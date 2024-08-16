@@ -1,0 +1,12 @@
+{
+  //...
+  "search.exclude": {
+    // Avoid polluting search results with lockfile content
+    "pnpm-lock.yaml": true
+  },
+  "npm.packageManager": "pnpm",
+  // For those using file-nesting, nest the new files. E.g.:
+  "explorer.fileNesting.patterns": {
+    "package.json": "pnpm-workspace.yaml, pnpm-lock.yaml"
+  }
+}

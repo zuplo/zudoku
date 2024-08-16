@@ -1,0 +1,69 @@
+name: Build
+on:
+  workflow_call:
+  push:
+    branches:
+      - "**"
+      - "!main"
+    tags-ignore:
+      - "*"
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      COREPACK_ENABLE_STRICT: 0
+      ZUDOKU_INTERNAL_DEV: true
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - run: pnpm install nx --global
+
+      - run: pnpm run lint:ci
+      - run: pnpm run format:ci
+      - run: nx run-many -t build:ci
+
+      - name: Build Samples
+        run: nx run-many -t build --projects=tag:sample
+
+      - name: "Authenticate to Google Cloud"
+        uses: "google-github-actions/auth@v2"
+        with:
+          token_format: "access_token"
+          workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
+          service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
+          access_token_lifetime: "300s"
+
+      - name: Upload Artifacts
+        uses: "google-github-actions/upload-cloud-storage@v2"
+        with:
+          path: packages/zudoku/stats.html
+          destination: cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}
+          parent: false
+          headers: |-
+            content-type: text/html
+
+      - name: Write Summary
+        run: |
+          echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY

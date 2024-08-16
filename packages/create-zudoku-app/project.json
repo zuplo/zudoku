@@ -1,0 +1,7 @@
+{
+  "$schema": "../../node_modules/nx/schemas/nx-schema.json",
+  "root": "packages/create-zudoku-app",
+  "targets": {
+    "build:ci": {}
+  }
+}

@@ -1,0 +1,130 @@
+# This file was generated. Do not edit manually.
+
+schema {
+  query: Query
+}
+
+"Indicates exactly one field must be supplied and this field must not be `null`."
+directive @oneOf on INPUT_OBJECT
+
+type EncodingItem {
+  allowReserved: Boolean
+  contentType: String
+  explode: Boolean
+  headers: JSONObject
+  name: String!
+  style: String
+}
+
+type ExampleItem {
+  description: String
+  externalValue: String
+  name: String!
+  summary: String
+  value: String
+}
+
+type MediaTypeObject {
+  encoding: [EncodingItem!]
+  examples: [ExampleItem!]
+  mediaType: String!
+  schema: JSON!
+}
+
+type OperationItem {
+  contentTypes: [String!]!
+  deprecated: Boolean
+  description: String
+  method: String!
+  operationId: String
+  parameters: [ParameterItem!]
+  path: String!
+  requestBody: RequestBodyObject
+  responses: [ResponseItem!]!
+  slug: String!
+  summary: String
+  tags: [TagItem!]
+}
+
+type ParameterItem {
+  allowEmptyValue: Boolean
+  allowReserved: Boolean
+  deprecated: Boolean
+  description: String
+  examples: [ExampleItem!]
+  explode: Boolean
+  in: ParameterIn!
+  name: String!
+  required: Boolean
+  schema: JSON
+  style: String
+}
+
+type PathItem {
+  methods: [String!]!
+  path: String!
+}
+
+type Query {
+  schema(input: JSON!, type: SchemaType!): Schema!
+}
+
+type RequestBodyObject {
+  content: [MediaTypeObject!]
+  description: String
+  required: Boolean
+}
+
+type ResponseItem {
+  content: [MediaTypeObject!]
+  description: String!
+  headers: JSON
+  links: JSON
+  statusCode: String!
+}
+
+type Schema {
+  description: String
+  openapi: String!
+  operations(
+    method: String
+    operationId: String
+    path: String
+    tag: String
+  ): [OperationItem!]!
+  paths: [PathItem!]!
+  tags(name: String): [SchemaTag!]!
+  title: String!
+  url: String!
+  version: String!
+}
+
+type SchemaTag {
+  description: String
+  name: String
+  operations: [OperationItem!]!
+}
+
+type TagItem {
+  description: String
+  name: String!
+}
+
+enum ParameterIn {
+  cookie
+  header
+  path
+  query
+}
+
+enum SchemaType {
+  json
+  url
+  yaml
+}
+
+"The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."
+scalar JSON
+
+"The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."
+scalar JSONObject

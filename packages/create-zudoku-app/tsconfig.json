@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["templates", "dist"]
+}

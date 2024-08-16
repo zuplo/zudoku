@@ -1,0 +1,218 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-Thin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-UltraLight.woff2")
+    format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-SemiBold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-Bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-Black.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: Geist;
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url("https://cdn.zudoku.dev/geist/Geist-UltraBlack.woff2")
+    format("woff2");
+}
+
+@layer base {
+  :root {
+    --top-header-height: 65px;
+    --top-nav-height: 50px;
+    --side-nav-width: theme("spacing.72");
+    --header-height: calc(var(--top-header-height) + var(--top-nav-height));
+    --scroll-padding: calc(var(--header-height) + 10px);
+    --padding-content-top: theme("spacing.12");
+    --padding-content-bottom: theme("spacing.12");
+    --padding-nav-item: theme("spacing[2.5]");
+    --sidecar-grid-cols: 1fr minmax(200px, 260px);
+  }
+
+  html,
+  body,
+  #root {
+    @apply h-full min-h-screen;
+  }
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-padding-block: var(--scroll-padding);
+    scrollbar-gutter: stable;
+  }
+
+  body {
+    @apply antialiased bg-background text-foreground;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  .prose.prose {
+    @apply prose-a:underline-offset-4 hover:prose-a:text-primary;
+    @apply prose-blockquote:not-italic prose-blockquote:text-neutral-500/75 prose-blockquote:dark:text-neutral-400;
+    @apply prose-headings:prose-code:mx-2;
+    @apply prose-code:before:content-none prose-code:after:content-none;
+
+    ul.contains-task-list {
+      @apply list-none px-0;
+      li {
+        @apply flex items-center gap-2;
+      }
+    }
+  }
+
+  select {
+    @apply focus-visible:ring-primary focus-visible:ring-[1.5px] focus:outline-none;
+  }
+
+  .CollapsibleContent {
+    --easing: cubic-bezier(0.4, 0, 0.2, 1);
+    --slide-offset: -0.75rem;
+    @apply overflow-hidden;
+  }
+  .CollapsibleContent[data-state="open"] {
+    animation: slideDown 300ms var(--easing);
+  }
+  .CollapsibleContent[data-state="closed"] {
+    animation: slideUp 300ms var(--easing);
+  }
+
+  @keyframes slideDown {
+    from {
+      height: 0;
+      opacity: 0;
+      transform: translateY(var(--slide-offset));
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      height: var(--radix-collapsible-content-height);
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      height: 0;
+      opacity: 0;
+      transform: translateY(var(--slide-offset));
+    }
+  }
+
+  /* Theme */
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 72.22% 50.59%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: var(--primary);
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: var(--primary);
+  }
+}

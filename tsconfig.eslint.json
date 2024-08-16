@@ -1,0 +1,11 @@
+{
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs"],
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx"
+  }
+}

@@ -1,0 +1,6 @@
+packages:
+  - "scripts"
+  - "packages/*"
+  - "examples/*"
+  - "website"
+  - "docs"

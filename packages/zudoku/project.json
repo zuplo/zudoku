@@ -1,0 +1,58 @@
+{
+  "$schema": "../../node_modules/nx/schemas/nx-schema.json",
+  "root": "packages/zudoku",
+  "targets": {
+    "build:ci": {
+      "dependsOn": ["build", "build:vite", "build:standalone"],
+      "executor": "nx:noop"
+    },
+    "build:standalone": {
+      "dependsOn": ["build:standalone:html", "build:standalone:vite"],
+      "executor": "nx:noop"
+    },
+    "publish:local": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["build:ci"],
+      "options": {
+        "cwd": "packages/zudoku",
+        "commands": [
+          "pnpm version prerelease --preid local --git-tag-version=false --commit-hooks=false",
+          "pnpm publish --filter zudoku --tag local --registry http://localhost:4873 --no-git-checks"
+        ]
+      }
+    },
+    "build": {
+      "outputs": ["{projectRoot}/dist"],
+      "inputs": [
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.tsx",
+        "!{projectRoot}/**/*.css"
+      ],
+      "cache": true
+    },
+    "build:vite": {
+      "outputs": ["{projectRoot}/lib"],
+      "inputs": [
+        "{projectRoot}/vite.config.ts",
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.tsx",
+        "!{projectRoot}/**/*.css"
+      ],
+      "cache": true
+    },
+    "build:standalone:vite": {
+      "outputs": ["{projectRoot}/standalone"],
+      "inputs": [
+        "{projectRoot}/vite.standalone.config.ts",
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.tsx",
+        "!{projectRoot}/**/*.css"
+      ],
+      "cache": true
+    },
+    "build:standalone:html": {
+      "dependsOn": ["build:standalone:vite"]
+    },
+    "codegen": {}
+  }
+}

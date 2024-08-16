@@ -1,0 +1,14 @@
+{
+  "$schema": "../node_modules/nx/schemas/nx-schema.json",
+  "root": "scripts",
+  "targets": {
+    "build": {
+      "outputs": ["{projectRoot}/dist"],
+      "inputs": ["{projectRoot}/**/*.ts"],
+      "cache": true
+    },
+    "codegen": {
+      "dependsOn": ["build"]
+    }
+  }
+}

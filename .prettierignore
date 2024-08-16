@@ -1,0 +1,11 @@
+# Add files here to ignore them from prettier formatting
+dist/
+coverage/
+node_modules/
+packages/zudoku/lib/
+packages/zudoku/standalone/
+/.nx/cache
+/.nx/workspace-data
+pnpm-lock.yaml
+.next/
+stats.html
