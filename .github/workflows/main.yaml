@@ -165,7 +165,12 @@ jobs:
           --header 'Authorization: Bearer ${{ secrets.CF_ZONE_PURGE_ACCESS_TOKEN }}' \
           --data '{
             "files": [
-              "https://cdn.zuduoku.dev/latest/index.html"
+              "https://cdn.zudoku.dev/demo",
+              "https://cdn.zudoku.dev/demo/",
+              "https://cdn.zudoku.dev/demo/index.html",
+              "https://cdn.zudoku.dev/latest/index.html",
+              "https://cdn.zudoku.dev/latest/demo.js",
+              "https://cdn.zudoku.dev/latest/style.css"
             ]
           }'
 
