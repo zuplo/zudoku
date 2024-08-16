@@ -102,6 +102,7 @@ jobs:
       - name: Upload CSS
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
+          process_gcloudignore: false
           path: packages/zudoku/standalone
           glob: "**/*.css"
           destination: cdn.zudoku.dev/${{ env.ZUDOKU_VERSION }}
@@ -112,6 +113,7 @@ jobs:
       - name: Upload Javascript
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
+          process_gcloudignore: false
           path: packages/zudoku/standalone
           glob: "**/*.js"
           destination: cdn.zudoku.dev/${{ env.ZUDOKU_VERSION }}
@@ -122,6 +124,7 @@ jobs:
       - name: Upload HTML (Latest)
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
+          process_gcloudignore: false
           path: packages/zudoku/standalone/index.html
           destination: cdn.zudoku.dev/latest
           parent: false
@@ -131,6 +134,7 @@ jobs:
       - name: Upload CSS (Latest)
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
+          process_gcloudignore: false
           path: packages/zudoku/standalone
           glob: "**/*.css"
           destination: cdn.zudoku.dev/latest
@@ -141,6 +145,7 @@ jobs:
       - name: Upload Javascript (Latest)
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
+          process_gcloudignore: false
           path: packages/zudoku/standalone
           glob: "**/*.js"
           destination: cdn.zudoku.dev/latest
@@ -151,6 +156,7 @@ jobs:
       - name: Upload Artifacts
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
+          process_gcloudignore: false
           path: packages/zudoku/stats.html
           destination: cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}
           parent: false
