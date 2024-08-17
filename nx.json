@@ -3,10 +3,10 @@
   "defaultBase": "main",
   "targetDefaults": {
     "dev": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["zudoku:build"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["zudoku:build"],
       "outputs": ["{projectRoot}/dist"],
       "cache": false
     },
