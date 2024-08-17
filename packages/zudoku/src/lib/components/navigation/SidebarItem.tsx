@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router-dom";
 
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
@@ -42,6 +42,7 @@ export const SidebarItem = ({
 }) => {
   const topNavItem = useTopNavigationItem();
   const { activeAnchor } = useViewportAnchor();
+  const [searchParams] = useSearchParams();
 
   switch (item.type) {
     case "category":
@@ -69,7 +70,7 @@ export const SidebarItem = ({
     case "link":
       return item.href.startsWith("#") ? (
         <AnchorLink
-          to={item.href}
+          to={{ hash: item.href, search: searchParams.toString() }}
           {...{ [DATA_ANCHOR_ATTR]: item.href.slice(1) }}
           className={cn(
             "flex gap-2.5 justify-between",

@@ -1,5 +1,5 @@
 import { writeFile } from "fs/promises";
-import { build as viteBuild } from "vite";
+import { createServer as createViteServer, build as viteBuild } from "vite";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { prerender } from "./prerender.js";
@@ -32,13 +32,15 @@ export async function runBuild(options: { dir: string }) {
       o.fileName.endsWith(".css"),
     )?.fileName;
 
+    const vite = await createViteServer(viteServerConfig);
+
     const html = getBuildHtml({
       jsEntry: `/${jsEntry}`,
       cssEntry: `/${cssEntry}`,
     });
 
     try {
-      const writtenFiles = await prerender(html, options.dir);
+      const writtenFiles = await prerender(vite, html, options.dir);
 
       if (writtenFiles.includes("index.html")) {
         return;
