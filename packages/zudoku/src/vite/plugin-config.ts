@@ -1,7 +1,7 @@
-import { PluginOption } from "vite";
+import { type Plugin } from "vite";
 import { getConfigFilePath } from "./config.js";
 
-const viteConfigPlugin = ({ rootDir }: { rootDir: string }): PluginOption => {
+const viteConfigPlugin = ({ rootDir }: { rootDir: string }): Plugin => {
   const virtualModuleId = "virtual:zudoku-config";
 
   return {

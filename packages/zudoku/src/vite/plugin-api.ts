@@ -1,7 +1,7 @@
-import { Plugin } from "vite";
-import { ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
+import { type ZudokuPluginOptions } from "../config/config.js";
 
-const viteApiPlugin = (config: ZudokuPluginOptions): Plugin => {
+const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -14,6 +14,8 @@ const viteApiPlugin = (config: ZudokuPluginOptions): Plugin => {
     },
     async load(id, options) {
       if (id === resolvedVirtualModuleId) {
+        const config = getConfig();
+
         const code = [
           `import { openApiPlugin } from "zudoku/plugins/openapi";`,
           `const configuredApiPlugins = [];`,

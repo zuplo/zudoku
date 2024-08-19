@@ -1,11 +1,11 @@
-import { Plugin } from "vite";
-import { DocsConfig, ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
+import type { DocsConfig, ZudokuPluginOptions } from "../config/config.js";
 
 function getDefaultConfigIfFilesExist() {
   return [{ files: "/pages/**/*.mdx" }];
 }
 
-const viteDocsPlugin = (config: ZudokuPluginOptions): Plugin => {
+const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -18,6 +18,8 @@ const viteDocsPlugin = (config: ZudokuPluginOptions): Plugin => {
     },
     load(id) {
       if (id === resolvedVirtualModuleId) {
+        const config = getConfig();
+
         if (config.mode === "standalone") {
           return `export const configuredDocsPlugins = [];`;
         }

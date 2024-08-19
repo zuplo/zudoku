@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs";
 import path from "node:path";
-import { Plugin } from "vite";
+import { type Plugin } from "vite";
 
 /**
  * Used for debugging, writes metadata to build.

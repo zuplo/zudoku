@@ -1,11 +1,12 @@
-import { PluginOption } from "vite";
-import { ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
+import { type ZudokuPluginOptions } from "../config/config.js";
 
-const viteAliasPlugin = (config: ZudokuPluginOptions): PluginOption => {
+const viteAliasPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   return {
     name: "zudoku-component-plugin",
-    config: () =>
-      config.mode === "internal" || config.mode === "standalone"
+    config: () => {
+      const config = getConfig();
+      return config.mode === "internal" || config.mode === "standalone"
         ? {
             resolve: {
               alias: {
@@ -18,7 +19,8 @@ const viteAliasPlugin = (config: ZudokuPluginOptions): PluginOption => {
               },
             },
           }
-        : undefined,
+        : undefined;
+    },
   };
 };
 

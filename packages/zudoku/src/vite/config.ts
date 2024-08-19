@@ -5,16 +5,16 @@ import path from "node:path";
 import colors from "picocolors";
 import tailwindcss from "tailwindcss";
 import {
-  ConfigEnv,
-  InlineConfig,
-  LogLevel,
+  type ConfigEnv,
+  type InlineConfig,
+  type LogLevel,
   loadConfigFromFile,
   mergeConfig,
 } from "vite";
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import { isPortAvailable } from "../cli/common/utils/ports.js";
-import { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
+import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
 import { validateConfig } from "../config/validators/validate.js";
 
 import vitePlugin from "./plugin.js";
@@ -35,9 +35,11 @@ const fileExists = (path: string) =>
 let configPath: string | undefined;
 
 export async function getConfigFilePath(rootDir: string): Promise<string> {
-  if (configPath) {
+  // Also check if file exists, so renaming the file will trigger a restart as well
+  if (configPath && (await fileExists(configPath))) {
     return configPath;
   }
+
   for (const fileName of zuploConfigFiles) {
     const filepath = path.join(rootDir, fileName);
 
@@ -46,6 +48,7 @@ export async function getConfigFilePath(rootDir: string): Promise<string> {
       return filepath;
     }
   }
+  configPath = undefined;
   throw new Error(`No zudoku config file found in project root.`);
 }
 
@@ -54,13 +57,13 @@ export type ZudokuConfigEnv = ConfigEnv & {
   forceReload?: boolean;
 };
 
-type LoadedConfig = ZudokuConfig & {
+export type LoadedConfig = ZudokuConfig & {
   vite: { dependencies: string[]; path: string };
 };
 
 let config: LoadedConfig | undefined;
 
-export async function loadZuploConfig(
+export async function loadZudokuConfig(
   rootDir: string,
   configEnv: ZudokuConfigEnv,
 ): Promise<LoadedConfig> {
@@ -144,7 +147,10 @@ export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
 ): Promise<InlineConfig> {
-  const config = await loadZuploConfig(dir, configEnv);
+  const config = await loadZudokuConfig(dir, configEnv);
+
+  const onConfigChange = () =>
+    loadZudokuConfig(dir, { ...configEnv, forceReload: true });
 
   validateConfig(config);
 
@@ -225,7 +231,7 @@ export async function getViteConfig(
       vitePluginSsrCss({
         entries: [`${pluginOptions.moduleDir}/src/app/entry.client.tsx`],
       }),
-      ...vitePlugin(pluginOptions),
+      vitePlugin(pluginOptions, onConfigChange),
     ],
     css: {
       postcss: {
