@@ -1,6 +1,5 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { ViteDevServer } from "vite";
 import {
   type getRoutesByConfig,
   type render as serverRender,
@@ -66,11 +65,7 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
   return paths;
 };
 
-export const prerender = async (
-  vite: ViteDevServer,
-  html: string,
-  dir: string,
-) => {
+export const prerender = async (html: string, dir: string) => {
   // eslint-disable-next-line no-console
   console.log("Prerendering...");
   const config = await import(
@@ -93,9 +88,7 @@ export const prerender = async (
 
     const response = new FileWritingResponse(path.join(dir, "dist/", filename));
 
-    const template = await vite.transformIndexHtml(urlPath, html);
-
-    await render({ template, request: req, response, config });
+    await render({ template: html, request: req, response, config });
     await response.isSent();
     writtenFiles.push(filename);
   }
