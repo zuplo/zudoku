@@ -4,6 +4,7 @@ import { createBrowserRouter } from "react-router-dom";
 import { Bootstrap } from "zudoku/components";
 import type { ZudokuConfig } from "../config/validators/validate.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";
+import { themeToggle } from "../lib/themeToggle.js";
 import "../lib/util/logInit.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
@@ -15,6 +16,8 @@ if (!apiUrl) {
     "No API URL in query parameters. Please provide an API URL using the `api-url` query parameter.",
   );
 }
+
+themeToggle();
 
 logger.info(`API URL: ${apiUrl}`);
 
@@ -51,6 +54,6 @@ const config = {
 
 const routes = getRoutesByConfig(config);
 const router = createBrowserRouter(routes, {
-  basename: "/demo",
+  basename: window.location.pathname,
 });
 createRoot(root).render(<Bootstrap router={router} />);

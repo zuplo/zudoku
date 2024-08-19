@@ -8,6 +8,7 @@ import viteAliasPlugin from "./plugin-component.js";
 import viteConfigPlugin from "./plugin-config.js";
 import viteCustomCss from "./plugin-custom-css.js";
 import viteDocsPlugin from "./plugin-docs.js";
+import { viteHtmlTransform } from "./plugin-html-transform.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSidebarPlugin } from "./plugin-sidebar.js";
@@ -27,5 +28,6 @@ export default function vitePlugin(
     viteAliasPlugin(config),
     viteRedirectPlugin(config),
     viteCustomCss(config),
+    viteHtmlTransform(config),
   ];
 }

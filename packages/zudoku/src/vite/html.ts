@@ -1,12 +1,4 @@
-const themeScript = `if (
-  localStorage.getItem("theme") === "dark" ||
-  (!("theme" in localStorage) &&
-    window.matchMedia("(prefers-color-scheme: dark)").matches)
-) {
-  document.documentElement.classList.add("dark");
-} else {
-  document.documentElement.classList.remove("dark");
-}`;
+import { themeToggle } from "../lib/themeToggle.js";
 
 export function getDevHtml(jsEntry: string) {
   return `<!doctype html>
@@ -15,7 +7,6 @@ export function getDevHtml(jsEntry: string) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!--app-helmet-->
-    <script type="module">${themeScript}</script>
     <link rel="preconnect" href="https://cdn.zudoku.dev/">
   </head>
   <body>
@@ -40,8 +31,8 @@ export function getBuildHtml({
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="module" crossorigin src="${jsEntry}"></script>
     <link rel="stylesheet" crossorigin href="${cssEntry}">
+    <script type="module">(${themeToggle.toString()})();</script>
     <!--app-helmet-->
-    <script type="module">${themeScript}</script>
     <link rel="preconnect" href="https://cdn.zudoku.dev/">
   </head>
   <body>

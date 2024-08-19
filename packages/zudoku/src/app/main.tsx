@@ -9,9 +9,9 @@ import "virtual:zudoku-theme.css";
 import { DevPortal, Layout, RouterError } from "zudoku/components";
 import { isNavigationPlugin } from "zudoku/internal";
 import { customPagePlugin } from "zudoku/plugins/custom-page";
+import { inkeepSearchPlugin } from "zudoku/plugins/search-inkeep";
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/DevPortalContext.js";
-import { inkeepSearchPlugin } from "../lib/plugins/search-inkeep/index.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
