@@ -65,16 +65,11 @@ jobs:
       # Build must happen after version bump so builds use the correct version
       - run: nx run-many -t build:ci
 
-      - run: git add -A
-
       - run: echo "ZUDOKU_VERSION=$(node -e 'console.log(require(`./packages/zudoku/package.json`).version)')" >> $GITHUB_ENV
 
       # Push changes before publishing because if it fails we still want the tag
       - name: Commit & Push Changes
-        run: |
-          git commit -m "[Version] ${{ env.ZUDOKU_VERSION }} [skip ci]" --no-verify
-          git tag ${{ env.ZUDOKU_VERSION }}
-          git push origin main --tags
+        run: git push origin main --tags
 
       - name: Publish Module (Zudoku)
         run: pnpm publish --provenance --filter zudoku --tag ${{ env.RELEASE_TYPE == 'prerelease' && 'dev' || 'latest' }}
