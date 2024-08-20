@@ -25,5 +25,24 @@
         "targetName": "eslint:lint"
       }
     }
-  ]
+  ],
+  "release": {
+    "projects": ["zudoku", "create-zudoku-app"],
+    "changelog": {
+      "projectChangelogs": {
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": true,
+          "versionTitleDate": true
+        }
+      },
+      "workspaceChangelog": {
+        "renderOptions": {
+          "authors": false,
+          "commitReferences": true,
+          "versionTitleDate": true
+        }
+      }
+    }
+  }
 }

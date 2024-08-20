@@ -59,13 +59,8 @@ jobs:
       - run: git config --global user.email "zudoku-bot@zuplo.com"
       - run: git config --global user.name "Zudoku Bot"
 
-      - name: Version Bump (Zudoku)
-        run: pnpm version ${{ env.RELEASE_TYPE }} --preid dev
-        working-directory: packages/zudoku
-
-      - name: Version Bump (Create App)
-        run: pnpm version ${{ env.RELEASE_TYPE }} --preid dev
-        working-directory: packages/create-zudoku-app
+      - name: Version Bump
+        run: nx release version ${{ env.RELEASE_TYPE }} --preid dev --git-tag --git-commit
 
       # Build must happen after version bump so builds use the correct version
       - run: nx run-many -t build:ci
