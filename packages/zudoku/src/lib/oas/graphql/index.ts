@@ -68,6 +68,25 @@ const builder = new SchemaBuilder<{
 const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 
+const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
+  const tags = schema.tags ?? [];
+
+  // Extract tags from operations
+  const operationTags = Object.values(schema.paths ?? {})
+    .flatMap((path) => Object.values(path ?? {}))
+    .flatMap((operation) =>
+      typeof operation === "object" && "tags" in operation
+        ? operation.tags ?? []
+        : [],
+    );
+
+  // Remove duplicates and tags that appear in the schema
+  const uniqueOperationTags = [...new Set(operationTags)].filter(
+    (tag) => !tags.some((rootTag) => rootTag.name === tag),
+  );
+  return [...tags, ...uniqueOperationTags.map((tag) => ({ name: tag }))];
+};
+
 const getAllOperations = (paths?: PathsObject, tag?: string) => {
   return Object.entries(paths ?? {}).flatMap(([path, value]) =>
     HttpMethods.flatMap((method) => {
@@ -117,7 +136,7 @@ const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
     operations: t.field({
       type: [OperationItem],
       resolve: (parent, _args, ctx) => {
-        const rootTags = ctx.schema.tags?.map((tag) => tag.name) ?? [];
+        const rootTags = getAllTags(ctx.schema).map((tag) => tag.name);
 
         return getAllOperations(ctx.schema.paths, parent.name).filter((item) =>
           parent.name
@@ -363,10 +382,10 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         name: t.arg.string(),
       },
       type: [SchemaTag],
-      resolve: (root, args) =>
-        [...(root.tags ?? []), { name: "" }].filter(
-          (tag) => !args.name || args.name === tag.name,
-        ),
+      resolve: (root, args) => {
+        const tags = [...getAllTags(root), { name: "" }];
+        return args.name ? tags.filter((tag) => tag.name === args.name) : tags;
+      },
     }),
     operations: t.field({
       type: [OperationItem],
