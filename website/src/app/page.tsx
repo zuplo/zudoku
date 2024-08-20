@@ -54,14 +54,21 @@ export default function Home() {
         </div>
 
         <div className="text-6xl font-bold text-center mt-14 leading-snug">
-          API documentation<br />should be <span style={{ color: '#FF00BD' }}>free</span>.
+          API documentation
+          <br />
+          should be <span style={{ color: "#FF00BD" }}>free</span>.
         </div>
 
         <div className="text-1xl text-center mt-10 leading-snug">
-          Zudoku is an open-source, OpenAPI powered, highly customizable<br />API documentation framework for building quality developer experiences.
+          Zudoku is an open-source, OpenAPI powered, highly customizable
+          <br />
+          API documentation framework for building quality developer
+          experiences.
         </div>
 
-        <h2 className="mt-12 mb-4 text-2xl font-semibold">Try it with your API!</h2>
+        <h2 className="mt-12 mb-4 text-2xl font-semibold">
+          Try it with your API!
+        </h2>
 
         <input
           placeholder="https://example.com/api/openapi.json"
