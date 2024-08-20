@@ -22,7 +22,7 @@ export async function dev(argv: Arguments) {
   const dir = path.resolve(process.cwd(), argv.dir);
   const server = new DevServer({ dir, port, ssr: argv.ssr });
 
-  await server.watch();
+  await server.start();
 
   printDiagnosticsToConsole("Started local development setup");
   printDiagnosticsToConsole("Ctrl+C to exit");

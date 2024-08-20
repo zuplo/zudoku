@@ -20,10 +20,6 @@ export class DevServer {
 
   constructor(private options: { port: number; dir: string; ssr?: boolean }) {}
 
-  async watch() {
-    await this.start();
-  }
-
   async start() {
     const app = express();
 
