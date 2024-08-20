@@ -2,7 +2,7 @@ import { type Plugin } from "vite";
 import type { DocsConfig, ZudokuPluginOptions } from "../config/config.js";
 
 function getDefaultConfigIfFilesExist() {
-  return [{ files: "/pages/**/*.mdx" }];
+  return [{ files: "/pages/**/*.{md,mdx}" }];
 }
 
 const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
