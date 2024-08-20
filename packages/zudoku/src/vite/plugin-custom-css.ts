@@ -1,5 +1,5 @@
-import { Plugin } from "vite";
-import { ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
+import { type ZudokuPluginOptions } from "../config/config.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 
 const THEME_VARIABLES = [
@@ -36,7 +36,7 @@ const generateCss = (theme: Theme) =>
     .map(([key, value]) => `--${uncamelize(key)}:${value};`)
     .join("\n");
 
-const viteCustomCss = (config: ZudokuPluginOptions): Plugin => {
+const viteCustomCss = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-theme.css";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -49,6 +49,8 @@ const viteCustomCss = (config: ZudokuPluginOptions): Plugin => {
     },
     load(id) {
       if (id !== resolvedVirtualModuleId) return;
+
+      const config = getConfig();
 
       const cssParts = [];
       if (config.theme?.light) {

@@ -1,8 +1,7 @@
-import { Plugin } from "vite";
-import { ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
 import { themeToggle } from "../lib/themeToggle.js";
 
-export const viteHtmlTransform = (_config: ZudokuPluginOptions): Plugin => {
+export const viteHtmlTransform = (): Plugin => {
   return {
     name: "zudoku-html-transform",
     transformIndexHtml: () => [

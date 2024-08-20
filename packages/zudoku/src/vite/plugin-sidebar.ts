@@ -1,8 +1,10 @@
-import { Plugin } from "vite";
-import { ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
+import { type ZudokuPluginOptions } from "../config/config.js";
 import { resolveSidebar } from "../config/validators/SidebarSchema.js";
 
-export const viteSidebarPlugin = (config: ZudokuPluginOptions): Plugin => {
+export const viteSidebarPlugin = (
+  getConfig: () => ZudokuPluginOptions,
+): Plugin => {
   const virtualModuleId = "virtual:zudoku-sidebar";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -15,6 +17,7 @@ export const viteSidebarPlugin = (config: ZudokuPluginOptions): Plugin => {
     },
     async load(id) {
       if (id !== resolvedVirtualModuleId) return;
+      const config = getConfig();
 
       const resolvedSidebar = Object.fromEntries(
         await Promise.all(

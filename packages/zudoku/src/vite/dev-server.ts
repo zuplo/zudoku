@@ -1,54 +1,24 @@
-import chokidar from "chokidar";
 import express from "express";
 import { Server } from "node:http";
-import path from "node:path";
 import { createServer as createViteServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
-import type { ZudokuConfig } from "../config/config.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
 import {
   getAppClientEntryPath,
   getAppServerEntryPath,
   getViteConfig,
-  loadZuploConfig,
-  zuploConfigFiles,
+  type LoadedConfig,
+  loadZudokuConfig,
 } from "./config.js";
 import { getDevHtml } from "./html.js";
 
 export class DevServer {
   private server: Server | undefined;
-  private currentConfig: ZudokuConfig | undefined;
+  private currentConfig: LoadedConfig | undefined;
 
   constructor(private options: { port: number; dir: string; ssr?: boolean }) {}
-
-  async watch() {
-    // Watches files for changes and restarts the server
-    const watcher = chokidar.watch(
-      zuploConfigFiles.map((filename) => path.join(this.options.dir, filename)),
-      {
-        persistent: true,
-      },
-    );
-
-    watcher.on("change", async () => {
-      await this.stop();
-      await this.start();
-
-      this.currentConfig = await loadZuploConfig(this.options.dir, {
-        command: "serve",
-        mode: "development",
-        forceReload: true,
-      });
-
-      printDiagnosticsToConsole(
-        `Configuration file changed. Restarted server.`,
-      );
-    });
-
-    await this.start();
-  }
 
   async start() {
     const app = express();
@@ -61,7 +31,7 @@ export class DevServer {
 
     const vite = await createViteServer(viteConfig);
 
-    this.currentConfig = await loadZuploConfig(this.options.dir, {
+    this.currentConfig = await loadZudokuConfig(this.options.dir, {
       command: "serve",
       mode: "development",
     });

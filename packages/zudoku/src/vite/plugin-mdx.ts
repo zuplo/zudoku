@@ -11,8 +11,8 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { visit } from "unist-util-visit";
-import { Plugin } from "vite";
-import { ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin } from "vite";
+import { type ZudokuPluginOptions } from "../config/config.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rehypeCodeBlockPlugin = () => (tree: any) => {
@@ -42,7 +42,8 @@ export type DevPortalPluginOptions = {
   rehypePlugins?: Options["rehypePlugins"];
 };
 
-const viteMdxPlugin = (config: ZudokuPluginOptions): Plugin => {
+const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+  const config = getConfig();
   return {
     enforce: "pre",
     ...mdx({
