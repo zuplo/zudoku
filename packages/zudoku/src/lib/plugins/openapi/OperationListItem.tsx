@@ -6,9 +6,9 @@ import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
-import { SchemaListView } from "./SchemaListView.js";
 import { Sidecar } from "./Sidecar.js";
 import { FragmentType, useFragment } from "./graphql/index.js";
+import { SchemaView } from "./schema/SchemaView.js";
 import { SchemaProseClasses } from "./util/prose.js";
 
 export const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
@@ -62,7 +62,7 @@ export const OperationListItem = ({
             <Heading level={3} className="capitalize">
               Request Body
             </Heading>
-            <SchemaListView schema={schema} />
+            <SchemaView schema={schema} />
           </div>
         ))}
         {operation.responses.length > 0 && (
@@ -93,7 +93,7 @@ export const OperationListItem = ({
                     {renderIf(
                       response.content?.find((content) => content.schema),
                       (content) => {
-                        return <SchemaListView schema={content.schema} />;
+                        return <SchemaView schema={content.schema} />;
                       },
                     ) ?? (
                       <Card className="font-mono text-sm p-4">
