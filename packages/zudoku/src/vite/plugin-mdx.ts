@@ -3,7 +3,6 @@ import mdx, { type Options } from "@mdx-js/rollup";
 import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import path from "node:path";
-import rehypeRaw from "rehype-raw";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
 import remarkDirective from "remark-directive";
@@ -66,7 +65,6 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
-        rehypeRaw,
         withToc,
         withTocExport,
         ...(config.build?.rehypePlugins ?? []),
