@@ -46,7 +46,6 @@ At its core **Zudoku** (pronounced "zoo-doh-koo", a blend of "Zuplo" and the Ger
 - ✅ MDX Support
 - ✅ Static Page Support
 - GraphQL Support
--
 
 # Getting Started
 
