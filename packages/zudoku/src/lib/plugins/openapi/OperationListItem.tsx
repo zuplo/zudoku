@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Card } from "../../ui/Card.js";
@@ -26,6 +27,8 @@ export const OperationListItem = ({
   );
 
   const first = operation.responses.at(0);
+  const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
+
   return (
     <div
       key={operation.operationId}
@@ -70,12 +73,15 @@ export const OperationListItem = ({
             <Heading level={3} className="capitalize mt-8 pt-8 border-t">
               Responses
             </Heading>
-            <Tabs defaultValue={`${first?.statusCode}${first?.description}`}>
+            <Tabs
+              onValueChange={(value) => setSelectedResponse(value)}
+              value={selectedResponse}
+            >
               {operation.responses.length > 1 && (
                 <TabsList>
                   {operation.responses.map((response) => (
                     <TabsTrigger
-                      value={response.statusCode + response.description}
+                      value={response.statusCode}
                       key={response.statusCode}
                       title={response.description}
                     >
@@ -87,7 +93,7 @@ export const OperationListItem = ({
               <ul className="list-none m-0 px-0 overflow-hidden">
                 {operation.responses.map((response) => (
                   <TabsContent
-                    value={response.statusCode + response.description}
+                    value={response.statusCode}
                     key={response.statusCode}
                   >
                     {renderIf(
@@ -96,7 +102,7 @@ export const OperationListItem = ({
                         return <SchemaView schema={content.schema} />;
                       },
                     ) ?? (
-                      <Card className="font-mono text-sm p-4">
+                      <Card className="font-mono text-sm p-4 italic bg-border/20">
                         No response body
                       </Card>
                     )}
@@ -108,7 +114,11 @@ export const OperationListItem = ({
         )}
       </div>
 
-      <Sidecar operation={operation} />
+      <Sidecar
+        selectedResponse={selectedResponse}
+        onSelectResponse={setSelectedResponse}
+        operation={operation}
+      />
     </div>
   );
 };

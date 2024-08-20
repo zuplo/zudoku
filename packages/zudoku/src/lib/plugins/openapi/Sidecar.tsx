@@ -84,8 +84,12 @@ const methodToColor = {
 
 export const Sidecar = ({
   operation,
+  selectedResponse,
+  onSelectResponse,
 }: {
   operation: OperationListItemResult;
+  selectedResponse?: string;
+  onSelectResponse: (response: string) => void;
 }) => {
   const oasConfig = useOasConfig();
   const [result] = useQuery({
@@ -201,7 +205,11 @@ export const Sidecar = ({
         <RequestBodySidecarBox content={requestBodyContent} />
       )}
       {operation.responses.length > 0 && (
-        <ResponsesSidecarBox responses={operation.responses} />
+        <ResponsesSidecarBox
+          selectedResponse={selectedResponse}
+          onSelectResponse={onSelectResponse}
+          responses={operation.responses}
+        />
       )}
     </aside>
   );

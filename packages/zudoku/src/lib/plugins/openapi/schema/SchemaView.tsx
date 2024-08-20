@@ -63,12 +63,14 @@ export const SchemaView = ({
       const isTopLevelSingleItem =
         level === 0 && Object.keys(groupedProperties).length === 1;
 
+      const groupNames = ["required", "optional", "deprecated"] as const;
+
       return (
         <Card className="divide-y overflow-hidden">
-          {(["required", "optional", "deprecated"] as const).map(
+          {groupNames.map(
             (group) =>
               groupedProperties[group] && (
-                <ul key={group} className="divide-y divide-border">
+                <ul key={group} className="divide-y">
                   {groupedProperties[group].map(([key, value]) => (
                     <SchemaPropertyItem
                       key={key}
