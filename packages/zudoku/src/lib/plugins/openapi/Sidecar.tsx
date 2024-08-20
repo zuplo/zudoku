@@ -84,8 +84,12 @@ const methodToColor = {
 
 export const Sidecar = ({
   operation,
+  selectedResponse,
+  onSelectResponse,
 }: {
   operation: OperationListItemResult;
+  selectedResponse?: string;
+  onSelectResponse: (response: string) => void;
 }) => {
   const oasConfig = useOasConfig();
   const [result] = useQuery({
@@ -105,8 +109,9 @@ export const Sidecar = ({
 
   const requestBodyContent = operation.requestBody?.content;
 
-  const path = operation.path.split("/").map((part) => (
-    <Fragment key={part}>
+  const path = operation.path.split("/").map((part, i, arr) => (
+    // eslint-disable-next-line react/no-array-index-key
+    <Fragment key={part + i}>
       {part.startsWith("{") && part.endsWith("}") ? (
         <ColorizedParam
           name={part.slice(1, -1)}
@@ -119,7 +124,7 @@ export const Sidecar = ({
       ) : (
         part
       )}
-      /
+      {i < arr.length - 1 ? "/" : null}
       <wbr />
     </Fragment>
   ));
@@ -200,7 +205,11 @@ export const Sidecar = ({
         <RequestBodySidecarBox content={requestBodyContent} />
       )}
       {operation.responses.length > 0 && (
-        <ResponsesSidecarBox responses={operation.responses} />
+        <ResponsesSidecarBox
+          selectedResponse={selectedResponse}
+          onSelectResponse={onSelectResponse}
+          responses={operation.responses}
+        />
       )}
     </aside>
   );

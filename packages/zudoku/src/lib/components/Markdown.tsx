@@ -1,4 +1,5 @@
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
 import { MdxComponents } from "../util/MdxComponents.js";
@@ -8,13 +9,13 @@ import { MdxComponents } from "../util/MdxComponents.js";
 const rehypeCodeBlockPlugin = () => (tree: any) => {
   visit(tree, "element", (node, _index, parent) => {
     if (node.tagName === "code") {
-      node.properties.inline = parent?.tagName !== "pre";
+      node.properties.inline = String(parent?.tagName !== "pre");
     }
   });
 };
 
 const remarkPlugins = [remarkGfm];
-const rehypePlugins = [rehypeCodeBlockPlugin];
+const rehypePlugins = [rehypeCodeBlockPlugin, rehypeRaw];
 
 // other styles are defined in main.css .prose
 export const ProseClasses = "prose dark:prose-invert prose-neutral";
