@@ -60,7 +60,7 @@ jobs:
       - run: git config --global user.name "Zudoku Bot"
 
       - name: Version Bump
-        run: nx release version ${{ env.RELEASE_TYPE }} --preid dev --git-tag --git-commit
+        run: 'nx release version ${{ env.RELEASE_TYPE }} --preid dev --git-tag --git-commit --git-commit-message "chore(release): publish {version} [skip ci]"'
 
       # Build must happen after version bump so builds use the correct version
       - run: nx run-many -t build:ci
