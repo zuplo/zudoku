@@ -16,7 +16,7 @@ const config = {
     path: "/api",
   },
   docs: {
-    files: "/pages/**/*.md?x",
+    files: "/pages/**/*.{md,mdx}",
   },
 };
 
