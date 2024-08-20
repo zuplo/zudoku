@@ -18,6 +18,7 @@ export const SidebarCategory = ({
 }) => {
   const topNavItem = useTopNavigationItem();
   const isCategoryOpen = useIsCategoryOpen(category);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   const isCollapsible = category.collapsible ?? true;
   const isCollapsed = category.collapsed ?? true;
@@ -40,11 +41,15 @@ export const SidebarCategory = ({
       onClick={(e) => {
         e.preventDefault();
         setOpen((prev) => !prev);
+        setHasInteracted(true);
       }}
     >
       <ChevronRightIcon
         size={16}
-        className="transition shrink-0 group-data-[state=open]:rotate-90"
+        className={cn(
+          hasInteracted && "transition",
+          "shrink-0 group-data-[state=open]:rotate-90",
+        )}
       />
     </button>
   );
@@ -88,7 +93,13 @@ export const SidebarCategory = ({
           </div>
         )}
       </Collapsible.Trigger>
-      <Collapsible.Content className="CollapsibleContent ms-[calc(var(--padding-nav-item)*1.125)]">
+      <Collapsible.Content
+        className={cn(
+          // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
+          hasInteracted && "CollapsibleContent",
+          "ms-[calc(var(--padding-nav-item)*1.125)]",
+        )}
+      >
         <ul className="mt-1 border-l ps-2">
           {category.items.map((item) => (
             <SidebarItem

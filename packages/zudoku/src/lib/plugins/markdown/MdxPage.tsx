@@ -23,7 +23,6 @@ const MarkdownHeadings = {
   ),
   h3: ({ children, id }) => (
     <Heading level={3} id={id} registerSidebarAnchor>
-      {" "}
       {children}
     </Heading>
   ),
