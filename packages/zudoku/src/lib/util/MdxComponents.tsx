@@ -69,19 +69,19 @@ export const MdxComponents = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const inline = (props as any).inline;
 
-    if (!inline) {
-      const match = className?.match(/language?-(\w+)/);
-
-      return (
-        <SyntaxHighlight
-          language={match?.[1] ?? "markup"}
-          className="rounded-xl overflow-x-auto p-4 border dark:!bg-foreground/10 dark:border-transparent"
-          showLanguageIndicator
-          code={String(children).trim()}
-        />
-      );
+    if (inline === true || inline === "true") {
+      return <InlineCode className={className}>{children}</InlineCode>;
     }
 
-    return <InlineCode className={className}>{children}</InlineCode>;
+    const match = className?.match(/language?-(\w+)/);
+
+    return (
+      <SyntaxHighlight
+        language={match?.[1] ?? "markup"}
+        className="rounded-xl overflow-x-auto p-4 border dark:!bg-foreground/10 dark:border-transparent"
+        showLanguageIndicator
+        code={String(children).trim()}
+      />
+    );
   },
 } satisfies MdxComponentsType;
