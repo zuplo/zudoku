@@ -36,7 +36,7 @@ export default function Home() {
           >
             <a
               className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-              href="https://zuplo.com"
+              href="https://zuplo.com?utm_source=zudoku-web&utm_medium=web&utm_content=made-by-zuplo"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -54,13 +54,14 @@ export default function Home() {
         </div>
 
         <div className="text-6xl font-bold text-center mt-14 leading-snug">
-          Zudoku makes
-          <br /> all gorillas 🦍
-          <br />
-          🍌 go bananas
+          API documentation<br />should be <font color="#FF00BD">free</font>.
         </div>
 
-        <h2 className="mt-12 mb-4 text-2xl font-semibold">Try it yourself</h2>
+        <div className="text-1xl text-center mt-10 leading-snug">
+          Zudoku is an open-source, OpenAPI powered, highly customizable<br />API documentation framework for building quality developer experiences.
+        </div>
+
+        <h2 className="mt-12 mb-4 text-2xl font-semibold">Try a Demo</h2>
 
         <input
           placeholder="https://example.com/api/openapi.json"
