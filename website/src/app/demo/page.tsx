@@ -6,12 +6,11 @@ export default function Page() {
       <Script
         type="module"
         crossOrigin="anonymous"
+        strategy="beforeInteractive"
         src="https://cdn.zudoku.dev/latest/demo.js"
+        stylesheets={["https://cdn.zudoku.dev/latest/style.css"]}
       />
-      <link rel="stylesheet" href="https://cdn.zudoku.dev/latest/style.css" />
-      <div className="bg-white m-5 border rounded overflow-auto max-h-full">
-        <div id="root" />
-      </div>
+      <div id="root" />
     </>
   );
 }
