@@ -164,8 +164,9 @@ export const Playground = ({
   });
 
   const path = url.split("/").map((part, i, arr) => {
-    const isPathParam = part.startsWith("{") && part.endsWith("}");
-    const replaced = part.replace(/[{}]/g, "");
+    const isPathParam =
+      (part.startsWith("{") && part.endsWith("}")) || part.startsWith(":");
+    const replaced = part.replace(/[:{}]/g, "");
     const value = formState.pathParams.find((p) => p.name === replaced)?.value;
 
     const pathParamValue = value ? (
@@ -190,10 +191,6 @@ export const Playground = ({
       </Fragment>
     );
   });
-
-  const lang = mimeTypeToLanguage(
-    queryMutation.data?.headers.get("Content-Type") ?? "",
-  );
 
   const headerEntries = Array.from(queryMutation.data?.headers.entries() ?? []);
 

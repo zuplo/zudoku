@@ -109,25 +109,31 @@ export const Sidecar = ({
 
   const requestBodyContent = operation.requestBody?.content;
 
-  const path = operation.path.split("/").map((part, i, arr) => (
-    // eslint-disable-next-line react/no-array-index-key
-    <Fragment key={part + i}>
-      {part.startsWith("{") && part.endsWith("}") ? (
-        <ColorizedParam
-          name={part.slice(1, -1)}
-          backgroundOpacity="0"
-          // same as in `ParameterListItem`
-          slug={operation.slug + "-" + part.slice(1, -1).toLocaleLowerCase()}
-        >
-          {part}
-        </ColorizedParam>
-      ) : (
-        part
-      )}
-      {i < arr.length - 1 ? "/" : null}
-      <wbr />
-    </Fragment>
-  ));
+  const path = operation.path.split("/").map((part, i, arr) => {
+    const isParam =
+      (part.startsWith("{") && part.endsWith("}")) || part.startsWith(":");
+    const paramName = isParam ? part.replace(/[:{}]/g, "") : undefined;
+
+    return (
+      // eslint-disable-next-line react/no-array-index-key
+      <Fragment key={part + i}>
+        {paramName ? (
+          <ColorizedParam
+            name={paramName}
+            backgroundOpacity="0"
+            // same as in `ParameterListItem`
+            slug={`${operation.slug}-${paramName.toLocaleLowerCase()}`}
+          >
+            {part}
+          </ColorizedParam>
+        ) : (
+          part
+        )}
+        {i < arr.length - 1 ? "/" : null}
+        <wbr />
+      </Fragment>
+    );
+  });
 
   const code = useMemo(() => {
     const example = requestBodyContent?.[0]?.schema
