@@ -1,11 +1,12 @@
 import type { PlaygroundForm } from "./Playground.js";
 
 export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
-  const filledPath = path.replace(
-    /\{(\w+)}/g,
-    (_, key) =>
-      data.pathParams.find((part) => part.name === key)?.value || `{${key}}`,
-  );
+  const filledPath = path.replace(/(:\w+|\{\w+})/g, (match) => {
+    const key = match.replace(/[:{}]/g, "");
+    const value = data.pathParams.find((part) => part.name === key)?.value;
+
+    return value ?? match;
+  });
 
   const url = new URL(filledPath, host);
 
