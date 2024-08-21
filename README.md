@@ -132,4 +132,4 @@ Details of the latest updates to Zudoku can be found in the [changelog](CHANGELO
 
 # License
 
-Zudoku is licensed under MIT. See the full [LICENSE].
+Zudoku is licensed under MIT. See the full [LICENSE.md].
