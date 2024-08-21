@@ -16,7 +16,7 @@
 
 # Introduction
 
-**Zudoku** (pronounced _"zoo-doh-koo"_) is an open-source, highly customizable API documentation framework for building quality developer experiences.
+**Zudoku** (pronounced _"zoo-doh-koo"_) is an open-source, highly customizable API documentation framework for building quality developer experiences. 
 
 Because building great API documentation should always be:
 
@@ -27,8 +27,7 @@ Because building great API documentation should always be:
 Zudoku supports both OpenAPI and GraphQL schemas and is extended via plugins that include features like static content, authentication, monetization, or anything else you can think of.
 
 ## 🤩 Try it
-
-**Test Zudoku with your own API right now at [zudoku.dev](https://zudoku.dev)** and see how good your documentation can look!
+**Test Zudoku with your own API now at [zudoku.dev](https://zudoku.dev)** and see how good your documentation can look!
 
 ## ⚙️ Installation
 
@@ -64,15 +63,14 @@ Add the package and styles to your `<head>` and pass the URL for your API schema
 ```
 
 ### 🧱 Getting started templates
-
 To get started with some of the features Zudoku offers you can use one of these [example templates](https://github.com/zuplo/zudoku/tree/main/examples):
 
-| Template                                                                                | What it does                                          |
-| --------------------------------------------------------------------------------------- | ----------------------------------------------------- |
-| [many-apis](https://github.com/zuplo/zudoku/tree/main/examples/many-apis)               | Using more than one OpenAPI document with Zudoku      |
-| [with-auth0](https://github.com/zuplo/zudoku/tree/main/examples/with-auth0)             | Authenticate users in docs with the Auth0 plugin      |
-| [with-config](hhttps://github.com/zuplo/zudoku/tree/main/examples/with-config)          | Barebones config, ready for you to setup how you like |
-| [with-vite-config](https://github.com/zuplo/zudoku/tree/main/examples/with-vite-config) | Use Zudoku with your Vite config (Advanced)           |
+| Template | What it does |
+| -------- | ----------- |
+| [many-apis](https://github.com/zuplo/zudoku/tree/main/examples/many-apis) | Using more than one OpenAPI document with Zudoku |
+| [with-auth0](https://github.com/zuplo/zudoku/tree/main/examples/with-auth0) | Authenticate users in docs with the Auth0 plugin |
+| [with-config](https://github.com/zuplo/zudoku/tree/main/examples/with-config) | Barebones config, ready for you to setup how you like |
+| [with-vite-config](https://github.com/zuplo/zudoku/tree/main/examples/with-vite-config) | Use Zudoku with your Vite config (Advanced) |
 
 # ✨ Features
 
@@ -100,6 +98,12 @@ Zudoku is a flexible and highly customizable framework so it can be used to crea
 
 # 🎯 Motivation
 
+At Zuplo, we couldn’t find an open-source solution that met our high standards for both trustworthiness and programmability, so we decided to create our own. And since no one chooses Zuplo solely because of our documentation, we felt great about open-sourcing this tool and making it easy to self-host.
+
+We hope that if you use it, you’ll think fondly of Zuplo, and one day, when you’re looking for a gateway or API management product, you’ll consider us as a vendor to evaluate.
+
+Zudoku will always be open-source. It will always be free.
+
 # 🔧 Contributing
 
 Contributions are absolutely welcome! You can start contributing by cloning this repository and running:
@@ -110,7 +114,6 @@ pnpm dev
 ```
 
 ## Prerequisites
-
 To work develop and contribute to Zudoku you will need:
 
 - [Node.js](https://nodejs.org/) >= v20.0.0
@@ -120,9 +123,7 @@ To work develop and contribute to Zudoku you will need:
 More detail on the process for contributing can be found in the [contributing guide](CONTRIBUTING.md).
 
 # Changelog
-
 Details of the latest updates to Zudoku can be found in the [changelog](CHANGELOG.md).
 
 # License
-
 Zudoku is licensed under MIT. See the full [LICENSE].
