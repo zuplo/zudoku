@@ -85,7 +85,7 @@ export const SchemaPropertyItem = ({
           />
         )}
 
-        {(hasLogicalGroupings(value) ?? isComplexType(value)) && (
+        {(hasLogicalGroupings(value) || isComplexType(value)) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}
