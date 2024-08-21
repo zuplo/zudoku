@@ -5,13 +5,35 @@
   <img alt="Zudoku Docs & Developer Portal" src="./assets/zudoku-logo-dark.svg" width=630>
 </picture>
 
-An open source documentation, reference and API documentation tool as an alternative to Mintlify, Readme.com.
-
+API documentation should always be **free**.
+<p align="center">
+  <a aria-label="Made with love by Zuplo" href="https://zuplo.com"><img src="https://img.shields.io/badge/made_with_❤️_by-zuplo-FF00BD"></a>
+  <a aria-label="Zudoku Version" href="https://www.npmjs.com/package/zudoku"><img alt="" src="https://img.shields.io/npm/v/zudoku
+  "></a>
+  <a aria-label="Create Zudoku App Version" href="https://www.npmjs.com/package/create-zudoku-app"><img alt="" src="https://img.shields.io/npm/v/create-zudoku-app?label=cli
+  "></a>
+  <a aria-label="License" href="https://github.com/zuplo/zudoku/license.md"><img alt="" src="https://img.shields.io/badge/license-mit-green"></a>
+</p>
 </div>
 
-# Zudoku
+# Introduction
 
-At its core **Zudoku** (pronounced "zoo-doh-koo", a blend of "Zuplo" and the German word "Dokumentation") generates clean and functional documentation from OpenAPI and GraphQL schemas. It can be easily extended via plugins to include features like static content, authentication, monetization, etc.
+**Zudoku** (pronounced "zoo-doh-koo") is an open-source, highly customizable API documentation framework for building quality developer experiences. 
+
+Because building great API documentation should always be:
+
+✅ Free<br />
+✅ OpenAPI powered<br />
+✅ Programmable
+
+
+Zudoku can use both OpenAPI and GraphQL schemas and is extended via plugins that include features like static content, authentication, monetization, or anything else you can think of.
+
+**Test Zudoku with your own API right now at [zudoku.dev](https://zudoku.dev).**
+
+## Installation
+
+
 
 ## Use Cases
 
