@@ -3,29 +3,19 @@
   "defaultBase": "main",
   "targetDefaults": {
     "dev": {
-      "dependsOn": [
-        "zudoku:build"
-      ]
+      "dependsOn": ["zudoku:build"]
     },
     "build": {
-      "dependsOn": [
-        "zudoku:build"
-      ],
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
+      "dependsOn": ["zudoku:build"],
+      "outputs": ["{projectRoot}/dist"],
       "cache": false
     },
     "clean": {
-      "dependsOn": [
-        "^clean"
-      ],
+      "dependsOn": ["^clean"],
       "cache": false
     },
     "test": {
-      "dependsOn": [
-        "build"
-      ]
+      "dependsOn": ["build"]
     }
   },
   "plugins": [
@@ -37,10 +27,7 @@
     }
   ],
   "release": {
-    "projects": [
-      "zudoku",
-      "create-zudoku-app"
-    ],
+    "projects": ["zudoku", "create-zudoku-app"],
     "releaseTagPattern": "v{version}",
     "version": {
       "git": {
@@ -49,7 +36,8 @@
     },
     "changelog": {
       "git": {
-        "commit": false
+        "commit": false,
+        "tag": false
       },
       "projectChangelogs": false,
       "workspaceChangelog": {
