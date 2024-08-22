@@ -1,11 +1,13 @@
 <div align=center>
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./assets/zudoku-logo-light.svg" width=630>
-  <a href="https://zudoku.dev" alt="Zudoku"><img alt="Zudoku Docs & Developer Portal" src="./assets/zudoku-logo-dark.svg" width=630></a>
-</picture>
+<a href="https://zudoku.dev" alt="Zudoku">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/zudoku-logo-light.svg" width=630>
+    <img alt="Zudoku Docs & Developer Portal" src="./assets/zudoku-logo-dark.svg" width=630>
+  </picture>
+</a>
 
-<h2>API documentation should always be free.</h2>
+## API documentation should always be free.
 
 [![MIT License](https://img.shields.io/badge/license-mit-green?style=for-the-badge&labelColor=000000)](https://github.com/zuplo/zudoku/license.md)
 [![Zudoku Version](https://img.shields.io/npm/v/zudoku.svg?style=for-the-badge&labelColor=000000)](https://www.npmjs.com/package/zudoku)
