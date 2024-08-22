@@ -33,7 +33,7 @@ if (!root) {
 
 const config = {
   page: {
-    pageTitle: "Zudoku Demo",
+    pageTitle: "Demo",
   },
   topNavigation: [
     {
