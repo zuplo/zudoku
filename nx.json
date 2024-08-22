@@ -2,41 +2,26 @@
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "defaultBase": "main",
   "targetDefaults": {
-    "dev": {
-      "dependsOn": ["zudoku:build"]
-    },
+    "dev": { "dependsOn": ["zudoku:build"] },
     "build": {
       "dependsOn": ["zudoku:build"],
       "outputs": ["{projectRoot}/dist"],
       "cache": false
     },
-    "clean": {
-      "dependsOn": ["^clean"],
-      "cache": false
-    },
-    "test": {
-      "dependsOn": ["build"]
-    }
+    "clean": { "dependsOn": ["^clean"], "cache": false },
+    "test": { "dependsOn": ["build"] }
   },
   "plugins": [
     {
       "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "eslint:lint"
-      }
+      "options": { "targetName": "eslint:lint" }
     }
   ],
   "release": {
     "projects": ["zudoku", "create-zudoku-app"],
     "releaseTagPattern": "v{version}",
-    "git": {
-      "commitMessage": "chore(release): publish {version} [skip ci]"
-    },
-    "version": {
-      "generatorOptions": {
-        "preid": "dev"
-      }
-    },
+    "git": { "commitMessage": "chore(release): publish {version} [skip ci]" },
+    "version": { "generatorOptions": { "preid": "dev" } },
     "changelog": {
       "projectChangelogs": false,
       "workspaceChangelog": {
@@ -49,5 +34,6 @@
         }
       }
     }
-  }
+  },
+  "nxCloudAccessToken": "MDhhNTdkMDMtOGE1MC00YzkxLTkwN2MtMzk0ZGRmOWFkYTBlfHJlYWQtd3JpdGU="
 }
