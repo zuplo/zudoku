@@ -68,7 +68,8 @@ jobs:
         run: nx release publish --tag ${{ env.RELEASE_TYPE == 'prerelease' && 'dev' || 'latest' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          # TODO: Enable once repo is public
+          NPM_CONFIG_PROVENANCE: false
 
       - run: echo "ZUDOKU_VERSION=$(node -e 'console.log(require(`./packages/zudoku/package.json`).version)')" >> $GITHUB_ENV
 
@@ -77,6 +78,9 @@ jobs:
         run: nx release changelog ${{ env.ZUDOKU_VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Git Changes
+        run: git push origin main --follow-tags
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
