@@ -17,6 +17,10 @@ on:
       - "main"
     tags-ignore:
       - "*"
+
+env:
+  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+
 jobs:
   release:
     name: Release
@@ -54,7 +58,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      # - uses: nrwl/nx-set-shas@v4
+      - uses: nrwl/nx-set-shas@v4
 
       - run: git config --global user.email "zudoku-bot@zuplo.com"
       - run: git config --global user.name "Zudoku Bot"
