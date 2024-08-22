@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
-import { Card } from "../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
@@ -96,16 +95,12 @@ export const OperationListItem = ({
                     value={response.statusCode}
                     key={response.statusCode}
                   >
-                    {renderIf(
-                      response.content?.find((content) => content.schema),
-                      (content) => {
-                        return <SchemaView schema={content.schema} />;
-                      },
-                    ) ?? (
-                      <Card className="font-mono text-sm p-4 italic bg-border/20">
-                        No response body
-                      </Card>
-                    )}
+                    <SchemaView
+                      schema={
+                        response.content?.find((content) => content.schema)
+                          ?.schema
+                      }
+                    />
                   </TabsContent>
                 ))}
               </ul>

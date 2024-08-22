@@ -164,7 +164,7 @@ export const openApiPlugin = (
         .map<SidebarItem>((tag) => ({
           type: "category",
           label: tag.name ?? "",
-          collapsible: false,
+          collapsible: true,
           collapsed: false,
           items: tag.operations.map((operation) => ({
             type: "link",
