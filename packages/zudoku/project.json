@@ -31,7 +31,7 @@
       "cache": true
     },
     "build:vite": {
-      "outputs": ["{projectRoot}/lib"],
+      "outputs": ["{projectRoot}/lib", "{projectRoot}/stats.html"],
       "inputs": [
         "{projectRoot}/vite.config.ts",
         "{projectRoot}/**/*.ts",
