@@ -26,6 +26,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: write
       id-token: write
 
@@ -60,8 +61,8 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: git config --global user.email "zudoku-bot@zuplo.com"
-      - run: git config --global user.name "Zudoku Bot"
+      - run: git config --global user.email "zuplo-integrations@zuplo.com"
+      - run: git config --global user.name "Zuplo Integrations"
 
       - run: nx run-many -t root:lint:ci root:format:ci build:ci
 
