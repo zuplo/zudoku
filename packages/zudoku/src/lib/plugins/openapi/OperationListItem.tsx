@@ -89,7 +89,7 @@ export const OperationListItem = ({
                   ))}
                 </TabsList>
               )}
-              <ul className="list-none m-0 px-0 overflow-hidden">
+              <ul className="list-none m-0 px-0">
                 {operation.responses.map((response) => (
                   <TabsContent
                     value={response.statusCode}

@@ -1,12 +1,15 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ListPlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
+import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaView } from "./SchemaView.js";
 import { hasLogicalGroupings, isComplexType } from "./utils.js";
+
+export type LogicalGroupType = "AND" | "OR" | "ONE";
 
 export const SchemaLogicalGroup = ({
   schema,
@@ -15,27 +18,123 @@ export const SchemaLogicalGroup = ({
   schema: SchemaObject;
   level: number;
 }) => {
-  const renderLogicalGroup = (
-    group: SchemaObject[],
-    groupName: string,
-    separator: string,
-  ) => {
-    return group.map((subSchema, index) => (
-      <div key={index} className="my-2">
-        <strong>{groupName}</strong>
-        <div className="mt-2">
-          <SchemaView schema={subSchema} level={level + 1} />
-          {index < group.length - 1 && (
-            <div className="text-center my-2">{separator}</div>
-          )}
-        </div>
-      </div>
-    ));
-  };
+  const [isOpen, setIsOpen] = useState(true);
+  const toggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
 
-  if (schema.oneOf) return renderLogicalGroup(schema.oneOf, "One of", "OR");
-  if (schema.allOf) return renderLogicalGroup(schema.allOf, "All of", "AND");
-  if (schema.anyOf) return renderLogicalGroup(schema.anyOf, "Any of", "OR");
+  if (schema.allOf) {
+    return (
+      <LogicalGroup
+        schemas={schema.allOf}
+        type="AND"
+        isOpen={isOpen}
+        toggleOpen={toggleOpen}
+        level={level}
+      />
+    );
+  }
+
+  if (schema.anyOf) {
+    return (
+      <LogicalGroup
+        schemas={schema.anyOf}
+        type="OR"
+        isOpen={isOpen}
+        toggleOpen={toggleOpen}
+        level={level}
+      />
+    );
+  }
+
+  if (schema.oneOf) {
+    return (
+      <LogicalGroup
+        schemas={schema.oneOf}
+        type="ONE"
+        isOpen={isOpen}
+        toggleOpen={toggleOpen}
+        level={level}
+      />
+    );
+  }
+
+  return null;
+
+  // const [isOpen, setIsOpen] = useState(true);
+  //
+  // const renderLogicalGroup = (
+  //   group: SchemaObject[],
+  //   groupName: string,
+  //   separator: "AND" | "OR" | "ONE",
+  // ) => {
+  //   return (
+  //     <Collapsible.Root
+  //       defaultOpen
+  //       open={isOpen}
+  //       onOpenChange={() => setIsOpen(!isOpen)}
+  //     >
+  //       <Card className="py-4">
+  //         {group.map((subSchema, index) => (
+  //           <div key={index} className="mx-4">
+  //             {index === 0 && (
+  //               <Collapsible.Trigger>
+  //                 <div className="flex gap-2 items-center text-sm text-muted-foreground">
+  //                   <button>
+  //                     {isOpen ? (
+  //                       <SquareMinusIcon size={14} />
+  //                     ) : (
+  //                       <SquarePlusIcon size={14} />
+  //                     )}
+  //                   </button>
+  //                   <span>{groupName}</span>
+  //                 </div>
+  //               </Collapsible.Trigger>
+  //             )}
+  //             <Collapsible.Content className="pt-2">
+  //               <SchemaView schema={subSchema} level={level + 1} />
+  //               {index < group.length - 1 && (
+  //                 <div
+  //                   className={cn(
+  //                     {
+  //                       "text-green-500 dark:text-green-300/60":
+  //                         separator === "AND",
+  //                       "text-blue-400 dark:text-blue-500": separator === "OR",
+  //                       "text-purple-500 dark:text-purple-300/60":
+  //                         separator === "ONE",
+  //                     },
+  //                     "relative text-sm flex items-center py-4",
+  //                     "before:border-l before:absolute before:left-0 before:-top-[8px] before:-bottom-[8px] before:border-border before:border-dashed before:content-['']",
+  //                   )}
+  //                 >
+  //                   {separator === "AND" ? (
+  //                     <PlusCircleIcon
+  //                       size={16}
+  //                       className="-translate-x-1/2 fill-card"
+  //                     />
+  //                   ) : separator === "OR" ? (
+  //                     <CircleDotIcon
+  //                       size={16}
+  //                       className="-translate-x-1/2 fill-card"
+  //                     />
+  //                   ) : (
+  //                     <CircleIcon
+  //                       size={14}
+  //                       className="-translate-x-1/2 fill-card"
+  //                     />
+  //                   )}
+  //                   {separator}
+  //                 </div>
+  //               )}
+  //             </Collapsible.Content>
+  //           </div>
+  //         ))}
+  //       </Card>
+  //     </Collapsible.Root>
+  //   );
+  // };
+  //
+  // if (schema.allOf) return renderLogicalGroup(schema.allOf, "All of", "AND");
+  // if (schema.anyOf) return renderLogicalGroup(schema.anyOf, "Any of", "OR");
+  // if (schema.oneOf) return renderLogicalGroup(schema.oneOf, "One of", "ONE");
 
   return null;
 };
