@@ -54,7 +54,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v4
+      # - uses: nrwl/nx-set-shas@v4
 
       - run: git config --global user.email "zudoku-bot@zuplo.com"
       - run: git config --global user.name "Zudoku Bot"
@@ -62,7 +62,7 @@ jobs:
       - run: nx run-many -t root:lint:ci root:format:ci build:ci
 
       - name: Release
-        run: "nx release ${{ env.RELEASE_TYPE }}"
+        run: nx release ${{ env.RELEASE_TYPE }} --skip-publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
@@ -72,16 +72,19 @@ jobs:
       - name: Push Changes
         run: git push origin main --tags
 
-      - name: "Authenticate to Google Cloud"
-        uses: "google-github-actions/auth@v2"
+      - name: Publish
+        run: nx release publish --tag ${{ env.RELEASE_TYPE == 'prerelease' && 'dev' || 'latest' }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          token_format: "access_token"
+          token_format: access_token
           workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
           service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
-          access_token_lifetime: "300s"
+          access_token_lifetime: 300s
 
       - name: Upload CSS
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -92,7 +95,7 @@ jobs:
             content-type: text/css
 
       - name: Upload Javascript
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -103,7 +106,7 @@ jobs:
             content-type: text/javascript
 
       - name: Upload HTML (Latest)
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone/index.html
@@ -113,7 +116,7 @@ jobs:
             content-type: text/html
 
       - name: Upload CSS (Latest)
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -124,7 +127,7 @@ jobs:
             content-type: text/css
 
       - name: Upload Javascript (Latest)
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/standalone
@@ -135,7 +138,7 @@ jobs:
             content-type: text/javascript
 
       - name: Upload Artifacts
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/stats.html
