@@ -20,11 +20,11 @@
     <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/zuplo">
   </a>
   <p align="center">
-    <a href="#try-it-right-now"><strong>Try Zudoku</strong></a> · 
-    <a href="#installation"><strong>Installation</strong></a> · 
-    <a href="#examples"><strong>Examples</strong></a> · 
-    <a href="#contributing"><strong>Contributing</strong></a> · 
-    <a href="#motivation"><strong>Motivation</strong></a>
+    <a href="#-try-it-right-now"><strong>Try Zudoku</strong></a> · 
+    <a href="#-installation"><strong>Installation</strong></a> · 
+    <a href="#-examples"><strong>Examples</strong></a> · 
+    <a href="#-contributing"><strong>Contributing</strong></a> · 
+    <a href="#-motivation"><strong>Motivation</strong></a>
   </p>
 </div>
 
