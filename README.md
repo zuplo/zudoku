@@ -7,11 +7,25 @@
 
 <h2>API documentation should always be free.</h2>
 
-[![MIT License](https://img.shields.io/badge/license-mit-green?style=for-the-badge)](https://github.com/zuplo/zudoku/license.md)
-[![Zudoku Version](https://img.shields.io/npm/v/zudoku?style=for-the-badge)](https://www.npmjs.com/package/zudoku)
-[![Create Zudoku App Version](https://img.shields.io/npm/v/create-zudoku-app?label=cli&style=for-the-badge)](https://www.npmjs.com/package/create-zudoku-app)
-[![Made with love by Zuplo](https://img.shields.io/badge/made_with_❤️_by-zuplo-FF00BD?style=for-the-badge)](https://zuplo.com)
+[![MIT License](https://img.shields.io/badge/license-mit-green?style=for-the-badge&labelColor=000000)](https://github.com/zuplo/zudoku/license.md)
+[![Zudoku Version](https://img.shields.io/npm/v/zudoku.svg?style=for-the-badge&labelColor=000000)](https://www.npmjs.com/package/zudoku)
+[![Create Zudoku App Version](https://img.shields.io/npm/v/create-zudoku-app?label=cli&style=for-the-badge&labelColor=000000)](https://www.npmjs.com/package/create-zudoku-app)
+[![Made with love by Zuplo](https://img.shields.io/badge/MADE%20BY%20Zuplo-FF00BD.svg?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAzNyAzMiIgYXJpYS1oaWRkZW49InRydWUiPgogIDxwYXRoIGZpbGw9IiNGRjAwQkQiIGQ9Ik0yNy4xNDIgMTkuOTc4SDE2LjYyTDI3LjgzIDguNzQ2YS43NTguNzU4IDAgMDAtLjUzNC0xLjI5M0g5LjQ4OFYwaDE5LjUzNGE3LjU3MyA3LjU3MyAwIDAxNC4wNjUgMS4xMjUgNy41OTEgNy41OTEgMCAwMTIuODM2IDMuMTI2IDcuNDAyIDcuNDAyIDAgMDEtMS40NjEgOC4zOThsLTcuMzIgNy4zMjh6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGMDBCRCIgZD0iTTkuNDg5IDExLjA0MmgxMC41MjRsLTExLjE5IDExLjIxYS43NzIuNzcyIDAgMDAuNTQzIDEuMzE2aDE3Ljc1OXY3LjQ1Mkg3LjYxYTcuNTc0IDcuNTc0IDAgMDEtNC4wNjUtMS4xMjVBNy41OTMgNy41OTMgMCAwMS43MSAyNi43NjhhNy40MDMgNy40MDMgMCAwMTEuNDYyLTguMzk3bDcuMzE4LTcuMzI5eiIvPgo8L3N2Zz4K&labelColor=000)](https://zuplo.com)
+[![Join the community on Discord](https://img.shields.io/badge/Chat%20on%20discord-5865F2.svg?style=for-the-badge&logo=discord&labelColor=000000&logoWidth=20)](https://discord.com/channels/848913990360629268/1235294876778627246)
 
+</div>
+
+<div align="center">
+  <a href="https://twitter.com/zuplo">
+    <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/zuplo">
+  </a>
+  <p align="center">
+    <a href="#try-it-right-now"><strong>Try Zudoku</strong></a> · 
+    <a href="#installation"><strong>Installation</strong></a> · 
+    <a href="#examples"><strong>Examples</strong></a> · 
+    <a href="#contributing"><strong>Contributing</strong></a> · 
+    <a href="#motivation"><strong>Motivation</strong></a>
+  </p>
 </div>
 
 ## Introduction
@@ -98,14 +112,6 @@ Because Zudoku is a flexible and highly customizable framework so it can be used
 - A developer portal with combined documentation and fully function API reference with authentication, testing and support for your user accounts.
 - Internal documentation
 
-## 🎯 Motivation
-
-At Zuplo, we couldn’t find an open-source solution that met our high standards for both trustworthiness and programmability, so we decided to create our own. And since no one chooses Zuplo solely because of our documentation, we felt great about open-sourcing this tool and making it easy for anyone to self-host.
-
-We hope that if you use it, you’ll think fondly of Zuplo, and one day, when you’re looking for a gateway or API management product, you’ll consider us as a vendor to evaluate.
-
-Zudoku will always be open-source. It will always be free.
-
 ## 🔧 Contributing
 
 Contributions are absolutely welcome! You can start contributing by cloning this repository and running:
@@ -128,6 +134,14 @@ More detail on the process for contributing can be found in the [contributing gu
 ## Changelog
 
 Details of the latest updates to Zudoku can be found in the [changelog](CHANGELOG.md).
+
+## 🎯 Motivation
+
+At Zuplo, we couldn’t find an open-source solution that met our high standards for both trustworthiness and programmability, so we decided to create our own. And since no one chooses Zuplo solely because of our documentation, we felt great about open-sourcing this tool and making it easy for anyone to self-host.
+
+We hope that if you use it, you’ll think fondly of Zuplo, and one day, when you’re looking for a gateway or API management product, you’ll consider us as a vendor to evaluate.
+
+Zudoku will always be open-source. It will always be free.
 
 ## License
 
