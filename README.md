@@ -100,7 +100,7 @@ Because Zudoku is a flexible and highly customizable framework so it can be used
 
 ## 🎯 Motivation
 
-At Zuplo, we couldn’t find an open-source solution that met our high standards for both trustworthiness and programmability, so we decided to create our own. And since no one chooses Zuplo solely because of our documentation, we felt great about open-sourcing this tool and making it easy to self-host.
+At Zuplo, we couldn’t find an open-source solution that met our high standards for both trustworthiness and programmability, so we decided to create our own. And since no one chooses Zuplo solely because of our documentation, we felt great about open-sourcing this tool and making it easy for anyone to self-host.
 
 We hope that if you use it, you’ll think fondly of Zuplo, and one day, when you’re looking for a gateway or API management product, you’ll consider us as a vendor to evaluate.
 
