@@ -18,7 +18,12 @@ const tsxProcess = spawn(
   tsxBin,
   [
     ...(isWatch
-      ? ["watch", "--ignore", `./zudoku.config.*.mjs`, "--clear-screen=false"]
+      ? [
+          "watch",
+          "--ignore",
+          `./{vite,zudoku}.config.*.mjs`,
+          "--clear-screen=false",
+        ]
       : []),
     path.join(baseDir, "src/cli/cli.ts"),
     ...args,

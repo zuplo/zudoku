@@ -9,77 +9,97 @@
     "src/lib",
     "src/app"
   ],
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "bin": {
     "zudoku": "./cli.js"
   },
   "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./internal": {
-      "import": "./dist/internal.js"
-    },
-    "./auth/clerk": {
-      "import": "./lib/zudoku.auth-clerk.js",
-      "types": "./dist/lib/authentication/providers/clerk.d.ts"
-    },
-    "./auth/auth0": {
-      "import": "./lib/zudoku.auth-auth0.js",
-      "types": "./dist/lib/authentication/providers/auth0.d.ts"
-    },
-    "./auth/openid": {
-      "import": "./lib/zudoku.auth-openid.js",
-      "types": "./dist/lib/authentication/providers/openid.d.ts"
-    },
-    "./plugins/api-keys": {
-      "import": "./lib/zudoku.plugin-api-keys.js",
-      "types": "./dist/lib/plugins/api-keys/index.d.ts"
-    },
-    "./plugins/markdown": {
-      "import": "./lib/zudoku.plugin-markdown.js",
-      "types": "./dist/lib/plugins/markdown/index.d.ts"
-    },
-    "./plugins/openapi": {
-      "import": "./lib/zudoku.plugin-openapi.js",
-      "types": "./dist/lib/plugins/openapi/index.d.ts"
-    },
-    "./plugins/redirect": {
-      "import": "./lib/zudoku.plugin-redirect.js",
-      "types": "./dist/lib/plugins/redirect/index.d.ts"
-    },
-    "./plugins/custom-page": {
-      "import": "./lib/zudoku.plugin-custom-page.js",
-      "types": "./dist/lib/plugins/custom-page/index.d.ts"
-    },
-    "./plugins/search-inkeep": {
-      "import": "./lib/zudoku.plugin-search-inkeep.js",
-      "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
-    },
-    "./openapi-worker": {
-      "import": "./lib/zudoku.openapi-worker.js",
-      "types": "./dist/lib/plugins/openapi-worker.d.ts"
-    },
-    "./components": {
-      "import": "./lib/zudoku.components.js",
-      "types": "./dist/lib/components/index.d.ts"
-    },
-    "./vite": {
-      "require": "./dist/vite/plugin.js",
-      "import": "./dist/vite/plugin.js"
-    },
-    "./tailwind": {
-      "require": "./dist/app/tailwind.js",
-      "import": "./dist/app/tailwind.js"
-    },
-    "./main.css": {
-      "require": "./src/app/main.css",
-      "import": "./src/app/main.css"
-    },
-    "./app/*": {
-      "import": "./src/app/*"
+    ".": "./src/index.ts",
+    "./internal": "./src/internal.ts",
+    "./auth/clerk": "./src/lib/authentication/providers/clerk.ts",
+    "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
+    "./auth/openid": "./src/lib/authentication/providers/openid.ts",
+    "./plugins/api-keys": "./src/lib/plugins/api-keys/index.ts",
+    "./plugins/markdown": "./src/lib/plugins/markdown/index.ts",
+    "./plugins/openapi": "./src/lib/plugins/openapi/index.ts",
+    "./plugins/redirect": "./src/lib/plugins/redirect/index.ts",
+    "./plugins/custom-page": "./src/lib/plugins/custom-page/index.ts",
+    "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
+    "./openapi-worker": "./src/lib/plugins/openapi-worker.ts",
+    "./components": "./src/lib/components/index.ts",
+    "./vite": "./src/vite/plugin.ts",
+    "./tailwind": "./src/app/tailwind.ts",
+    "./app/*": "./src/app/*"
+  },
+  "publishConfig": {
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.js",
+        "types": "./dist/index.d.ts"
+      },
+      "./internal": {
+        "import": "./dist/internal.js"
+      },
+      "./auth/clerk": {
+        "import": "./lib/zudoku.auth-clerk.js",
+        "types": "./dist/lib/authentication/providers/clerk.d.ts"
+      },
+      "./auth/auth0": {
+        "import": "./lib/zudoku.auth-auth0.js",
+        "types": "./dist/lib/authentication/providers/auth0.d.ts"
+      },
+      "./auth/openid": {
+        "import": "./lib/zudoku.auth-openid.js",
+        "types": "./dist/lib/authentication/providers/openid.d.ts"
+      },
+      "./plugins/api-keys": {
+        "import": "./lib/zudoku.plugin-api-keys.js",
+        "types": "./dist/lib/plugins/api-keys/index.d.ts"
+      },
+      "./plugins/markdown": {
+        "import": "./lib/zudoku.plugin-markdown.js",
+        "types": "./dist/lib/plugins/markdown/index.d.ts"
+      },
+      "./plugins/openapi": {
+        "import": "./lib/zudoku.plugin-openapi.js",
+        "types": "./dist/lib/plugins/openapi/index.d.ts"
+      },
+      "./plugins/redirect": {
+        "import": "./lib/zudoku.plugin-redirect.js",
+        "types": "./dist/lib/plugins/redirect/index.d.ts"
+      },
+      "./plugins/custom-page": {
+        "import": "./lib/zudoku.plugin-custom-page.js",
+        "types": "./dist/lib/plugins/custom-page/index.d.ts"
+      },
+      "./plugins/search-inkeep": {
+        "import": "./lib/zudoku.plugin-search-inkeep.js",
+        "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
+      },
+      "./openapi-worker": {
+        "import": "./lib/zudoku.openapi-worker.js",
+        "types": "./dist/lib/plugins/openapi-worker.d.ts"
+      },
+      "./components": {
+        "import": "./lib/zudoku.components.js",
+        "types": "./dist/lib/components/index.d.ts"
+      },
+      "./vite": {
+        "require": "./dist/vite/plugin.js",
+        "import": "./dist/vite/plugin.js"
+      },
+      "./tailwind": {
+        "require": "./dist/app/tailwind.js",
+        "import": "./dist/app/tailwind.js"
+      },
+      "./main.css": {
+        "require": "./src/app/main.css",
+        "import": "./src/app/main.css"
+      },
+      "./app/*": {
+        "import": "./src/app/*"
+      }
     }
   },
   "scripts": {
