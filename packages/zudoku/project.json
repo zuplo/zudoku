@@ -1,6 +1,6 @@
 {
+  "name": "zudoku",
   "$schema": "../../node_modules/nx/schemas/nx-schema.json",
-  "root": "packages/zudoku",
   "targets": {
     "build:ci": {
       "dependsOn": ["build", "build:vite", "build:standalone"],

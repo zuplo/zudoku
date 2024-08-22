@@ -1,7 +1,14 @@
 {
+  "name": "create-zudoku-app",
   "$schema": "../../node_modules/nx/schemas/nx-schema.json",
-  "root": "packages/create-zudoku-app",
   "targets": {
-    "build:ci": {}
+    "build": {
+      "inputs": ["{projectRoot}/**/*.ts", "{projectRoot}/templates/**"],
+      "outputs": ["{workspaceRoot}/dist"],
+      "cache": true
+    },
+    "build:ci": {
+      "dependsOn": ["build"]
+    }
   }
 }
