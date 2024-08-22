@@ -61,7 +61,8 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: git config --global user.email "zuplo-integrations@zuplo.com"
+      # This must be a real github account otherwise vercel thows ugly errors
+      - run: git config --global user.email "integrations@zuplo.com"
       - run: git config --global user.name "Zuplo Integrations"
 
       - run: nx run-many -t root:lint:ci root:format:ci build:ci
