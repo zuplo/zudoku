@@ -29,14 +29,10 @@
   "release": {
     "projects": ["zudoku", "create-zudoku-app"],
     "changelog": {
-      "projectChangelogs": {
-        "renderOptions": {
-          "authors": false,
-          "commitReferences": true,
-          "versionTitleDate": true
-        }
-      },
+      "projectChangelogs": false,
       "workspaceChangelog": {
+        "file": false,
+        "createRelease": "github",
         "renderOptions": {
           "authors": false,
           "commitReferences": true,
