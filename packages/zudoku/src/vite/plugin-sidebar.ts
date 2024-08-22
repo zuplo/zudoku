@@ -21,10 +21,12 @@ export const viteSidebarPlugin = (
 
       const resolvedSidebar = Object.fromEntries(
         await Promise.all(
-          Object.entries(config.sidebar ?? {}).map(async ([id, sidebar]) => [
-            id,
-            await resolveSidebar(config.rootDir, id, sidebar),
-          ]),
+          Object.entries(config.sidebar ?? {}).map(
+            async ([parentId, sidebar]) => [
+              parentId,
+              await resolveSidebar(config.rootDir, parentId, sidebar),
+            ],
+          ),
         ),
       );
 
