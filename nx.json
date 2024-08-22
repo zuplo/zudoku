@@ -28,6 +28,14 @@
   ],
   "release": {
     "projects": ["zudoku", "create-zudoku-app"],
+    "git": {
+      "commitMessage": "chore(release): publish {version} [skip ci]"
+    },
+    "version": {
+      "generatorOptions": {
+        "preid": "dev"
+      }
+    },
     "changelog": {
       "projectChangelogs": false,
       "workspaceChangelog": {

@@ -62,7 +62,7 @@ jobs:
       - run: nx run-many -t build:ci
 
       - name: Release
-        run: 'nx release ${{ env.RELEASE_TYPE }} --preid dev --git-tag --git-commit --git-commit-message "chore(release): publish {version} [skip ci]"'
+        run: "nx release ${{ env.RELEASE_TYPE }}"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
