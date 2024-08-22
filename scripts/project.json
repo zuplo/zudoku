@@ -1,6 +1,6 @@
 {
+  "name": "scripts",
   "$schema": "../node_modules/nx/schemas/nx-schema.json",
-  "root": "scripts",
   "targets": {
     "build": {
       "outputs": ["{projectRoot}/dist"],

@@ -41,18 +41,24 @@ export const resolveSidebar = async (
   parentId: string,
   sidebar: InputSidebarItem[],
 ): Promise<SidebarItem[]> => {
-  const resolveDoc = async (id: string, categoryLabel?: string) => {
-    const foundMatches = await glob(`/**/${parentId}/${id}.{md,mdx}`, {
+  const resolveDoc = async (globId: string, categoryLabel?: string) => {
+    const foundMatches = await glob(`/**/${globId}.{md,mdx}`, {
       root: rootDir,
     });
 
     if (foundMatches.length === 0) {
-      throw new Error(`No file found for doc ${parentId}/${id}`);
+      throw new Error(`No file found for doc ${globId}`);
     }
 
     if (foundMatches.length > 1) {
-      throw new Error(`Multiple files found for doc ${parentId}/${id}`);
+      throw new Error(`Multiple files found for doc ${globId}`);
     }
+
+    // Strip parent id if it's prefixed
+    // E.g. docs/introduction should work as well as introduction
+    const id = globId.startsWith(parentId)
+      ? globId.slice(parentId.length)
+      : globId;
 
     const file = await fs.readFile(foundMatches.at(0)!);
 

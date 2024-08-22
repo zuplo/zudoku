@@ -16,25 +16,28 @@ import type { ZudokuContextOptions } from "../lib/core/DevPortalContext.js";
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
 ): ZudokuContextOptions => {
-  const fallbackLogo =
-    config.page?.logoUrl ?? "https://cdn.zudoku.dev/logos/icon.svg";
+  const fallbackLogoLight =
+    config.page?.logoUrl ??
+    "https://cdn.zudoku.dev/logos/zudoku-logo-full-light.svg";
+  const fallbackLogoDark =
+    config.page?.logoUrl ??
+    "https://cdn.zudoku.dev/logos/zudoku-logo-full-dark.svg";
 
   return {
     page: {
-      pageTitle: "Developer Portal",
       ...config.page,
       logo: {
         ...config.page?.logo,
         src: {
-          light: config.page?.logo?.src?.light ?? fallbackLogo,
-          dark: config.page?.logo?.src?.dark ?? fallbackLogo,
+          light: config.page?.logo?.src?.light ?? fallbackLogoLight,
+          dark: config.page?.logo?.src?.dark ?? fallbackLogoDark,
         },
       },
     },
     slotlets: config.slotlets,
     metadata: {
       favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
-      title: "%s | Developer Portal",
+      title: "%s - Zudoku",
       ...config.metadata,
     },
     sidebars: configuredSidebar,

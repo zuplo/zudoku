@@ -170,6 +170,28 @@
     }
   }
 
+  .scrollbar::-webkit-scrollbar {
+    padding: 2px;
+    width: 12px;
+    height: 12px;
+    background: transparent;
+  }
+
+  .scrollbar:hover::-webkit-scrollbar-thumb {
+    background: hsla(var(--border));
+    border-radius: 12px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: transparent;
+  }
+
+  .scrollbar::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
   /* Theme */
   :root {
     --background: 0 0% 100%;

@@ -28,15 +28,21 @@
   ],
   "release": {
     "projects": ["zudoku", "create-zudoku-app"],
+    "releaseTagPattern": "v{version}",
+    "version": {
+      "git": {
+        "commitMessage": "chore(release): publish {version} [skip ci]"
+      }
+    },
     "changelog": {
-      "projectChangelogs": {
-        "renderOptions": {
-          "authors": false,
-          "commitReferences": true,
-          "versionTitleDate": true
-        }
+      "git": {
+        "commit": false,
+        "tag": false
       },
+      "projectChangelogs": false,
       "workspaceChangelog": {
+        "file": false,
+        "createRelease": "github",
         "renderOptions": {
           "authors": false,
           "commitReferences": true,

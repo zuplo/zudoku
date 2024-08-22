@@ -14,6 +14,7 @@
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor"
   },
+  "nx": {},
   "lint-staged": {
     "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
       "prettier --write"
