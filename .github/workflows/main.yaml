@@ -62,11 +62,20 @@ jobs:
       - run: nx run-many -t root:lint:ci root:format:ci build:ci
 
       - name: Release
+        if: env.RELEASE_TYPE != 'prerelease'
         run: nx release ${{ env.RELEASE_TYPE }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
-          NPM_CONFIG_TAG: ${{ env.RELEASE_TYPE == 'prerelease' && 'dev' || 'latest' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release (Prerelease)
+        # Only publish modules for prerelease, no tags or GH releases
+        if: env.RELEASE_TYPE == 'prerelease'
+        run: nx release publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - run: echo "ZUDOKU_VERSION=$(node -e 'console.log(require(`./packages/zudoku/package.json`).version)')" >> $GITHUB_ENV
 
@@ -101,6 +110,8 @@ jobs:
             content-type: text/javascript
 
       - name: Upload HTML (Latest)
+        # Only publish latest for non-prerelease
+        if: env.RELEASE_TYPE != 'prerelease'
         uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
@@ -111,6 +122,8 @@ jobs:
             content-type: text/html
 
       - name: Upload CSS (Latest)
+        # Only publish latest for non-prerelease
+        if: env.RELEASE_TYPE != 'prerelease'
         uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
@@ -122,6 +135,8 @@ jobs:
             content-type: text/css
 
       - name: Upload Javascript (Latest)
+        # Only publish latest for non-prerelease
+        if: env.RELEASE_TYPE != 'prerelease'
         uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
@@ -143,6 +158,8 @@ jobs:
             content-type: text/html
 
       - name: Clear CDN Cache
+        # Only for non-prerelease
+        if: env.RELEASE_TYPE != 'prerelease'
         run: |
           curl --request POST \
           --url https://api.cloudflare.com/client/v4/zones/1abaefabd6800e9979a740a7cdf235a8/purge_cache \
