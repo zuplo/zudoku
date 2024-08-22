@@ -27,7 +27,6 @@ export const convertZudokuConfigToOptions = (
     page: {
       ...config.page,
       logo: {
-        width: "130px",
         ...config.page?.logo,
         src: {
           light: config.page?.logo?.src?.light ?? fallbackLogoLight,
