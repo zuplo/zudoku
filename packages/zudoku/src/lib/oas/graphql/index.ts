@@ -265,7 +265,7 @@ const RequestBodyObject = builder
 const ResponseItem = builder
   .objectRef<{
     statusCode: string;
-    description: string;
+    description?: string;
     content: Array<{
       mediaType: string;
       schema: any;
@@ -277,7 +277,7 @@ const ResponseItem = builder
   .implement({
     fields: (t) => ({
       statusCode: t.exposeString("statusCode"),
-      description: t.exposeString("description"),
+      description: t.exposeString("description", { nullable: true }),
       content: t.expose("content", { type: [MediaTypeItem], nullable: true }),
       headers: t.expose("headers", { type: JSONScalar, nullable: true }),
       links: t.expose("links", { type: JSONScalar, nullable: true }),
