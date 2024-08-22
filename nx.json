@@ -29,15 +29,15 @@
   "release": {
     "projects": ["zudoku", "create-zudoku-app"],
     "releaseTagPattern": "v{version}",
-    "git": {
-      "commitMessage": "chore(release): publish {version} [skip ci]"
-    },
     "version": {
-      "generatorOptions": {
-        "preid": "dev"
+      "git": {
+        "commitMessage": "chore(release): publish {version} [skip ci]"
       }
     },
     "changelog": {
+      "git": {
+        "commit": false
+      },
       "projectChangelogs": false,
       "workspaceChangelog": {
         "file": false,
