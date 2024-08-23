@@ -63,6 +63,7 @@ module.exports = {
       "warn",
       {
         ignorePrimitives: { string: true },
+        ignoreConditionalTests: true,
       },
     ],
     "@typescript-eslint/prefer-optional-chain": "warn",
