@@ -1,5 +1,4 @@
 import type { ZudokuConfig } from "zudoku";
-import navigation from "./navigation.js";
 
 const config: ZudokuConfig = {
   page: {
@@ -15,9 +14,24 @@ const config: ZudokuConfig = {
   metadata: {
     title: "%s | Zudoku",
   },
-  navigation,
   docs: {
     files: "/pages/**/*.mdx",
+  },
+  redirects: [
+    { from: "/", to: "/documentation/introduction" },
+    { from: "/documentation", to: "/documentation/introduction" },
+  ],
+  topNavigation: [
+    { id: "documentation", label: "Documentation" },
+  ],
+  sidebar: {
+    documentation: [
+      {
+        type: "category",
+        label: "Overview",
+        items: ["introduction", "getting-started"],
+      }
+    ],
   },
 };
 
