@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Heading } from "../../components/Heading.js";
-import { Markdown } from "../../components/Markdown.js";
+import { Markdown, ProseClasses } from "../../components/Markdown.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
@@ -9,7 +9,6 @@ import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
 import { FragmentType, useFragment } from "./graphql/index.js";
 import { SchemaView } from "./schema/SchemaView.js";
-import { SchemaProseClasses } from "./util/prose.js";
 
 export const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
 export type ParameterGroup = (typeof PARAM_GROUPS)[number];
@@ -39,7 +38,7 @@ export const OperationListItem = ({
         </Heading>
         {operation.description && (
           <Markdown
-            className={SchemaProseClasses}
+            className={`${ProseClasses} max-w-full prose-img:max-w-prose`}
             content={operation.description}
           />
         )}
