@@ -28,8 +28,13 @@ const config: ZudokuConfig = {
     documentation: [
       {
         type: "category",
-        label: "Overview",
-        items: ["introduction", "getting-started"],
+        label: "Zudoku",
+        items: ["introduction"],
+      },
+      {
+        type: "category",
+        label: "Getting started",
+        items: ["getting-started", "installation",  "configuration"],
       }
     ],
   },
