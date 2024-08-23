@@ -1,12 +1,17 @@
-import { CircleDotIcon, CircleIcon, PlusCircleIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import {
+  ChevronDownIcon,
+  CircleDotIcon,
+  CircleFadingPlusIcon,
+  CircleIcon,
+} from "lucide-react";
 import { cn } from "../../../../util/cn.js";
-import type { LogicalGroupType } from "../SchemaComponents.js";
+
+import type { LogicalGroupType } from "../utils.js";
 
 const iconMap = {
-  AND: <PlusCircleIcon size={16} className="-translate-x-1/2 fill-card" />,
-  OR: <CircleDotIcon size={16} className="-translate-x-1/2 fill-card" />,
-  ONE: <CircleIcon size={14} className="-translate-x-1/2 fill-card" />,
+  AND: <CircleFadingPlusIcon size={16} className="fill-card" />,
+  OR: <CircleDotIcon size={16} className="fill-card" />,
+  ONE: <CircleIcon size={14} className="fill-card" />,
 } as const;
 
 const colorClass = {
@@ -15,29 +20,35 @@ const colorClass = {
   ONE: "text-purple-500 dark:text-purple-300/60",
 } as const;
 
-const labelMap = {
-  AND: "and",
-  OR: "or",
-  ONE: "one",
-} as const;
-
 export const LogicalGroupConnector = ({
   type,
-  children,
+  isOpen,
+  className,
 }: {
   type: LogicalGroupType;
-  children?: ReactNode;
+  isOpen: boolean;
+  className?: string;
 }) => {
   return (
     <div
       className={cn(
         colorClass[type],
-        "relative text-sm flex items-center py-4",
-        "before:border-l before:absolute before:left-0 before:-top-[8px] before:-bottom-[8px] before:border-border before:border-dashed before:content-['']",
+        "relative text-sm flex py-2",
+        "before:border-l before:absolute before:-top-2 before:-bottom-2 before:border-border before:border-dashed before:content-['']",
+        className,
       )}
     >
-      {iconMap[type]}
-      {children ?? labelMap[type]}
+      <div className="-translate-x-[7px] flex gap-1 items-center">
+        {iconMap[type]}
+        <div
+          className={cn(
+            "translate-y-px mx-px opacity-0 group-hover:opacity-100 transition",
+            !isOpen && "-rotate-90",
+          )}
+        >
+          <ChevronDownIcon size={16} />
+        </div>
+      </div>
     </div>
   );
 };
