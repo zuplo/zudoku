@@ -74,14 +74,15 @@ Add the package and styles to your `<head>` and pass the URL for your API schema
 
 ```html
 <!doctype html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="https://cdn.zudoku.dev/logos/icon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Zudoku Demo</title>
-    <script type="module" crossorigin src="https://chdn.zudoku.dev/latest/main.js"></script>
-    <link rel="stylesheet" crossorigin href="https://chdn.zudoku.dev/latest/style.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="icon" type="image/svg+xml" href="https://cdn.zudoku.dev/logos/favicon.svg" />
+    <script type="module" src="https://cdn.zudoku.dev/latest/main.js" crossorigin></script>
+    <link rel="stylesheet" href="https://cdn.zudoku.dev/latest/style.css" crossorigin />
   </head>
   <body>
     <div data-api-url="https://api.example.com/openapi.json"></div>
