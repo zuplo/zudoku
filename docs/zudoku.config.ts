@@ -35,6 +35,11 @@ const config: ZudokuConfig = {
         type: "category",
         label: "Getting started",
         items: ["getting-started", "installation",  "configuration"],
+      },
+      {
+        type: "category",
+        label: "Advanced",
+        items: ["authentication", "search",  "api-keys"],
       }
     ],
   },
