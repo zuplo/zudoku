@@ -111,11 +111,11 @@ export const SchemaView = ({
             (group) =>
               groupedProperties[group] && (
                 <ul key={group} className="divide-y">
-                  {groupedProperties[group].map(([key, value]) => (
+                  {groupedProperties[group].map(([name, schema]) => (
                     <SchemaPropertyItem
-                      key={key}
-                      name={key}
-                      value={value}
+                      key={name}
+                      name={name}
+                      schema={schema}
                       group={group}
                       level={level}
                       defaultOpen={isTopLevelSingleItem || defaultOpen}

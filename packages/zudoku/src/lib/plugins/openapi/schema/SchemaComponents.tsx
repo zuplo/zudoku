@@ -1,12 +1,18 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ListPlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
+import { objectEntries } from "../../../util/objectEntries.js";
+import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaView } from "./SchemaView.js";
-import { hasLogicalGroupings, isComplexType } from "./utils.js";
+import {
+  hasLogicalGroupings,
+  isComplexType,
+  LogicalSchemaTypeMap,
+} from "./utils.js";
 
 export const SchemaLogicalGroup = ({
   schema,
@@ -15,41 +21,34 @@ export const SchemaLogicalGroup = ({
   schema: SchemaObject;
   level: number;
 }) => {
-  const renderLogicalGroup = (
-    group: SchemaObject[],
-    groupName: string,
-    separator: string,
-  ) => {
-    return group.map((subSchema, index) => (
-      <div key={index} className="my-2">
-        <strong>{groupName}</strong>
-        <div className="mt-2">
-          <SchemaView schema={subSchema} level={level + 1} />
-          {index < group.length - 1 && (
-            <div className="text-center my-2">{separator}</div>
-          )}
-        </div>
-      </div>
-    ));
-  };
+  const [isOpen, setIsOpen] = useState(true);
+  const toggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
 
-  if (schema.oneOf) return renderLogicalGroup(schema.oneOf, "One of", "OR");
-  if (schema.allOf) return renderLogicalGroup(schema.allOf, "All of", "AND");
-  if (schema.anyOf) return renderLogicalGroup(schema.anyOf, "Any of", "OR");
+  for (const [key, type] of objectEntries(LogicalSchemaTypeMap)) {
+    if (!schema[key]) continue;
 
-  return null;
+    return (
+      <LogicalGroup
+        schemas={schema[key]}
+        type={type}
+        isOpen={isOpen}
+        toggleOpen={toggleOpen}
+        level={level}
+      />
+    );
+  }
 };
 
 export const SchemaPropertyItem = ({
   name,
-  value,
+  schema,
   group,
   level,
   defaultOpen = false,
   showCollapseButton = true,
 }: {
   name: string;
-  value: SchemaObject;
+  schema: SchemaObject;
   group: "required" | "optional" | "deprecated";
   level: number;
   defaultOpen?: boolean;
@@ -63,12 +62,12 @@ export const SchemaPropertyItem = ({
         <div className="flex gap-2 items-center">
           <code>{name}</code>
           <span className="text-muted-foreground">
-            {value.type === "array" && value.items?.type ? (
-              <span>{value.items.type}[]</span>
-            ) : Array.isArray(value.type) ? (
-              <span>{value.type.join(" | ")}</span>
+            {schema.type === "array" && schema.items?.type ? (
+              <span>{schema.items.type}[]</span>
+            ) : Array.isArray(schema.type) ? (
+              <span>{schema.type.join(" | ")}</span>
             ) : (
-              <span>{value.type}</span>
+              <span>{schema.type}</span>
             )}
           </span>
           {group === "optional" && (
@@ -78,14 +77,14 @@ export const SchemaPropertyItem = ({
           )}
         </div>
 
-        {value.description && (
+        {schema.description && (
           <Markdown
             className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
-            content={value.description}
+            content={schema.description}
           />
         )}
 
-        {(hasLogicalGroupings(value) || isComplexType(value)) && (
+        {(hasLogicalGroupings(schema) || isComplexType(schema)) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}
@@ -107,14 +106,15 @@ export const SchemaPropertyItem = ({
             )}
             <Collapsible.Content>
               <div className="mt-2">
-                {hasLogicalGroupings(value) && (
-                  <SchemaLogicalGroup schema={value} level={level + 1} />
-                )}
-                {value.type === "object" && (
-                  <SchemaView schema={value} level={level + 1} />
-                )}
-                {value.type === "array" && typeof value.items === "object" && (
-                  <SchemaView schema={value.items} level={level + 1} />
+                {hasLogicalGroupings(schema) ? (
+                  <SchemaLogicalGroup schema={schema} level={level + 1} />
+                ) : schema.type === "object" ? (
+                  <SchemaView schema={schema} level={level + 1} />
+                ) : (
+                  schema.type === "array" &&
+                  typeof schema.items === "object" && (
+                    <SchemaView schema={schema.items} level={level + 1} />
+                  )
                 )}
               </div>
             </Collapsible.Content>
