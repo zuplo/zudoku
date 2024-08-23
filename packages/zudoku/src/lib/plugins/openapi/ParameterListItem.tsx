@@ -55,7 +55,7 @@ export const ParameterListItem = ({
     {parameter.description && (
       <Markdown
         content={parameter.description}
-        className="text-sm prose-p:my-1"
+        className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
       />
     )}
   </li>

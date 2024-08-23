@@ -4,14 +4,13 @@ import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { ErrorPage } from "../../components/ErrorPage.js";
 import { Heading } from "../../components/Heading.js";
 import { InlineCode } from "../../components/InlineCode.js";
-import { Markdown } from "../../components/Markdown.js";
+import { Markdown, ProseClasses } from "../../components/Markdown.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
 import { OperationListItem } from "./OperationListItem.js";
 import StaggeredRender from "./StaggeredRender.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
-import { SchemaProseClasses } from "./util/prose.js";
 import { useQuery } from "./util/urql.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
@@ -124,10 +123,7 @@ export const OperationList = () => {
   return (
     <div className="pt-[--padding-content-top]">
       <div
-        className={cn(
-          SchemaProseClasses,
-          "mb-16 max-w-full prose-img:max-w-prose",
-        )}
+        className={cn(ProseClasses, "mb-16 max-w-full prose-img:max-w-prose")}
       >
         <CategoryHeading>Overview</CategoryHeading>
         <Heading level={1} id="description" registerSidebarAnchor>
@@ -142,7 +138,7 @@ export const OperationList = () => {
             {tag.name && <CategoryHeading>{tag.name}</CategoryHeading>}
             {tag.description && (
               <Markdown
-                className={`${SchemaProseClasses} mt-2 mb-12`}
+                className={`${ProseClasses} max-w-full prose-img:max-w-prose w-full mt-2 mb-12`}
                 content={tag.description}
               />
             )}
