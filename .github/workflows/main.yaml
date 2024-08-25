@@ -24,7 +24,7 @@ env:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-large-runners
     permissions:
       actions: read
       contents: write
