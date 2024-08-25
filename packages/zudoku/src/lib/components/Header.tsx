@@ -1,6 +1,5 @@
 import { MoonStarIcon, SunIcon } from "lucide-react";
 import { memo } from "react";
-
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../authentication/hook.js";
 import { isProfileMenuPlugin, ProfileNavigationItem } from "../core/plugins.js";
@@ -98,7 +97,7 @@ export const Header = memo(function HeaderInner() {
             <div className="items-center justify-self-end text-sm hidden lg:flex gap-2">
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && !isAuthenticated ? (
-                <Button onClick={() => auth.login()} asChild>
+                <Button variant="ghost" onClick={() => auth.login()}>
                   Login
                 </Button>
               ) : (

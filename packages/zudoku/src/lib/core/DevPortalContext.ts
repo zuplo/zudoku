@@ -1,5 +1,4 @@
 import { QueryClient } from "@tanstack/react-query";
-import { NavigateFunction } from "react-router-dom";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
@@ -84,15 +83,11 @@ export class DevPortalContext {
     this.page = config.page;
   }
 
-  initialize = async ({
-    navigate,
-  }: {
-    navigate: NavigateFunction;
-  }): Promise<void> => {
+  initialize = async (): Promise<void> => {
     await Promise.all(
       this.plugins
         .filter(needsInitialization)
-        .map((plugin) => plugin.initialize?.(this, { navigate })),
+        .map((plugin) => plugin.initialize?.(this)),
     );
   };
 

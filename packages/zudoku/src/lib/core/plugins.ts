@@ -1,5 +1,5 @@
 import { type ReactElement } from "react";
-import { NavigateFunction, type RouteObject } from "react-router-dom";
+import { type RouteObject } from "react-router-dom";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
 import { MdxComponentsType } from "../util/MdxComponents.js";
 import { DevPortalContext, type ApiIdentity } from "./DevPortalContext.js";
@@ -40,7 +40,6 @@ export type ProfileNavigationItem = {
 export interface CommonPlugin {
   initialize?: (
     context: DevPortalContext,
-    options: { navigate: NavigateFunction },
   ) => Promise<void | boolean> | void | boolean;
   getHead?: () => ReactElement | undefined;
   getMdxComponents?: () => MdxComponentsType;

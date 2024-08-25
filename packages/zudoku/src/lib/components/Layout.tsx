@@ -14,12 +14,17 @@ import { Spinner } from "./Spinner.js";
 export const Layout = ({ children }: { children?: ReactNode }) => {
   const location = useLocation();
   const { setActiveAnchor } = useViewportAnchor();
-  const { meta } = useZudoku();
+  const { meta, authentication } = useZudoku();
 
   useScrollToAnchor();
   useScrollToTop();
 
   const previousLocationPath = useRef(location.pathname);
+
+  useEffect(() => {
+    // Initialize the authentication plugin
+    authentication?.pageLoad ? authentication.pageLoad() : null;
+  }, [authentication]);
 
   useEffect(() => {
     // always reset on location change

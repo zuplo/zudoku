@@ -21,8 +21,9 @@ const config: ZudokuConfig = {
   // Authentication configuration
   authentication: {
     type: "auth0",
-    domain: "ntotten-test.us.auth0.com",
-    clientId: "s2YqBXJ0BDykcaIOEW4cXXacaUntA1bm",
+    domain: "zuplo-samples.us.auth0.com",
+    clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
+    audience: "https://accuweather-poc.pages.dev/",
   },
   apiKeys: {
     enabled: true,
