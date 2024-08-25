@@ -178,7 +178,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     authorizationUrl.searchParams.set("client_id", this.client.client_id);
     authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
     authorizationUrl.searchParams.set("response_type", "code");
-    authorizationUrl.searchParams.set("scope", "openid profile");
+    authorizationUrl.searchParams.set("scope", "openid profile email");
     authorizationUrl.searchParams.set("code_challenge", codeChallenge);
     authorizationUrl.searchParams.set(
       "code_challenge_method",
