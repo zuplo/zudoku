@@ -44,7 +44,6 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   protected tokenEndpoint: string | undefined;
 
   protected authorizationServer: oauth.AuthorizationServer | undefined;
-  protected tokens: TokenState | undefined;
 
   protected callbackUrlPath = "/oauth/callback";
   protected logoutRedirectUrlPath = "/";
@@ -117,13 +116,13 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       throw new AuthorizationError("No expires_in in response");
     }
 
-    this.tokens = {
+    const tokens: TokenState = {
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
     };
-    sessionStorage.setItem("openid-token", JSON.stringify(this.tokens));
+    sessionStorage.setItem("token-state", JSON.stringify(tokens));
   }
 
   async signUp({ redirectTo }: { redirectTo?: string } = {}) {
@@ -210,11 +209,14 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
-    if (!this.tokens) {
+    const tokenState = sessionStorage.getItem("token-state");
+    if (!tokenState) {
       throw new AuthorizationError("User is not authenticated");
     }
-    if (this.tokens.expiresOn < new Date()) {
-      if (!this.tokens.refreshToken) {
+
+    const state = JSON.parse(tokenState) as TokenState;
+    if (state.expiresOn < new Date()) {
+      if (!state.refreshToken) {
         await this.signIn();
         return "";
       }
@@ -222,7 +224,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       const request = await oauth.refreshTokenGrantRequest(
         as,
         this.client,
-        this.tokens.refreshToken,
+        state.refreshToken,
       );
       const response = await oauth.processRefreshTokenResponse(
         as,
@@ -230,10 +232,16 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
         request,
       );
 
-      this.setTokensFromResponse(response);
-    }
+      if (!response.access_token) {
+        throw new AuthorizationError("No access token in response");
+      }
 
-    return this.tokens.accessToken;
+      this.setTokensFromResponse(response);
+
+      return response.access_token.toString();
+    } else {
+      return state.accessToken;
+    }
   }
 
   signOut = async () => {
@@ -242,7 +250,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       isPending: false,
       profile: undefined,
     });
-    localStorage.removeItem("auto-login");
+    sessionStorage.clear();
 
     const as = await this.getAuthServer();
 
@@ -349,20 +357,29 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       profile,
     });
 
-    localStorage.setItem("auto-login", "1");
+    sessionStorage.setItem(
+      "profile-state",
+      JSON.stringify(useAuthState.getState().profile),
+    );
 
-    return sessionStorage.getItem("redirect-to") ?? "/";
+    const redirectTo = sessionStorage.getItem("redirect-to") ?? "/";
+    sessionStorage.removeItem("redirect-to");
+    return redirectTo;
   };
 
   pageLoad(): void {
-    if (localStorage.getItem("auto-login")) {
-      localStorage.removeItem("auto-login");
-
-      // TODO: This needs to be cleaned up. We need to be able to return an
-      // error to the user if the authentication fails.
-      this.authorize({ redirectTo: window.location.pathname }).catch((err) => {
-        logger.error(err);
-      });
+    const profileState = sessionStorage.getItem("profile-state");
+    if (profileState) {
+      try {
+        const profile = JSON.parse(profileState);
+        useAuthState.setState({
+          isAuthenticated: true,
+          isPending: false,
+          profile,
+        });
+      } catch (err) {
+        logger.error("Error parsing auth state", err);
+      }
     }
   }
 
