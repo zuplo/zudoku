@@ -43,7 +43,7 @@
     "husky": "^9.0.11",
     "lint-staged": "^15.2.7",
     "nx": "19.6.2",
-    "prettier": "3.3.2",
+    "prettier": "3.3.3",
     "prettier-plugin-organize-imports": "^4.0.0",
     "react": "18.3.1",
     "syncpack": "12.3.2",
