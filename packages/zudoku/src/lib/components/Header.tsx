@@ -45,6 +45,7 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
 };
 
 export const Header = memo(function HeaderInner() {
+  const auth = useAuth();
   const [isDark, toggleTheme] = useTheme();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const { pathname } = useLocation();
@@ -97,15 +98,8 @@ export const Header = memo(function HeaderInner() {
             <div className="items-center justify-self-end text-sm hidden lg:flex gap-2">
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && !isAuthenticated ? (
-                <Button variant="ghost" asChild>
-                  <Link
-                    to={{
-                      pathname: "/signin",
-                      search: `?redirect=${encodeURIComponent(pathname)}`,
-                    }}
-                  >
-                    Login
-                  </Link>
+                <Button onClick={() => auth.login()} asChild>
+                  Login
                 </Button>
               ) : (
                 accountItems.length > 0 && (
