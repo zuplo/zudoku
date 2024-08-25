@@ -46,10 +46,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: nx run-many -t root:lint:ci root:format:ci build:ci
-
-      - name: Build Samples
-        run: nx run-many -t build --projects=tag:sample
+      - run: nx affected -t root:lint:ci root:format:ci build:ci
 
       - name: "Authenticate to Google Cloud"
         uses: "google-github-actions/auth@v2"
@@ -74,3 +71,39 @@ jobs:
           echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
+  examples:
+    name: Build Examples
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+
+    env:
+      COREPACK_ENABLE_STRICT: 0
+      ZUDOKU_INTERNAL_DEV: true
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm install nx --global
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - name: Build Samples
+        run: nx affected -t build --projects=tag:sample
