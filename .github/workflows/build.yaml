@@ -105,5 +105,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
+      - run: nx run zudoku:build:ci
+
       - name: Build Samples
         run: nx affected -t build --projects=tag:sample
