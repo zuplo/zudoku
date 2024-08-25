@@ -29,17 +29,6 @@ export function CallbackHandler({
         logger.error(err);
         setError(err);
       });
-
-    // if (localStorage.getItem("auto-login")) {
-    //   localStorage.removeItem("auto-login");
-
-    //   await this.authorize({ redirectTo: window.location.pathname });
-    // } else if (window.location.pathname === "/oauth/callback") {
-    //   const redirect = await this.handleCallback();
-    //   if (redirect) {
-    //     options.navigate(redirect);
-    //   }
-    // }
   }, [navigate, handleCallback]);
 
   if (error) {
