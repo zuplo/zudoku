@@ -1,9 +1,24 @@
-import { Auth0AuthenticationConfig } from "../../../config/config.js";
+import {
+  Auth0AuthenticationConfig,
+  OpenIDAuthenticationConfig,
+} from "../../../config/config.js";
 import { AuthenticationProviderInitializer } from "../authentication.js";
 import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
 
 class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
+  constructor(config: OpenIDAuthenticationConfig) {
+    super(config);
+
+    // Prefill the authorization server since we know what Auth0's config is
+    this.authorizationServer = {
+      issuer: config.issuer,
+      authorization_endpoint: `${config.issuer}/authorize`,
+      token_endpoint: `${config.issuer}/oauth/token`,
+      code_challenge_methods_supported: ["S256", "plain"],
+    };
+  }
+
   onAuthorizationUrl = async (
     url: URL,
     { isSignUp }: { isSignUp: boolean },
@@ -12,6 +27,17 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
       url.searchParams.set("screen_hint", "signup");
     }
   };
+
+  override async getAuthServer() {
+    this.authorizationServer = {
+      issuer: new URL(this.authorizationEndpoint!).origin,
+      authorization_endpoint: this.authorizationEndpoint,
+      token_endpoint: this.tokenEndpoint,
+      code_challenge_methods_supported: [],
+    };
+    return this.authorizationServer;
+  }
+
   signOut = async (): Promise<void> => {
     useAuthState.setState({
       isAuthenticated: false,

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { ErrorPage } from "../../components/ErrorPage.js";
+import { Spinner } from "../../components/Spinner.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 
 export function CallbackHandler({
@@ -50,5 +51,9 @@ export function CallbackHandler({
     );
   }
 
-  return <p>Loading...</p>;
+  return (
+    <div className="grid h-full place-items-center">
+      <Spinner />
+    </div>
+  );
 }
