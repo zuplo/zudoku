@@ -108,4 +108,4 @@ jobs:
       - run: nx run zudoku:build:ci
 
       - name: Build Samples
-        run: nx affected -t build --projects=tag:sample
+        run: nx run-many -t build --projects=tag:sample
