@@ -30,11 +30,6 @@ export type OpenIDAuthenticationConfig = {
   issuer: string;
   scopes?: string[];
   audience?: string;
-
-  // Advanced options
-  jwksEndpoint?: URL | URLString;
-  authorizationEndpoint?: string;
-  tokenEndpoint?: string;
 } & RedirectOptions;
 
 export type Auth0AuthenticationConfig = {

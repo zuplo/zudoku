@@ -1,22 +1,17 @@
-import {
-  Auth0AuthenticationConfig,
-  OpenIDAuthenticationConfig,
-} from "../../../config/config.js";
+import { Auth0AuthenticationConfig } from "../../../config/config.js";
 import { AuthenticationProviderInitializer } from "../authentication.js";
 import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
 
 class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
-  constructor(config: OpenIDAuthenticationConfig) {
-    super(config);
-
-    // Prefill the authorization server since we know what Auth0's config is
-    this.authorizationServer = {
-      issuer: config.issuer,
-      authorization_endpoint: `${config.issuer}/authorize`,
-      token_endpoint: `${config.issuer}/oauth/token`,
-      code_challenge_methods_supported: ["S256", "plain"],
-    };
+  constructor(config: Auth0AuthenticationConfig) {
+    super({
+      ...config,
+      type: "openid",
+      issuer: `https://${config.domain}`,
+      clientId: config.clientId,
+      audience: config.audience,
+    });
   }
 
   onAuthorizationUrl = async (
@@ -27,16 +22,6 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
       url.searchParams.set("screen_hint", "signup");
     }
   };
-
-  override async getAuthServer() {
-    this.authorizationServer = {
-      issuer: new URL(this.authorizationEndpoint!).origin,
-      authorization_endpoint: this.authorizationEndpoint,
-      token_endpoint: this.tokenEndpoint,
-      code_challenge_methods_supported: [],
-    };
-    return this.authorizationServer;
-  }
 
   signOut = async (): Promise<void> => {
     useAuthState.setState({
@@ -79,11 +64,6 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
 
 const auth0Auth: AuthenticationProviderInitializer<
   Auth0AuthenticationConfig
-> = ({ domain, ...options }) =>
-  new Auth0AuthenticationProvider({
-    ...options,
-    type: "openid",
-    issuer: `https://${domain}`,
-  });
+> = (options) => new Auth0AuthenticationProvider(options);
 
 export default auth0Auth;
