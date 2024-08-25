@@ -1,13 +1,12 @@
 import logger from "loglevel";
 import * as oauth from "oauth4webapi";
-import { NavigateFunction } from "react-router-dom";
 import { OpenIDAuthenticationConfig } from "../../../config/config.js";
-import { CommonPlugin } from "../../core/plugins.js";
 import {
   AuthenticationProvider,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
+import { CallbackHandler } from "../components/CallbackHandler.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { useAuthState, UserProfile } from "../state.js";
 
@@ -23,7 +22,7 @@ interface TokenState {
 class OpenIdAuthPlugin extends AuthenticationPlugin {
   constructor(
     private callbackUrlPath: string,
-    public initialize?: CommonPlugin["initialize"],
+    private handleCallback: () => Promise<string>,
   ) {
     super();
   }
@@ -32,7 +31,7 @@ class OpenIdAuthPlugin extends AuthenticationPlugin {
       ...super.getRoutes(),
       {
         path: this.callbackUrlPath,
-        element: <div />,
+        element: <CallbackHandler handleCallback={this.handleCallback} />,
       },
     ];
   }
@@ -279,9 +278,8 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     // Authorization Code Grant Request & Response
     const codeVerifier = sessionStorage.getItem(CODE_VERIFIER_KEY);
     sessionStorage.removeItem(CODE_VERIFIER_KEY);
-
     if (!codeVerifier) {
-      return "/";
+      throw new AuthorizationError("No code verifier found in state.");
     }
 
     const authServer = await this.getAuthServer();
@@ -320,7 +318,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     //   }
     //   throw new Error(); // Handle WWW-Authenticate Challenges as needed
     // }
-    const oauthResult = await oauth.processAuthorizationCodeOAuth2Response(
+    const oauthResult = await oauth.processAuthorizationCodeOpenIDResponse(
       authServer,
       this.client,
       response,
@@ -356,24 +354,22 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     return sessionStorage.getItem("redirect-to") ?? "/";
   };
 
+  pageLoad(): void {
+    if (localStorage.getItem("auto-login")) {
+      localStorage.removeItem("auto-login");
+
+      // TODO: This needs to be cleaned up. We need to be able to return an
+      // error to the user if the authentication fails.
+      this.authorize({ redirectTo: window.location.pathname }).catch((err) => {
+        logger.error(err);
+      });
+    }
+  }
+
   getAuthenticationPlugin() {
-    return new OpenIdAuthPlugin(
-      this.callbackUrlPath,
-      async (_, options: { navigate: NavigateFunction }) => {
-        if (typeof window === "undefined") return;
-
-        if (localStorage.getItem("auto-login")) {
-          localStorage.removeItem("auto-login");
-
-          await this.authorize({ redirectTo: window.location.pathname });
-        } else if (window.location.pathname === "/oauth/callback") {
-          const redirect = await this.handleCallback();
-          if (redirect) {
-            options.navigate(redirect);
-          }
-        }
-      },
-    );
+    // TODO: This API is a bit messy, we need to refactor auth plugins/providers
+    // to remove the extra layers of abstraction.
+    return new OpenIdAuthPlugin(this.callbackUrlPath, this.handleCallback);
   }
 }
 

@@ -5,6 +5,7 @@ export interface AuthenticationProvider {
   signIn(options?: { redirectTo?: string }): Promise<void>;
   signOut(): Promise<void>;
   getAccessToken(): Promise<string>;
+  pageLoad?(): void;
   getAuthenticationPlugin?(): DevPortalPlugin;
 }
 
