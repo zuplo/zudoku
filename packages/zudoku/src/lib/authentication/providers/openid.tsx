@@ -40,8 +40,6 @@ class OpenIdAuthPlugin extends AuthenticationPlugin {
 export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   protected client: oauth.Client;
   protected issuer: string;
-  protected authorizationEndpoint: string | undefined;
-  protected tokenEndpoint: string | undefined;
 
   protected authorizationServer: oauth.AuthorizationServer | undefined;
 
@@ -59,8 +57,6 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   constructor({
     issuer,
     audience,
-    authorizationEndpoint,
-    tokenEndpoint,
     clientId,
     redirectToAfterSignUp,
     redirectToAfterSignIn,
@@ -72,8 +68,6 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     };
     this.audience = audience;
     this.issuer = issuer;
-    this.authorizationEndpoint = authorizationEndpoint;
-    this.tokenEndpoint = tokenEndpoint;
     this.redirectToAfterSignUp = redirectToAfterSignUp ?? "/";
     this.redirectToAfterSignIn = redirectToAfterSignIn ?? "/";
     this.redirectToAfterSignOut = redirectToAfterSignOut ?? "/";
@@ -81,21 +75,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   protected async getAuthServer() {
     if (!this.authorizationServer) {
-      if (this.tokenEndpoint && this.authorizationEndpoint) {
-        this.authorizationServer = {
-          issuer: new URL(this.authorizationEndpoint!).origin,
-          authorization_endpoint: this.authorizationEndpoint,
-          token_endpoint: this.tokenEndpoint,
-          code_challenge_methods_supported: [],
-        };
-      } else {
-        const issuerUrl = new URL(this.issuer);
-        const response = await oauth.discoveryRequest(issuerUrl);
-        this.authorizationServer = await oauth.processDiscoveryResponse(
-          issuerUrl,
-          response,
-        );
-      }
+      const issuerUrl = new URL(this.issuer);
+      const response = await oauth.discoveryRequest(issuerUrl);
+      this.authorizationServer = await oauth.processDiscoveryResponse(
+        issuerUrl,
+        response,
+      );
     }
     return this.authorizationServer;
   }
