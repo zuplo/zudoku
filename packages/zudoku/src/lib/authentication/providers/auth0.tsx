@@ -18,7 +18,7 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
       isPending: false,
       profile: undefined,
     });
-    localStorage.removeItem("auto-login");
+    sessionStorage.clear();
     const as = await this.getAuthServer();
 
     const redirectUrl = new URL(
