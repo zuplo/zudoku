@@ -9,8 +9,15 @@
   },
   "nx": {
     "tags": [
-      "sample"
-    ]
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
   },
   "devDependencies": {
     "@mdx-js/react": "3.0.1",
