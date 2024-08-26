@@ -39,17 +39,17 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Advanced",
-        items: ["authentication", "search",  "api-keys", "using-multiple-apis"],
+        items: ["authentication",  "api-keys", "using-multiple-apis"],
       },
       {
         type: "category",
         label: "Plugins",
-        items: ["plugins"],
+        items: ["search", "custom-pages"],
       },
       {
         type: "category",
         label: "Deployment",
-        items: ["deployment"],
+        items: ["deployment", "deploy/cloudflare-pages", "deploy/direct-upload"],
       }
     ],
   },
