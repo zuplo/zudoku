@@ -8,9 +8,7 @@ export const DeveloperHint = ({
   children: ReactNode;
   className?: string;
 }) => {
-  // TODO: figure out a way to do that in consumer dev mode not "internal"
-  //  so this doesn't get stripped out in the build
-  if (!import.meta.env.DEV) return;
+  if (process.env.NODE_ENV !== "development") return;
 
   return (
     <Callout type="caution" title="Developer hint" className={className}>

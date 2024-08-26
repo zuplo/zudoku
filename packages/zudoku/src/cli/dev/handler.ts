@@ -10,6 +10,7 @@ export interface Arguments {
 }
 
 export async function dev(argv: Arguments) {
+  process.env.NODE_ENV = "development";
   const host = "localhost";
   let port = argv.port;
   if (!port) {
