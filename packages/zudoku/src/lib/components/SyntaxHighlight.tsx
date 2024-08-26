@@ -60,7 +60,7 @@ export const SyntaxHighlight = ({
         <div className="relative group">
           <pre
             className={cn(
-              "relative overflow-x-auto",
+              "relative scrollbar overflow-x-auto",
               className,
               props.className,
               props.noBackground && "!bg-transparent",

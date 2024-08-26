@@ -1,6 +1,6 @@
 import { MoonStarIcon, SunIcon } from "lucide-react";
 import { memo } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../authentication/hook.js";
 import { isProfileMenuPlugin, ProfileNavigationItem } from "../core/plugins.js";
 import { Button } from "../ui/Button.js";
@@ -47,7 +47,6 @@ export const Header = memo(function HeaderInner() {
   const auth = useAuth();
   const [isDark, toggleTheme] = useTheme();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
-  const { pathname } = useLocation();
   const context = useZudoku();
   const { page, plugins } = context;
 
@@ -59,7 +58,8 @@ export const Header = memo(function HeaderInner() {
   const ThemeIcon = isDark ? MoonStarIcon : SunIcon;
 
   return (
-    <header className="fixed top-0 w-full z-10 bg-background/80 backdrop-blur">
+    // padding-left is to prevent layout jumping when scrollbar appears/disappears
+    <header className="fixed top-0 z-10 bg-background/80 backdrop-blur left-0 right-0 pl-[var(--scrollbar-width)]">
       <div className="max-w-screen-2xl mx-auto">
         <div className="grid grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center border-b px-12 h-[--top-header-height]">
           <div className="flex">
@@ -102,7 +102,7 @@ export const Header = memo(function HeaderInner() {
                 </Button>
               ) : (
                 accountItems.length > 0 && (
-                  <DropdownMenu>
+                  <DropdownMenu modal={false}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost">
                         {profile?.email ? `${profile.email}` : "My Account"}

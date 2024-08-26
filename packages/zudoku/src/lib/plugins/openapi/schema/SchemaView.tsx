@@ -26,7 +26,7 @@ export const SchemaView = ({
   }
 
   const renderSchema = (schema: SchemaObject, level: number) => {
-    if (schema.oneOf || schema.allOf || schema.anyOf) {
+    if (hasLogicalGroupings(schema)) {
       return <SchemaLogicalGroup schema={schema} level={level} />;
     }
 
@@ -55,10 +55,7 @@ export const SchemaView = ({
             )}
           </Card>
         );
-      } else if (
-        itemsSchema.type === "object" ||
-        hasLogicalGroupings(itemsSchema)
-      ) {
+      } else if (itemsSchema.type === "object") {
         return (
           <Card className="flex flex-col gap-2 bg-border/30 p-4">
             <span className="text-sm text-muted-foreground">object[]</span>
@@ -100,9 +97,6 @@ export const SchemaView = ({
         },
       );
 
-      const isTopLevelSingleItem =
-        level === 0 && Object.keys(groupedProperties).length === 1;
-
       const groupNames = ["required", "optional", "deprecated"] as const;
 
       return (
@@ -118,8 +112,7 @@ export const SchemaView = ({
                       schema={schema}
                       group={group}
                       level={level}
-                      defaultOpen={isTopLevelSingleItem || defaultOpen}
-                      showCollapseButton={!isTopLevelSingleItem}
+                      defaultOpen={defaultOpen}
                     />
                   ))}
                 </ul>

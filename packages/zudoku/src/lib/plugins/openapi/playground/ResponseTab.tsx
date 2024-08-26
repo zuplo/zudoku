@@ -55,7 +55,7 @@ export const ResponseTab = ({
           }
           noBackground
           showLanguageIndicator
-          className="overflow-x-auto p-4 text-xs"
+          className="overflow-x-auto p-4 text-xs max-h-[480px]"
           code={view === "raw" ? body : beautifiedBody}
         />
       </Card>

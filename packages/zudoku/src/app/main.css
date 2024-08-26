@@ -87,6 +87,7 @@
     --padding-content-bottom: theme("spacing.12");
     --padding-nav-item: theme("spacing[2.5]");
     --sidecar-grid-cols: 1fr minmax(200px, 260px);
+    --scrollbar-width: calc(100vw - 100%);
   }
 
   html,
@@ -100,7 +101,9 @@
 
   html {
     scroll-padding-block: var(--scroll-padding);
-    scrollbar-gutter: stable;
+    overflow: auto;
+    /* This is to prevent layout jumping when the scrollbar appears/disappears */
+    padding-left: var(--scrollbar-width);
   }
 
   body {
