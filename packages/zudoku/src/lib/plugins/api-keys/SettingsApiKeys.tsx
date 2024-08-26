@@ -3,7 +3,14 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { EyeIcon, EyeOffIcon, RotateCwIcon, TrashIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CopyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  RotateCwIcon,
+  TrashIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
@@ -147,6 +154,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
 const RevealApiKey = ({ apiKey }: { apiKey: string }) => {
   const [revealed, setRevealed] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   return (
     <div className="flex gap-2 items-center text-sm">
@@ -159,6 +167,18 @@ const RevealApiKey = ({ apiKey }: { apiKey: string }) => {
         size="icon"
       >
         {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+      </Button>
+      <Button
+        variant="outline"
+        onClick={() => {
+          navigator.clipboard.writeText(apiKey).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          });
+        }}
+        size="icon"
+      >
+        {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
       </Button>
     </div>
   );
