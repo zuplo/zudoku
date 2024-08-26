@@ -140,19 +140,24 @@ export const Sidecar = ({
       ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
       : undefined;
 
-    const snippet = new HTTPSnippet(
-      {
-        method: operation.method.toLocaleUpperCase(),
-        url: operation.path.replaceAll("{", ":").replaceAll("}", ""),
-        headers: [{ name: "Authorization", value: "Bearer <token>" }],
-        postData: example
-          ? {
-              text: JSON.stringify(example, null, 2),
-              mimeType: "application/json",
-            }
-          : {},
-      } as never, // 👈 never touch this
-    );
+    const snippet = new HTTPSnippet({
+      method: operation.method.toLocaleUpperCase(),
+      url:
+        (result.data?.schema.url ?? "") +
+        operation.path.replaceAll("{", ":").replaceAll("}", ""),
+      postData: example
+        ? {
+            text: JSON.stringify(example, null, 2),
+            mimeType: "application/json",
+          }
+        : ({} as any),
+      headers: [],
+      queryString: [],
+      httpVersion: "",
+      cookies: [],
+      headersSize: 0,
+      bodySize: 0,
+    });
 
     return getConverted(snippet, selectedLang);
   }, [selectedLang, operation.method, operation.path, requestBodyContent]);
