@@ -101,7 +101,6 @@
 
   html {
     scroll-padding-block: var(--scroll-padding);
-    overflow: auto;
     /* This is to prevent layout jumping when the scrollbar appears/disappears */
     padding-left: var(--scrollbar-width);
   }
