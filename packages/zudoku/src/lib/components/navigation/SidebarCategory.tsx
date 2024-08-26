@@ -103,10 +103,13 @@ export const SidebarCategory = ({
         <ul className="mt-1 border-l ps-2">
           {category.items.map((item) => (
             <SidebarItem
-              key={item.label}
+              key={
+                ("id" in item ? item.id : "") +
+                ("href" in item ? item.href : "") +
+                item.label
+              }
               level={level + 1}
               item={item}
-              // activeAnchor={activeAnchor}
             />
           ))}
         </ul>

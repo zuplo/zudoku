@@ -172,6 +172,16 @@
     }
   }
 
+  .scrollbar {
+    /* For Firefox */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scrollbar:hover {
+    scrollbar-color: hsla(var(--border)) transparent;
+  }
+
   .scrollbar::-webkit-scrollbar {
     padding: 2px;
     width: 12px;

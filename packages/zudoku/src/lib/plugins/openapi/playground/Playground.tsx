@@ -225,7 +225,7 @@ export const Playground = ({
             <Tabs
               defaultValue={pathParams.length > 0 ? "parameters" : "headers"}
             >
-              <div className="flex justify-between">
+              <div className="flex flex-wrap gap-1 justify-between">
                 <TabsList>
                   {queryParams.length + pathParams.length > 0 && (
                     <TabsTrigger value="parameters">Parameters</TabsTrigger>
