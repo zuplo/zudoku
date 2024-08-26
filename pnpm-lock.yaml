@@ -333,8 +333,8 @@ importers:
         specifier: ^1.9.1
         version: 1.9.1
       lru-cache:
-        specifier: 10.2.0
-        version: 10.2.0
+        specifier: 11.0.0
+        version: 11.0.0
       mdx:
         specifier: 0.3.1
         version: 0.3.1
