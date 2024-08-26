@@ -4,7 +4,7 @@
   "targets": {
     "build": {
       "inputs": ["{projectRoot}/**/*.ts", "{projectRoot}/templates/**"],
-      "outputs": ["{workspaceRoot}/dist"],
+      "outputs": ["{projectRoot}/dist"],
       "cache": true
     },
     "build:ci": {
