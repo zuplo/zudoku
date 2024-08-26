@@ -74,7 +74,7 @@ export const Callout = ({ type, children, title, className }: CalloutProps) => {
       )}
     >
       <Icon
-        className={cn(!title && "mt-1 translate-y-px", iconColor)}
+        className={cn(!title && "translate-y-px", iconColor)}
         size={20}
         aria-hidden="true"
       />

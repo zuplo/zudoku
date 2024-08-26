@@ -52,7 +52,7 @@ export const ResponsesSidecarBox = ({
                 <SyntaxHighlight
                   language="json"
                   noBackground
-                  className="text-xs"
+                  className="text-xs max-h-[450px]"
                   code={JSON.stringify(generateSchemaExample(schema), null, 2)}
                 />
               ) : (

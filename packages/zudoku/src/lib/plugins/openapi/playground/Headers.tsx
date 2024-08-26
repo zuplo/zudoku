@@ -1,14 +1,8 @@
-import { TriangleAlertIcon, XIcon } from "lucide-react";
-import {
-  Control,
-  useFieldArray,
-  UseFormRegister,
-  useWatch,
-} from "react-hook-form";
+import { XIcon } from "lucide-react";
+import { Control, useFieldArray, UseFormRegister } from "react-hook-form";
 import { Button } from "../../../ui/Button.js";
-import { cn } from "../../../util/cn.js";
-import { InlineInput } from "./InlineInput.js";
-import { NO_IDENTITY, type PlaygroundForm } from "./Playground.js";
+import { Input } from "../../../ui/Input.js";
+import { type PlaygroundForm } from "./Playground.js";
 
 export const Headers = ({
   control,
@@ -21,67 +15,58 @@ export const Headers = ({
     control,
     name: "headers",
   });
-  const selectedIdentity = useWatch({ name: "identity", control });
-  const liveHeaders = useWatch({ name: "headers", control });
-
-  const disableAuth = selectedIdentity !== NO_IDENTITY;
 
   return (
-    <div className="grid grid-cols-[1fr_1fr_auto]">
-      {fields.map((header, i) => {
-        const isDisabledByAuth =
-          disableAuth && liveHeaders.at(i)?.name === "Authorization";
-
-        return (
-          <div
-            key={header.id}
-            className={cn(
-              "grid-cols-subgrid col-span-full grid items-center gap-x-2 has-[:focus]:bg-muted hover:bg-muted rounded overflow-hidden group",
-              isDisabledByAuth && "line-through",
-            )}
-            title={
-              isDisabledByAuth
-                ? "This header is disabled because authentication was selected"
-                : undefined
-            }
-          >
-            <div className="flex gap-2 items-center">
-              <InlineInput
-                {...register(`headers.${i}.name`)}
-                placeholder="Name"
-                className="peer"
-                autoComplete="off"
-              />
-              {isDisabledByAuth && (
-                <TriangleAlertIcon size={16} className="text-amber-500" />
-              )}
-            </div>
-            <InlineInput
-              placeholder={"Value"}
-              className="peer"
-              {...register(`headers.${i}.value`)}
-              autoComplete="off"
-            />
-            <button
-              className="hover:bg-black/5 p-1 rounded mr-2 text-muted-foreground invisible group-hover:visible peer-focus:visible"
-              onClick={() => {
-                remove(i);
-              }}
-              type="button"
+    <div className="flex flex-col gap-2">
+      <table className="w-full [&_td]:border [&_td]:p-1.5 [&_td]:px-2">
+        <tbody>
+          {fields.map((header, i) => (
+            <tr
+              key={header.id}
+              className="group has-[:focus]:bg-muted/50 hover:bg-muted/50"
             >
-              <XIcon size={16} />
-            </button>
-            <div className="col-span-full border-b"></div>
-          </div>
-        );
-      })}
-      <Button
-        className="col-span-full mt-4"
-        onClick={() => append({ name: "", value: "" })}
-        type="button"
-      >
-        Add header
-      </Button>
+              <td className="flex gap-2 items-center">
+                <Input
+                  {...register(`headers.${i}.name`)}
+                  placeholder="Name"
+                  className="border-0 shadow-none text-xs font-mono"
+                  autoComplete="off"
+                />
+              </td>
+              <td>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder={"Value"}
+                    className="border-0 shadow-none text-xs font-mono"
+                    {...register(`headers.${i}.value`)}
+                    autoComplete="off"
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="text-muted-foreground opacity-0 group-hover:opacity-100"
+                    onClick={() => {
+                      remove(i);
+                    }}
+                    type="button"
+                  >
+                    <XIcon size={16} />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="text-end">
+        <Button
+          className=""
+          onClick={() => append({ name: "", value: "" })}
+          type="button"
+        >
+          Add header
+        </Button>
+      </div>
     </div>
   );
 };

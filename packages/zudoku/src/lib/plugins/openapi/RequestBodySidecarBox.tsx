@@ -23,7 +23,7 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
             language="json"
             noBackground
             copyable
-            className="text-xs"
+            className="text-xs max-h-[450px]"
             code={JSON.stringify(
               content.at(0)?.schema
                 ? generateSchemaExample(content[0].schema as SchemaObject)

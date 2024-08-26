@@ -11,9 +11,9 @@ import {
 } from "../../../components/Select.js";
 import { Spinner } from "../../../components/Spinner.js";
 import { Button } from "../../../ui/Button.js";
-import { Card } from "../../../ui/Card.js";
+import { Callout } from "../../../ui/Callout.js";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
-import { fetchTimeout } from "../../../util/fetchTimeout.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import { createUrl } from "./createUrl.js";
 import { Headers } from "./Headers.js";
@@ -22,23 +22,6 @@ import { QueryParams } from "./QueryParams.js";
 import { ResponseTab } from "./ResponseTab.js";
 
 export const NO_IDENTITY = "__none";
-
-function mimeTypeToLanguage(mimeType: string) {
-  const mimeTypeMapping = {
-    "application/json": "json",
-    "text/json": "json",
-    "text/html": "html",
-    "text/css": "css",
-    "text/javascript": "javascript",
-    "application/xml": "xml",
-    "application/xhtml+xml": "xhtml",
-    "text/plain": "plain",
-  } as const;
-
-  return Object.entries(mimeTypeMapping).find(([mime]) =>
-    mimeType.includes(mime),
-  )?.[1];
-}
 
 const statusCodeMap: Record<number, string> = {
   200: "OK",
@@ -148,18 +131,31 @@ export const Playground = ({
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
       }
-      const response = await fetchTimeout(request);
-      const time = performance.now() - start;
+      try {
+        const response = await fetch(request, {
+          signal: AbortSignal.timeout(5000),
+        });
 
-      const body = await response.text();
+        const time = performance.now() - start;
 
-      return {
-        status: response.status,
-        headers: response.headers,
-        size: body.length,
-        body,
-        time,
-      };
+        const body = await response.text();
+
+        return {
+          status: response.status,
+          headers: response.headers,
+          size: body.length,
+          body,
+          time,
+        };
+      } catch (error) {
+        if (error instanceof TypeError) {
+          throw new Error(
+            "The request failed, possibly due to network issues or CORS policy.",
+          );
+        } else {
+          throw error;
+        }
+      }
     },
   });
 
@@ -298,11 +294,24 @@ export const Playground = ({
           </div>
           <div className="flex flex-col gap-4 p-8 bg-muted/70">
             {queryMutation.error ? (
-              <div>
-                Error:{" "}
-                {queryMutation.error.message ||
-                  String(queryMutation.error) ||
-                  "Unexpected error"}
+              <div className="flex flex-col gap-2">
+                {formState.pathParams.some((p) => p.value === "") && (
+                  <Callout type="caution">
+                    Some path parameters are missing values. Please fill them in
+                    to ensure the request is sent correctly.
+                  </Callout>
+                )}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Request failed</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    Error:{" "}
+                    {queryMutation.error.message ||
+                      String(queryMutation.error) ||
+                      "Unexpected error"}
+                  </CardContent>
+                </Card>
               </div>
             ) : queryMutation.data ? (
               <div className="flex flex-col gap-2">

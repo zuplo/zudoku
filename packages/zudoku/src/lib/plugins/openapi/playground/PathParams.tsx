@@ -51,9 +51,7 @@ export const PathParams = ({
                     <Input
                       {...field}
                       placeholder="Enter value"
-                      className={cn(
-                        "border-0 shadow-none ring-0 font-mono text-xs",
-                      )}
+                      className="border-0 shadow-none ring-0 font-mono text-xs"
                     />
                   )}
                 />
