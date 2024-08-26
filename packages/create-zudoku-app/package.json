@@ -5,6 +5,7 @@
     "react",
     "zudoku"
   ],
+  "main": "./dist/index.js",
   "description": "Create Zudoku docs site with one command",
   "repository": {
     "type": "git",
