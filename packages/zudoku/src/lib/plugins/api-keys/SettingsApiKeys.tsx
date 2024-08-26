@@ -76,13 +76,13 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       ) : (
         <ul
           className={cn(
-            "grid grid-cols-1  rounded border",
+            "grid grid-cols-1 rounded border divide-y divide-border",
             "lg:grid-cols-[minmax(250px,min-content)_1fr_min-content]",
           )}
         >
           {data.map((key) => (
             <li
-              className="border-b p-5 grid grid-cols-subgrid col-span-full gap-2 items-center"
+              className="p-5 grid grid-cols-subgrid col-span-full gap-2 items-center"
               key={key.id}
             >
               <div className="flex flex-col gap-1 text-sm">
@@ -149,8 +149,8 @@ const RevealApiKey = ({ apiKey }: { apiKey: string }) => {
   const [revealed, setRevealed] = useState(false);
 
   return (
-    <div className="flex gap-2 items-center text-sm w-full">
-      <div className="border rounded bg-gray-100 dark:bg-gray-950 p-1 font-mono w-fit overflow-x-scroll h-9 items-center flex px-2">
+    <div className="flex gap-2 items-center text-sm">
+      <div className="border rounded bg-gray-100 dark:bg-gray-950 p-1 font-mono truncate h-9 items-center flex px-2">
         {revealed ? apiKey : "•".repeat(apiKey.length)}
       </div>
       <Button
