@@ -91,9 +91,12 @@
   }
 
   html,
-  body,
+  body {
+    @apply h-full;
+  }
+
   #root {
-    @apply h-full min-h-screen;
+    @apply min-h-screen grid grid-rows-[var(--header-height)_1fr] w-full;
   }
   * {
     @apply border-border;
@@ -102,11 +105,11 @@
   html {
     scroll-padding-block: var(--scroll-padding);
     /* This is to prevent layout jumping when the scrollbar appears/disappears */
-    @apply mr-[calc(-1*var(--scrollbar-width))] overflow-x-hidden;
+    @apply -mr-[--scrollbar-width];
   }
 
   body {
-    @apply antialiased bg-background text-foreground;
+    @apply antialiased bg-background text-foreground overflow-y-auto overflow-x-clip;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
