@@ -89,7 +89,7 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
   }, [activeAnchor]);
 
   return (
-    <aside className="sticky top-[--header-height] h-[calc(100vh-var(--header-height))] pt-[--padding-content-top] pb-[--padding-content-bottom] overflow-y-auto ps-1 text-sm">
+    <aside className="sticky scrollbar top-[--header-height] h-[calc(100vh-var(--header-height))] pt-[--padding-content-top] pb-[--padding-content-bottom] overflow-y-auto ps-1 text-sm">
       <div className="flex items-center gap-2 font-medium mb-2">
         <ListTreeIcon size={16} />
         On this page

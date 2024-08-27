@@ -58,8 +58,7 @@ export const Header = memo(function HeaderInner() {
   const ThemeIcon = isDark ? MoonStarIcon : SunIcon;
 
   return (
-    // margin-left is to prevent layout jumping when scrollbar appears/disappears
-    <header className="fixed top-0 z-10 bg-background/80 backdrop-blur left-0 right-0 2xl:ml-[--scrollbar-width]">
+    <header className="sticky top-0 z-10 bg-background/80 backdrop-blur w-full">
       <div className="max-w-screen-2xl mx-auto">
         <div className="grid grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center border-b px-12 h-[--top-header-height]">
           <div className="flex">

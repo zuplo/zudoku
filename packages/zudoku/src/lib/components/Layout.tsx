@@ -47,19 +47,20 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       </Helmet>
       <Header />
 
-      <div className="max-w-screen-2xl mx-auto pt-[--header-height] px-10 lg:px-12 h-full">
+      <div className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12">
         <Suspense
           fallback={
-            <div className="grid h-full place-items-center">
+            <main className="grid h-full place-items-center">
               <Spinner />
-            </div>
+            </main>
           }
         >
           <Sidebar />
           <main
             className={cn(
-              "dark:border-white/10 translate-x-0 h-full",
+              "dark:border-white/10 translate-x-0",
               "lg:overflow-visible",
+              // This works in tandem with the `SidebarWrapper` component
               "lg:peer-data-[navigation=true]:w-[calc(100%-var(--side-nav-width))]",
               "lg:peer-data-[navigation=true]:translate-x-[--side-nav-width] lg:peer-data-[navigation=true]:pl-12",
             )}
