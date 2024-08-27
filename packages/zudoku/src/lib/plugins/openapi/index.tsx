@@ -163,7 +163,7 @@ export const openApiPlugin = (
         .filter((tag) => tag.operations.length > 0)
         .map<SidebarItem>((tag) => ({
           type: "category",
-          label: tag.name ?? "",
+          label: tag.name || "Other endpoints",
           collapsible: true,
           collapsed: false,
           items: tag.operations.map((operation) => ({

@@ -223,7 +223,11 @@ export const Playground = ({
               </Button>
             </div>
             <Tabs
-              defaultValue={pathParams.length > 0 ? "parameters" : "headers"}
+              defaultValue={
+                queryParams.length + pathParams.length > 0
+                  ? "parameters"
+                  : "headers"
+              }
             >
               <div className="flex flex-wrap gap-1 justify-between">
                 <TabsList>
@@ -292,7 +296,7 @@ export const Playground = ({
               </TabsContent>
             </Tabs>
           </div>
-          <div className="flex flex-col gap-4 p-8 bg-muted/70">
+          <div className="p-8 bg-muted/70">
             {queryMutation.error ? (
               <div className="flex flex-col gap-2">
                 {formState.pathParams.some((p) => p.value === "") && (
@@ -325,7 +329,6 @@ export const Playground = ({
                     <div>Size: {queryMutation.data.size} B</div>
                   </div>
                 </div>
-                {/*<UrlDisplay host={host} path={url} />*/}
                 <Tabs defaultValue="response">
                   <TabsList>
                     <TabsTrigger value="response">Response</TabsTrigger>
@@ -343,7 +346,10 @@ export const Playground = ({
                     />
                   </TabsContent>
                   <TabsContent value="headers">
-                    <Card className="grid grid-cols-2 w-full gap-2.5 font-mono text-xs shadow-none p-4">
+                    <Card
+                      // playground dialog has h-5/6 ≈ 83.333vh
+                      className="max-h-[calc(83.333vh-140px)] overflow-y-auto grid grid-cols-2 w-full gap-2.5 font-mono text-xs shadow-none p-4"
+                    >
                       <div className="font-semibold">Key</div>
                       <div className="font-semibold">Value</div>
                       {headerEntries.map(([key, value]) => (
