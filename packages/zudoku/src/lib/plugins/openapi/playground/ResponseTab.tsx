@@ -55,7 +55,8 @@ export const ResponseTab = ({
           }
           noBackground
           showLanguageIndicator
-          className="overflow-x-auto p-4 text-xs max-h-[480px]"
+          // playground dialog has h-5/6 ≈ 83.333vh
+          className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]"
           code={view === "raw" ? body : beautifiedBody}
         />
       </Card>
