@@ -417,8 +417,8 @@ importers:
         specifier: 7.1.0
         version: 7.1.0
       tailwind-merge:
-        specifier: 2.3.0
-        version: 2.3.0
+        specifier: 2.5.2
+        version: 2.5.2
       tailwindcss:
         specifier: 3.4.4
         version: 3.4.4(ts-node@10.9.1(@types/node@20.12.10)(typescript@5.5.3))
@@ -1341,10 +1341,6 @@ packages:
 
   '@babel/runtime-corejs3@7.25.0':
     resolution: {integrity: sha512-BOehWE7MgQ8W8Qn0CQnMtg2tHPHPulcS/5AVpFvs2KCK1ET+0WqZqPvnpRpFN81gYoFopdIEJX9Sgjw3ZBccPg==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/runtime@7.24.1':
-    resolution: {integrity: sha512-+BIznRzyqBf+2wCTxcKE3wDjfGeCoVE61KSHGpkzqrLi8qxqFwBeUFyId2cxkTmm55fzDGnm0+yCxaxygrLUnQ==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.24.7':
@@ -8480,8 +8476,8 @@ packages:
   tabbable@6.2.0:
     resolution: {integrity: sha512-Cat63mxsVJlzYvN51JmVXIgNoUokrIaT2zLclCXjRd8boZ0004U4KCs/sToJ75C6sdlByWxpYnb5Boif1VSFew==}
 
-  tailwind-merge@2.3.0:
-    resolution: {integrity: sha512-vkYrLpIP+lgR0tQCG6AP7zZXCTLc1Lnv/CCRT3BqJ9CZ3ui2++GPaGb1x/ILsINIMSYqqvrpqjUFsMNLlW99EA==}
+  tailwind-merge@2.5.2:
+    resolution: {integrity: sha512-kjEBm+pvD+6eAwzJL2Bi+02/9LFLal1Gs61+QB7HvTfQQ0aXwC5LGT8PEt1gS0CWKktKe6ysPTAy3cBC5MeiIg==}
 
   tailwindcss@3.4.4:
     resolution: {integrity: sha512-ZoyXOdJjISB7/BcLTR6SEsLgKtDStYyYZVLsUtWChO4Ps20CBad7lfJKVDiejocV4ME1hLmyY0WJE3hSDcmQ2A==}
@@ -10331,10 +10327,6 @@ snapshots:
       core-js-pure: 3.38.0
       regenerator-runtime: 0.14.1
     optional: true
-
-  '@babel/runtime@7.24.1':
-    dependencies:
-      regenerator-runtime: 0.14.1
 
   '@babel/runtime@7.24.7':
     dependencies:
@@ -20102,9 +20094,7 @@ snapshots:
 
   tabbable@6.2.0: {}
 
-  tailwind-merge@2.3.0:
-    dependencies:
-      '@babel/runtime': 7.24.1
+  tailwind-merge@2.5.2: {}
 
   tailwindcss@3.4.4(ts-node@10.9.1(@types/node@20.12.10)(typescript@5.5.3)):
     dependencies:
