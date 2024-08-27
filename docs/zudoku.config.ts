@@ -23,13 +23,15 @@ const config: ZudokuConfig = {
   ],
   topNavigation: [
     { id: "documentation", label: "Documentation" },
+    { id: "https://github.com/zuplo/zudoku/discussions", label: "GitHub Discussions" },
+    { id: "https://github.com/zuplo/zudoku/issues", label: "Submit an issue" },
   ],
   sidebar: {
     documentation: [
       {
-        type: "category",
-        label: "Zudoku",
-        items: ["introduction"],
+        type: "doc",
+        label: "Introduction",
+        id: "introduction",
       },
       {
         type: "category",
@@ -49,7 +51,7 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Deployment",
-        items: ["deployment", "deploy/cloudflare-pages", "deploy/direct-upload"],
+        items: ["deployment", "deploy/cloudflare-pages", "deploy/github-pages", "deploy/vercel", "deploy/direct-upload"],
       }
     ],
   },
