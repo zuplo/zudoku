@@ -8,7 +8,7 @@ You can find the `zudoku.config.ts` file in the root directory of your project.
 It will already be populated with some default options.
 
 ## Example
-Below is real example that is used to configure the documentation for the Zuplo gateway version of the [Rick & Morty API](https://zudoku.zuplopreview.net/demo?api-url=https://rickandmorty.zuplo.io/openapi.json).
+Below is real example that is used to configure the default Zudoku site that `create-zudoku-app` will generate. You can edit this configuration to suit your own needs.
 
 ```typescript
 import type { ZudokuConfig } from "zudoku";
@@ -16,28 +16,28 @@ import type { ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   topNavigation: [
     { id: "documentation", label: "Documentation" },
-    { id: "api", label: "Rick & Morty API" },
+    { id: "api", label: "API Reference" },
   ],
   sidebar: {
     documentation: [
       {
         type: "category",
-        label: "Get started",
-        items: ["introduction", "installation"],
+        label: "Overview",
+        items: ["example", "other-example"],
       },
     ],
   },
   redirects: [
-    { from: "/", to: "/documentation/introduction" },
-    { from: "/documentation", to: "/documentation/introduction" },
+    { from: "/", to: "/documentation" }
   ],
   apis: {
     type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
+    input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
+    //input: "https://rickandmorty.zuplo.io/openapi.json", // ...or, uncomment this line to see an example
     navigationId: "api",
   },
   docs: {
-    files: "/pages/**/*.mdx",
+    files: "/pages/**/*.{md,mdx}",
   },
 };
 
@@ -52,7 +52,7 @@ After all, you're here because you built your API using OpenAPI, right?
 
 ### OpenAPI URL
 
-If your OpenAPI document is accessible elsewhere via URL you can use this configuration:
+If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document if you want to test and play around):
 
 ```json
 apis: {
