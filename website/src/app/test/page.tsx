@@ -1,40 +1,33 @@
-"use client";
-
+import { PreviewInput } from "@/app/test/PreviewInput";
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { Typewriter } from "react-simple-typewriter";
 import "../globals.css";
+import { AnimatedHeading } from "./AnimatedHeading";
+import Code from "./Code";
+import { Features } from "./Features";
+import { Footer } from "./Footer";
+import { Frame } from "./Frame";
+import screenshot from "./screenshot.jpg";
 
-const Test = () => {
-  const [state, setState] = useState(false);
-
-  useEffect(() => {
-    document.onclick = (e) => {
-      if (e.target instanceof HTMLElement && !e.target.closest(".menu-btn")) {
-        setState(false);
-      }
-    };
-  }, []);
-
+const Test = async () => {
   const Brand = () => (
     <div className="flex items-center justify-between py-5 md:block">
+      <div
+        className="absolute pointer-events-none inset-0 m-auto max-w-xs h-[400px] blur-[118px] sm:max-w-md md:max-w-lg"
+        style={{
+          background:
+            "linear-gradient(106.89deg, rgba(192, 132, 252, 0.11) 15.73%, rgba(14, 165, 233, 0.41) 15.74%, rgba(232, 121, 249, 0.26) 56.49%, rgba(79, 70, 229, 0.4) 115.91%)",
+        }}
+      />
       <a href="#">
-        <img
-          src="/zudoku-logo-full-dark.svg"
-          width={120}
-          height={50}
-          alt="Float UI logo"
-        />
+        <img src="/zudoku-logo-full-dark.svg" width={120} height={50} />
       </a>
     </div>
   );
 
   return (
-    <div className="h-full bg-gray-900">
+    <div className="min-h-full bg-gray-900">
       <header>
-        <nav
-          className={`pb-5 md:text-sm ${state ? "absolute z-20 top-0 inset-x-0 bg-gray-800 rounded-xl mx-2 mt-2 md:mx-0 md:mt-0 md:relative md:bg-transparent" : ""}`}
-        >
+        <nav className="pb-5 md:text-sm">
           <div className="gap-x-14 items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 flex justify-between">
             <Brand />
             <div className="flex gap-2">
@@ -79,67 +72,113 @@ const Test = () => {
         </nav>
       </header>
       <section className="relative">
-        <div className="relative z-10 max-w-screen-xl mx-auto px-4 py-28 md:px-8">
+        <div className="relative max-w-screen-xl mx-auto px-4 py-28 md:px-8">
           <div className="space-y-8 max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl text-white font-extrabold mx-auto md:text-5xl">
-              API documentation
-              <br />
-              should be{" "}
-              <span className="text-[#ff00bd]">
-                <Typewriter
-                  cursor
-                  loop
-                  words={[
-                    "free",
-                    "simple",
-                    "adaptable",
-                    "open source",
-                    "flexible",
-                    "pluggable",
-                  ]}
-                />
-              </span>
-            </h2>
+            <AnimatedHeading />
             <p className="max-w-2xl mx-auto text-gray-400">
               Zudoku is an open-source, OpenAPI powered, highly customizable API
               documentation framework for building quality developer
               experiences.
             </p>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="justify-center items-center gap-x-3 sm:flex"
-            >
-              <input
-                type="text"
-                placeholder="https://example.io/openapi.json"
-                className="w-full max-w-[500px] px-3 py-2.5 text-gray-400 bg-gray-700 outline-none rounded-lg shadow"
-              />
-              <button className="flex items-center justify-center gap-x-2 py-2.5 px-4 mt-3 w-full text-sm text-white font-medium bg-[#ff00bd] hover:bg-[#ff00bd]/90 active:bg-[#ff00bd]/90 duration-150 rounded-lg sm:mt-0 sm:w-auto">
-                Get started
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  className="w-5 h-5"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </form>
+            <PreviewInput />
+            <div className="flex gap-2 max-w-2xl mx-auto items-center">
+              <strong>Examples:</strong>
+              <ul className="flex gap-2">
+                <li className="">
+                  <a
+                    className="py-1.5 px-2 bg-gray-600/75 rounded-md hover:bg-gray-600 transition-colors"
+                    href="https://docs-zudoku.pages.dev/"
+                    target="_blank"
+                  >
+                    Zuplo Documentation
+                  </a>
+                </li>
+                <li className="">
+                  <a
+                    className="py-1.5 px-2 bg-gray-600/75 rounded-md hover:bg-gray-600 transition-colors"
+                    href="/demo?api-url=https://rickandmorty.zuplo.io/openapi.json"
+                    target="_blank"
+                  >
+                    Rick & Morty API
+                  </a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
-        <div
-          className="absolute inset-0 m-auto max-w-xs h-[400px] blur-[118px] sm:max-w-md md:max-w-lg"
-          style={{
-            background:
-              "linear-gradient(106.89deg, rgba(192, 132, 252, 0.11) 15.73%, rgba(14, 165, 233, 0.41) 15.74%, rgba(232, 121, 249, 0.26) 56.49%, rgba(79, 70, 229, 0.4) 115.91%)",
-          }}
-        ></div>
       </section>
+      <section className="max-w-2xl mx-auto">
+        <div className="flex gap-12 my-12 flex-col items-center">
+          <h3 className="text-5xl font-bold">
+            Build it <span className="text-[#ff00bd]">your</span> way
+          </h3>
+          <p className=" text-center text-gray-400">
+            Get going with Zudoku in a few simple steps:
+            <br />
+            Add it to your HTML, get the package or let{" "}
+            <a href="https://zuplo.com" target="_blank">
+              Zuplo
+            </a>{" "}
+            host it for you!
+          </p>
+        </div>
+      </section>
+
+      <section className="relative max-w-xl mx-auto mt-32 mb-[450px]">
+        <Frame
+          darkMode
+          inFocus={false}
+          className="absolute left-0 right-0 -translate-x-1/3 scale-[80%]"
+        >
+          <Code
+            code={`
+\$ npx create zudoku-app@latest
+\$ npx run zudoku dev
+> zudoku dev
+
+Server-side rendering enabled
+Started local development setup
+Ctrl+C to exit
+
+🚀 Zudoku Portal: http://localhost:9000
+`.trim()}
+            lang="shell"
+          />
+        </Frame>
+        <Frame
+          className="absolute left-0 right-0 translate-x-[25%] -translate-y-[10%] overflow-hidden border border-gray-800 h-[330px] scale-90 hover:scale-100 transition duration-300 ease-in-out drop-shadow-lg"
+          innerPadding={false}
+        >
+          <Image src={screenshot} alt="" />
+        </Frame>
+      </section>
+      {/*      <Frame className="mx-auto max-w-2xl" darkMode>
+        <Code
+          className=""
+          code={`<!doctype html>
+<html>
+  <head>
+    <script type="module" src="https://cdn.zudoku.dev/latest/main.js" crossorigin></script>
+    <link rel="stylesheet" href="https://cdn.zudoku.dev/latest/style.css" crossorigin />
+  </head>
+  <body>
+    <div data-api-url="{URL_PLACEHOLDER}"></div>
+  </body>
+</html>`}
+          lang="html"
+        />
+      </Frame>*/}
+      <Features />
+      <section>
+        <div className="flex gap-12 my-12 flex-col items-center">
+          <h3 className="text-3xl font-semibold">Get started</h3>
+
+          <Frame className="w-full max-w-2xl" darkMode>
+            <Code code="npx create zudoku-app@latest" lang="shell" />
+          </Frame>
+        </div>
+      </section>
+      <Footer />
     </div>
   );
 };
