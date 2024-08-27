@@ -1,5 +1,4 @@
 import type { ZudokuConfig } from "zudoku";
-import navigation from "./navigation.js";
 
 const config: ZudokuConfig = {
   page: {
@@ -15,9 +14,44 @@ const config: ZudokuConfig = {
   metadata: {
     title: "%s | Zudoku",
   },
-  navigation,
   docs: {
     files: "/pages/**/*.mdx",
+  },
+  redirects: [
+    { from: "/", to: "/documentation/introduction" },
+    { from: "/documentation", to: "/documentation/introduction" },
+  ],
+  topNavigation: [
+    { id: "documentation", label: "Documentation" },
+  ],
+  sidebar: {
+    documentation: [
+      {
+        type: "category",
+        label: "Zudoku",
+        items: ["introduction"],
+      },
+      {
+        type: "category",
+        label: "Getting started",
+        items: ["getting-started", "installation",  "configuration"],
+      },
+      {
+        type: "category",
+        label: "Advanced",
+        items: ["authentication",  "api-keys", "using-multiple-apis"],
+      },
+      {
+        type: "category",
+        label: "Plugins",
+        items: ["search", "custom-pages"],
+      },
+      {
+        type: "category",
+        label: "Deployment",
+        items: ["deployment", "deploy/cloudflare-pages", "deploy/direct-upload"],
+      }
+    ],
   },
 };
 
