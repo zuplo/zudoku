@@ -117,6 +117,7 @@ export const installTemplate = async ({
   const packageJson: any = {
     name: appName,
     version: "0.1.0",
+    type: "module",
     private: true,
     scripts: {
       dev: `zudoku dev`,
