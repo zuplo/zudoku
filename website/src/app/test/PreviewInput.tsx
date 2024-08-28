@@ -1,10 +1,6 @@
 "use client";
 
-import { useState } from "react";
-
 export const PreviewInput = () => {
-  const [input, setInput] = useState("");
-
   return (
     <form
       className="justify-center items-center gap-x-3 sm:flex"
@@ -26,11 +22,11 @@ export const PreviewInput = () => {
         type="url"
         required
         placeholder="https://example.io/openapi.json"
-        className="w-full max-w-[500px] px-3 py-2.5 text-gray-400 bg-gray-700 outline-none rounded-lg shadow"
+        className="w-full px-4 py-3.5 text-gray-400 bg-slate-700 outline-none rounded-lg shadow font-medium text-md"
       />
       <button
         type="submit"
-        className="flex items-center justify-center gap-x-2 py-2.5 px-4 mt-3 w-full text-sm text-white font-medium bg-[#ff00bd] hover:bg-[#ff00bd]/90 active:bg-[#ff00bd]/90 duration-150 rounded-lg sm:mt-0 sm:w-auto"
+        className="whitespace-nowrap flex items-center justify-center gap-x-2 py-4 px-4 mt-3 w-full text-sm text-white font-medium bg-[#ff00bd] hover:bg-[#ff00bd]/80 active:bg-[#ff00bd]/80 duration-150 rounded-lg sm:mt-0 sm:w-auto"
       >
         Get started
         <svg

@@ -17,8 +17,8 @@ export const Features = () => {
           />
         </svg>
       ),
-      title: "Analytics",
-      desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue, nisl eget molestie varius, enim ex faucibus purus.",
+      title: "Everything is a plugin",
+      desc: "We build Zudoku with extensibility in mind. Every part of the framework is a plugin, from the search to the sidebar. You can easily customize and extend Zudoku to fit your needs.",
     },
     {
       icon: (
@@ -37,8 +37,8 @@ export const Features = () => {
           />
         </svg>
       ),
-      title: "Datacenter security",
-      desc: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec congue, nisl eget molestie varius, enim ex faucibus purus.",
+      title: "Run anywhere, platform agnostic",
+      desc: "Build with flexibility in mind. Zudoku is designed to run on any platform, be it a static site generator or a serverless function: Cloudflare Pages, Vercel, Netlify, AWS Lambda, and more.",
     },
   ];
 
