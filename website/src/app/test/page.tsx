@@ -138,7 +138,7 @@ Ctrl+C to exit
 
       <div className="flex gap-12 my-12 flex-col items-center">
         <h3 className="text-3xl font-bold text-center mb-6">
-          Ready? Let's set you up!
+          Ready? Let&apos;s set you up!
         </h3>
         <Frame className="w-full max-w-2xl" darkMode>
           <Code code="npx create zudoku-app@latest" lang="shell" />
