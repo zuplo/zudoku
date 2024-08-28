@@ -28,7 +28,7 @@ export const PreviewInput = () => {
         type="submit"
         className="whitespace-nowrap flex items-center justify-center gap-x-2 py-4 px-4 mt-3 w-full text-sm text-white font-medium bg-[#ff00bd] hover:bg-[#ff00bd]/80 active:bg-[#ff00bd]/80 duration-150 rounded-lg sm:mt-0 sm:w-auto"
       >
-        Get started
+        Preview
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 20 20"

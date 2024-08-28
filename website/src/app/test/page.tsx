@@ -1,9 +1,9 @@
+import { OpenAPI } from "@/app/test/OpenAPI";
 import { PreviewInput } from "@/app/test/PreviewInput";
 import Image from "next/image";
 import "../globals.css";
 import { AnimatedHeading } from "./AnimatedHeading";
 import Code from "./Code";
-import { Features } from "./Features";
 import { Footer } from "./Footer";
 import { Frame } from "./Frame";
 import screenshot from "./screenshot.jpg";
@@ -92,11 +92,11 @@ const Page = async () => {
         </div>
       </section>
       <section className="max-w-2xl mx-auto">
-        <div className="flex gap-12 my-12 flex-col items-center">
-          <h3 className="text-5xl font-bold">
-            Build it <span className="text-[#ff00bd]">your</span> way
+        <div className="flex gap-8 my-4 flex-col items-center">
+          <h3 className="text-4xl font-bold">
+            Get started with <span className="text-[#ff00bd]">your</span> docs
           </h3>
-          <p className=" text-center text-gray-400">
+          <p className="text-center text-gray-400">
             Get going with Zudoku in a few simple steps:
             <br />
             Add it to your HTML, get the package or let{" "}
@@ -107,7 +107,6 @@ const Page = async () => {
           </p>
         </div>
       </section>
-
       <section className="relative max-w-xl mx-auto mt-20 mb-[450px]">
         <Frame
           darkMode
@@ -136,6 +135,15 @@ Ctrl+C to exit
           <Image src={screenshot} alt="" />
         </Frame>
       </section>
+
+      <div className="flex gap-12 my-12 flex-col items-center">
+        <h3 className="text-3xl font-bold text-center mb-6">
+          Ready? Let's set you up!
+        </h3>
+        <Frame className="w-full max-w-2xl" darkMode>
+          <Code code="npx create zudoku-app@latest" lang="shell" />
+        </Frame>
+      </div>
       {/*      <Frame className="mx-auto max-w-2xl" darkMode>
         <Code
           className=""
@@ -152,16 +160,9 @@ Ctrl+C to exit
           lang="html"
         />
       </Frame>*/}
-      <Features />
-      <section>
-        <div className="flex gap-12 my-12 flex-col items-center">
-          <h3 className="text-3xl font-semibold">Get started</h3>
 
-          <Frame className="w-full max-w-2xl" darkMode>
-            <Code code="npx create zudoku-app@latest" lang="shell" />
-          </Frame>
-        </div>
-      </section>
+      <OpenAPI />
+      {/*<Features />*/}
       <Footer />
     </div>
   );

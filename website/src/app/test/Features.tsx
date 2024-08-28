@@ -47,13 +47,16 @@ export const Features = () => {
       <div className="max-w-screen-xl mx-auto px-4 gap-16 justify-between md:px-8 lg:flex">
         <div>
           <div className="max-w-xl space-y-3">
-            <h3 className="text-[#ff00bd] font-semibold">Features</h3>
+            <h3 className="text-[#ff00bd] font-semibold">
+              Open API Specification
+            </h3>
             <p className="text-3xl font-semibold sm:text-4xl">
-              Simple solutions for complex issues
+              OpenAPI into beautiful documentation
             </p>
             <p>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec
-              congue, nisl eget molestie varius, enim ex faucibus purus
+              Use OpenAPI to describe your API and let Zudoku generate beautiful
+              documentation for you. Zudoku supports OpenAPI 3.x and 2.0 is
+              coming soon.
             </p>
           </div>
           <div className="mt-12 max-w-lg lg:max-w-none">
