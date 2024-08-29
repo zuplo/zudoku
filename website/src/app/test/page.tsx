@@ -169,6 +169,7 @@ Ctrl+C to exit
         />
       </Frame>*/}
       {/*<TechStack />*/}
+      <div className="h-20" />
       <FeatureGrid />
 
       <div className="h-20" />

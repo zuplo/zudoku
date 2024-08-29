@@ -10,7 +10,7 @@ export function FeatureGrid() {
   return (
     <div className="max-w-4xl m-auto flex gap-6 flex-col">
       <h3 className="text-4xl font-bold text-center mb-0">
-        Nice things we have for you today.
+        We have nice things for you today.
       </h3>
       <p>
         We are always looking to improve. If something is missing, please let us
