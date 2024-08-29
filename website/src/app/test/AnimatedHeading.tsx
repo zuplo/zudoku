@@ -23,6 +23,7 @@ export const AnimatedHeading = () => {
             "open source",
             "flexible",
             "pluggable",
+            "adorable",
           ]}
         />
       </span>

@@ -10,10 +10,13 @@
   },
   "dependencies": {
     "clsx": "2.1.1",
+    "framer-motion": "^11.3.31",
+    "lucide-react": "0.378.0",
     "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
-    "react-simple-typewriter": "5.0.1"
+    "react-simple-typewriter": "5.0.1",
+    "tailwind-merge": "2.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",
