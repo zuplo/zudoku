@@ -1,6 +1,6 @@
-import { FeatureGrid } from "@/app/test/FeatureGrid";
-import { OpenAPI } from "@/app/test/OpenAPI";
-import { PreviewInput } from "@/app/test/PreviewInput";
+import { FeatureGrid } from "@/app/components/FeatureGrid";
+import { OpenAPI } from "@/app/components/OpenAPI";
+import { PreviewInput } from "@/app/components/PreviewInput";
 import Image from "next/image";
 import "../globals.css";
 import { AnimatedHeading } from "./AnimatedHeading";

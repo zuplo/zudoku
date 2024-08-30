@@ -1,7 +1,7 @@
 "use client";
 
-import { BentoGrid, BentoGridItem } from "@/app/test/BentoGrid";
-import { TechStackBubble } from "@/app/test/TechStack";
+import { BentoGrid, BentoGridItem } from "@/app/components/BentoGrid";
+import { TechStackBubble } from "@/app/components/TechStack";
 import { cn } from "@/app/utils/cn";
 import { CircleUserIcon, MagnetIcon, PuzzleIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";

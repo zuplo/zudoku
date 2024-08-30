@@ -1,6 +1,6 @@
-import Code from "@/app/test/Code";
-import { Frame } from "@/app/test/Frame";
-import screenshot from "@/app/test/screenshot.jpg";
+import Code from "@/app/components/Code";
+import { Frame } from "@/app/components/Frame";
+import screenshot from "@/app/components/screenshot.jpg";
 import Image from "next/image";
 
 export const OpenAPI = () => {
