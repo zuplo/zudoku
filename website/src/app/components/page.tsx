@@ -26,7 +26,7 @@ const Brand = () => (
 
 const Page = async () => {
   return (
-    <div className="min-h-full bg-gray-900">
+    <div className="min-h-full bg-gray-900 p-4 lg:p-0">
       <header>
         <nav className="pb-5 md:text-sm">
           <div className="h-24 flex items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
@@ -94,7 +94,7 @@ const Page = async () => {
       </section>
       <section className="max-w-2xl mx-auto">
         <div className="flex gap-8 my-4 flex-col items-center">
-          <h3 className="text-4xl font-bold">
+          <h3 className="text-4xl font-bold text-center">
             Get started with <span className="text-[#ff00bd]">your</span> docs
           </h3>
           <p className="text-center text-gray-400">
@@ -112,11 +112,11 @@ const Page = async () => {
           </p>
         </div>
       </section>
-      <section className="relative max-w-xl mx-auto mt-20 mb-[450px]">
+      <section className="relative flex flex-col-reverse gap-2 lg:block max-w-xl mx-auto lg:mt-20 lg:mb-[450px]">
         <Frame
           darkMode
           inFocus={false}
-          className="absolute left-0 right-0 -translate-x-1/3 scale-[80%]"
+          className="lg:absolute lg:left-0 lg:right-0 lg:-translate-x-1/3 lg:scale-[80%]"
         >
           <Code
             code={`
@@ -134,7 +134,7 @@ Ctrl+C to exit
           />
         </Frame>
         <Frame
-          className="absolute left-0 right-0 translate-x-[25%] -translate-y-[10%] overflow-hidden border border-gray-800 h-[330px] scale-90 hover:scale-100 transition duration-300 ease-in-out drop-shadow-lg"
+          className="lg:absolute lg:left-0 lg:right-0 lg:translate-x-[25%] lg:-translate-y-[10%] overflow-hidden border border-gray-800 lg:scale-90 hover:scale-100 transition duration-300 ease-in-out drop-shadow-lg h-min"
           innerPadding={false}
         >
           <Image src={screenshot} alt="" />
@@ -145,7 +145,7 @@ Ctrl+C to exit
         <h3 className="text-3xl font-bold text-center mb-0">
           Ready? Let&apos;s set you up!
         </h3>
-        <p>
+        <p className="text-center text-gray-400">
           Run the following command to get started with Zudoku in your project.
         </p>
         <Frame className="w-full max-w-2xl" darkMode>
