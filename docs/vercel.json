@@ -2,6 +2,6 @@
   "framework": "vite",
   "devCommand": "npx nx run docs:dev",
   "buildCommand": "npx nx run docs:build",
-  "outputDirectory": "docs",
+  "outputDirectory": "dist",
   "installCommand": "pnpm install"
 }
