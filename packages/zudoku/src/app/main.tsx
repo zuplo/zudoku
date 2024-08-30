@@ -24,7 +24,9 @@ export const convertZudokuConfigToOptions = (
     "https://cdn.zudoku.dev/logos/zudoku-logo-full-dark.svg";
 
   const isUsingFallback =
-    !config.page?.logo?.src?.light || !config.page?.logo?.src?.dark;
+    !config.page?.logoUrl &&
+    !config.page?.logo?.src?.light &&
+    !config.page?.logo?.src?.dark;
 
   return {
     page: {
