@@ -3,5 +3,11 @@
   "devCommand": "npx nx run docs:dev",
   "buildCommand": "npx nx run docs:build",
   "outputDirectory": "dist",
-  "installCommand": "pnpm install"
+  "installCommand": "pnpm install",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
