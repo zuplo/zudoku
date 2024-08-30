@@ -12,11 +12,11 @@ const nextConfig = {
       },
       {
         source: "/assets/:path*",
-        destination: "https://docs.zudoku.dev/:path*",
+        destination: "https://docs.zudoku.dev/assets/:path*",
       },
       {
         source: "/docs-static/:path*",
-        destination: "https://docs.zudoku.dev/:path*",
+        destination: "https://docs.zudoku.dev/docs-static/:path*",
       },
     ];
   },

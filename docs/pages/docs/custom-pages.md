@@ -1,6 +1,7 @@
 ---
 title: Custom pages
 ---
+
 If you want to include pages in your documentation that have greater flexibility than MDX pages, it is possible to include custom pages of your own.
 
 These pages are typically built using standard React markup and can borrow from a set of prebuild components that Zudoku already has such as buttons, links and headers.
@@ -8,6 +9,7 @@ These pages are typically built using standard React markup and can borrow from 
 Start by creating the page you want to add.
 
 ## Setup a custom page
+
 Each custom page is a page component of its own and live in a `src` directory at the root of your project. Let's create the `<MyCustomPage />` component as an example.
 
 From the root of your project run this command:
@@ -36,7 +38,9 @@ export const LandingPage = () => {
   );
 };
 ```
+
 ## Configuration
+
 In `zudoku.config.ts` you will need to add two things.
 
 First, import the `<MyCustomPage />` component that you created.

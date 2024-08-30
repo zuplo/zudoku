@@ -49,4 +49,3 @@ npx wrangler pages deploy ./dist
 ```
 
 Within a few seconds the site will be live and viewable at `<your-project-name>.pages.dev`.
-

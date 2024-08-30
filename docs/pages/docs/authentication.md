@@ -5,6 +5,7 @@ title: Authentication
 If you use a managed authentication service, such as Auth0, Clerk or OpenID you can implement this into your site and allow users to browse and interact with your documentation and API reference in a logged in state.
 
 ## Configuration
+
 To implement the authentication option for your site, add the `authentication` property to the `zudoku.config.ts` file. The configuration is slightly different depending on the authentication provider you use.
 
 ### Auth0
@@ -20,7 +21,7 @@ You can find this in the Auth0 dashboard under [Application Settings](https://au
     type: "auth0",
     domain: "yourdomain.us.auth0.com",
     clientId: "<your-auth0-clientId>",
-  },  
+  },
   // ...
 }
 ```
@@ -35,12 +36,13 @@ For Clerk you will need the publishable key for your application. You can find t
   authentication: {
     type: "clerk",
     clerkPubKey: "<your-clerk-publishable-key>"
-  },  
+  },
   // ...
 }
 ```
 
 ### OpenID
+
 For authentication services that support OpenID, you will need to supply an `clientId` and `issuer`.
 
 ```typescript
@@ -50,7 +52,7 @@ For authentication services that support OpenID, you will need to supply an `cli
     type: "openid",
     clientId: "<your-client-id>",
     issuer: "<the-issuer-url">
-  },  
+  },
   // ...
 }
 ```

@@ -54,3 +54,45 @@ By default Vercel looks for a directory named `public`, but the Zudoku build wil
 ```
 
 After this is complete, your site will build and Vercel will respond with the URL for you to test it.
+
+## Vercel Configuration
+
+In addition to the configuration of the build command, etc, you must set URL rewrites to rewrite to your `index.html` file. You can do so by creating a [`vercel.json` file](https://vercel.com/docs/projects/project-configuration) in the root of your project with the following content:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+A full example of a `vercel.json` file might look like this:
+
+```json
+{
+  "devCommand": "npx nx run docs:dev",
+  "buildCommand": "npx nx run docs:build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/docs/introduction"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs/introduction"
+    }
+  ]
+}
+```

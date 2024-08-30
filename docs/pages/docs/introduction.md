@@ -23,8 +23,8 @@ Out of the box, Zudoku can:
 
 Zudoku is quick to implement, easy to configure and is highly composable with sensible defaults.
 
-
 ## Try Zudoku
+
 You can test Zudoku with your own API now at [zudoku.dev](https://zudoku.dev).
 
 Just drop in the URL for your OpenAPI document and you'll get a fully functional _Zudoku-ized_ version of it to play around with.

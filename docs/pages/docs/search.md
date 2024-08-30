@@ -1,9 +1,11 @@
 ---
 title: Search
 ---
+
 It is possible to add search to a Zudoku powered site. It will appear in the top navigation and persist across all pages.
 
 ## Configuration
+
 At this time, only [Inkeep](https://inkeep.com/) is supported.
 
 ### Inkeep
