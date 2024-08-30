@@ -58,7 +58,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
           <Sidebar />
           <main
             className={cn(
-              "dark:border-white/10 translate-x-0",
+              "h-full dark:border-white/10 translate-x-0",
               "lg:overflow-visible",
               // This works in tandem with the `SidebarWrapper` component
               "lg:peer-data-[navigation=true]:w-[calc(100%-var(--side-nav-width))]",
