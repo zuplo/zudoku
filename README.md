@@ -49,7 +49,7 @@ Because great API documentation frameworks should always be:
 ## ✨ Features
 
 - 🚀 Generate documentation from a single or multiple [OpenAPI](https://swagger.io/specification/) schema
-- 📄 Create static [MDX pages](https://mdxjs.com/) for anything you want to document
+- 📄 Create [MDX pages](https://mdxjs.com/) for anything you want to document
 - 🔐 Integrate your users with authentication via OpenID or OAuth2
 - 🧪 Let users test their API calls using the Integrated Playground (includes authentication!)
 - 🌑 Dark mode (of course!)

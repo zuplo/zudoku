@@ -120,7 +120,7 @@ const Page = async () => {
         >
           <Code
             code={`
-\$ npx create zudoku-app@latest
+\$ npx create-zudoku-app@latest
 \$ npx run zudoku dev
 > zudoku dev
 
@@ -149,7 +149,7 @@ Ctrl+C to exit
           Run the following command to get started with Zudoku in your project.
         </p>
         <Frame className="w-full max-w-2xl" darkMode>
-          <Code code="npx create zudoku-app@latest" lang="shell" />
+          <Code code="npx create-zudoku-app@latest" lang="shell" />
         </Frame>
       </div>
       {/*      <Frame className="mx-auto max-w-2xl" darkMode>

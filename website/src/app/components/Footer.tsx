@@ -82,7 +82,10 @@ export const Footer = () => (
               <strong className="dark:text-white">Product</strong>
               <ul>
                 <li className="pt-4">
-                  <a className="hover:text-white" href="/setup/">
+                  <a
+                    className="hover:text-white"
+                    href="https://docs.zudoku.dev/docs/getting-started"
+                  >
                     Getting Started
                   </a>
                 </li>
