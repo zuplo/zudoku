@@ -1,5 +1,3 @@
-import navigation from "./navigation";
-
 /** @type {import('zudoku').ZudokuConfig} */
 const config = {
   topNavigation: [
@@ -15,9 +13,7 @@ const config = {
       },
     ],
   },
-  redirects: [
-    { from: "/", to: "/documentation" }
-  ],
+  redirects: [{ from: "/", to: "/documentation" }],
   apis: {
     type: "url",
     input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
