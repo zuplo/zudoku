@@ -70,7 +70,7 @@ With this option configured, run:
 npm run dev
 ```
 
-Then in your browser, navigate to [https://localhost:9000/api](https://localhost:9000/api) to see your API documentation powered by Zudoku!
+Then in your browser, navigate to http://localhost:9000/api to see your API documentation powered by Zudoku!
 
 ## Configuration options
 
