@@ -5,8 +5,8 @@ const config: ZudokuConfig = {
     pageTitle: "",
     logo: {
       src: {
-        light: "/logos/zudoku-light.svg",
-        dark: "/logos/zudoku-dark.svg",
+        light: "/docs-static/logos/zudoku-light.svg",
+        dark: "/docs-static/logos/zudoku-dark.svg",
       },
       width: "99px",
     },

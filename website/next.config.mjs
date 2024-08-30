@@ -14,6 +14,10 @@ const nextConfig = {
         source: "/assets/:path*",
         destination: "https://docs.zudoku.dev/:path*",
       },
+      {
+        source: "/docs-static/:path*",
+        destination: "https://docs.zudoku.dev/:path*",
+      },
     ];
   },
 };
