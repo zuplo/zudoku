@@ -55,10 +55,14 @@ After all, you're here because you built your API using OpenAPI, right?
 If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document if you want to test and play around):
 
 ```json
-apis: {
-  type: "url",
-  input: "https://rickandmorty.zuplo.io/openapi.json",
-  navigationId: "api",
+{
+  // ...
+  "apis": {
+    "type": "url",
+    "input": "https://rickandmorty.zuplo.io/openapi.json",
+    "navigationId": "api"
+  }
+  // ...
 }
 ```
 
