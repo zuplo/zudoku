@@ -1,16 +1,27 @@
 {
+  "framework": "vite",
   "devCommand": "npx nx run docs:dev",
   "buildCommand": "npx nx run docs:build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
-  "redirects": [
+  "routes": [
     {
-      "source": "/",
-      "destination": "/docs/introduction"
+      "src": "/",
+      "status": 308,
+      "headers": {
+        "Location": "/docs/introduction"
+      }
     },
     {
-      "source": "/docs",
-      "destination": "/docs/introduction"
+      "src": "/docs",
+      "status": 308,
+      "headers": {
+        "Location": "/docs/introduction"
+      }
+    },
+    {
+      "src": "/docs/(.*)",
+      "dest": "/docs/$1.html"
     }
   ]
 }
