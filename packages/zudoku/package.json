@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.4.3-dev.9",
+  "version": "0.4.3-dev.11",
   "type": "module",
   "files": [
     "dist",

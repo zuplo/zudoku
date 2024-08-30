@@ -15,6 +15,8 @@ import("prismjs/components/prism-ruby.min.js");
 // @ts-expect-error This is untyped
 import("prismjs/components/prism-markup-templating.js");
 // @ts-expect-error This is untyped
+import("prismjs/components/prism-markup.js");
+// @ts-expect-error This is untyped
 import("prismjs/components/prism-php.min.js");
 // @ts-expect-error This is untyped
 import("prismjs/components/prism-json.min.js");
@@ -24,6 +26,12 @@ import("prismjs/components/prism-java.min.js");
 import("prismjs/components/prism-csharp.min.js");
 // @ts-expect-error This is untyped
 import("prismjs/components/prism-objectivec.min.js");
+// @ts-expect-error This is untyped
+import("prismjs/components/prism-markdown.min.js");
+// @ts-expect-error This is untyped
+import("prismjs/components/prism-javascript.min.js");
+// @ts-expect-error This is untyped
+import("prismjs/components/prism-typescript.min.js");
 
 import { useState } from "react";
 import { cn } from "../util/cn.js";
