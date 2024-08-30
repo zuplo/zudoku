@@ -25,11 +25,6 @@ const config: ZudokuConfig = {
   topNavigation: [
     { id: "introduction", label: "Introduction" },
     { id: "docs", label: "Documentation" },
-    {
-      id: "https://github.com/zuplo/zudoku/discussions",
-      label: "GitHub Discussions",
-    },
-    { id: "https://github.com/zuplo/zudoku/issues", label: "Submit an issue" },
   ],
   sidebar,
 };
