@@ -1,5 +1,5 @@
 {
-  "framework": "vite",
+  "framework": null,
   "devCommand": "npx nx run docs:dev",
   "buildCommand": "npx nx run docs:build",
   "outputDirectory": "dist",
