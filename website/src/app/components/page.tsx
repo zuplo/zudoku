@@ -80,7 +80,7 @@ const Page = async () => {
                   <li>
                     <a
                       className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
-                      href="/demo?api-url=https://rickandmorty.zuplo.io/openapi.json"
+                      href="https://cdn.zudoku.dev/demo?api-url=https://rickandmorty.zuplo.io/openapi.json"
                       target="_blank"
                     >
                       Rick & Morty API
