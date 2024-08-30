@@ -20,6 +20,10 @@
       }
     },
     {
+      "src": "/introduction",
+      "dest": "/introduction.html"
+    },
+    {
       "src": "/docs/(.*)",
       "dest": "/docs/$1.html"
     }
