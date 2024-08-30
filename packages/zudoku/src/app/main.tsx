@@ -23,10 +23,14 @@ export const convertZudokuConfigToOptions = (
     config.page?.logoUrl ??
     "https://cdn.zudoku.dev/logos/zudoku-logo-full-dark.svg";
 
+  const isUsingFallback =
+    !config.page?.logo?.src?.light || !config.page?.logo?.src?.dark;
+
   return {
     page: {
       ...config.page,
       logo: {
+        ...(isUsingFallback ? { width: "130px" } : {}),
         ...config.page?.logo,
         src: {
           light: config.page?.logo?.src?.light ?? fallbackLogoLight,
