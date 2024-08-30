@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: "/demo",
-        destination: "https://cdn.zudoku.dev.com/demo",
+        destination: "https://cdn.zudoku.dev/demo",
       },
     ];
   },
