@@ -11,12 +11,12 @@ export const sidebar: Record<string, Sidebar> = {
     {
       type: "category",
       label: "Getting started",
-      items: ["getting-started", "installation"],
+      items: ["installation", "getting-started"],
     },
     {
       type: "category",
       label: "Configuration",
-      link: "configuration/index",
+      link: "configuration/overview",
       items: [
         "configuration/navigation",
         "configuration/search",
@@ -26,13 +26,13 @@ export const sidebar: Record<string, Sidebar> = {
     {
       type: "category",
       label: "Markdown",
-      link: "markdown/index",
+      link: "markdown/overview",
       items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
     },
     {
       type: "category",
       label: "Advanced",
-      items: ["authentication", "api-keys", "using-multiple-apis"],
+      items: ["api-keys", "using-multiple-apis"],
     },
     {
       type: "category",
