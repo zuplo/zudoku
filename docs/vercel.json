@@ -1,5 +1,5 @@
 {
-  "framework": "vite",
+  "framework": "other",
   "devCommand": "npx nx run docs:dev",
   "buildCommand": "npx nx run docs:build",
   "outputDirectory": "dist",
@@ -8,6 +8,13 @@
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/documenation",
+      "permanent": true
     }
   ]
 }
