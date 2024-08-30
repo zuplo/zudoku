@@ -8,7 +8,7 @@ const nextConfig = {
       },
       {
         source: "/docs/:path*",
-        destination: "https://docs.zudoku.dev/:path*",
+        destination: "https://docs.zudoku.dev/docs/:path*",
       },
       {
         source: "/assets/:path*",
