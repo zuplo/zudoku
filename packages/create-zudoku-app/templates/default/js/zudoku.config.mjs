@@ -2,18 +2,27 @@ import navigation from "./navigation";
 
 /** @type {import('zudoku').ZudokuConfig} */
 const config = {
-  page: {
-    pageTitle: "%s | Dev Portal",
-    logo: "/icon.svg",
+  topNavigation: [
+    { id: "documentation", label: "Documentation" },
+    { id: "api", label: "API Reference" },
+  ],
+  sidebar: {
+    documentation: [
+      {
+        type: "category",
+        label: "Overview",
+        items: ["example", "other-example"],
+      },
+    ],
   },
-  metadata: {
-    title: "%s | My Portal",
-  },
-  navigation,
+  redirects: [
+    { from: "/", to: "/documentation" }
+  ],
   apis: {
     type: "url",
-    input: `https://api.example.com/openapi.json`,
-    path: "/api",
+    input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
+    //input: "https://rickandmorty.zuplo.io/openapi.json" // ...or, uncomment this line to see an example
+    navigationId: "api",
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",
