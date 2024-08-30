@@ -78,17 +78,17 @@ export const OpenAPI = () => {
           </div>
         </div>
         <div className="mt-12 lg:mt-0 flex-1">
-          <div className="relative max-w-xl mx-auto mt-20 mb-[450px]">
+          <div className="relative flex flex-col gap-2 lg:block max-w-xl mx-auto lg:mt-20 lg:mb-[450px]">
             <Frame
-              className="absolute left-0 right-0 -translate-y-[10%] overflow-hidden border border-gray-800 h-[330px] scale-90 hover:scale-100 transition duration-300 ease-in-out drop-shadow-lg"
+              className="lg:absolute lg:left-0 lg:right-0 lg:-translate-y-[10%] overflow-hidden border border-gray-800 h-min lg:scale-90 transition duration-300 ease-in-out drop-shadow-lg"
               innerPadding={false}
+              inFocus={false}
             >
               <Image src={screenshot} alt="" />
             </Frame>
             <Frame
               darkMode
-              inFocus={false}
-              className="absolute left-0 right-0  translate-x-[25%] scale-[65%]"
+              className="lg:absolute lg:left-0 lg:right-0 lg:translate-x-[25%] lg:scale-[65%]"
             >
               <Code
                 code={`
