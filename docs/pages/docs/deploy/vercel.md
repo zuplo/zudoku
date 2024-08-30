@@ -57,33 +57,14 @@ After this is complete, your site will build and Vercel will respond with the UR
 
 ## Vercel Configuration
 
-In addition to the configuration of the build command, etc, you must set URL rewrites to rewrite to your `index.html` file. You can do so by creating a [`vercel.json` file](https://vercel.com/docs/projects/project-configuration) in the root of your project with the following content:
+In addition to the configuration of the build command, etc, you can use a [`vercel.json` file](https://vercel.com/docs/projects/project-configuration) in the root of your project for additional configuration. An example of a `vercel.json` file might look like this:
 
 ```json
 {
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
-```
-
-A full example of a `vercel.json` file might look like this:
-
-```json
-{
-  "devCommand": "npx nx run docs:dev",
-  "buildCommand": "npx nx run docs:build",
+  "devCommand": "npm run dev",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "pnpm install",
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ],
+  "installCommand": "npm install",
   "redirects": [
     {
       "source": "/",
