@@ -1,27 +1,30 @@
 ---
 title: Multiple APIs
 ---
+
 Zudoku supports creating documentation and API references for multiple APIs and can work with as many OpenAPI documents as you need.
 
-In order to do this you will need to modify the `zudoku.config.ts` file to include additional 
+In order to do this you will need to modify the `zudoku.config.ts` file to include additional
 
 ## Configuration
+
 Using multiple APIs is a configuration setting that you can add in the `zudoku.config.ts` file.
 
 ### Step 1: Add all your APIs
+
 First, create a new array in `zudoku.config.ts` that lists each API you want to include as its own object:
 
 ```typescript
 const navigation = [
   {
-    "label": "The first API",
-    "id": "the-first-api-openapi"
+    label: "The first API",
+    id: "the-first-api-openapi",
   },
   {
-    "label": "The second API",
-    "id": "the-second-api"
-  }
-]
+    label: "The second API",
+    id: "the-second-api",
+  },
+];
 ```
 
 ### Step 2: Modify the config
@@ -33,14 +36,14 @@ import { type ZudokuConfig } from "zudoku";
 
 const navigation = [
   {
-    "label": "The first API",
-    "id": "the-first-api-openapi"
+    label: "The first API",
+    id: "the-first-api-openapi",
   },
   {
-    "label": "The second API",
-    "id": "the-second-api"
-  }
-]
+    label: "The second API",
+    id: "the-second-api",
+  },
+];
 
 const config: ZudokuConfig = {
   topNavigation: [

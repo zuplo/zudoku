@@ -13,4 +13,3 @@ npm run build
 ```
 
 Once complete, you will see a new `dist` folder in the root of your project that includes the files you need to upload.
-

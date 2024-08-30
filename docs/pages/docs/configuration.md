@@ -1,6 +1,7 @@
 ---
 title: Configuration
 ---
+
 Zudoku uses a single file for configuration. It controls the structure, metadata, style, plugins, and routing for your documentation.
 
 You can find the `zudoku.config.ts` file in the root directory of your project.
@@ -8,6 +9,7 @@ You can find the `zudoku.config.ts` file in the root directory of your project.
 It will already be populated with some default options.
 
 ## Example
+
 Below is real example that is used to configure the default Zudoku site that `create-zudoku-app` will generate. You can edit this configuration to suit your own needs.
 
 ```typescript
@@ -27,9 +29,7 @@ const config: ZudokuConfig = {
       },
     ],
   },
-  redirects: [
-    { from: "/", to: "/documentation" }
-  ],
+  redirects: [{ from: "/", to: "/documentation" }],
   apis: {
     type: "url",
     input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
@@ -72,7 +72,6 @@ npm run dev
 
 Then in your browser, navigate to [https://localhost:9000/api](https://localhost:9000/api) to see your API documentation powered by Zudoku!
 
-
 ## Configuration options
 
 ### `page`
@@ -84,15 +83,15 @@ Controls global page attributes across the site, including logos and the site ti
 ```json
 {
   // ...
-  page: {
-    pageTitle: "Our Documentation",
-    logo: {
-      src: {
-        light: "/logos/zudoku-light.svg",
-        dark: "/logos/zudoku-dark.svg",
+  "page": {
+    "pageTitle": "Our Documentation",
+    "logo": {
+      "src": {
+        "light": "/logos/zudoku-light.svg",
+        "dark": "/logos/zudoku-dark.svg"
       },
-      width: "99px",
-    },
+      "width": "99px"
+    }
   }
   // ...
 }
@@ -109,9 +108,9 @@ _Note: `topNavigation` will only display if there is more than one item in the n
 ```json
 {
   // ...
-  topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "api", label: "API Reference" },
+  "topNavigation": [
+    { "id": "documentation", "label": "Documentation" },
+    { "id": "api", "label": "API Reference" }
   ]
   // ...
 }
@@ -128,19 +127,19 @@ The example below uses a key of `documentation` which can be referenced as an `i
 ```json
 {
   // ...
-  sidebar: {
-    documentation: [
+  "sidebar": {
+    "documentation": [
       {
-        type: "category",
-        label: "Zudoku",
-        items: ["introduction"],
+        "type": "category",
+        "label": "Zudoku",
+        "items": ["introduction"]
       },
       {
-        type: "category",
-        label: "Getting started",
-        items: ["getting-started", "installation",  "configuration"],
+        "type": "category",
+        "label": "Getting started",
+        "items": ["getting-started", "installation", "configuration"]
       }
-    ],
+    ]
   }
   // ...
 }
@@ -159,14 +158,14 @@ You can customize your theme as much as you want using [ShadCDN UI theme variabl
 ```json
 {
   // ...
-  theme: {
-    light: {
-      primary: "316 100% 50%",
-      primaryForeground: "360 100% 100%"
+  "theme": {
+    "light": {
+      "primary": "316 100% 50%",
+      "primaryForeground": "360 100% 100%"
     },
-    dark: {
-      primary: "316 100% 50%",
-      primaryForeground: "360 100% 100%"
+    "dark": {
+      "primary": "316 100% 50%",
+      "primaryForeground": "360 100% 100%"
     }
   }
   // ...
@@ -208,9 +207,9 @@ Configures where your non API reference documentation can be found in your folde
 ```json
 {
   // ...
-  docs: {
-    files: "/pages/**/*.mdx",
-  },
+  "docs": {
+    "files": "/pages/**/*.mdx"
+  }
   // ...
 }
 ```
@@ -224,10 +223,10 @@ Implements any page redirects you want to use. This gives you control over the r
 ```json
 {
   // ...
-  redirects: [
-    { from: "/", to: "/documentation/introduction" },
-    { from: "/documentation", to: "/documentation/introduction" },
-  ],
+  "redirects": [
+    { "from": "/", "to": "/documentation/introduction" },
+    { "from": "/documentation", "to": "/documentation/introduction" }
+  ]
   // ...
 }
 ```

@@ -12,8 +12,11 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/documenation",
-      "permanent": true
+      "destination": "/docs/introduction"
+    },
+    {
+      "source": "/docs",
+      "destination": "/docs/introduction"
     }
   ]
 }
