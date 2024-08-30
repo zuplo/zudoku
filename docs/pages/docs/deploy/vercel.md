@@ -61,18 +61,29 @@ In addition to the configuration of the build command, etc, you can use a [`verc
 
 ```json
 {
-  "devCommand": "npm run dev",
-  "buildCommand": "npm run build",
+  "framework": null,
+  "devCommand": "npx nx run docs:dev",
+  "buildCommand": "npx nx run docs:build",
   "outputDirectory": "dist",
-  "installCommand": "npm install",
-  "redirects": [
+  "installCommand": "pnpm install",
+  "routes": [
     {
-      "source": "/",
-      "destination": "/docs/introduction"
+      "src": "/",
+      "status": 308,
+      "headers": {
+        "Location": "/docs/introduction"
+      }
     },
     {
-      "source": "/docs",
-      "destination": "/docs/introduction"
+      "src": "/docs",
+      "status": 308,
+      "headers": {
+        "Location": "/docs/introduction"
+      }
+    },
+    {
+      "src": "/docs/(.*)",
+      "dest": "/docs/$1.html"
     }
   ]
 }
