@@ -2,7 +2,6 @@ import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
   page: {
-    pageTitle: "",
     logo: {
       src: {
         light: "/docs-static/logos/zudoku-light.svg",
@@ -13,9 +12,10 @@ const config: ZudokuConfig = {
   },
   metadata: {
     title: "%s | Zudoku",
+    favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
   },
   docs: {
-    files: "/pages/**/*.mdx",
+    files: "/pages/**/*.{md,mdx}",
   },
   redirects: [
     { from: "/", to: "/docs/introduction" },
