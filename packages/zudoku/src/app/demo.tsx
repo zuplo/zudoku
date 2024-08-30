@@ -33,7 +33,7 @@ if (!root) {
 
 const config = {
   page: {
-    pageTitle: "Demo",
+    pageTitle: "",
   },
   topNavigation: [
     {
