@@ -18,16 +18,19 @@ const config: ZudokuConfig = {
     files: "/pages/**/*.mdx",
   },
   redirects: [
-    { from: "/", to: "/documentation/introduction" },
-    { from: "/documentation", to: "/documentation/introduction" },
+    { from: "/", to: "/docs/introduction" },
+    { from: "/docs", to: "/docs/introduction" },
   ],
   topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "https://github.com/zuplo/zudoku/discussions", label: "GitHub Discussions" },
+    { id: "docs", label: "Documentation" },
+    {
+      id: "https://github.com/zuplo/zudoku/discussions",
+      label: "GitHub Discussions",
+    },
     { id: "https://github.com/zuplo/zudoku/issues", label: "Submit an issue" },
   ],
   sidebar: {
-    documentation: [
+    docs: [
       {
         type: "doc",
         label: "Introduction",
@@ -36,12 +39,12 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Getting started",
-        items: ["getting-started", "installation",  "configuration"],
+        items: ["getting-started", "installation", "configuration"],
       },
       {
         type: "category",
         label: "Advanced",
-        items: ["authentication",  "api-keys", "using-multiple-apis"],
+        items: ["authentication", "api-keys", "using-multiple-apis"],
       },
       {
         type: "category",
@@ -51,8 +54,14 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Deployment",
-        items: ["deployment", "deploy/cloudflare-pages", "deploy/github-pages", "deploy/vercel", "deploy/direct-upload"],
-      }
+        items: [
+          "deployment",
+          "deploy/cloudflare-pages",
+          "deploy/github-pages",
+          "deploy/vercel",
+          "deploy/direct-upload",
+        ],
+      },
     ],
   },
 };

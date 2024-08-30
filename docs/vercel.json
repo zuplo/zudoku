@@ -9,5 +9,12 @@
       "source": "/(.*)",
       "destination": "/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/documenation",
+      "permanent": true
+    }
   ]
 }
