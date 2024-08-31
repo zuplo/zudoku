@@ -20,9 +20,8 @@ if (root.childElementCount > 0) {
 }
 
 async function hydrateLazyRoutes(routes: RouteObject[]) {
-  const lazyMatches = matchRoutes(routes, window.location)?.filter(
-    (m) => m.route.lazy,
-  );
+  const path = window.location.pathname.slice(config.basePath?.length ?? 0);
+  const lazyMatches = matchRoutes(routes, path)?.filter((m) => m.route.lazy);
 
   if (lazyMatches?.length) {
     await Promise.all(
@@ -35,13 +34,17 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
 }
 
 function render(routes: RouteObject[]) {
-  const router = createBrowserRouter(routes);
+  const router = createBrowserRouter(routes, {
+    basename: config.basePath,
+  });
   createRoot(root).render(<Bootstrap router={router} />);
 }
 
 async function hydrate(routes: RouteObject[]) {
   await hydrateLazyRoutes(routes);
-  const router = createBrowserRouter(routes);
+  const router = createBrowserRouter(routes, {
+    basename: config.basePath,
+  });
 
   hydrateRoot(root, <Bootstrap hydrate router={router} />);
 }

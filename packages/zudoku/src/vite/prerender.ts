@@ -4,6 +4,7 @@ import {
   type getRoutesByConfig,
   type render as serverRender,
 } from "../app/entry.server.js";
+import { joinPath } from "../lib/util/joinPath.js";
 
 export class FileWritingResponse {
   private buffer = "";
@@ -82,7 +83,9 @@ export const prerender = async (html: string, dir: string) => {
 
   const writtenFiles: string[] = [];
   for (const urlPath of paths) {
-    const req = new Request(`http://localhost${urlPath}`);
+    const req = new Request(
+      new URL(joinPath(config.basePath, urlPath), "http://localhost").href,
+    );
 
     const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
 

@@ -169,6 +169,7 @@ export async function getViteConfig(
 
   const viteConfig: InlineConfig = {
     root: dir,
+    base: config.basePath,
     appType: "custom",
     configFile: false,
     clearScreen: false,
