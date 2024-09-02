@@ -9,14 +9,14 @@
       "src": "/",
       "status": 308,
       "headers": {
-        "Location": "/docs/introduction"
+        "Location": "/introduction"
       }
     },
     {
       "src": "/docs",
       "status": 308,
       "headers": {
-        "Location": "/docs/introduction"
+        "Location": "/docs/getting-started"
       }
     },
     {

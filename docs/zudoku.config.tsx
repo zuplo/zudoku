@@ -22,10 +22,7 @@ const config: ZudokuConfig = {
     { from: "/", to: "/introduction" },
     { from: "/docs", to: "/docs/getting-started" },
   ],
-  topNavigation: [
-    { id: "introduction", label: "Introduction" },
-    { id: "docs", label: "Documentation" },
-  ],
+  topNavigation: [{ id: "docs", label: "Documentation" }],
   sidebar,
 };
 

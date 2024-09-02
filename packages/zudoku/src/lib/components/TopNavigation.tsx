@@ -8,7 +8,7 @@ export const TopNavigation = () => {
 
   // Hide top nav if there is only one item
   if (topNavigation.length <= 1) {
-    return null;
+    return <style>{`:root { --top-nav-height: 0px; }`}</style>;
   }
 
   return (
