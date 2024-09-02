@@ -37,7 +37,7 @@ const Page = async () => {
                   src="/github-logo.svg"
                   width="20"
                   height={20}
-                  className="invert dark:invert-0 inline-block hover:opacity-80"
+                  className="inline-block hover:opacity-80"
                   alt="Zudoku on Github"
                 />
               </a>
@@ -46,7 +46,7 @@ const Page = async () => {
                   src="/discord-logo.svg"
                   width="20"
                   height={20}
-                  className="invert dark:invert-0 inline-block hover:opacity-80"
+                  className="inline-block hover:opacity-80"
                   alt="Discord"
                 />
               </a>
