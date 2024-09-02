@@ -1,3 +1,4 @@
+import DocsScreenshot from "@/app/assets/docs-light.jpg";
 import { FeatureGrid } from "@/app/components/FeatureGrid";
 import { OpenAPI } from "@/app/components/OpenAPI";
 import { PreviewInput } from "@/app/components/PreviewInput";
@@ -7,7 +8,6 @@ import { AnimatedHeading } from "./AnimatedHeading";
 import Code from "./Code";
 import { Footer } from "./Footer";
 import { Frame } from "./Frame";
-import screenshot from "./screenshot.jpg";
 
 const Brand = () => (
   <div className="flex items-center justify-between md:block">
@@ -134,10 +134,10 @@ Ctrl+C to exit
           />
         </Frame>
         <Frame
-          className="lg:absolute lg:left-0 lg:right-0 lg:translate-x-[25%] lg:-translate-y-[10%] overflow-hidden border border-gray-800 lg:scale-90 hover:scale-100 transition duration-300 ease-in-out drop-shadow-lg h-min"
+          className="lg:absolute lg:left-0 lg:right-0 lg:translate-x-[25%] lg:-translate-y-[10%] overflow-hidden border border-gray-800 lg:scale-90 hover:scale-95 transition duration-300 ease-in-out drop-shadow-lg h-min"
           innerPadding={false}
         >
-          <Image src={screenshot} alt="" />
+          <Image src={DocsScreenshot} alt="" />
         </Frame>
       </section>
 
@@ -152,30 +152,12 @@ Ctrl+C to exit
           <Code code="npx create-zudoku-app@latest" lang="shell" />
         </Frame>
       </div>
-      {/*      <Frame className="mx-auto max-w-2xl" darkMode>
-        <Code
-          className=""
-          code={`<!doctype html>
-<html>
-  <head>
-    <script type="module" src="https://cdn.zudoku.dev/latest/main.js" crossorigin></script>
-    <link rel="stylesheet" href="https://cdn.zudoku.dev/latest/style.css" crossorigin />
-  </head>
-  <body>
-    <div data-api-url="{URL_PLACEHOLDER}"></div>
-  </body>
-</html>`}
-          lang="html"
-        />
-      </Frame>*/}
-      {/*<TechStack />*/}
       <div className="h-20" />
       <FeatureGrid />
 
       <div className="h-20" />
       <OpenAPI />
 
-      {/*<Features />*/}
       <Footer />
     </div>
   );
