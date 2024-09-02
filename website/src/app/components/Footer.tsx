@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export const Footer = () => (
   <footer>
-    <div className="flex justify-center pt-8 mt-24 w-full text-zinc-600 border-t border-zinc-700 ">
+    <div className="flex justify-center pt-8 mt-24 w-full text-zinc-400/80 border-t border-zinc-700 ">
       <div className="p-8 w-full max-w-screen-xl">
         <div className="mb-10 w-full">
           <ul className="flex flex-wrap flex-row items-stretch w-full gap-6 lg:gap-20 xl:gap-36">
@@ -29,22 +29,14 @@ export const Footer = () => (
               </ul>
             </li>
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
-              <strong className="dark:text-white">Open Source</strong>
-              <ul className="">
+              <strong className="dark:text-white">Product</strong>
+              <ul>
                 <li className="pt-4">
                   <a
                     className="hover:text-white"
-                    href="https://github.com/zuplo/zudoku"
+                    href="https://docs.zudoku.dev/docs/getting-started"
                   >
-                    Zudoku on Github
-                  </a>
-                </li>
-                <li className="pt-4">
-                  <a
-                    className="hover:text-white"
-                    href="https://github.com/zuplo/"
-                  >
-                    Zuplo on Github
+                    Getting Started
                   </a>
                 </li>
               </ul>
@@ -79,14 +71,22 @@ export const Footer = () => (
               </ul>
             </li>
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
-              <strong className="dark:text-white">Product</strong>
-              <ul>
+              <strong className="dark:text-white">Open Source</strong>
+              <ul className="">
                 <li className="pt-4">
                   <a
                     className="hover:text-white"
-                    href="https://docs.zudoku.dev/docs/getting-started"
+                    href="https://github.com/zuplo/zudoku"
                   >
-                    Getting Started
+                    Zudoku on Github
+                  </a>
+                </li>
+                <li className="pt-4">
+                  <a
+                    className="hover:text-white"
+                    href="https://github.com/zuplo/"
+                  >
+                    Zuplo on Github
                   </a>
                 </li>
               </ul>
@@ -98,13 +98,13 @@ export const Footer = () => (
             src="/zuplo.svg"
             height="12"
             width="80"
-            className="invert dark:invert-0 inline-block hover:opacity-80"
+            className="inline-block hover:opacity-80"
             alt="Zuplo Logo"
           />
         </div>
         <div className="flex flex-col md:flex-row items-stretch my-10 flex-wrap gap-4">
           <div className="flex-1 text-center md:text-left">
-            Copyright 2024 Zuplo. All rights reserved.
+            Copyright {new Date().getUTCFullYear()} Zuplo. All rights reserved.
           </div>
           <div className="flex flex-1 justify-center items-center">
             <a target="_blank" href="https://twitter.com/Zuplo">
@@ -112,7 +112,7 @@ export const Footer = () => (
                 src="/twitter-logo.svg"
                 height={20}
                 width="20"
-                className="invert dark:invert-0 inline-block opacity-70 dark:opacity-40 hover:opacity-80"
+                className="inline-block opacity-70 dark:opacity-40 hover:opacity-80"
                 alt="Twitter"
               />
             </a>
@@ -137,10 +137,9 @@ export const Footer = () => (
               />
             </a>
           </div>
-          <div className="flex flex-1 justify-end">
-            Product may contain traces of 🌲
-          </div>
+          <div className="flex flex-1 justify-end">✌</div>
         </div>
+        ️
       </div>
     </div>
   </footer>
