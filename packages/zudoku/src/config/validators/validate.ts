@@ -97,6 +97,7 @@ const LogoSchema = z.object({
 
 const ConfigSchema = z
   .object({
+    basePath: z.string().optional(),
     page: z
       .object({
         pageTitle: z.string(),

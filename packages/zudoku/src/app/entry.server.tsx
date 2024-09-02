@@ -29,7 +29,9 @@ export const render = async ({
   config: ZudokuConfig;
 }) => {
   const routes = getRoutesByConfig(config);
-  const { query, dataRoutes } = createStaticHandler(routes);
+  const { query, dataRoutes } = createStaticHandler(routes, {
+    basename: config.basePath,
+  });
 
   const request =
     baseRequest instanceof Request

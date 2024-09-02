@@ -1,5 +1,6 @@
 import { writeFile } from "fs/promises";
 import { build as viteBuild } from "vite";
+import { joinPath } from "../lib/util/joinPath.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { prerender } from "./prerender.js";
@@ -32,9 +33,13 @@ export async function runBuild(options: { dir: string }) {
       o.fileName.endsWith(".css"),
     )?.fileName;
 
+    if (!jsEntry || !cssEntry) {
+      throw new Error("Build failed. No js or css assets found");
+    }
+
     const html = getBuildHtml({
-      jsEntry: `/${jsEntry}`,
-      cssEntry: `/${cssEntry}`,
+      jsEntry: joinPath(viteClientConfig.base, jsEntry),
+      cssEntry: joinPath(viteClientConfig.base, cssEntry),
     });
 
     try {
