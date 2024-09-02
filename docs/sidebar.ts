@@ -1,17 +1,11 @@
 import type { Sidebar } from "zudoku";
 
 export const sidebar: Record<string, Sidebar> = {
-  introduction: [
-    {
-      type: "doc",
-      id: "introduction",
-    },
-  ],
   docs: [
     {
       type: "category",
       label: "Getting started",
-      items: ["installation", "getting-started"],
+      items: ["introduction", "getting-started", "installation"],
     },
     {
       type: "category",
