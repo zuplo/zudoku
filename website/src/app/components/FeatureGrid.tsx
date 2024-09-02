@@ -12,7 +12,7 @@ export function FeatureGrid() {
         Zudoku can do <span className="text-[#ff00bd]">more</span> than docs
       </h3>
       <p className="text-center text-gray-400">
-        Zudoku is in beta, but it's already a powerful tool for building
+        Zudoku is in beta, but it&apos;s already a powerful tool for building
         interactive API documentation. We are constantly adding new features and
         improving the platform. Here is what we have so far:
       </p>
