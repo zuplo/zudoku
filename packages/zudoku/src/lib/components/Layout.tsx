@@ -45,6 +45,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
         )}
         {meta?.favicon && <link rel="icon" href={meta.favicon} />}
       </Helmet>
+      <Slotlet name="layout-before-head" />
       <Header />
 
       <div className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12">
