@@ -3,19 +3,14 @@
 import { BentoGrid, BentoGridItem } from "@/app/components/BentoGrid";
 import { TechStackBubble } from "@/app/components/TechStack";
 import { cn } from "@/app/utils/cn";
-import { CircleUserIcon, MagnetIcon, PuzzleIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 export function FeatureGrid() {
   return (
     <div className="max-w-4xl m-auto flex gap-6 flex-col">
-      <h3 className="text-4xl font-bold text-center mb-0">
-        What Zudoku can do for you
+      <h3 className="text-4xl font-bold text-center">
+        Zudoku can do <span className="text-[#ff00bd]">more</span> than docs
       </h3>
-      <p className="text-center text-gray-400">
-        We are always looking to improve. If something is missing, please let us
-        know. This is a very active project and we are always looking to
-      </p>
       <BentoGrid className="w-full md:auto-rows-[20rem]">
         {features.map((item, i) => (
           <BentoGridItem
@@ -32,7 +27,6 @@ export function FeatureGrid() {
         {simpleFeatures.map((item, i) => (
           <BentoGridItem
             key={i}
-            icon={item.icon}
             title={item.title}
             description={item.description}
             className={item.className}
@@ -52,10 +46,11 @@ const InkeepLogo = () => {
   const [hover, setHover] = useState(false);
   const props = !hover
     ? {
+        className: "transition",
         stroke: "white",
         fill: "transparent",
-        ["paint-order"]: "stroke",
-        ["stroke-dasharray"]: "3",
+        "paint-order": "stroke",
+        "stroke-dasharray": 3,
       }
     : {};
   return (
@@ -186,7 +181,7 @@ const PlatformHeader = () => {
 
 const features = [
   {
-    title: "Modern tech stack",
+    title: "Modern Tech Stack",
     description:
       "We build Zudoku with modern tools and technologies. React, Tailwind CSS, TypeScript, and Vite to create a fast and responsive experience." +
       "\n",
@@ -250,24 +245,33 @@ const features = [
 
 const simpleFeatures = [
   {
-    icon: <PuzzleIcon className="w-4 h-4" />,
-    title: "Plugin System",
-    description:
-      "Powered by Algolia, Zudoku provides a powerful search experience.",
-    className: "md:col-span-1",
-  },
-  {
-    icon: <CircleUserIcon className="w-4 h-4" />,
-    title: "Authentication integration",
+    title: "Authentication Integration",
     description:
       "Integrate with any Auth0, Firebase, or Supabase for authentication. Let user view & create API keys.",
     className: "md:col-span-1",
   },
   {
-    icon: <MagnetIcon className="w-4 h-4" />,
+    title: "Plugin System",
+    description:
+      "Zudoku comes with a powerful plugin system. Most of its features are built on top of it. So you can easily extend Zudoku with your own plugins to unlock new features.",
+    className: "md:col-span-2",
+  },
+  {
     title: "MDX Support",
     description:
       "Add any MDX content to your docs. Write your docs in Markdown and React components.",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Theming",
+    description:
+      "Supports the same theming as shadcn, so you can easily customize the look and feel of your docs.",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Dark Mode",
+    description:
+      "Comes with a built-in dark mode. Simply toggle between light and dark mode.",
     className: "md:col-span-1",
   },
 ];

@@ -1,6 +1,6 @@
+import ApiReferenceLight from "@/app/assets/api-reference-light.png";
 import Code from "@/app/components/Code";
 import { Frame } from "@/app/components/Frame";
-import screenshot from "@/app/components/screenshot.jpg";
 import Image from "next/image";
 
 export const OpenAPI = () => {
@@ -84,7 +84,7 @@ export const OpenAPI = () => {
               innerPadding={false}
               inFocus={false}
             >
-              <Image src={screenshot} alt="" />
+              <Image src={ApiReferenceLight} alt="" />
             </Frame>
             <Frame
               darkMode
@@ -93,18 +93,17 @@ export const OpenAPI = () => {
               <Code
                 code={`
 {
-  "openapi": "3.0.0",
+  "openapi": "3.1.0",
   "info": {
     "title": "The Zuplo Developer API, powered by Zuplo",
     "version": "1.0.0",
-    "description": "Welcome to ZAPI - the Zuplo API where you can manage API keys, tunnels and more. To get your API key for this service login to [portal.zuplo.com](https://portal.zuplo.com) and navigate to your project **Settings > Zuplo API Keys.** \\n\\n\\n ![API Keys](https://cdn.zuplo.com/uploads/zuplo-api-keys.png)",
+    "description": "Welcome to the Zuplo API where you can manage API keys, tunnels and more. To get your API key for this service login to [portal.zuplo.com](https://portal.zuplo.com) and navigate to your project **Settings > Zuplo API Keys.** \\n\\n\\n ![API Keys](https://cdn.zuplo.com/uploads/zuplo-api-keys.png)",
   },
   "paths": {
     "/openapi": {
       "get": {
         "operationId": "openApi",
         "summary": "OpenAPI Specification",
-    ...
 `.trim()}
                 lang="shell"
               />

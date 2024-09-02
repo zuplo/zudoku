@@ -34,7 +34,7 @@ export const Frame = ({
               <span
                 key={color}
                 className={clsx(
-                  "block w-3 h-3 rounded-full",
+                  "block w-2.5 h-2.5 rounded-full",
                   inFocus ? color : "bg-gray-600",
                 )}
               />
