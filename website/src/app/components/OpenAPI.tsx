@@ -1,4 +1,4 @@
-import ApiReferenceLight from "@/app/assets/api-reference-light.png";
+import ApiReferenceLight from "@/app/assets/api-reference-light.jpg";
 import Code from "@/app/components/Code";
 import { Frame } from "@/app/components/Frame";
 import Image from "next/image";
