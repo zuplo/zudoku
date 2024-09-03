@@ -60,8 +60,13 @@ export const PreviewInput = () => {
           }
         }}
       >
-        <label>
-          <input type="file" name="spec" className="hidden" />
+        <label className="hidden md:block rounded transition hover:scale-125 cursor-pointer">
+          <input
+            type="file"
+            name="spec"
+            className="hidden"
+            onChange={(e) => e.target.form?.submit()}
+          />
           <PaperclipIcon />
         </label>
         <input
