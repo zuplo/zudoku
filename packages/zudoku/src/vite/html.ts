@@ -5,7 +5,7 @@ export function getDevHtml(jsEntry: string) {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <!--app-helmet-->
     <link rel="preconnect" href="https://cdn.zudoku.dev/">
   </head>
@@ -28,7 +28,7 @@ export function getBuildHtml({
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <script type="module" crossorigin src="${jsEntry}"></script>
     <link rel="stylesheet" crossorigin href="${cssEntry}">
     <script type="module">(${themeToggle.toString()})();</script>

@@ -85,11 +85,11 @@ export const MdxPage = ({
         {!hidePager && (
           <>
             <hr />
-            <div className="not-prose flex items-center justify-between gap-8">
+            <div className="not-prose flex flex-wrap items-center justify-between gap-8">
               {prev ? (
                 <Link
                   to={prev.id}
-                  className="flex flex-col items-stretch gap-2 flex-1 truncate border rounded px-6 py-4 text-start hover:border-primary/85 transition shadow-sm hover:shadow-md"
+                  className="flex flex-col items-stretch gap-2 flex-1 min-w-max border rounded px-6 py-4 text-start hover:border-primary/85 transition shadow-sm hover:shadow-md"
                   title={prev.label}
                 >
                   <div className="text-sm text-muted-foreground">
@@ -105,7 +105,7 @@ export const MdxPage = ({
               {next ? (
                 <Link
                   to={next.id}
-                  className="flex flex-col items-stretch gap-2 flex-1 truncate border rounded px-6 py-4 text-end hover:border-primary/85 transition shadow-sm hover:shadow-md"
+                  className="flex flex-col items-stretch gap-2 flex-1 min-w-max border rounded px-6 py-4 text-end hover:border-primary/85 transition shadow-sm hover:shadow-md"
                   title={next.label}
                 >
                   <div className="text-sm text-muted-foreground">
