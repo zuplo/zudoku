@@ -9,7 +9,7 @@ To get started with Zudoku you can either build a project using our generator, o
 To generate a new Zudoku site, run:
 
 ```command
-npx create-zudoku-app@latest
+npm create zudoku-app@latest
 ```
 
 The generator will take you through the setup steps and scaffold a minimal but fully functional documentation site for you to get started with.

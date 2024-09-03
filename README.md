@@ -65,7 +65,7 @@ You can use the CLI to generate a new project or use it standalone as a React co
 Fire up your new API docs from out getting started template:
 
 ```
-npx create-zudoku-app@latest
+npm create zudoku-app@latest
 ```
 
 ### 📦 Standalone via CDN
