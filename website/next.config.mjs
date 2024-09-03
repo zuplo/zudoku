@@ -16,10 +16,6 @@ const nextConfig = {
         destination: "https://cdn.zudoku.dev/demo",
       },
       {
-        source: "/introduction",
-        destination: "https://docs.zudoku.dev/introduction",
-      },
-      {
         source: "/docs/:path*",
         destination: "https://docs.zudoku.dev/docs/:path*",
       },
