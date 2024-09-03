@@ -114,6 +114,15 @@ export const installTemplate = async ({
     };
   }
 
+  // Typescript eslint dependencies
+  if (eslint && mode === "ts") {
+    packageJson.devDependencies = {
+      ...packageJson.devDependencies,
+      "@typescript-eslint/eslint-plugin": "^8",
+      "@typescript-eslint/parser": "^8",
+    };
+  }
+
   const devDeps = Object.keys(packageJson.devDependencies).length;
   if (!devDeps) delete packageJson.devDependencies;
 
