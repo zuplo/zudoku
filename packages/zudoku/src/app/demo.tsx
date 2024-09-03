@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router-dom";
 import { Bootstrap } from "zudoku/components";
 import type { ZudokuConfig } from "../config/validators/validate.js";
+import DemoAnnouncement from "../lib/demo/DemoAnnouncement.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";
 import { themeToggle } from "../lib/themeToggle.js";
 import "../lib/util/logInit.js";
@@ -41,6 +42,9 @@ const config = {
       label: "API Reference",
     },
   ],
+  slotlets: {
+    "layout-before-head": <DemoAnnouncement />,
+  },
   plugins: [
     // Using the plugin directly because there's no config file to load in the virtual plugins
     openApiPlugin({
