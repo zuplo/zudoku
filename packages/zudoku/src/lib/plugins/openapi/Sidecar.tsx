@@ -193,7 +193,10 @@ export const Sidecar = ({
             value={selectedLang}
             onChange={(e) => {
               startTransition(() => {
-                setSearchParams({ lang: e.target.value });
+                setSearchParams((prev) => {
+                  prev.set("lang", e.target.value);
+                  return prev;
+                });
               });
             }}
             options={[
