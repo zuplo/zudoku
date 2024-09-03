@@ -96,7 +96,7 @@
   }
 
   #root {
-    @apply min-h-screen grid grid-rows-[var(--header-height)_1fr] w-full;
+    @apply min-h-screen w-full;
   }
   * {
     @apply border-border;
