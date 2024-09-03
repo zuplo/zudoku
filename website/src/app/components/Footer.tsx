@@ -7,7 +7,7 @@ export const Footer = () => (
         <div className="mb-10 w-full">
           <ul className="flex flex-wrap flex-row items-stretch w-full gap-6 lg:gap-20 xl:gap-36">
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
-              <strong className="dark:text-white">Examples</strong>
+              <strong className="text-white">Examples</strong>
               <ul className="">
                 <li className="pt-4">
                   <a
@@ -29,7 +29,7 @@ export const Footer = () => (
               </ul>
             </li>
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
-              <strong className="dark:text-white">Product</strong>
+              <strong className="text-white">Product</strong>
               <ul>
                 <li className="pt-4">
                   <a
@@ -42,7 +42,7 @@ export const Footer = () => (
               </ul>
             </li>
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
-              <strong className="dark:text-white">Community</strong>
+              <strong className="text-white">Community</strong>
               <ul>
                 <li className="pt-4">
                   <a
@@ -71,7 +71,7 @@ export const Footer = () => (
               </ul>
             </li>
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
-              <strong className="dark:text-white">Open Source</strong>
+              <strong className="text-white">Open Source</strong>
               <ul className="">
                 <li className="pt-4">
                   <a
@@ -112,7 +112,7 @@ export const Footer = () => (
                 src="/twitter-logo.svg"
                 height={20}
                 width="20"
-                className="inline-block opacity-70 dark:opacity-40 hover:opacity-80"
+                className="inline-block opacity-40 hover:opacity-80"
                 alt="Twitter"
               />
             </a>
@@ -122,7 +122,7 @@ export const Footer = () => (
                 src="/github-logo.svg"
                 width="20"
                 height={20}
-                className="invert dark:invert-0 inline-block opacity-70 dark:opacity-40 hover:opacity-80"
+                className="inline-block opacity-40 hover:opacity-80"
                 alt="Zudoku on Github"
               />
             </a>
@@ -132,14 +132,13 @@ export const Footer = () => (
                 src="/discord-logo.svg"
                 width="20"
                 height={20}
-                className="invert dark:invert-0 inline-block opacity-70 dark:opacity-40 hover:opacity-80"
+                className="inline-block opacity-40 hover:opacity-80"
                 alt="Discord"
               />
             </a>
           </div>
-          <div className="flex flex-1 justify-end">✌</div>
+          <div className="flex flex-1 justify-end">{"✌️"}</div>
         </div>
-        ️
       </div>
     </div>
   </footer>
