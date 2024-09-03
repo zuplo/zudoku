@@ -7,7 +7,7 @@ Create a new Zudoku app in seconds with `create-zudoku-app`.
 You can create a new project interactively by running:
 
 ```bash
-npx create-zudoku-app@latest
+npm create zudoku-app@latest
 # or
 yarn create zudoku-app
 # or
@@ -104,7 +104,7 @@ Options:
 
 `create-zudoku-app` allows you to create a new Zudoku app within seconds. It is officially maintained by the creators of Zudoku, and includes a number of benefits:
 
-- **Interactive Experience**: Running `npx create-zudoku-app@latest` (with no arguments) launches an interactive experience that guides you through setting up a project.
+- **Interactive Experience**: Running `npm create zudoku-app@latest` (with no arguments) launches an interactive experience that guides you through setting up a project.
 - **Zero Dependencies**: Initializing a project is as quick as one second. Create Zudoku App has zero dependencies.
 - **Offline Support**: Create Zudoku App will automatically detect if you're offline and bootstrap your project using your local package cache.
 - **Support for Examples**: Create Zudoku App can bootstrap your application using an example from the Zudoku examples collection (e.g. `npx create-zudoku-app --example my-docs`).
