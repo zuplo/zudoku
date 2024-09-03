@@ -77,8 +77,8 @@ export const MdxComponents = {
 
     return (
       <SyntaxHighlight
-        language={match?.[1] ?? "markup"}
-        className="rounded-xl overflow-x-auto p-4 border dark:!bg-foreground/10 dark:border-transparent"
+        language={match?.[1]}
+        className="rounded-xl p-4 border dark:!bg-foreground/10 dark:border-transparent"
         showLanguageIndicator
         code={String(children).trim()}
       />
