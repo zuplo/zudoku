@@ -222,8 +222,6 @@ async function run(): Promise<void> {
     const defaults: typeof preferences = {
       typescript: true,
       eslint: true,
-      importAlias: "@/*",
-      customizeImportAlias: false,
       empty: false,
     };
     const getPrefOrDefault = (field: string) =>
@@ -283,50 +281,6 @@ async function run(): Promise<void> {
         preferences.eslint = Boolean(eslint);
       }
     }
-
-    const importAliasPattern = /^[^*"]+\/\*\s*$/;
-    if (
-      typeof opts.importAlias !== "string" ||
-      !importAliasPattern.test(opts.importAlias)
-    ) {
-      if (skipPrompt) {
-        // We don't use preferences here because the default value is @/* regardless of existing preferences
-        opts.importAlias = defaults.importAlias;
-      } else if (args.includes("--no-import-alias")) {
-        opts.importAlias = defaults.importAlias;
-      } else {
-        const styledImportAlias = blue("import alias");
-
-        const { customizeImportAlias } = await prompts({
-          onState: onPromptState,
-          type: "toggle",
-          name: "customizeImportAlias",
-          message: `Would you like to customize the ${styledImportAlias} (${defaults.importAlias} by default)?`,
-          initial: getPrefOrDefault("customizeImportAlias"),
-          active: "Yes",
-          inactive: "No",
-        });
-
-        if (!customizeImportAlias) {
-          // We don't use preferences here because the default value is @/* regardless of existing preferences
-          opts.importAlias = defaults.importAlias;
-        } else {
-          const { importAlias } = await prompts({
-            onState: onPromptState,
-            type: "text",
-            name: "importAlias",
-            message: `What ${styledImportAlias} would you like configured?`,
-            initial: getPrefOrDefault("importAlias"),
-            validate: (value) =>
-              importAliasPattern.test(value)
-                ? true
-                : "Import alias must follow the pattern <prefix>/*",
-          });
-          opts.importAlias = importAlias;
-          preferences.importAlias = importAlias;
-        }
-      }
-    }
   }
 
   try {
@@ -337,7 +291,6 @@ async function run(): Promise<void> {
       examplePath: opts.examplePath,
       typescript: opts.typescript,
       eslint: opts.eslint,
-      importAlias: opts.importAlias,
       skipInstall: opts.skipInstall,
       empty: opts.empty,
     });
@@ -364,7 +317,6 @@ async function run(): Promise<void> {
       packageManager,
       typescript: opts.typescript,
       eslint: opts.eslint,
-      importAlias: opts.importAlias,
       skipInstall: opts.skipInstall,
       empty: opts.empty,
     });
