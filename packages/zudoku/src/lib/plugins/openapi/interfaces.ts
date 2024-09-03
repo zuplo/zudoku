@@ -1,6 +1,4 @@
-type OasSource =
-  | { type: "url"; input: string }
-  | { type: "file"; input: string };
+type OasSource = { type: "url"; input: string } | { type: "file"; input: any };
 
 export type OasPluginConfig = {
   server?: string;
