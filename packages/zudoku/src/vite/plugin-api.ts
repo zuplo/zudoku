@@ -1,3 +1,4 @@
+import { readFile } from "fs/promises";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 
@@ -23,14 +24,28 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
 
         if (config.apis) {
           const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-          apis.forEach((c) => {
+          for (const c of apis) {
+            if (c.type === "file") {
+              const raw = await readFile(c.input, "utf-8");
+
+              let data: unknown;
+              if (raw.trim().startsWith("{")) {
+                data = JSON.parse(raw);
+              } else {
+                const yaml = await import("yaml");
+                data = yaml.parse(raw);
+              }
+
+              c.input = JSON.stringify(data);
+            }
+
             code.push(
               ...[
                 `// @ts-ignore`, // To make tests pass
                 `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...c, inMemory: options?.ssr ?? config.mode === "internal" })}));`,
               ],
             );
-          });
+          }
         }
 
         code.push(`export { configuredApiPlugins };`);

@@ -43,10 +43,7 @@ const ApiSchema = z.union([
     .object({ type: z.literal("url"), input: z.string() })
     .merge(ApiConfigSchema),
   z
-    .object({ type: z.literal("yaml"), input: z.string() })
-    .merge(ApiConfigSchema),
-  z
-    .object({ type: z.literal("json"), input: z.object({}).passthrough() })
+    .object({ type: z.literal("file"), input: z.string() })
     .merge(ApiConfigSchema),
 ]);
 
@@ -214,6 +211,7 @@ Following IDs are available: ${topNavIds.join(", ")}`,
     }
   });
 
+export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuConfig = z.infer<typeof ConfigSchema>;
 
 export function validateConfig(config: unknown) {

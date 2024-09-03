@@ -76,7 +76,7 @@ const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
     .flatMap((path) => Object.values(path ?? {}))
     .flatMap((operation) =>
       typeof operation === "object" && "tags" in operation
-        ? operation.tags ?? []
+        ? (operation.tags ?? [])
         : [],
     );
 
@@ -422,7 +422,7 @@ const loadOpenAPISchema = async (input: NonNullable<unknown>) => {
 };
 
 const SchemaSource = builder.enumType("SchemaType", {
-  values: ["url", "json", "yaml"] as const,
+  values: ["url", "file"] as const,
 });
 
 builder.queryType({

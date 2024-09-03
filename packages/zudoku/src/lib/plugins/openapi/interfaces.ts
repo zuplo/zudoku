@@ -1,7 +1,6 @@
 type OasSource =
   | { type: "url"; input: string }
-  | { type: "yaml"; input: string }
-  | { type: "json"; input: object };
+  | { type: "file"; input: string };
 
 export type OasPluginConfig = {
   server?: string;
