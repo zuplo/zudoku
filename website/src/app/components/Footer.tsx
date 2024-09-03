@@ -47,7 +47,7 @@ export const Footer = () => (
                 <li className="pt-4">
                   <a
                     className="hover:text-white"
-                    href="https://discord.gg/kYzGdaQ4"
+                    href="https://discord.gg/9tfNGyN4de"
                   >
                     Discord
                   </a>
@@ -127,7 +127,7 @@ export const Footer = () => (
               />
             </a>
             <div className="mx-4 h-full border-l border-zinc-700"></div>
-            <a target="_blank" href="https://discord.gg/kYzGdaQ4">
+            <a target="_blank" href="https://discord.gg/9tfNGyN4de">
               <Image
                 src="/discord-logo.svg"
                 width="20"
