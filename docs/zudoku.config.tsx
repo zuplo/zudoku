@@ -45,15 +45,7 @@ const config: ZudokuConfig = {
         type: "category",
         label: "Markdown",
         link: "markdown/overview",
-        items: [
-          "markdown/mdx",
-          "markdown/admonitions",
-          "markdown/code-blocks",
-          {
-            type: "doc",
-            id: "markdown/links",
-          },
-        ],
+        items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
       },
       {
         type: "category",
