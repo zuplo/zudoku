@@ -2,6 +2,7 @@ import DocsScreenshot from "@/app/assets/docs-light.jpg";
 import { FeatureGrid } from "@/app/components/FeatureGrid";
 import { OpenAPI } from "@/app/components/OpenAPI";
 import { PreviewInput } from "@/app/components/PreviewInput";
+import { headers } from "next/headers";
 import Image from "next/image";
 import "../globals.css";
 import { AnimatedHeading } from "./AnimatedHeading";
@@ -25,6 +26,15 @@ const Brand = () => (
 );
 
 const Page = async () => {
+  const allHeaders = headers();
+  const domain =
+    allHeaders.get("x-forwarded-host") ||
+    allHeaders.get("host") ||
+    "zudoku.dev";
+  const protocol = headers().get("x-forwarded-proto") || "https";
+
+  const baseExampleUrl = `${protocol}://${domain}`;
+
   return (
     <div className="min-h-full bg-gray-900 p-4 lg:p-0">
       <header>
@@ -80,10 +90,19 @@ const Page = async () => {
                   <li>
                     <a
                       className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
-                      href="/demo?api-url=https://rickandmorty.zuplo.io/openapi.json"
+                      href={`/demo?api-url=${baseExampleUrl}/rick-and-morty.oas.json`}
                       target="_blank"
                     >
                       Rick & Morty API
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      href={`/demo?api-url=${baseExampleUrl}/petstore.oas.json`}
+                      target="_blank"
+                    >
+                      Petstore API
                     </a>
                   </li>
                 </ul>
