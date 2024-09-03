@@ -1,8 +1,6 @@
 import { copy } from "../helpers/copy";
 import { install } from "../helpers/install";
 
-import { Sema } from "async-sema";
-import { async as glob } from "fast-glob";
 import fs from "fs/promises";
 import os from "os";
 import path from "path";
@@ -35,7 +33,6 @@ export const installTemplate = async ({
   template,
   mode,
   eslint,
-  importAlias,
   skipInstall,
 }: InstallTemplateArgs) => {
   console.log(bold(`Using ${packageManager}.`));
@@ -69,46 +66,7 @@ export const installTemplate = async ({
     },
   });
 
-  const tsconfigFile = path.join(
-    root,
-    mode === "js" ? "jsconfig.json" : "tsconfig.json",
-  );
-  await fs.writeFile(
-    tsconfigFile,
-    (await fs.readFile(tsconfigFile, "utf8")).replace(
-      `"@/*":`,
-      `"${importAlias}":`,
-    ),
-  );
-
   // update import alias in any files if not using the default
-  if (importAlias !== "@/*") {
-    const files = await glob("**/*", {
-      cwd: root,
-      dot: true,
-      stats: false,
-      // We don't want to modify compiler options in [ts/js]config.json
-      // and none of the files in the .git folder
-      ignore: ["tsconfig.json", "jsconfig.json", ".git/**/*"],
-    });
-    const writeSema = new Sema(8, { capacity: files.length });
-    await Promise.all(
-      files.map(async (file) => {
-        await writeSema.acquire();
-        const filePath = path.join(root, file);
-        if ((await fs.stat(filePath)).isFile()) {
-          await fs.writeFile(
-            filePath,
-            (await fs.readFile(filePath, "utf8")).replace(
-              `@/`,
-              `${importAlias.replace(/\*/g, "")}`,
-            ),
-          );
-        }
-        writeSema.release();
-      }),
-    );
-  }
 
   /** Copy the version from package.json or override for tests. */
   const version = process.env.ZUDOKU_PRIVATE_TEST_VERSION ?? pkg.version;

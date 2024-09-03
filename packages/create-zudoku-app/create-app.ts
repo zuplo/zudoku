@@ -31,7 +31,6 @@ export async function createApp({
   examplePath,
   typescript,
   eslint,
-  importAlias,
   skipInstall,
   empty,
 }: {
@@ -41,7 +40,6 @@ export async function createApp({
   examplePath?: string;
   typescript: boolean;
   eslint: boolean;
-  importAlias: string;
   skipInstall: boolean;
   empty: boolean;
 }): Promise<void> {
@@ -134,7 +132,7 @@ export async function createApp({
   const isOnline = !useYarn || (await getOnline());
   const originalDirectory = process.cwd();
 
-  console.log(`Creating a new Zuplo app in ${green(root)}.`);
+  console.log(`Creating a new Zudoku app in ${green(root)}.`);
   console.log();
 
   process.chdir(root);
@@ -215,7 +213,6 @@ export async function createApp({
       packageManager,
       isOnline,
       eslint,
-      importAlias,
       skipInstall,
     });
   }
