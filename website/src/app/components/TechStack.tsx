@@ -24,7 +24,7 @@ export const TechStack = () => {
           <div
             className={cn(
               "h-[10rem] md:h-[15rem] rounded-xl z-40 w-full",
-              "dark:bg-indigo-900/20 [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]",
+              "bg-indigo-900/20 [mask-image:radial-gradient(50%_50%_at_50%_50%,white_0%,transparent_100%)]",
             )}
           >
             <TechStackBubble />
