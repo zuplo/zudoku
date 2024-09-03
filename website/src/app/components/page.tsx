@@ -42,6 +42,9 @@ const Page = async () => {
           <div className="h-24 flex items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
             <Brand />
             <div className="flex gap-4">
+              <a href="/docs" className="hover:text-gray-300">
+                Docs
+              </a>
               <a target="_blank" href="https://github.com/zuplo/zudoku/">
                 <Image
                   src="/github-logo.svg"
