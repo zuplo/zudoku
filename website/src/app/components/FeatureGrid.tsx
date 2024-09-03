@@ -334,7 +334,13 @@ const simpleFeatures = [
     title: "Plugin System",
     description:
       "Zudoku comes with a powerful plugin system. Most of its features are built on top of it. So you can easily extend Zudoku with your own plugins to unlock new features.",
-    className: "md:col-span-2",
+    className: "md:col-span-1",
+  },
+  {
+    title: "Interactive Playground",
+    description:
+      "Zudoku comes with an interactive playground. You can test your API directly from the documentation, support bringing your own API Keys",
+    className: "md:col-span-1",
   },
   {
     title: "MDX Support",
