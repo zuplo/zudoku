@@ -41,7 +41,7 @@ export const LandingPage = () => {
 
 ## Configuration
 
-In `zudoku.config.ts` you will need to add two things.
+In the [Zudoku Configuration](/docs/configuration/overview) you will need to add two things.
 
 First, import the `<MyCustomPage />` component that you created.
 

@@ -4,9 +4,9 @@ title: Configuration
 
 Zudoku uses a single file for configuration. It controls the structure, metadata, style, plugins, and routing for your documentation.
 
-You can find the `zudoku.config.ts` file in the root directory of your project.
+You can find the file in the root directory of your project. It will be start with `zudoku.config`. The file can be in either JavaScript or TypeScript format and use a `.js`, `.mjs`, `.jsx`, `.ts`, or `.tsx` file extension.
 
-It will already be populated with some default options.
+When you create a project with `create-zudoku-app`, a default configuration file is generated for you. This file is a good starting point and can be customized to suit your needs.
 
 ## Example
 
@@ -44,15 +44,48 @@ const config: ZudokuConfig = {
 export default config;
 ```
 
-## What to configure first
+## Multiple Files
 
-We recommend the first option you setup is the `apis` configuration so your project knows which API to generate documentation for.
+The configuration file is a standard JavaScript or TypeScript file, so you can split it into multiple files if you prefer. This can be useful if you have a large configuration or want to keep your code organized.
 
-After all, you're here because you built your API using OpenAPI, right?
+For example, if you wanted to move your sidebar configuration to a separate file, you could create a new file called `sidebar.ts` and export the sidebar configuration from there.
 
-### OpenAPI URL
+```ts
+// sidebar.ts
+import type { Sidebar } from "zudoku";
 
-If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document if you want to test and play around):
+export const sidebar: Record<string, Sidebar> = {
+  documentation: [
+    {
+      type: "category",
+      label: "Overview",
+      items: ["example", "other-example"],
+    },
+  ],
+};
+```
+
+Then you can import the sidebar configuration into your main configuration file.
+
+```ts
+// zudoku.config.ts
+import type { ZudokuConfig } from "zudoku";
+import { sidebar } from "./sidebar";
+
+const config = {
+  // ...
+  sidebar,
+  // ...
+};
+
+export default config;
+```
+
+## Configuration options
+
+### `apis`
+
+There are multiple options for referencing your OpenAPI document. The example below uses a URL to an OpenAPI document, but you can also use a local file path. For full details on the options available, see the [API Reference](/docs/configuration/api-reference).
 
 ```json
 {
@@ -65,18 +98,6 @@ If your OpenAPI document is accessible elsewhere via URL you can use this config
   // ...
 }
 ```
-
-The OpenAPI document can be in either JSON or YAML format. Both are supported.
-
-With this option configured, run:
-
-```command
-npm run dev
-```
-
-Then in your browser, navigate to http://localhost:9000/api to see your API documentation powered by Zudoku!
-
-## Configuration options
 
 ### `page`
 
@@ -103,7 +124,7 @@ Controls global page attributes across the site, including logos and the site ti
 
 ### `topNavigation`
 
-Defines the links and headings for the top horizontal navigation that persists through every page on the site.
+Defines the links and headings for the top horizontal navigation that persists through every page on the site. For full details on the options available, see the [Navigation](/docs/configuration/navigation) page.
 
 _Note: `topNavigation` will only display if there is more than one item in the navigation_
 
@@ -122,7 +143,7 @@ _Note: `topNavigation` will only display if there is more than one item in the n
 
 ### `sidebar`
 
-Defines the sidebar navigation including top level categories and their sub pages.
+Defines the sidebar navigation including top level categories and their sub pages. For full details on the options available, see the [Navigation](/docs/configuration/navigation) page.
 
 The example below uses a key of `documentation` which can be referenced as an `id` in `topNavigation`.
 
@@ -212,7 +233,7 @@ Configures where your non API reference documentation can be found in your folde
 {
   // ...
   "docs": {
-    "files": "/pages/**/*.mdx"
+    "files": "/pages/**/*.{md,mdx}"
   }
   // ...
 }
@@ -234,7 +255,3 @@ Implements any page redirects you want to use. This gives you control over the r
   // ...
 }
 ```
-
-This covers everything you need to build a solid documentation site around your OpenAPI document.
-
-If you want to include advanced options such as user authentication, API keys, search and other plugins, check out the Advanced Configuration page.
