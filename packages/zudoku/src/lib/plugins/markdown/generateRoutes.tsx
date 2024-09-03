@@ -16,12 +16,8 @@ export const generateRoutes = (
 
     if (!path) return [];
 
-    const pathSegments = path.split("/");
-    const isIndexFile = pathSegments.at(-1) === "index";
-    const routePath = isIndexFile ? pathSegments.slice(0, -1).join("/") : path;
-
     return {
-      path: routePath,
+      path,
       lazy: async () => {
         const { MdxPage } = await import("./MdxPage.js");
         const { default: Component, ...props } = await importPromise();

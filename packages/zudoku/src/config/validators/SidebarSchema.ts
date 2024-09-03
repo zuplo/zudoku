@@ -50,10 +50,6 @@ export const resolveSidebar = async (
       throw new Error(`No file found for doc ${globId}`);
     }
 
-    if (foundMatches.length > 1) {
-      throw new Error(`Multiple files found for doc ${globId}`);
-    }
-
     // Strip parent id if it's prefixed
     // E.g. docs/introduction should work as well as introduction
     const id = globId.startsWith(parentId)
