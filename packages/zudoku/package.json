@@ -7,7 +7,8 @@
     "lib",
     "cli.js",
     "src/lib",
-    "src/app"
+    "src/app",
+    "client.d.ts"
   ],
   "bin": {
     "zudoku": "./cli.js"
@@ -37,6 +38,9 @@
       ".": {
         "import": "./dist/index.js",
         "types": "./dist/index.d.ts"
+      },
+      "./client": {
+        "types": "./client.d.ts"
       },
       "./internal": {
         "import": "./dist/internal.js"
