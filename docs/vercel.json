@@ -9,19 +9,15 @@
       "src": "/",
       "status": 308,
       "headers": {
-        "Location": "/introduction"
+        "Location": "/docs/introduction"
       }
     },
     {
       "src": "/docs",
       "status": 308,
       "headers": {
-        "Location": "/docs/getting-started"
+        "Location": "/docs/introduction"
       }
-    },
-    {
-      "src": "/introduction",
-      "dest": "/introduction.html"
     },
     {
       "src": "/docs/(.*)",
