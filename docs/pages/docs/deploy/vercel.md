@@ -55,36 +55,16 @@ By default Vercel looks for a directory named `public`, but the Zudoku build wil
 
 After this is complete, your site will build and Vercel will respond with the URL for you to test it.
 
-## Vercel Configuration
+:::tip{title="Clean URLs"}
 
-In addition to the configuration of the build command, etc, you can use a [`vercel.json` file](https://vercel.com/docs/projects/project-configuration) in the root of your project for additional configuration. An example of a `vercel.json` file might look like this:
+You will almost certainly want to enable clean URLs for your site. This will remove the `.html` extension from your URLs. You can do this by adding a `cleanUrls` property to your `vercel.json` file. See the [Vercel Configuration](https://vercel.com/docs/projects/project-configuration#cleanurls) for more information.
 
-```json
-{
-  "framework": null,
-  "devCommand": "npx nx run docs:dev",
-  "buildCommand": "npx nx run docs:build",
-  "outputDirectory": "dist",
-  "installCommand": "pnpm install",
-  "routes": [
-    {
-      "src": "/",
-      "status": 308,
-      "headers": {
-        "Location": "/docs/introduction"
-      }
-    },
-    {
-      "src": "/docs",
-      "status": 308,
-      "headers": {
-        "Location": "/docs/introduction"
-      }
-    },
-    {
-      "src": "/docs/(.*)",
-      "dest": "/docs/$1.html"
-    }
-  ]
-}
-```
+:::
+
+:::caution{title="Redirects"}
+
+If you have redirects configured in your Zuplo configuration, you will need to also add those to your `vercel.json` file. See the [Vercel Configuration](https://vercel.com/docs/projects/project-configuration#redirects) for more information.
+
+This is a current limitation. See [#115](https://github.com/zuplo/zudoku/issues/151).
+
+:::
