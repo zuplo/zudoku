@@ -66,7 +66,7 @@ export const Callout = ({ type, children, title, className }: CalloutProps) => {
       className={cn(
         "not-prose grid grid-cols-[min-content_1fr] grid-rows-[fit-content_1fr] gap-x-4 gap-y-2 text-md rounded-md border p-4",
         "[&_a]:underline [&_a]:decoration-current [&_a]:decoration-from-font [&_a]:underline-offset-4 hover:[&_a]:decoration-1",
-        "[&_code]:!bg-gray-50 [&_code]:dark:!bg-gray-800 [&_code]:!border-none",
+        "[&_code]:!bg-gray-50 [&_code]:dark:!bg-gray-800 [&_code]:!border-none my-2",
         title && "items-center",
         border,
         bg,

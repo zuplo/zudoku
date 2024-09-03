@@ -1,5 +1,4 @@
 import type { ZudokuConfig } from "zudoku";
-import { sidebar } from "./sidebar";
 
 const config: ZudokuConfig = {
   page: {
@@ -19,11 +18,58 @@ const config: ZudokuConfig = {
     files: "/pages/**/*.{md,mdx}",
   },
   redirects: [
-    { from: "/", to: "/introduction" },
-    { from: "/docs", to: "/docs/getting-started" },
+    { from: "/", to: "/docs/introduction" },
+    { from: "/docs", to: "/docs/introduction" },
   ],
   topNavigation: [{ id: "docs", label: "Documentation" }],
-  sidebar,
+  sidebar: {
+    docs: [
+      {
+        type: "category",
+        label: "Getting started",
+        items: ["introduction", "getting-started", "installation"],
+      },
+      {
+        type: "category",
+        label: "Configuration",
+        link: "configuration/overview",
+        items: [
+          "configuration/api-reference",
+          "configuration/navigation",
+          "configuration/search",
+          "configuration/authentication",
+          "configuration/vite-config",
+        ],
+      },
+      {
+        type: "category",
+        label: "Markdown",
+        link: "markdown/overview",
+        items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
+      },
+      {
+        type: "category",
+        label: "Guide",
+        items: ["environment-variables", "custom-pages", "using-multiple-apis"],
+      },
+      {
+        type: "category",
+        label: "Extending",
+        items: ["api-keys"],
+      },
+      {
+        type: "category",
+        label: "Deployment",
+        link: "deployment",
+        items: [
+          "deploy/cloudflare-pages",
+          "deploy/github-pages",
+          "deploy/vercel",
+          "deploy/direct-upload",
+        ],
+      },
+    ],
+  },
 };
 
 export default config;

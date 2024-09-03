@@ -16,7 +16,7 @@ To add search to your site you will need to copy some variables from your [Inkee
 - Integration ID
 - Organization ID
 
-With these you can then configure the `search` option in `zudoku.config.ts`:
+With these you can then configure the `search` option in [Zudoku Configuration](/docs/configuration/overview):
 
 ```typescript
 {

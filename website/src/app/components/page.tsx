@@ -43,7 +43,7 @@ const Page = async () => {
             <Brand />
             <div className="flex gap-4">
               <a href="/docs" className="hover:text-gray-300">
-                Docs
+                Documentation
               </a>
               <a target="_blank" href="https://github.com/zuplo/zudoku/">
                 <Image
@@ -54,7 +54,7 @@ const Page = async () => {
                   alt="Zudoku on Github"
                 />
               </a>
-              <a target="_blank" href="https://discord.gg/9tfNGyN4de">
+              <a target="_blank" href="https://discord.zudoku.dev">
                 <Image
                   src="/discord-logo.svg"
                   width="20"
