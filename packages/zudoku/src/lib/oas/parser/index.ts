@@ -73,10 +73,17 @@ const parseSchemaInput = async (
         );
       }
 
+      const schemaText = await response.text();
+
       try {
-        return (await response.json()) as JSONSchema;
+        if (schemaText.trim().startsWith("{")) {
+          return JSON.parse(schemaText) as JSONSchema;
+        } else {
+          const yaml = await import("yaml");
+          return yaml.parse(schemaText) as JSONSchema;
+        }
       } catch (err) {
-        throw new GraphQLError("Fetched invalid JSON schema", {
+        throw new GraphQLError("Fetched invalid schema", {
           originalError: err,
         });
       }
