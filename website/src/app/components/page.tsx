@@ -140,7 +140,7 @@ const Page = async () => {
           <Code
             code={`
 \$ npx create-zudoku-app@latest
-\$ npx run zudoku dev
+\$ npx zudoku dev
 > zudoku dev
 
 Server-side rendering enabled
