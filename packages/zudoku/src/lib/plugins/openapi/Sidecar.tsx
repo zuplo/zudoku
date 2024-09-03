@@ -178,7 +178,7 @@ export const Sidecar = ({
             operation={operation}
           />
         </SidecarBox.Head>
-        <SidecarBox.Body>
+        <SidecarBox.Body className="max-h-[480px]">
           <SyntaxHighlight
             language={selectedLang}
             noBackground
