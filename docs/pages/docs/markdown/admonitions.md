@@ -72,6 +72,7 @@ Some **content** with _Markdown_ `syntax`. Check [this `api`](#).
 
 If you use Prettier to format your Markdown files, Prettier might auto-format your code to invalid admonition syntax. To avoid this problem, add empty lines around the starting and ending directives. This is also why the examples we show here all have empty lines around the content.
 
+<!-- prettier-ignore -->
 ```markdown
 <!-- Prettier doesn't change this -->
 
@@ -83,7 +84,9 @@ Hello world
 
 <!-- Prettier changes this -->
 
-:::note Hello world :::
+:::note 
+Hello world 
+:::
 
 <!-- to this -->
 
