@@ -12,7 +12,7 @@ export const TopNavigation = () => {
   }
 
   return (
-    <nav className="border-b text-sm px-12 h-[--top-nav-height]">
+    <nav className="hidden lg:block border-b text-sm px-12 h-[--top-nav-height]">
       <ul className="flex flex-row items-center gap-8">
         {topNavigation.map((item) => (
           <li key={item.label}>

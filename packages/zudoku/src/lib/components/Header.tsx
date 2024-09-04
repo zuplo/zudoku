@@ -19,6 +19,7 @@ import {
 import { cn } from "../util/cn.js";
 import { useTheme } from "./context/ThemeContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
+import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { Search } from "./Search.js";
 import { Slotlet } from "./SlotletProvider.js";
 import { TopNavigation } from "./TopNavigation.js";
@@ -58,9 +59,9 @@ export const Header = memo(function HeaderInner() {
   const ThemeIcon = isDark ? MoonStarIcon : SunIcon;
 
   return (
-    <header className="sticky top-0 z-10 bg-background/80 backdrop-blur w-full">
+    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <div className="max-w-screen-2xl mx-auto">
-        <div className="grid lg:grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center border-b px-12 h-[--top-header-height]">
+        <div className="grid grid-cols-2 lg:grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center border-b px-10 lg:px-12 h-[--top-header-height]">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
@@ -88,12 +89,13 @@ export const Header = memo(function HeaderInner() {
               </div>
             </Link>
           </div>
-          <div className="grid grid-cols-[--sidecar-grid-cols] items-center gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-[--sidecar-grid-cols] items-center gap-8">
             <div className="w-full justify-center flex">
               <Search />
             </div>
 
-            <div className="items-center justify-self-end text-sm hidden lg:flex gap-2">
+            <MobileTopNavigation />
+            <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && !isAuthenticated ? (
                 <Button variant="ghost" onClick={() => auth.login()}>
@@ -115,7 +117,6 @@ export const Header = memo(function HeaderInner() {
                   </DropdownMenu>
                 )
               )}
-
               <button
                 type="button"
                 aria-label={

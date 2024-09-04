@@ -85,7 +85,7 @@ export const MdxPage = ({
         {!hidePager && (
           <>
             <hr />
-            <div className="not-prose flex flex-wrap items-center justify-between gap-8">
+            <div className="not-prose flex flex-wrap items-center justify-between gap-2 lg:gap-8">
               {prev ? (
                 <Link
                   to={prev.id}
