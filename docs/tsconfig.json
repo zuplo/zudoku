@@ -11,5 +11,6 @@
     "isolatedModules": true,
     "useUnknownInCatchVariables": false,
     "jsx": "react-jsx"
-  }
+  },
+  "include": ["zudoku.config.tsx"]
 }

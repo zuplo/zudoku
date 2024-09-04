@@ -10,16 +10,16 @@ There are multiple ways to reference an API file in the configuration including 
 
 If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document if you want to test and play around):
 
-```json
-{
+```js
+const config = {
   // ...
-  "apis": {
-    "type": "url",
-    "input": "https://rickandmorty.zuplo.io/openapi.json",
-    "navigationId": "api"
-  }
+  apis: {
+    type: "url",
+    input: "https://rickandmorty.zuplo.io/openapi.json",
+    navigationId: "api",
+  },
   // ...
-}
+};
 ```
 
 :::caution{title="CORS Policy"}
@@ -35,13 +35,11 @@ If you have a local OpenAPI document that you want to use, you import it into yo
 **For JSON files:**
 
 ```ts
-import openapi from "./openapi.json";
-
 const config = {
   // ...
   apis: {
-    type: "json",
-    input: openapi,
+    type: "file",
+    input: "./openapi.json",
     navigationId: "api",
   },
   // ...
@@ -51,13 +49,11 @@ const config = {
 **For YAML files:**
 
 ```ts
-import openapi from "./openapi.yaml";
-
 const config = {
   // ...
   apis: {
-    type: "yaml",
-    input: openapi,
+    type: "file",
+    input: "./openapi.yaml",
     navigationId: "api",
   },
   // ...
