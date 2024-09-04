@@ -42,10 +42,14 @@ const Page = async () => {
         <nav className="pb-5 md:text-sm">
           <div className="h-24 flex items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
             <Brand />
-            <div className="flex gap-4">
-              <a href="/docs" className="hover:text-gray-300">
+            <div className="flex gap-4 items-center">
+              <a
+                href="/docs"
+                className="hover:text-gray-300 bg-white/5 rounded p-2 px-4 hover:bg-white hover:text-gray-950"
+              >
                 Documentation
               </a>
+              <div className="mx-2 border h-10 border-slate-700" />
               <a target="_blank" href="https://github.com/zuplo/zudoku/">
                 <Image
                   src="/github-logo.svg"
@@ -82,7 +86,7 @@ const Page = async () => {
               <div className="flex flex-col md:flex-row gap-2 mt-6 items-center font-medium text-gray-300 md:text-sm">
                 <strong>Examples:</strong>
                 <ul className="flex gap-4 md:gap-2 flex-col items-stretch w-full md:flex-row md:items-center">
-                 <li>
+                  <li>
                     <a
                       className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
                       href={`/demo?api-url=${baseExampleUrl}/train-travel.oas.yaml`}
