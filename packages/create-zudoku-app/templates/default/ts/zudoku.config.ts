@@ -16,9 +16,8 @@ const config: ZudokuConfig = {
   },
   redirects: [{ from: "/", to: "/documentation" }],
   apis: {
-    type: "url",
-    input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
-    // input: "https://rickandmorty.zuplo.io/openapi.json", // ...or, uncomment this line to see an example
+    type: "file",
+    input: "./apis/openapi.yaml",
     navigationId: "api",
   },
   docs: {
