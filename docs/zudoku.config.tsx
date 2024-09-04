@@ -1,4 +1,5 @@
 import type { ZudokuConfig } from "zudoku";
+import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
   page: {
@@ -8,6 +9,9 @@ const config: ZudokuConfig = {
         dark: "/docs-static/logos/zudoku-dark.svg",
       },
       width: "99px",
+    },
+    banner: {
+      message: <PreviewBanner />,
     },
   },
   metadata: {
@@ -27,7 +31,7 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Getting started",
-        items: ["introduction", "getting-started", "installation"],
+        items: ["introduction", "app-quickstart", "html-quickstart"],
       },
       {
         type: "category",
@@ -54,11 +58,6 @@ const config: ZudokuConfig = {
       },
       {
         type: "category",
-        label: "Extending",
-        items: ["api-keys"],
-      },
-      {
-        type: "category",
         label: "Deployment",
         link: "deployment",
         items: [
@@ -67,6 +66,11 @@ const config: ZudokuConfig = {
           "deploy/vercel",
           "deploy/direct-upload",
         ],
+      },
+      {
+        type: "category",
+        label: "Extending",
+        items: ["custom-plugins", "api-keys"],
       },
     ],
   },

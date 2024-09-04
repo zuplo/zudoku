@@ -1,6 +1,10 @@
 ---
 title: API Keys
-description: ⚠️ This plugin is still in development and will be available soon.
+description: Learn how to use the API Keys feature to let your users create and manage API keys for your API.
 ---
 
-The ability to create and manage API keys for any API that uses Zuplo as its gateway directly from a Zudoku site is coming soon.
+:::caution{title="Work in Progress"}
+
+API Key management is still a work in progress. Check back soon for updates.
+
+:::

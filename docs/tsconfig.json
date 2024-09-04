@@ -12,5 +12,5 @@
     "useUnknownInCatchVariables": false,
     "jsx": "react-jsx"
   },
-  "include": ["zudoku.config.tsx"]
+  "include": ["zudoku.config.tsx", "src"]
 }
