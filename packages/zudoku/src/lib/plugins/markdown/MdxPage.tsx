@@ -75,9 +75,6 @@ export const MdxPage = ({
               {title}
             </Heading>
           )}
-          {frontmatter.description && (
-            <p className="prose-lg">{frontmatter.description}</p>
-          )}
         </header>
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}

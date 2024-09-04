@@ -3,11 +3,7 @@ title: Introduction
 description: Zudoku (pronounced "zoo-doh-koo") is an open-source, highly customizable API documentation framework for building quality developer experiences using MDX and OpenAPI.
 ---
 
-:::warning{title="Under Development"}
-
-Zudoku is currently under active development. If you find any issues or have any feature requests, please [open an issue](https://github.com/zuplo/zudoku/issues).
-
-:::
+Zudoku (pronounced "zoo-doh-koo") is an open-source, highly customizable API documentation framework for building quality developer experiences using MDX and OpenAPI.
 
 The framework was created because great API documentation frameworks should always be:
 
