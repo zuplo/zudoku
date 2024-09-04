@@ -77,7 +77,7 @@ const Page = async () => {
               experiences.
             </p>
             <div>
-              <PreviewInput />
+              <PreviewInput sample={`${baseExampleUrl}/petstore.oas.json`} />
               <div className="flex gap-2 mt-6 items-center font-medium text-gray-300 text-xs">
                 <strong>Examples:</strong>
                 <ul className="flex gap-2">
