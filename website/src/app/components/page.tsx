@@ -40,7 +40,7 @@ const Page = async () => {
     <div className="min-h-full bg-gray-900 p-4 lg:p-0">
       <header>
         <nav className="pb-5 md:text-sm">
-          <div className="h-24 flex items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
+          <div className="h-24 flex flex-col md:flex-row items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
             <Brand />
             <div className="flex gap-4 items-center">
               <a
@@ -50,7 +50,11 @@ const Page = async () => {
                 Documentation
               </a>
               <div className="mx-2 border h-10 border-slate-700" />
-              <a target="_blank" href="https://github.com/zuplo/zudoku/">
+              <a
+                target="_blank"
+                href="https://github.com/zuplo/zudoku/"
+                className="flex-shrink-0"
+              >
                 <Image
                   src="/github-logo.svg"
                   width="20"
@@ -59,7 +63,11 @@ const Page = async () => {
                   alt="Zudoku on Github"
                 />
               </a>
-              <a target="_blank" href="https://discord.zudoku.dev">
+              <a
+                target="_blank"
+                href="https://discord.zudoku.dev"
+                className="flex-shrink-0"
+              >
                 <Image
                   src="/discord-logo.svg"
                   width="20"
