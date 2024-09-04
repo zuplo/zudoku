@@ -39,7 +39,7 @@ export const useNavigation = () => {
   const { getPluginSidebar, sidebars } = useZudoku();
   const navItem = useTopNavigationItem();
   const path = navItem?.id;
-  const currentSidebar = path ? sidebars[path] ?? [] : [];
+  const currentSidebar = path ? (sidebars[path] ?? []) : [];
   const location = useLocation();
 
   return useSuspenseQuery({

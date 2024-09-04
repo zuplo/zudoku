@@ -1,1 +1,11 @@
-{ "plugins": ["prettier-plugin-organize-imports"] }
+{
+  "plugins": ["prettier-plugin-organize-imports"],
+  "overrides": [
+    {
+      "files": "*.md",
+      "options": {
+        "proseWrap": "always"
+      }
+    }
+  ]
+}

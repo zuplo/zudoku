@@ -171,7 +171,7 @@ const RevealApiKey = ({ apiKey }: { apiKey: string }) => {
       <Button
         variant="outline"
         onClick={() => {
-          navigator.clipboard.writeText(apiKey).then(() => {
+          void navigator.clipboard.writeText(apiKey).then(() => {
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           });

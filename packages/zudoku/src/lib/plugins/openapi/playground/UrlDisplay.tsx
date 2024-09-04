@@ -10,8 +10,8 @@ export const UrlDisplay = ({ host, path }: { host: string; path: string }) => {
         .split("/")
         .map((v) =>
           v.startsWith("{") && v.endsWith("}")
-            ? data.pathParams.find((part) => part.name === v.slice(1, -1))
-                ?.value ?? v
+            ? (data.pathParams.find((part) => part.name === v.slice(1, -1))
+                ?.value ?? v)
             : v,
         )
         .join("/"),

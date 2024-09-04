@@ -14,7 +14,7 @@ info:
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
-  version: '0.1'
+  version: "0.1"
   x-docs-schema-whitelist:
     - AttachedResourceResponse
     - FormField-Checkbox
@@ -160,28 +160,28 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/BadRequestResponse'
+            $ref: "#/components/schemas/BadRequestResponse"
     Unauthorized:
       description: >-
         Unauthorized
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/UnauthorizedResponse'
+            $ref: "#/components/schemas/UnauthorizedResponse"
     Forbidden:
       description: >-
         Forbidden
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ForbiddenResponse'
+            $ref: "#/components/schemas/ForbiddenResponse"
     NotFound:
       description: >-
         Not found
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/NotFoundResponse'
+            $ref: "#/components/schemas/NotFoundResponse"
     TooManyRequests:
       description: >-
         Too Many Requests
@@ -194,7 +194,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/InternalServerErrorResponse'
+            $ref: "#/components/schemas/InternalServerErrorResponse"
     ImATeapot:
       description: >-
         I'm A Teapot
@@ -208,20 +208,20 @@ components:
           type: string
           description: >-
             The time (in ISO 8601 date format) when the request should expire.
-          example: '2019-04-15T01:01:46.055Z'
+          example: "2019-04-15T01:01:46.055Z"
         user:
           type: string
           description: >-
             The user GID this hook is coming from.
-          example: '54321'
+          example: "54321"
         workspace:
           type: string
           description: >-
             The workspace GID this hook is coming from.
-          example: '12345'
+          example: "12345"
     AttachResourceRequest:
       allOf:
-        - $ref: '#/components/schemas/RootUIComponentRequest'
+        - $ref: "#/components/schemas/RootUIComponentRequest"
         - type: object
           description: >-
             The body of an attach request.
@@ -251,17 +251,17 @@ components:
           description: >-
             The name of the attached resource
           type: string
-          example: 'Build the Thing'
+          example: "Build the Thing"
         resource_url:
           description: >-
             The URL of the attached resource
           type: string
-          example: 'https://example.atlassian.net/browse/CP-1'
+          example: "https://example.atlassian.net/browse/CP-1"
         error:
           description: >-
             The error that should be displayed to the user
           type: string
-          example: 'No resource matched that input'
+          example: "No resource matched that input"
     BadRequestResponse:
       description: >-
         An error response object indicating a bad request (i.e., a status code of `400`).
@@ -289,12 +289,12 @@ components:
           description: >-
             The ID of the option.
           type: string
-          example: 'opt-in'
+          example: "opt-in"
         label:
           description: >-
             The label of the option. Limit 80 characters.
           type: string
-          example: 'Opt in'
+          example: "Opt in"
     DropdownOption:
       description: >-
         An option for a dropdown field (i.e., an object in the field's `options` array).
@@ -307,17 +307,17 @@ components:
           description: >-
             The ID of the option.
           type: string
-          example: 'red'
+          example: "red"
         label:
           description: >-
             The label of the option. Limit 80 characters.
           type: string
-          example: 'Red'
+          example: "Red"
         icon_url:
           description: >-
             *Optional*. The URL for the icon beside the label. If not present, no icon will be displayed.
           type: string
-          example: 'https://example.com/red.png'
+          example: "https://example.com/red.png"
     ForbiddenResponse:
       description: >-
         An error response object indicating a forbidden request (i.e., a status code of `403`).
@@ -363,17 +363,17 @@ components:
           type: string
           enum:
             - static_text
-          example: 'static_text'
+          example: "static_text"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'static_text_field_1'
+          example: "static_text_field_1"
         name:
           description: >-
             The text (i.e., label) for the field. Limit 50 characters.
           type: string
-          example: 'Please enter the following details:'
+          example: "Please enter the following details:"
         style:
           description: >-
             *Optional*. The style of the field. If not provided, the default value will be `"default"`.
@@ -381,7 +381,7 @@ components:
           enum:
             - default
             - header
-          example: 'default'
+          example: "default"
     FormField-SingleLineText:
       description: >-
         A modal form field that accepts single-line text input.
@@ -396,17 +396,17 @@ components:
           type: string
           enum:
             - single_line_text
-          example: 'single_line_text'
+          example: "single_line_text"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'single_line_text_field_1'
+          example: "single_line_text_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Resource name'
+          example: "Resource name"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -422,12 +422,12 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         placeholder:
           description: >-
             The placeholder for the input, which is shown if the field has no value. If not provided, there will be no placeholder.
           type: string
-          example: 'Enter the full title of the resource here'
+          example: "Enter the full title of the resource here"
         width:
           description: >-
             *Optional*. The width of the form field. If not provided, the default value will be `"full"`.
@@ -435,7 +435,7 @@ components:
           enum:
             - full
             - half
-          example: 'full'
+          example: "full"
         value:
           description: >-
             The value of the field. If not provided, the field will be empty and the form cannot be submitted if it is required. Limit 200 characters.
@@ -455,17 +455,17 @@ components:
           type: string
           enum:
             - multi_line_text
-          example: 'multi_line_text'
+          example: "multi_line_text"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'multi_line_text_field_1'
+          example: "multi_line_text_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Resource name'
+          example: "Resource name"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -481,12 +481,12 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         placeholder:
           description: >-
             The placeholder for the input, which is shown if the field has no value. If not provided, there will be no placeholder.
           type: string
-          example: 'Enter the full title of the resource here'
+          example: "Enter the full title of the resource here"
         value:
           description: >-
             The value of the field. If not provided, the field will be empty and the form cannot be submitted if it is required. Limit 3000 characters.
@@ -506,17 +506,17 @@ components:
           type: string
           enum:
             - rich_text
-          example: 'rich_text'
+          example: "rich_text"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'rich_text_field_1'
+          example: "rich_text_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Resource name'
+          example: "Resource name"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -532,12 +532,12 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         placeholder:
           description: >-
             The placeholder for the input, which is shown if the field has no value. If not provided, there will be no placeholder.
           type: string
-          example: 'Enter the full title of the resource here'
+          example: "Enter the full title of the resource here"
         value:
           description: >-
             The value of the field. If not provided, the field will be empty and the form cannot be submitted if it is required. Limit 3000 characters.
@@ -558,17 +558,17 @@ components:
           type: string
           enum:
             - dropdown
-          example: 'dropdown'
+          example: "dropdown"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'dropdown_field_1'
+          example: "dropdown_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Resource name'
+          example: "Resource name"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -584,7 +584,7 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         width:
           description: >-
             *Optional*. The width of the form field. If not provided, the default value will be `"full"`.
@@ -592,18 +592,18 @@ components:
           enum:
             - full
             - half
-          example: 'full'
+          example: "full"
         value:
           description: >-
             *Optional*. The value for the form field, which is the ID of the chosen DropdownOption object.
           type: string
-          example: 'dropdown_option_1'
+          example: "dropdown_option_1"
         options:
           description: >-
             An array (minimum length: 1) of DropdownOption objects.
           type: array
           items:
-            $ref: '#/components/schemas/DropdownOption'
+            $ref: "#/components/schemas/DropdownOption"
     FormField-RadioButton:
       description: >-
         A modal form field that accepts radio button input. Limit 5 options.
@@ -619,17 +619,17 @@ components:
           type: string
           enum:
             - radio_button
-          example: 'radio_button'
+          example: "radio_button"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'radio_button_field_1'
+          example: "radio_button_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Resource name'
+          example: "Resource name"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -645,18 +645,18 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         value:
           description: >-
             *Optional*. The value for the form field, which is the ID of the chosen RadioOption object.
           type: string
-          example: 'radio_option_1'
+          example: "radio_option_1"
         options:
           description: >-
             An array (minimum length: 1) of RadioOption objects.
           type: array
           items:
-            $ref: '#/components/schemas/RadioOption'
+            $ref: "#/components/schemas/RadioOption"
     FormField-Checkbox:
       description: >-
         A modal form field that accepts checkbox input. Limit 10 options.
@@ -672,17 +672,17 @@ components:
           type: string
           enum:
             - checkbox
-          example: 'checkbox'
+          example: "checkbox"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'checkbox_field_1'
+          example: "checkbox_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Resource name'
+          example: "Resource name"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -698,7 +698,7 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         value:
           description: >-
             *Optional*. The values for the form field, which are the IDs of the chosen CheckboxOption objects.
@@ -706,13 +706,13 @@ components:
           items:
             type: string
           example:
-            - 'opt-in'
+            - "opt-in"
         options:
           description: >-
             An array (minimum length: 1) of CheckboxOption objects.
           type: array
           items:
-            $ref: '#/components/schemas/CheckboxOption'
+            $ref: "#/components/schemas/CheckboxOption"
     FormField-Date:
       description: >-
         A modal form field that accepts date input.
@@ -727,17 +727,17 @@ components:
           type: string
           enum:
             - date
-          example: 'date'
+          example: "date"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'date_field_1'
+          example: "date_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Date'
+          example: "Date"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -753,18 +753,18 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         placeholder:
           description: >-
             The placeholder for the input, which is shown if the field has no value. If not provided, there will be no placeholder.
           type: string
-          example: '2022-02-01'
+          example: "2022-02-01"
         value:
           description: >-
             The value of the field. This takes a date with format YYYY-MM-DD or ISO 8601 date string in UTC.
           type: string
           format: date
-          example: '2022-02-01'
+          example: "2022-02-01"
           nullable: true
     FormField-Datetime:
       description: >-
@@ -780,17 +780,17 @@ components:
           type: string
           enum:
             - datetime
-          example: 'datetime'
+          example: "datetime"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'datetime_field_1'
+          example: "datetime_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Datetime'
+          example: "Datetime"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -806,18 +806,18 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         placeholder:
           description: >-
             The placeholder for the input, which is shown if the field has no value. If not provided, there will be no placeholder.
           type: string
-          example: '2022-02-01T14:48:00.000Z'
+          example: "2022-02-01T14:48:00.000Z"
         value:
           description: >-
             The value of the field. This value takes the form of an ISO 8601 date string in UTC.
           type: string
           format: date-time
-          example: '2022-02-01T14:48:00.000Z'
+          example: "2022-02-01T14:48:00.000Z"
           nullable: true
     FormField-Typeahead:
       description: >-
@@ -834,17 +834,17 @@ components:
           type: string
           enum:
             - typeahead
-          example: 'typeahead'
+          example: "typeahead"
         id:
           description: >-
             The ID of the field, which is used to reference the field. These should be unique across the entire form.
           type: string
-          example: 'typeahead_field_1'
+          example: "typeahead_field_1"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 50 characters.
           type: string
-          example: 'Statuses'
+          example: "Statuses"
         is_required:
           description: >-
             *Optional*. Indicates whether the field is required to submit the form. If this property is not specified, the value is assumed `false`.
@@ -860,7 +860,7 @@ components:
           description: >-
             *Optional*. The developer-specified error message displayed to the user if there is an error with the chosen value.
           type: string
-          example: 'Please review and change your input'
+          example: "Please review and change your input"
         width:
           description: >-
             *Optional*. The width of the form field. If not provided, the default value will be `"full"`.
@@ -868,15 +868,15 @@ components:
           enum:
             - full
             - half
-          example: 'full'
+          example: "full"
         typeahead_url:
           description: >-
             The URL that Asana uses to request typehead results from the application server.
           type: string
-          example: 'https://www.app-server.com/app/typeahead'
+          example: "https://www.app-server.com/app/typeahead"
         value:
           allOf:
-            - $ref: '#/components/schemas/TypeaheadItem'
+            - $ref: "#/components/schemas/TypeaheadItem"
             - type: object
               description: >-
                 *Optional*. The value for the form field, which is the chosen [TypeaheadItem](/reference/lookups#typeaheaditem) object.
@@ -894,7 +894,7 @@ components:
           type: string
           enum:
             - form_metadata_v0
-          example: 'form_metadata_v0'
+          example: "form_metadata_v0"
         metadata:
           description: >-
             The metadata (i.e., underlying definition) of a form. `metadata` must exist alongside a `template`, and its schema must be specific to the value of that `template`.
@@ -907,7 +907,7 @@ components:
               description: >-
                 The title of the form, which is displayed at the top of the creation form
               type: string
-              example: 'Create New Issue'
+              example: "Create New Issue"
             fields:
               description: >-
                 An array of form field objects that are rendered in the order they are in the array. Limit of 30 fields.
@@ -924,19 +924,19 @@ components:
                 The text to display on the form’s submit button. If not provided, the default text “Submit” will be
                 displayed on the button.
               type: string
-              example: 'Create New Issue'
+              example: "Create New Issue"
             on_submit_callback:
               description: >-
                 The URL to `POST` the form to when the user clicks the submit button.
                 If this is field is omitted then the submission button will be disabled. This is useful if the user must
                 enter information in a watched field first, such as to show additional fields.
               type: string
-              example: 'https://www.example.com/on_submit'
+              example: "https://www.example.com/on_submit"
             on_change_callback:
               description: >-
                 The URL to `POST` the form to whenever watched field values are changed.
               type: string
-              example: 'https://www.example.com/on_change'
+              example: "https://www.example.com/on_change"
     FormOnChangeFormSubmissionRequest:
       description: >-
         Common properties between app component on change and on submit requests.
@@ -968,8 +968,8 @@ components:
               value: "Typeahead"
     FormSubmissionRequest:
       allOf:
-        - $ref: '#/components/schemas/RootUIComponentRequest'
-        - $ref: '#/components/schemas/FormOnChangeFormSubmissionRequest'
+        - $ref: "#/components/schemas/RootUIComponentRequest"
+        - $ref: "#/components/schemas/FormOnChangeFormSubmissionRequest"
         - type: object
           description: >-
             The body of a form submission.
@@ -978,10 +978,10 @@ components:
               type: string
               description: >-
                 The task GID this hook is coming from.
-              example: '67890'
+              example: "67890"
     ActionFormSubmissionRequest:
       allOf:
-        - $ref: '#/components/schemas/FormSubmissionRequest'
+        - $ref: "#/components/schemas/FormSubmissionRequest"
         - type: object
           description: >-
             The body of a form submission.
@@ -990,22 +990,22 @@ components:
               type: string
               description: >-
                 The name of the rule being created
-              example: 'rule name'
+              example: "rule name"
             action:
               type: string
               description: >-
                 The ID of an existing rule action that is being edited
-              example: '12345'
+              example: "12345"
             action_type:
               type: string
               description: >-
                 The ID of the configuration used to create the rule action.
-              example: '45678'
+              example: "45678"
             project:
               type: string
               description: >-
                 The project GID this hook is coming from.
-              example: '12345'
+              example: "12345"
     WidgetFooter-Created:
       description: >-
         A widget footer that displays the timestamp of the resource's creation time.
@@ -1015,17 +1015,17 @@ components:
         - footer_type
       properties:
         footer_type:
-          description:  >-
+          description: >-
             The type of widget footer.
           type: string
           enum:
             - created
-          example: 'created'
+          example: "created"
         created_at:
           description: >-
             The time (in ISO 8601 date format) to show in the footer.
           type: string
-          example: '2012-02-22T02:06:58.147Z'
+          example: "2012-02-22T02:06:58.147Z"
     WidgetFooter-CustomText:
       type: object
       required:
@@ -1040,22 +1040,22 @@ components:
           type: string
           enum:
             - custom_text
-          example: 'custom_text'
+          example: "custom_text"
         text:
           description: >-
             The text to show in the footer.
           type: string
-          example: 'This is a custom footer message'
+          example: "This is a custom footer message"
         icon_url:
           description: >-
             *Optional*. The icon to show in the footer next to the text. If not provided, no
             icon will be shown.
           type: string
-          example: 'https://example-icon.png'
+          example: "https://example-icon.png"
     FormOnChangeBaseRequest:
       allOf:
-        - $ref: '#/components/schemas/RootUIComponentRequest'
-        - $ref: '#/components/schemas/FormOnChangeFormSubmissionRequest'
+        - $ref: "#/components/schemas/RootUIComponentRequest"
+        - $ref: "#/components/schemas/FormOnChangeFormSubmissionRequest"
         - type: object
           description: >-
             The body of an onchange event.
@@ -1064,10 +1064,10 @@ components:
               type: string
               description: >-
                 The name of the changed FormField.
-              example: 'checkbox_field_1'
+              example: "checkbox_field_1"
     FormOnChangeRequest:
       allOf:
-        - $ref: '#/components/schemas/FormOnChangeBaseRequest'
+        - $ref: "#/components/schemas/FormOnChangeBaseRequest"
         - type: object
           description: >-
             The body of an onchange event.
@@ -1076,10 +1076,10 @@ components:
               type: string
               description: >-
                 The task GID this hook is coming from.
-              example: '67890'
+              example: "67890"
     ActionFormOnChangeRequest:
       allOf:
-        - $ref: '#/components/schemas/FormOnChangeBaseRequest'
+        - $ref: "#/components/schemas/FormOnChangeBaseRequest"
         - type: object
           description: >-
             The body of an action onchange event.
@@ -1088,17 +1088,17 @@ components:
               type: string
               description: >-
                 The ID of an existing rule action that is being edited.
-              example: '12345'
+              example: "12345"
             action_type:
               type: string
               description: >-
                 The ID of the configuration used to create the rule action.
-              example: '45678'
+              example: "45678"
             project:
               type: string
               description: >-
                 The project GID this hook is coming from.
-              example: '12345'
+              example: "12345"
     NotFoundResponse:
       description: >-
         An error response object indicating a request that could not be found (i.e., a status code of `404`).
@@ -1116,7 +1116,7 @@ components:
               example: "Not found."
     RunActionRequest:
       allOf:
-        - $ref: '#/components/schemas/RootUIComponentRequest'
+        - $ref: "#/components/schemas/RootUIComponentRequest"
         - type: object
           description: >-
             The body of an action request.
@@ -1127,7 +1127,7 @@ components:
               type: string
               description: >-
                 The project GID this hook is coming from.
-              example: '12345'
+              example: "12345"
             target_object:
               type: string
               description: >-
@@ -1156,7 +1156,7 @@ components:
           description: >-
             The error that should be displayed to the user.
           type: string
-          example: 'That resource no longer exists'
+          example: "That resource no longer exists"
         action_result:
           type: string
           enum:
@@ -1165,7 +1165,7 @@ components:
           description: >-
             Specifies any additional information that the app wants to send to Asana on completion of the action.
             Can only be `resources_created` or `ok`.
-          example: 'ok'
+          example: "ok"
         resources_created:
           type: array
           description: >-
@@ -1173,7 +1173,7 @@ components:
             shape that Asana expects. `resources_created` expects the name and URL of the resources that the action
             created.
           items:
-            $ref: '#/components/schemas/AttachedResourceResponse'
+            $ref: "#/components/schemas/AttachedResourceResponse"
     RadioOption:
       description: >-
         An option for a radio button field (i.e., an object in the field's `options` array).
@@ -1186,17 +1186,17 @@ components:
           description: >-
             The ID of the option.
           type: string
-          example: 'radio_option_1'
+          example: "radio_option_1"
         label:
           description: >-
             The label of the option. Limit 80 characters.
           type: string
-          example: 'Radio Option 1'
+          example: "Radio Option 1"
         sub_label:
           description: >-
             *Optional*. The label to display as subtext for the `label`.
           type: string
-          example: '#0000FF'
+          example: "#0000FF"
     TypeaheadItem:
       description: >-
         An object describing a typeahead result.
@@ -1209,25 +1209,25 @@ components:
           description: >-
             The title of the typeahead item.
           type: string
-          example: 'OTP Team PF'
+          example: "OTP Team PF"
         subtitle:
           description: >-
             The subtitle of the typeahead item.
           type: string
-          example: 'OTP'
+          example: "OTP"
         value:
           description: >-
             The value of the typeahead item.
           type: string
-          example: 'OTP'
+          example: "OTP"
         icon_url:
           description: >-
             The URL of the icon to display next to the title.
           type: string
-          example: 'https://example-icon.png'
+          example: "https://example-icon.png"
     TypeaheadListRequest:
       allOf:
-        - $ref: '#/components/schemas/RootUIComponentRequest'
+        - $ref: "#/components/schemas/RootUIComponentRequest"
         - type: object
           description: >-
             The body of a typeahead request.
@@ -1236,27 +1236,27 @@ components:
               type: string
               description: >-
                 The workspace GID this hook is coming from.
-              example: '12345'
+              example: "12345"
             query:
               type: string
               description: >-
                 The user's input in the typeahead text input.
-              example: 'Messages'
+              example: "Messages"
             task:
               type: string
               description: >-
                 *Conditional*. The task GID this hook is coming from. `task` is only present in the [modal form](/docs/modal-form) (as there is a "context task"), but not in the [rule action](/docs/rule-action) (as rules are associated with a _project_).
-              example: '67890'
+              example: "67890"
             user:
               type: string
               description: >-
                 The user GID this hook is coming from.
-              example: '54321'
+              example: "54321"
             expires_at:
               type: string
               description: >-
                 The time (in ISO 8601 format) when the request should expire.
-              example: '2019-04-15T01:01:46.055Z'
+              example: "2019-04-15T01:01:46.055Z"
     TypeaheadListResponse:
       description: >-
         The response to a successful typeahead request.
@@ -1268,13 +1268,13 @@ components:
           description: >-
             *Optional*. Header text to display above the list of typeahead results. If no `header` is passed in or the value is an empty string, only the typeahead results with be rendered.
           type: string
-          example: 'List of messages'
+          example: "List of messages"
         items:
           description: >-
             Array of [TypeaheadItem](/reference/lookups#typeaheaditem) objects that indicate typeahead results.
           type: array
           items:
-            $ref: '#/components/schemas/TypeaheadItem'
+            $ref: "#/components/schemas/TypeaheadItem"
     UnauthorizedResponse:
       description: >-
         An error response object indicating a unauthorized request (i.e., a status code of `401`).
@@ -1299,17 +1299,17 @@ components:
         - last_updated_at
       properties:
         footer_type:
-          description:  >-
+          description: >-
             The type of widget footer.
           type: string
           enum:
             - updated
-          example: 'updated'
+          example: "updated"
         last_updated_at:
           description: >-
             The time (in ISO 8601 date format) to show in the footer.
           type: string
-          example: '2012-02-22T02:06:58.147Z'
+          example: "2012-02-22T02:06:58.147Z"
     WidgetField-DatetimeWithIcon:
       description: >-
         A widget field that displays a timestamp and an optional icon.
@@ -1319,27 +1319,27 @@ components:
         - type
       properties:
         type:
-          description:  >-
+          description: >-
             The type of widget field.
           type: string
           enum:
             - datetime_with_icon
-          example: 'datetime_with_icon'
+          example: "datetime_with_icon"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 40 characters.
           type: string
-          example: 'Status'
+          example: "Status"
         datetime:
           description: >-
             The time (in ISO 8601 date format) to display next to the icon.
           type: string
-          example: '2012-02-22T02:06:58.147Z'
+          example: "2012-02-22T02:06:58.147Z"
         icon_url:
           description: >-
             *Optional*. The URL of the icon to display next to the time.
           type: string
-          example: 'https://example-icon.png'
+          example: "https://example-icon.png"
     WidgetField-Pill:
       description: >-
         A widget field that displays custom text in a colored "pill" format.
@@ -1351,22 +1351,22 @@ components:
         - type
       properties:
         type:
-          description:  >-
+          description: >-
             The type of widget field.
           type: string
           enum:
             - pill
-          example: 'pill'
+          example: "pill"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 40 characters.
           type: string
-          example: 'Status'
+          example: "Status"
         text:
           description: >-
             The text to show in the field. Limit 40 characters.
           type: string
-          example: 'In Progress'
+          example: "In Progress"
         color:
           description: >-
             The color of the pill.
@@ -1388,7 +1388,7 @@ components:
             - hot-pink
             - pink
             - cool-gray
-          example: 'cool-gray'
+          example: "cool-gray"
     WidgetField-TextWithIcon:
       description: >-
         A widget field that displays custom text with an optional icon.
@@ -1399,27 +1399,27 @@ components:
         - type
       properties:
         type:
-          description:  >-
+          description: >-
             The type of widget field.
           type: string
           enum:
             - text_with_icon
-          example: 'text_with_icon'
+          example: "text_with_icon"
         name:
           description: >-
             The text (i.e., label) to show in the title of the field. Limit 40 characters.
           type: string
-          example: 'Status'
+          example: "Status"
         text:
           description: >-
             The text to show in the field. Limit 40 characters.
           type: string
-          example: 'In Progress'
+          example: "In Progress"
         icon_url:
           description: >-
             *Optional*. The URL of the icon to display next to the text.
           type: string
-          example: 'https://example-icon.png'
+          example: "https://example-icon.png"
     WidgetMetadataResponse:
       description: >-
         An object containing information about the widget.
@@ -1434,7 +1434,7 @@ components:
           type: string
           enum:
             - summary_with_details_v0
-          example: 'summary_with_details_v0'
+          example: "summary_with_details_v0"
         metadata:
           description: >-
             The metadata (i.e., underlying definition) of a widget. `metadata` must exist alongside a `template`, and its schema must be specific to the value of that `template`.
@@ -1448,7 +1448,7 @@ components:
               description: >-
                 The text to show in the title of the widget. Max length of 200 characters.
               type: string
-              example: 'Status'
+              example: "Status"
             fields:
               description: >-
                 A list of fields showing data from external resources (i.e., an array of WidgetField objects). A widget must contain at least 1 field and no more than 5 fields.
@@ -1461,12 +1461,12 @@ components:
                 The text to show under the title of the widget, next to "Open in {App Name}". If not provided, the
                 `resource_name` from the app definition will be used as default.
               type: string
-              example: 'Custom App Story · Open in Custom App'
+              example: "Custom App Story · Open in Custom App"
             subicon_url:
               description: >-
                 The URL of the subicon next to the subtitle . If not provided, no icon will be shown.
               type: string
-              example: 'https://example-icon.png'
+              example: "https://example-icon.png"
             footer:
               type: object
               description: >-
@@ -1483,12 +1483,12 @@ components:
 paths:
   /widget_metadata_url_path_placeholder:
     parameters:
-      - $ref: '#/components/parameters/resource_url'
-      - $ref: '#/components/parameters/workspace'
-      - $ref: '#/components/parameters/task'
-      - $ref: '#/components/parameters/user'
-      - $ref: '#/components/parameters/attachment'
-      - $ref: '#/components/parameters/expires_at'
+      - $ref: "#/components/parameters/resource_url"
+      - $ref: "#/components/parameters/workspace"
+      - $ref: "#/components/parameters/task"
+      - $ref: "#/components/parameters/user"
+      - $ref: "#/components/parameters/attachment"
+      - $ref: "#/components/parameters/expires_at"
     get:
       summary: Get widget metadata
       description: >-
@@ -1511,19 +1511,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WidgetMetadataResponse'
+                $ref: "#/components/schemas/WidgetMetadataResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         418:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /resource_attach_url_path_placeholder:
     post:
       summary: Attach resource
@@ -1545,24 +1545,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AttachResourceRequest'
+              $ref: "#/components/schemas/AttachResourceRequest"
       responses:
         200:
           description: Successfully attached the resource to the given object.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AttachedResourceResponse'
+                $ref: "#/components/schemas/AttachedResourceResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /resource_typeahead_url_path_placeholder:
     get:
       summary: Get lookup typeahead results
@@ -1585,30 +1585,30 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TypeaheadListRequest'
+              $ref: "#/components/schemas/TypeaheadListRequest"
       responses:
         200:
           description: Successfully retrieved typeahead results.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TypeaheadListResponse'
+                $ref: "#/components/schemas/TypeaheadListResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /form_metadata_url_path_placeholder:
     parameters:
-      - $ref: '#/components/parameters/workspace'
-      - $ref: '#/components/parameters/task'
-      - $ref: '#/components/parameters/user'
-      - $ref: '#/components/parameters/expires_at'
+      - $ref: "#/components/parameters/workspace"
+      - $ref: "#/components/parameters/task"
+      - $ref: "#/components/parameters/user"
+      - $ref: "#/components/parameters/expires_at"
     get:
       summary: Get form metadata
       description: >-
@@ -1631,17 +1631,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /modal_form_typeahead_url_path_placeholder:
     get:
       summary: Get modal form typeahead results
@@ -1669,24 +1669,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TypeaheadListRequest'
+              $ref: "#/components/schemas/TypeaheadListRequest"
       responses:
         200:
           description: Successfully retrieved typeahead results.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TypeaheadListResponse'
+                $ref: "#/components/schemas/TypeaheadListResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /rule_action_typeahead_url_path_placeholder:
     get:
       summary: Get rule action typeahead results
@@ -1714,24 +1714,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TypeaheadListRequest'
+              $ref: "#/components/schemas/TypeaheadListRequest"
       responses:
         200:
           description: Successfully retrieved typeahead results.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TypeaheadListResponse'
+                $ref: "#/components/schemas/TypeaheadListResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
 
   /on_change_callback_path_placeholder:
     post:
@@ -1758,28 +1758,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FormOnChangeRequest'
+              $ref: "#/components/schemas/FormOnChangeRequest"
       responses:
         200:
           description: Successfully returned the new state of the form.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         400:
           description: Something was wrong with the form data.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /on_submit_callback_path_placeholder:
     post:
       summary: On submit callback
@@ -1805,28 +1805,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FormSubmissionRequest'
+              $ref: "#/components/schemas/FormSubmissionRequest"
       responses:
         200:
           description: Successfully attached the resource created by the form.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AttachedResourceResponse'
+                $ref: "#/components/schemas/AttachedResourceResponse"
         400:
           description: Something was wrong with the form data.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /run_action_url_path_placeholder:
     post:
       summary: Run action
@@ -1856,34 +1856,34 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RunActionRequest'
+              $ref: "#/components/schemas/RunActionRequest"
       responses:
         200:
           description: Successfully attached the resource created by the form.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RanActionResponse'
+                $ref: "#/components/schemas/RanActionResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         410:
-          $ref: '#/components/responses/Gone'
+          $ref: "#/components/responses/Gone"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /action.metadata_url_path_placeholder:
     parameters:
-      - $ref: '#/components/parameters/action'
-      - $ref: '#/components/parameters/action_type'
-      - $ref: '#/components/parameters/project'
-      - $ref: '#/components/parameters/workspace'
-      - $ref: '#/components/parameters/user'
-      - $ref: '#/components/parameters/expires_at'
+      - $ref: "#/components/parameters/action"
+      - $ref: "#/components/parameters/action_type"
+      - $ref: "#/components/parameters/project"
+      - $ref: "#/components/parameters/workspace"
+      - $ref: "#/components/parameters/user"
+      - $ref: "#/components/parameters/expires_at"
     get:
       summary: Get action metadata
       description: >-
@@ -1910,17 +1910,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         400:
-          $ref: '#/components/responses/BadRequest'
+          $ref: "#/components/responses/BadRequest"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /action.on_change_callback_path_placeholder:
     post:
       summary: On action change callback
@@ -1946,28 +1946,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionFormOnChangeRequest'
+              $ref: "#/components/schemas/ActionFormOnChangeRequest"
       responses:
         200:
           description: Successfully returned the new state of the form.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         400:
           description: Something was wrong with the form data.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
   /action.on_submit_callback_path_placeholder:
     post:
       summary: On action submit callback
@@ -1999,7 +1999,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ActionFormSubmissionRequest'
+              $ref: "#/components/schemas/ActionFormSubmissionRequest"
       responses:
         200:
           description: Successfully handled form submission.
@@ -2008,12 +2008,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FormMetadataResponse'
+                $ref: "#/components/schemas/FormMetadataResponse"
         401:
-          $ref: '#/components/responses/Unauthorized'
+          $ref: "#/components/responses/Unauthorized"
         403:
-          $ref: '#/components/responses/Forbidden'
+          $ref: "#/components/responses/Forbidden"
         404:
-          $ref: '#/components/responses/NotFound'
+          $ref: "#/components/responses/NotFound"
         500:
-          $ref: '#/components/responses/InternalServerError'
+          $ref: "#/components/responses/InternalServerError"
