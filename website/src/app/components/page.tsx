@@ -45,7 +45,7 @@ const Page = async () => {
             <div className="flex gap-4 items-center">
               <a
                 href="/docs"
-                className="hover:text-gray-300 bg-white/5 rounded p-2 px-4 hover:bg-white hover:text-gray-950"
+                className="bg-white/5 rounded p-2 px-4 hover:bg-white hover:text-gray-950"
               >
                 Documentation
               </a>
