@@ -2,19 +2,22 @@ import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
   topNavigation: [
-    { id: "documentation", label: "Documentation" },
+    { id: "docs", label: "Documentation" },
     { id: "api", label: "API Reference" },
   ],
   sidebar: {
-    documentation: [
+    docs: [
       {
         type: "category",
         label: "Overview",
-        items: ["example", "other-example"],
+        items: ["introduction", "example"],
       },
     ],
   },
-  redirects: [{ from: "/", to: "/documentation" }],
+  redirects: [
+    { from: "/", to: "/docs/introduction" },
+    { from: "/docs", to: "/docs/introduction" },
+  ],
   apis: {
     type: "file",
     input: "./apis/openapi.yaml",
