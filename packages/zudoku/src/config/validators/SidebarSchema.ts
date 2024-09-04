@@ -47,7 +47,9 @@ export const resolveSidebar = async (
     });
 
     if (foundMatches.length === 0) {
-      throw new Error(`No file found for doc ${globId}`);
+      throw new Error(
+        `File not found for document '${globId}'. Check your sidebar configuration.`,
+      );
     }
 
     // Strip parent id if it's prefixed
@@ -63,7 +65,9 @@ export const resolveSidebar = async (
       data.sidebar_label ?? data.title ?? extractTitleFromContent(content);
 
     if (typeof label !== "string") {
-      throw new Error(`No title found for doc ${id}`);
+      throw new Error(
+        `Error determining title for document '${id}'. Check that the document has a H1 header or title frontmatter.`,
+      );
     }
 
     return {
