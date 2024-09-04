@@ -1,6 +1,6 @@
 {
   "name": "create-zudoku-app",
-  "version": "0.5.1-dev.0",
+  "version": "0.5.1",
   "keywords": [
     "react",
     "zudoku"
