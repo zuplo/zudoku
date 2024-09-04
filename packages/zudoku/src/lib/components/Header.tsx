@@ -66,7 +66,7 @@ export const Header = memo(function HeaderInner() {
             <div>{page.banner.message}</div>
           </div>
         ) : (
-          <style>{`:root{--banner-height: 0}`}</style>
+          <style>{`:root{ --banner-height: 0px }`}</style>
         )}
       </>
       <div className="max-w-screen-2xl mx-auto">

@@ -81,16 +81,21 @@
     --top-header-height: 65px;
     --top-nav-height: 50px;
     --banner-height: 48px;
-    --side-nav-width: theme("spacing.72");
     --header-height: calc(
       var(--top-header-height) + var(--top-nav-height) + var(--banner-height)
     );
     --scroll-padding: calc(var(--header-height) + 10px);
+    --side-nav-width: theme("spacing.72");
     --padding-content-top: theme("spacing.12");
     --padding-content-bottom: theme("spacing.12");
     --padding-nav-item: theme("spacing[2.5]");
     --sidecar-grid-cols: 1fr minmax(200px, 260px);
     --scrollbar-width: calc(100vw - 100%);
+  }
+
+  html {
+    /* This is to prevent layout jumping when the scrollbar appears/disappears */
+    @apply -mr-[--scrollbar-width] scroll-pt-[--scroll-padding];
   }
 
   html,
@@ -103,12 +108,6 @@
   }
   * {
     @apply border-border;
-  }
-
-  html {
-    scroll-padding-block: var(--scroll-padding);
-    /* This is to prevent layout jumping when the scrollbar appears/disappears */
-    @apply -mr-[--scrollbar-width];
   }
 
   body {
