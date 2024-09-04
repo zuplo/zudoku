@@ -79,12 +79,12 @@ const Page = async () => {
             </p>
             <div>
               <PreviewInput sample={`${baseExampleUrl}/petstore.oas.json`} />
-              <div className="flex gap-2 mt-6 items-center font-medium text-gray-300 text-xs">
+              <div className="flex flex-col md:flex-row gap-2 mt-6 items-center font-medium text-gray-300 md:text-sm">
                 <strong>Examples:</strong>
-                <ul className="flex gap-2">
+                <ul className="flex gap-4 md:gap-2 flex-col items-stretch w-full md:flex-row md:items-center">
                   <li>
                     <a
-                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
                       href="https://docs-zudoku.pages.dev/"
                       target="_blank"
                     >
@@ -93,7 +93,7 @@ const Page = async () => {
                   </li>
                   <li>
                     <a
-                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
                       href={`/demo?api-url=${baseExampleUrl}/rick-and-morty.oas.json`}
                       target="_blank"
                     >
@@ -102,11 +102,20 @@ const Page = async () => {
                   </li>
                   <li>
                     <a
-                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
                       href={`/demo?api-url=${baseExampleUrl}/petstore.oas.json`}
                       target="_blank"
                     >
                       Petstore API
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      href={`/demo?api-url=${baseExampleUrl}/asana.oas.yml`}
+                      target="_blank"
+                    >
+                      Asana
                     </a>
                   </li>
                 </ul>
