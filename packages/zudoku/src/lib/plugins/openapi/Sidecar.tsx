@@ -178,11 +178,11 @@ export const Sidecar = ({
             operation={operation}
           />
         </SidecarBox.Head>
-        <SidecarBox.Body className="max-h-[480px]">
+        <SidecarBox.Body className="max-h-[480px] p-0">
           <SyntaxHighlight
             language={selectedLang}
             noBackground
-            className="text-xs"
+            className="text-xs p-2"
             code={code}
           />
         </SidecarBox.Body>
