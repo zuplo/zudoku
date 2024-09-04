@@ -572,19 +572,31 @@
             "type": "object",
             "properties": {
               "name": { "type": "string", "example": "Earth" },
-              "url": { "type": "string", "example": "https://rickandmorty.zuplo.io/v1/locations/1" }
+              "url": {
+                "type": "string",
+                "example": "https://rickandmorty.zuplo.io/v1/locations/1"
+              }
             }
           },
           "location": {
             "type": "object",
             "properties": {
               "name": { "type": "string", "example": "Earth" },
-              "url": { "type": "string", "example": "https://rickandmorty.zuplo.io/v1/locations/20" }
+              "url": {
+                "type": "string",
+                "example": "https://rickandmorty.zuplo.io/v1/locations/20"
+              }
             }
           },
-          "image": { "type": "string", "example": "https://rickandmorty.zuplo.io/v1/characters/avatar/1.jpeg" },
+          "image": {
+            "type": "string",
+            "example": "https://rickandmorty.zuplo.io/v1/characters/avatar/1.jpeg"
+          },
           "episode": { "type": "array", "items": { "type": "string" } },
-          "url": { "type": "string", "example": "https://rickandmorty.zuplo.io/v1/characters/1" },
+          "url": {
+            "type": "string",
+            "example": "https://rickandmorty.zuplo.io/v1/characters/1"
+          },
           "created": { "type": "string", "example": "2017-11-04T18:48:46.250Z" }
         }
       },
@@ -596,7 +608,11 @@
             "properties": {
               "count": { "type": "integer", "example": 826 },
               "pages": { "type": "integer", "example": 42 },
-              "next": { "type": "string", "nullable": true, "example": "https://rickandmorty.zuplo.io/v1/characters/?page=2" },
+              "next": {
+                "type": "string",
+                "nullable": true,
+                "example": "https://rickandmorty.zuplo.io/v1/characters/?page=2"
+              },
               "prev": { "type": "string", "nullable": true, "example": null }
             }
           },
@@ -617,7 +633,10 @@
             "type": "array",
             "items": { "type": "string" }
           },
-          "url": { "type": "string", "example": "https://rickandmorty.zuplo.io/v1/locations/1" },
+          "url": {
+            "type": "string",
+            "example": "https://rickandmorty.zuplo.io/v1/locations/1"
+          },
           "created": { "type": "string", "example": "2017-11-10T12:42:04.162Z" }
         }
       },
@@ -650,7 +669,10 @@
             "type": "array",
             "items": { "type": "string" }
           },
-          "url": { "type": "string", "example": "https://rickandmorty.zuplo.io/v1/episodes/1" },
+          "url": {
+            "type": "string",
+            "example": "https://rickandmorty.zuplo.io/v1/episodes/1"
+          },
           "created": { "type": "string", "example": "2017-11-10T12:56:33.798Z" }
         }
       },
@@ -662,7 +684,11 @@
             "properties": {
               "count": { "type": "integer", "example": 51 },
               "pages": { "type": "integer", "example": 3 },
-              "next": { "type": "string", "nullable": true, "example": "https://rickandmorty.zuplo.io/v1/episodes?page=2" },
+              "next": {
+                "type": "string",
+                "nullable": true,
+                "example": "https://rickandmorty.zuplo.io/v1/episodes?page=2"
+              },
               "prev": { "type": "string", "nullable": true, "example": null }
             }
           },

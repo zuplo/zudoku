@@ -16,8 +16,7 @@ pnpm create zudoku-app
 bunx create-zudoku-app
 ```
 
-You will be asked for the name of your project, and then whether you want to
-create a TypeScript project:
+You will be asked for the name of your project, and then whether you want to create a TypeScript project:
 
 ```bash
 ✔ Would you like to use TypeScript? … No / Yes
@@ -27,8 +26,7 @@ Select **Yes** to install the necessary types/dependencies and create a new TS p
 
 ### Non-interactive
 
-You can also pass command line arguments to set up a new project
-non-interactively. See `create-zudoku-app --help`:
+You can also pass command line arguments to set up a new project non-interactively. See `create-zudoku-app --help`:
 
 ```bash
 Usage: create-zudoku-app [project-directory] [options]

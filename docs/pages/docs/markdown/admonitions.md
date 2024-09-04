@@ -83,9 +83,7 @@ Hello world
 
 <!-- Prettier changes this -->
 
-:::note
-Hello world
-:::
+:::note Hello world :::
 
 <!-- to this -->
 

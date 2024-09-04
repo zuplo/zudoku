@@ -62,7 +62,7 @@ export const SchemaPropertyItem = ({
         <div className="flex gap-2 items-center">
           <code>{name}</code>
           <span className="text-muted-foreground">
-            {schema.type === "array" && schema.items?.type ? (
+            {schema.type === "array" && schema.items.type ? (
               <span>{schema.items.type}[]</span>
             ) : Array.isArray(schema.type) ? (
               <span>{schema.type.join(" | ")}</span>
