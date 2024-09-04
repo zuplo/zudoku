@@ -1,4 +1,5 @@
 import DocsScreenshot from "@/app/assets/docs-light.jpg";
+import { CopyButton } from "@/app/components/CopyButton";
 import { FeatureGrid } from "@/app/components/FeatureGrid";
 import { OpenAPI } from "@/app/components/OpenAPI";
 import { PreviewInput } from "@/app/components/PreviewInput";
@@ -171,7 +172,13 @@ Ctrl+C to exit
           Run the following command to get started with Zudoku in your project.
         </p>
         <Frame className="w-full max-w-2xl" darkMode>
-          <Code code="npm create zudoku-app@latest" lang="shell" />
+          <div className="flex justify-between items-center">
+            <Code code="npm create zudoku-app@latest" lang="shell" />
+            <CopyButton
+              textToCopy="npm create zudoku-app@latest"
+              className="p-2 -m-2"
+            />
+          </div>
         </Frame>
       </div>
       <div className="h-20" />
