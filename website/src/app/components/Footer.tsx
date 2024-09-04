@@ -94,13 +94,15 @@ export const Footer = () => (
           </ul>
         </div>
         <div className="w-full flex justify-center md:justify-start">
-          <Image
-            src="/zuplo.svg"
-            height="12"
-            width="80"
-            className="inline-block hover:opacity-80"
-            alt="Zuplo Logo"
-          />
+          <a href="https://zuplo.com">
+            <Image
+              src="/zuplo.svg"
+              height="12"
+              width="80"
+              className="inline-block hover:opacity-80"
+              alt="Zuplo Logo"
+            />
+          </a>
         </div>
         <div className="flex flex-col md:flex-row items-stretch my-10 flex-wrap gap-4">
           <div className="flex-1 text-center md:text-left">
