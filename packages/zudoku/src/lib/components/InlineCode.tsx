@@ -10,8 +10,8 @@ export const InlineCode = ({
 }) => (
   <code
     className={cn(
-      className,
       "font-mono border p-1 py-0.5 rounded bg-border/50 dark:bg-border/70 whitespace-nowrap",
+      className,
     )}
   >
     {children}
