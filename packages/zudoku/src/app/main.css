@@ -80,8 +80,11 @@
   :root {
     --top-header-height: 65px;
     --top-nav-height: 50px;
+    --banner-height: 48px;
     --side-nav-width: theme("spacing.72");
-    --header-height: calc(var(--top-header-height) + var(--top-nav-height));
+    --header-height: calc(
+      var(--top-header-height) + var(--top-nav-height) + var(--banner-height)
+    );
     --scroll-padding: calc(var(--header-height) + 10px);
     --padding-content-top: theme("spacing.12");
     --padding-content-bottom: theme("spacing.12");
