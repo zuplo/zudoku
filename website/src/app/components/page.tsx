@@ -109,6 +109,15 @@ const Page = async () => {
                       Petstore API
                     </a>
                   </li>
+                  <li>
+                    <a
+                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      href={`/demo?api-url=${baseExampleUrl}/train-travel.oas.yaml`}
+                      target="_blank"
+                    >
+                      Train Travel API
+                    </a>
+                  </li>
                 </ul>
               </div>
             </div>
