@@ -2,18 +2,12 @@
 
 import { cn } from "@/app/utils/cn";
 import { PaperclipIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function validate(data: string) {
   const trimmedData = data.trim().toLowerCase();
-
-  // Regex pattern for JSON: match `"swagger": "2.0"` allowing for spaces/newlines/quotes variations
   const jsonPattern = /"swagger"\s*:\s*"2\.0"/;
-
-  // Regex pattern for YAML: match `swagger: "2.0"` or `swagger: 2.0` allowing for spaces/newlines/quotes variations
   const yamlPattern = /swagger\s*:\s*["']?2\.0["']?/;
-
-  // Check if the string matches JSON or YAML pattern
   if (jsonPattern.test(trimmedData)) {
     return "We currently don't support Swagger 2.0 YAML Specification";
   }
@@ -29,6 +23,12 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
 
+  useEffect(() => {
+    if (formRef.current && error) {
+      formRef.current.reset();
+    }
+  }, [error]);
+
   return (
     <>
       {error && <div className=" p-2 bg-white/5 rounded mb-4">{error}</div>}
@@ -38,7 +38,6 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
           "justify-center items-center gap-x-3 sm:flex rounded-xl border border-transparent",
           // isDragActive && "bg-white/5 border-dashed border-white/10",
         )}
-        method={"POST"}
         onSubmit={(e) => {
           e.preventDefault();
           setError(null);
