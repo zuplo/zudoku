@@ -1,15 +1,14 @@
 export const PreviewBanner = () => {
   return (
     <>
-      Zudoku is under active development. If you find any issues or have any
-      feature requests, please{" "}
+      Welcome to the beta! Please{" "}
       <a
         href="https://github.com/zuplo/zudoku/issues"
         className="underline hover:white"
       >
-        open an issue
-      </a>
-      .
+        open a Github issue
+      </a>{" "}
+      if you have feature requests or find any issues.
     </>
   );
 };
