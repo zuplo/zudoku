@@ -1,4 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
+import { ReactNode } from "react";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
@@ -47,6 +48,9 @@ type Page = Partial<{
     };
     width?: string;
     alt?: string;
+  };
+  banner?: {
+    message: ReactNode;
   };
 }>;
 

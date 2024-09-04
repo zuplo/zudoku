@@ -35,6 +35,9 @@ if (!root) {
 const config = {
   page: {
     pageTitle: "",
+    banner: {
+      message: <DemoAnnouncement />,
+    },
   },
   topNavigation: [
     {
@@ -42,9 +45,6 @@ const config = {
       label: "API Reference",
     },
   ],
-  slotlets: {
-    "layout-before-head": <DemoAnnouncement />,
-  },
   plugins: [
     // Using the plugin directly because there's no config file to load in the virtual plugins
     openApiPlugin({
