@@ -155,7 +155,7 @@ export type SchemaTag = {
   operations: Array<OperationItem>;
 };
 
-export type SchemaType = "json" | "url" | "yaml";
+export type SchemaType = "file" | "url";
 
 export type TagItem = {
   __typename?: "TagItem";

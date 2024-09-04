@@ -4,6 +4,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "types": ["zudoku/client"],
     "useDefineForClassFields": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
@@ -12,5 +13,5 @@
     "useUnknownInCatchVariables": false,
     "jsx": "react-jsx"
   },
-  "include": ["zudoku.config.tsx"]
+  "include": ["src", "zudoku.config.ts"]
 }

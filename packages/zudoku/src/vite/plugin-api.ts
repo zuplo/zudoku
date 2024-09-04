@@ -1,5 +1,7 @@
+import { readFile } from "fs/promises";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
+import { OpenApiPluginOptions } from "../lib/plugins/openapi/index.js";
 
 const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
@@ -23,14 +25,34 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
 
         if (config.apis) {
           const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-          apis.forEach((c) => {
+          for (const c of apis) {
+            let apiConfig: OpenApiPluginOptions;
+            if (c.type === "file") {
+              const raw = await readFile(c.input, "utf-8");
+
+              let data: unknown;
+              if (raw.trim().startsWith("{")) {
+                data = JSON.parse(raw);
+              } else {
+                const yaml = await import("yaml");
+                data = yaml.parse(raw);
+              }
+
+              apiConfig = {
+                ...c,
+                input: data,
+              };
+            } else {
+              apiConfig = c;
+            }
+
             code.push(
               ...[
                 `// @ts-ignore`, // To make tests pass
-                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...c, inMemory: options?.ssr ?? config.mode === "internal" })}));`,
+                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, inMemory: options?.ssr ?? config.mode === "internal" })}));`,
               ],
             );
-          });
+          }
         }
 
         code.push(`export { configuredApiPlugins };`);

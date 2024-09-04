@@ -68,8 +68,10 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
   head: "gray",
 };
 
+export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
+
 export const openApiPlugin = (
-  config: OasPluginConfig & InternalOasPluginConfig,
+  config: OpenApiPluginOptions,
 ): DevPortalPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");
 
