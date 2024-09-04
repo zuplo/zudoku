@@ -1,27 +1,68 @@
 "use client";
 
+import { cn } from "@/app/utils/cn";
 import { PaperclipIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
-export const PreviewInput = () => {
+function validate(data: string) {
+  const trimmedData = data.trim().toLowerCase();
+  const jsonPattern = /"swagger"\s*:\s*"2\.0"/;
+  const yamlPattern = /swagger\s*:\s*["']?2\.0["']?/;
+  if (jsonPattern.test(trimmedData)) {
+    return "We currently don't support Swagger 2.0 YAML Specification";
+  }
+
+  if (yamlPattern.test(trimmedData)) {
+    return "We currently don't support Swagger 2.0 YAML Specification";
+  }
+
+  return null;
+}
+
+export const PreviewInput = ({ sample }: { sample: string }) => {
+  const [error, setError] = useState<string | null>(null);
+  const formRef = useRef<HTMLFormElement | null>(null);
+
+  useEffect(() => {
+    if (formRef.current && error) {
+      formRef.current.reset();
+    }
+  }, [error]);
+
   return (
     <>
+      {error && <div className=" p-2 bg-white/5 rounded mb-4">{error}</div>}
       <form
-        className="justify-center items-center gap-x-3 sm:flex"
+        ref={formRef}
+        className={cn(
+          "justify-center items-center gap-x-3 sm:flex rounded-xl border border-transparent",
+          // isDragActive && "bg-white/5 border-dashed border-white/10",
+        )}
         onSubmit={(e) => {
+          e.preventDefault();
+          setError(null);
           if (e.target instanceof HTMLFormElement) {
             const formData = new FormData(e.target);
             const url = formData.get("url");
             const spec = formData.get("spec");
-
-            if (typeof url === "string" && url.length > 0) {
-              window.open(`/demo?api-url=${url.trim()}`);
-            }
-
-            if (spec instanceof Blob) {
+            if (spec instanceof Blob && spec.size > 0) {
               const reader = new FileReader();
 
               reader.onload = async (e) => {
-                console.log("upload done");
+                const schema = e.target?.result;
+
+                if (typeof schema !== "string") {
+                  setError("Failed to read the file");
+                  return;
+                }
+
+                const validationError = validate(schema);
+
+                if (validationError) {
+                  setError(validationError);
+                  return;
+                }
+
                 const createBin = await fetch(
                   "https://api.mockbin.io/v1/bins",
                   {
@@ -34,7 +75,9 @@ export const PreviewInput = () => {
                         status: 200,
                         body: e.target?.result,
                         headers: {
-                          "Content-Type": "application/json",
+                          "Content-Type": schema.trim().startsWith("{")
+                            ? "application/json"
+                            : "application/yml",
                         },
                       },
                     }),
@@ -54,21 +97,40 @@ export const PreviewInput = () => {
               };
 
               reader.readAsText(spec);
+            } else {
+              const schema =
+                typeof url === "string" && url.trim().length > 0
+                  ? url.trim()
+                  : sample;
+
+              window.open(`/demo?api-url=${schema}`);
             }
 
             e.preventDefault();
           }
         }}
       >
-        <label>
-          <input type="file" name="spec" className="hidden" />
+        <label className="hidden md:block rounded transition hover:scale-125 cursor-pointer">
+          <input
+            type="file"
+            name="spec"
+            className="hidden"
+            onChange={(e) => {
+              e.preventDefault();
+              if (formRef.current) {
+                formRef.current.dispatchEvent(
+                  new Event("submit", { bubbles: true, cancelable: true }),
+                );
+              }
+            }}
+          />
           <PaperclipIcon />
         </label>
         <input
           name="url"
           type="url"
-          placeholder="https://example.io/openapi.json"
-          className="w-full px-4 py-3.5 text-gray-400 bg-slate-700 outline-none rounded-lg shadow font-medium text-md"
+          placeholder={sample}
+          className="w-full px-4 py-3.5 text-white bg-slate-700 outline-none rounded-lg shadow font-medium text-md"
         />
         <button
           type="submit"
