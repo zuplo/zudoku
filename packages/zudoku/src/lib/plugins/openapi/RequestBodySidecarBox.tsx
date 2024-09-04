@@ -18,12 +18,12 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
         <SidecarBox.Head className="text-xs flex justify-between items-center">
           <span className="font-mono">Request Body Example</span>
         </SidecarBox.Head>
-        <SidecarBox.Body>
+        <SidecarBox.Body className="p-0">
           <SyntaxHighlight
             language="json"
             noBackground
             copyable
-            className="text-xs max-h-[450px]"
+            className="text-xs max-h-[450px] p-2"
             code={JSON.stringify(
               content.at(0)?.schema
                 ? generateSchemaExample(content[0].schema as SchemaObject)

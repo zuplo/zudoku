@@ -47,12 +47,12 @@ export const ResponsesSidecarBox = ({
 
         return (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
-            <SidecarBox.Body>
+            <SidecarBox.Body className="p-0">
               {schema ? (
                 <SyntaxHighlight
                   language="json"
                   noBackground
-                  className="text-xs max-h-[450px]"
+                  className="text-xs max-h-[450px] p-2"
                   code={JSON.stringify(generateSchemaExample(schema), null, 2)}
                 />
               ) : (
