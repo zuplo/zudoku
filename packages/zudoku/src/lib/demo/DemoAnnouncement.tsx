@@ -1,11 +1,11 @@
 export const DemoAnnouncement = () => {
   return (
     <>
-      This demo hosting of your OpenAPI isn't as fast or flexible as
-      self-hosting;{" "}
+      This demo version of your OpenAPI isn't as fast or flexible as
+      self-hosting.{" "}
       <a
         href="https://github.com/zuplo/zudoku"
-        className="px-1 underline hover:white"
+        className="underline hover:white"
       >
         Get started here
       </a>{" "}
