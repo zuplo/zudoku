@@ -1,6 +1,6 @@
 export const PreviewBanner = () => {
   return (
-    <>
+    <div className="text-center">
       Welcome to the beta! Please{" "}
       <a
         href="https://github.com/zuplo/zudoku/issues"
@@ -9,7 +9,7 @@ export const PreviewBanner = () => {
         open a Github issue
       </a>{" "}
       if you have feature requests or find any issues.
-    </>
+    </div>
   );
 };
 

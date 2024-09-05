@@ -51,6 +51,8 @@ type Page = Partial<{
   };
   banner?: {
     message: ReactNode;
+    color?: "note" | "tip" | "info" | "caution" | "danger";
+    dismissible?: boolean;
   };
 }>;
 
