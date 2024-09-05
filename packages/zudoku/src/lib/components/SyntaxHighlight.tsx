@@ -9,29 +9,29 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 
 globalThis.Prism = Prism;
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-bash.min.js");
+void import("prismjs/components/prism-bash.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-ruby.min.js");
+void import("prismjs/components/prism-ruby.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-markup-templating.js");
+void import("prismjs/components/prism-markup-templating.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-markup.js");
+void import("prismjs/components/prism-markup.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-php.min.js");
+void import("prismjs/components/prism-php.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-json.min.js");
+void import("prismjs/components/prism-json.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-java.min.js");
+void import("prismjs/components/prism-java.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-csharp.min.js");
+void import("prismjs/components/prism-csharp.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-objectivec.min.js");
+void import("prismjs/components/prism-objectivec.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-markdown.min.js");
+void import("prismjs/components/prism-markdown.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-javascript.min.js");
+void import("prismjs/components/prism-javascript.min.js");
 // @ts-expect-error This is untyped
-import("prismjs/components/prism-typescript.min.js");
+void import("prismjs/components/prism-typescript.min.js");
 
 import { useState } from "react";
 import { cn } from "../util/cn.js";
@@ -96,7 +96,7 @@ export const SyntaxHighlight = ({
               type="button"
               aria-label="Copy code"
               title="Copy code"
-              className="absolute top-1.5 right-1.5 p-2.5 opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition"
+              className="absolute top-2 right-2 p-2 opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition"
               disabled={isCopied}
               onClick={() => {
                 setIsCopied(true);
@@ -109,9 +109,9 @@ export const SyntaxHighlight = ({
               }}
             >
               {isCopied ? (
-                <CheckIcon className="text-emerald-600" size={18} />
+                <CheckIcon className="text-emerald-600" size={16} />
               ) : (
-                <CopyIcon size={18} />
+                <CopyIcon size={16} />
               )}
             </button>
           )}

@@ -9,3 +9,4 @@ packages/zudoku/standalone/
 pnpm-lock.yaml
 .next/
 stats.html
+.vercel/

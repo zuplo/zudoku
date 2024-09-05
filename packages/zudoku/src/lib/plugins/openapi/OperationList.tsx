@@ -7,6 +7,7 @@ import { InlineCode } from "../../components/InlineCode.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
+import { Endpoint } from "./Endpoint.js";
 import { OperationListItem } from "./OperationListItem.js";
 import StaggeredRender from "./StaggeredRender.js";
 import { useOasConfig } from "./context.js";
@@ -131,6 +132,9 @@ export const OperationList = () => {
         </Heading>
         <Markdown content={result.data.schema.description ?? ""} />
       </div>
+      <hr />
+      <Endpoint url={result.data.schema.url} />
+
       {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (

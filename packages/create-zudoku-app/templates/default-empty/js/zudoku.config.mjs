@@ -1,13 +1,7 @@
 /** @type {import('zudoku').ZudokuConfig} */
 const config = {
-  apis: {
-    type: "url",
-    input: `https://api.example.com/openapi.json`,
-    path: "/api",
-  },
-  docs: {
-    files: "/pages/**/*.{md,mdx}",
-  },
+  // Your config here
+  // See: https://zudoku.dev/docs/configuration/overview
 };
 
 export default config;

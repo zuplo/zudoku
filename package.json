@@ -1,5 +1,5 @@
 {
-  "name": "zudoku-root",
+  "name": "root",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,7 +10,7 @@
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "clean": "git clean -Xfde !.env",
-    "prepare": "husky prepare",
+    "prepare": "husky",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor"
   },

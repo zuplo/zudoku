@@ -12,6 +12,7 @@ import {
   type LoadedConfig,
   loadZudokuConfig,
 } from "./config.js";
+import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
 
 export class DevServer {
@@ -42,11 +43,12 @@ export class DevServer {
 
     app.use(graphql.graphqlEndpoint, graphql);
     app.use(vite.middlewares);
+
     printDiagnosticsToConsole(
       `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
     );
 
-    app.use("*", async (request, response) => {
+    app.use("*", async (request, response, next) => {
       const url = request.originalUrl;
 
       try {
@@ -56,7 +58,7 @@ export class DevServer {
 
         if (this.options.ssr) {
           if (!this.currentConfig) {
-            throw new Error("No config loaded");
+            throw new Error("Error loading configuration.");
           }
 
           const module = await vite.ssrLoadModule(getAppServerEntryPath());
@@ -75,11 +77,12 @@ export class DevServer {
             .end(template);
         }
       } catch (e) {
-        vite.ssrFixStacktrace(e);
         logger.error(e);
-        response.status(500).end(e.message);
+        next(e);
       }
     });
+
+    app.use(errorMiddleware(vite));
 
     return new Promise<void>((resolve) => {
       this.server = app.listen(this.options.port, resolve);

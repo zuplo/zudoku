@@ -25,7 +25,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   useEffect(() => {
     // Initialize the authentication plugin
-    authentication?.pageLoad ? authentication.pageLoad() : null;
+    authentication?.pageLoad?.();
   }, [authentication]);
 
   useEffect(() => {

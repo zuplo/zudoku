@@ -57,7 +57,6 @@ module.exports = {
         },
       },
     ],
-    "@typescript-eslint/type-annotation-spacing": "warn",
     "@typescript-eslint/switch-exhaustiveness-check": "error",
     "@typescript-eslint/prefer-nullish-coalescing": [
       "warn",

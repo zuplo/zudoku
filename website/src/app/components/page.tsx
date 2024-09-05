@@ -40,13 +40,21 @@ const Page = async () => {
     <div className="min-h-full bg-gray-900 p-4 lg:p-0">
       <header>
         <nav className="pb-5 md:text-sm">
-          <div className="h-24 flex items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
+          <div className="h-24 flex flex-col md:flex-row items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
             <Brand />
-            <div className="flex gap-4">
-              <a href="/docs" className="hover:text-gray-300">
+            <div className="flex gap-4 items-center">
+              <a
+                href="/docs"
+                className="bg-white/5 rounded p-2 px-4 hover:bg-white hover:text-gray-950"
+              >
                 Documentation
               </a>
-              <a target="_blank" href="https://github.com/zuplo/zudoku/">
+              <div className="mx-2 border h-10 border-slate-700" />
+              <a
+                target="_blank"
+                href="https://github.com/zuplo/zudoku/"
+                className="flex-shrink-0"
+              >
                 <Image
                   src="/github-logo.svg"
                   width="20"
@@ -55,7 +63,11 @@ const Page = async () => {
                   alt="Zudoku on Github"
                 />
               </a>
-              <a target="_blank" href="https://discord.zudoku.dev">
+              <a
+                target="_blank"
+                href="https://discord.zudoku.dev"
+                className="flex-shrink-0"
+              >
                 <Image
                   src="/discord-logo.svg"
                   width="20"
@@ -79,21 +91,21 @@ const Page = async () => {
             </p>
             <div>
               <PreviewInput sample={`${baseExampleUrl}/petstore.oas.json`} />
-              <div className="flex gap-2 mt-6 items-center font-medium text-gray-300 text-xs">
+              <div className="flex flex-col md:flex-row gap-2 mt-6 items-center font-medium text-gray-300 md:text-sm">
                 <strong>Examples:</strong>
-                <ul className="flex gap-2">
+                <ul className="flex gap-4 md:gap-2 flex-col items-stretch w-full md:flex-row md:items-center">
                   <li>
                     <a
-                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
-                      href="https://docs-zudoku.pages.dev/"
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      href={`/demo?api-url=${baseExampleUrl}/train-travel.oas.yaml`}
                       target="_blank"
                     >
-                      Zuplo
+                      Train Travel API
                     </a>
                   </li>
                   <li>
                     <a
-                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
                       href={`/demo?api-url=${baseExampleUrl}/rick-and-morty.oas.json`}
                       target="_blank"
                     >
@@ -102,11 +114,29 @@ const Page = async () => {
                   </li>
                   <li>
                     <a
-                      className="py-1.5 px-2 bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
                       href={`/demo?api-url=${baseExampleUrl}/petstore.oas.json`}
                       target="_blank"
                     >
                       Petstore API
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      href={`/demo?api-url=${baseExampleUrl}/asana.oas.yml`}
+                      target="_blank"
+                    >
+                      Asana
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
+                      href="https://docs-zudoku.pages.dev/"
+                      target="_blank"
+                    >
+                      Zuplo
                     </a>
                   </li>
                 </ul>

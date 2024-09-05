@@ -60,7 +60,12 @@ export const OperationListItem = ({
         )}
         {renderIf(operation.requestBody?.content?.at(0)?.schema, (schema) => (
           <div className="mt-4 flex flex-col gap-4">
-            <Heading level={3} className="capitalize">
+            <Heading
+              level={3}
+              className="capitalize"
+              id={`${operation.slug}/request-body`}
+              registerSidebarAnchor
+            >
               Request Body
             </Heading>
             <SchemaView schema={schema} />
@@ -68,7 +73,12 @@ export const OperationListItem = ({
         ))}
         {operation.responses.length > 0 && (
           <>
-            <Heading level={3} className="capitalize mt-8 pt-8 border-t">
+            <Heading
+              level={3}
+              className="capitalize mt-8 pt-8 border-t"
+              id={`${operation.slug}/responses`}
+              registerSidebarAnchor
+            >
               Responses
             </Heading>
             <Tabs

@@ -7,40 +7,34 @@
   </picture>
 </a>
 
-## API documentation should always be free.
-
-[![MIT License](https://img.shields.io/badge/license-mit-green?style=for-the-badge&labelColor=000000)](https://github.com/zuplo/zudoku/license.md)
-[![Zudoku Version](https://img.shields.io/npm/v/zudoku.svg?style=for-the-badge&labelColor=000000)](https://www.npmjs.com/package/zudoku)
-[![Create Zudoku App Version](https://img.shields.io/npm/v/create-zudoku-app?label=cli&style=for-the-badge&labelColor=000000)](https://www.npmjs.com/package/create-zudoku-app)
-[![Made with love by Zuplo](https://img.shields.io/badge/MADE%20BY%20Zuplo-FF00BD.svg?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAzNyAzMiIgYXJpYS1oaWRkZW49InRydWUiPgogIDxwYXRoIGZpbGw9IiNGRjAwQkQiIGQ9Ik0yNy4xNDIgMTkuOTc4SDE2LjYyTDI3LjgzIDguNzQ2YS43NTguNzU4IDAgMDAtLjUzNC0xLjI5M0g5LjQ4OFYwaDE5LjUzNGE3LjU3MyA3LjU3MyAwIDAxNC4wNjUgMS4xMjUgNy41OTEgNy41OTEgMCAwMTIuODM2IDMuMTI2IDcuNDAyIDcuNDAyIDAgMDEtMS40NjEgOC4zOThsLTcuMzIgNy4zMjh6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGMDBCRCIgZD0iTTkuNDg5IDExLjA0MmgxMC41MjRsLTExLjE5IDExLjIxYS43NzIuNzcyIDAgMDAuNTQzIDEuMzE2aDE3Ljc1OXY3LjQ1Mkg3LjYxYTcuNTc0IDcuNTc0IDAgMDEtNC4wNjUtMS4xMjVBNy41OTMgNy41OTMgMCAwMS43MSAyNi43NjhhNy40MDMgNy40MDMgMCAwMTEuNDYyLTguMzk3bDcuMzE4LTcuMzI5eiIvPgo8L3N2Zz4K&labelColor=000)](https://zuplo.com)
-[![Join the community on Discord](https://img.shields.io/badge/Chat%20on%20discord-5865F2.svg?style=for-the-badge&logo=discord&labelColor=000000&logoWidth=20)](https://discord.com/channels/848913990360629268/1235294876778627246)
+[![MIT License](https://img.shields.io/badge/license-mit-green?style=flat&labelColor=000000)](https://github.com/zuplo/zudoku/license.md)
+[![Zudoku Version](https://img.shields.io/npm/v/zudoku.svg?style=flat&labelColor=000000)](https://www.npmjs.com/package/zudoku)
+[![Create Zudoku App Version](https://img.shields.io/npm/v/create-zudoku-app?label=cli&style=flat&labelColor=000000)](https://www.npmjs.com/package/create-zudoku-app)
+[![Made with love by Zuplo](https://img.shields.io/badge/Made%20by%20Zuplo-FF00BD.svg?style=flat&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAzNyAzMiIgYXJpYS1oaWRkZW49InRydWUiPgogIDxwYXRoIGZpbGw9IiNGRjAwQkQiIGQ9Ik0yNy4xNDIgMTkuOTc4SDE2LjYyTDI3LjgzIDguNzQ2YS43NTguNzU4IDAgMDAtLjUzNC0xLjI5M0g5LjQ4OFYwaDE5LjUzNGE3LjU3MyA3LjU3MyAwIDAxNC4wNjUgMS4xMjUgNy41OTEgNy41OTEgMCAwMTIuODM2IDMuMTI2IDcuNDAyIDcuNDAyIDAgMDEtMS40NjEgOC4zOThsLTcuMzIgNy4zMjh6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGMDBCRCIgZD0iTTkuNDg5IDExLjA0MmgxMC41MjRsLTExLjE5IDExLjIxYS43NzIuNzcyIDAgMDAuNTQzIDEuMzE2aDE3Ljc1OXY3LjQ1Mkg3LjYxYTcuNTc0IDcuNTc0IDAgMDEtNC4wNjUtMS4xMjVBNy41OTMgNy41OTMgMCAwMS43MSAyNi43NjhhNy40MDMgNy40MDMgMCAwMTEuNDYyLTguMzk3bDcuMzE4LTcuMzI5eiIvPgo8L3N2Zz4K&labelColor=000)](https://zuplo.com)
 
 </div>
 
-<div align="center">
-  <a href="https://twitter.com/zuplo">
-    <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/zuplo">
-  </a>
-  <p align="center">
-    <a href="#-try-it-right-now"><strong>Try Zudoku</strong></a> · 
-    <a href="#-installation"><strong>Installation</strong></a> · 
-    <a href="#-examples"><strong>Examples</strong></a> · 
-    <a href="#-contributing"><strong>Contributing</strong></a> · 
-    <a href="#-motivation"><strong>Motivation</strong></a>
-  </p>
-</div>
+# Zudoku
+
+API documentation should always be free.
+
+<a href="#-installation"><strong>Installation</strong></a> ·
+<a href="https://zudoku.dev/docs/getting-started"><strong>Docs</strong></a> ·
+<a href="#-examples"><strong>Examples</strong></a> ·
+<a href="#-contributing"><strong>Contributing</strong></a> ·
+<a href="#-motivation"><strong>Motivation</strong></a>
 
 ## Introduction
 
 **Zudoku** is an open-source, highly customizable API documentation framework for building quality developer experiences around OpenAPI documents.
 
-Because great API documentation frameworks should always be:
+Because great API documentation frameworks should be:
 
-✅ Free<br />
+🌍 Free & Open Source<br />
 ✅ OpenAPI powered<br />
-✅ Extensible<br />
-✅ Low barrier to entry<br />
-✅ Easy to maintain
+🔩 Extensible with Plugins<br />
+⚡ Easy to setup & blazing fast to work with<br />
+🔧 Easy to maintain
 
 ## 🤩 Try it, right now!
 
@@ -116,7 +110,7 @@ Because Zudoku is a flexible and highly customizable framework it can be used to
 - A developer portal with documentation, fully functional API reference for testing and authentication support for your user accounts.
 - Internal documentation
 
-## 🔧 Contributing
+## 🔧 Contributing & Community
 
 For details on how to contribute to Zudoku, see the [contributing guide](CONTRIBUTING.md).
 
@@ -135,3 +129,7 @@ Zudoku will always be open-source. It will always be free.
 ## License
 
 Zudoku is licensed under MIT. See the full [license](LICENSE.md).
+
+<a href="https://twitter.com/zuplo">
+  <img alt="X (formerly Twitter) Follow" src="https://img.shields.io/twitter/follow/zuplo">
+</a>

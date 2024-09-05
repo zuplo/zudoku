@@ -100,6 +100,11 @@ const ConfigSchema = z
         pageTitle: z.string(),
         logoUrl: z.string(),
         logo: LogoSchema,
+        banner: z
+          .object({
+            message: z.custom<NonNullable<ReactNode>>(),
+          })
+          .optional(),
       })
       .partial(),
     topNavigation: z.array(
