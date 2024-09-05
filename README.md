@@ -59,7 +59,7 @@ You can use the CLI to generate a new project or use it standalone via CDN as a 
 Fire up your new API docs using the command line generator:
 
 ```
-npm create-zudoku-app@latest
+npm create zudoku-app@latest
 ```
 
 ### 📦 Standalone via CDN
