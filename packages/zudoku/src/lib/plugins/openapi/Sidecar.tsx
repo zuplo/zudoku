@@ -1,7 +1,6 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { Fragment, useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router-dom";
-import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
@@ -15,6 +14,7 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
+import { methodForColor } from "./util/methodToColor.js";
 import { useQuery } from "./util/urql.js";
 
 const getConverted = (snippet: HTTPSnippet, option: string) => {
@@ -71,17 +71,6 @@ export const GetServerQuery = graphql(/* GraphQL */ `
 
 const context = { suspense: true };
 
-const methodToColor = {
-  get: TextColorMap.green,
-  post: TextColorMap.blue,
-  put: TextColorMap.yellow,
-  delete: TextColorMap.red,
-  patch: TextColorMap.purple,
-  options: TextColorMap.indigo,
-  head: TextColorMap.gray,
-  trace: TextColorMap.gray,
-};
-
 export const Sidecar = ({
   operation,
   selectedResponse,
@@ -97,10 +86,7 @@ export const Sidecar = ({
     variables: oasConfig,
     context,
   });
-  const methodTextColor =
-    methodToColor[
-      operation.method.toLocaleLowerCase() as keyof typeof methodToColor
-    ] ?? TextColorMap.gray;
+  const methodTextColor = methodForColor(operation.method);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();

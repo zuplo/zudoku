@@ -150,6 +150,7 @@ export const OperationList = () => {
               <StaggeredRender>
                 {tag.operations.map((fragment) => (
                   <OperationListItem
+                    serverUrl={result.data?.schema.url}
                     key={fragment.slug}
                     operationFragment={fragment}
                   />
