@@ -103,7 +103,7 @@ To get started with some of the features Zudoku offers you can use one of these 
 
 ### Zudoku use cases
 
-Because Zudoku is a flexible and highly customizable framework it can be used to create many things, including:
+Zudoku is a flexible and highly customizable framework that can be used to create many things, including:
 
 - Standalone documentation websites
 - OpenAPI powered API references
