@@ -1,6 +1,7 @@
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { resolveSidebar } from "../config/validators/SidebarSchema.js";
+import { replaceSidebarAnnotatedIcons } from "./plugin-icons.js";
 
 export const viteSidebarPlugin = (
   getConfig: () => ZudokuPluginOptions,
@@ -30,7 +31,12 @@ export const viteSidebarPlugin = (
         ),
       );
 
-      return `export const configuredSidebar = ${JSON.stringify(resolvedSidebar)};`;
+      return JSON.stringify(resolvedSidebar);
+    },
+    async transform(code, id) {
+      if (id !== resolvedVirtualModuleId) return;
+
+      return replaceSidebarAnnotatedIcons(code);
     },
   };
 };

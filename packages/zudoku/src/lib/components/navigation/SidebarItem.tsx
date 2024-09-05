@@ -12,7 +12,7 @@ import { SidebarBadge } from "./SidebarBadge.js";
 import { SidebarCategory } from "./SidebarCategory.js";
 
 export const navigationListItem = cva(
-  "flex px-[--padding-nav-item] py-1.5 rounded-lg hover:bg-accent transition-colors duration-300",
+  "flex items-center gap-2 px-[--padding-nav-item] py-1.5 rounded-lg hover:bg-accent transition-colors duration-300",
   {
     variants: {
       isTopLevel: {
@@ -55,6 +55,7 @@ export const SidebarItem = ({
           }
           to={joinPath(topNavItem?.id, item.id)}
         >
+          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
               <span className="truncate" title={item.label}>

@@ -1,6 +1,8 @@
 import { glob } from "glob";
 import matter from "gray-matter";
+import { type LucideIcon } from "lucide-react";
 import fs from "node:fs/promises";
+import { annotateIcon } from "../../vite/plugin-icons.js";
 import type {
   BaseInputSidebarItemCategoryLinkDoc,
   BaseInputSidebarItemDoc,
@@ -9,23 +11,28 @@ import type {
   InputSidebarItemLink,
 } from "./InputSidebarSchema.js";
 
-export type SidebarItemDoc = BaseInputSidebarItemDoc & {
+export type SidebarItemDoc = Omit<BaseInputSidebarItemDoc, "icon"> & {
   label: string;
   categoryLabel?: string;
+  icon?: LucideIcon | string;
 };
 
-export type SidebarItemLink = InputSidebarItemLink;
+export type SidebarItemLink = InputSidebarItemLink & {
+  icon?: LucideIcon | string;
+};
 
 export type SidebarItemCategoryLinkDoc = BaseInputSidebarItemCategoryLinkDoc & {
   label: string;
+  icon?: LucideIcon | string;
 };
 
 export type SidebarItemCategory = Omit<
   InputSidebarItemCategory,
-  "items" | "link"
+  "items" | "link" | "icon"
 > & {
   items: SidebarItem[];
   link?: SidebarItemCategoryLinkDoc;
+  icon?: LucideIcon | string;
 };
 
 export type SidebarItem =
@@ -63,6 +70,7 @@ export const resolveSidebar = async (
     const { data, content } = matter(file);
     const label =
       data.sidebar_label ?? data.title ?? extractTitleFromContent(content);
+    const icon = annotateIcon(data.sidebar_icon);
 
     if (typeof label !== "string") {
       throw new Error(
@@ -74,6 +82,7 @@ export const resolveSidebar = async (
       type: "doc",
       id,
       label,
+      icon,
       categoryLabel,
     } satisfies SidebarItemDoc;
   };
@@ -84,6 +93,7 @@ export const resolveSidebar = async (
       type: "doc",
       id: id,
       label: doc.label,
+      icon: doc.icon,
     } satisfies SidebarItemCategoryLinkDoc;
   };
 
@@ -94,9 +104,9 @@ export const resolveSidebar = async (
       return resolveLink(item);
     }
 
-    const label = item.label ?? (await resolveDoc(item.id)).label;
+    const { label, icon } = await resolveDoc(item.id);
 
-    return { label, ...item };
+    return { ...item, label, icon };
   };
 
   const resolveSidebarItemDoc = async (
@@ -107,8 +117,8 @@ export const resolveSidebar = async (
       return resolveDoc(item, categoryLabel);
     }
 
-    const label =
-      item.label ?? (await resolveDoc(item.id, categoryLabel)).label;
+    const doc = await resolveDoc(item.id, categoryLabel);
+    const label = item.label ?? doc.label;
 
     return { ...item, label, categoryLabel };
   };
@@ -141,6 +151,7 @@ export const resolveSidebar = async (
 
         return {
           ...categoryItem,
+          icon: annotateIcon(categoryItem.icon),
           items,
           link: resolvedLink,
         };
