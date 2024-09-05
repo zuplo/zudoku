@@ -15,7 +15,7 @@
     "description": "Find out more about Swagger",
     "url": "http://swagger.io"
   },
-  "servers": [{ "url": "/api/v3" }],
+  "servers": [{ "url": "https://zudoku-petstore-main-c32e252.d2.zuplo.dev" }],
   "tags": [
     {
       "name": "pet",
