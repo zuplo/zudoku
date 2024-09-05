@@ -7,10 +7,7 @@
   </picture>
 </a>
 
-[![MIT License](https://img.shields.io/badge/license-mit-green?style=flat&labelColor=000000)](https://github.com/zuplo/zudoku/license.md)
-[![Zudoku Version](https://img.shields.io/npm/v/zudoku.svg?style=flat&labelColor=000000)](https://www.npmjs.com/package/zudoku)
-[![Create Zudoku App Version](https://img.shields.io/npm/v/create-zudoku-app?label=cli&style=flat&labelColor=000000)](https://www.npmjs.com/package/create-zudoku-app)
-[![Made with love by Zuplo](https://img.shields.io/badge/Made%20by%20Zuplo-FF00BD.svg?style=flat&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAzNyAzMiIgYXJpYS1oaWRkZW49InRydWUiPgogIDxwYXRoIGZpbGw9IiNGRjAwQkQiIGQ9Ik0yNy4xNDIgMTkuOTc4SDE2LjYyTDI3LjgzIDguNzQ2YS43NTguNzU4IDAgMDAtLjUzNC0xLjI5M0g5LjQ4OFYwaDE5LjUzNGE3LjU3MyA3LjU3MyAwIDAxNC4wNjUgMS4xMjUgNy41OTEgNy41OTEgMCAwMTIuODM2IDMuMTI2IDcuNDAyIDcuNDAyIDAgMDEtMS40NjEgOC4zOThsLTcuMzIgNy4zMjh6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGMDBCRCIgZD0iTTkuNDg5IDExLjA0MmgxMC41MjRsLTExLjE5IDExLjIxYS43NzIuNzcyIDAgMDAuNTQzIDEuMzE2aDE3Ljc1OXY3LjQ1Mkg3LjYxYTcuNTc0IDcuNTc0IDAgMDEtNC4wNjUtMS4xMjVBNy41OTMgNy41OTMgMCAwMS43MSAyNi43NjhhNy40MDMgNy40MDMgMCAwMTEuNDYyLTguMzk3bDcuMzE4LTcuMzI5eiIvPgo8L3N2Zz4K&labelColor=000)](https://zuplo.com)
+[![MIT License](https://img.shields.io/badge/license-mit-green?style=flat&labelColor=000000)](https://github.com/zuplo/zudoku/license.md) [![Zudoku Version](https://img.shields.io/npm/v/zudoku.svg?style=flat&labelColor=000000)](https://www.npmjs.com/package/zudoku) [![Create Zudoku App Version](https://img.shields.io/npm/v/create-zudoku-app?label=cli&style=flat&labelColor=000000)](https://www.npmjs.com/package/create-zudoku-app) [![Made with love by Zuplo](https://img.shields.io/badge/Made%20by%20Zuplo-FF00BD.svg?style=flat&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCAzNyAzMiIgYXJpYS1oaWRkZW49InRydWUiPgogIDxwYXRoIGZpbGw9IiNGRjAwQkQiIGQ9Ik0yNy4xNDIgMTkuOTc4SDE2LjYyTDI3LjgzIDguNzQ2YS43NTguNzU4IDAgMDAtLjUzNC0xLjI5M0g5LjQ4OFYwaDE5LjUzNGE3LjU3MyA3LjU3MyAwIDAxNC4wNjUgMS4xMjUgNy41OTEgNy41OTEgMCAwMTIuODM2IDMuMTI2IDcuNDAyIDcuNDAyIDAgMDEtMS40NjEgOC4zOThsLTcuMzIgNy4zMjh6Ii8+CiAgPHBhdGggZmlsbD0iI0ZGMDBCRCIgZD0iTTkuNDg5IDExLjA0MmgxMC41MjRsLTExLjE5IDExLjIxYS43NzIuNzcyIDAgMDAuNTQzIDEuMzE2aDE3Ljc1OXY3LjQ1Mkg3LjYxYTcuNTc0IDcuNTc0IDAgMDEtNC4wNjUtMS4xMjVBNy41OTMgNy41OTMgMCAwMS43MSAyNi43NjhhNy40MDMgNy40MDMgMCAwMTEuNDYyLTguMzk3bDcuMzE4LTcuMzI5eiIvPgo8L3N2Zz4K&labelColor=000)](https://zuplo.com)
 
 </div>
 
@@ -18,11 +15,7 @@
 
 API documentation should always be free.
 
-<a href="#-installation"><strong>Installation</strong></a> ·
-<a href="https://zudoku.dev/docs/getting-started"><strong>Docs</strong></a> ·
-<a href="#-examples"><strong>Examples</strong></a> ·
-<a href="#-contributing--community"><strong>Contributing</strong></a> ·
-<a href="#-motivation"><strong>Motivation</strong></a>
+<a href="#-installation"><strong>Installation</strong></a> · <a href="https://zudoku.dev/docs/app-quickstart"><strong>Docs</strong></a> · <a href="#-examples"><strong>Examples</strong></a> · <a href="#-contributing--community"><strong>Contributing</strong></a> · <a href="#-motivation"><strong>Motivation</strong></a>
 
 ## Introduction
 
@@ -30,11 +23,7 @@ API documentation should always be free.
 
 Because great API documentation frameworks should be:
 
-🌍 Free & Open Source<br />
-✅ OpenAPI powered<br />
-🔩 Extensible with Plugins<br />
-⚡ Easy to setup & blazing fast to work with<br />
-🔧 Easy to maintain
+🌍 Free & Open Source<br /> ✅ OpenAPI powered<br /> 🔩 Extensible with Plugins<br /> ⚡ Easy to setup & blazing fast to work with<br /> 🔧 Easy to maintain
 
 ## 🤩 Try it, right now!
 

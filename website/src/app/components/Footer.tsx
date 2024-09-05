@@ -34,7 +34,7 @@ export const Footer = () => (
                 <li className="pt-4">
                   <a
                     className="hover:text-white"
-                    href="https://docs.zudoku.dev/docs/getting-started"
+                    href="https://zudoku.dev/docs/app-quickstart"
                   >
                     Getting Started
                   </a>

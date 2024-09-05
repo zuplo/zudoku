@@ -200,7 +200,7 @@ Ctrl+C to exit
         </h3>
         <p className="text-center text-gray-400">
           Run the following command to{" "}
-          <a href="https://zudoku.dev/docs/getting-started">
+          <a href="https://zudoku.dev/docs/app-quickstart">
             {" "}
             get started with Zudoku
           </a>{" "}
