@@ -24,6 +24,7 @@ const config: ZudokuConfig = {
   redirects: [
     { from: "/", to: "/docs/introduction" },
     { from: "/docs", to: "/docs/introduction" },
+    { from: "/docs/getting-started", to: "/docs/app-quickstart" },
   ],
   topNavigation: [{ id: "docs", label: "Documentation" }],
   sidebar: {
