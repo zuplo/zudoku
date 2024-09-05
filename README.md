@@ -26,7 +26,7 @@ API documentation should always be free.
 
 ## Introduction
 
-**Zudoku** is an open-source, highly customizable API documentation framework for building quality developer experiences around OpenAPI documents.
+**Zudoku** (pronounced "zoo-doh-koo") is an open-source, highly customizable API documentation framework for building quality developer experiences around OpenAPI and, soon, GraphQL documents.
 
 Because great API documentation frameworks should be:
 
