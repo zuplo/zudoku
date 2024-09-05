@@ -9,14 +9,17 @@ import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
 import { FragmentType, useFragment } from "./graphql/index.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { methodForColor } from "./util/methodToColor.js";
 
 export const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
 export type ParameterGroup = (typeof PARAM_GROUPS)[number];
 
 export const OperationListItem = ({
   operationFragment,
+  serverUrl,
 }: {
   operationFragment: FragmentType<typeof OperationsFragment>;
+  serverUrl?: string;
 }) => {
   const operation = useFragment(OperationsFragment, operationFragment);
   const groupedParameters = groupBy(
@@ -36,6 +39,15 @@ export const OperationListItem = ({
         <Heading level={2} id={operation.slug} registerSidebarAnchor>
           {operation.summary}
         </Heading>
+        <div className="text-sm flex gap-2 font-mono">
+          <span className={methodForColor(operation.method)}>
+            {operation.method.toUpperCase()}
+          </span>
+          <div className="font-mono">
+            <span className="text-gray-500">{serverUrl}</span>
+            <span className="text-gray-200">{operation.path}</span>
+          </div>
+        </div>
         {operation.description && (
           <Markdown
             className={`${ProseClasses} max-w-full prose-img:max-w-prose`}

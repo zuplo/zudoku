@@ -3,7 +3,6 @@ import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { Fragment, useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useSelectedServerStore } from "../../authentication/state.js";
-import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
@@ -20,6 +19,7 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
+import { methodForColor } from "./util/methodToColor.js";
 
 const getConverted = (snippet: HTTPSnippet, option: string) => {
   let converted;
@@ -76,17 +76,6 @@ export const GetServerQuery = graphql(/* GraphQL */ `
   }
 `);
 
-const methodToColor = {
-  get: TextColorMap.green,
-  post: TextColorMap.blue,
-  put: TextColorMap.yellow,
-  delete: TextColorMap.red,
-  patch: TextColorMap.purple,
-  options: TextColorMap.indigo,
-  head: TextColorMap.gray,
-  trace: TextColorMap.gray,
-};
-
 const EXAMPLE_LANGUAGES = [
   { value: "shell", label: "cURL" },
   { value: "js", label: "JavaScript" },
@@ -114,10 +103,7 @@ export const Sidecar = ({
   const query = useCreateQuery(GetServerQuery, { input, type });
   const result = useSuspenseQuery(query);
 
-  const methodTextColor =
-    methodToColor[
-      operation.method.toLocaleLowerCase() as keyof typeof methodToColor
-    ] ?? TextColorMap.gray;
+  const methodTextColor = methodForColor(operation.method);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
