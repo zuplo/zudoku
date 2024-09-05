@@ -15,6 +15,11 @@
       "source": "/docs",
       "destination": "/docs/introduction",
       "permanent": false
+    },
+    {
+      "source": "/docs/getting-started",
+      "destination": "/docs/introduction",
+      "permanent": false
     }
   ]
 }
