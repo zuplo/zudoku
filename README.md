@@ -32,7 +32,7 @@
 
 ## Introduction
 
-**Zudoku** (pronounced _"zoo-doh-koo"_) is an open-source, highly customizable API documentation framework for building quality developer experiences.
+**Zudoku** is an open-source, highly customizable API documentation framework for building quality developer experiences around OpenAPI documents.
 
 Because great API documentation frameworks should always be:
 
@@ -44,7 +44,7 @@ Because great API documentation frameworks should always be:
 
 ## 🤩 Try it, right now!
 
-**Test Zudoku with your own API now at [zudoku.dev](https://zudoku.dev)** and see how good your documentation can look!
+You can test Zudoku with your own OpenAPI document at [zudoku.dev](https://zudoku.dev?utm_source=github&utm_medium=web&utm_content=link&ref=github) and see how good your documentation can look!
 
 ## ✨ Features
 
@@ -58,14 +58,14 @@ Zudoku is quick to implement, easy to configure and is highly composable with se
 
 ## ⚙️ Installation
 
-You can use the CLI to generate a new project or use it standalone as a React component.
+You can use the CLI to generate a new project or use it standalone via CDN as a React component.
 
 ### ⚡️ Quick start
 
-Fire up your new API docs from out getting started template:
+Fire up your new API docs using the command line generator:
 
 ```
-npm create zudoku-app@latest
+npm create-zudoku-app@latest
 ```
 
 ### 📦 Standalone via CDN
@@ -103,36 +103,22 @@ To get started with some of the features Zudoku offers you can use one of these 
 
 ## 🎓 Examples
 
-- [Rick & Morty API](https://zudoku.zuplopreview.net/demo?api-url=https://rickandmorty.zuplo.io/openapi.json)
+- [Rick & Morty API](https://zudoku.dev/demo?api-url=https://rickandmorty.zuplo.io/openapi.json)
+- [Pet Store API](https://zudoku.dev/demo?api-url=https://zudoku.dev/petstore.oas.json)
 - [Zuplo API Documentation](https://docs-zudoku.pages.dev/)
 
 ### Zudoku use cases
 
-Because Zudoku is a flexible and highly customizable framework so it can be used to create many things, including:
+Because Zudoku is a flexible and highly customizable framework it can be used to create many things, including:
 
 - Standalone documentation websites
-- OpenAPI or GraphQL schema powered API documentation
-- A developer portal with combined documentation and fully function API reference with authentication, testing and support for your user accounts.
+- OpenAPI powered API references
+- A developer portal with documentation, fully functional API reference for testing and authentication support for your user accounts.
 - Internal documentation
 
 ## 🔧 Contributing
 
-Contributions are absolutely welcome! You can start contributing by cloning this repository and running:
-
-```
-pnpm install
-pnpm dev
-```
-
-### Prerequisites
-
-To work develop and contribute to Zudoku you will need:
-
-- [Node.js](https://nodejs.org/) >= v20.0.0
-- [Git](https://git-scm.com/)
-- [pnpm](https://pnpm.io/installation)
-
-More detail on the process for contributing can be found in the [contributing guide](CONTRIBUTING.md).
+For details on how to contribute to Zudoku, see the [contributing guide](CONTRIBUTING.md).
 
 ## Changelog
 
