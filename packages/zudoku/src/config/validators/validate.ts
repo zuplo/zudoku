@@ -103,6 +103,10 @@ const ConfigSchema = z
         banner: z
           .object({
             message: z.custom<NonNullable<ReactNode>>(),
+            color: z
+              .enum(["note", "tip", "info", "caution", "danger"])
+              .optional(),
+            dismissible: z.boolean().optional(),
           })
           .optional(),
       })

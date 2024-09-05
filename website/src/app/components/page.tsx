@@ -199,7 +199,12 @@ Ctrl+C to exit
           Ready? Let&apos;s set you up!
         </h3>
         <p className="text-center text-gray-400">
-          Run the following command to get started with Zudoku in your project.
+          Run the following command to{" "}
+          <a href="https://zudoku.dev/docs/getting-started">
+            {" "}
+            get started with Zudoku
+          </a>{" "}
+          in your project.
         </p>
         <Frame className="w-full max-w-2xl" darkMode>
           <div className="flex justify-between items-center">

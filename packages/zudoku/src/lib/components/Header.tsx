@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
 import { cn } from "../util/cn.js";
+import { Banner } from "./Banner.js";
 import { useTheme } from "./context/ThemeContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
@@ -60,15 +61,7 @@ export const Header = memo(function HeaderInner() {
 
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
-      <>
-        {page?.banner ? (
-          <div className="h-[--banner-height] bg-primary/90 text-primary-foreground text-center text-sm font-medium py-2 flex items-center justify-center">
-            <div>{page.banner.message}</div>
-          </div>
-        ) : (
-          <style>{`:root{ --banner-height: 0px }`}</style>
-        )}
-      </>
+      <Banner />
       <div className="max-w-screen-2xl mx-auto">
         <div className="grid grid-cols-2 lg:grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center border-b px-10 lg:px-12 h-[--top-header-height]">
           <div className="flex">
