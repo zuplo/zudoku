@@ -1,5 +1,6 @@
 ---
 title: Environment Variables
+sidebar_icon: table
 ---
 
 Zudoku is built on top of Vite and uses [their approach](https://vitejs.dev/guide/env-and-mode) for managing environment variables.

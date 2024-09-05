@@ -1,5 +1,6 @@
 ---
 title: Search
+sidebar_icon: search-code
 ---
 
 It is possible to add search to a Zudoku powered site. It will appear in the top navigation and persist across all pages.

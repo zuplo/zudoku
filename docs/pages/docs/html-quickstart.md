@@ -1,6 +1,7 @@
 ---
 title: HTML Quickstart
 description: Create beautiful API documentation for your OpenAPI file with Zudoku using a single HTML page in seconds.
+sidebar_icon: chevrons-left-right
 ---
 
 This quickstart will walk you through using the standalone HTML version of Zudodu to create beautiful API documentation for your OpenAPI file in seconds. No special tools, setup, or installation required. Just a single HTML page.

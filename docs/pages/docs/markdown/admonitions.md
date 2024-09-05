@@ -1,5 +1,6 @@
 ---
 title: Admonitions
+sidebar_icon: rectangle-horizontal
 ---
 
 In addition to the basic Markdown syntax, we have a special admonitions syntax by wrapping text with a set of 3 colons, followed by a label denoting its type.

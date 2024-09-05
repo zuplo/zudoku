@@ -1,5 +1,6 @@
 ---
 title: Code Blocks
+sidebar_icon: braces
 ---
 
 Zudoku supports code blocks in Markdown using the [Prism.js](https://prismjs.com/) syntax highlighting library.
