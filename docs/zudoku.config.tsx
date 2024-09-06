@@ -16,7 +16,7 @@ const config: ZudokuConfig = {
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",
-    outfile: "docs/sitemap.xml",
+    outDir: "docs/",
   },
   metadata: {
     title: "%s | Zudoku",
