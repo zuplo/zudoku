@@ -197,6 +197,38 @@ You can customize your theme as much as you want using [ShadCDN UI theme variabl
 }
 ```
 
+### `sitemap`
+
+Controls the sitemap for your documentation. All possible options are outlined in the example below.
+
+```json
+{
+  // ...
+  "sitemap": {
+    // The base url for your site
+    // Required
+    "siteUrl": "https://example.com",
+    // The change frequency for the pages
+    // Defaults to daily
+    "changefreq": "daily",
+    // The priority for the pages
+    // Defaults to 0.7
+    "priority": 0.7,
+    // The output directory for the sitemap
+    // Defaults to undefined
+    "outDir": "sitemaps/",
+    // Whether to include the last modified date
+    // Defaults to true
+    "autoLastmod": true,
+    // The pages to exclude from the sitemap
+    // Can also be a function that returns an array of paths
+    // () => Promise<string[]>
+    "exclude": ["/404", "/private/page"]
+  }
+  // ...
+}
+```
+
 ### `metadata`
 
 Controls the site metadata for your documentation. All possible options are outlined in the example below.
