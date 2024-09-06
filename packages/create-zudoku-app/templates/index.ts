@@ -5,7 +5,6 @@ import fs from "fs/promises";
 import os from "os";
 import path from "path";
 import { bold, cyan } from "picocolors";
-import pkg from "../package.json";
 
 import { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
@@ -34,6 +33,7 @@ export const installTemplate = async ({
   mode,
   eslint,
   skipInstall,
+  zudokuVersion,
 }: InstallTemplateArgs) => {
   console.log(bold(`Using ${packageManager}.`));
 
@@ -69,7 +69,7 @@ export const installTemplate = async ({
   // update import alias in any files if not using the default
 
   /** Copy the version from package.json or override for tests. */
-  const version = process.env.ZUDOKU_PRIVATE_TEST_VERSION ?? pkg.version;
+  const version = process.env.ZUDOKU_PRIVATE_TEST_VERSION ?? zudokuVersion;
 
   /** Create a package.json for the new project and write it to disk. */
   const packageJson: any = {

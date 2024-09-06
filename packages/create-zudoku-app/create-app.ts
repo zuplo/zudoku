@@ -33,6 +33,7 @@ export async function createApp({
   eslint,
   skipInstall,
   empty,
+  zudokuVersion,
 }: {
   appPath: string;
   packageManager: PackageManager;
@@ -42,6 +43,7 @@ export async function createApp({
   eslint: boolean;
   skipInstall: boolean;
   empty: boolean;
+  zudokuVersion: string;
 }): Promise<void> {
   let repoInfo: RepoInfo | undefined;
   const mode: TemplateMode = typescript ? "ts" : "js";
@@ -214,6 +216,7 @@ export async function createApp({
       isOnline,
       eslint,
       skipInstall,
+      zudokuVersion,
     });
   }
 

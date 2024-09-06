@@ -3,8 +3,8 @@
 import ciInfo from "ci-info";
 import { Command } from "commander";
 import Conf from "conf";
-import { existsSync } from "node:fs";
-import { basename, resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import path, { basename, resolve } from "node:path";
 import { blue, bold, cyan, green, red, yellow } from "picocolors";
 import type { InitialReturnValue } from "prompts";
 import prompts from "prompts";
@@ -14,7 +14,6 @@ import type { PackageManager } from "./helpers/get-pkg-manager";
 import { getPkgManager } from "./helpers/get-pkg-manager";
 import { isFolderEmpty } from "./helpers/is-folder-empty";
 import { validateNpmName } from "./helpers/validate-pkg";
-import packageJson from "./package.json";
 
 let projectPath: string = "";
 
@@ -36,6 +35,10 @@ const onPromptState = (state: {
     process.exit(1);
   }
 };
+
+const packageJson = JSON.parse(
+  readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
+);
 
 const program = new Command(packageJson.name)
   .version(
@@ -293,6 +296,7 @@ async function run(): Promise<void> {
       eslint: opts.eslint,
       skipInstall: opts.skipInstall,
       empty: opts.empty,
+      zudokuVersion: packageJson.version,
     });
   } catch (reason) {
     if (!(reason instanceof DownloadError)) {
@@ -319,6 +323,7 @@ async function run(): Promise<void> {
       eslint: opts.eslint,
       skipInstall: opts.skipInstall,
       empty: opts.empty,
+      zudokuVersion: packageJson.version,
     });
   }
   conf.set("preferences", preferences);
