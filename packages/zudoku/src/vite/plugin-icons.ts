@@ -1,8 +1,6 @@
 import matter from "gray-matter";
-import dynamicIconImports from "lucide-react/dynamicIconImports.js";
 import { readFile } from "node:fs/promises";
 import type { Plugin } from "vite";
-const lucideIconNames = Object.keys(dynamicIconImports.default);
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
 
@@ -14,14 +12,6 @@ export const replaceSidebarIcons = (code: string) => {
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
-    if (!lucideIconNames.includes(match[1])) {
-      // eslint-disable-next-line no-console
-      console.warn(
-        `Invalid icon name "${match[1]}", defaulting to no icon. Check https://lucide.dev/icons for all available icon names.`,
-      );
-      continue;
-    }
-
     collectedIcons.add(match[1]);
   }
 
@@ -29,8 +19,7 @@ export const replaceSidebarIcons = (code: string) => {
   const replacedString = code.replaceAll(
     matchIconAnnotation,
     // The element will be created by the implementers side
-    (_, iconName) =>
-      `"icon": ${collectedIcons.has(iconName) ? toPascalCase(iconName) : "null"}`,
+    (_, iconName) => `"icon": ${toPascalCase(iconName)}`,
   );
 
   return `${importStatement}export const configuredSidebar = ${replacedString};`;
