@@ -18,4 +18,5 @@ export interface InstallTemplateArgs {
   mode: TemplateMode;
   eslint: boolean;
   skipInstall: boolean;
+  zudokuVersion: string;
 }

@@ -72,11 +72,10 @@ jobs:
       - run: git config --global user.email "integrations@zuplo.com"
       - run: git config --global user.name "Zuplo Integrations"
 
+      - run: nx run-many -t root:lint:ci root:format:ci build:ci
+
       - name: Version
         run: nx release version --specifier ${{ env.RELEASE_TYPE }} --git-commit --git-tag=${{ env.RELEASE_TYPE != 'prerelease' }} --preid dev
-
-      # Must be AFTER the release step so that the builds use the new version numbers
-      - run: nx run-many -t root:lint:ci root:format:ci build:ci
 
       - name: Publish Modules
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --tag ${{ env.RELEASE_TYPE == 'prerelease' && 'dev' || 'latest' }}
