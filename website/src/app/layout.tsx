@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Zudoku - Open Source API Documentation",
@@ -22,6 +23,17 @@ export default function RootLayout({
     })`,
             }}
           ></script>
+          <Script
+            id="gtm"
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=AW-11213523037"
+          ></Script>
+          <Script id="gtm2">
+            {`window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'AW-11213523037', {'allow_enhanced_conversions':true});`}
+          </Script>
         </head>
       )}
       <body>{children}</body>
