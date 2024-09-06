@@ -18,6 +18,12 @@ on:
     tags-ignore:
       - "*"
 
+# Only one of these can run at a time because it pushes to main
+# kill any other running jobs and the latest one wins
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
