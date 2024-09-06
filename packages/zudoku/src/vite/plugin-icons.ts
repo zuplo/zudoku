@@ -1,38 +1,42 @@
 import matter from "gray-matter";
-import type { LucideIcon } from "lucide-react";
+import dynamicIconImports from "lucide-react/dynamicIconImports.js";
 import { readFile } from "node:fs/promises";
 import type { Plugin } from "vite";
+const lucideIconNames = Object.keys(dynamicIconImports.default);
 
-export const annotateIcon = (icon?: string) =>
-  icon ? (`__IMPORT_ICON:${icon}__` as unknown as LucideIcon) : undefined;
-
-const matchIconAnnotation = /"__IMPORT_ICON:(.*?)__"/g;
+const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
 
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
 
-export const replaceSidebarAnnotatedIcons = (code: string) => {
+export const replaceSidebarIcons = (code: string) => {
   const collectedIcons = new Set<string>();
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
+    if (!lucideIconNames.includes(match[1])) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Invalid icon name "${match[1]}", defaulting to no icon. Check https://lucide.dev/icons for all available icon names.`,
+      );
+      continue;
+    }
+
     collectedIcons.add(match[1]);
   }
 
-  const importStatement = [
-    'import React from "react";',
-    `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`,
-  ].join("\n");
-
+  const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
   const replacedString = code.replaceAll(
     matchIconAnnotation,
     // The element will be created by the implementers side
-    (_, iconName) => toPascalCase(iconName),
+    (_, iconName) =>
+      `"icon": ${collectedIcons.has(iconName) ? toPascalCase(iconName) : "null"}`,
   );
 
   return `${importStatement}export const configuredSidebar = ${replacedString};`;
 };
 
+// This plugin is responsible to restart the dev server when a sidebar icon is changed inside a markdown file.
 export const viteIconsPlugin = (): Plugin => {
   const iconMap = new Map<string, string | null>();
 

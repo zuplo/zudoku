@@ -2,7 +2,6 @@ import { glob } from "glob";
 import matter from "gray-matter";
 import { type LucideIcon } from "lucide-react";
 import fs from "node:fs/promises";
-import { annotateIcon } from "../../vite/plugin-icons.js";
 import type {
   BaseInputSidebarItemCategoryLinkDoc,
   BaseInputSidebarItemDoc,
@@ -70,7 +69,7 @@ export const resolveSidebar = async (
     const { data, content } = matter(file);
     const label =
       data.sidebar_label ?? data.title ?? extractTitleFromContent(content);
-    const icon = annotateIcon(data.sidebar_icon);
+    const icon = data.sidebar_icon;
 
     if (typeof label !== "string") {
       throw new Error(
@@ -151,7 +150,6 @@ export const resolveSidebar = async (
 
         return {
           ...categoryItem,
-          icon: annotateIcon(categoryItem.icon),
           items,
           link: resolvedLink,
         };
