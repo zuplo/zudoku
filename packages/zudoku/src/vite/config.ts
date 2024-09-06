@@ -2,8 +2,10 @@ import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
 import autoprefixer from "autoprefixer";
 import { stat } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import colors from "picocolors";
 import tailwindcss from "tailwindcss";
+import { tsImport } from "tsx/esm/api";
 import {
   type ConfigEnv,
   type InlineConfig,
@@ -16,7 +18,6 @@ import { logger } from "../cli/common/logger.js";
 import { isPortAvailable } from "../cli/common/utils/ports.js";
 import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
 import { validateConfig } from "../config/validators/validate.js";
-
 import vitePlugin from "./plugin.js";
 
 export const zuploConfigFiles = [
@@ -58,42 +59,46 @@ export type ZudokuConfigEnv = ConfigEnv & {
 };
 
 export type LoadedConfig = ZudokuConfig & {
-  vite: { dependencies: string[]; path: string };
+  __meta: { dependencies: string[]; path: string };
 };
 
 let config: LoadedConfig | undefined;
 
 export async function loadZudokuConfig(
   rootDir: string,
-  configEnv: ZudokuConfigEnv,
+  forceReload?: boolean,
 ): Promise<LoadedConfig> {
-  if (!configEnv.forceReload && config) {
+  if (!forceReload && config) {
     return config;
   }
+
   const filepath = await getConfigFilePath(rootDir);
 
   try {
     logger.info(colors.yellow(`loaded config file `) + colors.dim(filepath), {
       timestamp: true,
     });
-    // NOTE: This function technically is for loading vite configs, but it
-    // doesn't actually have anything to do with vite config, it just loads
-    // typescript files. So we can use it to load our zudoku config file.
-    // It is possible they change this and it wont work in the future.
-    const loaded = await loadConfigFromFile(configEnv, filepath, rootDir);
-    if (!loaded) {
+
+    const dependencies: string[] = [];
+    const loadedConfig = await tsImport(filepath, {
+      parentURL: import.meta.url,
+      onImport: (file: string) => {
+        const path = fileURLToPath(file);
+        if (path.startsWith(rootDir)) {
+          dependencies.push(path);
+        }
+      },
+    }).then((m) => m.default as ZudokuConfig);
+
+    if (!loadedConfig) {
       throw new Error(`Failed to load config file: ${filepath}`);
     }
-    // Using `loaded` directly breaks Vite in unexpected ways:
-    // Errors with: "(intermediate value).glob is not a function"
-    // Maybe worth revisiting at some point in time
+
     config = {
-      ...(loaded.config as ZudokuConfig),
-      vite: {
-        dependencies: loaded.dependencies,
-        path: loaded.path,
-      },
+      ...loadedConfig,
+      __meta: { dependencies, path: filepath },
     };
+
     return config;
   } catch (e) {
     logger.error(e);
@@ -147,10 +152,9 @@ export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
 ): Promise<InlineConfig> {
-  const config = await loadZudokuConfig(dir, configEnv);
+  const config = await loadZudokuConfig(dir);
 
-  const onConfigChange = () =>
-    loadZudokuConfig(dir, { ...configEnv, forceReload: true });
+  const onConfigChange = () => loadZudokuConfig(dir, true);
 
   validateConfig(config);
 
@@ -244,9 +248,9 @@ export async function getViteConfig(
               // Tailwind seems to crash if it tries to parse compiled .js files
               // as a workaround, we will just ship the source file and use those
               // `${moduleDir}/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              config.vite.path,
-              ...config.vite.dependencies.map(
-                (dep) => `${path.dirname(config.vite.path)}/${dep}`,
+              config.__meta.path,
+              ...config.__meta.dependencies.map(
+                (dep) => `${path.dirname(config.__meta.path)}/${dep}`,
               ),
               `${pluginOptions.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
               // Users custom components

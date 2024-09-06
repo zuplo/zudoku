@@ -32,10 +32,7 @@ export class DevServer {
 
     const vite = await createViteServer(viteConfig);
 
-    this.currentConfig = await loadZudokuConfig(this.options.dir, {
-      command: "serve",
-      mode: "development",
-    });
+    this.currentConfig = await loadZudokuConfig(this.options.dir);
 
     const graphql = createGraphQLServer({
       graphqlEndpoint: "/__z/graphql",

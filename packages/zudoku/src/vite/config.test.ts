@@ -5,9 +5,6 @@ import { loadZudokuConfig } from "./config.js";
 
 test("Should correctly load zudoku.config.ts file", async () => {
   const rootPath = path.resolve("../../examples/with-config/");
-  const config = await loadZudokuConfig(rootPath, {
-    mode: "development",
-    command: "build",
-  });
+  const config = await loadZudokuConfig(rootPath);
   assert.equal(config.metadata?.title, "My Portal");
 });
