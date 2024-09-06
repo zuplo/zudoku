@@ -25,20 +25,29 @@ export async function dev(argv: Arguments) {
 
   await server.start();
 
-  printDiagnosticsToConsole("Started local development server");
+  printDiagnosticsToConsole("Started development server");
   printDiagnosticsToConsole("Ctrl+C to exit");
   printDiagnosticsToConsole("");
   printDiagnosticsToConsole(`🚀 Zudoku Portal: http://${host}:${port}`);
   printDiagnosticsToConsole("");
-  printDiagnosticsToConsole("");
+
+  let hasExited = false;
 
   return new Promise<void>((resolve) => {
-    async function exit() {
-      printDiagnosticsToConsole("Closing local development server");
-
-      await server.stop();
-
-      resolve();
+    function exit() {
+      if (!hasExited) {
+        hasExited = true;
+        server
+          .stop()
+          .then(() => {
+            resolve();
+          })
+          .catch((e) => {
+            // eslint-disable-next-line no-console
+            console.error("Error stopping server", e);
+            resolve();
+          });
+      }
     }
 
     process.on("SIGTERM", exit);
