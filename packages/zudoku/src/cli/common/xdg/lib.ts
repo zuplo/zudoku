@@ -22,15 +22,15 @@ export const XDG_STATE_HOME = defineDirectoryWithFallback(
   "XDG_DATA_HOME",
   ".local/state",
 );
-export const ZUPLO_XDG_CONFIG_HOME = path.join(
+export const ZUDOKU_XDG_CONFIG_HOME = path.join(
   XDG_CONFIG_HOME,
   CLI_XDG_FOLDER_NAME,
 );
-export const ZUPLO_XDG_DATA_HOME = path.join(
+export const ZUDOKU_XDG_DATA_HOME = path.join(
   XDG_DATA_HOME,
   CLI_XDG_FOLDER_NAME,
 );
-export const ZUPLO_XDG_STATE_HOME = path.join(
+export const ZUDOKU_XDG_STATE_HOME = path.join(
   XDG_STATE_HOME,
   CLI_XDG_FOLDER_NAME,
 );

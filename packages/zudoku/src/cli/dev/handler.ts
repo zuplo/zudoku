@@ -25,7 +25,7 @@ export async function dev(argv: Arguments) {
 
   await server.start();
 
-  printDiagnosticsToConsole("Started local development setup");
+  printDiagnosticsToConsole("Started local development server");
   printDiagnosticsToConsole("Ctrl+C to exit");
   printDiagnosticsToConsole("");
   printDiagnosticsToConsole(`🚀 Zudoku Portal: http://${host}:${port}`);
@@ -34,7 +34,7 @@ export async function dev(argv: Arguments) {
 
   return new Promise<void>((resolve) => {
     async function exit() {
-      printDiagnosticsToConsole("Closing local development setup");
+      printDiagnosticsToConsole("Closing local development server");
 
       await server.stop();
 

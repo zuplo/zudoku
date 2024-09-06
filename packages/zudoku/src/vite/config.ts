@@ -20,7 +20,7 @@ import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
 import { validateConfig } from "../config/validators/validate.js";
 import vitePlugin from "./plugin.js";
 
-export const zuploConfigFiles = [
+export const zudokuConfigFiles = [
   "zudoku.config.js",
   "zudoku.config.jsx",
   "zudoku.config.ts",
@@ -41,7 +41,7 @@ export async function getConfigFilePath(rootDir: string): Promise<string> {
     return configPath;
   }
 
-  for (const fileName of zuploConfigFiles) {
+  for (const fileName of zudokuConfigFiles) {
     const filepath = path.join(rootDir, fileName);
 
     if (await fileExists(filepath)) {
