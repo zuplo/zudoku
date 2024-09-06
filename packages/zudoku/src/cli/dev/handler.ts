@@ -48,6 +48,11 @@ export async function dev(argv: Arguments) {
       console.error("Uncaught exception", e);
       void exit();
     });
+    process.on("unhandledRejection", (e) => {
+      // eslint-disable-next-line no-console
+      console.error("Unhandled rejection", e);
+      void exit();
+    });
     process.on("exit", exit);
   });
 }
