@@ -197,6 +197,21 @@ You can customize your theme as much as you want using [ShadCDN UI theme variabl
 }
 ```
 
+### `sitemap`
+
+Controls the sitemap for your documentation. All possible options are outlined in the example below.
+
+```json
+{
+  // ...
+  "sitemap": {
+    "siteUrl": "https://example.com",
+    "outfile": "sitemap.xml"
+  }
+  // ...
+}
+```
+
 ### `metadata`
 
 Controls the site metadata for your documentation. All possible options are outlined in the example below.

@@ -104,7 +104,7 @@ export const prerender = async (html: string, dir: string) => {
     const toUrlLoc = (path?: string) => {
       try {
         if (!path || path.includes("*")) return [];
-        return `<url><loc>${new URL(joinPath(config.basePath, path), config.sitemap!.baseUrl)}</loc></url>`;
+        return `<url><loc>${new URL(joinPath(config.basePath, path), config.sitemap!.siteUrl)}</loc></url>`;
       } catch {
         // skip invalid urls
         return [];

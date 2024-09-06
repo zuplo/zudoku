@@ -197,7 +197,7 @@ const ConfigSchema = z
     plugins: z.array(z.custom<DevPortalPlugin>()),
     sitemap: z
       .object({
-        baseUrl: z.string(),
+        siteUrl: z.string(),
         outfile: z.string().optional(),
       })
       .optional(),
