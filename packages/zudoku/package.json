@@ -112,7 +112,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --project tsconfig.app.json",
+    "build": "tsc --project tsconfig.json",
     "build:vite": "vite build && pnpm run hack:fix-worker-paths lib",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html",
@@ -177,7 +177,6 @@
     "remark-mdx-frontmatter": "5.0.0",
     "rollup": "^4.21.2",
     "semver": "7.6.2",
-    "sitemap": "^8.0.0",
     "slugify": "1.6.6",
     "strip-ansi": "7.1.0",
     "tailwind-merge": "2.5.2",

@@ -18,14 +18,6 @@ const entries: Record<string, string> = {
   "openapi-worker": "./src/lib/plugins/openapi-worker.ts",
 };
 
-export const getBuildEntries = (input: Record<string, string>) =>
-  Object.fromEntries(
-    Object.entries(input).map(([key, value]) => [
-      key,
-      path.resolve(__dirname, value),
-    ]),
-  );
-
 export default defineConfig({
   worker: {
     format: "es",
@@ -34,10 +26,13 @@ export default defineConfig({
     sourcemap: true,
     outDir: path.resolve(__dirname, "lib"),
     lib: {
-      entry: getBuildEntries(entries),
+      entry: Object.entries(entries).reduce((acc, [key, value]) => {
+        acc[key] = path.resolve(__dirname, value);
+        return acc;
+      }, {}),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (_format, fileName) => {
+      fileName: (format, fileName) => {
         return `zudoku.${fileName}.js`;
       },
     },

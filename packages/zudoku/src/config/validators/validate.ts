@@ -92,51 +92,6 @@ const LogoSchema = z.object({
   width: z.string().optional(),
 });
 
-const SiteMapSchema = z
-  .object({
-    /**
-     * Base url of your website
-     */
-    siteUrl: z.string(),
-    /**
-     * Change frequency.
-     * @default 'daily'
-     */
-    changefreq: z.optional(
-      z.enum([
-        "always",
-        "hourly",
-        "daily",
-        "weekly",
-        "monthly",
-        "yearly",
-        "never",
-      ]),
-    ),
-    /**
-     * Priority
-     * @default 0.7
-     */
-    priority: z.optional(z.number()),
-    outDir: z.string().optional(),
-    /**
-     * Add <lastmod/> property.
-     * @default true
-     */
-    autoLastmod: z.boolean().optional(),
-    /**
-     * Array of relative paths to exclude from listing on sitemap.xml or sitemap-*.xml.
-     * @example ['/page-0', '/page/example']
-     */
-    exclude: z
-      .union([
-        z.function().returns(z.promise(z.array(z.string()))),
-        z.array(z.string()),
-      ])
-      .optional(),
-  })
-  .optional();
-
 const ConfigSchema = z
   .object({
     basePath: z.string().optional(),
@@ -240,7 +195,6 @@ const ConfigSchema = z
       }),
     ),
     plugins: z.array(z.custom<DevPortalPlugin>()),
-    sitemap: SiteMapSchema,
     build: z.custom<{
       remarkPlugins?: Options["remarkPlugins"];
       rehypePlugins?: Options["rehypePlugins"];
@@ -268,7 +222,6 @@ Following IDs are available: ${topNavIds.join(", ")}`,
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuConfig = z.infer<typeof ConfigSchema>;
-export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 
 export function validateConfig(config: unknown) {
   const validationResult = ConfigSchema.safeParse(config);
