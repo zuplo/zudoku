@@ -195,12 +195,6 @@ const ConfigSchema = z
       }),
     ),
     plugins: z.array(z.custom<DevPortalPlugin>()),
-    sitemap: z
-      .object({
-        baseUrl: z.string(),
-        outfile: z.string().optional(),
-      })
-      .optional(),
     build: z.custom<{
       remarkPlugins?: Options["remarkPlugins"];
       rehypePlugins?: Options["rehypePlugins"];

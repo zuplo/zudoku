@@ -5,7 +5,6 @@ import { defineConfig } from "vite";
 import tailwindConfig from "./src/app/tailwind.js";
 import { getPluginOptions } from "./src/vite/config.js";
 import vitePlugin from "./src/vite/plugin.js";
-import { getBuildEntries } from "./vite.config";
 
 const entries: Record<string, string> = {
   standalone: "./src/app/standalone.tsx",
@@ -28,10 +27,13 @@ export default defineConfig({
     sourcemap: true,
     outDir: path.resolve(__dirname, "standalone"),
     lib: {
-      entry: getBuildEntries(entries),
+      entry: Object.entries(entries).reduce((acc, [key, value]) => {
+        acc[key] = path.resolve(__dirname, value);
+        return acc;
+      }, {}),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (_format, fileName) => {
+      fileName: (format, fileName) => {
         if (fileName === "standalone") {
           return `main.js`;
         } else if (fileName === "demo") {
