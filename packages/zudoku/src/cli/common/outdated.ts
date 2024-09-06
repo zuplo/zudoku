@@ -6,21 +6,25 @@ import { gt } from "semver";
 import { VERSION_CHECK_FILE } from "./constants.js";
 import { printWarningToConsole } from "./output.js";
 import box from "./utils/box.js";
-import { ZUPLO_XDG_STATE_HOME } from "./xdg/lib.js";
+import { ZUDOKU_XDG_STATE_HOME } from "./xdg/lib.js";
 
 interface VersionCheckInfo {
   lastCheck: number;
-  latestVersion: string;
+  latestVersion: string | undefined;
 }
 export async function warnIfOutdatedVersion(currentVersion: string) {
   // Print update information, if available
   if (
-    !process.env.ZUPLO_OVERRIDE_CI_TO_TEST &&
-    (process.env.CI || process.env.ZUPLO_DISABLE_UPDATE_CHECK)
+    !process.env.ZUDOKU_OVERRIDE_CI_TO_TEST &&
+    (process.env.CI || process.env.ZUDOKU_DISABLE_UPDATE_CHECK)
   ) {
     return false;
   }
   const versionCheckInfo = await getVersionCheckInfo();
+
+  if (!versionCheckInfo.latestVersion) {
+    return false;
+  }
   const shouldWarn = gt(versionCheckInfo.latestVersion, currentVersion);
 
   if (shouldWarn) {
@@ -29,9 +33,9 @@ export async function warnIfOutdatedVersion(currentVersion: string) {
         `Update available! ${colors.gray(`v${currentVersion}`)} ≫ ${colors.green(
           `v${versionCheckInfo.latestVersion}`,
         )}
-Run ${colors.cyan("npm install zuplo@latest")} to update.
+Run ${colors.cyan("npm install zudoku@latest")} to update.
 
-${colors.gray("Older versions are unsupported and may not work as expected.")}`,
+${colors.gray("Upgrade to receive the latest features and fixes.")}`,
       ),
     );
   }
@@ -39,20 +43,26 @@ ${colors.gray("Older versions are unsupported and may not work as expected.")}`,
   return shouldWarn;
 }
 
-async function getLatestVersion(): Promise<string> {
+async function getLatestVersion(): Promise<string | undefined> {
   const response = await fetch(
-    "https://raw.githubusercontent.com/zuplo/zudoku/main/packages/zudoku/package.json",
+    "https://api.github.com/repos/zuplo/zudoku/releases?per_page=1",
   );
-  const result = await response.json();
+  // Try to get the version from the tag name
+  if (response.status === 200) {
+    const result = (await response.json()) as { tag_name: string }[];
+    if (Array.isArray(result) && result.length > 0) {
+      return result[0].tag_name.substring(1);
+    }
+  }
 
-  return result.dependencies["zudoku"];
+  return undefined;
 }
 
 async function getVersionCheckInfo(): Promise<VersionCheckInfo> {
-  if (!existsSync(ZUPLO_XDG_STATE_HOME)) {
-    mkdirSync(ZUPLO_XDG_STATE_HOME, { recursive: true });
+  if (!existsSync(ZUDOKU_XDG_STATE_HOME)) {
+    mkdirSync(ZUDOKU_XDG_STATE_HOME, { recursive: true });
   }
-  const versionCheckPath = join(ZUPLO_XDG_STATE_HOME, VERSION_CHECK_FILE);
+  const versionCheckPath = join(ZUDOKU_XDG_STATE_HOME, VERSION_CHECK_FILE);
 
   let versionCheckInfo: VersionCheckInfo | undefined;
   if (existsSync(versionCheckPath)) {

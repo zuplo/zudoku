@@ -4,7 +4,6 @@
 import * as Sentry from "@sentry/node";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-
 import { gte } from "semver";
 import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
@@ -16,7 +15,7 @@ import { logger } from "./common/logger.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
 import { printCriticalFailureToConsoleAndExit } from "./common/output.js";
 
-const MIN_NODE_VERSION = "18.0.0";
+const MIN_NODE_VERSION = "20.0.0";
 
 if (gte(process.versions.node, MIN_NODE_VERSION)) {
   let packageJson;
@@ -51,10 +50,10 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
     .help();
 
   try {
-    await cli.argv;
-
     // Don't block
     void warnIfOutdatedVersion(packageJson?.version);
+
+    await cli.argv;
 
     void Sentry.close(MAX_WAIT_PENDING_TIME_MS).then(() => {
       process.exit(0);
@@ -70,7 +69,7 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
   }
 } else {
   await printCriticalFailureToConsoleAndExit(
-    `The zup CLI requires at least node.js v${MIN_NODE_VERSION}. You are using v${process.versions.node}. Please update your version of node.js.
+    `The Zudoku CLI requires at least node.js v${MIN_NODE_VERSION}. You are using v${process.versions.node}. Please update your version of node.js.
 
     Consider using a Node.js version manager such as https://github.com/nvm-sh/nvm.`,
   );

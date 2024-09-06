@@ -26,7 +26,7 @@ let _postHog: PostHog | undefined;
 // let _context: Context | undefined;
 
 function init(): PostHog | undefined {
-  if (process.env.ZUPLO_DO_NOT_TRACK || !POST_HOG_CAPTURE_KEY) {
+  if (process.env.ZUDOKU_DO_NOT_TRACK || !POST_HOG_CAPTURE_KEY) {
     return undefined;
   }
 

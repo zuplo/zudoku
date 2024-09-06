@@ -178,7 +178,7 @@ const Page = async () => {
 > zudoku dev
 
 Server-side rendering enabled
-Started local development setup
+Started local development server
 Ctrl+C to exit
 
 🚀 Zudoku Portal: http://localhost:9000
