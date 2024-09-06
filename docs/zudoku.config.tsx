@@ -14,10 +14,6 @@ const config: ZudokuConfig = {
       message: <PreviewBanner />,
     },
   },
-  sitemap: {
-    siteUrl: "https://zudoku.dev",
-    outDir: "docs/",
-  },
   metadata: {
     title: "%s | Zudoku",
     favicon: "https://cdn.zudoku.dev/logos/favicon.svg",

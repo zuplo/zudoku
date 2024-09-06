@@ -177,7 +177,6 @@
     "remark-mdx-frontmatter": "5.0.0",
     "rollup": "^4.21.2",
     "semver": "7.6.2",
-    "sitemap": "^8.0.0",
     "slugify": "1.6.6",
     "strip-ansi": "7.1.0",
     "tailwind-merge": "2.5.2",
