@@ -1,5 +1,6 @@
 ---
 title: Multiple APIs
+sidebar_icon: file-stack
 ---
 
 Zudoku supports creating documentation and API references for multiple APIs and can work with as many OpenAPI documents as you need.

@@ -1,5 +1,6 @@
 ---
 title: API Reference
+sidebar_icon: square-library
 ---
 
 The `apis` configuration setting in the [Zudoku Configuration](/docs/configuration/overview) file allows you to specify the OpenAPI document that you want to use to generate your API reference documentation.

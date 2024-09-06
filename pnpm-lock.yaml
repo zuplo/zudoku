@@ -380,6 +380,9 @@ importers:
       lru-cache:
         specifier: 11.0.0
         version: 11.0.0
+      lucide-react:
+        specifier: 0.438.0
+        version: 0.438.0(react@18.3.1)
       mdx:
         specifier: 0.3.1
         version: 0.3.1
@@ -556,9 +559,6 @@ importers:
       clsx:
         specifier: 2.1.1
         version: 2.1.1
-      lucide-react:
-        specifier: 0.378.0
-        version: 0.378.0(react@18.3.1)
       oauth4webapi:
         specifier: 2.11.1
         version: 2.11.1
@@ -6697,6 +6697,11 @@ packages:
     resolution: {integrity: sha512-u6EPU8juLUk9ytRcyapkWI18epAv3RU+6+TC23ivjR0e+glWKBobFeSgRwOIJihzktILQuy6E0E80P2jVTDR5g==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0
+
+  lucide-react@0.438.0:
+    resolution: {integrity: sha512-uq6yCB+IzVfgIPMK8ibkecXSWTTSOMs9UjUgZigfrDCVqgdwkpIgYg1fSYnf0XXF2AoSyCJZhoZXQwzoai7VGw==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0-rc
 
   magic-string@0.30.10:
     resolution: {integrity: sha512-iIRwTIf0QKV3UAnYK4PU8uiEc4SRh5jX0mwpIwETPpHdhVM4f53RSwS/vXvN1JhGX+Cs7B8qIq3d6AH49O5fAQ==}
@@ -17790,6 +17795,10 @@ snapshots:
       yallist: 4.0.0
 
   lucide-react@0.378.0(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+
+  lucide-react@0.438.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 

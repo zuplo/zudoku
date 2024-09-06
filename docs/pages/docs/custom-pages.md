@@ -1,5 +1,6 @@
 ---
 title: Custom pages
+sidebar_icon: layers-3
 ---
 
 If you want to include pages in your documentation that have greater flexibility than MDX pages, it is possible to include custom pages of your own.

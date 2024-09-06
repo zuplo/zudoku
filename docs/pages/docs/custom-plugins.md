@@ -1,5 +1,6 @@
 ---
 title: Custom Plugins
+sidebar_icon: list-end
 ---
 
 Zudoku is highly extensible. You can create custom plugins to add new functionality to your documentation site.

@@ -43,7 +43,11 @@ export async function dev(argv: Arguments) {
 
     process.on("SIGTERM", exit);
     process.on("SIGINT", exit);
-    process.on("uncaughtException", exit);
+    process.on("uncaughtException", (e) => {
+      // eslint-disable-next-line no-console
+      console.error("Uncaught exception", e);
+      void exit();
+    });
     process.on("exit", exit);
   });
 }

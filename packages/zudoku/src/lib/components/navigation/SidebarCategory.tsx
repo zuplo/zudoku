@@ -61,37 +61,49 @@ export const SidebarCategory = ({
       open={open}
       onOpenChange={() => setOpen(true)}
     >
-      <Collapsible.Trigger
-        className={cn(
-          "group text-start",
-          navigationListItem({ isActive: false, isTopLevel: level === 0 }),
-          isCollapsible
-            ? "cursor-pointer"
-            : "cursor-default hover:bg-transparent",
-        )}
-        asChild
-        disabled={!isCollapsible}
-      >
-        {category.link?.type === "doc" ? (
-          <NavLink to={joinPath(topNavItem?.id, category.link.id)}>
-            {({ isActive }) => (
-              <div
-                className={cn(
-                  "flex items-center gap-2 justify-between w-full",
-                  isActive ? "text-primary font-medium" : "text-foreground/80",
-                )}
-              >
-                <div className="truncate">{category.label}</div>
-                {ToggleButton}
-              </div>
-            )}
-          </NavLink>
-        ) : (
-          <div className="flex items-center justify-between w-full">
-            <div className="flex gap-2 truncate w-full">{category.label}</div>
-            {ToggleButton}
-          </div>
-        )}
+      <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
+        <div
+          className={cn(
+            "text-start",
+            navigationListItem({ isActive: false, isTopLevel: level === 0 }),
+            isCollapsible
+              ? "cursor-pointer"
+              : "cursor-default hover:bg-transparent",
+          )}
+        >
+          {category.icon && (
+            <category.icon
+              size={16}
+              className="align-[-0.125em] -translate-x-1"
+            />
+          )}
+          {category.link?.type === "doc" ? (
+            <NavLink
+              to={joinPath(topNavItem?.id, category.link.id)}
+              className="flex-1"
+              onClick={() => setHasInteracted(true)}
+            >
+              {({ isActive }) => (
+                <div
+                  className={cn(
+                    "flex items-center gap-2 justify-between w-full",
+                    isActive
+                      ? "text-primary font-medium"
+                      : "text-foreground/80",
+                  )}
+                >
+                  <div className="truncate">{category.label}</div>
+                  {ToggleButton}
+                </div>
+              )}
+            </NavLink>
+          ) : (
+            <div className="flex items-center justify-between w-full">
+              <div className="flex gap-2 truncate w-full">{category.label}</div>
+              {ToggleButton}
+            </div>
+          )}
+        </div>
       </Collapsible.Trigger>
       <Collapsible.Content
         className={cn(

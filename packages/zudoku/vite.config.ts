@@ -5,6 +5,7 @@ import pkgJson from "./package.json";
 
 const entries: Record<string, string> = {
   components: "./src/lib/components/index.ts",
+  icons: "./src/lib/icons.ts",
   "auth-clerk": "./src/lib/authentication/providers/clerk.tsx",
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
@@ -39,6 +40,7 @@ export default defineConfig({
       external: [
         "react",
         "react-dom",
+        "lucide-react",
 
         // Optional Modules (i.e. auth providers) are external as we don't
         // want to bundle these in the library. Users will install these

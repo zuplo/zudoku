@@ -1,5 +1,6 @@
 ---
 title: Navigation
+sidebar_icon: compass
 ---
 
 Navigation in Zudoku can be customized at several layers. The primary is the top navigation tabs. Tabs can reference pages, plugins, or external links. The secondary is the sidebar navigation. The sidebar can be customized to show additional links or content.

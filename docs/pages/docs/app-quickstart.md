@@ -1,6 +1,7 @@
 ---
 title: App Quickstart
 description: Get started with Zudoku by creating a new Zudoku app using the `create-zudoku-app` tool.
+sidebar_icon: app-window-mac
 ---
 
 The recommended way to get started with Zudoku is to use the `create-zudoku-app` CLI tool. This tool will scaffold a new Zudoku site for you to customize and build upon.

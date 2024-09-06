@@ -1,5 +1,6 @@
 ---
 title: MDX
+sidebar_icon: notebook-pen
 ---
 
 Zudoku support MDX files for creating rich content pages. MDX is a markdown format that allows you to include JSX components in your markdown files.

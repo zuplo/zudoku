@@ -1,6 +1,7 @@
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { resolveSidebar } from "../config/validators/SidebarSchema.js";
+import { replaceSidebarIcons } from "./plugin-icons.js";
 
 export const viteSidebarPlugin = (
   getConfig: () => ZudokuPluginOptions,
@@ -30,7 +31,15 @@ export const viteSidebarPlugin = (
         ),
       );
 
-      return `export const configuredSidebar = ${JSON.stringify(resolvedSidebar)};`;
+      return JSON.stringify(resolvedSidebar);
+    },
+    async transform(code, id) {
+      if (id !== resolvedVirtualModuleId) return;
+
+      // In the stringified config all occurrences of icons are replaced with icon components
+      // and their imports are added to the top.
+      // They will be created as elements when the sidebar is rendered.
+      return replaceSidebarIcons(code);
     },
   };
 };

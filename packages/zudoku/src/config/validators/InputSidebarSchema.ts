@@ -1,4 +1,7 @@
+import type dynamicIconImports from "lucide-react/dynamicIconImports.js";
 import { z } from "zod";
+
+type IconNames = keyof typeof dynamicIconImports;
 
 export const BaseInputSidebarItemCategoryLinkDocSchema = z.object({
   type: z.literal("doc"),
@@ -18,6 +21,7 @@ export const InputSidebarItemCategoryLinkDocSchema = z.union([
 export const BaseInputSidebarItemDocSchema = z.object({
   type: z.literal("doc"),
   id: z.string(),
+  icon: z.custom<IconNames>().optional(),
   label: z.string().optional(),
   badge: z
     .object({
@@ -69,6 +73,7 @@ export type InputSidebarItemLink = z.infer<typeof InputSidebarItemLinkSchema>;
 
 export const BaseInputSidebarItemCategorySchema = z.object({
   type: z.literal("category"),
+  icon: z.custom<IconNames>().optional(),
   label: z.string(),
   description: z.string().optional(),
   collapsible: z.boolean().optional(),
