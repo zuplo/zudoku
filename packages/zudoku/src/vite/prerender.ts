@@ -4,6 +4,7 @@ import {
   type getRoutesByConfig,
   type render as serverRender,
 } from "../app/entry.server.js";
+import { type ZudokuConfig } from "../config/validators/validate.js";
 import { joinPath } from "../lib/util/joinPath.js";
 
 export class FileWritingResponse {
@@ -69,7 +70,7 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
 export const prerender = async (html: string, dir: string) => {
   // eslint-disable-next-line no-console
   console.log("Prerendering...");
-  const config = await import(
+  const config: ZudokuConfig = await import(
     path.join(dir, "dist/server/zudoku.config.js")
   ).then((m) => m.default);
 
@@ -98,6 +99,35 @@ export const prerender = async (html: string, dir: string) => {
 
   // eslint-disable-next-line no-console
   console.log(`Prerendered ${paths.length} pages`);
+
+  if (config.sitemap) {
+    const toUrlLoc = (path?: string) => {
+      try {
+        if (!path || path.includes("*")) return [];
+        return `<url><loc>${new URL(joinPath(config.basePath, path), config.sitemap!.baseUrl)}</loc></url>`;
+      } catch {
+        // skip invalid urls
+        return [];
+      }
+    };
+
+    const sitemapXml = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      ...paths.flatMap(toUrlLoc),
+      "</urlset>",
+    ].join("\n");
+
+    const sitemapPath = path.join(
+      dir,
+      "dist",
+      config.sitemap.outfile ?? "sitemap.xml",
+    );
+    await fs.writeFile(sitemapPath, sitemapXml);
+
+    // eslint-disable-next-line no-console
+    console.log(`Wrote sitemap to ${sitemapPath}`);
+  }
 
   return writtenFiles;
 };
