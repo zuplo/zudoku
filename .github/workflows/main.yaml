@@ -70,13 +70,17 @@ jobs:
 
       - run: nx run-many -t root:lint:ci root:format:ci build:ci
 
+      - name: Get Variables
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Version
         if: github.event_name == 'workflow_dispatch'
         run: nx release version --specifier ${{ github.event.inputs.releaseType }} --git-commit --git-tag=true
 
       - name: Version (Prerelease)
         if: github.event_name == 'push'
-        run: nx release version --specifier 0.0.0-${{ github.run_id }} --git-tag=false
+        run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }} ${{ github.event_name == 'push' && '--no-git-checks' }}

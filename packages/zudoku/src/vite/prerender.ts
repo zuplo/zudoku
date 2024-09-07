@@ -4,7 +4,9 @@ import {
   type getRoutesByConfig,
   type render as serverRender,
 } from "../app/entry.server.js";
+import { type ZudokuConfig } from "../config/validators/validate.js";
 import { joinPath } from "../lib/util/joinPath.js";
+import { generateSitemap } from "./sitemap.js";
 
 export class FileWritingResponse {
   private buffer = "";
@@ -69,7 +71,7 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
 export const prerender = async (html: string, dir: string) => {
   // eslint-disable-next-line no-console
   console.log("Prerendering...");
-  const config = await import(
+  const config: ZudokuConfig = await import(
     path.join(dir, "dist/server/zudoku.config.js")
   ).then((m) => m.default);
 
@@ -95,6 +97,13 @@ export const prerender = async (html: string, dir: string) => {
     await response.isSent();
     writtenFiles.push(filename);
   }
+
+  await generateSitemap({
+    basePath: config.basePath,
+    outputUrls: paths,
+    config: config.sitemap,
+    baseOutputDir: path.join(dir, "dist"),
+  });
 
   // eslint-disable-next-line no-console
   console.log(`Prerendered ${paths.length} pages`);

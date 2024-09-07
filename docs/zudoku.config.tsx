@@ -21,6 +21,10 @@ const config: ZudokuConfig = {
   docs: {
     files: "/pages/**/*.{md,mdx}",
   },
+  sitemap: {
+    siteUrl: "https://zudoku.dev",
+    outDir: "docs/",
+  },
   redirects: [
     { from: "/", to: "/docs" },
     { from: "/docs/getting-started", to: "/docs/app-quickstart" },

@@ -38,6 +38,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
       - name: Install dependencies
@@ -47,7 +48,20 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: nx affected -t root:lint:ci root:format:ci build:ci
+      - run: nx run-many -t root:lint:ci root:format:ci build:ci
+
+      - name: Get Variables
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Version (Canary)
+        if: github.event_name == 'push'
+        run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
+
+      - name: Publish Modules
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --tag canary --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example
