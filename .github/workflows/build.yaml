@@ -47,7 +47,16 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: nx affected -t root:lint:ci root:format:ci build:ci
+      - run: nx run-many -t root:lint:ci root:format:ci build:ci
+
+      - name: Version (Canary)
+        if: github.event_name == 'push'
+        run: nx release version --specifier 0.0.0-${{ github.sha }} --git-tag=false
+
+      - name: Publish Modules
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --tag canary --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example
