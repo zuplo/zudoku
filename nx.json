@@ -30,6 +30,7 @@
   "release": {
     "projects": ["zudoku", "create-zudoku-app"],
     "releaseTagPattern": "v{version}",
+    "versionPlans": true,
     "version": {
       "git": {
         "commitMessage": "chore(release): publish {version} [skip ci]"
