@@ -16,7 +16,6 @@ import { ErrorPage } from "../../components/ErrorPage.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { Button } from "../../ui/Button.js";
-import { joinPath } from "../../util/joinPath.js";
 import { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
@@ -73,7 +72,7 @@ export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 export const openApiPlugin = (
   config: OpenApiPluginOptions,
 ): DevPortalPlugin => {
-  const basePath = joinPath(config.navigationId ?? "/reference");
+  const basePath = "/reference";
 
   const client = config.server
     ? new UrqlClient({

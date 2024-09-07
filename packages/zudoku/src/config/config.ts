@@ -1,4 +1,3 @@
-import { MarkdownPluginOptions } from "../lib/plugins/markdown/index.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 
 export type URLString = `https://${string}` | `http://${string}`;
@@ -11,11 +10,6 @@ export interface ZudokuPluginOptions extends ZudokuConfig {
 
   // Internal use only
   mode: "internal" | "module" | "standalone";
-}
-
-export interface DocsConfig {
-  files?: string;
-  defaultOptions?: MarkdownPluginOptions["defaultOptions"];
 }
 
 export type ClerkAuthenticationConfig = {

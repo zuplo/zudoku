@@ -6,6 +6,7 @@ import { generateRoutes } from "./generateRoutes.js";
 export type MarkdownPluginOptions = {
   markdownFiles: Record<string, () => Promise<MDXImport>>;
   defaultOptions?: MarkdownPluginDefaultOptions;
+  filesPath: string;
 };
 export type MarkdownPluginDefaultOptions = Pick<
   Frontmatter,
@@ -29,6 +30,7 @@ export type MDXImport = {
 export const markdownPlugin = ({
   markdownFiles,
   defaultOptions,
+  filesPath,
 }: MarkdownPluginOptions): DevPortalPlugin => ({
-  getRoutes: () => generateRoutes(markdownFiles, defaultOptions),
+  getRoutes: () => generateRoutes(markdownFiles, filesPath, defaultOptions),
 });
