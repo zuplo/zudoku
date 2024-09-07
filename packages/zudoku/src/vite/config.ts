@@ -141,7 +141,7 @@ export function getPluginOptions({
 }): ZudokuPluginOptions {
   const moduleDir = getModuleDir();
   return {
-    ...config,
+    ...config!,
     rootDir: dir,
     moduleDir,
     mode,
