@@ -14,10 +14,7 @@ const config: ZudokuConfig = {
       },
     ],
   },
-  redirects: [
-    { from: "/", to: "/documentation/introduction" },
-    { from: "/documentation", to: "/documentation/introduction" },
-  ],
+  redirects: [{ from: "/", to: "/documentation" }],
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",

@@ -14,7 +14,7 @@ const config: ZudokuConfig = {
       },
     ],
   },
-  redirects: [{ from: "/", to: "/documentation/introduction" }],
+  redirects: [{ from: "/", to: "/documentation" }],
   docs: {
     files: "/pages/**/*.mdx",
   },
