@@ -115,6 +115,7 @@ const ConfigSchema = z
       z.object({
         label: z.string(),
         id: z.string(),
+        default: z.string().optional(),
       }),
     ),
     sidebar: z.record(InputSidebarSchema),
