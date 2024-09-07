@@ -1,33 +1,50 @@
 name: Main
 on:
-  workflow_call:
+  workflow_dispatch:
+    inputs:
+      releaseType:
+        description: "Release Type"
+        required: true
+        default: "minor"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
   push:
     branches:
-      - "**"
+      - "main"
     tags-ignore:
       - "*"
+
+# Only one of these can run at a time because it pushes to main
+# kill any other running jobs and the latest one wins
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
 
 env:
   NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
 
 jobs:
-  build:
-    name: Build & Test
+  release:
+    name: Release
     runs-on:
       group: ubuntu-large-runners
     permissions:
       actions: read
-      contents: read
+      contents: write
       id-token: write
 
-    env:
-      COREPACK_ENABLE_STRICT: 0
-      ZUDOKU_INTERNAL_DEV: true
+    # This can only be triggered from main
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          ssh-key: ${{ secrets.GH_ACTIONS_DEPLOY_KEY_RULE_BYPASS }}
+
       - uses: pnpm/action-setup@v4
         with:
           version: 9
@@ -37,6 +54,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
       - name: Install dependencies
@@ -46,29 +64,109 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: nx affected -t root:lint:ci root:format:ci build:ci
+      # This must be a real github account otherwise vercel thows ugly errors
+      - run: git config --global user.email "integrations@zuplo.com"
+      - run: git config --global user.name "Zuplo Integrations"
 
-      - name: Build Examples
-        run: nx run-many -t build --projects=tag:example
+      - run: nx run-many -t root:lint:ci root:format:ci build:ci
 
-        # Check if the stats file exists, if zudoku doesn't change in the PR
-        # the stats file won't exist and we don't need to upload it
-      - name: Has Stats
-        run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
-        id: stats-file
+      - name: Version
+        if: github.event_name == 'workflow_dispatch'
+        run: nx release version --specifier ${{ github.event.inputs.releaseType }} --git-commit --git-tag=true
 
-      - name: "Authenticate to Google Cloud"
-        if: steps.stats-file.outputs.exists == 'true'
-        uses: "google-github-actions/auth@v2"
+      - name: Version (Prerelease)
+        if: github.event_name == 'push'
+        run: nx release version --specifier 0.0.0-${{ github.run_id }} --git-tag=false
+
+      - name: Publish Modules
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+
+      - run: echo "ZUDOKU_VERSION=$(node -e 'console.log(require(`./packages/zudoku/package.json`).version)')" >> $GITHUB_ENV
+
+      - name: Push Git Changes
+        if: github.event_name == 'workflow_dispatch'
+        run: git push origin main --follow-tags
+
+      - name: Changelog
+        if: github.event_name == 'workflow_dispatch'
+        run: nx release changelog ${{ env.ZUDOKU_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          token_format: "access_token"
+          token_format: access_token
           workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
           service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
-          access_token_lifetime: "300s"
+          access_token_lifetime: 300s
+
+      - name: Upload CSS
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          process_gcloudignore: false
+          path: packages/zudoku/standalone
+          glob: "**/*.css"
+          destination: cdn.zudoku.dev/${{ env.ZUDOKU_VERSION }}
+          parent: false
+          headers: |-
+            content-type: text/css
+
+      - name: Upload Javascript
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          process_gcloudignore: false
+          path: packages/zudoku/standalone
+          glob: "**/*.js"
+          destination: cdn.zudoku.dev/${{ env.ZUDOKU_VERSION }}
+          parent: false
+          headers: |-
+            content-type: text/javascript
+            cache-control: public,max-age=31536000,immutable
+
+      - name: Upload HTML (Latest)
+        # Only publish latest for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          process_gcloudignore: false
+          path: packages/zudoku/standalone/index.html
+          destination: cdn.zudoku.dev/latest
+          parent: false
+          headers: |-
+            content-type: text/html
+
+      - name: Upload CSS (Latest)
+        # Only publish latest for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          process_gcloudignore: false
+          path: packages/zudoku/standalone
+          glob: "**/*.css"
+          destination: cdn.zudoku.dev/latest
+          parent: false
+          headers: |-
+            content-type: text/css
+
+      - name: Upload Javascript (Latest)
+        # Only publish latest for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          process_gcloudignore: false
+          path: packages/zudoku/standalone
+          glob: "**/*.js"
+          destination: cdn.zudoku.dev/latest
+          parent: false
+          headers: |-
+            content-type: text/javascript
+            cache-control: public,max-age=31536000,immutable
 
       - name: Upload Artifacts
-        if: steps.stats-file.outputs.exists == 'true'
-        uses: "google-github-actions/upload-cloud-storage@v2"
+        uses: google-github-actions/upload-cloud-storage@v2
         with:
           process_gcloudignore: false
           path: packages/zudoku/stats.html
@@ -77,9 +175,37 @@ jobs:
           headers: |-
             content-type: text/html
 
+      - name: Clear CDN Cache
+        # Only for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          curl --request POST \
+          --url https://api.cloudflare.com/client/v4/zones/1abaefabd6800e9979a740a7cdf235a8/purge_cache \
+          --header 'Content-Type: application/json' \
+          --header 'Authorization: Bearer ${{ secrets.CF_ZONE_PURGE_ACCESS_TOKEN }}' \
+          --data '{
+            "files": [
+              "https://cdn.zudoku.dev/demo",
+              "https://cdn.zudoku.dev/demo/",
+              "https://cdn.zudoku.dev/demo/index.html",
+              "https://cdn.zudoku.dev/latest",
+              "https://cdn.zudoku.dev/latest/",
+              "https://cdn.zudoku.dev/latest/index.html",
+              "https://cdn.zudoku.dev/latest/main.js",
+              "https://cdn.zudoku.dev/latest/demo.js",
+              "https://cdn.zudoku.dev/latest/style.css"
+            ]
+          }'
+
       - name: Write Summary
-        if: steps.stats-file.outputs.exists == 'true'
         run: |
           echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
+
+      # Trigger updates of internal projects using Zudoku
+      - run: gh workflow run release.yaml --repo zuplo-poc/docs-zudoku --ref main
+        # Only for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_POC_WORKFLOWS }}
