@@ -1,6 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
+import { TopNavigationItem } from "../../config/validators/validate.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import { Slotlets } from "../components/SlotletProvider.js";
@@ -60,7 +61,7 @@ export type ZudokuContextOptions = {
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationProvider;
-  topNavigation?: Array<{ id: string; label: string; default?: string }>;
+  topNavigation?: TopNavigationItem[];
   sidebars?: SidebarConfig;
   plugins?: DevPortalPlugin[];
   slotlets?: Slotlets;
@@ -72,7 +73,7 @@ export type ZudokuContextOptions = {
 
 export class DevPortalContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
-  public sidebars: NonNullable<ZudokuContextOptions["sidebars"]>;
+  public sidebars: SidebarConfig;
   public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];

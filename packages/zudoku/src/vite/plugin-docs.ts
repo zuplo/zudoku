@@ -1,8 +1,13 @@
 import { type Plugin } from "vite";
 import type { ZudokuPluginOptions } from "../config/config.js";
+import { DocResolver } from "../lib/plugins/markdown/resolver.js";
+import { writePluginDebugCode } from "./debug.js";
+import type { ZudokuPluginOptions } from "../config/config.js";
 import { ZudokuDocsConfig } from "../config/validators/validate.js";
 
-const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
+function getDefaultConfigIfFilesExist() {
+  return [{ files: "/pages/**/*.{md,mdx}" }];
+}
 
 const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
@@ -15,7 +20,7 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         return resolvedVirtualModuleId;
       }
     },
-    load(id) {
+    async load(id) {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
@@ -29,32 +34,39 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           config.mode === "internal"
             ? `import { markdownPlugin } from "${config.moduleDir}/src/lib/plugins/markdown/index.tsx";`
             : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
-          `const configuredDocsPlugins = [];`,
+          `const docsPluginOptions = [];`,
         ];
 
-        const docsConfigs: ZudokuDocsConfig[] = config.docs
-          ? Array.isArray(config.docs)
-            ? config.docs
-            : [config.docs]
-          : [{ files: DEFAULT_DOCS_FILES }];
+        const resolver = new DocResolver(config);
+        const docsConfigs = resolver.getDocsConfigs();
 
         docsConfigs.forEach((docsConfig) => {
           code.push(
             ...[
               `// @ts-ignore`, // To make tests pass
-              `const markdownFiles = import.meta.glob(${JSON.stringify(docsConfig.files)}, {`,
+              `const fileImports = import.meta.glob(${JSON.stringify(docsConfig.files)}, {`,
               `  eager: false,`,
               `});`,
-              `configuredDocsPlugins.push(markdownPlugin({ `,
-              ` markdownFiles,`,
+              `docsPluginOptions.push({ `,
+              ` fileImports,`,
               ` defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
-              ` filesPath: ${JSON.stringify(docsConfig.files)}`,
-              `}));`,
+              ` files: ${JSON.stringify(docsConfig.files)}`,
+              `});`,
             ],
           );
         });
 
-        code.push(`export { configuredDocsPlugins };`);
+        // Even though this returns an array, the plugin should be a single
+        // instance because we need to make sure that there are not duplicate
+        // routes even if different folders have been used.
+        code.push(
+          ...[
+            `const configuredDocsPlugins = [markdownPlugin(docsPluginOptions)]`,
+            `export { configuredDocsPlugins };`,
+          ],
+        );
+
+        await writePluginDebugCode(config.rootDir, "docs-plugin", code);
 
         return {
           code: code.join("\n"),
