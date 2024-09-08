@@ -4,7 +4,7 @@ import type {
   SidebarItemCategory,
 } from "../../../config/validators/SidebarSchema.js";
 import { joinPath } from "../../util/joinPath.js";
-import { useTopNavigationItem, useZudoku } from "../context/ZudokuContext.js";
+import { useCurrentNavigation } from "../context/ZudokuContext.js";
 
 export type TraverseCallback<T> = (
   item: SidebarItem,
@@ -42,15 +42,12 @@ export const traverseSidebarItem = <T>(
 
 export const useCurrentItem = () => {
   const location = useLocation();
-  const topNavItem = useTopNavigationItem();
-  const { sidebars } = useZudoku();
-  const currentSidebar = topNavItem?.id ? sidebars[topNavItem.id] : [];
+  const nav = useCurrentNavigation();
+
+  const currentSidebar = nav.data.sidebar;
 
   return traverseSidebar(currentSidebar, (item) => {
-    if (
-      item.type === "doc" &&
-      joinPath(topNavItem?.id, item.id) === location.pathname
-    ) {
+    if (item.type === "doc" && joinPath(item.id) === location.pathname) {
       return item;
     }
   });
@@ -58,18 +55,17 @@ export const useCurrentItem = () => {
 
 export const useIsCategoryOpen = (category: SidebarItemCategory) => {
   const location = useLocation();
-  const topNavItem = useTopNavigationItem();
 
   return traverseSidebarItem(category, (item) => {
     if (item.type === "category" && item.link) {
-      const categoryLinkPath = joinPath(topNavItem?.id, item.link.id);
+      const categoryLinkPath = joinPath(item.link.id);
       if (categoryLinkPath === location.pathname) {
         return true;
       }
     }
 
     if (item.type === "doc") {
-      const docPath = joinPath(topNavItem?.id, item.id);
+      const docPath = joinPath(item.id);
       if (docPath === location.pathname) {
         return true;
       }
@@ -82,9 +78,8 @@ export const usePrevNext = (): {
   next?: { label: string; id: string };
 } => {
   const currentId = useLocation().pathname;
-  const { sidebars } = useZudoku();
-  const topNavItem = useTopNavigationItem();
-  const currentSidebar = topNavItem?.id ? sidebars[topNavItem.id] : [];
+  const nav = useCurrentNavigation();
+  const currentSidebar = nav.data.sidebar;
 
   let prev;
   let next;
@@ -94,9 +89,9 @@ export const usePrevNext = (): {
   traverseSidebar(currentSidebar, (item) => {
     const itemId =
       item.type === "doc"
-        ? joinPath(topNavItem?.id, item.id)
+        ? joinPath(item.id)
         : item.type === "category" && item.link
-          ? joinPath(topNavItem?.id, item.link.id)
+          ? joinPath(item.link.id)
           : undefined;
 
     if (!itemId) return;

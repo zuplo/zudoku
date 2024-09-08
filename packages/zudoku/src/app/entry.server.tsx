@@ -96,6 +96,10 @@ export const render = async ({
 
         const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
 
+        if (!htmlStart) {
+          throw new Error("No <!--app-html--> found in template");
+        }
+
         response.write(
           htmlStart.replace(
             "<!--app-helmet-->",

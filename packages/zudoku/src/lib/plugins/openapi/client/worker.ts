@@ -10,7 +10,7 @@ worker.addEventListener(
   function (event: MessageEvent<{ id: string; body: string }>) {
     const port = event.ports[0];
 
-    port.onmessage = async function (e) {
+    port!.onmessage = async function (e) {
       const response = await localServer.fetch(
         new Request("/__z/graphql", {
           method: "POST",
@@ -21,7 +21,7 @@ worker.addEventListener(
         }),
       );
 
-      port.postMessage({
+      port!.postMessage({
         id: e.data.id,
         body: await response.text(),
       } satisfies WorkerGraphQLMessage);

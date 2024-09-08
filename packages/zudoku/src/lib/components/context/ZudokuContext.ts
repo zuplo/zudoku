@@ -1,7 +1,11 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { useLocation } from "react-router-dom";
+import { SidebarItem } from "../../../config/validators/SidebarSchema.js";
+import { TopNavigationItem } from "../../../config/validators/validate.js";
 import { DevPortalContext } from "../../core/DevPortalContext.js";
+import { joinPath } from "../../util/joinPath.js";
+import { traverseSidebar } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<DevPortalContext | undefined>(
   undefined,
@@ -25,34 +29,44 @@ export const useApiIdentities = () => {
   });
 };
 
-export const useTopNavigationItem = () => {
-  const { topNavigation } = useZudoku();
+export const useCurrentNavigation = () => {
+  const { getPluginSidebar, sidebars, topNavigation } = useZudoku();
   const location = useLocation();
 
-  const firstPart = location.pathname.split("/").at(1);
-  if (!firstPart) return;
+  const currentSidebarItem = Object.entries(sidebars).find(([id, sidebar]) => {
+    return traverseSidebar(sidebar, (item) => {
+      const itemId =
+        item.type === "doc"
+          ? joinPath(item.id)
+          : item.type === "category" && item.link
+            ? joinPath(item.link.id)
+            : undefined;
 
-  return topNavigation.find((item) => item.id === firstPart);
-};
-
-export const useNavigation = () => {
-  const { getPluginSidebar, sidebars } = useZudoku();
-  const navItem = useTopNavigationItem();
-  const path = navItem?.id;
-  const currentSidebar = path ? (sidebars[path] ?? []) : [];
-  const location = useLocation();
+      if (itemId === location.pathname) {
+        return item;
+      }
+    });
+  });
+  const currentTopNavItem = topNavigation.find(
+    (t) => t.id === currentSidebarItem?.[0],
+  );
 
   return useSuspenseQuery({
     queryFn: async () => {
-      const pluginSidebar = path
-        ? await getPluginSidebar(path)
-        : await getPluginSidebar(location.pathname);
+      const pluginSidebar = await getPluginSidebar(location.pathname);
 
-      return {
-        items: [...currentSidebar, ...pluginSidebar],
-        currentTopNavItem: navItem,
+      const result: {
+        sidebar: SidebarItem[];
+        topNavItem: TopNavigationItem | undefined;
+      } = {
+        sidebar: [
+          ...(currentSidebarItem ? currentSidebarItem[1] : []),
+          ...pluginSidebar,
+        ],
+        topNavItem: currentTopNavItem,
       };
+      return result;
     },
-    queryKey: ["navigation", path],
+    queryKey: ["navigation", location.pathname],
   });
 };

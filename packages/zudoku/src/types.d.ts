@@ -1,5 +1,9 @@
 declare module "virtual:zudoku-docs-plugins" {
   export const configuredDocsPlugins: import("./lib/core/plugins.ts").DevPortalPlugin[];
+  /**
+   * Map of markdown files and imports
+   */
+  export const configuredMarkdownFiles: Record<string, () => Promise<unknown>>;
 }
 
 declare module "virtual:zudoku-sidebar" {

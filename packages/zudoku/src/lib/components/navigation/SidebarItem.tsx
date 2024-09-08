@@ -6,7 +6,6 @@ import type { SidebarItem as SidebarItemType } from "../../../config/validators/
 import { joinPath } from "../../util/joinPath.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
-import { useTopNavigationItem } from "../context/ZudokuContext.js";
 import { SidebarBadge } from "./SidebarBadge.js";
 import { SidebarCategory } from "./SidebarCategory.js";
 
@@ -43,7 +42,6 @@ export const SidebarItem = ({
   basePath?: string;
   level?: number;
 }) => {
-  const topNavItem = useTopNavigationItem();
   const { activeAnchor } = useViewportAnchor();
   const [searchParams] = useSearchParams();
 
@@ -56,7 +54,7 @@ export const SidebarItem = ({
           className={({ isActive }) =>
             navigationListItem({ isActive, isTopLevel: level === 0 })
           }
-          to={joinPath(topNavItem?.id, item.id)}
+          to={joinPath(item.id)}
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
