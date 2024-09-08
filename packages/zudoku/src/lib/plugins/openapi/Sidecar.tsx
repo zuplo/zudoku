@@ -183,7 +183,7 @@ export const Sidecar = ({
             language={selectedLang}
             noBackground
             className="text-xs p-2"
-            code={code}
+            code={code!}
           />
         </SidecarBox.Body>
         <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-1">

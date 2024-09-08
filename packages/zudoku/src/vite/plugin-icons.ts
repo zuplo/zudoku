@@ -12,7 +12,7 @@ export const replaceSidebarIcons = (code: string) => {
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
-    collectedIcons.add(match[1]);
+    collectedIcons.add(match[1]!);
   }
 
   const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
@@ -53,7 +53,18 @@ export const viteIconsPlugin = (): Plugin => {
     },
     async load(id) {
       if (/\.mdx?$/.test(id)) {
-        const code = await readFile(id, "utf-8");
+        let code: string;
+        try {
+          code = await readFile(id, "utf-8");
+        } catch (cause) {
+          throw new Error(
+            `Unable to load icon. Could not read file at '${id}'`,
+            {
+              cause,
+            },
+          );
+        }
+
         const { sidebar_icon: sidebarIcon } = matter(code).data;
         iconMap.set(id, sidebarIcon);
       }
