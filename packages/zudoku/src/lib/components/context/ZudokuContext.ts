@@ -33,7 +33,7 @@ export const useCurrentNavigation = () => {
   const { getPluginSidebar, sidebars, topNavigation } = useZudoku();
   const location = useLocation();
 
-  const currentSidebarItem = Object.entries(sidebars).find(([id, sidebar]) => {
+  const currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
     return traverseSidebar(sidebar, (item) => {
       const itemId =
         item.type === "doc"

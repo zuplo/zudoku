@@ -1,6 +1,7 @@
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { resolveSidebar } from "../config/validators/SidebarSchema.js";
+import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
 
@@ -25,6 +26,7 @@ const replaceSidebarIcons = (code: string) => {
   return `${importStatement}export const configuredSidebar = ${replacedString};`;
 };
 
+
 export const viteSidebarPlugin = (
   getConfig: () => ZudokuPluginOptions,
 ): Plugin => {
@@ -47,13 +49,21 @@ export const viteSidebarPlugin = (
           Object.entries(config.sidebar ?? {}).map(
             async ([parentId, sidebar]) => [
               parentId,
-              await resolveSidebar(config.rootDir, parentId, sidebar),
+              await resolveSidebar(config.rootDir, sidebar),
             ],
           ),
         ),
       );
 
-      return JSON.stringify(resolvedSidebar);
+      const code = JSON.stringify(resolvedSidebar);
+      await writePluginDebugCode(
+        config.rootDir,
+        "sidebar-plugin",
+        code,
+        "json",
+      );
+
+      return code;
     },
     async transform(code, id) {
       if (id !== resolvedVirtualModuleId) return;
