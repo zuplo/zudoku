@@ -10,7 +10,7 @@ export const createConfigReloadPlugin = (
 ): [Plugin, () => ZudokuPluginOptions] => {
   let currentConfig = initialConfig;
 
-  const plugin = {
+  const plugin: Plugin = {
     name: "zudoku-config-reload",
     configureServer: ({ watcher, restart }) => {
       if (!onConfigChange) return;
@@ -28,7 +28,7 @@ export const createConfigReloadPlugin = (
         );
       });
     },
-  } satisfies Plugin;
+  };
 
   return [plugin, () => currentConfig] as const;
 };

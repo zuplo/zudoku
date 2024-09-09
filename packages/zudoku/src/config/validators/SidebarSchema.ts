@@ -44,25 +44,22 @@ const extractTitleFromContent = (content: string) =>
 
 export const resolveSidebar = async (
   rootDir: string,
-  parentId: string,
   sidebar: InputSidebarItem[],
 ): Promise<SidebarItem[]> => {
-  const resolveDoc = async (globId: string, categoryLabel?: string) => {
-    const foundMatches = await glob(`/**/${globId}.{md,mdx}`, {
+  const resolveDoc = async (
+    id: string,
+    categoryLabel?: string,
+  ): Promise<SidebarItemDoc> => {
+    const foundMatches = await glob(`/**/${id}.{md,mdx}`, {
+      ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
       root: rootDir,
     });
 
     if (foundMatches.length === 0) {
       throw new Error(
-        `File not found for document '${globId}'. Check your sidebar configuration.`,
+        `File not found for document '${id}'. Check your sidebar configuration.`,
       );
     }
-
-    // Strip parent id if it's prefixed
-    // E.g. docs/introduction should work as well as introduction
-    const id = globId.startsWith(parentId)
-      ? globId.slice(parentId.length)
-      : globId;
 
     const file = await fs.readFile(foundMatches.at(0)!);
 
@@ -83,17 +80,19 @@ export const resolveSidebar = async (
       label,
       icon,
       categoryLabel,
-    } satisfies SidebarItemDoc;
+    };
   };
 
-  const resolveLink = async (id: string) => {
+  const resolveLink = async (
+    id: string,
+  ): Promise<SidebarItemCategoryLinkDoc> => {
     const doc = await resolveDoc(id);
     return {
       type: "doc",
       id: id,
       label: doc.label,
       icon: doc.icon,
-    } satisfies SidebarItemCategoryLinkDoc;
+    };
   };
 
   const resolveSidebarItemCategoryLinkDoc = async (
