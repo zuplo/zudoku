@@ -1,8 +1,16 @@
 import type { ZudokuConfig } from "zudoku";
-import { sidebar } from "./sidebar";
+import { Landingpage } from "./src/Landingpage";
 import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
+  theme: {
+    dark: {
+      primary: "316deg 100% 50%",
+    },
+    light: {
+      primary: "#ff00bd",
+    },
+  },
   page: {
     banner: {
       message: <PreviewBanner />,
@@ -22,9 +30,88 @@ const config: ZudokuConfig = {
   redirects: [
     { from: "/", to: "/docs" },
     { from: "/docs/getting-started", to: "/docs/app-quickstart" },
+    { from: "/components", to: "/components/callout" },
   ],
-  topNavigation: [{ id: "docs", label: "Documentation" }],
-  sidebar,
+  topNavigation: [
+    { id: "start", label: "Start" },
+    { id: "docs", label: "Documentation" },
+    { id: "components", label: "Components" },
+  ],
+  sidebar: {
+    docs: [
+      {
+        type: "category",
+        label: "Getting started",
+        icon: "sparkles",
+        items: ["introduction", "app-quickstart", "html-quickstart"],
+      },
+      {
+        type: "category",
+        label: "Configuration",
+        icon: "cog",
+        link: "configuration/overview",
+        items: [
+          "configuration/api-reference",
+          "configuration/navigation",
+          "configuration/search",
+          "configuration/authentication",
+          "configuration/vite-config",
+        ],
+      },
+      {
+        type: "category",
+        label: "Markdown",
+        icon: "book-open-text",
+        link: "markdown/overview",
+        items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
+      },
+      {
+        type: "category",
+        label: "Guide",
+        icon: "monitor-check",
+        items: ["environment-variables", "custom-pages", "using-multiple-apis"],
+      },
+      {
+        type: "category",
+        label: "Deployment",
+        icon: "cloud-upload",
+        link: "deployment",
+        items: [
+          "deploy/cloudflare-pages",
+          "deploy/github-pages",
+          "deploy/vercel",
+          "deploy/direct-upload",
+        ],
+      },
+      {
+        type: "category",
+        label: "Extending",
+        icon: "blocks",
+        items: ["custom-plugins", "api-keys"],
+      },
+    ],
+    components: [
+      {
+        icon: "lightbulb",
+        type: "category",
+        label: "Introduction",
+        items: ["components/intro"],
+      },
+      {
+        icon: "component",
+        type: "category",
+        label: "Components",
+        items: [
+          "components/button",
+          "components/callout",
+          "components/note",
+          "components/icons",
+          "components/tabs",
+        ],
+      },
+    ],
+  },
+  customPages: [{ path: "/start", element: <Landingpage /> }],
 };
 
 export default config;
