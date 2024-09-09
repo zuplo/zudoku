@@ -31,21 +31,22 @@ const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
   const { sidebars } = useZudoku();
   const nav = useCurrentNavigation();
   const currentSidebar = sidebars[id];
-  if (!currentSidebar) {
-    throw new Error(
-      `No sidebar found for top navigation '${id}'. Check the 'topNavigation' config.`,
-    );
-  }
 
+  // TODO: This is a bit of a hack to get the first link in the sidebar
+  // We should really process this when we load the config so we can validate
+  // that the sidebar is actually set. In this case we just fall back to linking
+  // to the id if we can't resolve a sidebar.
   const first =
     defaultLink ??
-    traverseSidebar(currentSidebar, (item) => {
-      if (item.type === "doc") return joinPath(item.id);
-    });
+    (currentSidebar
+      ? traverseSidebar(currentSidebar, (item) => {
+          if (item.type === "doc") return joinPath(item.id);
+        })
+      : joinPath(id));
 
   if (!first) {
     throw new Error(
-      `No links found in top navigation for top navigation '${id}'. Check that the sidebar isn't empty.`,
+      `No links found in top navigation for top navigation '${id}'. Check that the sidebar isn't empty or that a default link set.`,
     );
   }
 
