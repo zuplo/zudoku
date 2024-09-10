@@ -1,4 +1,5 @@
 import express from "express";
+import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { Server } from "node:http";
 import { createServer as createViteServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
@@ -18,6 +19,7 @@ import { getDevHtml } from "./html.js";
 export class DevServer {
   private server: Server | undefined;
   private currentConfig: LoadedConfig | undefined;
+  private terminator: HttpTerminator | undefined;
 
   constructor(private options: { port: number; dir: string; ssr?: boolean }) {}
 
@@ -83,20 +85,13 @@ export class DevServer {
 
     return new Promise<void>((resolve) => {
       this.server = app.listen(this.options.port, resolve);
+      this.terminator = createHttpTerminator({
+        server: this.server,
+      });
     });
   }
 
   async stop() {
-    if (this.server) {
-      return new Promise<void>((resolve, reject) => {
-        this.server!.close((err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        });
-      });
-    }
+    await this.terminator?.terminate();
   }
 }

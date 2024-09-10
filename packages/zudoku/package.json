@@ -149,6 +149,7 @@
     "graphql-type-json": "0.3.2",
     "graphql-yoga": "5.2.0",
     "gray-matter": "^4.0.3",
+    "http-terminator": "^3.2.0",
     "loglevel": "^1.9.1",
     "lru-cache": "11.0.0",
     "lucide-react": "0.438.0",
