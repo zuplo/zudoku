@@ -8,8 +8,38 @@ import Image from "next/image";
 import "../globals.css";
 import { AnimatedHeading } from "./AnimatedHeading";
 import Code from "./Code";
+import { DocumentationButton } from "./DocumentationButton";
 import { Footer } from "./Footer";
 import { Frame } from "./Frame";
+
+declare global {
+  // eslint-disable-next-line no-unused-vars
+  interface Window {
+    gtag?:
+      | ((
+          action: string,
+          id: string,
+          options?: Record<
+            string,
+            | string
+            | number
+            | undefined
+            | Record<string, string | number | undefined>
+          >,
+        ) => void)
+      | ((
+          event: string,
+          eventName: string,
+          options?: Record<
+            string,
+            | string
+            | number
+            | undefined
+            | Record<string, string | number | undefined>
+          >,
+        ) => void);
+  }
+}
 
 const Brand = () => (
   <div className="flex items-center justify-between md:block">
@@ -21,7 +51,12 @@ const Brand = () => (
       }}
     />
     <a href="#">
-      <img src="/zudoku-logo-full-dark.svg" width={120} height={50} />
+      <Image
+        alt="logo"
+        src="/zudoku-logo-full-dark.svg"
+        width={120}
+        height={50}
+      />
     </a>
   </div>
 );
@@ -43,12 +78,7 @@ const Page = async () => {
           <div className="h-24 flex flex-col md:flex-row items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
             <Brand />
             <div className="flex gap-4 items-center">
-              <a
-                href="/docs"
-                className="bg-white/5 rounded p-2 px-4 hover:bg-white hover:text-gray-950"
-              >
-                Documentation
-              </a>
+              <DocumentationButton />
               <div className="mx-2 border h-10 border-slate-700" />
               <a
                 target="_blank"
