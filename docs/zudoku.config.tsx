@@ -3,13 +3,6 @@ import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
   page: {
-    logo: {
-      src: {
-        light: "/docs-static/logos/zudoku-light.svg",
-        dark: "/docs-static/logos/zudoku-dark.svg",
-      },
-      width: "99px",
-    },
     banner: {
       message: <PreviewBanner />,
     },
