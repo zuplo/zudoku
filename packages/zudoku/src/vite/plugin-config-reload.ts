@@ -9,6 +9,7 @@ export const createConfigReloadPlugin = (
   onConfigChange?: () => Promise<LoadedConfig>,
 ): [Plugin, () => ZudokuPluginOptions] => {
   let currentConfig = initialConfig;
+  let importDependencies = initialConfig.__meta.dependencies;
 
   const plugin = {
     name: "zudoku-config-reload",
@@ -17,11 +18,15 @@ export const createConfigReloadPlugin = (
 
       watcher.on("change", async (file) => {
         if (!file.startsWith(currentConfig.rootDir)) return;
+        if (!importDependencies.includes(file)) return;
 
         const newConfig = await onConfigChange();
         currentConfig = { ...initialConfig, ...newConfig };
 
-        if (!currentConfig.__meta.dependencies.includes(file)) return;
+        importDependencies = newConfig.__meta.dependencies;
+
+        // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
+        if (file !== newConfig.__meta.path && file.endsWith(".tsx")) return;
 
         await restart();
         printDiagnosticsToConsole(
