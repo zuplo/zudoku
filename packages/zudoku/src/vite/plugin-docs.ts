@@ -1,9 +1,8 @@
 import { type Plugin } from "vite";
-import type { DocsConfig, ZudokuPluginOptions } from "../config/config.js";
+import type { ZudokuPluginOptions } from "../config/config.js";
+import { ZudokuDocsConfig } from "../config/validators/validate.js";
 
-function getDefaultConfigIfFilesExist() {
-  return [{ files: "/pages/**/*.{md,mdx}" }];
-}
+const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
 const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
@@ -32,11 +31,12 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
           `const configuredDocsPlugins = [];`,
         ];
-        const docsConfigs: DocsConfig[] = config.docs
+
+        const docsConfigs: ZudokuDocsConfig[] = config.docs
           ? Array.isArray(config.docs)
             ? config.docs
             : [config.docs]
-          : getDefaultConfigIfFilesExist();
+          : [{ files: DEFAULT_DOCS_FILES }];
 
         docsConfigs.forEach((docsConfig) => {
           code.push(
@@ -45,7 +45,11 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
               `const markdownFiles = import.meta.glob(${JSON.stringify(docsConfig.files)}, {`,
               `  eager: false,`,
               `});`,
-              `configuredDocsPlugins.push(markdownPlugin({ markdownFiles, defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)} }));`,
+              `configuredDocsPlugins.push(markdownPlugin({ `,
+              ` markdownFiles,`,
+              ` defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
+              ` filesPath: ${JSON.stringify(docsConfig.files)}`,
+              `}));`,
             ],
           );
         });

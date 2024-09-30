@@ -7,17 +7,20 @@ import {
 
 export const generateRoutes = (
   markdownFiles: MarkdownPluginOptions["markdownFiles"],
+  filesPath: string,
   defaultOptions?: MarkdownPluginDefaultOptions,
 ): RouteObject[] =>
   Object.entries(markdownFiles).flatMap(([file, importPromise]) => {
-    // @todo we can pass in the folder name and then filter the markdown files based on that path
-    const match = file.match(/pages\/(.*).mdx?$/);
-    const path = match?.at(1);
+    let rootDir = filesPath.split("**")[0];
+    rootDir = rootDir.replace("/**", "/");
+    const re = new RegExp(`^${rootDir}(.*).mdx?`);
+    const match = file.match(re);
+    const fsPath = match?.at(1);
 
-    if (!path) return [];
+    if (!fsPath) return [];
 
     return {
-      path,
+      path: fsPath,
       lazy: async () => {
         const { MdxPage } = await import("./MdxPage.js");
         const { default: Component, ...props } = await importPromise();
