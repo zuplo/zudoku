@@ -91,7 +91,7 @@ export const OperationListItem = ({
                     <TabsTrigger
                       value={response.statusCode}
                       key={response.statusCode}
-                      title={response.description}
+                      title={response.description ?? undefined}
                     >
                       {response.statusCode}
                     </TabsTrigger>

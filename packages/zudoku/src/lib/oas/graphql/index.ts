@@ -422,7 +422,7 @@ const loadOpenAPISchema = async (input: NonNullable<unknown>) => {
 };
 
 const SchemaSource = builder.enumType("SchemaType", {
-  values: ["url", "file"] as const,
+  values: ["url", "file", "raw"] as const,
 });
 
 builder.queryType({

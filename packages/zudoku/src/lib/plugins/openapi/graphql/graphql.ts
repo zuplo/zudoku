@@ -119,7 +119,7 @@ export type RequestBodyObject = {
 export type ResponseItem = {
   __typename?: "ResponseItem";
   content?: Maybe<Array<MediaTypeObject>>;
-  description: Scalars["String"]["output"];
+  description?: Maybe<Scalars["String"]["output"]>;
   headers?: Maybe<Scalars["JSON"]["output"]>;
   links?: Maybe<Scalars["JSON"]["output"]>;
   statusCode: Scalars["String"]["output"];
@@ -155,7 +155,7 @@ export type SchemaTag = {
   operations: Array<OperationItem>;
 };
 
-export type SchemaType = "file" | "url";
+export type SchemaType = "file" | "raw" | "url";
 
 export type TagItem = {
   __typename?: "TagItem";
@@ -204,7 +204,7 @@ export type OperationsFragmentFragment = {
     __typename?: "ResponseItem";
     statusCode: string;
     links?: any | null;
-    description: string;
+    description?: string | null;
     content?: Array<{
       __typename?: "MediaTypeObject";
       mediaType: string;
