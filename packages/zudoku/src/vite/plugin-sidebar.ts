@@ -1,7 +1,29 @@
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { resolveSidebar } from "../config/validators/SidebarSchema.js";
-import { replaceSidebarIcons } from "./plugin-icons.js";
+
+const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
+
+const toPascalCase = (str: string) =>
+  str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
+
+const replaceSidebarIcons = (code: string) => {
+  const collectedIcons = new Set<string>();
+
+  let match;
+  while ((match = matchIconAnnotation.exec(code)) !== null) {
+    collectedIcons.add(match[1]);
+  }
+
+  const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
+  const replacedString = code.replaceAll(
+    matchIconAnnotation,
+    // The element will be created by the implementers side
+    (_, iconName) => `"icon": ${toPascalCase(iconName)}`,
+  );
+
+  return `${importStatement}export const configuredSidebar = ${replacedString};`;
+};
 
 export const viteSidebarPlugin = (
   getConfig: () => ZudokuPluginOptions,
