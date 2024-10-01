@@ -108,3 +108,5 @@ export const InputSidebarItemCategorySchema: z.ZodType<InputSidebarItemCategory>
 export const InputSidebarSchema = InputSidebarItemSchema.array();
 
 export type InputSidebar = z.infer<typeof InputSidebarSchema>;
+
+export type ConfigSidebar = Record<string, InputSidebar>;

@@ -141,7 +141,7 @@ export function getPluginOptions({
 }): ZudokuPluginOptions {
   const moduleDir = getModuleDir();
   return {
-    ...config,
+    ...config!,
     rootDir: dir,
     moduleDir,
     mode,
@@ -151,10 +151,16 @@ export function getPluginOptions({
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
+  onConfigChange?: (config: LoadedConfig) => void,
 ): Promise<InlineConfig> {
   const config = await loadZudokuConfig(dir);
 
-  const onConfigChange = () => loadZudokuConfig(dir, true);
+  const handleConfigChange = async () => {
+    const config = await loadZudokuConfig(dir, true);
+    onConfigChange?.(config);
+
+    return config;
+  };
 
   validateConfig(config);
 
@@ -236,7 +242,7 @@ export async function getViteConfig(
       vitePluginSsrCss({
         entries: [`${pluginOptions.moduleDir}/src/app/entry.client.tsx`],
       }),
-      vitePlugin(pluginOptions, onConfigChange),
+      vitePlugin(pluginOptions, handleConfigChange),
     ],
     css: {
       postcss: {
