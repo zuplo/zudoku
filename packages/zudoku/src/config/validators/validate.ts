@@ -45,6 +45,9 @@ const ApiSchema = z.union([
   z
     .object({ type: z.literal("file"), input: z.string() })
     .merge(ApiConfigSchema),
+  z
+    .object({ type: z.literal("raw"), input: z.string() })
+    .merge(ApiConfigSchema),
 ]);
 
 const ApiKeysSchema = z.union([
@@ -137,6 +140,17 @@ const SiteMapSchema = z
   })
   .optional();
 
+const DocsConfigSchema = z.object({
+  files: z.string(),
+  defaultOptions: z
+    .object({
+      toc: z.boolean(),
+      disablePager: z.boolean(),
+    })
+    .partial()
+    .optional(),
+});
+
 const ConfigSchema = z
   .object({
     basePath: z.string().optional(),
@@ -220,17 +234,7 @@ const ConfigSchema = z
       primaryBrandColor: z.string(),
       organizationDisplayName: z.string(),
     }),
-    docs: z
-      .object({
-        files: z.string(),
-        defaultOptions: z
-          .object({
-            toc: z.boolean(),
-            disablePager: z.boolean(),
-          })
-          .partial(),
-      })
-      .partial(),
+    docs: DocsConfigSchema,
     apis: z.union([ApiSchema, z.array(ApiSchema)]),
     apiKeys: ApiKeysSchema,
     redirects: z.array(z.object({ from: z.string(), to: z.string() })),
@@ -270,6 +274,7 @@ Following IDs are available: ${topNavIds.join(", ")}`,
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuConfig = z.infer<typeof ConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
+export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 
 export function validateConfig(config: unknown) {
   const validationResult = ConfigSchema.safeParse(config);

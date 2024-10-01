@@ -26,11 +26,15 @@ export class DevServer {
   async start() {
     const app = express();
 
-    const viteConfig = await getViteConfig(this.options.dir, {
-      mode: "development",
-      command: "serve",
-      isSsrBuild: this.options.ssr,
-    });
+    const viteConfig = await getViteConfig(
+      this.options.dir,
+      {
+        mode: "development",
+        command: "serve",
+        isSsrBuild: this.options.ssr,
+      },
+      (zudokuConfig) => (this.currentConfig = zudokuConfig),
+    );
 
     const vite = await createViteServer(viteConfig);
 
