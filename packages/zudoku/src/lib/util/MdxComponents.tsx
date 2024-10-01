@@ -4,7 +4,9 @@ import { Link } from "react-router-dom";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { SyntaxHighlight } from "../components/SyntaxHighlight.js";
+import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs.js";
 
 export type MdxComponentsType = ComponentProps<
   typeof MDXProvider
@@ -48,6 +50,7 @@ export const MdxComponents = {
       {children}
     </Heading>
   ),
+  Button,
   // @ts-expect-error Node is not in types but still gets passed
   a: ({ href, node, ...props }) =>
     href && !href.startsWith("http") ? (
@@ -55,6 +58,10 @@ export const MdxComponents = {
     ) : (
       <a href={href} target="_blank" {...props} rel="noreferrer" />
     ),
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
   Callout,
   tip: (props) => <Callout type="tip" {...props} />,
   info: (props) => <Callout type="info" {...props} />,
@@ -62,7 +69,6 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
-
   pre: ({ children }) => <>{children}</>,
   code: ({ className, children, ...props }) => {
     // `inline` provided by the rehype plugin, as react-markdown removed support for that

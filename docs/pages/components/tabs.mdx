@@ -1,0 +1,57 @@
+---
+title: Tabs
+---
+
+## Example
+
+To install the package, run:
+
+<Tabs defaultValue="auto" className="w-[400px]">
+  <TabsList>
+    <TabsTrigger value="manual">Manual Installation</TabsTrigger>
+    <TabsTrigger value="auto">Automated Installation</TabsTrigger>
+  </TabsList>
+  <TabsContent value="manual">
+    This could be a manual installation guide for a software. It could include
+    steps like:
+    <ul>
+      <li>Download the software from the official website</li>
+      <li>Extract the downloaded file</li>
+      <li>Run the installer</li>
+      <li>Follow the on-screen instructions</li>
+    </ul>
+  </TabsContent>
+  <TabsContent value="auto">
+    Just run this command and follow the on-screen instructions:
+
+    <code>
+      ```shell
+      npx create-my-app my-app
+      // Ready to go!
+      ```
+    </code>
+
+  </TabsContent>
+</Tabs>
+
+## Usage
+
+<code>
+  ```mdx
+
+# Installation
+
+To install the package, run:
+
+  <Tabs defaultValue="account">
+    <TabsList>
+      <TabsTrigger value="account">Account</TabsTrigger>
+      <TabsTrigger value="password">Password</TabsTrigger>
+    </TabsList>
+    <TabsContent value="account">
+      Make changes to your account here.
+    </TabsContent>
+    <TabsContent value="password">Change your password here.</TabsContent>
+  </Tabs>
+  ```
+</code>
