@@ -132,12 +132,12 @@ export async function downloadAndExtractExample(root: string, name: string) {
 
   await pipeline(
     await downloadTarStream(
-      "https://codeload.github.com/vercel/next.js/tar.gz/canary",
+      "https://codeload.github.com/zuplo/zudoku/tar.gz/canary",
     ),
     x({
       cwd: root,
       strip: 2 + name.split("/").length,
-      filter: (p) => p.includes(`next.js-canary/examples/${name}/`),
+      filter: (p) => p.includes(`zudoku-canary/examples/${name}/`),
     }),
   );
 }
