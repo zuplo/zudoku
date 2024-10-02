@@ -143,7 +143,7 @@
     "chokidar": "^3.6.0",
     "class-variance-authority": "0.7.0",
     "dotenv": "16.4.5",
-    "express": "4.19.2",
+    "express": "4.20.0",
     "glob": "^11.0.0",
     "graphql": "16.9.0",
     "graphql-type-json": "0.3.2",
