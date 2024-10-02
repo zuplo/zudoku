@@ -13,9 +13,6 @@ changelog:
     - title: Documentation 📚
       labels:
         - docs
-    - title: Internal Changes 🏠
-      labels:
-        - internal
     - title: Other Changes 🔄
       labels:
         - "*"
