@@ -28,18 +28,16 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           for (const c of apis) {
             let apiConfig: OpenApiPluginOptions;
             if (c.type === "file") {
-              const raw = await readFile(c.input, "utf-8");
+              let data = await readFile(c.input, "utf-8");
 
-              let data: unknown;
-              if (raw.trim().startsWith("{")) {
-                data = JSON.parse(raw);
-              } else {
+              if (!data.trim().startsWith("{")) {
                 const yaml = await import("yaml");
-                data = yaml.parse(raw);
+                data = yaml.parse(data);
               }
 
               apiConfig = {
                 ...c,
+                type: "raw",
                 input: data,
               };
             } else {
