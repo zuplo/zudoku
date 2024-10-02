@@ -120,7 +120,6 @@ export async function loadZudokuConfig(
     logger.error(e);
   }
 
-  // Default config
   logger.error(colors.red(`no zudoku config file found in project root.`), {
     timestamp: true,
   });
