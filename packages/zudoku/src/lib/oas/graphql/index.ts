@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import SchemaBuilder from "@pothos/core";
+import {
+  slugifyWithCounter,
+  type CountableSlugify,
+} from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
 import { LRUCache } from "lru-cache";
 import hashit from "object-hash";
-import slugify from "../../util/slugify.js";
 import {
   HttpMethods,
   validate,
@@ -35,7 +38,12 @@ type OperationLike = {
   path: string;
   method: string;
 };
-export const slugifyOperation = (operation: OperationLike, tag?: string) => {
+
+export const createOperationSlug = (
+  slugify: CountableSlugify,
+  operation: OperationLike,
+  tag?: string,
+) => {
   const summary =
     (operation.summary ?? "") +
     (operation.operationId
@@ -46,7 +54,6 @@ export const slugifyOperation = (operation: OperationLike, tag?: string) => {
   return slugify(
     (tag ? tag + "-" : "") +
       (summary || `${operation.method}-${operation.path}`),
-    { lower: true, trim: true },
   );
 };
 
@@ -88,6 +95,8 @@ const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
 };
 
 const getAllOperations = (paths?: PathsObject, tag?: string) => {
+  const slugify = slugifyWithCounter();
+
   return Object.entries(paths ?? {}).flatMap(([path, value]) =>
     HttpMethods.flatMap((method) => {
       if (!value?.[method]) return [];
@@ -109,21 +118,20 @@ const getAllOperations = (paths?: PathsObject, tag?: string) => {
         ...operationParameters,
       ];
 
+      const slugData = {
+        summary: operation.summary,
+        operationId: operation.operationId,
+        path,
+        method,
+      };
+
       return {
         ...operation,
         method,
         path,
         parameters,
         tags: operation.tags ?? [],
-        slug: slugifyOperation(
-          {
-            summary: operation.summary,
-            operationId: operation.operationId,
-            path,
-            method,
-          },
-          tag,
-        ),
+        slug: createOperationSlug(slugify, slugData, tag),
       };
     }),
   );

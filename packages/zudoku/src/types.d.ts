@@ -1,21 +1,3 @@
-declare module "slugify" {
-  declare function slugify(
-    string: string,
-    options?:
-      | {
-          replacement?: string;
-          remove?: RegExp;
-          lower?: boolean;
-          strict?: boolean;
-          locale?: string;
-          trim?: boolean;
-        }
-      | string,
-  ): string;
-
-  export default slugify;
-}
-
 declare module "virtual:zudoku-docs-plugins" {
   export const configuredDocsPlugins: import("./lib/core/plugins.ts").DevPortalPlugin[];
 }
