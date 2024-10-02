@@ -1,15 +1,5 @@
 import { cn } from "../../util/cn.js";
 
-export const TextColorMap = {
-  green: "text-green-600",
-  blue: "text-sky-600",
-  yellow: "text-yellow-600",
-  red: "text-red-600",
-  purple: "text-purple-600",
-  indigo: "text-indigo-600",
-  gray: "text-gray-600",
-};
-
 export const ColorMap = {
   green: "bg-green-400 dark:bg-green-800",
   blue: "bg-sky-400 dark:bg-sky-800",
