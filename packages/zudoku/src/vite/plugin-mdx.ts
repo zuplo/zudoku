@@ -12,7 +12,7 @@ import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { visit } from "unist-util-visit";
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import type { LoadedConfig } from "./config.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rehypeCodeBlockPlugin = () => (tree: any) => {
@@ -37,18 +37,18 @@ const remarkLinkRewritePlugin = () => (tree: any) => {
 };
 
 export type DevPortalPluginOptions = {
-  mode: ZudokuPluginOptions["mode"];
   remarkPlugins?: Options["remarkPlugins"];
   rehypePlugins?: Options["rehypePlugins"];
 };
 
-const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteMdxPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const config = getConfig();
   return {
     enforce: "pre",
     ...mdx({
       providerImportSource:
-        config.mode === "internal" || config.mode === "standalone"
+        process.env.ZUDOKU_ENV === "internal" ||
+        process.env.ZUDOKU_ENV === "standalone"
           ? "@mdx-js/react"
           : "zudoku/components",
       remarkPlugins: [

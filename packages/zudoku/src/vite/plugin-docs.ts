@@ -1,10 +1,10 @@
 import { type Plugin } from "vite";
-import type { ZudokuPluginOptions } from "../config/config.js";
 import { ZudokuDocsConfig } from "../config/validators/validate.js";
+import type { LoadedConfig } from "./config.js";
 
 const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
-const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -19,15 +19,15 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
-        if (config.mode === "standalone") {
+        if (process.env.ZUDOKU_ENV === "standalone") {
           return `export const configuredDocsPlugins = [];`;
         }
 
         const code: string[] = [
           // IMPORTANT! This path here is important, we MUST resolve
           // files here as Typescript from the appDir
-          config.mode === "internal"
-            ? `import { markdownPlugin } from "${config.moduleDir}/src/lib/plugins/markdown/index.tsx";`
+          process.env.ZUDOKU_ENV === "internal"
+            ? `import { markdownPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/markdown/index.tsx";`
             : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
           `const configuredDocsPlugins = [];`,
         ];

@@ -26,13 +26,16 @@ export default defineConfig({
     sourcemap: true,
     outDir: path.resolve(__dirname, "lib"),
     lib: {
-      entry: Object.entries(entries).reduce((acc, [key, value]) => {
-        acc[key] = path.resolve(__dirname, value);
-        return acc;
-      }, {}),
+      entry: Object.entries(entries).reduce(
+        (acc, [key, value]) => {
+          acc[key] = path.resolve(__dirname, value);
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (format, fileName) => {
+      fileName: (_format, fileName) => {
         return `zudoku.${fileName}.js`;
       },
     },

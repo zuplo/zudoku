@@ -1,9 +1,10 @@
 import autoprefixer from "autoprefixer";
+import { fileURLToPath } from "node:url";
 import path from "path";
 import tailwindcss from "tailwindcss";
 import { defineConfig } from "vite";
 import tailwindConfig from "./src/app/tailwind.js";
-import { getPluginOptions } from "./src/vite/config.js";
+import { getStandaloneConfig } from "./src/vite/config.js";
 import vitePlugin from "./src/vite/plugin.js";
 
 const entries: Record<string, string> = {
@@ -11,15 +12,12 @@ const entries: Record<string, string> = {
   demo: "./src/app/demo.tsx",
 };
 
-const config = {
-  ...getPluginOptions({
-    mode: "standalone",
-    dir: path.resolve(__dirname),
-  }),
-  __meta: {},
-};
+const rootDir = path.dirname(fileURLToPath(import.meta.url));
+
+process.env.ZUDOKU_ENV = "standalone";
 
 export default defineConfig({
+  mode: "standalone",
   worker: {
     format: "es",
   },
@@ -28,15 +26,18 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
-    outDir: path.resolve(__dirname, "standalone"),
+    outDir: path.resolve(rootDir, "standalone"),
     lib: {
-      entry: Object.entries(entries).reduce((acc, [key, value]) => {
-        acc[key] = path.resolve(__dirname, value);
-        return acc;
-      }, {}),
+      entry: Object.entries(entries).reduce(
+        (acc, [key, value]) => {
+          acc[key] = path.resolve(__dirname, value);
+          return acc;
+        },
+        {} as Record<string, string>,
+      ),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (format, fileName) => {
+      fileName: (_format, fileName) => {
         if (fileName === "standalone") {
           return `main.js`;
         } else if (fileName === "demo") {
@@ -58,7 +59,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vitePlugin(config)],
+  plugins: [vitePlugin(getStandaloneConfig(rootDir))],
   css: {
     postcss: {
       plugins: [

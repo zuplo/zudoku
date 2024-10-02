@@ -1,11 +1,9 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
 import { resolveSidebar } from "../config/validators/SidebarSchema.js";
+import type { LoadedConfig } from "./config.js";
 import { replaceSidebarIcons } from "./plugin-icons.js";
 
-export const viteSidebarPlugin = (
-  getConfig: () => ZudokuPluginOptions,
-): Plugin => {
+export const viteSidebarPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-sidebar";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -25,7 +23,7 @@ export const viteSidebarPlugin = (
           Object.entries(config.sidebar ?? {}).map(
             async ([parentId, sidebar]) => [
               parentId,
-              await resolveSidebar(config.rootDir, parentId, sidebar),
+              await resolveSidebar(config.__meta.rootDir, parentId, sidebar),
             ],
           ),
         ),

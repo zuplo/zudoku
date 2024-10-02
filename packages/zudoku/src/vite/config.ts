@@ -16,7 +16,7 @@ import {
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import { isPortAvailable } from "../cli/common/utils/ports.js";
-import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
+import type { ZudokuConfig } from "../config/config.js";
 import { validateConfig } from "../config/validators/validate.js";
 import vitePlugin from "./plugin.js";
 
@@ -53,16 +53,27 @@ export async function getConfigFilePath(rootDir: string): Promise<string> {
   throw new Error(`No zudoku config file found in project root.`);
 }
 
-export type ZudokuConfigEnv = ConfigEnv & {
-  mode: "development" | "production";
-  forceReload?: boolean;
-};
-
 export type LoadedConfig = ZudokuConfig & {
-  __meta: { dependencies: string[]; path: string };
+  __meta: {
+    rootDir: string;
+    moduleDir: string;
+    dependencies: string[];
+    configPath: string;
+  };
 };
 
 let config: LoadedConfig | undefined;
+
+export const getStandaloneConfig = (rootDir: string): LoadedConfig => {
+  return {
+    __meta: {
+      rootDir,
+      moduleDir: getModuleDir(),
+      dependencies: [],
+      configPath: "",
+    },
+  };
+};
 
 export async function loadZudokuConfig(
   rootDir: string,
@@ -96,7 +107,12 @@ export async function loadZudokuConfig(
 
     config = {
       ...loadedConfig,
-      __meta: { dependencies, path: filepath },
+      __meta: {
+        dependencies,
+        rootDir,
+        moduleDir: getModuleDir(),
+        configPath: filepath,
+      },
     };
 
     return config;
@@ -132,25 +148,9 @@ export function getAppServerEntryPath() {
   return path.join(modDir, "src", "app", "entry.server.tsx");
 }
 
-export function getPluginOptions({
-  dir,
-  mode,
-}: {
-  dir: string;
-  mode: ZudokuPluginOptions["mode"];
-}): ZudokuPluginOptions {
-  const moduleDir = getModuleDir();
-  return {
-    ...config!,
-    rootDir: dir,
-    moduleDir,
-    mode,
-  };
-}
-
 export async function getViteConfig(
   dir: string,
-  configEnv: ZudokuConfigEnv,
+  configEnv: ConfigEnv,
   onConfigChange?: (config: LoadedConfig) => void,
 ): Promise<InlineConfig> {
   const config = await loadZudokuConfig(dir);
@@ -172,14 +172,10 @@ export async function getViteConfig(
     websocketPort++;
   }
 
-  const pluginOptions = getPluginOptions({
-    dir,
-    mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
-  });
-
   const viteConfig: InlineConfig = {
     root: dir,
     base: config.basePath,
+    mode: process.env.ZUDOKU_ENV,
     appType: "custom",
     configFile: false,
     clearScreen: false,
@@ -204,8 +200,8 @@ export async function getViteConfig(
           `${dir}/dist`,
           `${dir}/lib`,
           `${dir}/.git`,
-          `${pluginOptions.moduleDir}/src/vite`,
-          `${pluginOptions.moduleDir}/src/cli`,
+          `${config.__meta.moduleDir}/src/vite`,
+          `${config.__meta.moduleDir}/src/cli`,
         ],
       },
     },
@@ -240,9 +236,9 @@ export async function getViteConfig(
     },
     plugins: [
       vitePluginSsrCss({
-        entries: [`${pluginOptions.moduleDir}/src/app/entry.client.tsx`],
+        entries: [`${config.__meta.moduleDir}/src/app/entry.client.tsx`],
       }),
-      vitePlugin(pluginOptions, handleConfigChange),
+      vitePlugin(config, handleConfigChange),
     ],
     css: {
       postcss: {
@@ -254,11 +250,10 @@ export async function getViteConfig(
               // Tailwind seems to crash if it tries to parse compiled .js files
               // as a workaround, we will just ship the source file and use those
               // `${moduleDir}/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              config.__meta.path,
               ...config.__meta.dependencies.map(
-                (dep) => `${path.dirname(config.__meta.path)}/${dep}`,
+                (dep) => `${path.dirname(config.__meta.configPath)}/${dep}`,
               ),
-              `${pluginOptions.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
+              `${config.__meta.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
               // Users custom components
               // NOTE: For now we are requiring components to be in `src` folder
               // would be good to make this more dynamic though because users

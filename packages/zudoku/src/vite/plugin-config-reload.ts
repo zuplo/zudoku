@@ -1,13 +1,12 @@
 import path from "node:path";
 import { type Plugin } from "vite";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
-import { type ZudokuPluginOptions } from "../config/config.js";
 import { type LoadedConfig } from "./config.js";
 
 export const createConfigReloadPlugin = (
-  initialConfig: ZudokuPluginOptions,
+  initialConfig: LoadedConfig,
   onConfigChange?: () => Promise<LoadedConfig>,
-): [Plugin, () => ZudokuPluginOptions] => {
+): [Plugin, () => LoadedConfig] => {
   let currentConfig = initialConfig;
   let importDependencies = initialConfig.__meta.dependencies;
 
@@ -15,9 +14,8 @@ export const createConfigReloadPlugin = (
     name: "zudoku-config-reload",
     configureServer: ({ watcher, restart }) => {
       if (!onConfigChange) return;
-
       watcher.on("change", async (file) => {
-        if (!file.startsWith(currentConfig.rootDir)) return;
+        if (!file.startsWith(currentConfig.__meta.rootDir)) return;
         if (!importDependencies.includes(file)) return;
 
         const newConfig = await onConfigChange();
@@ -26,11 +24,12 @@ export const createConfigReloadPlugin = (
         importDependencies = newConfig.__meta.dependencies;
 
         // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
-        if (file !== newConfig.__meta.path && file.endsWith(".tsx")) return;
+        if (file !== newConfig.__meta.configPath && file.endsWith(".tsx"))
+          return;
 
         await restart();
         printDiagnosticsToConsole(
-          `[${new Date().toLocaleTimeString()}]: Config ${path.basename(currentConfig.__meta.path)} changed. Restarted server.`,
+          `[${new Date().toLocaleTimeString()}]: Config ${path.basename(currentConfig.__meta.configPath)} changed. Restarted server.`,
         );
       });
     },

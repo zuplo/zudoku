@@ -1,9 +1,9 @@
 import { readFile } from "fs/promises";
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
 import { OpenApiPluginOptions } from "../lib/plugins/openapi/index.js";
+import type { LoadedConfig } from "./config.js";
 
-const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteApiPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -49,7 +49,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             code.push(
               ...[
                 `// @ts-ignore`, // To make tests pass
-                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, inMemory: options?.ssr ?? config.mode === "internal" })}));`,
+                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, inMemory: options?.ssr ?? process.env.ZUDOKU_ENV === "internal" })}));`,
               ],
             );
           }

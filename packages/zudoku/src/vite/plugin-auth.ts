@@ -1,7 +1,7 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import type { LoadedConfig } from "./config.js";
 
-const viteAuthPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteAuthPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-auth";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -16,14 +16,14 @@ const viteAuthPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
-        if (!config.authentication || config.mode === "standalone") {
+        if (!config.authentication || process.env.ZUDOKU_ENV === "standalone") {
           return `export const configuredAuthProvider = undefined;`;
         }
         // TODO: Validate that the authConfig.type is a valid authentication provider
         return [
           `const config = ${JSON.stringify(config.authentication, null, 2)};`,
-          config.mode === "internal"
-            ? `import authProvider from "${config.moduleDir}/src/lib/authentication/providers/${config.authentication.type}.tsx";`
+          process.env.ZUDOKU_ENV === "internal"
+            ? `import authProvider from "${config.__meta.moduleDir}/src/lib/authentication/providers/${config.authentication.type}.tsx";`
             : `import authProvider from "zudoku/auth/${config.authentication.type}";`,
           `export const configuredAuthProvider = authProvider(config);`,
         ].join("\n");
