@@ -256,10 +256,6 @@ export const Playground = ({
                 Send
               </Button>
             </div>
-            {/*            <label className="flex gap-2 items-center text-sm">
-              <input type="checkbox" />
-              Show host
-            </label>*/}
             <Tabs
               defaultValue={
                 queryParams.length + pathParams.length > 0
