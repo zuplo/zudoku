@@ -75,6 +75,9 @@ jobs:
         id: vars
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+      - name: Copy readme
+        run: cp README.md packages/zudoku
+
       - name: Version
         if: github.event_name == 'workflow_dispatch'
         run: nx release version --specifier ${{ github.event.inputs.releaseType }} --git-commit --git-tag=true
