@@ -131,6 +131,7 @@ export type Schema = {
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
+  servers: Array<Server>;
   tags: Array<SchemaTag>;
   title: Scalars["String"]["output"];
   url: Scalars["String"]["output"];
@@ -157,10 +158,30 @@ export type SchemaTag = {
 
 export type SchemaType = "file" | "raw" | "url";
 
+export type Server = {
+  __typename?: "Server";
+  description?: Maybe<Scalars["String"]["output"]>;
+  url: Scalars["String"]["output"];
+};
+
 export type TagItem = {
   __typename?: "TagItem";
   description?: Maybe<Scalars["String"]["output"]>;
   name: Scalars["String"]["output"];
+};
+
+export type ServersQueryQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type ServersQueryQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    url: string;
+    servers: Array<{ __typename?: "Server"; url: string }>;
+  };
 };
 
 export type OperationsFragmentFragment = {
@@ -249,7 +270,11 @@ export type GetServerQueryQueryVariables = Exact<{
 
 export type GetServerQueryQuery = {
   __typename?: "Query";
-  schema: { __typename?: "Schema"; url: string };
+  schema: {
+    __typename?: "Schema";
+    url: string;
+    servers: Array<{ __typename?: "Server"; url: string }>;
+  };
 };
 
 export type GetCategoriesQueryVariables = Exact<{
@@ -423,6 +448,83 @@ export const OperationsFragmentFragmentDoc = {
     },
   ],
 } as unknown as DocumentNode<OperationsFragmentFragment, unknown>;
+export const ServersQueryDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "ServersQuery" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "input" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "JSON" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "type" } },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "SchemaType" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "schema" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "input" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "input" },
+                },
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "type" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "type" },
+                },
+              },
+            ],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                { kind: "Field", name: { kind: "Name", value: "url" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "servers" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "url" } },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ServersQueryQuery, ServersQueryQueryVariables>;
 export const AllOperationsDocument = {
   kind: "Document",
   definitions: [
@@ -727,6 +829,16 @@ export const GetServerQueryDocument = {
               kind: "SelectionSet",
               selections: [
                 { kind: "Field", name: { kind: "Name", value: "url" } },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "servers" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "url" } },
+                    ],
+                  },
+                },
               ],
             },
           },

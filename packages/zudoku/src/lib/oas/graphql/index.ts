@@ -18,6 +18,7 @@ import {
   type ParameterObject,
   type PathsObject,
   type SchemaObject,
+  type ServerObject,
   type TagObject,
 } from "../parser/index.js";
 
@@ -155,6 +156,13 @@ const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
         );
       },
     }),
+  }),
+});
+
+const ServerItem = builder.objectRef<ServerObject>("Server").implement({
+  fields: (t) => ({
+    url: t.exposeString("url"),
+    description: t.exposeString("description", { nullable: true }),
   }),
 });
 
@@ -371,6 +379,10 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
   fields: (t) => ({
     openapi: t.string({ resolve: (root) => root.openapi }),
     url: t.string({ resolve: (root) => root.servers?.at(0)?.url ?? "/" }),
+    servers: t.field({
+      type: [ServerItem],
+      resolve: (root) => root.servers ?? [],
+    }),
     title: t.string({ resolve: (root) => root.info.title }),
     version: t.string({ resolve: (root) => root.info.version }),
     description: t.string({

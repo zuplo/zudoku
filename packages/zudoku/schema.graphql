@@ -28,7 +28,7 @@ type MediaTypeObject {
   encoding: [EncodingItem!]
   examples: [ExampleItem!]
   mediaType: String!
-  schema: JSON!
+  schema: JSON
 }
 
 type OperationItem {
@@ -77,7 +77,7 @@ type RequestBodyObject {
 
 type ResponseItem {
   content: [MediaTypeObject!]
-  description: String!
+  description: String
   headers: JSON
   links: JSON
   statusCode: String!
@@ -86,13 +86,9 @@ type ResponseItem {
 type Schema {
   description: String
   openapi: String!
-  operations(
-    method: String
-    operationId: String
-    path: String
-    tag: String
-  ): [OperationItem!]!
+  operations(method: String, operationId: String, path: String, tag: String): [OperationItem!]!
   paths: [PathItem!]!
+  servers: [Server!]!
   tags(name: String): [SchemaTag!]!
   title: String!
   url: String!
@@ -103,6 +99,11 @@ type SchemaTag {
   description: String
   name: String
   operations: [OperationItem!]!
+}
+
+type Server {
+  description: String
+  url: String!
 }
 
 type TagItem {
@@ -119,6 +120,7 @@ enum ParameterIn {
 
 enum SchemaType {
   file
+  raw
   url
 }
 

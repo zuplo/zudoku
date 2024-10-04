@@ -65,6 +65,9 @@ export const GetServerQuery = graphql(/* GraphQL */ `
   query getServerQuery($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
       url
+      servers {
+        url
+      }
     }
   }
 `);
@@ -175,6 +178,9 @@ export const Sidecar = ({
           </span>
           <PlaygroundDialogWrapper
             server={result.data?.schema.url ?? ""}
+            servers={
+              result.data?.schema.servers.map((server) => server.url) ?? []
+            }
             operation={operation}
           />
         </SidecarBox.Head>
