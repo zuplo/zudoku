@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { useSelectedServerStore } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import {
   Select,
@@ -62,6 +63,7 @@ export type PlaygroundForm = {
 
 export type PlaygroundContentProps = {
   server: string;
+  servers?: string[];
   url: string;
   method: string;
   headers?: Header[];
@@ -72,6 +74,7 @@ export type PlaygroundContentProps = {
 
 export const Playground = ({
   server,
+  servers,
   url,
   method,
   headers = [],
@@ -79,6 +82,8 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
 }: PlaygroundContentProps) => {
+  const { selectedServer, setSelectedServer } = useSelectedServerStore();
+  const [, startTransition] = useTransition();
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
@@ -114,7 +119,7 @@ export const Playground = ({
 
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
-      const requestUrl = createUrl(server, url, data);
+      const requestUrl = createUrl(selectedServer ?? server, url, data);
       const start = performance.now();
 
       const request = new Request(requestUrl, {
@@ -200,19 +205,48 @@ export const Playground = ({
       </Fragment>
     ));
 
+  const serverSelect = (
+    <div className="inline-block opacity-50 hover:opacity-100 transition">
+      {servers && servers.length > 1 ? (
+        <Select
+          onValueChange={(value) => {
+            startTransition(() => {
+              setSelectedServer(value);
+            });
+          }}
+          value={selectedServer}
+        >
+          <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {servers.map((s) => (
+              <SelectItem key={s} value={s}>
+                {s.replace(/^https?:\/\//, "")}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      ) : (
+        <span>{server.replace(/^https?:\/\//, "")}</span>
+      )}
+    </div>
+  );
+
   return (
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
     >
       <form onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}>
-        <div className="grid grid-cols-2 text-sm h-full">
+        <div className="grid grid-cols-[8fr_7fr] text-sm h-full">
           <div className="flex flex-col gap-4 p-8 bg-muted/50 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono">
                   {method.toUpperCase()}
                 </div>
-                <div className="p-2 font-mono text-xs">
+                <div className="flex items-center flex-wrap p-2 font-mono text-xs">
+                  {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
                   {urlQueryParams}
