@@ -2,6 +2,15 @@
   "name": "zudoku",
   "version": "0.10.0",
   "type": "module",
+  "homepage": "https://zudoku.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuplo/zudoku.git"
+  },
+  "bugs": {
+    "url": "https://github.com/zuplo/zudoku/issues"
+  },
+  "description": "Framework for building high quality, interactive API documentation.",
   "files": [
     "dist",
     "lib",
