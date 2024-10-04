@@ -53,7 +53,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <div className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12">
         <Suspense
           fallback={
-            <main className="grid h-full place-items-center">
+            <main className="grid h-[calc(100vh-var(--header-height))] place-items-center">
               <Spinner />
             </main>
           }
