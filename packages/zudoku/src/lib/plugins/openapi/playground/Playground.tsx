@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { Fragment, useEffect, useRef } from "react";
+import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { useSelectedServerStore } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import {
   Select,
@@ -54,7 +55,6 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
-  server: string;
   queryParams: Array<{ name: string; value: string; active: boolean }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{ name: string; value: string }>;
@@ -82,10 +82,11 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
 }: PlaygroundContentProps) => {
+  const { selectedServer, setSelectedServer } = useSelectedServerStore();
+  const [, startTransition] = useTransition();
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
-        server: servers?.at(0) ?? server,
         body: defaultBody,
         queryParams: queryParams.map((param) => ({
           name: param.name,
@@ -118,7 +119,7 @@ export const Playground = ({
 
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
-      const requestUrl = createUrl(data.server, url, data);
+      const requestUrl = createUrl(selectedServer ?? server, url, data);
       const start = performance.now();
 
       const request = new Request(requestUrl, {
@@ -208,8 +209,12 @@ export const Playground = ({
     <div className="inline-block opacity-50 hover:opacity-100 transition">
       {servers && servers.length > 1 ? (
         <Select
-          onValueChange={(value) => setValue("server", value)}
-          value={formState.server}
+          onValueChange={(value) => {
+            startTransition(() => {
+              setSelectedServer(value);
+            });
+          }}
+          value={selectedServer}
         >
           <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
             <SelectValue />

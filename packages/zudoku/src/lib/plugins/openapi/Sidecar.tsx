@@ -1,6 +1,7 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { Fragment, useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useSelectedServerStore } from "../../authentication/state.js";
 import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
@@ -138,6 +139,8 @@ export const Sidecar = ({
     );
   });
 
+  const { selectedServer } = useSelectedServerStore();
+
   const code = useMemo(() => {
     const example = requestBodyContent?.[0]?.schema
       ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
@@ -146,7 +149,7 @@ export const Sidecar = ({
     const snippet = new HTTPSnippet({
       method: operation.method.toLocaleUpperCase(),
       url:
-        (result.data?.schema.url ?? "") +
+        (selectedServer ?? result.data?.schema.url ?? "") +
         operation.path.replaceAll("{", ":").replaceAll("}", ""),
       postData: example
         ? {
@@ -163,7 +166,13 @@ export const Sidecar = ({
     });
 
     return getConverted(snippet, selectedLang);
-  }, [selectedLang, operation.method, operation.path, requestBodyContent]);
+  }, [
+    selectedServer,
+    selectedLang,
+    operation.method,
+    operation.path,
+    requestBodyContent,
+  ]);
 
   return (
     <aside className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4">
