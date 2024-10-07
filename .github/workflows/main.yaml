@@ -87,7 +87,7 @@ jobs:
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
-        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }} ${{ github.event_name == 'push' && '--no-git-checks' }}
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --no-git-checks --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
