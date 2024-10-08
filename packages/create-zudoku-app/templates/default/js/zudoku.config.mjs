@@ -13,10 +13,7 @@ const config = {
       },
     ],
   },
-  redirects: [
-    { from: "/", to: "/docs/introduction" },
-    { from: "/docs", to: "/docs/introduction" },
-  ],
+  redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: {
     type: "file",
     input: "./apis/openapi.yaml",
