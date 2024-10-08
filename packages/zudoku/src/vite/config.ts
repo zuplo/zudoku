@@ -2,7 +2,7 @@ import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
 import autoprefixer from "autoprefixer";
 import { stat } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import colors from "picocolors";
 import tailwindcss from "tailwindcss";
 import { tsImport } from "tsx/esm/api";
@@ -79,11 +79,16 @@ export async function loadZudokuConfig(
       timestamp: true,
     });
 
+    const configFilePath = pathToFileURL(filepath).href;
+
     const dependencies: string[] = [];
-    const loadedConfig = await tsImport(filepath, {
+    const loadedConfig = await tsImport(configFilePath, {
       parentURL: import.meta.url,
       onImport: (file: string) => {
-        const path = fileURLToPath(file);
+        const path = fileURLToPath(
+          file.startsWith("file://") ? file : pathToFileURL(file).href,
+        );
+
         if (path.startsWith(rootDir)) {
           dependencies.push(path);
         }
@@ -114,22 +119,23 @@ export async function loadZudokuConfig(
 function getModuleDir() {
   // NOTE: This is relative to the /dist folder because the dev server
   // runs the compiled JS files, but vite uses the raw TS files
-  const moduleDir = new URL("../../", import.meta.url).pathname;
-  if (moduleDir.endsWith("/")) {
-    return moduleDir.slice(0, -1);
-  } else {
-    return moduleDir;
-  }
+  const moduleDir = fileURLToPath(new URL("../../", import.meta.url))
+    // Windows compat
+    .replaceAll(path.sep, path.posix.sep);
+
+  return moduleDir.endsWith(path.posix.sep)
+    ? moduleDir.slice(0, -1)
+    : moduleDir;
 }
 
 export function getAppClientEntryPath() {
   const modDir = getModuleDir();
-  return path.join(modDir, "src", "app", "entry.client.tsx");
+  return path.posix.join(modDir, "src", "app", "entry.client.tsx");
 }
 
 export function getAppServerEntryPath() {
   const modDir = getModuleDir();
-  return path.join(modDir, "src", "app", "entry.server.tsx");
+  return path.posix.join(modDir, "src", "app", "entry.server.tsx");
 }
 
 export function getPluginOptions({
@@ -141,7 +147,7 @@ export function getPluginOptions({
 }): ZudokuPluginOptions {
   const moduleDir = getModuleDir();
   return {
-    ...config,
+    ...config!,
     rootDir: dir,
     moduleDir,
     mode,
@@ -151,10 +157,16 @@ export function getPluginOptions({
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
+  onConfigChange?: (config: LoadedConfig) => void,
 ): Promise<InlineConfig> {
   const config = await loadZudokuConfig(dir);
 
-  const onConfigChange = () => loadZudokuConfig(dir, true);
+  const handleConfigChange = async () => {
+    const config = await loadZudokuConfig(dir, true);
+    onConfigChange?.(config);
+
+    return config;
+  };
 
   validateConfig(config);
 
@@ -236,7 +248,7 @@ export async function getViteConfig(
       vitePluginSsrCss({
         entries: [`${pluginOptions.moduleDir}/src/app/entry.client.tsx`],
       }),
-      vitePlugin(pluginOptions, onConfigChange),
+      vitePlugin(pluginOptions, handleConfigChange),
     ],
     css: {
       postcss: {

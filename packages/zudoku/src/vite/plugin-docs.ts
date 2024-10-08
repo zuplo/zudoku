@@ -3,9 +3,7 @@ import type { ZudokuPluginOptions } from "../config/config.js";
 import { DocResolver } from "../lib/plugins/markdown/resolver.js";
 import { writePluginDebugCode } from "./debug.js";
 
-function getDefaultConfigIfFilesExist() {
-  return [{ files: "/pages/**/*.{md,mdx}" }];
-}
+const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
 const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";

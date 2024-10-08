@@ -1,4 +1,5 @@
 import { useMDXComponents } from "@mdx-js/react";
+import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { type PropsWithChildren } from "react";
 import { Link } from "react-router-dom";
@@ -11,7 +12,6 @@ import {
 } from "../../components/navigation/utils.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { cn } from "../../util/cn.js";
-import slugify from "../../util/slugify.js";
 import { Toc } from "./Toc.js";
 import { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
 
@@ -71,7 +71,7 @@ export const MdxPage = ({
         <header>
           {category && <CategoryHeading>{category}</CategoryHeading>}
           {title && (
-            <Heading level={1} id={slugify(title, { lower: true })}>
+            <Heading level={1} id={slugify(title)}>
               {title}
             </Heading>
           )}

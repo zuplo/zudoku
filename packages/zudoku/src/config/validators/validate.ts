@@ -45,6 +45,9 @@ const ApiSchema = z.union([
   z
     .object({ type: z.literal("file"), input: z.string() })
     .merge(ApiConfigSchema),
+  z
+    .object({ type: z.literal("raw"), input: z.string() })
+    .merge(ApiConfigSchema),
 ]);
 
 const ApiKeysSchema = z.union([

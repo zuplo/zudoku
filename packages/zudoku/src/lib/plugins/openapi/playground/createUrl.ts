@@ -8,7 +8,12 @@ export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
     return value ?? match;
   });
 
-  const url = new URL(filledPath, host);
+  // Ensure host ends with a slash and path doesn't start with one,
+  // so they form a correct URL, without overriding the host's path.
+  const url = new URL(
+    filledPath.replace(/^\//, ""),
+    host.endsWith("/") ? host : `${host}/`,
+  );
 
   data.queryParams
     .filter((param) => param.active)

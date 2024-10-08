@@ -19,10 +19,8 @@ export const getTemplateFile = ({
   return path.join(__dirname, template, mode, file);
 };
 
-export const SRC_DIR_NAMES = ["app", "pages", "styles"];
-
 /**
- * Install a Next.js internal template to a given `root` directory.
+ * Install a Zudoku internal template to a given `root` directory.
  */
 export const installTemplate = async ({
   appName,

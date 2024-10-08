@@ -107,6 +107,14 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
             }
 
             e.preventDefault();
+
+            if (typeof window !== "undefined") {
+              window.gtag?.("event", "conversion", {
+                send_to: "AW-11213523037/r09MCL3Wv9UZEN2Qg-Mp",
+                value: 1.0,
+                currency: "USD",
+              });
+            }
           }
         }}
       >

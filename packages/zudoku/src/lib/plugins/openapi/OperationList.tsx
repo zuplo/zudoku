@@ -133,7 +133,9 @@ export const OperationList = () => {
         <Markdown content={result.data.schema.description ?? ""} />
       </div>
       <hr />
-      <Endpoint url={result.data.schema.url} />
+      <div className="my-4 flex justify-end">
+        <Endpoint />
+      </div>
 
       {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)

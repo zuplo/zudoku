@@ -7,6 +7,7 @@ export const SimpleSelect = ({
   onChange,
   className,
   options,
+  showChevrons = true,
 }: {
   value: string;
   onChange: ChangeEventHandler<HTMLSelectElement>;
@@ -15,12 +16,14 @@ export const SimpleSelect = ({
     value: string;
     label: string;
   }[];
+  showChevrons?: boolean;
 }) => (
-  <div className={cn("grid", className)}>
+  <div className="grid">
     <select
       className={cn(
         "row-start-1 col-start-1 border border-input text-foreground px-2 py-1 pe-6",
         "rounded-md appearance-none bg-zinc-50 hover:bg-white dark:bg-zinc-800 hover:dark:bg-zinc-800/75",
+        className,
       )}
       value={value}
       onChange={onChange}
@@ -31,7 +34,12 @@ export const SimpleSelect = ({
         </option>
       ))}
     </select>
-    <div className="row-start-1 col-start-1 self-center justify-self-end relative end-2 pointer-events-none">
+    <div
+      className={cn(
+        !showChevrons && "hidden",
+        "row-start-1 col-start-1 self-center justify-self-end relative end-2 pointer-events-none",
+      )}
+    >
       <ChevronsUpDownIcon size={14} />
     </div>
   </div>

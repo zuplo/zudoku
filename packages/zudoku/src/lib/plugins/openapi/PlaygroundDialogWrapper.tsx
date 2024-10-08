@@ -3,9 +3,11 @@ import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
+  servers,
   operation,
 }: {
   server: string;
+  servers?: string[];
   operation: OperationListItemResult;
 }) => {
   const headers = operation.parameters
@@ -29,6 +31,7 @@ export const PlaygroundDialogWrapper = ({
   return (
     <PlaygroundDialog
       server={server}
+      servers={servers}
       method={operation.method}
       url={operation.path}
       headers={headers}

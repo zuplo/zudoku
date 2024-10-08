@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export const useAuthState = create<AuthState>(() => ({
   isPending: false,
@@ -19,3 +20,19 @@ export interface UserProfile {
   pictureUrl: string | undefined;
   [key: string]: string | boolean | undefined;
 }
+
+interface SelectedServerState {
+  selectedServer?: string;
+  setSelectedServer: (newServer: string) => void;
+}
+
+export const useSelectedServerStore = create<SelectedServerState>()(
+  persist(
+    (set) => ({
+      selectedServer: undefined,
+      setSelectedServer: (newServer: string) =>
+        set({ selectedServer: newServer }),
+    }),
+    { name: "zudoku-selected-server" },
+  ),
+);

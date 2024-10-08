@@ -11,10 +11,13 @@ const entries: Record<string, string> = {
   demo: "./src/app/demo.tsx",
 };
 
-const pluginOptions = getPluginOptions({
-  mode: "standalone",
-  dir: path.resolve(__dirname),
-});
+const config = {
+  ...getPluginOptions({
+    mode: "standalone",
+    dir: path.resolve(__dirname),
+  }),
+  __meta: {},
+};
 
 export default defineConfig({
   worker: {
@@ -55,7 +58,7 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vitePlugin(pluginOptions)],
+  plugins: [vitePlugin(config)],
   css: {
     postcss: {
       plugins: [

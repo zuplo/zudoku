@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { CategoryHeading } from "./CategoryHeading.js";
 import { Heading } from "./Heading.js";
 import { ProseClasses } from "./Markdown.js";
@@ -22,7 +21,6 @@ export const ErrorPage = ({
         </Heading>
       )}
       <p>{message}</p>
-      <Link to="/">Go back home</Link>
     </div>
   );
 };
