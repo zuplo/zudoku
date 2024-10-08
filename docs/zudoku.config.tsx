@@ -25,6 +25,7 @@ const config: ZudokuConfig = {
     outDir: "docs/",
   },
   redirects: [
+    { from: "/", to: "/introduction" },
     { from: "/getting-started", to: "/app-quickstart" },
     { from: "/components", to: "/components/callout" }
   ],
