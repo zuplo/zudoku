@@ -23,7 +23,10 @@ const config: ZudokuConfig = {
   sitemap: {
     siteUrl: "https://zudoku.dev",
   },
-  redirects: [{ from: "/getting-started", to: "/app-quickstart" }],
+  redirects: [
+    { from: "/", to: "/introduction" },
+    { from: "/getting-started", to: "/app-quickstart" },
+  ],
   topNavigation: [{ id: "docs", label: "Documentation" }],
   sidebar,
 };
