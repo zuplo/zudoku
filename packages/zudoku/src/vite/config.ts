@@ -85,7 +85,9 @@ export async function loadZudokuConfig(
     const loadedConfig = await tsImport(configFilePath, {
       parentURL: import.meta.url,
       onImport: (file: string) => {
-        const path = fileURLToPath(pathToFileURL(file).href);
+        const path = fileURLToPath(
+          file.startsWith("file://") ? file : pathToFileURL(file).href,
+        );
 
         if (path.startsWith(rootDir)) {
           dependencies.push(path);
