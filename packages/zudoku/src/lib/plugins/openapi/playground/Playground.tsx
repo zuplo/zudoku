@@ -330,7 +330,7 @@ export const Playground = ({
               </TabsContent>
             </Tabs>
           </div>
-          <div className="p-8 bg-muted/70">
+          <div className="min-w-0 p-8 bg-muted/70">
             {queryMutation.error ? (
               <div className="flex flex-col gap-2">
                 {formState.pathParams.some((p) => p.value === "") && (
