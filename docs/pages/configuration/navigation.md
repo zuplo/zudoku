@@ -3,71 +3,77 @@ title: Navigation
 sidebar_icon: compass
 ---
 
-Navigation in Zudoku can be customized at several layers. The primary is the top navigation tabs. Tabs can reference pages, plugins, or external links. The secondary is the sidebar navigation. The sidebar can be customized to show additional links or content.
+Navigation in Zudoku can be customized at several layers. The primary is the top navigation tabs. Tabs can reference pages, plugins, or external links. The secondary is the sidebar navigation. Sidebars are associated with documents via unique `id`s, providing greater flexibility in organizing your content, similar to how Docusaurus handles sidebar associations.
 
 ## Top Navigation
 
-The top navigation is defined in the `topNavigation` array of the Zudoku Config file. Each item in the array is an object with an `id` and `label`. The `id` is used to identify the tab, and the `label` is the text that will be displayed.
+The top navigation is defined in the `topNavigation` array of the Zudoku config file. Each item in the array is an object with a `label` and an `id`. The `label` is the text that will be displayed in the navigation bar, and the `id` is used to determine the path the tab will navigate to.
 
-```ts
+```json
 {
-  // ...
-  topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "api", label: "API Reference" },
-  ];
-  // ...
+  "topNavigation": [
+    { "label": "Documentation", "id": "documentation" },
+    { "label": "API Reference", "id": "api" }
+  ]
+}
+```
+
+### Default document
+
+When a user clicks on a top navigation tab, Zudoku navigates to the path associated with the `id` and the first item in the associated sidebar. To overwrite this behavior, you can specify the `default` option. For example:
+
+```json
+{
+  "label": "Documentation",
+  "id": "documentation",
+  "default": "documentation/motivation"
 }
 ```
 
 ## Sidebar
 
-The `sidebar` configuration section defines sidebars that can be referenced by the top navigation. Each sidebar is an object with a key that is used to reference it in the top navigation. The value is an array of objects that define the sidebar content.
+The `sidebar` configuration section defines sidebars that can be used throughout your documentation. Sidebars are associated with documents via `id`s specified in the sidebar configuration, not through file paths or the top navigation.
 
-The example below uses a key of documentation which can be referenced as an id in topNavigation.
-
-Example:
+Example `sidebar` configuration:
 
 ```json
 {
-  // ...
   "sidebar": {
     "documentation": [
       {
         "type": "category",
         "label": "Zudoku",
-        "items": ["introduction"]
+        "items": ["documentation/introduction"]
       },
       {
         "type": "category",
-        "label": "Getting started",
-        "items": ["getting-started", "installation", "configuration"]
+        "label": "Getting Started",
+        "items": ["documentation/getting-started", "documentation/installation", "configuration"]
       }
     ]
   }
-  // ...
 }
 ```
 
 ### Sidebar Items
 
-Sidebar Items can be of three types: `category`, `link`, or `doc`.
+Sidebar items can be of three types: `category`, `doc`, or `link`.
 
-- `category` is a group of links that can be expanded or collapsed.
-- `link` is a direct link to a page.
-- `doc` is a link to a markdown file.
+- `category`: A group of links that can be expanded or collapsed.
+- `doc`: A reference to a document by its `id`.
+- `link`: A direct link to a page or external URL.
 
-#### Category
+#### `category`
 
-The category type is used to group links together. The `label` is the text that will be displayed for the category, and the `items` array is an array of strings that reference the pages or documents that should be displayed under the category.
+The `category` type groups related items under a collapsible section. The `label` is the displayed text, and the `items` array contains `id`s of documents, links, or other categories.
 
 ```json
 {
   "type": "category",
-  "label": "Getting started",
+  "label": "Getting Started",
   "items": [
-    "getting-started",
-    "installation",
+    "documentation/getting-started",
+    "documentation/installation",
     {
       "type": "link",
       "label": "Support",
@@ -77,31 +83,9 @@ The category type is used to group links together. The `label` is the text that 
 }
 ```
 
-#### Link
+#### `doc`
 
-Links are used to reference pages or external links. The `label` is the text that will be displayed, and the `href` is the URL that the link will navigate to.
-
-```json
-{
-  "type": "link",
-  "label": "Support",
-  "href": "https://support.example.com"
-}
-```
-
-#### Doc
-
-Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `href` is the path to the markdown file.
-
-```json
-{
-  "type": "doc",
-  "label": "Support",
-  "href": "https://support.example.com"
-}
-```
-
-Documents can also be referenced by their id - the filename without the extension relative to the `pages` directory. For example, you could reference the `./pages/docs/overview.md` file as shown.
+Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `id` is the file path associated with a markdown file.
 
 ```json
 {
@@ -111,21 +95,71 @@ Documents can also be referenced by their id - the filename without the extensio
 }
 ```
 
-Documents can also be referenced simply by using the id string. For example, you could reference the `./pages/docs/overview.md` file as shown.
+:::tip
+
+Be sure that the markdown files are indexed in the `docs` configuration:
 
 ```json
 {
-  "type": "category",
-  "label": "Getting started",
-  "items": ["docs/overview"]
+  "docs": { "files": "/pages/**/*.{md,mdx}" }
 }
 ```
 
+:::
+
+#### `link`
+
+`link` items point directly to a URL. Use this for external resources or standalone pages.
+
+```json
+{
+  "type": "link",
+  "label": "Support",
+  "href": "https://support.example.com"
+}
+```
+
+### Document `id`s
+
+Documents are identified by their `id`s, which are typically derived from the file path relative to the `pages` directory, without the extension. For example, a file located at `./pages/docs/overview.md` would have an `id` of `docs/overview`.
+
+:::tip
+
+Be sure that the markdown files are indexed in the `docs` configuration:
+
+```json
+{
+  "docs": { "files": "/pages/**/*.{md,mdx}" }
+}
+```
+
+:::
+
+For example, you could reference a file located at `./pages/articles/about.md` with an `id` of `articles/about`:
+
+```json
+{
+  "type": "doc",
+  "label": "About",
+  "id": "articles/about"
+}
+```
+
+### Sidebar Selection
+
+Zudoku determines which sidebar to display based on the document's `id` and the sidebar configurations. When you include a document `id` in a sidebar, it creates a link to that document and associates the document with that sidebar.
+
+If a document is included in multiple sidebars, Zudoku picks the first suitable sidebar. This means you cannot explicitly control which sidebar is displayed when viewing a document that is included in multiple sidebars.
+
+For example:
+
+- If `docs/intro` is included in both `sidebar_1` and `sidebar_2`, and a user navigates to `docs/intro`, Zudoku will display `sidebar_1` (assuming it's the first one found containing `docs/intro`).
+
 ## Title & Labels
 
-All navigation items can have a `label` property that is used to display the text for the item. For navigation items of type `doc`, the `label` property is optional. If not provided, the title of the markdown file will be used (either from the front matter or the first `#` header in the file).
+All navigation items can have a `label` property that determines the displayed text. For `doc` items, the `label` is optional; if omitted, Zudoku uses the document's `title` from its front matter or the first `#` header.
 
-If you want to use a different title for the navigation item than the title of the markdown file, you can provide a `sidebar_label` property in the front matter of the markdown file.
+To override the navigation label without changing the document's `title`, use the `sidebar_label` property in the front matter:
 
 ```md
 ---
@@ -133,3 +167,5 @@ title: My Long Title
 sidebar_label: Short Title
 ---
 ```
+
+In this example, the document's title remains "My Long Title," but the sidebar displays "Short Title."
