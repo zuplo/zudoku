@@ -48,7 +48,7 @@ Example `sidebar` configuration:
       {
         "type": "category",
         "label": "Getting Started",
-        "items": ["documentation/getting-started", "documentation/installation", "configuration"]
+        "items": ["documentation/getting-started", "documentation/installation"]
       }
     ]
   }
@@ -83,6 +83,24 @@ The `category` type groups related items under a collapsible section. The `label
 }
 ```
 
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type SidebarCategory = {
+  type: "category";
+  label: string;
+  items: Array<SidebarDoc | SidebarLink | SidebarCategory>[];
+  icon?: string; // Lucide icon name
+  link?: string | SidebarLink;
+  description?: string;
+  collapsible?: boolean;
+  collapsed?: boolean;
+};
+```
+
+</details>
+
 #### `doc`
 
 Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `id` is the file path associated with a markdown file.
@@ -107,6 +125,24 @@ Be sure that the markdown files are indexed in the `docs` configuration:
 
 :::
 
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type SidebarDoc = {
+  type: "doc";
+  id: string;
+  icon?: string;
+  label?: string;
+  badge?: {
+    label: string;
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+  };
+};
+```
+
+</details>
+
 #### `link`
 
 `link` items point directly to a URL. Use this for external resources or standalone pages.
@@ -118,6 +154,24 @@ Be sure that the markdown files are indexed in the `docs` configuration:
   "href": "https://support.example.com"
 }
 ```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type SidebarLink = {
+  type: "link";
+  label: string;
+  href: string;
+  description?: string;
+  badge?: {
+    label: string;
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+  };
+};
+```
+
+</details>
 
 ### Document `id`s
 
