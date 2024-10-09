@@ -1,7 +1,6 @@
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
-  redirects: [{ from: "/", to: "/documentation" }],
   topNavigation: [
     { id: "documentation", label: "Documentation" },
     { id: "api", label: "Rick & Morty API" },
@@ -11,17 +10,18 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Get started",
-        items: ["introduction", "installation"],
+        items: ["documentation/introduction", "documentation/installation"],
       },
     ],
   },
-  docs: {
-    files: "/pages/**/*.mdx",
-  },
+  redirects: [{ from: "/", to: "/documentation/introduction" }],
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
     navigationId: "api",
+  },
+  docs: {
+    files: "/pages/**/*.mdx",
   },
 };
 
