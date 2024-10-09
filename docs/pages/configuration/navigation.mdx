@@ -3,6 +3,8 @@ title: Navigation
 sidebar_icon: compass
 ---
 
+import { Book, Code, FileText } from "zudoku/icons";
+
 Navigation in Zudoku can be customized at several layers. The primary is the top navigation tabs. Tabs can reference pages, plugins, or external links. The secondary is the sidebar navigation. Sidebars are associated with documents via unique `id`s, providing greater flexibility in organizing your content, similar to how Docusaurus handles sidebar associations.
 
 ## Top Navigation
@@ -208,6 +210,27 @@ If a document is included in multiple sidebars, Zudoku picks the first suitable 
 For example:
 
 - If `docs/intro` is included in both `sidebar_1` and `sidebar_2`, and a user navigates to `docs/intro`, Zudoku will display `sidebar_1` (assuming it's the first one found containing `docs/intro`).
+
+### Icons
+
+Icons can be added to categories and documents by specifying an `icon` property. The value should be the name of a [Lucide icon](https://lucide.dev/icons) (e.g., `book` <Book size={16} style={{ display: 'inline' }} />, `code` <Code size={16} style={{ display: 'inline' }} />, `file-text` <FileText size={16} style={{ display: 'inline' }} />).
+
+```json
+{
+  "type": "category",
+  "label": "Getting Started",
+  "icon": "book"
+}
+```
+
+They can also be set on individual documents in their front matter:
+
+```md
+---
+title: My Document
+icon: book
+---
+```
 
 ## Title & Labels
 
