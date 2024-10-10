@@ -258,7 +258,7 @@ const ConfigSchema = z
       primaryBrandColor: z.string(),
       organizationDisplayName: z.string(),
     }),
-    docs: DocsConfigSchema,
+    docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
     apis: z.union([ApiSchema, z.array(ApiSchema)]),
     apiKeys: ApiKeysSchema,
     redirects: z.array(z.object({ from: z.string(), to: z.string() })),
