@@ -219,7 +219,12 @@ export async function getViteConfig(
       ssr: configEnv.isSsrBuild,
       sourcemap: true,
       outDir: path.resolve(
-        path.join(dir, "dist", configEnv.isSsrBuild ? "server" : ""),
+        path.join(
+          dir,
+          "dist",
+          config.basePath ?? "",
+          configEnv.isSsrBuild ? "server" : "",
+        ),
       ),
       emptyOutDir: true,
       rollupOptions: {
