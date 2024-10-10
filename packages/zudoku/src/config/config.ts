@@ -1,5 +1,5 @@
-import type { ZudokuConfig } from "./validators/validate.js";
 import type { LoadedConfig } from "../vite/config.js";
+import type { ZudokuConfig } from "./validators/validate.js";
 
 export type URLString = `https://${string}` | `http://${string}`;
 

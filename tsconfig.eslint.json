@@ -2,6 +2,7 @@
   "include": ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx", "**/*.mjs"],
   "compilerOptions": {
     "resolveJsonModule": true,
+    "noUncheckedIndexedAccess": true,
     "useUnknownInCatchVariables": false,
     "strict": true,
     "strictNullChecks": true,

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 if (process.env.ZUDOKU_INTERNAL_CLI) {
-  import("./scripts/cli-dev.js");
+  await import("./scripts/cli-dev.js");
 } else {
-  import("./dist/cli/cli.js");
+  await import("./dist/cli/cli.js");
 }

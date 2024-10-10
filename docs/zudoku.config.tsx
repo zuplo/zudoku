@@ -1,12 +1,17 @@
 import type { ZudokuConfig } from "zudoku";
 import { sidebar } from "./sidebar";
+import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
+  basePath: "/docs",
   page: {
     banner: {
       message: <PreviewBanner />,
     },
+  },
+  mdx: {
+    components: { DocusaurusDocsLicense },
   },
   metadata: {
     title: "%s | Zudoku",
@@ -17,11 +22,10 @@ const config: ZudokuConfig = {
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",
-    outDir: "docs/",
   },
   redirects: [
-    { from: "/", to: "/docs" },
-    { from: "/docs/getting-started", to: "/docs/app-quickstart" },
+    { from: "/", to: "/introduction" },
+    { from: "/getting-started", to: "/app-quickstart" },
   ],
   topNavigation: [{ id: "docs", label: "Documentation" }],
   sidebar,

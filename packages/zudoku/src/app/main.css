@@ -103,6 +103,10 @@
     @apply h-full overscroll-none;
   }
 
+  details summary {
+    @apply cursor-pointer;
+  }
+
   #root {
     @apply min-h-screen w-full;
   }

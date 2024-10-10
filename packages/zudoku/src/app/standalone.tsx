@@ -16,7 +16,7 @@ if (!root) {
 themeToggle();
 
 const apiUrl = root.getAttribute("data-api-url");
-const pageTitle = document.getElementsByTagName("title")[0].innerText;
+const pageTitle = document.getElementsByTagName("title")[0]!.innerText;
 const logoUrl = root.getAttribute("data-logo-url");
 
 // IMPORTANT: This component must not contain tailwind classes

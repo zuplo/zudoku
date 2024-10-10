@@ -151,6 +151,12 @@ const DocsConfigSchema = z.object({
     .optional(),
 });
 
+const TopNavigationItemSchema = z.object({
+  label: z.string(),
+  id: z.string(),
+  default: z.string().optional(),
+});
+
 const ConfigSchema = z
   .object({
     basePath: z.string().optional(),
@@ -170,13 +176,7 @@ const ConfigSchema = z
           .optional(),
       })
       .partial(),
-    topNavigation: z.array(
-      z.object({
-        label: z.string(),
-        id: z.string(),
-        default: z.string().optional(),
-      }),
-    ),
+    topNavigation: z.array(TopNavigationItemSchema),
     sidebar: z.record(InputSidebarSchema),
     slotlets: z.record(z.string(), z.custom<ReactNode>()),
     theme: z
@@ -234,7 +234,7 @@ const ConfigSchema = z
       primaryBrandColor: z.string(),
       organizationDisplayName: z.string(),
     }),
-    docs: DocsConfigSchema,
+    docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
     apis: z.union([ApiSchema, z.array(ApiSchema)]),
     apiKeys: ApiKeysSchema,
     redirects: z.array(z.object({ from: z.string(), to: z.string() })),
@@ -275,6 +275,7 @@ export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuConfig = z.infer<typeof ConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
+export type TopNavigationItem = z.infer<typeof TopNavigationItemSchema>;
 
 export function validateConfig(config: unknown) {
   const validationResult = ConfigSchema.safeParse(config);
