@@ -3,8 +3,6 @@ import type { ZudokuPluginOptions } from "../config/config.js";
 import { DocResolver } from "../lib/plugins/markdown/resolver.js";
 import { writePluginDebugCode } from "./debug.js";
 
-const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
-
 const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
@@ -36,15 +34,15 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         const resolver = new DocResolver(config);
         const docsConfigs = resolver.getDocsConfigs();
 
-        docsConfigs.forEach((docsConfig) => {
+        docsConfigs.forEach((docsConfig, i) => {
           code.push(
             ...[
               `// @ts-ignore`, // To make tests pass
-              `const fileImports = import.meta.glob(${JSON.stringify(docsConfig.files)}, {`,
+              `const fileImports${i} = import.meta.glob(${JSON.stringify(docsConfig.files)}, {`,
               `  eager: false,`,
               `});`,
               `docsPluginOptions.push({ `,
-              ` fileImports,`,
+              ` fileImports: fileImports${i},`,
               ` defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
               ` files: ${JSON.stringify(docsConfig.files)}`,
               `});`,
