@@ -13,7 +13,7 @@ const replaceSidebarIcons = (code: string) => {
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
-    collectedIcons.add(match[1]);
+    collectedIcons.add(match[1]!);
   }
 
   const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
@@ -25,7 +25,6 @@ const replaceSidebarIcons = (code: string) => {
 
   return `${importStatement}export const configuredSidebar = ${replacedString};`;
 };
-
 
 export const viteSidebarPlugin = (
   getConfig: () => ZudokuPluginOptions,

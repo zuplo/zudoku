@@ -1,6 +1,6 @@
 import { cx } from "class-variance-authority";
-import { NavLink } from "react-router-dom";
-
+import { Suspense } from "react";
+import { Link } from "react-router-dom";
 import { TopNavigationItem } from "../../config/validators/validate.js";
 import { joinPath } from "../util/joinPath.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
@@ -15,15 +15,17 @@ export const TopNavigation = () => {
   }
 
   return (
-    <nav className="hidden lg:block border-b text-sm px-12 h-[--top-nav-height]">
-      <ul className="flex flex-row items-center gap-8">
-        {topNavigation.map((item) => (
-          <li key={item.id}>
-            <TopNavItem {...item} />
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <Suspense>
+      <nav className="hidden lg:block border-b text-sm px-12 h-[--top-nav-height]">
+        <ul className="flex flex-row items-center gap-8">
+          {topNavigation.map((item) => (
+            <li key={item.id}>
+              <TopNavItem {...item} />
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </Suspense>
   );
 };
 
@@ -54,7 +56,7 @@ const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
   const isActive = nav.data.topNavItem?.id === id;
 
   return (
-    <NavLink
+    <Link
       className={cx(
         "block py-3.5 font-medium -mb-px border-b-2",
         isActive
@@ -64,6 +66,6 @@ const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
       to={first}
     >
       {label}
-    </NavLink>
+    </Link>
   );
 };
