@@ -62,9 +62,9 @@ export const Endpoint = () => {
       <div className="flex items-center gap-2">
         <span className="font-medium text-sm">Endpoint:</span>
         <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
-          {servers[0].url}
+          {servers[0]!.url}
         </InlineCode>
-        <CopyButton url={servers[0].url} />
+        <CopyButton url={servers[0]!.url} />
       </div>
     );
   }

@@ -1,8 +1,6 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
-import { useLocation } from "react-router-dom";
-import { SidebarItem } from "../../../config/validators/SidebarSchema.js";
-import { TopNavigationItem } from "../../../config/validators/validate.js";
+import { matchPath, useLocation } from "react-router-dom";
 import { DevPortalContext } from "../../core/DevPortalContext.js";
 import { joinPath } from "../../util/joinPath.js";
 import { traverseSidebar } from "../navigation/utils.js";
@@ -47,25 +45,21 @@ export const useCurrentNavigation = () => {
       }
     });
   });
-  const currentTopNavItem = topNavigation.find(
-    (t) => t.id === currentSidebarItem?.[0],
-  );
+  const currentTopNavItem =
+    topNavigation.find((t) => t.id === currentSidebarItem?.[0]) ??
+    topNavigation.find((item) => matchPath(item.id, location.pathname));
 
   return useSuspenseQuery({
     queryFn: async () => {
       const pluginSidebar = await getPluginSidebar(location.pathname);
 
-      const result: {
-        sidebar: SidebarItem[];
-        topNavItem: TopNavigationItem | undefined;
-      } = {
+      return {
         sidebar: [
           ...(currentSidebarItem ? currentSidebarItem[1] : []),
           ...pluginSidebar,
         ],
         topNavItem: currentTopNavItem,
       };
-      return result;
     },
     queryKey: ["navigation", location.pathname],
   });
