@@ -186,7 +186,7 @@
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.0",
     "remark-mdx-frontmatter": "5.0.0",
-    "rollup": "^4.21.2",
+    "rollup": "^4.22.4",
     "semver": "7.6.2",
     "sitemap": "^8.0.0",
     "strip-ansi": "7.1.0",
