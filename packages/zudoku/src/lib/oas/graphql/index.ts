@@ -58,7 +58,7 @@ export const createOperationSlug = (
   );
 };
 
-const cache = new LRUCache<string, Promise<OpenAPIDocument>>({
+const cache = new LRUCache<string, OpenAPIDocument>({
   ttl: 60 * 10 * 1000,
   ttlAutopurge: true,
 });
@@ -434,7 +434,7 @@ const loadOpenAPISchema = async (input: NonNullable<unknown>) => {
     return cache.get(hash)!;
   }
 
-  const schema = validate(input);
+  const schema = await validate(input);
 
   cache.set(hash, schema);
 
