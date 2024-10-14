@@ -27,7 +27,6 @@
       "zudoku/openapi-worker": [
         "src/lib/plugins/openapi/client/createWorkerClient.ts"
       ],
-      "zudoku/plugins/custom-page": ["src/lib/plugins/custom-page/index.tsx"],
       "zudoku/plugins/openapi": ["src/lib/plugins/openapi/index.ts"],
       "zudoku/plugins/search-inkeep": [
         "src/lib/plugins/search-inkeep/index.tsx"

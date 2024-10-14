@@ -9,6 +9,7 @@ import viteAliasPlugin from "./plugin-component.js";
 import { createConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
 import viteCustomCss from "./plugin-custom-css.js";
+import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
 import { viteHtmlTransform } from "./plugin-html-transform.js";
@@ -30,6 +31,7 @@ export default function vitePlugin(
     react({ include: /\.(mdx?|jsx?|tsx?)$/ }),
     viteConfigPlugin(initialConfig),
     viteApiKeysPlugin(getCurrentConfig),
+    viteCustomPagesPlugin(getCurrentConfig),
     viteAuthPlugin(getCurrentConfig),
     viteDocsPlugin(getCurrentConfig),
     viteFrontmatterPlugin(),
