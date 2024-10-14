@@ -3,13 +3,13 @@ import type { RouteObject } from "react-router-dom";
 import { ProseClasses } from "../../components/Markdown.js";
 import type { DevPortalPlugin, NavigationPlugin } from "../../core/plugins.js";
 
-type CustomPageConfig = Array<{
+type CustomPagesConfig = Array<{
   path: string;
   element: ReactNode;
 }>;
 
-export const customPagePlugin = (
-  config: CustomPageConfig,
+export const customPagesPlugin = (
+  config: CustomPagesConfig,
 ): DevPortalPlugin & NavigationPlugin => {
   return {
     getRoutes: (): RouteObject[] =>

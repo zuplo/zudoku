@@ -14,6 +14,13 @@ declare module "virtual:zudoku-api-keys-plugin" {
     | import("./lib/core/plugins.ts").DevPortalPlugin
     | undefined;
 }
+
+declare module "virtual:zudoku-custom-pages-plugin" {
+  export const configuredCustomPagesPlugin:
+    | import("./lib/core/plugins.ts").DevPortalPlugin
+    | undefined;
+}
+
 declare module "virtual:zudoku-redirect-plugin" {
   export const configuredRedirectPlugin:
     | import("./lib/core/plugins.ts").DevPortalPlugin
