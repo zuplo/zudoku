@@ -10,6 +10,7 @@ import {
   DrawerTrigger,
 } from "../ui/Drawer.js";
 import { useZudoku } from "./context/ZudokuContext.js";
+import { Search } from "./Search.js";
 
 export const MobileTopNavigation = () => {
   const { topNavigation } = useZudoku();
@@ -27,6 +28,7 @@ export const MobileTopNavigation = () => {
         <VisuallyHidden>
           <DrawerTitle>Navigation</DrawerTitle>
         </VisuallyHidden>
+        <Search />
         <ul className="flex flex-col items-center gap-4 p-4">
           {topNavigation.map((item) => (
             <li key={item.label}>
