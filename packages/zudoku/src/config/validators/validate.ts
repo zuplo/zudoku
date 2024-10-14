@@ -197,7 +197,8 @@ const ConfigSchema = z
       }),
     ),
     sidebar: z.record(InputSidebarSchema),
-    slotlets: z.record(z.string(), z.custom<ReactNode>()),
+    // slotlets are a concept we are working on and not yet finalized
+    UNSAFE_slotlets: z.record(z.string(), z.custom<ReactNode>()),
     theme: z
       .object({
         light: ThemeSchema,
