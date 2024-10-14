@@ -1,5 +1,5 @@
 import type { Options } from "@mdx-js/rollup";
-import type { ReactNode } from "react";
+import type { ComponentType, ReactNode } from "react";
 import type { DevPortalPlugin } from "src/lib/core/plugins.js";
 import z, {
   type ZodEnumDef,
@@ -9,6 +9,7 @@ import z, {
   ZodUnion,
 } from "zod";
 import { fromError } from "zod-validation-error";
+import type { SlotletComponentProps } from "../../lib/components/SlotletProvider.js";
 import { DevPortalContext } from "../../lib/core/DevPortalContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
@@ -198,7 +199,10 @@ const ConfigSchema = z
     ),
     sidebar: z.record(InputSidebarSchema),
     // slotlets are a concept we are working on and not yet finalized
-    UNSAFE_slotlets: z.record(z.string(), z.custom<ReactNode>()),
+    UNSAFE_slotlets: z.record(
+      z.string(),
+      z.custom<ReactNode | ComponentType<SlotletComponentProps>>(),
+    ),
     theme: z
       .object({
         light: ThemeSchema,
