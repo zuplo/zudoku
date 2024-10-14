@@ -42,5 +42,5 @@ export const Slotlet = ({ name }: { name: string }) => {
     });
   }
 
-  return componentOrElement;
+  return componentOrElement as ReactNode;
 };
