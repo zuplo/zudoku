@@ -45,6 +45,15 @@ export class DevServer {
     });
 
     app.use(graphql.graphqlEndpoint, graphql);
+    app.use("/__z/entry.client.tsx", async (_req, res, next) => {
+      const transformed = await vite.transformRequest(getAppClientEntryPath());
+      if (!transformed) throw new Error("Error transforming client entry");
+
+      res
+        .status(200)
+        .set({ "Content-Type": "text/javascript" })
+        .end(transformed.code);
+    });
     app.use(vite.middlewares);
 
     printDiagnosticsToConsole(
@@ -55,8 +64,7 @@ export class DevServer {
       const url = request.originalUrl;
 
       try {
-        const entryJs = getAppClientEntryPath();
-        const rawHtml = getDevHtml(entryJs);
+        const rawHtml = getDevHtml("/__z/entry.client.tsx");
         const template = await vite.transformIndexHtml(url, rawHtml);
 
         if (this.options.ssr) {
