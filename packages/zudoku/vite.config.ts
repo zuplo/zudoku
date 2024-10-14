@@ -13,7 +13,7 @@ const entries: Record<string, string> = {
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",
   "plugin-redirect": "./src/lib/plugins/redirect/index.tsx",
-  "plugin-custom-page": "./src/lib/plugins/custom-page/index.tsx",
+  "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
   "openapi-worker": "./src/lib/plugins/openapi-worker.ts",
 };
