@@ -1,7 +1,15 @@
-import React, { type ReactElement, ReactNode, useContext } from "react";
+import React, {
+  type ComponentType,
+  type ReactElement,
+  ReactNode,
+  useContext,
+} from "react";
 import { isValidElementType } from "react-is";
 import { useLocation } from "react-router-dom";
-export type Slotlets = Record<string, ReactNode | ReactElement>;
+export type Slotlets = Record<
+  string,
+  ReactNode | ReactElement | ComponentType<SlotletComponentProps>
+>;
 
 const SlotletContext = React.createContext<Slotlets | undefined>({});
 
