@@ -58,9 +58,10 @@ export const createOperationSlug = (
   );
 };
 
-const cache = new LRUCache<string, Promise<OpenAPIDocument>>({
+const cache = new LRUCache<string, OpenAPIDocument>({
   ttl: 60 * 10 * 1000,
   ttlAutopurge: true,
+  fetchMethod: (_key, _oldValue, { context }) => validate(context as string),
 });
 
 const builder = new SchemaBuilder<{
@@ -429,16 +430,7 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
 
 const loadOpenAPISchema = async (input: NonNullable<unknown>) => {
   const hash = hashit(input);
-
-  if (cache.has(hash)) {
-    return cache.get(hash)!;
-  }
-
-  const schema = validate(input);
-
-  cache.set(hash, schema);
-
-  return schema;
+  return await cache.forceFetch(hash, { context: input });
 };
 
 const SchemaSource = builder.enumType("SchemaType", {
