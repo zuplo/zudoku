@@ -133,7 +133,9 @@ export const Header = memo(function HeaderInner() {
             </div>
           </div>
         </div>
+        <Slotlet name="top-navigation-before" />
         <TopNavigation />
+        <Slotlet name="top-navigation-after" />
       </div>
     </header>
   );

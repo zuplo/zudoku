@@ -1,6 +1,15 @@
-import React, { type ReactElement, ReactNode, useContext } from "react";
+import React, {
+  type ComponentType,
+  type ReactElement,
+  ReactNode,
+  useContext,
+} from "react";
 import { isValidElementType } from "react-is";
-export type Slotlets = Record<string, ReactNode | ReactElement>;
+import { useLocation } from "react-router-dom";
+export type Slotlets = Record<
+  string,
+  ReactNode | ReactElement | ComponentType<SlotletComponentProps>
+>;
 
 const SlotletContext = React.createContext<Slotlets | undefined>({});
 
@@ -18,13 +27,20 @@ export const SlotletProvider = ({
   );
 };
 
+export type SlotletComponentProps = {
+  location: Location;
+};
+
 export const Slotlet = ({ name }: { name: string }) => {
   const context = useContext(SlotletContext);
   const componentOrElement = context?.[name];
+  const location = useLocation();
 
   if (isValidElementType(componentOrElement)) {
-    return React.createElement(componentOrElement);
+    return React.createElement(componentOrElement, {
+      location,
+    });
   }
 
-  return componentOrElement;
+  return componentOrElement as ReactNode;
 };
