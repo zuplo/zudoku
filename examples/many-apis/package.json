@@ -10,13 +10,13 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
     "zudoku": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "18.3.3",
-    "js-yaml": "^4.1.0",
-    "serve": "^14.2.3"
+    "@types/react": "18.3.11",
+    "js-yaml": "4.1.0",
+    "serve": "14.2.3"
   }
 }

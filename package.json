@@ -14,7 +14,6 @@
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor"
   },
-  "nx": {},
   "lint-staged": {
     "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
       "prettier --write"
@@ -27,31 +26,31 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.27.7",
-    "@nx/eslint": "19.6.4",
-    "@nx/vite": "19.6.4",
-    "@nx/web": "19.6.4",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "@typescript-eslint/parser": "^8.8.0",
-    "@vitest/ui": "^1.6.0",
+    "@nx/eslint": "19.8.4",
+    "@nx/vite": "19.8.4",
+    "@nx/web": "19.8.4",
+    "@typescript-eslint/eslint-plugin": "8.9.0",
+    "@typescript-eslint/parser": "8.9.0",
     "eslint": "8.57.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-import": "^2.31.0",
-    "eslint-plugin-react": "^7.37.1",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-react": "7.37.1",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.12",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.7",
-    "nx": "19.6.4",
+    "husky": "9.0.11",
+    "lint-staged": "15.2.10",
+    "nx": "19.8.4",
     "prettier": "3.3.3",
-    "prettier-plugin-organize-imports": "^4.0.0",
-    "react": "18.3.1",
-    "syncpack": "12.3.2",
-    "typescript": "5.5.3",
-    "vite": "^5.3.3",
-    "vitest": "^1.6.0"
+    "prettier-plugin-organize-imports": "4.1.0",
+    "syncpack": "12.4.0",
+    "typescript": "5.6.3"
   },
   "pnpm": {
+    "overrides": {
+      "braces": ">=3.0.3",
+      "dset": ">=3.1.4",
+      "serve-handler>path-to-regexp": ">=3.3.0"
+    },
     "patchedDependencies": {
       "@vitejs/plugin-react@4.3.1": "patches/@vitejs__plugin-react@4.3.1.patch",
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"

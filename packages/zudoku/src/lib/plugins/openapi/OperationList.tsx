@@ -1,4 +1,5 @@
 import { ResultOf } from "@graphql-typed-document-node/core";
+import { useQuery } from "urql";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { ErrorPage } from "../../components/ErrorPage.js";
@@ -12,7 +13,6 @@ import { OperationListItem } from "./OperationListItem.js";
 import StaggeredRender from "./StaggeredRender.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
-import { useQuery } from "./util/urql.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
   fragment OperationsFragment on OperationItem {

@@ -1,12 +1,12 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState, useTransition } from "react";
+import { useQuery } from "urql";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Button } from "../../ui/Button.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 import { SimpleSelect } from "./SimpleSelect.js";
-import { useQuery } from "./util/urql.js";
 
 const ServersQuery = graphql(/* GraphQL */ `
   query ServersQuery($input: JSON!, $type: SchemaType!) {
