@@ -49,6 +49,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       </Helmet>
       <Slotlet name="layout-before-head" />
       <Header />
+      <Slotlet name="layout-after-head" />
 
       <div className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12">
         <Suspense
