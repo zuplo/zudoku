@@ -9,7 +9,7 @@ const COLOR_MAP = {
   tip: "bg-green-600",
   caution: "bg-orange-500",
   danger: "bg-rose-500",
-};
+} as const;
 
 export const Banner = () => {
   const { page } = useZudoku();
@@ -19,12 +19,22 @@ export const Banner = () => {
     return <style>{`:root { --banner-height: 0px; }`}</style>;
   }
 
+  const mappedColor =
+    page.banner.color && page.banner.color in COLOR_MAP
+      ? COLOR_MAP[page.banner.color as keyof typeof COLOR_MAP]
+      : !page.banner.color
+        ? "bg-primary"
+        : undefined;
+
+  const style = !mappedColor ? { backgroundColor: page.banner.color } : {};
+
   return (
     <div
       className={cn(
         "relative text-primary-foreground text-sm font-medium px-4 py-2 flex gap-2 items-center",
-        page.banner.color ? COLOR_MAP[page.banner.color] : "bg-primary",
+        mappedColor,
       )}
+      style={style}
     >
       <div className="w-full">{page.banner.message}</div>
       {page.banner.dismissible && (

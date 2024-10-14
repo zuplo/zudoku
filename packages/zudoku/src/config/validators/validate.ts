@@ -1,7 +1,13 @@
 import type { Options } from "@mdx-js/rollup";
 import type { ReactNode } from "react";
 import type { DevPortalPlugin } from "src/lib/core/plugins.js";
-import z from "zod";
+import z, {
+  type ZodEnumDef,
+  ZodOptional,
+  ZodString,
+  ZodType,
+  ZodUnion,
+} from "zod";
 import { fromError } from "zod-validation-error";
 import { DevPortalContext } from "../../lib/core/DevPortalContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
@@ -151,6 +157,18 @@ const DocsConfigSchema = z.object({
     .optional(),
 });
 
+type BannerColorType = ZodOptional<
+  ZodUnion<
+    [
+      ZodType<
+        "note" | "tip" | "info" | "caution" | "danger" | (string & {}),
+        ZodEnumDef
+      >,
+      ZodString,
+    ]
+  >
+>;
+
 const ConfigSchema = z
   .object({
     basePath: z.string().optional(),
@@ -164,7 +182,8 @@ const ConfigSchema = z
             message: z.custom<NonNullable<ReactNode>>(),
             color: z
               .enum(["note", "tip", "info", "caution", "danger"])
-              .optional(),
+              .or(z.string())
+              .optional() as BannerColorType,
             dismissible: z.boolean().optional(),
           })
           .optional(),
