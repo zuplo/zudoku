@@ -1,6 +1,7 @@
 import express, { type Express } from "express";
 import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { Server } from "node:http";
+import path from "node:path";
 import { createServer as createViteServer, type ViteDevServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
@@ -43,9 +44,12 @@ export class DevServer {
     const graphql = createGraphQLServer({
       graphqlEndpoint: "/__z/graphql",
     });
-
+    const proxiedEntryClientPath = path.join(
+      vite.config.base,
+      "/__z/entry.client.tsx",
+    );
     app.use(graphql.graphqlEndpoint, graphql);
-    app.use(vite.config.base + "/__z/entry.client.tsx", async (_req, res) => {
+    app.use(proxiedEntryClientPath, async (_req, res) => {
       const transformed = await vite.transformRequest(getAppClientEntryPath());
       if (!transformed) throw new Error("Error transforming client entry");
 
