@@ -6,11 +6,11 @@
     "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
-    "@graphql-codegen/cli": "^5.0.2",
-    "prettier": "^3.3.3"
+    "@graphql-codegen/cli": "5.0.3",
+    "prettier": "3.3.3"
   },
   "devDependencies": {
-    "@types/node": "20",
-    "typescript": "5.5.3"
+    "@types/node": "20.16.11",
+    "typescript": "5.6.3"
   }
 }

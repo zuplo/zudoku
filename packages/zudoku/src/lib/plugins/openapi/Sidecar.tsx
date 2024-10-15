@@ -1,6 +1,7 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { Fragment, useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "urql";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
@@ -16,7 +17,6 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
-import { useQuery } from "./util/urql.js";
 
 const getConverted = (snippet: HTTPSnippet, option: string) => {
   let converted;

@@ -1,12 +1,7 @@
 /* eslint-disable no-console */
 import { monotonicFactory } from "ulidx";
+import { cacheExchange, Client, fetchExchange, mapExchange } from "urql";
 import { createWaitForNotify } from "../../../util/createWaitForNotify.js";
-import {
-  cacheExchange,
-  Client,
-  fetchExchange,
-  mapExchange,
-} from "../util/urql.js";
 import { createClient as createMemoryClient } from "./createMemoryClient.js";
 import { CreateClientFunction } from "./interfaces.js";
 

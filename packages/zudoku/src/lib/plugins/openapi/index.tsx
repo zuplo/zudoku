@@ -1,11 +1,7 @@
 import { matchPath, useRouteError, type RouteObject } from "react-router-dom";
+import { Client as UrqlClient, cacheExchange, fetchExchange } from "urql";
 import { type DevPortalPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
-import {
-  Client as UrqlClient,
-  cacheExchange,
-  fetchExchange,
-} from "./util/urql.js";
 
 import { useQuery } from "@tanstack/react-query";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";

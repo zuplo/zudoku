@@ -1,8 +1,7 @@
 import { Outlet } from "react-router-dom";
+import { Provider, Client as UrqlClient } from "urql";
 import { OasConfigProvider } from "./context.js";
 import { OasPluginConfig } from "./interfaces.js";
-
-import { Provider, Client as UrqlClient } from "./util/urql.js";
 
 export function OpenApiRoute({
   config,

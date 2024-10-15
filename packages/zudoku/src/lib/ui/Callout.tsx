@@ -2,6 +2,7 @@ import {
   AlertTriangleIcon,
   InfoIcon,
   LightbulbIcon,
+  type LucideIcon,
   ShieldAlertIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -14,7 +15,7 @@ const stylesMap = {
     iconColor: "text-gray-600 dark:text-zinc-300",
     titleColor: "text-gray-600 dark:text-zinc-300",
     textColor: "text-gray-600 dark:text-zinc-300",
-    Icon: InfoIcon,
+    Icon: InfoIcon as LucideIcon,
   },
   tip: {
     border: "border-green-500 dark:border-green-800",
@@ -22,7 +23,7 @@ const stylesMap = {
     iconColor: "text-green-600 dark:text-green-200",
     titleColor: "text-green-700 dark:text-green-200",
     textColor: "text-green-600 dark:text-green-50",
-    Icon: LightbulbIcon,
+    Icon: LightbulbIcon as LucideIcon,
   },
   info: {
     border: "border-blue-400 dark:border-blue-900/60",
@@ -30,7 +31,7 @@ const stylesMap = {
     iconColor: "text-blue-400 dark:text-blue-200",
     titleColor: "text-blue-700 dark:text-blue-200",
     textColor: "text-blue-600 dark:text-blue-100",
-    Icon: InfoIcon,
+    Icon: InfoIcon as LucideIcon,
   },
   caution: {
     border: "border-yellow-400 dark:border-yellow-400/25",
@@ -38,7 +39,7 @@ const stylesMap = {
     iconColor: "text-yellow-500 dark:text-yellow-300",
     titleColor: "text-yellow-600 dark:text-yellow-300",
     textColor: "text-yellow-700 dark:text-yellow-200",
-    Icon: AlertTriangleIcon,
+    Icon: AlertTriangleIcon as LucideIcon,
   },
   danger: {
     border: "border-rose-400 dark:border-rose-800",
@@ -46,9 +47,9 @@ const stylesMap = {
     iconColor: "text-rose-400 dark:text-rose-300",
     titleColor: "text-rose-800 dark:text-rose-300",
     textColor: "text-rose-700 dark:text-rose-100",
-    Icon: ShieldAlertIcon,
+    Icon: ShieldAlertIcon as LucideIcon,
   },
-};
+} as const;
 
 type CalloutProps = {
   type: keyof typeof stylesMap;

@@ -23,7 +23,7 @@ export default {
       pinVersion: "workspace:*",
     },
     {
-      label: "Align versions of dependencies to dev-portal",
+      label: "Align versions of dependencies to Zudoku",
       dependencies: [
         "@types/node",
         "@types/react",

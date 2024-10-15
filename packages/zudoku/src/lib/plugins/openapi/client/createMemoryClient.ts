@@ -1,10 +1,5 @@
 /* eslint-disable no-console */
-import {
-  cacheExchange,
-  Client,
-  fetchExchange,
-  mapExchange,
-} from "../util/urql.js";
+import { cacheExchange, Client, fetchExchange, mapExchange } from "urql";
 import { createServer } from "./createServer.js";
 import { CreateClientFunction } from "./interfaces.js";
 
