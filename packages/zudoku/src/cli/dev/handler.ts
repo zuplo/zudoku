@@ -23,12 +23,14 @@ export async function dev(argv: Arguments) {
   const dir = path.resolve(process.cwd(), argv.dir);
   const server = new DevServer({ dir, port, ssr: argv.ssr });
 
-  await server.start();
+  const { vite } = await server.start();
 
   printDiagnosticsToConsole("Started development server");
   printDiagnosticsToConsole("Ctrl+C to exit");
   printDiagnosticsToConsole("");
-  printDiagnosticsToConsole(`🚀 Zudoku Portal: http://${host}:${port}`);
+  printDiagnosticsToConsole(
+    `🚀 Zudoku Portal: http://${host}:${port}${vite.config.base.replace(/\/$/, "")}`,
+  );
   printDiagnosticsToConsole("");
 
   let hasExited = false;
