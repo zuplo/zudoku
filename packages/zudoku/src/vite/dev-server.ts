@@ -1,7 +1,7 @@
-import express from "express";
+import express, { type Express } from "express";
 import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { Server } from "node:http";
-import { createServer as createViteServer } from "vite";
+import { createServer as createViteServer, type ViteDevServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
@@ -45,7 +45,7 @@ export class DevServer {
     });
 
     app.use(graphql.graphqlEndpoint, graphql);
-    app.use("/__z/entry.client.tsx", async (_req, res, next) => {
+    app.use(vite.config.base + "/__z/entry.client.tsx", async (_req, res) => {
       const transformed = await vite.transformRequest(getAppClientEntryPath());
       if (!transformed) throw new Error("Error transforming client entry");
 
@@ -95,8 +95,13 @@ export class DevServer {
 
     app.use(errorMiddleware(vite));
 
-    return new Promise<void>((resolve) => {
-      this.server = app.listen(this.options.port, resolve);
+    return new Promise<{
+      vite: ViteDevServer;
+      express: Express;
+    }>((resolve) => {
+      this.server = app.listen(this.options.port, () =>
+        resolve({ vite, express: app }),
+      );
       this.terminator = createHttpTerminator({
         server: this.server,
       });
