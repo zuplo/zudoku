@@ -39,7 +39,7 @@ export const Search = () => {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex items-center border border-input hover:bg-accent hover:text-accent-foreground p-4 relative h-8 justify-start rounded-lg bg-background text-sm text-muted-foreground shadow-none w-40 sm:w-72"
+        className="flex items-center border border-input hover:bg-accent hover:text-accent-foreground p-4 relative h-8 justify-start rounded-lg bg-background text-sm text-muted-foreground shadow-none w-full sm:w-72"
       >
         <div className="flex items-center gap-2 flex-grow">
           <SearchIcon size={14} />
