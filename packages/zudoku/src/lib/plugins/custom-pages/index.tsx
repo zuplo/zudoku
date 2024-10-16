@@ -1,22 +1,24 @@
-import type { ReactNode } from "react";
+import { type ComponentType, type ReactNode } from "react";
 import type { RouteObject } from "react-router-dom";
-import { ProseClasses } from "../../components/Markdown.js";
+import { type ExposedComponentProps } from "../../components/SlotletProvider.js";
 import type { DevPortalPlugin, NavigationPlugin } from "../../core/plugins.js";
+import { CustomPage } from "./CustomPage.js";
 
-type CustomPagesConfig = Array<{
+export type CustomPageConfig = {
   path: string;
-  element: ReactNode;
-}>;
+  prose?: boolean;
+  element?: ReactNode;
+  render?: ComponentType<ExposedComponentProps>;
+};
 
 export const customPagesPlugin = (
-  config: CustomPagesConfig,
+  config: CustomPageConfig[],
 ): DevPortalPlugin & NavigationPlugin => {
   return {
     getRoutes: (): RouteObject[] =>
-      config.map(({ path, element }) => ({
+      config.map(({ path, ...props }) => ({
         path,
-        // TODO: we should componentize prose pages
-        element: <div className={ProseClasses + " max-w-full"}>{element}</div>,
+        element: <CustomPage {...props} />,
       })),
   };
 };
