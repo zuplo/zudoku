@@ -28,7 +28,9 @@ export const MobileTopNavigation = () => {
         <VisuallyHidden>
           <DrawerTitle>Navigation</DrawerTitle>
         </VisuallyHidden>
-        <Search />
+        <div className="flex p-4">
+          <Search />
+        </div>
         <ul className="flex flex-col items-center gap-4 p-4">
           {topNavigation.map((item) => (
             <li key={item.label}>

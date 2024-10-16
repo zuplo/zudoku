@@ -91,8 +91,8 @@ export const Header = memo(function HeaderInner() {
               </div>
             </Link>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-[--sidecar-grid-cols] items-center gap-8">
-            <div className="w-full justify-center hidden md:flex ">
+          <div className="grid grid-cols-1 lg:grid-cols-[--sidecar-grid-cols] items-center gap-8">
+            <div className="w-full justify-center hidden lg:flex">
               <Search />
             </div>
 
