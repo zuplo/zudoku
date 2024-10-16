@@ -9,7 +9,7 @@ import z, {
   ZodUnion,
 } from "zod";
 import { fromError } from "zod-validation-error";
-import type { SlotletComponentProps } from "../../lib/components/SlotletProvider.js";
+import type { ExposedComponentProps } from "../../lib/components/SlotletProvider.js";
 import { DevPortalContext } from "../../lib/core/DevPortalContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
@@ -201,7 +201,7 @@ const ConfigSchema = z
     // slotlets are a concept we are working on and not yet finalized
     UNSAFE_slotlets: z.record(
       z.string(),
-      z.custom<ReactNode | ComponentType<SlotletComponentProps>>(),
+      z.custom<ReactNode | ComponentType<ExposedComponentProps>>(),
     ),
     theme: z
       .object({
@@ -265,7 +265,9 @@ const ConfigSchema = z
     customPages: z.array(
       z.object({
         path: z.string(),
-        element: z.custom<NonNullable<ReactNode>>(),
+        element: z.custom<NonNullable<ReactNode>>().optional(),
+        render: z.custom<ComponentType<ExposedComponentProps>>().optional(),
+        prose: z.boolean().optional(),
       }),
     ),
     plugins: z.array(z.custom<DevPortalPlugin>()),
