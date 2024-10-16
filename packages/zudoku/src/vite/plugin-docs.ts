@@ -61,13 +61,14 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             root: config.rootDir,
             ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
             absolute: false,
+            posix: true,
           });
 
           code.push(
             `const fileImports${i} = Object.assign({`,
             ...globbedFiles.map(
               (file) =>
-                `  "${ensureLeadingSlash(file)}": () => import("${ensureLeadingSlash(path.join(globImportBasePath, file))}"),`,
+                `  "${ensureLeadingSlash(file)}": () => import("${ensureLeadingSlash(path.posix.join(globImportBasePath, file))}"),`,
             ),
             `});`,
             `docsPluginOptions.push({`,
