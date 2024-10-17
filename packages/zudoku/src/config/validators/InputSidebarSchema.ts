@@ -3,6 +3,12 @@ import { z } from "zod";
 
 type IconNames = keyof typeof dynamicIconImports;
 
+const BadgeSchema = z.object({
+  label: z.string(),
+  color: z.enum(["green", "blue", "yellow", "red", "purple", "indigo", "gray"]),
+  placement: z.enum(["start", "end"]).optional(),
+});
+
 export const BaseInputSidebarItemCategoryLinkDocSchema = z.object({
   type: z.literal("doc"),
   id: z.string(),
@@ -23,20 +29,7 @@ export const BaseInputSidebarItemDocSchema = z.object({
   id: z.string(),
   icon: z.custom<IconNames>().optional(),
   label: z.string().optional(),
-  badge: z
-    .object({
-      label: z.string(),
-      color: z.enum([
-        "green",
-        "blue",
-        "yellow",
-        "red",
-        "purple",
-        "indigo",
-        "gray",
-      ]),
-    })
-    .optional(),
+  badge: BadgeSchema.optional(),
 });
 
 export type BaseInputSidebarItemDoc = z.infer<
@@ -53,20 +46,7 @@ export const InputSidebarItemLinkSchema = z.object({
   label: z.string(),
   href: z.string(),
   description: z.string().optional(),
-  badge: z
-    .object({
-      label: z.string(),
-      color: z.enum([
-        "green",
-        "blue",
-        "yellow",
-        "red",
-        "purple",
-        "indigo",
-        "gray",
-      ]),
-    })
-    .optional(),
+  badge: BadgeSchema.optional(),
 });
 
 export type InputSidebarItemLink = z.infer<typeof InputSidebarItemLinkSchema>;

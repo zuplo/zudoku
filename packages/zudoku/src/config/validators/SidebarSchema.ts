@@ -72,6 +72,7 @@ export const resolveSidebar = async (
       data.title ??
       extractTitleFromContent(content) ??
       id;
+
     const icon = data.sidebar_icon;
 
     return {
@@ -114,9 +115,8 @@ export const resolveSidebar = async (
     }
 
     const doc = await resolveDoc(item.id, categoryLabel);
-    const label = item.label ?? doc.label;
 
-    return { ...item, label, categoryLabel };
+    return { ...doc, ...item };
   };
 
   const resolveSidebarItem = async (
