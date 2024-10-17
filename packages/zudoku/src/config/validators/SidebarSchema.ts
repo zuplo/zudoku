@@ -39,7 +39,7 @@ export type SidebarItem =
   | SidebarItemLink
   | SidebarItemCategory;
 
-const extractTitleFromContent = (content: string) =>
+const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
 
 export const resolveSidebar = async (
@@ -68,14 +68,11 @@ export const resolveSidebar = async (
 
     const { data, content } = matter(file);
     const label =
-      data.sidebar_label ?? data.title ?? extractTitleFromContent(content);
+      data.sidebar_label ??
+      data.title ??
+      extractTitleFromContent(content) ??
+      id;
     const icon = data.sidebar_icon;
-
-    if (typeof label !== "string") {
-      throw new Error(
-        `Error determining title for document '${id}'. Check that the document has a H1 header or title frontmatter.`,
-      );
-    }
 
     return {
       type: "doc",

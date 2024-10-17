@@ -1,7 +1,7 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ChevronRightIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useMatch } from "react-router-dom";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinPath } from "../../util/joinPath.js";
@@ -26,6 +26,7 @@ export const SidebarCategory = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
+  const isActive = useMatch(category.link?.id ?? "");
 
   useEffect(() => {
     // this is triggered when an item from the sidebar is clicked
@@ -56,13 +57,14 @@ export const SidebarCategory = ({
 
   return (
     <Collapsible.Root
-      className={cn("flex flex-col", level === 0 && "-mx-[--padding-nav-item]")}
+      className="flex flex-col"
       defaultOpen={isDefaultOpen}
       open={open}
       onOpenChange={() => setOpen(true)}
     >
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
         <div
+          onClick={() => setHasInteracted(true)}
           className={cn(
             "text-start",
             navigationListItem({ isActive: false, isTopLevel: level === 0 }),
@@ -74,28 +76,32 @@ export const SidebarCategory = ({
           {category.icon && (
             <category.icon
               size={16}
-              className="align-[-0.125em] -translate-x-1"
+              className={cn(
+                "align-[-0.125em] -translate-x-1",
+                isActive && "text-primary",
+              )}
             />
           )}
           {category.link?.type === "doc" ? (
             <NavLink
               to={joinPath(topNavItem?.id, category.link.id)}
               className="flex-1"
-              onClick={() => setHasInteracted(true)}
+              onClick={() => {
+                // if it is the current path and closed then open it because there's no path change to trigger the open
+                if (isActive && !open) {
+                  setOpen(true);
+                }
+              }}
             >
-              {({ isActive }) => (
-                <div
-                  className={cn(
-                    "flex items-center gap-2 justify-between w-full",
-                    isActive
-                      ? "text-primary font-medium"
-                      : "text-foreground/80",
-                  )}
-                >
-                  <div className="truncate">{category.label}</div>
-                  {ToggleButton}
-                </div>
-              )}
+              <div
+                className={cn(
+                  "flex items-center gap-2 justify-between w-full",
+                  isActive ? "text-primary" : "text-foreground/80",
+                )}
+              >
+                <div className="truncate">{category.label}</div>
+                {ToggleButton}
+              </div>
             </NavLink>
           ) : (
             <div className="flex items-center justify-between w-full">
