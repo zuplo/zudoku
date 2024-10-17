@@ -1,6 +1,6 @@
 import type { ZudokuConfig } from "zudoku";
-import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import { sidebar } from "./sidebar";
+import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
