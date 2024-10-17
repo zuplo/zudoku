@@ -142,7 +142,6 @@
   .CollapsibleContent {
     --easing: cubic-bezier(0.4, 0, 0.2, 1);
     --slide-offset: -0.75rem;
-    @apply overflow-hidden;
   }
   .CollapsibleContent[data-state="open"] {
     animation: slideDown 300ms var(--easing);

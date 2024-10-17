@@ -68,14 +68,16 @@ export const MdxPage = ({
           "max-w-full xl:w-full xl:max-w-prose flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
         )}
       >
-        <header>
-          {category && <CategoryHeading>{category}</CategoryHeading>}
-          {title && (
-            <Heading level={1} id={slugify(title)}>
-              {title}
-            </Heading>
-          )}
-        </header>
+        {(category || title) && (
+          <header>
+            {category && <CategoryHeading>{category}</CategoryHeading>}
+            {title && (
+              <Heading level={1} id={slugify(title)}>
+                {title}
+              </Heading>
+            )}
+          </header>
+        )}
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}
         />

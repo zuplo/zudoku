@@ -3,7 +3,6 @@ import { ExternalLinkIcon } from "lucide-react";
 import { NavLink, useSearchParams } from "react-router-dom";
 
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
-import { cn } from "../../util/cn.js";
 import { joinPath } from "../../util/joinPath.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
@@ -16,7 +15,8 @@ export const navigationListItem = cva(
   {
     variants: {
       isTopLevel: {
-        true: "font-semibold",
+        true: "font-medium -mx-[--padding-nav-item]",
+        false: "-mr-[--padding-nav-item] ml-[--padding-nav-item]",
       },
       isActive: {
         true: "text-primary font-medium",
@@ -26,6 +26,9 @@ export const navigationListItem = cva(
         true: "text-foreground/30",
         false: "",
       },
+    },
+    defaultVariants: {
+      isActive: false,
     },
   },
 );
@@ -58,7 +61,7 @@ export const SidebarItem = ({
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <span className="truncate" title={item.label}>
+              <span className="truncate flex-1" title={item.label}>
                 {item.label}
               </span>
               <SidebarBadge {...item.badge} />
@@ -73,13 +76,11 @@ export const SidebarItem = ({
         <AnchorLink
           to={{ hash: item.href, search: searchParams.toString() }}
           {...{ [DATA_ANCHOR_ATTR]: item.href.slice(1) }}
-          className={cn(
-            "flex gap-2.5 justify-between",
-            level === 0 && "-mx-[--padding-nav-item]",
-            navigationListItem({
-              isActive: item.href.slice(1) === activeAnchor,
-            }),
-          )}
+          className={navigationListItem({
+            isActive: item.href.slice(1) === activeAnchor,
+            isTopLevel: level === 0,
+            className: item.badge?.placement !== "start" && "justify-between",
+          })}
         >
           {item.badge ? (
             <>
@@ -94,7 +95,9 @@ export const SidebarItem = ({
         </AnchorLink>
       ) : !item.href.startsWith("http") ? (
         <NavLink
-          className={cn("flex gap-2.5 justify-between", navigationListItem())}
+          className={navigationListItem({
+            className: item.badge?.placement !== "start" && "justify-between",
+          })}
           to={item.href}
         >
           {item.badge ? (
@@ -110,10 +113,7 @@ export const SidebarItem = ({
         </NavLink>
       ) : (
         <a
-          className={cn(
-            navigationListItem({ isTopLevel: level === 0 }),
-            "block",
-          )}
+          className={navigationListItem({ isTopLevel: level === 0 })}
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
@@ -121,8 +121,7 @@ export const SidebarItem = ({
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}
           <span className="whitespace-nowrap">
-            &nbsp;
-            <ExternalLinkIcon className="inline ml-1" size={12} />
+            <ExternalLinkIcon className="inline -translate-y-0.5" size={12} />
           </span>
         </a>
       );
