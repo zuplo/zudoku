@@ -24,7 +24,7 @@ export const SidebarCategory = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(joinPath(topNavItem?.id, category.link?.id));
+  const isActive = useMatch(category.link?.id ?? "");
 
   useEffect(() => {
     // this is triggered when an item from the sidebar is clicked
