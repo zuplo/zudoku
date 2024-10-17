@@ -5,11 +5,11 @@ import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugins } from "virtual:zudoku-docs-plugins";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
+import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import { DevPortal, Layout, RouterError } from "zudoku/components";
 import { isNavigationPlugin } from "zudoku/internal";
-import { inkeepSearchPlugin } from "zudoku/plugins/search-inkeep";
 import type { ZudokuConfig } from "../config/config.js";
 import { traverseSidebar } from "../lib/components/navigation/utils.js";
 import type { ZudokuContextOptions } from "../lib/core/DevPortalContext.js";
@@ -53,11 +53,9 @@ export const convertZudokuConfigToOptions = (
     mdx: config.mdx,
     authentication: configuredAuthProvider,
     plugins: [
-      ...(config.search?.type === "inkeep"
-        ? [inkeepSearchPlugin(config.search)]
-        : []),
       ...configuredDocsPlugins,
       ...configuredApiPlugins,
+      ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
       ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),

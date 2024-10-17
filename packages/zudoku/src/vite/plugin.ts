@@ -15,6 +15,7 @@ import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
 import { viteHtmlTransform } from "./plugin-html-transform.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
+import { viteSearchPlugin } from "./plugin-search.js";
 import { viteSidebarPlugin } from "./plugin-sidebar.js";
 
 export default function vitePlugin(
@@ -37,6 +38,7 @@ export default function vitePlugin(
     viteFrontmatterPlugin(),
     viteSidebarPlugin(getCurrentConfig),
     viteApiPlugin(getCurrentConfig),
+    viteSearchPlugin(getCurrentConfig),
     viteAliasPlugin(getCurrentConfig),
     viteRedirectPlugin(getCurrentConfig),
     viteCustomCss(getCurrentConfig),
