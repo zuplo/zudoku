@@ -22,7 +22,7 @@ export const MobileTopNavigation = () => {
         </DrawerTrigger>
       </div>
       <DrawerContent
-        className="lg:hidden h-screen right-0 left-auto w-[320px] rounded-none"
+        className="lg:hidden h-screen right-0 left-auto w-[320px] rounded-none overflow-auto"
         aria-describedby={undefined}
       >
         <VisuallyHidden>
