@@ -10,11 +10,11 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Get started",
-        items: ["introduction", "installation"],
+        items: ["documentation/introduction", "documentation/installation"],
       },
     ],
   },
-  redirects: [{ from: "/", to: "/documentation" }],
+  redirects: [{ from: "/", to: "/documentation/introduction" }],
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",

@@ -15,6 +15,7 @@
     "zudoku": "workspace:*"
   },
   "devDependencies": {
+    "@mdx-js/react": "3.0.1",
     "@types/react": "18.3.11",
     "js-yaml": "4.1.0",
     "serve": "14.2.3"

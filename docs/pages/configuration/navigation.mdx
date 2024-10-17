@@ -1,0 +1,248 @@
+---
+title: Navigation
+sidebar_icon: compass
+---
+
+import { Book, Code, FileText } from "zudoku/icons";
+
+Navigation in Zudoku can be customized at several layers. The primary is the top navigation tabs. Tabs can reference pages, plugins, or external links. The secondary is the sidebar navigation. Sidebars are associated with documents via unique `id`s, providing greater flexibility in organizing your content, similar to how Docusaurus handles sidebar associations.
+
+## Top Navigation
+
+The top navigation is defined in the `topNavigation` array of the Zudoku config file. Each item in the array is an object with a `label` and an `id`. The `label` is the text that will be displayed in the navigation bar, and the `id` is used to determine the path the tab will navigate to.
+
+```json
+{
+  "topNavigation": [
+    { "label": "Documentation", "id": "documentation" },
+    { "label": "API Reference", "id": "api" }
+  ]
+}
+```
+
+### Default document
+
+When a user clicks on a top navigation tab, Zudoku navigates to the path associated with the `id` and the first item in the associated sidebar. To overwrite this behavior, you can specify the `default` option. For example:
+
+```json
+{
+  "label": "Documentation",
+  "id": "documentation",
+  "default": "documentation/motivation"
+}
+```
+
+## Sidebar
+
+The `sidebar` configuration section defines sidebars that can be used throughout your documentation. Sidebars are associated with documents via `id`s specified in the sidebar configuration, not through file paths or the top navigation.
+
+Example `sidebar` configuration:
+
+```json
+{
+  "sidebar": {
+    "documentation": [
+      {
+        "type": "category",
+        "label": "Zudoku",
+        "items": ["documentation/introduction"]
+      },
+      {
+        "type": "category",
+        "label": "Getting Started",
+        "items": ["documentation/getting-started", "documentation/installation"]
+      }
+    ]
+  }
+}
+```
+
+### Sidebar Items
+
+Sidebar items can be of three types: `category`, `doc`, or `link`.
+
+- `category`: A group of links that can be expanded or collapsed.
+- `doc`: A reference to a document by its `id`.
+- `link`: A direct link to a page or external URL.
+
+#### `category`
+
+The `category` type groups related items under a collapsible section. The `label` is the displayed text, and the `items` array contains `id`s of documents, links, or other categories.
+
+```json
+{
+  "type": "category",
+  "label": "Getting Started",
+  "items": [
+    "documentation/getting-started",
+    "documentation/installation",
+    {
+      "type": "link",
+      "label": "Support",
+      "href": "https://support.example.com"
+    }
+  ]
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type SidebarCategory = {
+  type: "category";
+  label: string;
+  items: Array<SidebarDoc | SidebarLink | SidebarCategory>[];
+  icon?: string; // Lucide icon name
+  link?: string | SidebarLink;
+  description?: string;
+  collapsible?: boolean;
+  collapsed?: boolean;
+};
+```
+
+</details>
+
+#### `doc`
+
+Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `id` is the file path associated with a markdown file.
+
+```json
+{
+  "type": "doc",
+  "label": "Overview",
+  "id": "docs/overview"
+}
+```
+
+:::tip
+
+Be sure that the markdown files are indexed in the `docs` configuration:
+
+```json
+{
+  "docs": { "files": "/pages/**/*.{md,mdx}" }
+}
+```
+
+:::
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type SidebarDoc = {
+  type: "doc";
+  id: string;
+  icon?: string;
+  label?: string;
+  badge?: {
+    label: string;
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+  };
+};
+```
+
+</details>
+
+#### `link`
+
+`link` items point directly to a URL. Use this for external resources or standalone pages.
+
+```json
+{
+  "type": "link",
+  "label": "Support",
+  "href": "https://support.example.com"
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type SidebarLink = {
+  type: "link";
+  label: string;
+  href: string;
+  description?: string;
+  badge?: {
+    label: string;
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+  };
+};
+```
+
+</details>
+
+### Document `id`s
+
+Documents are identified by their `id`s, which are typically derived from the file path relative to the `pages` directory, without the extension. For example, a file located at `./pages/docs/overview.md` would have an `id` of `docs/overview`.
+
+:::tip
+
+Be sure that the markdown files are indexed in the `docs` configuration:
+
+```json
+{
+  "docs": { "files": "/pages/**/*.{md,mdx}" }
+}
+```
+
+:::
+
+For example, you could reference a file located at `./pages/articles/about.md` with an `id` of `articles/about`:
+
+```json
+{
+  "type": "doc",
+  "label": "About",
+  "id": "articles/about"
+}
+```
+
+### Sidebar Selection
+
+Zudoku determines which sidebar to display based on the document's `id` and the sidebar configurations. When you include a document `id` in a sidebar, it creates a link to that document and associates the document with that sidebar.
+
+If a document is included in multiple sidebars, Zudoku picks the first suitable sidebar. This means you cannot explicitly control which sidebar is displayed when viewing a document that is included in multiple sidebars.
+
+For example:
+
+- If `docs/intro` is included in both `sidebar_1` and `sidebar_2`, and a user navigates to `docs/intro`, Zudoku will display `sidebar_1` (assuming it's the first one found containing `docs/intro`).
+
+### Icons
+
+Icons can be added to categories and documents by specifying an `icon` property. The value should be the name of a [Lucide icon](https://lucide.dev/icons) (e.g., `book` <Book size={16} style={{ display: 'inline' }} />, `code` <Code size={16} style={{ display: 'inline' }} />, `file-text` <FileText size={16} style={{ display: 'inline' }} />).
+
+```json
+{
+  "type": "category",
+  "label": "Getting Started",
+  "icon": "book"
+}
+```
+
+They can also be set on individual documents in their front matter:
+
+```md
+---
+title: My Document
+icon: book
+---
+```
+
+## Title & Labels
+
+All navigation items can have a `label` property that determines the displayed text. For `doc` items, the `label` is optional; if omitted, Zudoku uses the document's `title` from its front matter or the first `#` header.
+
+To override the navigation label without changing the document's `title`, use the `sidebar_label` property in the front matter:
+
+```md
+---
+title: My Long Title
+sidebar_label: Short Title
+---
+```
+
+In this example, the document's title remains "My Long Title," but the sidebar displays "Short Title."

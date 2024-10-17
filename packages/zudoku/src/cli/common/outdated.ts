@@ -51,7 +51,7 @@ async function getLatestVersion(): Promise<string | undefined> {
   if (response.status === 200) {
     const result = (await response.json()) as { tag_name: string }[];
     if (Array.isArray(result) && result.length > 0) {
-      return result[0].tag_name.substring(1);
+      return result[0]!.tag_name.substring(1);
     }
   }
 

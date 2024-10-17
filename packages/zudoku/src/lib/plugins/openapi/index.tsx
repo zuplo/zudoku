@@ -170,7 +170,7 @@ export const openApiPlugin = (
             href: `#${operation.slug}`,
             badge: {
               label: operation.method,
-              color: MethodColorMap[operation.method.toLowerCase()],
+              color: MethodColorMap[operation.method.toLowerCase()]!,
             },
           })),
         }));
