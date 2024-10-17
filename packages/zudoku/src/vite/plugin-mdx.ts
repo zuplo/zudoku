@@ -36,6 +36,21 @@ const remarkLinkRewritePlugin = () => (tree: any) => {
   });
 };
 
+const rehypeMediaBasePath =
+  (basePath = "") =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (tree: any) => {
+    if (!basePath) return;
+
+    visit(tree, "element", (node) => {
+      if (node.tagName !== "img" && node.tagName !== "video") return;
+
+      if (node.properties.src && !node.properties.src.startsWith("http")) {
+        node.properties.src = path.join(basePath, node.properties.src);
+      }
+    });
+  };
+
 export type DevPortalPluginOptions = {
   mode: ZudokuPluginOptions["mode"];
   remarkPlugins?: Options["remarkPlugins"];
@@ -68,6 +83,7 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
+        [rehypeMediaBasePath, config.basePath],
         withToc,
         withTocExport,
         ...(config.build?.rehypePlugins ?? []),
