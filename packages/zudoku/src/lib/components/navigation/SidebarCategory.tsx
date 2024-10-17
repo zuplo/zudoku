@@ -65,13 +65,16 @@ export const SidebarCategory = ({
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
         <div
           onClick={() => setHasInteracted(true)}
-          className={cn(
-            "text-start",
-            navigationListItem({ isActive: false, isTopLevel: level === 0 }),
-            isCollapsible
-              ? "cursor-pointer"
-              : "cursor-default hover:bg-transparent",
-          )}
+          className={navigationListItem({
+            isActive: false,
+            isTopLevel: level === 0,
+            className: [
+              "text-start",
+              isCollapsible
+                ? "cursor-pointer"
+                : "cursor-default hover:bg-transparent",
+            ],
+          })}
         >
           {category.icon && (
             <category.icon
@@ -115,10 +118,9 @@ export const SidebarCategory = ({
         className={cn(
           // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
           hasInteracted && "CollapsibleContent",
-          "ms-[calc(var(--padding-nav-item)*1.125)]",
         )}
       >
-        <ul className="mt-1 border-l ps-2">
+        <ul className="mt-1 border-l ms-0.5">
           {category.items.map((item) => (
             <SidebarItem
               key={

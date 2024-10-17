@@ -15,8 +15,8 @@ export const navigationListItem = cva(
   {
     variants: {
       isTopLevel: {
-        true: "font-semibold -mx-[--padding-nav-item]",
-        false: "-me-[--padding-nav-item]",
+        true: "font-medium -mx-[--padding-nav-item]",
+        false: "-mr-[--padding-nav-item] ml-[--padding-nav-item]",
       },
       isActive: {
         true: "text-primary font-medium",
