@@ -129,6 +129,7 @@ export const Playground = ({
             .filter((h) => h.name)
             .map((header) => [header.name, header.value]),
         ),
+        body: data.body ? data.body : undefined,
       });
 
       if (data.identity !== NO_IDENTITY) {
