@@ -49,8 +49,14 @@ export class DevServer {
         ? vite.config.base
         : vite.config.base + "/") + "__z/entry.client.tsx";
 
+    // Ensure the path uses forward slashes, even on Windows
+    const normalizedProxiedEntryClientPath = proxiedEntryClientPath.replace(
+      /\\/g,
+      "/",
+    );
+
     app.use(graphql.graphqlEndpoint, graphql);
-    app.use(proxiedEntryClientPath, async (_req, res) => {
+    app.use(normalizedProxiedEntryClientPath, async (_req, res) => {
       const transformed = await vite.transformRequest(getAppClientEntryPath());
       if (!transformed) throw new Error("Error transforming client entry");
 
