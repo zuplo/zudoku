@@ -44,10 +44,12 @@ export class DevServer {
     const graphql = createGraphQLServer({
       graphqlEndpoint: "/__z/graphql",
     });
+
     const proxiedEntryClientPath = path.join(
       vite.config.base,
       "/__z/entry.client.tsx",
     );
+
     app.use(graphql.graphqlEndpoint, graphql);
     app.use(proxiedEntryClientPath, async (_req, res) => {
       const transformed = await vite.transformRequest(getAppClientEntryPath());

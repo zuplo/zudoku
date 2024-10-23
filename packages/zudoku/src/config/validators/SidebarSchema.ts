@@ -32,6 +32,7 @@ export type SidebarItemCategory = Omit<
   items: SidebarItem[];
   link?: SidebarItemCategoryLinkDoc;
   icon?: LucideIcon | string;
+  apiReference?: boolean;
 };
 
 export type SidebarItem =
