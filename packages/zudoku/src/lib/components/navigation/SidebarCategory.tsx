@@ -47,17 +47,16 @@ export const SidebarCategory = ({
   // this is useful when sidebar is collapsed and then user scrolls to an anchor link in the content then the sidebar should open to show the active category
   useEffect(() => {
     if (!activeAnchor) return;
-    // Don't auto-close if user has manually interacted with this category
     if (hasInteracted) return;
+
+    // if this category is not part of the api reference then return as we don't want to close-open on scroll for other documentation
+    if (!category.apiReference) return;
 
     const currentActiveCategory = activeAnchor.split("-")[0];
     const shouldBeOpen = currentActiveCategory === categoryLabel;
 
-    console.log("currentActiveCategory", activeAnchor);
-    console.log("categoryLabel", categoryLabel);
-
     setOpen(shouldBeOpen);
-  }, [activeAnchor, categoryLabel, hasInteracted]);
+  }, [activeAnchor, category.apiReference, categoryLabel, hasInteracted]);
 
   const ToggleButton = isCollapsible && (
     <button

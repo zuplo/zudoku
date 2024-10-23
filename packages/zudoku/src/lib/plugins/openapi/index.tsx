@@ -173,6 +173,7 @@ export const openApiPlugin = (
               color: MethodColorMap[operation.method.toLowerCase()],
             },
           })),
+          apiReference: true,
         }));
 
       categories.unshift({
