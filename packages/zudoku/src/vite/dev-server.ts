@@ -49,6 +49,8 @@ export class DevServer {
         ? vite.config.base
         : vite.config.base + "/") + "__z/entry.client.tsx";
 
+    logger.info(`The proxied entry client path is: ${proxiedEntryClientPath}`);
+
     app.use(graphql.graphqlEndpoint, graphql);
     app.use(proxiedEntryClientPath, async (_req, res) => {
       const transformed = await vite.transformRequest(getAppClientEntryPath());

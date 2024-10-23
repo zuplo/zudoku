@@ -6,5 +6,6 @@ type OasSource =
 export type OasPluginConfig = {
   server?: string;
   navigationId?: string;
+  defaultCollapsed?: boolean;
   skipPreload?: boolean;
 } & OasSource;

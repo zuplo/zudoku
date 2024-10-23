@@ -43,6 +43,7 @@ const ThemeSchema = z
 const ApiConfigSchema = z.object({
   server: z.string().optional(),
   navigationId: z.string().optional(),
+  defaultCollapsed: z.boolean().optional(),
 });
 
 const ApiSchema = z.union([

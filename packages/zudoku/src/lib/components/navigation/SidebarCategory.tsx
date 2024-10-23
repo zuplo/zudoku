@@ -1,10 +1,12 @@
+/* eslint-disable no-console */
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ChevronRightIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { NavLink, useMatch } from "react-router-dom";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinPath } from "../../util/joinPath.js";
+import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { useTopNavigationItem } from "../context/ZudokuContext.js";
 import { navigationListItem, SidebarItem } from "./SidebarItem.js";
 import { useIsCategoryOpen } from "./utils.js";
@@ -27,6 +29,7 @@ export const SidebarCategory = ({
   );
   const [open, setOpen] = useState(isDefaultOpen);
   const isActive = useMatch(joinPath(topNavItem?.id, category.link?.id));
+  const { activeAnchor } = useViewportAnchor();
 
   useEffect(() => {
     // this is triggered when an item from the sidebar is clicked
@@ -35,6 +38,26 @@ export const SidebarCategory = ({
       setOpen(true);
     }
   }, [isCategoryOpen]);
+
+  const categoryLabel = useMemo(
+    () => category.label.toLowerCase(),
+    [category.label],
+  );
+
+  // this is useful when sidebar is collapsed and then user scrolls to an anchor link in the content then the sidebar should open to show the active category
+  useEffect(() => {
+    if (!activeAnchor) return;
+    // Don't auto-close if user has manually interacted with this category
+    if (hasInteracted) return;
+
+    const currentActiveCategory = activeAnchor.split("-")[0];
+    const shouldBeOpen = currentActiveCategory === categoryLabel;
+
+    console.log("currentActiveCategory", activeAnchor);
+    console.log("categoryLabel", categoryLabel);
+
+    setOpen(shouldBeOpen);
+  }, [activeAnchor, categoryLabel, hasInteracted]);
 
   const ToggleButton = isCollapsible && (
     <button
@@ -116,8 +139,8 @@ export const SidebarCategory = ({
       </Collapsible.Trigger>
       <Collapsible.Content
         className={cn(
-          // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
-          hasInteracted && "CollapsibleContent",
+          // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle or the category is collapsed (if it was collapsed by default then while scrolling to an anchor link in the content it should animate as well)
+          (hasInteracted || category.collapsed) && "CollapsibleContent",
         )}
       >
         <ul className="mt-1 border-l ms-0.5">

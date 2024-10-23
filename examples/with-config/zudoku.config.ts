@@ -11,6 +11,7 @@ const config: ZudokuConfig = {
         type: "category",
         label: "Get started",
         items: ["introduction", "installation"],
+        collapsed: true,
       },
     ],
   },
@@ -19,6 +20,7 @@ const config: ZudokuConfig = {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
     navigationId: "api",
+    defaultCollapsed: true,
   },
   docs: {
     files: "/pages/**/*.mdx",

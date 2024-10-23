@@ -163,7 +163,7 @@ export const openApiPlugin = (
           type: "category",
           label: tag.name || "Other endpoints",
           collapsible: true,
-          collapsed: false,
+          collapsed: config.defaultCollapsed ?? false,
           items: tag.operations.map((operation) => ({
             type: "link",
             label: operation.summary ?? operation.path,
