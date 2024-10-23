@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ChevronRightIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
