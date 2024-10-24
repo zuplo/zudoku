@@ -48,14 +48,14 @@ function expose(result: string): string {
   switch (process.platform) {
     case "darwin":
       return result
-        .split("IOPlatformUUID")[1]
-        .split("\n")[0]
+        .split("IOPlatformUUID")[1]!
+        .split("\n")[0]!
         .replace(/=|\s+]"/gi, "")
         .toLowerCase();
     case "win32":
       return result
         .toString()
-        .split("REG_SZ")[1]
+        .split("REG_SZ")[1]!
         .replace(/\r+|\n+|\s+/gi, "")
         .toLowerCase();
     case "linux":

@@ -20,8 +20,10 @@ if (root.childElementCount > 0) {
 }
 
 async function hydrateLazyRoutes(routes: RouteObject[]) {
-  const path = window.location.pathname.slice(config.basePath?.length ?? 0);
-  const lazyMatches = matchRoutes(routes, path)?.filter((m) => m.route.lazy);
+  const path = window.location.pathname;
+  const lazyMatches = matchRoutes(routes, path, config.basePath)?.filter(
+    (m) => m.route.lazy,
+  );
 
   if (lazyMatches?.length) {
     await Promise.all(

@@ -26,7 +26,7 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
             className="text-xs max-h-[450px] p-2"
             code={JSON.stringify(
               content.at(0)?.schema
-                ? generateSchemaExample(content[0].schema as SchemaObject)
+                ? generateSchemaExample(content[0]!.schema as SchemaObject)
                 : "",
               null,
               2,
