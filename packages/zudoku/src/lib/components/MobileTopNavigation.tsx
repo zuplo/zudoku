@@ -14,6 +14,7 @@ import { Search } from "./Search.js";
 
 export const MobileTopNavigation = () => {
   const { topNavigation } = useZudoku();
+
   return (
     <Drawer direction="right">
       <div className="flex lg:hidden justify-self-end">
