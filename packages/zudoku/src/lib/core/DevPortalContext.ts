@@ -60,7 +60,12 @@ export type ZudokuContextOptions = {
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationProvider;
-  topNavigation?: Array<{ id: string; label: string; default?: string }>;
+  topNavigation?: Array<{
+    id: string;
+    label: string;
+    default?: string;
+    display?: "auth" | "anon" | "always";
+  }>;
   sidebars?: SidebarConfig;
   plugins?: DevPortalPlugin[];
   slotlets?: Slotlets;

@@ -195,6 +195,10 @@ const ConfigSchema = z
         label: z.string(),
         id: z.string(),
         default: z.string().optional(),
+        display: z
+          .enum(["auth", "anon", "always"])
+          .default("always")
+          .optional(),
       }),
     ),
     sidebar: z.record(InputSidebarSchema),
