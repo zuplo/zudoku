@@ -47,7 +47,7 @@ export class DevServer {
 
     const proxiedEntryClientPath = path.posix.join(
       vite.config.base,
-      "__z/entry.client.tsx",
+      "/__z/entry.client.tsx",
     );
 
     app.use(graphql.graphqlEndpoint, graphql);
