@@ -40,24 +40,32 @@ const statusCodeMap: Record<number, string> = {
 export type Header = {
   name: string;
   defaultValue?: string;
+  enum?: string[];
 };
 export type QueryParam = {
   name: string;
   defaultValue?: string;
   defaultActive?: boolean;
   isRequired?: boolean;
+  enum?: string[];
 };
 export type PathParam = {
   name: string;
   defaultValue?: string;
   isRequired?: boolean;
+  enum?: string[];
 };
 
 export type PlaygroundForm = {
   body: string;
-  queryParams: Array<{ name: string; value: string; active: boolean }>;
-  pathParams: Array<{ name: string; value: string }>;
-  headers: Array<{ name: string; value: string }>;
+  queryParams: Array<{
+    name: string;
+    value: string;
+    active: boolean;
+    enum?: string[];
+  }>;
+  pathParams: Array<{ name: string; value: string; enum?: string[] }>;
+  headers: Array<{ name: string; value: string; enum?: string[] }>;
   identity?: string;
 };
 

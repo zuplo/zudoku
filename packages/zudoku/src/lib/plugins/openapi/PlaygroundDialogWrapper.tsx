@@ -23,6 +23,7 @@ export const PlaygroundDialogWrapper = ({
       name: p.name,
       defaultActive: p.required ?? false,
       isRequired: p.required ?? false,
+      enum: p.schema?.enum,
     }));
   const pathParams = operation.parameters
     ?.filter((p) => p.in === "path")

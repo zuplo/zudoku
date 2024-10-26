@@ -5,6 +5,13 @@ import {
   useFieldArray,
   useFormContext,
 } from "react-hook-form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/Select.js";
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
 import { cn } from "../../../util/cn.js";
@@ -82,19 +89,43 @@ export const QueryParams = ({
                   <div className="flex justify-between items-center">
                     <Controller
                       control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e.target.value);
-                            if (e.target.value.length > 0) {
-                              form.setValue(`queryParams.${i}.active`, true);
-                            }
-                          }}
-                          placeholder="Enter value"
-                          className="w-full border-0 shadow-none text-xs font-mono"
-                        />
-                      )}
+                      render={({ field }) => {
+                        const hasEnum =
+                          queryParams[i].enum && queryParams[i].enum.length > 0;
+                        if (hasEnum) {
+                          return (
+                            <Select
+                              onValueChange={(value) => field.onChange(value)}
+                              value={field.value}
+                              defaultValue={field.value}
+                            >
+                              <SelectTrigger className="w-full flex">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent align="center">
+                                {queryParams[i].enum?.map((enumValue) => (
+                                  <SelectItem key={enumValue} value={enumValue}>
+                                    {enumValue}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+                        }
+                        return (
+                          <Input
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              if (e.target.value.length > 0) {
+                                form.setValue(`queryParams.${i}.active`, true);
+                              }
+                            }}
+                            placeholder="Enter value"
+                            className="w-full border-0 shadow-none text-xs font-mono"
+                          />
+                        );
+                      }}
                       name={`queryParams.${i}.value`}
                     />
                     <Controller
