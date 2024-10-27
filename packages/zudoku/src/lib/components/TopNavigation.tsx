@@ -5,8 +5,8 @@ import { useAuth } from "../authentication/hook.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 export const TopNavigation = () => {
-  const { topNavigation } = useZudoku();
-  const { isAuthenticated } = useAuth();
+  const { topNavigation, globalDisplay } = useZudoku();
+  const { isAuthenticated, isAuthEnabled } = useAuth();
 
   // Hide top nav if there is only one item
   if (topNavigation.length <= 1) {
@@ -19,9 +19,13 @@ export const TopNavigation = () => {
         {topNavigation
           .filter(
             (item) =>
-              (item.display === "auth" && isAuthenticated) ||
+              (item.display === "auth" && isAuthEnabled && isAuthenticated) ||
               (item.display === "anon" && !isAuthenticated) ||
-              !item.display ||
+              (!item.display &&
+                globalDisplay === "auth" &&
+                isAuthEnabled &&
+                isAuthenticated) ||
+              globalDisplay === "always" ||
               item.display === "always",
           )
           .map((item) => (

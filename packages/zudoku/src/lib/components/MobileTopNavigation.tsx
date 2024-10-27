@@ -2,6 +2,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cx } from "class-variance-authority";
 import { MenuIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../authentication/hook.js";
 import {
   Drawer,
   DrawerClose,
@@ -13,7 +14,8 @@ import { useZudoku } from "./context/ZudokuContext.js";
 import { Search } from "./Search.js";
 
 export const MobileTopNavigation = () => {
-  const { topNavigation } = useZudoku();
+  const { topNavigation, globalDisplay } = useZudoku();
+  const { isAuthEnabled, isAuthenticated } = useAuth();
 
   return (
     <Drawer direction="right">
@@ -33,23 +35,35 @@ export const MobileTopNavigation = () => {
           <Search />
         </div>
         <ul className="flex flex-col items-center gap-4 p-4">
-          {topNavigation.map((item) => (
-            <li key={item.label}>
-              <NavLink
-                className={({ isActive }) =>
-                  cx(
-                    "block font-medium border-b-2",
-                    isActive
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
-                  )
-                }
-                to={item.id}
-              >
-                <DrawerClose>{item.label}</DrawerClose>
-              </NavLink>
-            </li>
-          ))}
+          {topNavigation
+            .filter(
+              (item) =>
+                (item.display === "auth" && isAuthEnabled && isAuthenticated) ||
+                (item.display === "anon" && !isAuthenticated) ||
+                (!item.display &&
+                  globalDisplay === "auth" &&
+                  isAuthEnabled &&
+                  isAuthenticated) ||
+                globalDisplay === "always" ||
+                item.display === "always",
+            )
+            .map((item) => (
+              <li key={item.label}>
+                <NavLink
+                  className={({ isActive }) =>
+                    cx(
+                      "block font-medium border-b-2",
+                      isActive
+                        ? "border-primary text-foreground"
+                        : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
+                    )
+                  }
+                  to={item.id}
+                >
+                  <DrawerClose>{item.label}</DrawerClose>
+                </NavLink>
+              </li>
+            ))}
         </ul>
       </DrawerContent>
     </Drawer>

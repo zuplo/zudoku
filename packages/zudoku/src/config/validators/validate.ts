@@ -173,6 +173,7 @@ type BannerColorType = ZodOptional<
 const ConfigSchema = z
   .object({
     basePath: z.string().optional(),
+    globalDisplay: z.enum(["auth", "always"]).default("always").optional(),
     page: z
       .object({
         pageTitle: z.string(),
@@ -240,6 +241,16 @@ const ConfigSchema = z
           (val) =>
             typeof val === "string" ? /^pk_(test|live)_\w+$/.test(val) : false,
         ),
+        redirectToAfterSignUp: z.string().optional(),
+        redirectToAfterSignIn: z.string().optional(),
+        redirectToAfterSignOut: z.string().optional(),
+      }),
+      z.object({
+        type: z.literal("openid"),
+        clientId: z.string(),
+        issuer: z.string(),
+        audience: z.string().optional(),
+        scopes: z.array(z.string()).optional(),
         redirectToAfterSignUp: z.string().optional(),
         redirectToAfterSignIn: z.string().optional(),
         redirectToAfterSignOut: z.string().optional(),

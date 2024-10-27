@@ -31,6 +31,7 @@ export const convertZudokuConfigToOptions = (
     !config.page?.logo?.src?.dark;
 
   return {
+    globalDisplay: config.globalDisplay,
     page: {
       ...config.page,
       logo: {

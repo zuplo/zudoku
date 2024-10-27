@@ -57,6 +57,7 @@ type Page = Partial<{
 }>;
 
 export type ZudokuContextOptions = {
+  globalDisplay?: string;
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationProvider;
@@ -76,6 +77,7 @@ export type ZudokuContextOptions = {
 };
 
 export class DevPortalContext {
+  public globalDisplay: NonNullable<ZudokuContextOptions["globalDisplay"]>;
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public sidebars: NonNullable<ZudokuContextOptions["sidebars"]>;
   public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
@@ -92,6 +94,7 @@ export class DevPortalContext {
     this.authentication = config.authentication;
     this.meta = config.metadata;
     this.page = config.page;
+    this.globalDisplay = config.globalDisplay || "always";
   }
 
   initialize = async (): Promise<void> => {
