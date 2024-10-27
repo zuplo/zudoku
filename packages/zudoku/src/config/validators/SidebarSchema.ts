@@ -50,11 +50,8 @@ export class SidebarManager {
   sidebars: SidebarClass[];
   private switchQueue: Array<{ from: string; to: string; item: SidebarItem }> =
     [];
-  constructor(
-    rootDir: string,
-    sidebarConfig: NonNullable<ZudokuConfig["sidebar"]>,
-  ) {
-    this.sidebars = Object.entries(sidebarConfig).map(
+  constructor(rootDir: string, sidebarConfig: ZudokuConfig["sidebar"]) {
+    this.sidebars = Object.entries(sidebarConfig ?? {}).map(
       ([parent, items]) => new SidebarClass(this, rootDir, parent, items),
     );
   }

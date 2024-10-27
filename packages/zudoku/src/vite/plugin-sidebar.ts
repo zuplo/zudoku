@@ -43,8 +43,6 @@ export const viteSidebarPlugin = (
       if (id !== resolvedVirtualModuleId) return;
       const config = getConfig();
 
-      if (!config.sidebar) return;
-
       const manager = new SidebarManager(config.rootDir, config.sidebar);
       const resolvedSidebars = await manager.resolveSidebars();
 
