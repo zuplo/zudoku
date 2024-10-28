@@ -1,15 +1,7 @@
 name: Build
 on:
   workflow_call:
-  push:
-    branches:
-      - "**"
-      - "!main"
-    tags-ignore:
-      - "*"
-
-env:
-  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+  pull_request:
 
 jobs:
   build:
