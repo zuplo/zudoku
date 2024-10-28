@@ -1,10 +1,23 @@
 import { cx } from "class-variance-authority";
 import { NavLink } from "react-router-dom";
 
+import { useAuth } from "../authentication/hook.js";
 import { useZudoku } from "./context/ZudokuContext.js";
+
+export const isHiddenItem =
+  (isAuthenticated?: boolean) =>
+  (item: { display?: "auth" | "anon" | "always" }) => {
+    return (
+      (item.display === "auth" && isAuthenticated) ||
+      (item.display === "anon" && !isAuthenticated) ||
+      !item.display ||
+      item.display === "always"
+    );
+  };
 
 export const TopNavigation = () => {
   const { topNavigation } = useZudoku();
+  const { isAuthenticated } = useAuth();
 
   // Hide top nav if there is only one item
   if (topNavigation.length <= 1) {
@@ -14,7 +27,7 @@ export const TopNavigation = () => {
   return (
     <nav className="hidden lg:block border-b text-sm px-12 h-[--top-nav-height]">
       <ul className="flex flex-row items-center gap-8">
-        {topNavigation.map((item) => (
+        {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
           <li key={item.label}>
             <NavLink
               className={({ isActive }) =>

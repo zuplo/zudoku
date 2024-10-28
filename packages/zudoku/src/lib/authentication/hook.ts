@@ -10,7 +10,7 @@ export const useAuth = () => {
     isAuthEnabled,
     isPending: authState.isPending,
     profile: authState.profile,
-    isAuthenticated: authState.profile,
+    isAuthenticated: Boolean(authState.profile),
 
     login: async () => {
       if (!isAuthEnabled) {
