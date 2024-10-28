@@ -21,7 +21,15 @@ export const UrlDisplay = ({ host, path }: { host: string; path: string }) => {
     if (!param.value) {
       return;
     }
-    url.searchParams.set(param.name, param.value);
+
+    if (Array.isArray(param.value)) {
+      // If the parameter is an array then create multiple query params with the same name by comma separating the values
+      param.value.forEach((value) => {
+        url.searchParams.append(param.name, value);
+      });
+    } else {
+      url.searchParams.set(param.name, param.value);
+    }
   });
 
   return (

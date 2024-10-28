@@ -5,6 +5,7 @@ import {
   useFieldArray,
   useFormContext,
 } from "react-hook-form";
+import MultiSelect from "../../../components/MultiSelect.js";
 import {
   Select,
   SelectContent,
@@ -92,14 +93,39 @@ export const QueryParams = ({
                       render={({ field }) => {
                         const hasEnum =
                           queryParams[i].enum && queryParams[i].enum.length > 0;
-                        if (hasEnum) {
-                          return (
+                        const typeOfField = queryParams[i].type;
+                        return hasEnum ? (
+                          typeOfField === "array" ? (
+                            <MultiSelect
+                              options={queryParams[i].enum ?? []}
+                              onValueChange={(value) => {
+                                if (
+                                  Array.isArray(value) &&
+                                  value.length === 0
+                                ) {
+                                  field.onChange("");
+                                } else {
+                                  field.onChange(value);
+                                }
+                              }}
+                              placeholder="Choose options"
+                              value={
+                                Array.isArray(field.value)
+                                  ? field.value.join(",")
+                                  : field.value
+                              }
+                            />
+                          ) : (
                             <Select
                               onValueChange={(value) => field.onChange(value)}
-                              value={field.value}
-                              defaultValue={field.value}
+                              value={field.value as string}
+                              defaultValue={field.value as string}
                             >
-                              <SelectTrigger className="w-full flex">
+                              <SelectTrigger
+                                className="w-full flex"
+                                placeholder="Choose an option"
+                                value={field.value}
+                              >
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent align="center">
@@ -110,9 +136,8 @@ export const QueryParams = ({
                                 ))}
                               </SelectContent>
                             </Select>
-                          );
-                        }
-                        return (
+                          )
+                        ) : (
                           <Input
                             {...field}
                             onChange={(e) => {
