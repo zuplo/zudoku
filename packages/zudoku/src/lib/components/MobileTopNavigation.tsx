@@ -2,6 +2,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { cx } from "class-variance-authority";
 import { MenuIcon } from "lucide-react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../authentication/hook.js";
 import {
   Drawer,
   DrawerClose,
@@ -11,9 +12,11 @@ import {
 } from "../ui/Drawer.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Search } from "./Search.js";
+import { isHiddenItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
   const { topNavigation } = useZudoku();
+  const { isAuthenticated } = useAuth();
 
   return (
     <Drawer direction="right">
@@ -33,7 +36,7 @@ export const MobileTopNavigation = () => {
           <Search />
         </div>
         <ul className="flex flex-col items-center gap-4 p-4">
-          {topNavigation.map((item) => (
+          {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
             <li key={item.label}>
               <NavLink
                 className={({ isActive }) =>
