@@ -14,8 +14,7 @@ env:
 jobs:
   build:
     name: Build & Test
-    runs-on:
-      group: ubuntu-large-runners
+    runs-on: ubuntu-latest
     permissions:
       actions: read
       contents: read
