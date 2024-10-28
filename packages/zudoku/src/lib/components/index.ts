@@ -11,6 +11,7 @@ import {
 } from "./Bootstrap.js";
 import { DevPortal as DevPortalImport } from "./DevPortal.js";
 import { Layout as LayoutImport } from "./Layout.js";
+import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
 
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
 export const Callout = /*@__PURE__*/ CalloutImport;
@@ -23,3 +24,4 @@ export const Bootstrap = /*@__PURE__*/ BootstrapImport;
 export const BootstrapStatic = /*@__PURE__*/ BootstrapStaticImport;
 export const Button = /*@__PURE__*/ ButtonImport;
 export const Head = /*@__PURE__*/ Helmet;
+export const useZudoku = /*@__PURE__*/ useZudokuImport;
