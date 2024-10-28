@@ -123,38 +123,12 @@
             "name": "status",
             "in": "query",
             "description": "Status values that need to be considered for filter",
-            "required": true,
+            "required": false,
             "explode": true,
             "schema": {
               "type": "string",
               "default": "available",
-              "enum": ["available", "pending", "sold"],
-              "example": "available"
-            }
-          },
-          {
-            "name": "number",
-            "in": "query",
-            "description": "Number of pets to return",
-            "required": false,
-            "explode": true,
-            "schema": {
-              "type": "integer",
-              "default": "10",
-              "example": "available"
-            }
-          },
-          {
-            "name": "tags",
-            "in": "query",
-            "description": "Tags to filter by",
-            "required": true,
-            "explode": true,
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+              "enum": ["available", "pending", "sold"]
             }
           }
         ],
