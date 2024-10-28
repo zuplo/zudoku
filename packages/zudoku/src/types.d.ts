@@ -9,6 +9,13 @@ declare module "virtual:zudoku-sidebar" {
 declare module "virtual:zudoku-api-plugins" {
   export const configuredApiPlugins: import("./lib/core/plugins.ts").DevPortalPlugin[];
 }
+
+declare module "virtual:zudoku-search-plugin" {
+  export const configuredSearchPlugin:
+    | import("./lib/core/plugins.ts").DevPortalPlugin
+    | undefined;
+}
+
 declare module "virtual:zudoku-api-keys-plugin" {
   export const configuredApiKeysPlugin:
     | import("./lib/core/plugins.ts").DevPortalPlugin
