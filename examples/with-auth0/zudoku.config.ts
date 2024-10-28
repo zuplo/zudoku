@@ -1,6 +1,7 @@
 import { type ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
+  globalDisplay: "auth",
   topNavigation: [
     { id: "documentation", label: "Documentation" },
     { id: "api", label: "Rick & Morty API" },

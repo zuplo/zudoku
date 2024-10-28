@@ -1,4 +1,5 @@
 import { type RouteObject } from "react-router-dom";
+import { ProtectedRoute } from "../../components/ProtectedRoute.js";
 import { DevPortalContext } from "../../core/DevPortalContext.js";
 import {
   type ApiIdentityPlugin,
@@ -8,7 +9,6 @@ import {
 import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
 import { CreateApiKey } from "./CreateApiKey.js";
-import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_API_KEY_ENDPOINT =
