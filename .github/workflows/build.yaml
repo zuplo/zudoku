@@ -69,7 +69,7 @@ jobs:
         uses: "google-github-actions/auth@v2"
         with:
           token_format: "access_token"
-          workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
+          workload_identity_provider: projects/914576303414/locations/global/workloadIdentityPools/github-actions-wi-pool/providers/github-actions-wi-provider
           service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
           access_token_lifetime: "300s"
 
