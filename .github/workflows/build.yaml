@@ -65,7 +65,7 @@ jobs:
         id: stats-file
 
       - name: "Authenticate to Google Cloud"
-        if: steps.stats-file.outputs.exists == 'true'
+        if: steps.stats-file.outputs.exists == 'true' && github.event.pull_request.head.repo.fork != 'true'
         uses: "google-github-actions/auth@v2"
         with:
           token_format: "access_token"
@@ -74,7 +74,7 @@ jobs:
           access_token_lifetime: "300s"
 
       - name: Upload Artifacts
-        if: steps.stats-file.outputs.exists == 'true'
+        if: steps.stats-file.outputs.exists == 'true' && github.event.pull_request.head.repo.fork != 'true'
         uses: "google-github-actions/upload-cloud-storage@v2"
         with:
           process_gcloudignore: false
@@ -85,7 +85,7 @@ jobs:
             content-type: text/html
 
       - name: Write Summary
-        if: steps.stats-file.outputs.exists == 'true'
+        if: steps.stats-file.outputs.exists == 'true' && github.event.pull_request.head.repo.fork != 'true'
         run: |
           echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
