@@ -245,6 +245,16 @@ const ConfigSchema = z
         redirectToAfterSignOut: z.string().optional(),
       }),
       z.object({
+        type: z.literal("openid"),
+        clientId: z.string(),
+        issuer: z.string(),
+        audience: z.string().optional(),
+        scopes: z.array(z.string()).optional(),
+        redirectToAfterSignUp: z.string().optional(),
+        redirectToAfterSignIn: z.string().optional(),
+        redirectToAfterSignOut: z.string().optional(),
+      }),
+      z.object({
         type: z.literal("auth0"),
         clientId: z.string(),
         domain: z.string(),
