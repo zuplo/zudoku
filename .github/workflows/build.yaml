@@ -64,29 +64,4 @@ jobs:
         run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
         id: stats-file
 
-      - name: "Authenticate to Google Cloud"
-        if: steps.stats-file.outputs.exists == 'true' && github.repository == 'zuplo/zudoku'
-        uses: "google-github-actions/auth@v2"
-        with:
-          token_format: "access_token"
-          workload_identity_provider: projects/914576303414/locations/global/workloadIdentityPools/github-actions-wi-pool/providers/github-actions-wi-provider
-          service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
-          access_token_lifetime: "300s"
 
-      - name: Upload Artifacts
-        if: steps.stats-file.outputs.exists == 'true' && github.repository == 'zuplo/zudoku'
-        uses: "google-github-actions/upload-cloud-storage@v2"
-        with:
-          process_gcloudignore: false
-          path: packages/zudoku/stats.html
-          destination: cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}
-          parent: false
-          headers: |-
-            content-type: text/html
-
-      - name: Write Summary
-        if: steps.stats-file.outputs.exists == 'true' && github.repository == 'zuplo/zudoku'
-        run: |
-          echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
