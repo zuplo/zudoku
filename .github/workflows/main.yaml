@@ -204,19 +204,7 @@ jobs:
           --url https://api.cloudflare.com/client/v4/zones/1abaefabd6800e9979a740a7cdf235a8/purge_cache \
           --header 'Content-Type: application/json' \
           --header 'Authorization: Bearer ${{ secrets.CF_ZONE_PURGE_ACCESS_TOKEN }}' \
-          --data '{
-            "files": [
-              "https://cdn.zudoku.dev/demo",
-              "https://cdn.zudoku.dev/demo/",
-              "https://cdn.zudoku.dev/demo/index.html",
-              "https://cdn.zudoku.dev/latest",
-              "https://cdn.zudoku.dev/latest/",
-              "https://cdn.zudoku.dev/latest/index.html",
-              "https://cdn.zudoku.dev/latest/main.js",
-              "https://cdn.zudoku.dev/latest/demo.js",
-              "https://cdn.zudoku.dev/latest/style.css"
-            ]
-          }'
+          --data '{ "purge_everything": true }'
 
       - name: Write Summary
         run: |
