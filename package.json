@@ -12,7 +12,8 @@
     "clean": "git clean -Xfde !.env",
     "prepare": "husky",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
-    "release:minor": "gh workflow run release.yaml -f releaseType=minor"
+    "release:minor": "gh workflow run release.yaml -f releaseType=minor",
+    "local": "cp .env.example .env"
   },
   "lint-staged": {
     "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
