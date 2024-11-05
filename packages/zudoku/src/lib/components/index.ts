@@ -13,7 +13,7 @@ import {
 import { DevPortal as DevPortalImport } from "./DevPortal.js";
 import { Layout as LayoutImport } from "./Layout.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
-export const useMDXComponents = /*@__P`URE__*/ useMDXComponentsImport;
+export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
 export const DevPortal = /*@__PURE__*/ DevPortalImport;
 export const Layout = /*@__PURE__*/ LayoutImport;
 export const RouterError = /*@__PURE__*/ RouterErrorImport;
