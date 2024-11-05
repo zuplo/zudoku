@@ -10,6 +10,7 @@ import {
   Bootstrap as BootstrapImport,
   BootstrapStatic as BootstrapStaticImport,
 } from "./Bootstrap.js";
+import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
 import { DevPortal as DevPortalImport } from "./DevPortal.js";
 import { Layout as LayoutImport } from "./Layout.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
@@ -28,5 +29,6 @@ export const useAuth = /*@__PURE__*/ useAuthState;
 export const Zudoku = /*@__PURE__*/ DevPortalImport;
 
 export const Callout = /*@__PURE__*/ CalloutImport;
+export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;
 export const Button = /*@__PURE__*/ ButtonImport;
 export const Link: typeof LinkImport = /*@__PURE__*/ LinkImport;
