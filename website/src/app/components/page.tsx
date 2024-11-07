@@ -85,7 +85,7 @@ const Page = async () => {
                   width="20"
                   height={20}
                   className="inline-block hover:opacity-80"
-                  alt="Zudoku on Github"
+                  alt="Zudoku on GitHub"
                 />
               </a>
               <a

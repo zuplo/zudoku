@@ -78,7 +78,7 @@ export const Footer = () => (
                     className="hover:text-white"
                     href="https://github.com/zuplo/zudoku"
                   >
-                    Zudoku on Github
+                    Zudoku on GitHub
                   </a>
                 </li>
                 <li className="pt-4">
@@ -86,7 +86,7 @@ export const Footer = () => (
                     className="hover:text-white"
                     href="https://github.com/zuplo/"
                   >
-                    Zuplo on Github
+                    Zuplo on GitHub
                   </a>
                 </li>
               </ul>
@@ -125,7 +125,7 @@ export const Footer = () => (
                 width="20"
                 height={20}
                 className="inline-block opacity-40 hover:opacity-80"
-                alt="Zudoku on Github"
+                alt="Zudoku on GitHub"
               />
             </a>
             <div className="mx-4 h-full border-l border-zinc-700"></div>

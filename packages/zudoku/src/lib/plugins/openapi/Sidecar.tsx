@@ -216,13 +216,13 @@ export const Sidecar = ({
             }}
             options={[
               { value: "shell", label: "cURL" },
-              { value: "js", label: "Javascript" },
+              { value: "js", label: "JavaScript" },
               { value: "python", label: "Python" },
               { value: "java", label: "Java" },
               { value: "go", label: "Go" },
               { value: "csharp", label: "C#" },
               { value: "kotlin", label: "Kotlin" },
-              { value: "objc", label: "Objective C" },
+              { value: "objc", label: "Objective-C" },
               { value: "php", label: "PHP" },
               { value: "ruby", label: "Ruby" },
               { value: "swift", label: "Swift" },
