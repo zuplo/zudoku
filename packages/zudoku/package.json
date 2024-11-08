@@ -24,7 +24,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./internal": "./src/internal.ts",
+    "./ui/*": "./src/ui/*",
     "./auth/clerk": "./src/lib/authentication/providers/clerk.ts",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",
@@ -38,8 +38,7 @@
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
-    "./tailwind": "./src/app/tailwind.ts",
-    "./app/*": "./src/app/*"
+    "./tailwind": "./src/app/tailwind.ts"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -49,11 +48,12 @@
         "import": "./dist/index.js",
         "types": "./dist/index.d.ts"
       },
+      "./ui/*": {
+        "import": "./lib/ui/*",
+        "types": "./dist/lib/ui/*.d.ts"
+      },
       "./client": {
         "types": "./client.d.ts"
-      },
-      "./internal": {
-        "import": "./dist/internal.js"
       },
       "./auth/clerk": {
         "import": "./lib/zudoku.auth-clerk.js",
@@ -114,19 +114,12 @@
       "./main.css": {
         "require": "./src/app/main.css",
         "import": "./src/app/main.css"
-      },
-      "./app/*": {
-        "import": "./src/app/*"
-      },
-      "./ui/*": {
-        "import": "./lib/ui/*",
-        "types": "./dist/lib/ui/*.d.ts"
       }
     }
   },
   "scripts": {
     "build": "tsc --project tsconfig.json",
-    "build:vite": "vite build && pnpm run hack:fix-worker-paths lib",
+    "build:vite": "vite build",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html",
     "hack:fix-worker-paths": "node ./scripts/hack-worker.mjs",

@@ -23,7 +23,7 @@
     "types": ["vite/client"],
     "paths": {
       "zudoku/components": ["src/lib/components/index.ts"],
-      "zudoku/internal": ["src/internal.ts"],
+      "zudoku/ui/*": ["src/lib/ui/*"],
       "zudoku/openapi-worker": [
         "src/lib/plugins/openapi/client/createWorkerClient.ts"
       ],
