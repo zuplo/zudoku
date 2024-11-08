@@ -1,7 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { useZudoku } from "../../components/context/ZudokuContext.js";
 import {
   Select,
   SelectContent,
@@ -9,7 +8,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/Select.js";
+} from "zudoku/ui/Select.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { ApiKeyService } from "./index.js";

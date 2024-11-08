@@ -9,10 +9,10 @@ import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import { DevPortal, Layout, RouterError } from "zudoku/components";
-import { isNavigationPlugin } from "zudoku/internal";
 import type { ZudokuConfig } from "../config/config.js";
 import { traverseSidebar } from "../lib/components/navigation/utils.js";
 import type { ZudokuContextOptions } from "../lib/core/DevPortalContext.js";
+import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { joinPath } from "../lib/util/joinPath.js";
 
 export const convertZudokuConfigToOptions = (

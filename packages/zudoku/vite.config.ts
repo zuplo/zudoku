@@ -1,7 +1,14 @@
+import { glob } from "glob";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import pkgJson from "./package.json";
+
+const uiComponents = Object.fromEntries(
+  glob.sync("./src/lib/ui/**/*.{ts,tsx}").map((file) => {
+    return [`ui/${path.basename(file).replace(/\.tsx?$/, "")}`, file];
+  }),
+);
 
 const entries: Record<string, string> = {
   components: "./src/lib/components/index.ts",
@@ -16,11 +23,31 @@ const entries: Record<string, string> = {
   "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
   "openapi-worker": "./src/lib/plugins/openapi-worker.ts",
+  ...uiComponents,
 };
+
+// Fixes the worker import paths
+// See: https://github.com/vitejs/vite/issues/15618
+const fixWorkerPathsPlugin = (): Plugin => ({
+  name: "fix-worker-paths",
+  apply: "build",
+  generateBundle(_, bundle) {
+    Object.values(bundle).forEach((chunk) => {
+      if (chunk.type === "chunk" && chunk.fileName.endsWith(".js")) {
+        chunk.code = chunk.code.replaceAll('"/assets/', '"./assets/');
+      }
+    });
+  },
+});
 
 export default defineConfig({
   worker: {
     format: "es",
+  },
+  resolve: {
+    alias: [
+      { find: /^zudoku\/ui\/(.*).js/, replacement: `./src/lib/ui/$1.tsx` },
+    ],
   },
   build: {
     sourcemap: true,
@@ -32,8 +59,10 @@ export default defineConfig({
       }, {}),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (format, fileName) => {
-        return `zudoku.${fileName}.js`;
+      fileName: (_format, fileName) => {
+        return fileName.startsWith("ui/")
+          ? `${fileName}.js`
+          : `zudoku.${fileName}.js`;
       },
     },
     rollupOptions: {
@@ -41,6 +70,7 @@ export default defineConfig({
         "react",
         "react-dom",
         "lucide-react",
+        /@radix-ui/,
 
         // Optional Modules (i.e. auth providers) are external as we don't
         // want to bundle these in the library. Users will install these
@@ -51,7 +81,7 @@ export default defineConfig({
         // we only want this to be resolved when the end app gets built
         "zudoku/openapi-worker",
       ],
-      plugins: [visualizer()],
+      plugins: [visualizer(), fixWorkerPathsPlugin()],
       onwarn(warning, warn) {
         // Suppress "Module level directives cause errors when bundled" warnings
         if (

@@ -1,15 +1,15 @@
 import { useMutation } from "@tanstack/react-query";
 import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { useSelectedServerStore } from "../../../authentication/state.js";
-import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../../components/Select.js";
+} from "zudoku/ui/Select.js";
+import { useSelectedServerStore } from "../../../authentication/state.js";
+import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Spinner } from "../../../components/Spinner.js";
 import { Button } from "../../../ui/Button.js";
 import { Callout } from "../../../ui/Callout.js";
