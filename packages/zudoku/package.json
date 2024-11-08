@@ -50,7 +50,11 @@
         "types": "./dist/index.d.ts"
       },
       "./ui/*": {
-        "import": "./lib/ui/*",
+        "import": "./lib/ui/*.js",
+        "types": "./dist/lib/ui/*.d.ts"
+      },
+      "./ui/*.js": {
+        "import": "./lib/ui/*.js",
         "types": "./dist/lib/ui/*.d.ts"
       },
       "./client": {
