@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "../../../components/Dialog.js";
+} from "zudoku/ui/Dialog.js";
 import { Playground, type PlaygroundContentProps } from "./Playground.js";
 
 export type PlaygroundDialogProps = PropsWithChildren<PlaygroundContentProps>;
