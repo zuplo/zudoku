@@ -8,4 +8,4 @@ Not all configurations are supported in Zudoku, but common tasks like adding plu
 
 Zudoku will automatically pick up the configuration file and will use it to augment the built-in configuration.
 
-You can find an [example project](https://github.com/zuplo/zudoku/tree/main/examples/with-vite-config) on Github that demonstrates how to use a custom Vite configuration with Zudoku.
+You can find an [example project](https://github.com/zuplo/zudoku/tree/main/examples/with-vite-config) on GitHub that demonstrates how to use a custom Vite configuration with Zudoku.

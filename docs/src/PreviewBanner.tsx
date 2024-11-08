@@ -6,7 +6,7 @@ export const PreviewBanner = () => {
         href="https://github.com/zuplo/zudoku/issues"
         className="underline hover:white"
       >
-        open a Github issue
+        open a GitHub issue
       </a>{" "}
       if you have feature requests or find any issues.
     </div>
