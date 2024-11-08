@@ -18,7 +18,14 @@ export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
   data.queryParams
     .filter((param) => param.active)
     .forEach((param) => {
-      url.searchParams.set(param.name, param.value);
+      if (Array.isArray(param.value)) {
+        // If the parameter is an array then create multiple query params with the same name by comma separating the values (repeating query param name)
+        param.value.forEach((value) => {
+          url.searchParams.append(param.name, value);
+        });
+      } else {
+        url.searchParams.set(param.name, param.value);
+      }
     });
 
   return url;

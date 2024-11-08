@@ -46,6 +46,8 @@ export type QueryParam = {
   defaultValue?: string;
   defaultActive?: boolean;
   isRequired?: boolean;
+  enum?: string[];
+  type?: string;
 };
 export type PathParam = {
   name: string;
@@ -55,7 +57,12 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
-  queryParams: Array<{ name: string; value: string; active: boolean }>;
+  queryParams: Array<{
+    name: string;
+    value: string | string[];
+    active: boolean;
+    enum?: string[];
+  }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{ name: string; value: string }>;
   identity?: string;
@@ -92,6 +99,7 @@ export const Playground = ({
           name: param.name,
           value: param.defaultValue ?? "",
           active: param.defaultActive ?? false,
+          enum: param.enum ?? [],
         })),
         pathParams: pathParams.map((param) => ({
           name: param.name,
@@ -198,13 +206,23 @@ export const Playground = ({
 
   const urlQueryParams = formState.queryParams
     .filter((p) => p.active)
-    .map((p, i, arr) => (
-      <Fragment key={p.name}>
-        {p.name}={encodeURIComponent(p.value).replaceAll("%20", "+")}
-        {i < arr.length - 1 && "&"}
-        <wbr />
-      </Fragment>
-    ));
+    .flatMap((p, i, arr) =>
+      Array.isArray(p.value) ? (
+        p.value.map((v, vi) => (
+          <Fragment key={`${p.name}-${v}`}>
+            {p.name}={encodeURIComponent(v)}
+            {(vi < p.value.length - 1 || i < arr.length - 1) && "&"}
+            <wbr />
+          </Fragment>
+        ))
+      ) : (
+        <Fragment key={p.name}>
+          {p.name}={encodeURIComponent(p.value)}
+          {i < arr.length - 1 && "&"}
+          <wbr />
+        </Fragment>
+      ),
+    );
 
   const serverSelect = (
     <div className="inline-block opacity-50 hover:opacity-100 transition">
