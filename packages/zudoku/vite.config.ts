@@ -26,6 +26,8 @@ const entries: Record<string, string> = {
   ...uiComponents,
 };
 
+// Fixes the worker import paths
+// See: https://github.com/vitejs/vite/issues/15618
 const fixWorkerPathsPlugin = (): Plugin => ({
   name: "fix-worker-paths",
   apply: "build",
