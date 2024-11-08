@@ -38,7 +38,8 @@
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
-    "./tailwind": "./src/app/tailwind.ts"
+    "./tailwind": "./src/app/tailwind.ts",
+    "./app/*": "./src/app/*"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -114,6 +115,9 @@
       "./main.css": {
         "require": "./src/app/main.css",
         "import": "./src/app/main.css"
+      },
+      "./app/*": {
+        "import": "./src/app/*"
       }
     }
   },
