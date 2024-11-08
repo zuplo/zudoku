@@ -1,0 +1,69 @@
+---
+sidebar_label: shadcn/ui
+---
+
+export const components = [
+  "Accordion",
+  "Alert",
+  "AspectRatio",
+  "Badge",
+  "Breadcrumb",
+  "Button",
+  "Callout",
+  "Card",
+  "Carousel",
+  "Checkbox",
+  "Collapsible",
+  "Dialog",
+  "Drawer",
+  "DropdownMenu",
+  "Form",
+  "HoverCard",
+  "Input",
+  "Label",
+  "Pagination",
+  "Popover",
+  "Progress",
+  "RadioGroup",
+  "ScrollArea",
+  "Select",
+  "Skeleton",
+  "Slider",
+  "Switch",
+  "Tabs",
+  "Textarea",
+  "Toggle",
+  "ToggleGroup",
+  "Tooltip",
+];
+
+# `shadcn/ui` components
+
+We use a couple components from [shadcn/ui](https://ui.shadcn.com). To make them re-usable for and use them in your project you can import them from `zudoku/ui/*`.
+
+For example:
+
+```tsx
+import { Button } from "zudoku/ui/Button";
+```
+
+Following components are available:
+
+<ul className="grid grid-cols-2 sm:grid-cols-3">
+  {components.map((comp) => {
+    const link = comp.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase();
+
+    return (
+      <li key={comp}>
+        <a
+          target="_blank"
+          href={`https://ui.shadcn.com/docs/components/${link}`}
+        >
+          {comp}
+        </a>
+      </li>
+    );
+
+})}
+
+</ul>

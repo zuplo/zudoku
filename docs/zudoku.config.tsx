@@ -1,19 +1,11 @@
 import type { ZudokuConfig } from "zudoku";
-import { Landingpage } from "./src/Landingpage";
 import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
-  theme: {
-    dark: {
-      primary: "316deg 100% 50%",
-    },
-    light: {
-      primary: "#ff00bd",
-    },
-  },
   page: {
     banner: {
       message: <PreviewBanner />,
+      dismissible: true,
     },
   },
   metadata: {
@@ -33,7 +25,6 @@ const config: ZudokuConfig = {
     { from: "/components", to: "/components/callout" },
   ],
   topNavigation: [
-    { id: "start", label: "Start" },
     { id: "docs", label: "Documentation" },
     { id: "components", label: "Components" },
   ],
@@ -92,26 +83,19 @@ const config: ZudokuConfig = {
     ],
     components: [
       {
-        icon: "lightbulb",
-        type: "category",
-        label: "Introduction",
-        items: ["components/intro"],
-      },
-      {
         icon: "component",
         type: "category",
         label: "Components",
         items: [
           "components/button",
           "components/callout",
-          "components/note",
           "components/icons",
           "components/tabs",
+          "components/shadcn",
         ],
       },
     ],
   },
-  customPages: [{ path: "/start", element: <Landingpage /> }],
 };
 
 export default config;

@@ -2,61 +2,74 @@
 title: Callout
 ---
 
+This is a callout component that can be used to draw attention to important information.
+
+:::tip{title="Hot tip"}
+
+There's a shortcut to use callout components in Markdown files: [Admonitions](../docs/markdown/admonitions).
+
+:::
+
+````tsx
+
+## Props
+
+```ts
+type CalloutProps = {
+  type: "note" | "info" | "tip" | "danger" | "caution";
+  children: ReactNode;
+  title?: string;
+  className?: string;
+};
+````
+
 ## Note
 
-<Callout type="note" title="Hey we've got a hint for you!">
+<Callout type="note" title="Hey, listen!">
   This draws attention to important information
 </Callout>
 
-<code lang="tsx">
-  ```jsx
-  <Callout type="note" title="Hey we've got a hint for you!">
-    This draws attention to important information
-  </Callout>
-  ```
-</code>
+```tsx
+<Callout type="note" title="Hey we've got a hint for you!">
+  This draws attention to important information
+</Callout>
+```
 
 ## Info
 
 <Callout type="info" title="It's safe to use the info">
-  This adds info to your content
+  This adds info to your content.
 </Callout>
 
-<code lang="tsx">
-  ```jsx
-  <Callout type="info" title="It's safe to use the info">
-    This adds info to your content
-  </Callout>
-  ```
-</code>
+```tsx
+<Callout type="info" title="It's safe to use the info">
+  This adds info to your content.
+</Callout>
+```
 
 ## Tip
 
-<Callout type="tip" title="You'll be successfull ">
-  This is a tip
+<Callout type="tip" title="You'll be successful">
+  If you choose to be.
 </Callout>
 
-<code lang="tsx">
-  ```jsx
-  <Callout type="tip" title="You'll be successfull ">
-    This is a tip
-  </Callout>
-  ```
-</code>
+```tsx
+<Callout type="tip" title="You'll be successful">
+  If you choose to be.
+</Callout>
+```
 
 ## Danger
 
 <Callout type="danger" title="But some things are dangerous">
-  This is a tip
+  It's dangerous to go alone, take this.
 </Callout>
 
-<code lang="tsx">
-  ```jsx
-  <Callout type="danger" title="But some things are dangerous">
-    This is a tip
-  </Callout>
-  ```
-</code>
+```tsx
+<Callout type="danger" title="But some things are dangerous">
+  This is a tip
+</Callout>
+```
 
 ## Caution
 
@@ -64,17 +77,8 @@ title: Callout
   This raises a warning to watch out for.
 </Callout>
 
-<code lang="tsx">
-  ```jsx
-  <Callout type="caution" title="So, better show a warning">
-    This raises a warning to watch out for.
-  </Callout>
-  ```
-</code>
-
-If you want to include pages in your documentation that have greater flexibility
-than MDX pages, it is possible to include custom pages of your own.
-
-These pages are typically built using standard React markup and can borrow from a set of prebuild components that Zudoku already has such as buttons, links and headers.
-
-Start by creating the page
+```tsx
+<Callout type="caution" title="So, better show a warning">
+  This raises a warning to watch out for.
+</Callout>
+```
