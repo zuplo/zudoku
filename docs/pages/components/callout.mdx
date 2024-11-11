@@ -10,8 +10,6 @@ There's a shortcut to use callout components in Markdown files: [Admonitions](..
 
 :::
 
-````tsx
-
 ## Props
 
 ```ts
@@ -21,17 +19,17 @@ type CalloutProps = {
   title?: string;
   className?: string;
 };
-````
+```
 
 ## Note
 
 <Callout type="note" title="Hey, listen!">
-  This draws attention to important information
+  This draws attention to important information.
 </Callout>
 
 ```tsx
-<Callout type="note" title="Hey we've got a hint for you!">
-  This draws attention to important information
+<Callout type="note" title="Hey, listen!">
+  This draws attention to important information.
 </Callout>
 ```
 
@@ -67,7 +65,7 @@ type CalloutProps = {
 
 ```tsx
 <Callout type="danger" title="But some things are dangerous">
-  This is a tip
+  It's dangerous to go alone, take this.
 </Callout>
 ```
 
