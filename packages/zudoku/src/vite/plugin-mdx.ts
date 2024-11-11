@@ -2,6 +2,7 @@ import rehypeMetaAsAttributes from "@lekoarts/rehype-meta-as-attributes";
 import mdx from "@mdx-js/rollup";
 import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
+import type { Root } from "mdast";
 import path from "node:path";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
@@ -13,18 +14,18 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { visit } from "unist-util-visit";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
+import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rehypeCodeBlockPlugin = () => (tree: any) => {
   visit(tree, "element", (node, index, parent) => {
-    if (node.tagName === "code") {
+    if (node.type === "element" && node.tagName === "code") {
       node.properties.inline = parent?.tagName !== "pre";
     }
   });
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const remarkLinkRewritePlugin = () => (tree: any) => {
+const remarkLinkRewritePlugin = () => (tree: Root) => {
   visit(tree, "link", (node) => {
     if (!node.url) return;
 
@@ -64,6 +65,7 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       mdxExtensions: [".md", ".mdx"],
       format: "mdx",
       remarkPlugins: [
+        remarkStaticGeneration,
         remarkComment,
         remarkGfm,
         remarkFrontmatter,
