@@ -1,0 +1,82 @@
+---
+title: Callout
+---
+
+This is a callout component that can be used to draw attention to important information.
+
+:::tip{title="Hot tip"}
+
+There's a shortcut to use callout components in Markdown files: [Admonitions](../docs/markdown/admonitions).
+
+:::
+
+## Props
+
+```ts
+type CalloutProps = {
+  type: "note" | "info" | "tip" | "danger" | "caution";
+  children: ReactNode;
+  title?: string;
+  className?: string;
+};
+```
+
+## Note
+
+<Callout type="note" title="Hey, listen!">
+  This draws attention to important information.
+</Callout>
+
+```tsx
+<Callout type="note" title="Hey, listen!">
+  This draws attention to important information.
+</Callout>
+```
+
+## Info
+
+<Callout type="info" title="It's safe to use the info">
+  This adds info to your content.
+</Callout>
+
+```tsx
+<Callout type="info" title="It's safe to use the info">
+  This adds info to your content.
+</Callout>
+```
+
+## Tip
+
+<Callout type="tip" title="You'll be successful">
+  If you choose to be.
+</Callout>
+
+```tsx
+<Callout type="tip" title="You'll be successful">
+  If you choose to be.
+</Callout>
+```
+
+## Danger
+
+<Callout type="danger" title="But some things are dangerous">
+  It's dangerous to go alone, take this.
+</Callout>
+
+```tsx
+<Callout type="danger" title="But some things are dangerous">
+  It's dangerous to go alone, take this.
+</Callout>
+```
+
+## Caution
+
+<Callout type="caution" title="So, better show a warning">
+  This raises a warning to watch out for.
+</Callout>
+
+```tsx
+<Callout type="caution" title="So, better show a warning">
+  This raises a warning to watch out for.
+</Callout>
+```

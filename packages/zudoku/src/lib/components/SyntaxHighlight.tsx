@@ -46,6 +46,10 @@ type SyntaxHighlightProps = {
   language?: string;
 } & Omit<HighlightProps, "children" | "language">;
 
+const remapLang = {
+  mdx: "md",
+} as Record<string, string>;
+
 export const SyntaxHighlight = ({
   copyable = true,
   language = "plain",
@@ -61,7 +65,7 @@ export const SyntaxHighlight = ({
   return (
     <Highlight
       theme={isDark ? themes.vsDark : themes.github}
-      language={language}
+      language={remapLang[language] ?? language}
       {...props}
     >
       {({ className, style, tokens, getLineProps, getTokenProps }) => (

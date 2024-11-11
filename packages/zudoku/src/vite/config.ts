@@ -262,16 +262,17 @@ export async function getViteConfig(
               // Tailwind seems to crash if it tries to parse compiled .js files
               // as a workaround, we will just ship the source file and use those
               // `${moduleDir}/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
+              `${pluginOptions.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
+              // Include the config file and every file it depends on
               config.__meta.path,
               ...config.__meta.dependencies.map(
                 (dep) => `${path.dirname(config.__meta.path)}/${dep}`,
               ),
-              `${pluginOptions.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              // Users custom components
-              // NOTE: For now we are requiring components to be in `src` folder
-              // would be good to make this more dynamic though because users
-              // could put their components anywhere
               `${dir}/src/**/*.{js,ts,jsx,tsx,md,mdx}`,
+              // All doc files
+              ...(config.docs?.files
+                ? [path.posix.join(dir, config.docs.files)]
+                : []),
             ],
           }),
           autoprefixer,

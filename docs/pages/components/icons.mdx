@@ -1,0 +1,23 @@
+---
+title: Icons
+---
+
+import { AtomIcon, PackagePlusIcon } from "zudoku/icons";
+
+Icons are a great way to add visual elements to your content. They can be used to represent actions, objects, or ideas. They can also be used to add visual interest to your content.
+
+You can use any of the icons from [lucide-react](https://lucide.dev/icons/) in your content. To use an icon, you can import it from the Zudoku re-export `zudoku/icons`:
+
+```tsx
+import { AtomIcon } from "zudoku/icons";
+
+<AtomIcon size={42} className="text-primary" />;
+<PackagePlusIcon size={42} className="text-neutral-300" />;
+```
+
+<div className="flex gap-2">
+  <AtomIcon size={42} className="text-primary" />
+  <PackagePlusIcon size={42} className="text-neutral-300" />
+</div>
+
+More infos how to use icons in React can be found in the [documentation of `lucide-react`](https://lucide.dev/guide/packages/lucide-react#how-to-use).

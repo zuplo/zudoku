@@ -62,7 +62,6 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
-
   pre: ({ children }) => <>{children}</>,
   code: ({ className, children, ...props }) => {
     // `inline` provided by the rehype plugin, as react-markdown removed support for that
