@@ -1,8 +1,12 @@
+import { glob } from "glob";
+import path from "node:path";
 import { type Plugin } from "vite";
 import type { ZudokuPluginOptions } from "../config/config.js";
-import { ZudokuDocsConfig } from "../config/validators/validate.js";
+import { DocResolver } from "../lib/plugins/markdown/resolver.js";
+import { writePluginDebugCode } from "./debug.js";
 
-const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
+const ensureLeadingSlash = (str: string) =>
+  str.startsWith("/") ? str : `/${str}`;
 
 const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
@@ -15,7 +19,7 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         return resolvedVirtualModuleId;
       }
     },
-    load(id) {
+    async load(id) {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
@@ -29,37 +33,63 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           config.mode === "internal"
             ? `import { markdownPlugin } from "${config.moduleDir}/src/lib/plugins/markdown/index.tsx";`
             : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
-          `const configuredDocsPlugins = [];`,
+          `const docsPluginOptions = [];`,
         ];
 
-        const docsConfigs: ZudokuDocsConfig[] = config.docs
-          ? Array.isArray(config.docs)
-            ? config.docs
-            : [config.docs]
-          : [{ files: DEFAULT_DOCS_FILES }];
+        const resolver = new DocResolver(config);
+        const docsConfigs = resolver.getDocsConfigs();
 
-        docsConfigs.forEach((docsConfig) => {
+        const globImportBasePath =
+          process.env.NODE_ENV === "development" ? (config.basePath ?? "") : "";
+
+        for (let i = 0; i < docsConfigs.length; i++) {
+          const docsConfig = docsConfigs[i];
+
+          if (!docsConfig) continue;
+
+          // This is a workaround for a bug(?) in Vite where `import.meta.glob` failed us:
+          // - Root dir is `/path/to/docs`
+          // - The Markdown docs config is `/docs/**/*.md`
+          // - The basePath config is set to `/docs`
+          // This results in:
+          // > `Internal server error: Failed to resolve import "/some.md" from "virtual:zudoku-docs-plugins". Does the file exist?`
+          // Mind that the `docs` part that should be prepended is not in there
+          //
+          // This does only happen in dev SSR environments, so for prod the `basePath` is not added
+
+          const globbedFiles = await glob(docsConfig.files, {
+            root: config.rootDir,
+            ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
+            absolute: false,
+            posix: true,
+          });
+
           code.push(
-            ...[
-              `// @ts-ignore`, // To make tests pass
-              `const markdownFiles = import.meta.glob(${JSON.stringify(docsConfig.files)}, {`,
-              `  eager: false,`,
-              `});`,
-              `configuredDocsPlugins.push(markdownPlugin({ `,
-              ` markdownFiles,`,
-              ` defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
-              ` filesPath: ${JSON.stringify(docsConfig.files)}`,
-              `}));`,
-            ],
+            `const fileImports${i} = Object.assign({`,
+            ...globbedFiles.map(
+              (file) =>
+                `  "${ensureLeadingSlash(file)}": () => import("${ensureLeadingSlash(path.posix.join(globImportBasePath, file))}"),`,
+            ),
+            `});`,
+            `docsPluginOptions.push({`,
+            `  fileImports: fileImports${i},`,
+            `  defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
+            `  files: ${JSON.stringify(docsConfig.files)}`,
+            `});`,
           );
-        });
+        }
 
-        code.push(`export { configuredDocsPlugins };`);
+        // Even though this returns an array, the plugin should be a single
+        // instance because we need to make sure that there are not duplicate
+        // routes even if different folders have been used.
+        code.push(
+          `const configuredDocsPlugins = [markdownPlugin(docsPluginOptions)]`,
+          `export { configuredDocsPlugins };`,
+        );
 
-        return {
-          code: code.join("\n"),
-          map: null,
-        };
+        await writePluginDebugCode(config.rootDir, "docs-plugin", code);
+
+        return code.join("\n");
       }
     },
   };

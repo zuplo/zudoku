@@ -5,7 +5,6 @@ import { NavLink, useMatch } from "react-router-dom";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinPath } from "../../util/joinPath.js";
-import { useTopNavigationItem } from "../context/ZudokuContext.js";
 import { navigationListItem, SidebarItem } from "./SidebarItem.js";
 import { useIsCategoryOpen } from "./utils.js";
 
@@ -16,7 +15,6 @@ export const SidebarCategory = ({
   category: SidebarItemCategory;
   level: number;
 }) => {
-  const topNavItem = useTopNavigationItem();
   const isCategoryOpen = useIsCategoryOpen(category);
   const [hasInteracted, setHasInteracted] = useState(false);
 
@@ -26,7 +24,7 @@ export const SidebarCategory = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(joinPath(topNavItem?.id, category.link?.id));
+  const isActive = useMatch(category.link?.id ?? "");
 
   useEffect(() => {
     // this is triggered when an item from the sidebar is clicked
@@ -87,7 +85,7 @@ export const SidebarCategory = ({
           )}
           {category.link?.type === "doc" ? (
             <NavLink
-              to={joinPath(topNavItem?.id, category.link.id)}
+              to={joinPath(category.link.id)}
               className="flex-1"
               onClick={() => {
                 // if it is the current path and closed then open it because there's no path change to trigger the open

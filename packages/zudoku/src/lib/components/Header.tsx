@@ -70,14 +70,22 @@ export const Header = memo(function HeaderInner() {
                 {page?.logo && (
                   <>
                     <img
-                      src={page.logo.src.light}
+                      src={
+                        /https?:\/\//.test(page.logo.src.light)
+                          ? page.logo.src.light
+                          : import.meta.env.BASE_URL + page.logo.src.light
+                      }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
                       className={cn("h-10", isDark && "hidden")}
                       loading="lazy"
                     />
                     <img
-                      src={page.logo.src.dark}
+                      src={
+                        /https?:\/\//.test(page.logo.src.dark)
+                          ? page.logo.src.dark
+                          : import.meta.env.BASE_URL + page.logo.src.dark
+                      }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
                       className={cn("h-10", !isDark && "hidden")}

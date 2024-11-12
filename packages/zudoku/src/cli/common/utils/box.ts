@@ -105,12 +105,12 @@ export default function box(
   };
 
   return (
-    borderColorFn(`${topLeft}${hr.repeat(innerWidth)}${topRight}`) +
+    borderColorFn(`${topLeft}${hr!.repeat(innerWidth)}${topRight}`) +
     "\n" +
     spacerRow +
     lines.map(renderLine).join("\n") +
     "\n" +
     spacerRow +
-    borderColorFn(`${bottomLeft}${hr.repeat(innerWidth)}${bottomRight}`)
+    borderColorFn(`${bottomLeft}${hr!.repeat(innerWidth)}${bottomRight}`)
   );
 }

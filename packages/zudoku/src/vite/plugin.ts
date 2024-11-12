@@ -35,7 +35,7 @@ export default function vitePlugin(
     viteCustomPagesPlugin(getCurrentConfig),
     viteAuthPlugin(getCurrentConfig),
     viteDocsPlugin(getCurrentConfig),
-    viteFrontmatterPlugin(),
+    viteFrontmatterPlugin(getCurrentConfig),
     viteSidebarPlugin(getCurrentConfig),
     viteApiPlugin(getCurrentConfig),
     viteSearchPlugin(getCurrentConfig),

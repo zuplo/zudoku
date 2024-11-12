@@ -11,6 +11,8 @@ export type DevPortalPlugin =
   | ApiIdentityPlugin
   | SearchProviderPlugin;
 
+export type { RouteObject };
+
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
   getSidebar?: (path: string) => Promise<Sidebar>;

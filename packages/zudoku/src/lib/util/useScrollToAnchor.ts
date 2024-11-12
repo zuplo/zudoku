@@ -29,7 +29,7 @@ export const useScrollToAnchor = () => {
   useEffect(() => {
     if (!location.hash) return;
 
-    const hash = decodeURIComponent(location.hash.split("/")[0].slice(1));
+    const hash = decodeURIComponent(location.hash.split("/")[0]!.slice(1));
 
     const scrollToElement = () => {
       const element = document.getElementById(hash);

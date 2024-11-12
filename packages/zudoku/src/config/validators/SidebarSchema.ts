@@ -9,6 +9,7 @@ import type {
   InputSidebarItemCategory,
   InputSidebarItemLink,
 } from "./InputSidebarSchema.js";
+import type { ZudokuConfig } from "./validate.js";
 
 export type SidebarItemDoc = Omit<BaseInputSidebarItemDoc, "icon"> & {
   label: string;
@@ -42,31 +43,84 @@ export type SidebarItem =
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
 
-export const resolveSidebar = async (
-  rootDir: string,
-  parentId: string,
-  sidebar: InputSidebarItem[],
-): Promise<SidebarItem[]> => {
-  const resolveDoc = async (globId: string, categoryLabel?: string) => {
-    const foundMatches = await glob(`/**/${globId}.{md,mdx}`, {
-      root: rootDir,
+const isSidebarItem = (item: unknown): item is SidebarItem =>
+  item !== undefined;
+
+export class SidebarManager {
+  sidebars: SidebarClass[];
+  private switchQueue: Array<{ from: string; to: string; item: SidebarItem }> =
+    [];
+  constructor(rootDir: string, sidebarConfig: ZudokuConfig["sidebar"]) {
+    this.sidebars = Object.entries(sidebarConfig ?? {}).map(
+      ([parent, items]) => new SidebarClass(this, rootDir, parent, items),
+    );
+  }
+
+  async resolveSidebars() {
+    await Promise.all(this.sidebars.map((sidebar) => sidebar.resolve()));
+
+    // switch all collected items
+    for (const { from, to, item } of this.switchQueue) {
+      const fromSidebar = this.sidebars.find((s) => s.parent === from);
+      const toSidebar = this.sidebars.find((s) => s.parent === to);
+
+      if (!fromSidebar || !toSidebar) {
+        throw new Error(`Sidebar ${from} or ${to} not found`);
+      }
+
+      fromSidebar.resolvedItems = fromSidebar.resolvedItems.filter(
+        (resolvedItem) => resolvedItem !== item,
+      );
+      toSidebar.resolvedItems.push(item);
+    }
+
+    return Object.fromEntries(
+      this.sidebars.map((sidebar) => [sidebar.parent, sidebar.resolvedItems]),
+    );
+  }
+
+  switchSidebar(from: string, to: string, item: SidebarItem) {
+    this.switchQueue.push({ from, to, item });
+  }
+}
+
+export class SidebarClass {
+  resolvedItems: SidebarItem[] = [];
+
+  constructor(
+    private manager: SidebarManager,
+    public rootDir: string,
+    public parent: string,
+    private items: InputSidebarItem[],
+  ) {}
+
+  async resolve() {
+    const resolvedSidebar = (
+      await Promise.all(this.items.map((item) => this.resolveItem(item)))
+    ).filter(isSidebarItem);
+
+    this.resolvedItems = resolvedSidebar;
+  }
+
+  private async resolveDoc(
+    id: string,
+    categoryLabel?: string,
+  ): Promise<SidebarItemDoc | undefined> {
+    const foundMatches = await glob(`/**/${id}.{md,mdx}`, {
+      ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+      root: this.rootDir,
     });
 
     if (foundMatches.length === 0) {
       throw new Error(
-        `File not found for document '${globId}'. Check your sidebar configuration.`,
+        `File not found for document '${id}'. Check your sidebar configuration.`,
       );
     }
-
-    // Strip parent id if it's prefixed
-    // E.g. docs/introduction should work as well as introduction
-    const id = globId.startsWith(parentId)
-      ? globId.slice(parentId.length)
-      : globId;
 
     const file = await fs.readFile(foundMatches.at(0)!);
 
     const { data, content } = matter(file);
+
     const label =
       data.sidebar_label ??
       data.title ??
@@ -75,74 +129,81 @@ export const resolveSidebar = async (
 
     const icon = data.sidebar_icon;
 
-    return {
+    const doc: SidebarItemDoc = {
       type: "doc",
       id,
       label,
       icon,
       categoryLabel,
-    } satisfies SidebarItemDoc;
-  };
+    };
 
-  const resolveLink = async (id: string) => {
-    const doc = await resolveDoc(id);
-    return {
-      type: "doc",
-      id: id,
-      label: doc.label,
-      icon: doc.icon,
-    } satisfies SidebarItemCategoryLinkDoc;
-  };
-
-  const resolveSidebarItemCategoryLinkDoc = async (
-    item: string | BaseInputSidebarItemCategoryLinkDoc,
-  ): Promise<SidebarItemCategoryLinkDoc> => {
-    if (typeof item === "string") {
-      return resolveLink(item);
+    if (data.sidebar && data.sidebar !== this.parent) {
+      this.manager.switchSidebar(this.parent, data.sidebar, doc);
+      return undefined;
     }
 
-    const { label, icon } = await resolveDoc(item.id);
+    return doc;
+  }
 
-    return { ...item, label, icon };
-  };
+  private async resolveLink(
+    id: string,
+  ): Promise<SidebarItemCategoryLinkDoc | undefined> {
+    const doc = await this.resolveDoc(id);
 
-  const resolveSidebarItemDoc = async (
+    return doc
+      ? { type: "doc", id: id, label: doc.label, icon: doc.icon }
+      : undefined;
+  }
+
+  private async resolveItemCategoryLinkDoc(
+    item: string | BaseInputSidebarItemCategoryLinkDoc,
+  ): Promise<SidebarItemCategoryLinkDoc | undefined> {
+    if (typeof item === "string") {
+      return this.resolveLink(item);
+    }
+
+    const doc = await this.resolveDoc(item.id);
+    return doc ? { ...item, label: doc.label, icon: doc.icon } : undefined;
+  }
+
+  private async resolveSidebarItemDoc(
     item: string | BaseInputSidebarItemDoc,
     categoryLabel?: string,
-  ): Promise<SidebarItemDoc> => {
+  ): Promise<SidebarItemDoc | undefined> {
     if (typeof item === "string") {
-      return resolveDoc(item, categoryLabel);
+      return this.resolveDoc(item, categoryLabel);
     }
 
-    const doc = await resolveDoc(item.id, categoryLabel);
+    const doc = await this.resolveDoc(item.id, categoryLabel);
+    return doc ? { ...doc, ...item } : undefined;
+  }
 
-    return { ...doc, ...item };
-  };
-
-  const resolveSidebarItem = async (
+  private async resolveItem(
     item: InputSidebarItem,
     categoryLabel?: string,
-  ): Promise<SidebarItem> => {
+  ): Promise<SidebarItem | undefined> {
     if (typeof item === "string") {
-      return resolveDoc(item, categoryLabel);
+      return this.resolveDoc(item, categoryLabel);
     }
 
     switch (item.type) {
       case "doc":
-        return resolveSidebarItemDoc(item, categoryLabel);
+        return this.resolveSidebarItemDoc(item, categoryLabel);
       case "link":
         return item;
       case "category": {
         const categoryItem = item;
 
-        const items = await Promise.all(
-          categoryItem.items.map((subItem) =>
-            resolveSidebarItem(subItem, categoryItem.label),
-          ),
-        );
+        const items = (
+          await Promise.all(
+            categoryItem.items.map((subItem) =>
+              this.resolveItem(subItem, categoryItem.label),
+            ),
+          )
+        ).filter((item): item is SidebarItem => item !== undefined);
 
         const resolvedLink = categoryItem.link
-          ? await resolveSidebarItemCategoryLinkDoc(categoryItem.link)
+          ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
           : undefined;
 
         return {
@@ -152,10 +213,8 @@ export const resolveSidebar = async (
         };
       }
     }
-  };
-
-  return Promise.all(sidebar.map((item) => resolveSidebarItem(item)));
-};
+  }
+}
 
 export type Sidebar = SidebarItem[];
 export type SidebarConfig = Record<string, Sidebar>;

@@ -3,13 +3,9 @@ import { type ZudokuConfig } from "zudoku";
 import navigation from "./apis/navigation.json";
 
 const config: ZudokuConfig = {
-  topNavigation: [
-    { id: "home", label: "Home" },
-    { id: "home2", label: "Home 2" },
-  ],
-  redirects: [{ from: "/", to: "/home" }],
   sidebar: {
     home: [
+      "overview",
       ...navigation.map((item) => ({
         type: "link",
         label: item.label,
@@ -17,6 +13,7 @@ const config: ZudokuConfig = {
       })),
     ],
   },
+  redirects: [{ from: "/", to: "/overview" }],
   apis: [
     ...navigation.map((item) => ({
       type: "url",
@@ -25,6 +22,9 @@ const config: ZudokuConfig = {
       skipPreload: true,
     })),
   ],
+  docs: {
+    files: "/pages/**/*.{md,mdx}",
+  },
 };
 
 export default config;

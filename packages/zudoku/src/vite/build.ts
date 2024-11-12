@@ -1,4 +1,5 @@
 import { writeFile } from "fs/promises";
+import path from "node:path";
 import { build as viteBuild } from "vite";
 import { joinPath } from "../lib/util/joinPath.js";
 import { getViteConfig } from "./config.js";
@@ -43,13 +44,26 @@ export async function runBuild(options: { dir: string }) {
     });
 
     try {
-      const writtenFiles = await prerender(html, options.dir);
+      const writtenFiles = await prerender({
+        html,
+        dir: options.dir,
+        base: viteClientConfig.base,
+      });
 
       if (writtenFiles.includes("index.html")) {
         return;
       }
 
-      await writeFile(`${options.dir}/dist/index.html`, html, "utf-8");
+      await writeFile(
+        path.join(
+          options.dir,
+          "dist",
+          viteClientConfig.base ?? "",
+          "index.html",
+        ),
+        html,
+        "utf-8",
+      );
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
