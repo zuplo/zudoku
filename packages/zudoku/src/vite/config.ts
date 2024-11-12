@@ -64,6 +64,16 @@ export type LoadedConfig = ZudokuConfig & {
 
 let config: LoadedConfig | undefined;
 
+const getDocsConfigFiles = (
+  docsConfig: ZudokuConfig["docs"],
+  baseDir: string,
+): string[] => {
+  if (!docsConfig) return [];
+  const docsArray = Array.isArray(docsConfig) ? docsConfig : [docsConfig];
+
+  return docsArray.map((doc) => path.posix.join(baseDir, doc.files));
+};
+
 export async function loadZudokuConfig(
   rootDir: string,
   forceReload?: boolean,
@@ -275,9 +285,7 @@ export async function getViteConfig(
               ),
               `${dir}/src/**/*.{js,ts,jsx,tsx,md,mdx}`,
               // All doc files
-              ...(config.docs?.files
-                ? [path.posix.join(dir, config.docs.files)]
-                : []),
+              ...getDocsConfigFiles(config.docs, dir),
             ],
           }),
           autoprefixer,
