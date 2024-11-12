@@ -22,12 +22,11 @@ const config: ZudokuConfig = {
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",
-    outDir: "docs/",
   },
   redirects: [
     { from: "/", to: "/introduction" },
     { from: "/getting-started", to: "/app-quickstart" },
-    { from: "/components", to: "/components/callout" }
+    { from: "/components", to: "/components/callout" },
   ],
   topNavigation: [
     { id: "docs", label: "Documentation" },
