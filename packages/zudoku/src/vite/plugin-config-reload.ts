@@ -17,7 +17,6 @@ export const createConfigReloadPlugin = (
       if (!onConfigChange) return;
 
       watcher.on("change", async (file) => {
-        if (!file.startsWith(currentConfig.rootDir)) return;
         if (!importDependencies.includes(file)) return;
 
         const newConfig = await onConfigChange();
