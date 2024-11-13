@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
 import { cn } from "../util/cn.js";
+import { joinPath } from "../util/joinPath.js";
 import { Banner } from "./Banner.js";
 import { useTheme } from "./context/ThemeContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
@@ -73,7 +74,10 @@ export const Header = memo(function HeaderInner() {
                       src={
                         /https?:\/\//.test(page.logo.src.light)
                           ? page.logo.src.light
-                          : import.meta.env.BASE_URL + page.logo.src.light
+                          : joinPath(
+                              import.meta.env.BASE_URL,
+                              page.logo.src.light,
+                            )
                       }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
@@ -84,7 +88,10 @@ export const Header = memo(function HeaderInner() {
                       src={
                         /https?:\/\//.test(page.logo.src.dark)
                           ? page.logo.src.dark
-                          : import.meta.env.BASE_URL + page.logo.src.dark
+                          : joinPath(
+                              import.meta.env.BASE_URL,
+                              page.logo.src.dark,
+                            )
                       }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
