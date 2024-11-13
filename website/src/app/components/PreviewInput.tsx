@@ -76,7 +76,6 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
   const formRef = useRef<HTMLFormElement | null>(null);
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     const file = acceptedFiles.at(0);
-    debugger;
     if (file) {
       try {
         await uploadFile(file);
