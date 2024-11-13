@@ -2,7 +2,8 @@
 
 import { cn } from "@/app/utils/cn";
 import { PaperclipIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 
 function validate(data: string) {
   const trimmedData = data.trim().toLowerCase();
@@ -19,9 +20,71 @@ function validate(data: string) {
   return null;
 }
 
+const uploadFile = (file: Blob | File) => {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+
+    reader.onload = async (e) => {
+      const schema = e.target?.result;
+
+      if (typeof schema !== "string") {
+        rej("Failed to read the file");
+        return;
+      }
+
+      const validationError = validate(schema);
+      if (validationError) {
+        rej(validationError);
+        return;
+      }
+
+      const createBin = await fetch("https://api.mockbin.io/v1/bins", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          response: {
+            status: 200,
+            body: e.target?.result,
+            headers: {
+              "Content-Type": schema.trim().startsWith("{")
+                ? "application/json"
+                : "application/yml",
+            },
+          },
+        }),
+      });
+
+      const bin = (await createBin.json()) as {
+        id: string;
+        url: string;
+      };
+
+      if ("url" in bin ? bin.url : null) {
+        window.open(`/demo?api-url=${encodeURIComponent(bin.url.trim())}`);
+        res(`/demo?api-url=${encodeURIComponent(bin.url.trim())}`);
+      }
+    };
+
+    reader.readAsText(file);
+  });
+};
+
 export const PreviewInput = ({ sample }: { sample: string }) => {
   const [error, setError] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement | null>(null);
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    const file = acceptedFiles.at(0);
+    if (file) {
+      try {
+        await uploadFile(file);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Could not upload file");
+      }
+    }
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
 
   useEffect(() => {
     if (formRef.current && error) {
@@ -30,15 +93,24 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
   }, [error]);
 
   return (
-    <>
+    <div {...getRootProps()}>
+      <div
+        className={cn(
+          "absolute top-0 left-0 w-full h-full pointer-events-none",
+          isDragActive &&
+            "rounded-3xl bg-white/5 border border-dashed border-white/10",
+        )}
+        onClick={(e) => {
+          e.preventDefault();
+        }}
+      />
       {error && <div className=" p-2 bg-white/5 rounded mb-4">{error}</div>}
       <form
         ref={formRef}
         className={cn(
           "justify-center items-center gap-x-3 sm:flex rounded-xl border border-transparent",
-          // isDragActive && "bg-white/5 border-dashed border-white/10",
         )}
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
           setError(null);
           if (e.target instanceof HTMLFormElement) {
@@ -46,57 +118,13 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
             const url = formData.get("url");
             const spec = formData.get("spec");
             if (spec instanceof Blob && spec.size > 0) {
-              const reader = new FileReader();
-
-              reader.onload = async (e) => {
-                const schema = e.target?.result;
-
-                if (typeof schema !== "string") {
-                  setError("Failed to read the file");
-                  return;
-                }
-
-                const validationError = validate(schema);
-
-                if (validationError) {
-                  setError(validationError);
-                  return;
-                }
-
-                const createBin = await fetch(
-                  "https://api.mockbin.io/v1/bins",
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      response: {
-                        status: 200,
-                        body: e.target?.result,
-                        headers: {
-                          "Content-Type": schema.trim().startsWith("{")
-                            ? "application/json"
-                            : "application/yml",
-                        },
-                      },
-                    }),
-                  },
+              try {
+                await uploadFile(spec);
+              } catch (e) {
+                setError(
+                  e instanceof Error ? e.message : "Could not upload file",
                 );
-
-                const bin = (await createBin.json()) as {
-                  id: string;
-                  url: string;
-                };
-
-                if ("url" in bin ? bin.url : null) {
-                  window.open(
-                    `/demo?api-url=${encodeURIComponent(bin.url.trim())}`,
-                  );
-                }
-              };
-
-              reader.readAsText(spec);
+              }
             } else {
               const schema =
                 typeof url === "string" && url.trim().length > 0
@@ -118,7 +146,11 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
           }
         }}
       >
-        <label className="hidden md:block rounded transition hover:scale-125 cursor-pointer">
+        <label
+          className={cn(
+            "hidden md:block rounded transition hover:scale-125 cursor-pointer",
+          )}
+        >
           <input
             type="file"
             name="spec"
@@ -131,6 +163,7 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
                 );
               }
             }}
+            {...getInputProps()}
           />
           <PaperclipIcon />
         </label>
@@ -159,6 +192,6 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
           </svg>
         </button>
       </form>
-    </>
+    </div>
   );
 };
