@@ -9,8 +9,8 @@ export const CustomPage = ({
   render,
   prose = true,
 }: Omit<CustomPageConfig, "path">) => {
-  const slotletProps = useExposedProps();
-  const content = render ? React.createElement(render, slotletProps) : element;
+  const exposedProps = useExposedProps();
+  const content = render ? React.createElement(render, exposedProps) : element;
 
   return (
     <div className={cn(prose && ProseClasses, "max-w-full")}>{content}</div>

@@ -8,6 +8,7 @@ import { isValidElementType } from "react-is";
 import {
   type Location,
   type NavigateFunction,
+  type Params,
   type SetURLSearchParams,
 } from "react-router-dom";
 import { useExposedProps } from "../util/useExposedProps.js";
@@ -38,6 +39,7 @@ export type ExposedComponentProps = {
   navigate: NavigateFunction;
   searchParams: URLSearchParams;
   setSearchParams: SetURLSearchParams;
+  params: Params;
 };
 
 export const Slotlet = ({ name }: { name: string }) => {
