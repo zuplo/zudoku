@@ -2,8 +2,9 @@ import { writeFile } from "fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { joinPath } from "../lib/util/joinPath.js";
-import { getViteConfig } from "./config.js";
+import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
+import { writeOutput } from "./output.js";
 import { prerender } from "./prerender.js";
 
 export async function runBuild(options: { dir: string }) {
@@ -69,6 +70,10 @@ export async function runBuild(options: { dir: string }) {
       // eslint-disable-next-line no-console
       console.error(e);
     }
+
+    // Write the build output file
+    const config = await loadZudokuConfig(options.dir);
+    await writeOutput(options.dir, config);
 
     return;
   }

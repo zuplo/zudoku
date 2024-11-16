@@ -63,3 +63,7 @@ Thumbs.db
 
 
 gha-creds-*.json
+
+
+# Vercel
+.vercel

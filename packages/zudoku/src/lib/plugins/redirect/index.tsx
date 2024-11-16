@@ -1,19 +1,15 @@
 import { redirect } from "react-router-dom";
+import { ZudokuRedirect } from "../../../config/validators/validate.js";
 import type { DevPortalPlugin } from "../../core/plugins.js";
 
-export type Redirect = {
-  from: string;
-  to: string;
-};
-
 export const redirectPlugin = (options: {
-  redirects: Redirect[];
+  redirects: ZudokuRedirect[];
 }): DevPortalPlugin => {
   return {
     getRoutes: () =>
       options.redirects.map(({ from, to }) => ({
         path: from,
-        loader: () => redirect(to),
+        loader: () => redirect(to, 301),
       })),
   };
 };
