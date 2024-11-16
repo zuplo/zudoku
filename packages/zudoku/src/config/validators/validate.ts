@@ -162,10 +162,7 @@ const TopNavigationItemSchema = z.object({
   label: z.string(),
   id: z.string(),
   default: z.string().optional(),
-  display: z
-    .enum(["auth", "anon", "always"])
-    .default("always")
-    .optional(),
+  display: z.enum(["auth", "anon", "always"]).default("always").optional(),
 });
 
 type BannerColorType = ZodOptional<
@@ -179,6 +176,11 @@ type BannerColorType = ZodOptional<
     ]
   >
 >;
+
+const Redirect = z.object({
+  from: z.string(),
+  to: z.string(),
+});
 
 const ConfigSchema = z
   .object({
@@ -275,7 +277,7 @@ const ConfigSchema = z
     docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
     apis: z.union([ApiSchema, z.array(ApiSchema)]),
     apiKeys: ApiKeysSchema,
-    redirects: z.array(z.object({ from: z.string(), to: z.string() })),
+    redirects: z.array(Redirect),
     customPages: z.array(
       z.object({
         path: z.string(),
@@ -316,6 +318,7 @@ export type ZudokuConfig = z.infer<typeof ConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type TopNavigationItem = z.infer<typeof TopNavigationItemSchema>;
+export type ZudokuRedirect = z.infer<typeof Redirect>;
 
 export function validateConfig(config: unknown) {
   const validationResult = ConfigSchema.safeParse(config);
