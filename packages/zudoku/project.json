@@ -34,6 +34,7 @@
       "cache": true
     },
     "build:vite": {
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/lib", "{projectRoot}/stats.html"],
       "inputs": [
         "{projectRoot}/vite.config.ts",
@@ -46,6 +47,7 @@
       "cache": true
     },
     "build:standalone:vite": {
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/standalone"],
       "inputs": [
         "{projectRoot}/vite.standalone.config.ts",
@@ -58,6 +60,7 @@
       "cache": true
     },
     "build:standalone:html": {
+      "dependsOn": ["^build"],
       "dependsOn": ["build:standalone:vite"]
     },
     "codegen": {}
