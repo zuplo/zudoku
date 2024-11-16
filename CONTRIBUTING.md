@@ -32,10 +32,10 @@ nx login
 
 ## Build
 
-To build all projects run:
+To build the project run:
 
 ```
-nx run-many -t build
+nx run zudoku:build
 ```
 
 ## Dev

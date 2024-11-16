@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "build": "nx run-many -t=build -p zudoku config",
     "mismatches": "syncpack list-mismatches",
     "lint": "eslint --cache --fix .",
     "lint:ci": "eslint .",

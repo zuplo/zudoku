@@ -22,11 +22,14 @@
       }
     },
     "build": {
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/dist"],
       "inputs": [
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css"
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
       ],
       "cache": true
     },
@@ -36,7 +39,9 @@
         "{projectRoot}/vite.config.ts",
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css"
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
       ],
       "cache": true
     },
@@ -46,7 +51,9 @@
         "{projectRoot}/vite.standalone.config.ts",
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css"
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
       ],
       "cache": true
     },
