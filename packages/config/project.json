@@ -1,0 +1,18 @@
+{
+  "name": "config",
+  "$schema": "../../node_modules/nx/schemas/nx-schema.json",
+  "targets": {
+    "build": {
+      "inputs": [
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
+      ],
+      "outputs": ["{projectRoot}/dist"],
+      "cache": true
+    },
+    "build:ci": {
+      "dependsOn": ["build"]
+    }
+  }
+}

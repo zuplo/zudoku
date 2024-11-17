@@ -4,10 +4,10 @@
   "parallel": 5,
   "targetDefaults": {
     "dev": {
-      "dependsOn": ["zudoku:build"]
+      "dependsOn": ["^build"]
     },
     "build": {
-      "dependsOn": ["zudoku:build"],
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/dist"],
       "cache": false
     },
@@ -28,7 +28,7 @@
     }
   ],
   "release": {
-    "projects": ["zudoku", "create-zudoku-app"],
+    "projects": ["zudoku", "create-zudoku-app", "config"],
     "releaseTagPattern": "v{version}",
     "versionPlans": true,
     "version": {

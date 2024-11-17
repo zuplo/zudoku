@@ -221,6 +221,19 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
+  packages/config:
+    dependencies:
+      tsx:
+        specifier: 4.19.1
+        version: 4.19.1
+    devDependencies:
+      '@types/node':
+        specifier: 20.16.11
+        version: 20.16.11
+      typescript:
+        specifier: 5.6.3
+        version: 5.6.3
+
   packages/create-zudoku-app:
     devDependencies:
       '@types/async-retry':
@@ -394,6 +407,9 @@ importers:
       '@vitejs/plugin-react':
         specifier: 4.3.1
         version: 4.3.1(patch_hash=jb2tifk2jsavdxlrb3gpff2s3i)(vite@5.4.9(@types/node@20.16.11))
+      '@zudoku/config':
+        specifier: workspace:*
+        version: link:../config
       '@zudoku/httpsnippet':
         specifier: 10.0.9
         version: 10.0.9
@@ -532,9 +548,6 @@ importers:
       tailwindcss:
         specifier: 3.4.13
         version: 3.4.13(ts-node@10.9.1(@types/node@20.16.11)(typescript@5.6.3))
-      tsx:
-        specifier: 4.19.1
-        version: 4.19.1
       ulidx:
         specifier: 2.4.1
         version: 2.4.1

@@ -22,35 +22,45 @@
       }
     },
     "build": {
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/dist"],
       "inputs": [
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css"
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
       ],
       "cache": true
     },
     "build:vite": {
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/lib", "{projectRoot}/stats.html"],
       "inputs": [
         "{projectRoot}/vite.config.ts",
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css"
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
       ],
       "cache": true
     },
     "build:standalone:vite": {
+      "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/standalone"],
       "inputs": [
         "{projectRoot}/vite.standalone.config.ts",
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css"
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
       ],
       "cache": true
     },
     "build:standalone:html": {
+      "dependsOn": ["^build"],
       "dependsOn": ["build:standalone:vite"]
     },
     "codegen": {}

@@ -1,11 +1,13 @@
 import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
+import {
+  ConfigWithMeta,
+  loadZudokuConfig as loadZudokuConfigInner,
+} from "@zudoku/config";
 import autoprefixer from "autoprefixer";
-import { stat } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import colors from "picocolors";
 import tailwindcss from "tailwindcss";
-import { tsImport } from "tsx/esm/api";
 import {
   type ConfigEnv,
   type InlineConfig,
@@ -20,47 +22,12 @@ import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
 import { validateConfig } from "../config/validators/validate.js";
 import vitePlugin from "./plugin.js";
 
-export const zudokuConfigFiles = [
-  "zudoku.config.js",
-  "zudoku.config.jsx",
-  "zudoku.config.ts",
-  "zudoku.config.tsx",
-  "zudoku.config.mjs",
-];
-
-const fileExists = (path: string) =>
-  stat(path)
-    .then(() => true)
-    .catch(() => false);
-
-let configPath: string | undefined;
-
-export async function getConfigFilePath(rootDir: string): Promise<string> {
-  // Also check if file exists, so renaming the file will trigger a restart as well
-  if (configPath && (await fileExists(configPath))) {
-    return configPath;
-  }
-
-  for (const fileName of zudokuConfigFiles) {
-    const filepath = path.join(rootDir, fileName);
-
-    if (await fileExists(filepath)) {
-      configPath = filepath;
-      return filepath;
-    }
-  }
-  configPath = undefined;
-  throw new Error(`No zudoku config file found in project root.`);
-}
-
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
   forceReload?: boolean;
 };
 
-export type LoadedConfig = ZudokuConfig & {
-  __meta: { dependencies: string[]; path: string };
-};
+export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
 
 let config: LoadedConfig | undefined;
 
@@ -82,41 +49,25 @@ export async function loadZudokuConfig(
     return config;
   }
 
-  const filepath = await getConfigFilePath(rootDir);
-
   try {
-    logger.info(colors.yellow(`loaded config file `) + colors.dim(filepath), {
-      timestamp: true,
-    });
+    const loadedConfig = await loadZudokuConfigInner<ZudokuConfig>(rootDir);
 
-    const configFilePath = pathToFileURL(filepath).href;
-
-    const dependencies: string[] = [];
-    const loadedConfig = await tsImport(configFilePath, {
-      parentURL: import.meta.url,
-      onImport: (file: string) => {
-        const path = fileURLToPath(
-          file.startsWith("file://") ? file : pathToFileURL(file).href,
-        );
-
-        if (path.startsWith(rootDir)) {
-          dependencies.push(path);
-        }
+    logger.info(
+      colors.yellow(`loaded config file `) +
+        colors.dim(loadedConfig.__meta.path),
+      {
+        timestamp: true,
       },
-    }).then((m) => m.default as ZudokuConfig);
+    );
 
-    if (!loadedConfig) {
-      throw new Error(`Failed to load config file: ${filepath}`);
-    }
+    config = loadedConfig;
 
-    config = {
-      ...loadedConfig,
-      __meta: { dependencies, path: filepath },
-    };
-
-    return config;
-  } catch (e) {
-    logger.error(e);
+    return loadedConfig;
+  } catch (error) {
+    logger.error(colors.red(`Error loading Zudoku config`), {
+      timestamp: true,
+      error,
+    });
   }
 
   // Default config
@@ -241,7 +192,7 @@ export async function getViteConfig(
         input:
           configEnv.command === "build"
             ? configEnv.isSsrBuild
-              ? ["zudoku/app/entry.server.tsx", configPath!]
+              ? ["zudoku/app/entry.server.tsx", config.__meta.path]
               : "zudoku/app/entry.client.tsx"
             : undefined,
       },

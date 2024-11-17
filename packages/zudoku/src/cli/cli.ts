@@ -62,8 +62,7 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
     if (err instanceof Error) {
       Sentry.captureException(err);
     }
-    await printCriticalFailureToConsoleAndExit(err.message ?? err);
-    cli.showHelp();
+    throw err;
   } finally {
     await shutdownAnalytics();
   }
