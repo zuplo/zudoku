@@ -22,8 +22,6 @@ import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
 import { validateConfig } from "../config/validators/validate.js";
 import vitePlugin from "./plugin.js";
 
-let configPath: string | undefined;
-
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
   forceReload?: boolean;
@@ -194,7 +192,7 @@ export async function getViteConfig(
         input:
           configEnv.command === "build"
             ? configEnv.isSsrBuild
-              ? ["zudoku/app/entry.server.tsx", configPath!]
+              ? ["zudoku/app/entry.server.tsx", config.__meta.path]
               : "zudoku/app/entry.client.tsx"
             : undefined,
       },
