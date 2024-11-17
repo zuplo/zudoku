@@ -27,6 +27,9 @@
       }
     }
   ],
+  "cli": {
+    "packageManager": "pnpm"
+  },
   "release": {
     "projects": ["zudoku", "create-zudoku-app", "config"],
     "releaseTagPattern": "v{version}",
