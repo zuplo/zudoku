@@ -52,16 +52,19 @@ export async function loadZudokuConfig(
   }
 
   try {
-    const config = await loadZudokuConfigInner<ZudokuConfig>(rootDir);
+    const loadedConfig = await loadZudokuConfigInner<ZudokuConfig>(rootDir);
 
     logger.info(
-      colors.yellow(`loaded config file `) + colors.dim(config.__meta.path),
+      colors.yellow(`loaded config file `) +
+        colors.dim(loadedConfig.__meta.path),
       {
         timestamp: true,
       },
     );
 
-    return config;
+    config = loadedConfig;
+
+    return loadedConfig;
   } catch (error) {
     logger.error(colors.red(`Error loading Zudoku config`), {
       timestamp: true,
