@@ -30,7 +30,7 @@ export default function vitePlugin(
   return [
     viteMdxPlugin(getCurrentConfig),
     react({ include: /\.(mdx?|jsx?|tsx?)$/ }),
-    viteConfigPlugin(initialConfig.__meta.path),
+    viteConfigPlugin(getCurrentConfig),
     viteApiKeysPlugin(getCurrentConfig),
     viteCustomPagesPlugin(getCurrentConfig),
     viteAuthPlugin(getCurrentConfig),
