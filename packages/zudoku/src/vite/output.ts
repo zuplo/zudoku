@@ -1,8 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import pkgJson from "../../package.json";
 import { joinPath } from "../lib/util/joinPath.js";
 import { LoadedConfig } from "./config.js";
+
+const pkgJson = JSON.parse(await readFile("../../package.json", "utf-8"));
 
 // Generates a Vercel build output file
 // https://vercel.com/docs/build-output-api/v3
