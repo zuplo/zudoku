@@ -18,6 +18,7 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     url: URL,
     { isSignUp }: { isSignUp: boolean },
   ) => {
+    url.searchParams.set("prompt", "login");
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
     }
