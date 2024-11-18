@@ -1,6 +1,6 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import pkgJson from "../../package.json" assert { type: "json" };
+import pkgJson from "../../package.json";
 import { joinPath } from "../lib/util/joinPath.js";
 import { LoadedConfig } from "./config.js";
 
