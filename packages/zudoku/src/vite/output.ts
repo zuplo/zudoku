@@ -3,7 +3,12 @@ import path from "node:path";
 import { joinPath } from "../lib/util/joinPath.js";
 import { LoadedConfig } from "./config.js";
 
-const pkgJson = JSON.parse(await readFile("../../package.json", "utf-8"));
+const pkgJsonPath = path.join(
+  path.dirname(new URL(import.meta.url).pathname),
+  "../../package.json",
+);
+
+const pkgJson = JSON.parse(await readFile(pkgJsonPath, "utf-8"));
 
 // Generates a Vercel build output file
 // https://vercel.com/docs/build-output-api/v3
