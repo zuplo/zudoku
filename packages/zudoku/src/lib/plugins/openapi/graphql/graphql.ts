@@ -86,6 +86,14 @@ export type OperationsFragmentFragment = {
       mediaType: string;
       schema?: any | null;
       encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
+      examples?: Array<{
+        __typename?: "ExampleItem";
+        name: string;
+        description?: string | null;
+        externalValue?: string | null;
+        value?: string | null;
+        summary?: string | null;
+      }> | null;
     }> | null;
   } | null;
   responses: Array<{
@@ -97,6 +105,14 @@ export type OperationsFragmentFragment = {
       __typename?: "MediaTypeObject";
       mediaType: string;
       schema?: any | null;
+      examples?: Array<{
+        __typename?: "ExampleItem";
+        name: string;
+        description?: string | null;
+        externalValue?: string | null;
+        value?: string | null;
+        summary?: string | null;
+      }> | null;
       encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
     }> | null;
   }>;
@@ -258,6 +274,35 @@ export const OperationsFragmentFragmentDoc = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "examples" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "externalValue" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "value" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "summary" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "schema" },
                       },
                     ],
@@ -283,6 +328,35 @@ export const OperationsFragmentFragmentDoc = {
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "examples" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "externalValue" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "value" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "summary" },
+                            },
+                          ],
+                        },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "mediaType" },
@@ -580,6 +654,35 @@ export const AllOperationsDocument = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "examples" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "externalValue" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "value" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "summary" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "schema" },
                       },
                     ],
@@ -605,6 +708,35 @@ export const AllOperationsDocument = {
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "examples" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "description" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "externalValue" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "value" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "summary" },
+                            },
+                          ],
+                        },
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "mediaType" },

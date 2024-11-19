@@ -44,6 +44,13 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         encoding {
           name
         }
+        examples {
+          name
+          description
+          externalValue
+          value
+          summary
+        }
         schema
       }
       description
@@ -54,6 +61,13 @@ export const OperationsFragment = graphql(/* GraphQL */ `
       links
       description
       content {
+        examples {
+          name
+          description
+          externalValue
+          value
+          summary
+        }
         mediaType
         encoding {
           name
