@@ -55,12 +55,12 @@ export const ResponsesSidecarBox = ({
             <SidecarBox.Body className="p-0">
               <CollapsibleCode>
                 <SyntaxHighlight
-                  language={schema ? "json" : "plain"}
+                  language={example ? "json" : "plain"}
                   noBackground
-                  className="text-xs max-h-[500px] p-2"
+                  className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
                   code={
-                    schema
-                      ? JSON.stringify(generateSchemaExample(schema), null, 2)
+                    example
+                      ? JSON.stringify(example, null, 2)
                       : "Empty response"
                   }
                 />

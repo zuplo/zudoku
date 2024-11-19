@@ -30,17 +30,11 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
         <SidecarBox.Body className="p-0">
           <CollapsibleCode>
             <SyntaxHighlight
-              language="json"
+              language={example ? "json" : "plain"}
               noBackground
               copyable
-              className="text-xs max-h-[450px] p-2"
-              code={JSON.stringify(
-                firstContent?.schema
-                  ? generateSchemaExample(firstContent.schema as SchemaObject)
-                  : "",
-                null,
-                2,
-              )}
+              className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
+              code={example ? JSON.stringify(example, null, 2) : "No example"}
             />
           </CollapsibleCode>
         </SidecarBox.Body>
