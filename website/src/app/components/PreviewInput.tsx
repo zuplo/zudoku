@@ -1,9 +1,9 @@
 "use client";
 
+import { useGlobalDropZone } from "@/app/components/useGlobalDropZone";
 import { cn } from "@/app/utils/cn";
-import { PaperclipIcon } from "lucide-react";
+import { FileX2Icon, PaperclipIcon } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDropzone } from "react-dropzone";
 
 function validate(data: string) {
   const trimmedData = data.trim().toLowerCase();
@@ -72,19 +72,43 @@ const uploadFile = (file: Blob | File) => {
 };
 
 export const PreviewInput = ({ sample }: { sample: string }) => {
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>();
+  const [url, setUrl] = useState("");
   const formRef = useRef<HTMLFormElement | null>(null);
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const [file, setFile] = useState<File>();
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles.at(0);
-    if (file) {
-      try {
-        await uploadFile(file);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not upload file");
-      }
+
+    if (!file) return;
+
+    if (
+      file.type === "application/json" ||
+      file.type === "application/yaml" ||
+      file.type === "application/x-yaml" ||
+      file.type === "application/x-yml"
+    ) {
+      setFile(file);
+      setUrl(file.name);
+      setError(undefined);
+    } else {
+      setError("Only JSON or YAML files are supported");
     }
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+
+  const { isDragging } = useGlobalDropZone({
+    onDrop,
+    onDragStart: () => {
+      document.body.classList.add(
+        "transition",
+        "scale-[0.98]",
+        "origin-center",
+      );
+    },
+    onDragEnd: () => {
+      document.body.classList.remove("scale-[0.98]", "origin-center");
+    },
+  });
 
   useEffect(() => {
     if (formRef.current && error) {
@@ -93,85 +117,85 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
   }, [error]);
 
   return (
-    <div {...getRootProps()}>
+    <div>
       <div
         className={cn(
-          "absolute top-0 left-0 w-full h-full pointer-events-none",
-          isDragActive &&
-            "rounded-3xl bg-white/5 border border-dashed border-white/10",
+          "fixed inset-0 transition duration-300 overflow-hidden pointer-events-none border-2 border-transparent text-transparent grid place-items-center text-4xl font-semibold",
+          isDragging &&
+            "bg-black/35 text-stroke border-white/10 border-dashed text-white",
         )}
-        onClick={(e) => {
-          e.preventDefault();
-        }}
-      />
-      {error && <div className=" p-2 bg-white/5 rounded mb-4">{error}</div>}
+      >
+        Drop to upload
+      </div>
+      {error && <div className="p-2 bg-white/5 rounded mb-4">{error}</div>}
       <form
         ref={formRef}
-        className={cn(
-          "justify-center items-center gap-x-3 sm:flex rounded-xl border border-transparent",
-        )}
+        className="justify-center items-center gap-x-3 sm:flex"
         onSubmit={async (e) => {
           e.preventDefault();
-          setError(null);
-          if (e.target instanceof HTMLFormElement) {
-            const formData = new FormData(e.target);
-            const url = formData.get("url");
-            const spec = formData.get("spec");
-            if (spec instanceof Blob && spec.size > 0) {
-              try {
-                await uploadFile(spec);
-              } catch (e) {
-                setError(
-                  e instanceof Error ? e.message : "Could not upload file",
-                );
-              }
-            } else {
-              const schema =
-                typeof url === "string" && url.trim().length > 0
-                  ? url.trim()
-                  : sample;
+          setError(undefined);
 
-              window.open(`/demo?api-url=${schema}`);
+          if (file) {
+            try {
+              await uploadFile(file);
+              setUrl("");
+              setFile(undefined);
+            } catch (e) {
+              setError(
+                e instanceof Error ? e.message : "Could not upload file",
+              );
             }
-
-            e.preventDefault();
-
-            if (typeof window !== "undefined") {
-              window.gtag?.("event", "conversion", {
-                send_to: "AW-11213523037/r09MCL3Wv9UZEN2Qg-Mp",
-                value: 1.0,
-                currency: "USD",
-              });
-            }
+          } else {
+            const schema = url.trim().length > 0 ? url.trim() : sample;
+            window.open(`/demo?api-url=${schema}`);
+          }
+          e.preventDefault();
+          if (typeof window !== "undefined") {
+            window.gtag?.("event", "conversion", {
+              send_to: "AW-11213523037/r09MCL3Wv9UZEN2Qg-Mp",
+              value: 1.0,
+              currency: "USD",
+            });
           }
         }}
       >
-        <label
-          className={cn(
-            "hidden md:block rounded transition hover:scale-125 cursor-pointer",
-          )}
-        >
+        <label className="hidden md:block rounded transition hover:scale-125 cursor-pointer">
           <input
             type="file"
             name="spec"
             className="hidden"
             onChange={(e) => {
               e.preventDefault();
-              if (formRef.current) {
-                formRef.current.dispatchEvent(
-                  new Event("submit", { bubbles: true, cancelable: true }),
-                );
+              if (e.target.files) {
+                onDrop(Array.from(e.target.files));
               }
             }}
-            {...getInputProps()}
           />
-          <PaperclipIcon />
+          {file ? (
+            <FileX2Icon
+              onClick={(e) => {
+                setFile(undefined);
+                setUrl("");
+                formRef.current?.reset();
+                e.preventDefault();
+              }}
+            />
+          ) : (
+            <PaperclipIcon />
+          )}
         </label>
         <input
           name="url"
           type="url"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          disabled={file !== undefined}
+          readOnly={file !== undefined}
           placeholder={sample}
-          className="w-full px-4 py-3.5 text-white bg-slate-700 outline-none rounded-lg shadow font-medium text-md"
+          className={cn(
+            "w-full px-4 py-3.5 text-white bg-slate-700 outline-none rounded-lg shadow font-medium text-md",
+            "read-only:text-slate-300",
+          )}
         />
         <button
           type="submit"
