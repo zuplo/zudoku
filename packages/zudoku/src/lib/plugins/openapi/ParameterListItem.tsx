@@ -27,36 +27,42 @@ export const ParameterListItem = ({
   parameter: ParameterListItemResult;
   group: ParameterGroup;
   id: string;
-}) => (
-  <li className="p-4 bg-border/20 text-sm flex flex-col gap-1">
-    <div className="flex items-center gap-2">
-      <code>
-        {group === "path" ? (
-          <ColorizedParam
-            name={parameter.name}
-            backgroundOpacity="15%"
-            slug={id + "-" + parameter.name.toLocaleLowerCase()}
-          />
-        ) : (
-          parameter.name
+}) => {
+  const paramSchema = getParameterSchema(parameter);
+
+  return (
+    <li className="p-4 bg-border/20 text-sm flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <code>
+          {group === "path" ? (
+            <ColorizedParam
+              name={parameter.name}
+              backgroundOpacity="15%"
+              slug={id + "-" + parameter.name.toLocaleLowerCase()}
+            />
+          ) : (
+            parameter.name
+          )}
+        </code>
+        {parameter.required && (
+          <span className="py-px px-1.5 font-medium bg-primary/75 text-muted rounded-lg">
+            required
+          </span>
         )}
-      </code>
-      {parameter.required && (
-        <span className="py-px px-1.5 font-medium bg-primary/75 text-muted rounded-lg">
-          required
-        </span>
+        {paramSchema.type && (
+          <span className="text-muted-foreground">
+            {paramSchema.type === "array"
+              ? `${paramSchema.items.type}[]`
+              : paramSchema.type}
+          </span>
+        )}
+      </div>
+      {parameter.description && (
+        <Markdown
+          content={parameter.description}
+          className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
+        />
       )}
-      {getParameterSchema(parameter).type && (
-        <span className="text-muted-foreground">
-          {getParameterSchema(parameter).type}
-        </span>
-      )}
-    </div>
-    {parameter.description && (
-      <Markdown
-        content={parameter.description}
-        className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
-      />
-    )}
-  </li>
-);
+    </li>
+  );
+};
