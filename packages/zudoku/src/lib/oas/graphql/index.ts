@@ -206,7 +206,7 @@ const ExampleItem = builder
       name: t.exposeString("name"),
       summary: t.exposeString("summary", { nullable: true }),
       description: t.exposeString("description", { nullable: true }),
-      value: t.expose("value", { type: JSONObjectScalar, nullable: true }),
+      value: t.expose("value", { type: JSONScalar, nullable: true }),
       externalValue: t.exposeString("externalValue", { nullable: true }),
     }),
   });
