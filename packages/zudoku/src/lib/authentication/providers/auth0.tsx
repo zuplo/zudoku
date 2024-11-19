@@ -57,8 +57,11 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
         "post_logout_redirect_uri",
         redirectUrl.toString(),
       );
+
+      window.location.href = logoutUrl.toString();
     } else {
-      logoutUrl = new URL(`${this.issuer}oidc/logout`);
+      const logoutUrl = new URL(`${this.issuer}oidc/logout`);
+      window.location.href = logoutUrl.toString();
     }
   };
 }
