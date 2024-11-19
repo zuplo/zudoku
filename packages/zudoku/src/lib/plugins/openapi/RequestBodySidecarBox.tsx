@@ -1,5 +1,6 @@
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
+import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
@@ -12,6 +13,14 @@ type Content = NonNullable<
 export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
   if (!content.length) return null;
 
+  const firstContent = content.at(0);
+
+  const example =
+    firstContent?.examples?.at(0)?.value ??
+    (firstContent?.schema
+      ? generateSchemaExample(firstContent.schema as SchemaObject)
+      : "");
+
   return (
     <>
       <SidecarBox.Root>
@@ -19,19 +28,15 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
           <span className="font-mono">Request Body Example</span>
         </SidecarBox.Head>
         <SidecarBox.Body className="p-0">
-          <SyntaxHighlight
-            language="json"
-            noBackground
-            copyable
-            className="text-xs max-h-[450px] p-2"
-            code={JSON.stringify(
-              content.at(0)?.schema
-                ? generateSchemaExample(content[0]!.schema as SchemaObject)
-                : "",
-              null,
-              2,
-            )}
-          />
+          <CollapsibleCode>
+            <SyntaxHighlight
+              language={example ? "json" : "plain"}
+              noBackground
+              copyable
+              className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
+              code={example ? JSON.stringify(example, null, 2) : "No example"}
+            />
+          </CollapsibleCode>
         </SidecarBox.Body>
       </SidecarBox.Root>
     </>

@@ -7,6 +7,7 @@ import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
+import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
@@ -193,13 +194,15 @@ export const Sidecar = ({
             operation={operation}
           />
         </SidecarBox.Head>
-        <SidecarBox.Body className="max-h-[480px] p-0">
-          <SyntaxHighlight
-            language={selectedLang}
-            noBackground
-            className="text-xs p-2"
-            code={code!}
-          />
+        <SidecarBox.Body className="p-0">
+          <CollapsibleCode>
+            <SyntaxHighlight
+              language={selectedLang}
+              noBackground
+              className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
+              code={code!}
+            />
+          </CollapsibleCode>
         </SidecarBox.Body>
         <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-1">
           <span>Show example in</span>

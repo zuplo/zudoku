@@ -1,72 +1,58 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type SchemaObject } from "../../../oas/graphql/index.js";
-
-export const isObject = (value: unknown): boolean =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
 
 export const generateSchemaExample = (
   schema: SchemaObject,
   name?: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
   // Directly return the example or default if they exist
   if (schema.example !== undefined) {
     return schema.example;
+  } else if (schema.examples) {
+    return Object.values(schema.examples)[0];
   } else if (schema.default !== undefined) {
     return schema.default;
   }
 
-  // Process examples object
-  if (schema.examples && isObject(schema.examples)) {
-    return Object.values(schema.examples)[0];
+  if (schema.properties || schema.type === "object") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const example: any = {};
+
+    if (schema.properties) {
+      for (const [key, propSchema] of Object.entries(schema.properties)) {
+        example[key] = generateSchemaExample(propSchema as SchemaObject, key);
+      }
+    }
+    return example;
   }
 
-  // Recursively process objects and arrays
-  return processComplexTypes(schema, name);
-};
-
-function processComplexTypes(schema: SchemaObject, name?: string): any {
-  const properties = Object.entries(schema.properties ?? {}).concat(
-    Object.entries(schema.additionalProperties ?? {}),
-  );
-  if (schema.type === "object" && properties.length > 0) {
-    const obj: { [key: string]: any } = {};
-    properties.forEach(([key, propSchema]) => {
-      const value = generateSchemaExample(propSchema, key);
-      if (value !== undefined) {
-        obj[key] = value;
-      }
-    });
-    return obj;
-  } else if (schema.type === "array" && schema.items) {
-    const value = generateSchemaExample(schema.items, name);
-    if (value !== undefined) {
-      return [value];
+  if (schema.type === "array") {
+    if (Array.isArray(schema.items)) {
+      return schema.items.map((itemSchema) =>
+        generateSchemaExample(itemSchema as SchemaObject),
+      );
+    } else if (schema.items) {
+      return [generateSchemaExample(schema.items as SchemaObject)];
     }
     return [];
   }
-  // Fallback for missing or undefined types
-  return undefined; //getDefaultForType(schema.type);
-}
 
-function getDefaultForType(type?: string | string[]): any {
-  if (Array.isArray(type)) {
-    return getDefaultForSingleType(type[0]);
+  if (schema.enum) {
+    return schema.enum[0];
   }
-  return getDefaultForSingleType(type);
-}
 
-function getDefaultForSingleType(type?: string): any {
-  switch (type) {
+  switch (schema.type) {
     case "string":
-      return "";
+      return name || "string";
     case "number":
     case "integer":
       return 0;
     case "boolean":
-      return false;
+      return true;
     case "null":
       return null;
+    case undefined:
     default:
-      return "undefined";
+      return {};
   }
-}
+};

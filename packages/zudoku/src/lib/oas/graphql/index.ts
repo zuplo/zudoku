@@ -206,7 +206,7 @@ const ExampleItem = builder
       name: t.exposeString("name"),
       summary: t.exposeString("summary", { nullable: true }),
       description: t.exposeString("description", { nullable: true }),
-      value: t.exposeString("value", { nullable: true }),
+      value: t.expose("value", { type: JSONObjectScalar, nullable: true }),
       externalValue: t.exposeString("externalValue", { nullable: true }),
     }),
   });
@@ -348,10 +348,10 @@ const OperationItem = builder
               statusCode,
               description: response.description,
               content: Object.entries(response.content ?? {}).map(
-                ([mediaType, mediaTypeObject]) => ({
+                ([mediaType, { schema, examples }]) => ({
                   mediaType,
-                  schema: mediaTypeObject.schema,
-                  examples: Object.entries(mediaTypeObject.examples ?? {}).map(
+                  schema,
+                  examples: Object.entries(examples ?? {}).map(
                     ([name, value]) => ({ name, ...value }),
                   ),
                 }),

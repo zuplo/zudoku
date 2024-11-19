@@ -2,6 +2,7 @@ import * as Tabs from "@radix-ui/react-tabs";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
 import { cn } from "../../util/cn.js";
+import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
@@ -41,25 +42,29 @@ export const ResponsesSidecarBox = ({
         </Tabs.List>
       </SidecarBox.Head>
       {responses.map((response) => {
-        const schema = response.content?.[0]?.schema as
-          | SchemaObject
-          | undefined;
+        const firstContent = response.content?.at(0);
+
+        const example =
+          firstContent?.examples?.at(0)?.value ??
+          (firstContent?.schema
+            ? generateSchemaExample(firstContent.schema as SchemaObject)
+            : "");
 
         return (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
             <SidecarBox.Body className="p-0">
-              {schema ? (
+              <CollapsibleCode>
                 <SyntaxHighlight
-                  language="json"
+                  language={example ? "json" : "plain"}
                   noBackground
-                  className="text-xs max-h-[450px] p-2"
-                  code={JSON.stringify(generateSchemaExample(schema), null, 2)}
+                  className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
+                  code={
+                    example
+                      ? JSON.stringify(example, null, 2)
+                      : "Empty response"
+                  }
                 />
-              ) : (
-                <span className="text-muted-foreground font-mono italic text-xs">
-                  Empty Response
-                </span>
-              )}
+              </CollapsibleCode>
             </SidecarBox.Body>
             <SidecarBox.Footer className="flex justify-end text-xs">
               {response.description}
