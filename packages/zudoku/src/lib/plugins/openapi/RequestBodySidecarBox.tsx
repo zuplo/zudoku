@@ -1,5 +1,6 @@
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
+import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
@@ -21,19 +22,21 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
           <span className="font-mono">Request Body Example</span>
         </SidecarBox.Head>
         <SidecarBox.Body className="p-0">
-          <SyntaxHighlight
-            language="json"
-            noBackground
-            copyable
-            className="text-xs max-h-[450px] p-2"
-            code={JSON.stringify(
-              firstContent?.schema
-                ? generateSchemaExample(content[0]!.schema as SchemaObject)
-                : "",
-              null,
-              2,
-            )}
-          />
+          <CollapsibleCode>
+            <SyntaxHighlight
+              language="json"
+              noBackground
+              copyable
+              className="text-xs max-h-[450px] p-2"
+              code={JSON.stringify(
+                firstContent?.schema
+                  ? generateSchemaExample(firstContent.schema as SchemaObject)
+                  : "",
+                null,
+                2,
+              )}
+            />
+          </CollapsibleCode>
         </SidecarBox.Body>
       </SidecarBox.Root>
     </>
