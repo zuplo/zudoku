@@ -249,12 +249,14 @@ const MediaTypeItem = builder
     mediaType: string;
     schema: any;
     examples: Array<ExampleObject & { name: string }>;
+    example: any;
     encoding?: Array<EncodingObject & { name: string }>;
   }>("MediaTypeObject")
   .implement({
     fields: (t) => ({
       mediaType: t.exposeString("mediaType"),
       schema: t.expose("schema", { type: JSONScalar, nullable: true }),
+      example: t.expose("example", { type: JSONScalar, nullable: true }),
       examples: t.expose("examples", { type: [ExampleItem], nullable: true }),
       encoding: t.expose("encoding", { type: [EncodingItem], nullable: true }),
     }),
@@ -269,6 +271,7 @@ const RequestBodyObject = builder
       schema: any;
       examples: Array<ExampleObject & { name: string }>;
       encoding?: Array<EncodingObject & { name: string }>;
+      example: any;
     }>;
   }>("RequestBodyObject")
   .implement({
@@ -286,6 +289,7 @@ const ResponseItem = builder
     content: Array<{
       mediaType: string;
       schema: any;
+      example: any;
       examples: Array<ExampleObject & { name: string }>;
     }>;
     headers?: any;
@@ -329,6 +333,7 @@ const OperationItem = builder
             ([mediaType, content]) => ({
               mediaType,
               schema: content.schema,
+              example: content.example,
               examples: Object.entries(content.examples ?? {}).map(
                 ([name, value]) => ({ name, ...value }),
               ),
@@ -348,10 +353,11 @@ const OperationItem = builder
               statusCode,
               description: response.description,
               content: Object.entries(response.content ?? {}).map(
-                ([mediaType, mediaTypeObject]) => ({
+                ([mediaType, { example, schema, examples }]) => ({
                   mediaType,
-                  schema: mediaTypeObject.schema,
-                  examples: Object.entries(mediaTypeObject.examples ?? {}).map(
+                  example,
+                  schema,
+                  examples: Object.entries(examples ?? {}).map(
                     ([name, value]) => ({ name, ...value }),
                   ),
                 }),

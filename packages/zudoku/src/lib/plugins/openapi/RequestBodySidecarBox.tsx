@@ -12,6 +12,8 @@ type Content = NonNullable<
 export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
   if (!content.length) return null;
 
+  const firstContent = content.at(0);
+
   return (
     <>
       <SidecarBox.Root>
@@ -25,7 +27,7 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
             copyable
             className="text-xs max-h-[450px] p-2"
             code={JSON.stringify(
-              content.at(0)?.schema
+              firstContent?.schema
                 ? generateSchemaExample(content[0]!.schema as SchemaObject)
                 : "",
               null,

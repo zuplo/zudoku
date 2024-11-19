@@ -26,6 +26,7 @@ type ExampleItem {
 
 type MediaTypeObject {
   encoding: [EncodingItem!]
+  example: JSON
   examples: [ExampleItem!]
   mediaType: String!
   schema: JSON
