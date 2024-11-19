@@ -15,6 +15,12 @@ export const RequestBodySidecarBox = ({ content }: { content: Content }) => {
 
   const firstContent = content.at(0);
 
+  const example =
+    firstContent?.examples?.at(0)?.value ??
+    (firstContent?.schema
+      ? generateSchemaExample(firstContent.schema as SchemaObject)
+      : "");
+
   return (
     <>
       <SidecarBox.Root>

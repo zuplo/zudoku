@@ -42,9 +42,13 @@ export const ResponsesSidecarBox = ({
         </Tabs.List>
       </SidecarBox.Head>
       {responses.map((response) => {
-        const schema = response.content?.[0]?.schema as
-          | SchemaObject
-          | undefined;
+        const firstContent = response.content?.at(0);
+
+        const example =
+          firstContent?.examples?.at(0)?.value ??
+          (firstContent?.schema
+            ? generateSchemaExample(firstContent.schema as SchemaObject)
+            : "");
 
         return (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
