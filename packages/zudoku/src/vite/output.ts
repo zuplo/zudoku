@@ -1,12 +1,11 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { joinPath } from "../lib/util/joinPath.js";
 import { LoadedConfig } from "./config.js";
 
-const pkgJsonPath = path.join(
-  path.dirname(new URL(import.meta.url).pathname),
-  "../../package.json",
-);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkgJsonPath = path.join(__dirname, "../../package.json");
 
 const pkgJson = JSON.parse(await readFile(pkgJsonPath, "utf-8"));
 

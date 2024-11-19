@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   type getRoutesByConfig,
   type render as serverRender,
@@ -81,10 +82,12 @@ export const prerender = async ({
   console.log("Prerendering...");
   const distDir = path.join(dir, "dist", base);
   const config: ZudokuConfig = await import(
-    path.join(distDir, "server/zudoku.config.js")
+    pathToFileURL(path.join(distDir, "server/zudoku.config.js")).href
   ).then((m) => m.default);
 
-  const module = await import(path.join(distDir, "server/entry.server.js"));
+  const module = await import(
+    pathToFileURL(path.join(distDir, "server/entry.server.js")).href
+  );
   const render = module.render as typeof serverRender;
 
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
