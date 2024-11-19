@@ -1,5 +1,5 @@
 import rehypeMetaAsAttributes from "@lekoarts/rehype-meta-as-attributes";
-import mdx, { type Options } from "@mdx-js/rollup";
+import mdx from "@mdx-js/rollup";
 import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import path from "node:path";
@@ -50,12 +50,6 @@ const rehypeMediaBasePath =
       }
     });
   };
-
-export type DevPortalPluginOptions = {
-  mode: ZudokuPluginOptions["mode"];
-  remarkPlugins?: Options["remarkPlugins"];
-  rehypePlugins?: Options["rehypePlugins"];
-};
 
 const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const config = getConfig();

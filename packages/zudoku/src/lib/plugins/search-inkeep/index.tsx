@@ -1,7 +1,7 @@
 import type { InkeepWidgetBaseSettings } from "@inkeep/widgets";
 import { lazy } from "react";
 import { ClientOnly } from "../../components/ClientOnly.js";
-import type { DevPortalPlugin } from "../../core/plugins.js";
+import type { ZudokuPlugin } from "../../core/plugins.js";
 import { aiChatSettings, baseSettings } from "./inkeep.js";
 
 type PickedPluginInkeepBaseSettings =
@@ -44,7 +44,7 @@ const InkeepSearch = ({
 
 export const inkeepSearchPlugin = (
   settings: PluginInkeepBaseSettings,
-): DevPortalPlugin => {
+): ZudokuPlugin => {
   return {
     renderSearch: ({
       isOpen,

@@ -1,6 +1,6 @@
 import { matchPath, useRouteError, type RouteObject } from "react-router-dom";
 import { Client as UrqlClient, cacheExchange, fetchExchange } from "urql";
-import { type DevPortalPlugin } from "../../core/plugins.js";
+import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 
 import { useQuery } from "@tanstack/react-query";
@@ -66,9 +66,7 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
 
 export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
-export const openApiPlugin = (
-  config: OpenApiPluginOptions,
-): DevPortalPlugin => {
+export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");
 
   const client = config.server

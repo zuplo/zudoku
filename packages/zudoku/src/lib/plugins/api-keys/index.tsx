@@ -1,8 +1,8 @@
 import { type RouteObject } from "react-router-dom";
-import { DevPortalContext } from "../../core/DevPortalContext.js";
+import { ZudokuContext } from "../../core/ZudokuContext.js";
 import {
   type ApiIdentityPlugin,
-  type DevPortalPlugin,
+  type ZudokuPlugin,
   ProfileMenuPlugin,
 } from "../../core/plugins.js";
 import { RouterError } from "../../errors/RouterError.js";
@@ -15,17 +15,17 @@ const DEFAULT_API_KEY_ENDPOINT =
   "https://zudoku-rewiringamerica-main-ef9c9c0.d2.zuplo.dev";
 
 export type ApiKeyService = {
-  getKeys: (context: DevPortalContext) => Promise<ApiKey[]>;
-  rollKey?: (id: string, context: DevPortalContext) => Promise<void>;
-  deleteKey?: (id: string, context: DevPortalContext) => Promise<void>;
+  getKeys: (context: ZudokuContext) => Promise<ApiKey[]>;
+  rollKey?: (id: string, context: ZudokuContext) => Promise<void>;
+  deleteKey?: (id: string, context: ZudokuContext) => Promise<void>;
   updateKeyDescription?: (
     apiKey: { id: string; description: string },
-    context: DevPortalContext,
+    context: ZudokuContext,
   ) => Promise<void>;
-  getUsage?: (apiKeys: string[], context: DevPortalContext) => Promise<void>;
+  getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
   createKey?: (
     apiKey: { description: string; expiresOn?: string },
-    context: DevPortalContext,
+    context: ZudokuContext,
   ) => Promise<void>;
 };
 
@@ -93,7 +93,7 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
 
 export const apiKeyPlugin = (
   options: ApiKeyPluginOptions,
-): DevPortalPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
+): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
   const endpoint =
     "endpoint" in options ? options.endpoint : DEFAULT_API_KEY_ENDPOINT;
 

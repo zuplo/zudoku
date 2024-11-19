@@ -1,5 +1,5 @@
 declare module "virtual:zudoku-docs-plugins" {
-  export const configuredDocsPlugins: import("./lib/core/plugins.ts").DevPortalPlugin[];
+  export const configuredDocsPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
   /**
    * Map of markdown files and imports
    */
@@ -11,30 +11,30 @@ declare module "virtual:zudoku-sidebar" {
 }
 
 declare module "virtual:zudoku-api-plugins" {
-  export const configuredApiPlugins: import("./lib/core/plugins.ts").DevPortalPlugin[];
+  export const configuredApiPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
 }
 
 declare module "virtual:zudoku-search-plugin" {
   export const configuredSearchPlugin:
-    | import("./lib/core/plugins.ts").DevPortalPlugin
+    | import("./lib/core/plugins.ts").ZudokuPlugin
     | undefined;
 }
 
 declare module "virtual:zudoku-api-keys-plugin" {
   export const configuredApiKeysPlugin:
-    | import("./lib/core/plugins.ts").DevPortalPlugin
+    | import("./lib/core/plugins.ts").ZudokuPlugin
     | undefined;
 }
 
 declare module "virtual:zudoku-custom-pages-plugin" {
   export const configuredCustomPagesPlugin:
-    | import("./lib/core/plugins.ts").DevPortalPlugin
+    | import("./lib/core/plugins.ts").ZudokuPlugin
     | undefined;
 }
 
 declare module "virtual:zudoku-redirect-plugin" {
   export const configuredRedirectPlugin:
-    | import("./lib/core/plugins.ts").DevPortalPlugin
+    | import("./lib/core/plugins.ts").ZudokuPlugin
     | undefined;
 }
 declare module "virtual:zudoku-config" {

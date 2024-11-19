@@ -1,11 +1,11 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router-dom";
-import { DevPortalContext } from "../../core/DevPortalContext.js";
+import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinPath } from "../../util/joinPath.js";
 import { traverseSidebar } from "../navigation/utils.js";
 
-export const ZudokuReactContext = createContext<DevPortalContext | undefined>(
+export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
   undefined,
 );
 
@@ -13,7 +13,7 @@ export const useZudoku = () => {
   const context = useContext(ZudokuReactContext);
 
   if (!context) {
-    throw new Error("useDevPortal must be used within a DevPortalProvider.");
+    throw new Error("useZudoku must be used within a ZudokuProvider.");
   }
 
   return context;

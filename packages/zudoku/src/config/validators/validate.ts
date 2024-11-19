@@ -1,6 +1,6 @@
 import type { Options } from "@mdx-js/rollup";
 import type { ComponentType, ReactNode } from "react";
-import type { DevPortalPlugin } from "src/lib/core/plugins.js";
+import type { ZudokuPlugin } from "src/lib/core/plugins.js";
 import z, {
   type ZodEnumDef,
   ZodOptional,
@@ -10,7 +10,7 @@ import z, {
 } from "zod";
 import { fromError } from "zod-validation-error";
 import type { ExposedComponentProps } from "../../lib/components/SlotletProvider.js";
-import { DevPortalContext } from "../../lib/core/DevPortalContext.js";
+import { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
@@ -64,24 +64,24 @@ const ApiKeysSchema = z.union([
   }),
   z.object({
     enabled: z.boolean(),
-    getKeys: z.custom<(context: DevPortalContext) => Promise<ApiKey[]>>(
+    getKeys: z.custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
       (val) => typeof val === "function",
     ),
     rollKey: z
       .custom<
-        (id: string, context: DevPortalContext) => Promise<void>
+        (id: string, context: ZudokuContext) => Promise<void>
       >((val) => typeof val === "function")
       .optional(),
     deleteKey: z
       .custom<
-        (id: string, context: DevPortalContext) => Promise<void>
+        (id: string, context: ZudokuContext) => Promise<void>
       >((val) => typeof val === "function")
       .optional(),
     updateKeyDescription: z
       .custom<
         (
           apiKey: { id: string; description: string },
-          context: DevPortalContext,
+          context: ZudokuContext,
         ) => Promise<void>
       >((val) => typeof val === "function")
       .optional(),
@@ -89,7 +89,7 @@ const ApiKeysSchema = z.union([
       .custom<
         (
           apiKey: { description: string; expiresOn?: string },
-          context: DevPortalContext,
+          context: ZudokuContext,
         ) => Promise<void>
       >((val) => typeof val === "function")
       .optional(),
@@ -286,7 +286,7 @@ const ConfigSchema = z
         prose: z.boolean().optional(),
       }),
     ),
-    plugins: z.array(z.custom<DevPortalPlugin>()),
+    plugins: z.array(z.custom<ZudokuPlugin>()),
     sitemap: SiteMapSchema,
     build: z.custom<{
       remarkPlugins?: Options["remarkPlugins"];

@@ -2,9 +2,9 @@ import { type ReactElement } from "react";
 import { type RouteObject } from "react-router-dom";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
 import { MdxComponentsType } from "../util/MdxComponents.js";
-import { DevPortalContext, type ApiIdentity } from "./DevPortalContext.js";
+import { ZudokuContext, type ApiIdentity } from "./ZudokuContext.js";
 
-export type DevPortalPlugin =
+export type ZudokuPlugin =
   | CommonPlugin
   | ProfileMenuPlugin
   | NavigationPlugin
@@ -19,7 +19,7 @@ export interface NavigationPlugin {
 }
 
 export interface ApiIdentityPlugin {
-  getIdentities: (context: DevPortalContext) => Promise<ApiIdentity[]>;
+  getIdentities: (context: ZudokuContext) => Promise<ApiIdentity[]>;
 }
 
 export interface SearchProviderPlugin {
@@ -30,7 +30,7 @@ export interface SearchProviderPlugin {
 }
 
 export interface ProfileMenuPlugin {
-  getProfileMenuItems: (context: DevPortalContext) => ProfileNavigationItem[];
+  getProfileMenuItems: (context: ZudokuContext) => ProfileNavigationItem[];
 }
 
 export type ProfileNavigationItem = {
@@ -41,41 +41,37 @@ export type ProfileNavigationItem = {
 
 export interface CommonPlugin {
   initialize?: (
-    context: DevPortalContext,
+    context: ZudokuContext,
   ) => Promise<void | boolean> | void | boolean;
   getHead?: () => ReactElement | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
 
 export const isProfileMenuPlugin = (
-  obj: DevPortalPlugin,
+  obj: ZudokuPlugin,
 ): obj is ProfileMenuPlugin =>
   "getProfileMenuItems" in obj && typeof obj.getProfileMenuItems === "function";
 
 export const isNavigationPlugin = (
-  obj: DevPortalPlugin,
+  obj: ZudokuPlugin,
 ): obj is NavigationPlugin =>
   "getRoutes" in obj && typeof obj.getRoutes === "function";
 
 export const isSearchPlugin = (
-  obj: DevPortalPlugin,
+  obj: ZudokuPlugin,
 ): obj is SearchProviderPlugin =>
   "renderSearch" in obj && typeof obj.renderSearch === "function";
 
-export const needsInitialization = (
-  obj: DevPortalPlugin,
-): obj is CommonPlugin =>
+export const needsInitialization = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "initialize" in obj && typeof obj.initialize === "function";
 
-export const hasHead = (obj: DevPortalPlugin): obj is CommonPlugin =>
+export const hasHead = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "getHead" in obj && typeof obj.getHead === "function";
 
-export const isMdxProviderPlugin = (
-  obj: DevPortalPlugin,
-): obj is CommonPlugin =>
+export const isMdxProviderPlugin = (obj: ZudokuPlugin): obj is CommonPlugin =>
   "getMdxComponents" in obj && typeof obj.getMdxComponents === "function";
 
 export const isApiIdentityPlugin = (
-  obj: DevPortalPlugin,
+  obj: ZudokuPlugin,
 ): obj is ApiIdentityPlugin =>
   "getIdentities" in obj && typeof obj.getIdentities === "function";

@@ -2,7 +2,7 @@ import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import type { MDXProps } from "mdx/types.js";
 import { RouteObject } from "react-router-dom";
 import { ZudokuDocsConfig } from "../../../config/validators/validate.js";
-import type { DevPortalPlugin } from "../../core/plugins.js";
+import type { ZudokuPlugin } from "../../core/plugins.js";
 import { DocResolver } from "./resolver.js";
 
 export interface MarkdownPluginOptions extends ZudokuDocsConfig {
@@ -29,7 +29,7 @@ export type MDXImport = {
 
 export const markdownPlugin = (
   options: MarkdownPluginOptions[],
-): DevPortalPlugin => ({
+): ZudokuPlugin => ({
   getRoutes: () => {
     const routeMap = new Map<string, RouteObject>();
     options.forEach(({ fileImports, files, defaultOptions }) =>
