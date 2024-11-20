@@ -11,6 +11,7 @@ import {
 import "virtual:zudoku-theme.css";
 import { BootstrapStatic, ServerError } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
+import { ssr as urqlSsr } from "../lib/plugins/openapi/client/createMemoryClient.js";
 import type { FileWritingResponse } from "../vite/prerender.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
@@ -38,9 +39,6 @@ export const render = async ({
       ? baseRequest
       : createFetchRequest(baseRequest, response);
 
-  if (!request) {
-    throw new Error("Either fetchRequest or expressRequest must be provided");
-  }
   const context = await query(request);
   let status = 200;
 
@@ -65,6 +63,7 @@ export const render = async ({
 
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
+  const graphqlData = urqlSsr.extractData();
 
   const { pipe } = renderToPipeableStream(
     <BootstrapStatic
@@ -83,7 +82,7 @@ export const render = async ({
       },
       // for SSG we could use onAllReady instead of onShellReady
       // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
-      onShellReady() {
+      onAllReady() {
         response.set({ "Content-Type": "text/html" });
         response.status(status);
 
@@ -114,7 +113,12 @@ export const render = async ({
         );
 
         transformStream.on("finish", () => {
-          response.end(htmlEnd);
+          response.end(
+            htmlEnd?.replace(
+              "</body>",
+              `<script>window.__URQL_DATA__ = ${JSON.stringify(graphqlData)};</script></body>`,
+            ),
+          );
         });
 
         pipe(transformStream);

@@ -1,11 +1,24 @@
 /* eslint-disable no-console */
-import { cacheExchange, Client, fetchExchange, mapExchange } from "urql";
+import {
+  cacheExchange,
+  Client,
+  fetchExchange,
+  mapExchange,
+  ssrExchange,
+} from "urql";
 import { createServer } from "./createServer.js";
 import { CreateClientFunction } from "./interfaces.js";
 
-export type WorkerGraphQLMessage = { id: string; body: string };
-
 const localServer = createServer();
+
+const initialState =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  typeof window !== "undefined" ? (window as any).__URQL_DATA__ : undefined;
+
+export const ssr = ssrExchange({
+  isClient: typeof window !== "undefined",
+  initialState,
+});
 
 /**
  * Creates an in memory Client that does not use Workers. This allows
@@ -45,6 +58,7 @@ export const createClient: CreateClientFunction = () => {
           console.groupEnd();
         },
       }),
+      ssr,
       fetchExchange,
     ],
   });

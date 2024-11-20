@@ -2,7 +2,10 @@
 import { monotonicFactory } from "ulidx";
 import { cacheExchange, Client, fetchExchange, mapExchange } from "urql";
 import { createWaitForNotify } from "../../../util/createWaitForNotify.js";
-import { createClient as createMemoryClient } from "./createMemoryClient.js";
+import {
+  createClient as createMemoryClient,
+  ssr,
+} from "./createMemoryClient.js";
 import { CreateClientFunction } from "./interfaces.js";
 
 export type WorkerGraphQLMessage = { id: string; body: string };
@@ -69,6 +72,7 @@ export const createClient: CreateClientFunction = ({
           console.groupEnd();
         },
       }),
+      ssr,
       fetchExchange,
     ],
   });
