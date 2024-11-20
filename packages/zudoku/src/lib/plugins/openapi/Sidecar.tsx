@@ -7,6 +7,7 @@ import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
+import { useOnScreen } from "../../util/useOnScreen.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { useOasConfig } from "./context.js";
@@ -86,6 +87,20 @@ const methodToColor = {
   head: TextColorMap.gray,
   trace: TextColorMap.gray,
 };
+
+const EXAMPLE_LANGUAGES = [
+  { value: "shell", label: "cURL" },
+  { value: "js", label: "JavaScript" },
+  { value: "python", label: "Python" },
+  { value: "java", label: "Java" },
+  { value: "go", label: "Go" },
+  { value: "csharp", label: "C#" },
+  { value: "kotlin", label: "Kotlin" },
+  { value: "objc", label: "Objective-C" },
+  { value: "php", label: "PHP" },
+  { value: "ruby", label: "Ruby" },
+  { value: "swift", label: "Swift" },
+];
 
 export const Sidecar = ({
   operation,
@@ -168,15 +183,20 @@ export const Sidecar = ({
 
     return getConverted(snippet, selectedLang);
   }, [
-    selectedServer,
-    selectedLang,
+    requestBodyContent,
     operation.method,
     operation.path,
-    requestBodyContent,
+    selectedServer,
+    result.data?.schema.url,
+    selectedLang,
   ]);
+  const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
   return (
-    <aside className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4">
+    <aside
+      ref={ref}
+      className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
+    >
       <SidecarBox.Root>
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-3 gap-2 text-xs">
           <span className="font-mono break-words">
@@ -186,57 +206,51 @@ export const Sidecar = ({
             &nbsp;
             {path}
           </span>
-          <PlaygroundDialogWrapper
-            server={result.data?.schema.url ?? ""}
-            servers={
-              result.data?.schema.servers.map((server) => server.url) ?? []
-            }
-            operation={operation}
-          />
-        </SidecarBox.Head>
-        <SidecarBox.Body className="p-0">
-          <CollapsibleCode>
-            <SyntaxHighlight
-              language={selectedLang}
-              noBackground
-              className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
-              code={code!}
+          {isOnScreen && (
+            <PlaygroundDialogWrapper
+              server={result.data?.schema.url ?? ""}
+              servers={
+                result.data?.schema.servers.map((server) => server.url) ?? []
+              }
+              operation={operation}
             />
-          </CollapsibleCode>
-        </SidecarBox.Body>
-        <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-1">
-          <span>Show example in</span>
-          <SimpleSelect
-            className="self-start max-w-[150px]"
-            value={selectedLang}
-            onChange={(e) => {
-              startTransition(() => {
-                setSearchParams((prev) => {
-                  prev.set("lang", e.target.value);
-                  return prev;
-                });
-              });
-            }}
-            options={[
-              { value: "shell", label: "cURL" },
-              { value: "js", label: "JavaScript" },
-              { value: "python", label: "Python" },
-              { value: "java", label: "Java" },
-              { value: "go", label: "Go" },
-              { value: "csharp", label: "C#" },
-              { value: "kotlin", label: "Kotlin" },
-              { value: "objc", label: "Objective-C" },
-              { value: "php", label: "PHP" },
-              { value: "ruby", label: "Ruby" },
-              { value: "swift", label: "Swift" },
-            ]}
-          />
-        </SidecarBox.Footer>
+          )}
+        </SidecarBox.Head>
+        {isOnScreen && (
+          <>
+            <SidecarBox.Body className="p-0">
+              <CollapsibleCode>
+                <SyntaxHighlight
+                  language={selectedLang}
+                  noBackground
+                  className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
+                  code={code!}
+                />
+              </CollapsibleCode>
+            </SidecarBox.Body>
+            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-1">
+              <span>Show example in</span>
+              <SimpleSelect
+                className="self-start max-w-[150px]"
+                value={selectedLang}
+                onChange={(e) => {
+                  startTransition(() => {
+                    setSearchParams((prev) => {
+                      prev.set("lang", e.target.value);
+                      return prev;
+                    });
+                  });
+                }}
+                options={EXAMPLE_LANGUAGES}
+              />
+            </SidecarBox.Footer>
+          </>
+        )}
       </SidecarBox.Root>
-      {requestBodyContent && (
+      {isOnScreen && requestBodyContent && (
         <RequestBodySidecarBox content={requestBodyContent} />
       )}
-      {operation.responses.length > 0 && (
+      {isOnScreen && operation.responses.length > 0 && (
         <ResponsesSidecarBox
           selectedResponse={selectedResponse}
           onSelectResponse={onSelectResponse}
