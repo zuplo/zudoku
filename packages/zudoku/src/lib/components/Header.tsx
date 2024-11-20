@@ -2,6 +2,7 @@ import { MoonStarIcon, SunIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "zudoku/ui/Button.js";
+import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import { isProfileMenuPlugin, ProfileNavigationItem } from "../core/plugins.js";
 import {
@@ -19,6 +20,7 @@ import {
 import { cn } from "../util/cn.js";
 import { joinPath } from "../util/joinPath.js";
 import { Banner } from "./Banner.js";
+import { ClientOnly } from "./ClientOnly.js";
 import { useTheme } from "./context/ThemeContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
@@ -114,26 +116,30 @@ export const Header = memo(function HeaderInner() {
             <MobileTopNavigation />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slotlet name="head-navigation-start" />
-              {isAuthEnabled && !isAuthenticated ? (
-                <Button variant="ghost" onClick={() => auth.login()}>
-                  Login
-                </Button>
-              ) : (
-                accountItems.length > 0 && (
-                  <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost">
-                        {profile?.email ? `${profile.email}` : "My Account"}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-56">
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {accountItems}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )
-              )}
+              <ClientOnly
+                fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
+              >
+                {isAuthEnabled && !isAuthenticated ? (
+                  <Button variant="ghost" onClick={() => auth.login()}>
+                    Login
+                  </Button>
+                ) : (
+                  accountItems.length > 0 && (
+                    <DropdownMenu modal={false}>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                          {profile?.email ? `${profile.email}` : "My Account"}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {accountItems}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
+                )}
+              </ClientOnly>
               <Button
                 variant="ghost"
                 aria-label={
