@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.16.2",
+  "version": "0.16.3",
   "type": "module",
   "homepage": "https://zudoku.dev",
   "repository": {
@@ -173,7 +173,7 @@
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.1",
-    "@zudoku/config": "0.16.2",
+    "@zudoku/config": "0.16.3",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.4",
     "autoprefixer": "10.4.20",
