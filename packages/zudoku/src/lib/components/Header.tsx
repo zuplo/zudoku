@@ -1,9 +1,9 @@
 import { MoonStarIcon, SunIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "zudoku/ui/Button.js";
 import { useAuth } from "../authentication/hook.js";
 import { isProfileMenuPlugin, ProfileNavigationItem } from "../core/plugins.js";
-import { Button } from "../ui/Button.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -134,16 +134,16 @@ export const Header = memo(function HeaderInner() {
                   </DropdownMenu>
                 )
               )}
-              <button
-                type="button"
+              <Button
+                variant="ghost"
                 aria-label={
                   isDark ? "Switch to light mode" : "Switch to dark mode"
                 }
-                className="cursor-pointer hover:bg-secondary p-2.5 -m-2.5 rounded-full"
+                className="p-2.5 -m-2.5 rounded-full"
                 onClick={toggleTheme}
               >
                 <ThemeIcon size={18} />
-              </button>
+              </Button>
               <Slotlet name="head-navigation-end" />
             </div>
           </div>
