@@ -1,10 +1,4 @@
-import {
-  type CSSProperties,
-  type ReactNode,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { type CSSProperties, type ReactNode, useRef, useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Collapsible,
@@ -12,6 +6,7 @@ import {
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
 import { cn } from "../../util/cn.js";
+import useIsomorphicLayoutEffect from "../../util/useIsomorphicLayoutEffect.js";
 
 export const CollapsibleCode = ({
   children,
@@ -24,9 +19,11 @@ export const CollapsibleCode = ({
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const el = contentRef.current;
     if (!el) return;
+
+    setIsOverflowing(el.scrollHeight > maxHeight);
 
     const observer = new ResizeObserver(() => {
       setIsOverflowing(el.scrollHeight > maxHeight);
