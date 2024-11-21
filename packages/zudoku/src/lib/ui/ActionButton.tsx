@@ -5,7 +5,7 @@ import { cn } from "../util/cn.js";
 
 type ActionButtonProps = ButtonProps & { isPending?: boolean };
 
-export const ActionButton = forwardRef<HTMLButtonElement, ButtonProps>(
+export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
   ({ isPending, children, className, ...props }: ActionButtonProps, ref) => {
     return (
       <Button
