@@ -155,15 +155,7 @@ export const OperationList = () => {
       {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (
-          <div
-            key={tag.name}
-            style={
-              {
-                "content-visibility": "auto",
-              } as unknown as CSSProperties
-              // we need this until we have types
-            }
-          >
+          <div key={tag.name} className="[content-visibility:auto]">
             {tag.name && <CategoryHeading>{tag.name}</CategoryHeading>}
             {tag.description && (
               <Markdown
