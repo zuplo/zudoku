@@ -8,9 +8,9 @@ import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
-import { DevPortal, Layout, RouterError } from "zudoku/components";
+import { Layout, RouterError, Zudoku } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import type { ZudokuContextOptions } from "../lib/core/DevPortalContext.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 
 export const convertZudokuConfigToOptions = (
@@ -92,9 +92,9 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   return [
     {
       element: (
-        <DevPortal {...options}>
+        <Zudoku {...options}>
           <Layout />
-        </DevPortal>
+        </Zudoku>
       ),
       children: [
         {

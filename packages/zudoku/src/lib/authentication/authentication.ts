@@ -1,4 +1,4 @@
-import { DevPortalPlugin } from "../core/plugins.js";
+import { ZudokuPlugin } from "../core/plugins.js";
 
 export interface AuthenticationProvider {
   signUp(options?: { redirectTo?: string }): Promise<void>;
@@ -6,7 +6,7 @@ export interface AuthenticationProvider {
   signOut(): Promise<void>;
   getAccessToken(): Promise<string>;
   pageLoad?(): void;
-  getAuthenticationPlugin?(): DevPortalPlugin;
+  getAuthenticationPlugin?(): ZudokuPlugin;
 }
 
 export interface AuthenticationProviderInitializer<TConfig> {

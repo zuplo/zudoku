@@ -8,11 +8,11 @@ import { Slotlets } from "../components/SlotletProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import {
-  type DevPortalPlugin,
   isApiIdentityPlugin,
   isNavigationPlugin,
   type NavigationPlugin,
   needsInitialization,
+  type ZudokuPlugin,
 } from "./plugins.js";
 
 export interface ApiIdentity {
@@ -24,7 +24,7 @@ export interface ApiIdentity {
 export const queryClient = new QueryClient();
 
 export type ApiKeyCache = "api-keys";
-export type DevPortalCacheKey = ApiKeyCache | string;
+export type ZudokuCacheKey = ApiKeyCache | string;
 
 type Metadata = Partial<{
   title: string;
@@ -63,7 +63,7 @@ export type ZudokuContextOptions = {
   authentication?: AuthenticationProvider;
   topNavigation?: TopNavigationItem[];
   sidebars?: SidebarConfig;
-  plugins?: DevPortalPlugin[];
+  plugins?: ZudokuPlugin[];
   slotlets?: Slotlets;
   mdx?: {
     components?: MdxComponentsType;
@@ -71,7 +71,7 @@ export type ZudokuContextOptions = {
   overrides?: ComponentsContextType;
 };
 
-export class DevPortalContext {
+export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public sidebars: SidebarConfig;
   public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
@@ -98,7 +98,7 @@ export class DevPortalContext {
     );
   };
 
-  invalidateCache = async (key: DevPortalCacheKey[]) => {
+  invalidateCache = async (key: ZudokuCacheKey[]) => {
     await queryClient.invalidateQueries({ queryKey: key });
   };
 

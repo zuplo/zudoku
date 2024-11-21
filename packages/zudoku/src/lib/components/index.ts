@@ -11,11 +11,10 @@ import {
   BootstrapStatic as BootstrapStaticImport,
 } from "./Bootstrap.js";
 import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
-import { DevPortal as DevPortalImport } from "./DevPortal.js";
 import { Layout as LayoutImport } from "./Layout.js";
+import { Zudoku as ZudokuImport } from "./Zudoku.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
-export const DevPortal = /*@__PURE__*/ DevPortalImport;
 export const Layout = /*@__PURE__*/ LayoutImport;
 export const RouterError = /*@__PURE__*/ RouterErrorImport;
 export const ServerError = /*@__PURE__*/ ServerErrorImport;
@@ -26,7 +25,7 @@ export const Head = /*@__PURE__*/ Helmet;
 
 export const useZudoku = /*@__PURE__*/ useZudokuImport;
 export const useAuth = /*@__PURE__*/ useAuthState;
-export const Zudoku = /*@__PURE__*/ DevPortalImport;
+export const Zudoku = /*@__PURE__*/ ZudokuImport;
 
 export const Callout = /*@__PURE__*/ CalloutImport;
 export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;

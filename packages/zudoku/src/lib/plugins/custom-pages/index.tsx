@@ -1,7 +1,7 @@
 import { type ComponentType, type ReactNode } from "react";
 import type { RouteObject } from "react-router-dom";
 import { type ExposedComponentProps } from "../../components/SlotletProvider.js";
-import type { DevPortalPlugin, NavigationPlugin } from "../../core/plugins.js";
+import type { NavigationPlugin, ZudokuPlugin } from "../../core/plugins.js";
 import { CustomPage } from "./CustomPage.js";
 
 export type CustomPageConfig = {
@@ -13,7 +13,7 @@ export type CustomPageConfig = {
 
 export const customPagesPlugin = (
   config: CustomPageConfig[],
-): DevPortalPlugin & NavigationPlugin => {
+): ZudokuPlugin & NavigationPlugin => {
   return {
     getRoutes: (): RouteObject[] =>
       config.map(({ path, ...props }) => ({
