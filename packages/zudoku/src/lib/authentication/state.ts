@@ -1,16 +1,23 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-export const useAuthState = create<AuthState>(() => ({
-  isPending: false,
-  isAuthenticated: false,
-}));
+import { shared } from "./use-broadcast/shared.js";
 
 export interface AuthState {
   isAuthenticated: boolean;
   isPending: boolean;
   profile?: UserProfile;
 }
+
+export const useAuthState = create<AuthState>(
+  shared(
+    (_) => ({
+      isAuthenticated: false,
+      isPending: false,
+      profile: undefined,
+    }),
+    { name: "auth-state" },
+  ),
+);
 
 export interface UserProfile {
   sub: string;
