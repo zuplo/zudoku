@@ -1,4 +1,5 @@
 import { ResultOf } from "@graphql-typed-document-node/core";
+import type { CSSProperties } from "react";
 import { useQuery } from "urql";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
@@ -154,7 +155,7 @@ export const OperationList = () => {
       {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (
-          <div key={tag.name}>
+          <div key={tag.name} className="[content-visibility:auto]">
             {tag.name && <CategoryHeading>{tag.name}</CategoryHeading>}
             {tag.description && (
               <Markdown
