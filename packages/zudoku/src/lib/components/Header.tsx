@@ -1,4 +1,3 @@
-import { MoonStarIcon, SunIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "zudoku/ui/Button.js";
@@ -17,15 +16,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
-import { cn } from "../util/cn.js";
 import { joinPath } from "../util/joinPath.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
-import { useTheme } from "./context/ThemeContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { Search } from "./Search.js";
 import { Slotlet } from "./SlotletProvider.js";
+import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavigation } from "./TopNavigation.js";
 
 const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
@@ -50,7 +48,6 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
 
 export const Header = memo(function HeaderInner() {
   const auth = useAuth();
-  const [isDark, toggleTheme] = useTheme();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
   const { page, plugins } = context;
@@ -59,8 +56,6 @@ export const Header = memo(function HeaderInner() {
     .filter((p) => isProfileMenuPlugin(p))
     .flatMap((p) => p.getProfileMenuItems(context))
     .map((i) => <RecursiveMenu key={i.label} item={i} />);
-
-  const ThemeIcon = isDark ? MoonStarIcon : SunIcon;
 
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
@@ -83,10 +78,11 @@ export const Header = memo(function HeaderInner() {
                       }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className={cn("h-10", isDark && "hidden")}
+                      className="h-10 dark:hidden"
                       loading="lazy"
                     />
                     <img
+                      data-hide-on-theme="light"
                       src={
                         /https?:\/\//.test(page.logo.src.dark)
                           ? page.logo.src.dark
@@ -97,7 +93,7 @@ export const Header = memo(function HeaderInner() {
                       }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className={cn("h-10", !isDark && "hidden")}
+                      className="h-10"
                       loading="lazy"
                     />
                   </>
@@ -140,16 +136,7 @@ export const Header = memo(function HeaderInner() {
                   )
                 )}
               </ClientOnly>
-              <Button
-                variant="ghost"
-                aria-label={
-                  isDark ? "Switch to light mode" : "Switch to dark mode"
-                }
-                className="p-2.5 -m-2.5 rounded-full"
-                onClick={toggleTheme}
-              >
-                <ThemeIcon size={18} />
-              </Button>
+              <ThemeSwitch />
               <Slotlet name="head-navigation-end" />
             </div>
           </div>

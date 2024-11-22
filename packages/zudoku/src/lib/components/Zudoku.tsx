@@ -1,6 +1,7 @@
 import { MDXProvider } from "@mdx-js/react";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
+import { ThemeProvider } from "next-themes";
 import {
   Fragment,
   memo,
@@ -26,7 +27,6 @@ import {
   ComponentsProvider,
   DEFAULT_COMPONENTS,
 } from "./context/ComponentsContext.js";
-import { ThemeProvider } from "./context/ThemeProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
 import { SlotletProvider } from "./SlotletProvider.js";
@@ -82,7 +82,7 @@ const ZudokoInner = memo(
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
             <MDXProvider components={mdxComponents}>
-              <ThemeProvider>
+              <ThemeProvider attribute="class" disableTransitionOnChange>
                 <ComponentsProvider value={components}>
                   <SlotletProvider slotlets={props.slotlets}>
                     <ViewportAnchorProvider>
