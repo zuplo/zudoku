@@ -12,6 +12,7 @@ import {
 } from "../ui/Drawer.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Search } from "./Search.js";
+import { ThemeSwitch } from "./ThemeSwitch.js";
 import { isHiddenItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
@@ -36,6 +37,9 @@ export const MobileTopNavigation = () => {
           <Search />
         </div>
         <ul className="flex flex-col items-center gap-4 p-4">
+          <li>
+            <ThemeSwitch />
+          </li>
           {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
             <li key={item.label}>
               <NavLink

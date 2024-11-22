@@ -33,9 +33,10 @@ void import("prismjs/components/prism-javascript.min.js");
 // @ts-expect-error This is untyped
 void import("prismjs/components/prism-typescript.min.js");
 
+import { useTheme } from "next-themes";
 import { useState } from "react";
 import { cn } from "../util/cn.js";
-import { useTheme } from "./context/ThemeContext.js";
+import { ClientOnly } from "./ClientOnly.js";
 
 type SyntaxHighlightProps = {
   className?: string;
@@ -55,72 +56,105 @@ export const SyntaxHighlight = ({
   language = "plain",
   ...props
 }: SyntaxHighlightProps) => {
-  const [isDark] = useTheme();
+  const { theme } = useTheme();
   const [isCopied, setIsCopied] = useState(false);
 
   if (!props.code) {
     return null;
   }
 
+  const highlightTheme = theme === "dark" ? themes.vsDark : themes.github;
+
+  // hardcoded values from the themes to avoid color flash in SSR
+  const themeColorClasses =
+    "bg-[#f6f8fa] text-[#393a34] dark:bg-[#1e1e1e] dark:text-[#9cdcfe]";
+
   return (
-    <Highlight
-      theme={isDark ? themes.vsDark : themes.github}
-      language={remapLang[language] ?? language}
-      {...props}
-    >
-      {({ className, style, tokens, getLineProps, getTokenProps }) => (
+    <ClientOnly
+      fallback={
         <div className="relative group">
           <pre
             className={cn(
               "relative scrollbar overflow-x-auto",
-              className,
               props.className,
-              props.noBackground && "!bg-transparent",
+              props.noBackground ? "!bg-transparent" : themeColorClasses,
               props.wrapLines && "whitespace-pre-wrap break-words",
             )}
-            style={style}
           >
-            {tokens.map((line, i) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <div key={i} {...getLineProps({ line })}>
-                {line.map((token, key) => (
-                  // eslint-disable-next-line react/no-array-index-key
-                  <span key={key} {...getTokenProps({ token })} />
-                ))}
-              </div>
-            ))}
+            {props.code}
           </pre>
           {props.showLanguageIndicator && (
             <span className="absolute top-1.5 right-3 text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0">
               {language}
             </span>
           )}
-          {copyable && (
-            <button
-              type="button"
-              aria-label="Copy code"
-              title="Copy code"
-              className="absolute top-2 right-2 p-2 opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition"
-              disabled={isCopied}
-              onClick={() => {
-                setIsCopied(true);
-                void navigator.clipboard.writeText(
-                  tokens
-                    .map((line) => line.map(({ content }) => content).join(""))
-                    .join("\n"),
-                );
-                setTimeout(() => setIsCopied(false), 2000);
-              }}
-            >
-              {isCopied ? (
-                <CheckIcon className="text-emerald-600" size={16} />
-              ) : (
-                <CopyIcon size={16} />
-              )}
-            </button>
-          )}
         </div>
-      )}
-    </Highlight>
+      }
+    >
+      <Highlight
+        theme={highlightTheme}
+        language={remapLang[language] ?? language}
+        {...props}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <div className="relative group">
+            <pre
+              className={cn(
+                "relative scrollbar overflow-x-auto",
+                className,
+                props.className,
+                props.noBackground && "!bg-transparent",
+                props.wrapLines && "whitespace-pre-wrap break-words",
+              )}
+              style={style}
+            >
+              {tokens.map((line, i) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <div key={i} {...getLineProps({ line })}>
+                  {line.map((token, key) => (
+                    // eslint-disable-next-line react/no-array-index-key
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </div>
+              ))}
+            </pre>
+            {props.showLanguageIndicator && (
+              <span className="absolute top-1.5 right-3 text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0">
+                {language}
+              </span>
+            )}
+            {copyable && (
+              <button
+                type="button"
+                aria-label="Copy code"
+                title="Copy code"
+                className="absolute top-2 right-2 p-2 opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition"
+                disabled={isCopied}
+                onClick={() => {
+                  setIsCopied(true);
+                  void navigator.clipboard.writeText(
+                    tokens
+                      .map((l) => l.map(({ content }) => content).join(""))
+                      .join("\n"),
+                  );
+                  setTimeout(() => setIsCopied(false), 2000);
+                }}
+              >
+                {isCopied ? (
+                  <CheckIcon
+                    className="text-emerald-600"
+                    size={16}
+                    strokeWidth={2.5}
+                    absoluteStrokeWidth
+                  />
+                ) : (
+                  <CopyIcon size={16} />
+                )}
+              </button>
+            )}
+          </div>
+        )}
+      </Highlight>
+    </ClientOnly>
   );
 };

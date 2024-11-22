@@ -1,15 +1,15 @@
+import { useTheme } from "next-themes";
 import { useEffect, useRef, type ReactNode } from "react";
-import { useTheme } from "../../components/context/ThemeContext.js";
 import { cn } from "../../util/cn.js";
 import { pastellize } from "../../util/pastellize.js";
 
 export const DATA_ATTR = "data-linked-param";
 
 export const usePastellizedColor = (name: string) => {
-  const [isDark] = useTheme();
+  const { theme } = useTheme();
   return pastellize(
     name,
-    !isDark ? { saturation: 85, lightness: 50 } : undefined,
+    theme === "light" ? { saturation: 85, lightness: 50 } : undefined,
   );
 };
 
