@@ -91,31 +91,21 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
-      - run: echo "ZUDOKU_VERSION=$(node -e 'console.log(require(`./packages/zudoku/package.json`).version)')" >> $GITHUB_ENV
+      - run: echo "ZUDOKU_VERSION=$(node --print 'require(`./packages/zudoku/package.json`).version')" >> $GITHUB_ENV
 
       - name: Push Git Changes
         if: github.event_name == 'workflow_dispatch'
         run: git push origin main --follow-tags
 
       - uses: actions/github-script@v7
-        name: Create Release
+        name: ${{ github.event_name == 'workflow_dispatch' && 'Create Release' || 'Create Pre-release' }}
         id: create-release
-        if: github.event_name == 'workflow_dispatch'
         with:
           result-encoding: string
           retries: 3
           script: |
-            github.request("POST /repos/{owner}/{repo}/releases", {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              tag_name: `v${{ env.ZUDOKU_VERSION }}`,
-              draft: false,
-              prerelease: false,
-              generate_release_notes: true,
-              headers: {
-                "X-GitHub-Api-Version": "2022-11-28",
-              },
-            });
+            const { default: release } = await import('${{ github.workspace }}/.github/workflows/release.js')
+            await release({ github, context, core })
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
