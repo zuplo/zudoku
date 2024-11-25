@@ -1,5 +1,6 @@
 import { Auth0AuthenticationConfig } from "../../../config/config.js";
 import { AuthenticationProviderInitializer } from "../authentication.js";
+import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
 
 class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
@@ -27,9 +28,16 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     const as = await this.getAuthServer();
     const idToken = await this.getAccessToken();
 
+    useAuthState.setState({
+      isAuthenticated: false,
+      isPending: false,
+      profile: undefined,
+    });
+    sessionStorage.clear();
     const redirectUrl = new URL(
       window.location.origin + this.logoutRedirectUrlPath,
     );
+
     redirectUrl.pathname = this.logoutRedirectUrlPath;
 
     // SEE: https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0
