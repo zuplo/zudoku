@@ -43,11 +43,10 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     // Logout End Session Endpoint Discovery is enabled by default.
     // Otherwise we fallback to the old non-compliant logout
 
-    let logoutUrl: URL;
     // The endSessionEndpoint is set, the IdP supports some form of logout,
     // so we use the IdP logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
-      logoutUrl = new URL(as.end_session_endpoint);
+      const logoutUrl = new URL(as.end_session_endpoint);
       // TODO: get id_token and set hint
       // const { id_token } = session;
       // if (id_token) {
@@ -57,8 +56,11 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
         "post_logout_redirect_uri",
         redirectUrl.toString(),
       );
+
+      window.location.href = logoutUrl.toString();
     } else {
-      logoutUrl = new URL(`${this.issuer}oidc/logout`);
+      const logoutUrl = new URL(`${this.issuer.replace(/\/$/, "")}/oidc/logout`);
+      window.location.href = logoutUrl.toString();
     }
   };
 }
