@@ -12,7 +12,6 @@ import viteCustomCss from "./plugin-custom-css.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
-import { viteHtmlTransform } from "./plugin-html-transform.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSearchPlugin } from "./plugin-search.js";
@@ -42,7 +41,6 @@ export default function vitePlugin(
     viteAliasPlugin(getCurrentConfig),
     viteRedirectPlugin(getCurrentConfig),
     viteCustomCss(getCurrentConfig),
-    viteHtmlTransform(),
     configReloadPlugin,
   ];
 }
