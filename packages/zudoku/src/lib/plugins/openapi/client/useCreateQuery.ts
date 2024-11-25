@@ -1,4 +1,3 @@
-import hash from "object-hash";
 import { useContext } from "react";
 import type { TypedDocumentString } from "../graphql/graphql.js";
 import { GraphQLContext } from "./GraphQLContext.js";
@@ -14,6 +13,6 @@ export const useCreateQuery = <TResult, TVariables>(
 
   return {
     queryFn: () => graphqlClient.fetch(query, ...variables),
-    queryKey: [`graphql/${hash(query.toString())}`],
+    queryKey: [query, variables],
   } as const;
 };
