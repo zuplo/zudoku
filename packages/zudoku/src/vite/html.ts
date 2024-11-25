@@ -1,5 +1,3 @@
-import { themeToggle } from "../lib/themeToggle.js";
-
 export function getDevHtml(jsEntry: string) {
   return `<!doctype html>
 <html lang="en">
@@ -31,7 +29,6 @@ export function getBuildHtml({
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <script type="module" crossorigin src="${jsEntry}"></script>
     <link rel="stylesheet" crossorigin href="${cssEntry}">
-    <script type="module">(${themeToggle.toString()})();</script>
     <!--app-helmet-->
     <link rel="preconnect" href="https://cdn.zudoku.dev/">
   </head>

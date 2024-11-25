@@ -3,7 +3,6 @@ import { createBrowserRouter } from "react-router-dom";
 import { Bootstrap } from "zudoku/components";
 import type { ZudokuConfig } from "../config/validators/validate.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";
-import { themeToggle } from "../lib/themeToggle.js";
 import "../lib/util/logInit.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
@@ -12,8 +11,6 @@ const root = document.querySelector("div[data-api-url]");
 if (!root) {
   throw new Error("No div found with attribute data-api-url");
 }
-
-themeToggle();
 
 const apiUrl = root.getAttribute("data-api-url");
 const pageTitle = document.getElementsByTagName("title")[0]!.innerText;
