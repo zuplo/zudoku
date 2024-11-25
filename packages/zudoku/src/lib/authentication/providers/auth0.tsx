@@ -57,12 +57,12 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
         redirectUrl.toString(),
       );
 
-      window.location.href = logoutUrl.toString();
+      // window.location.href = logoutUrl.toString();
     } else {
       const logoutUrl = new URL(
         `${this.issuer.replace(/\/$/, "")}/oidc/logout`,
       );
-      window.location.href = logoutUrl.toString();
+      // window.location.href = logoutUrl.toString();
     }
   };
 }
