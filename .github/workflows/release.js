@@ -3,7 +3,6 @@ export default async function runRelease({ github, context }) {
   const { owner, repo } = context.repo;
   const tag_name = `v${ZUDOKU_VERSION}`;
   const eventName = context.eventName;
-  const prereleaseName = "Upcoming release";
 
   const releases = await github.paginate(github.rest.repos.listReleases, {
     owner,
@@ -36,19 +35,16 @@ export default async function runRelease({ github, context }) {
     });
   } else {
     if (existingPrerelease) {
-      await github.rest.repos.updateRelease({
-        ...shared,
+      await github.rest.repos.deleteRelease({
+        owner,
+        repo,
         release_id: existingPrerelease.id,
-        target_commitish: context.sha,
-        name: prereleaseName,
-        prerelease: true,
       });
-      return;
     }
 
     await github.rest.repos.createRelease({
       ...shared,
-      name: prereleaseName,
+      name: "Upcoming release",
       prerelease: true,
     });
   }
