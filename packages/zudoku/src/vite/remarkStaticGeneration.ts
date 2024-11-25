@@ -6,8 +6,8 @@ import vm, { type Context as VmContext } from "node:vm";
 import { SKIP, visit } from "unist-util-visit";
 import { VFile } from "vfile";
 
-const FUNCTION_NAME = "_static";
-const VARIABLE_NAME = "STATIC_CONTENT";
+const FUNCTION_NAME = "generateStaticData";
+const VARIABLE_NAME = "STATIC_DATA";
 
 const isStaticExport = (program: Program) => {
   for (const node of program.body) {
@@ -34,6 +34,37 @@ const isStaticExport = (program: Program) => {
     }
   }
   return false;
+};
+
+const injectResult = (variableName: string, tree: Root, result: unknown) => {
+  const estreeValue = valueToEstree(result, {
+    preserveReferences: true,
+    instanceAsObject: true,
+  });
+
+  tree.children.unshift({
+    type: "mdxjsEsm",
+    value: "",
+    data: {
+      estree: {
+        type: "Program",
+        body: [
+          {
+            type: "VariableDeclaration",
+            declarations: [
+              {
+                type: "VariableDeclarator",
+                id: { type: "Identifier", name: variableName },
+                init: estreeValue,
+              },
+            ],
+            kind: "const",
+          },
+        ],
+        sourceType: "module",
+      },
+    },
+  });
 };
 
 const executeFunction = async (
@@ -95,7 +126,7 @@ export const remarkStaticGeneration = () => async (tree: Root, file: VFile) => {
   const imports: ImportDeclaration[] = [];
   const nodesToProcess: MdxjsEsm[] = [];
 
-  visit(tree, "mdxjsEsm", (node, index) => {
+  visit(tree, "mdxjsEsm", (node) => {
     const innerTree = node.data?.estree;
     if (!innerTree) return;
 
@@ -114,32 +145,6 @@ export const remarkStaticGeneration = () => async (tree: Root, file: VFile) => {
     const executed = await executeFunction(file, node.value, imports);
     if (!executed) continue;
 
-    const estreeValue = valueToEstree(executed, {
-      preserveReferences: true,
-      instanceAsObject: true,
-    });
-    tree.children.unshift({
-      type: "mdxjsEsm",
-      value: "",
-      data: {
-        estree: {
-          type: "Program",
-          body: [
-            {
-              type: "VariableDeclaration",
-              declarations: [
-                {
-                  type: "VariableDeclarator",
-                  id: { type: "Identifier", name: VARIABLE_NAME },
-                  init: estreeValue,
-                },
-              ],
-              kind: "const",
-            },
-          ],
-          sourceType: "module",
-        },
-      },
-    });
+    injectResult(VARIABLE_NAME, tree, executed);
   }
 };
