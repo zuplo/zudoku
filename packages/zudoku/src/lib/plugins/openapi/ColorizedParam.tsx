@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { cn } from "../../util/cn.js";
 import { pastellize } from "../../util/pastellize.js";
 
@@ -61,27 +61,35 @@ export const ColorizedParam = ({
         });
     };
 
-    ref.current.addEventListener("mouseenter", onMouseEnter);
-    ref.current.addEventListener("mouseleave", onMouseLeave);
+    const el = ref.current;
+
+    el.addEventListener("mouseenter", onMouseEnter);
+    el.addEventListener("mouseleave", onMouseLeave);
 
     return () => {
-      ref.current?.removeEventListener("mouseenter", onMouseEnter);
-      ref.current?.removeEventListener("mouseleave", onMouseLeave);
+      el.removeEventListener("mouseenter", onMouseEnter);
+      el.removeEventListener("mouseleave", onMouseLeave);
     };
   }, [normalizedSlug]);
 
   return (
     <span
-      className={cn("inline-flex relative rounded group", className)}
       {...{ [DATA_ATTR]: normalizedSlug }}
+      className={cn(
+        "relative after:rounded after:absolute after:inset-0 after:-bottom-0.5 after:border-b-2 after:transition-opacity after:duration-200",
+        "after:pointer-events-none after:border-[--border-color] after:opacity-30 after:data-[active=true]:opacity-100",
+        className,
+      )}
       ref={ref}
       onClick={onClick}
+      style={
+        {
+          "--border-color": borderColor,
+          "--background-color": backgroundColor,
+        } as CSSProperties
+      }
     >
-      <span
-        className="absolute inset-0 border-b-2 transition-opacity duration-200 opacity-30 group-data-[active=true]:opacity-100"
-        style={{ borderColor, backgroundColor }}
-      />
-      <span className="relative">{children ?? name}</span>
+      {children ?? name}
     </span>
   );
 };
