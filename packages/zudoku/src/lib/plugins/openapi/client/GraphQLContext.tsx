@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, useMemo } from "react";
+import { GraphQLClient } from "zudoku/openapi-worker";
 import { useOasConfig } from "../context.js";
-import { GraphQLClient } from "./GraphQLClient.js";
 
 export const GraphQLContext = createContext<GraphQLClient | undefined>(
   undefined,

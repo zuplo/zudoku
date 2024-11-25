@@ -23,6 +23,9 @@
     "jsx": "react-jsx",
     "types": ["vite/client"],
     "paths": {
+      "zudoku/openapi-worker": [
+        "src/lib/plugins/openapi/client/GraphQLClient.tsx"
+      ],
       "zudoku/components": ["src/lib/components/index.ts"],
       "zudoku/ui/*": ["src/lib/ui/*"],
       "zudoku/plugins/openapi": ["src/lib/plugins/openapi/index.ts"],

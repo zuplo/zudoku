@@ -16,6 +16,7 @@ const entries: Record<string, string> = {
   "auth-clerk": "./src/lib/authentication/providers/clerk.tsx",
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
+  "openapi-worker": "./src/lib/plugins/openapi-worker.ts",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",
@@ -75,6 +76,10 @@ export default defineConfig({
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
         ...Object.keys(pkgJson.optionalDependencies),
+
+        // This is here because otherwise it tries to resolve at build time
+        // we only want this to be resolved when the end app gets built
+        "zudoku/openapi-worker",
       ],
       plugins: [visualizer(), fixWorkerPathsPlugin()],
       onwarn(warning, warn) {
