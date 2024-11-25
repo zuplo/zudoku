@@ -112,30 +112,32 @@ export const Header = memo(function HeaderInner() {
             <MobileTopNavigation />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slotlet name="head-navigation-start" />
-              <ClientOnly
-                fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
-              >
-                {isAuthEnabled && !isAuthenticated ? (
-                  <Button variant="ghost" onClick={() => auth.login()}>
-                    Login
-                  </Button>
-                ) : (
-                  accountItems.length > 0 && (
-                    <DropdownMenu modal={false}>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost">
-                          {profile?.email ? `${profile.email}` : "My Account"}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-56">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {accountItems}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  )
-                )}
-              </ClientOnly>
+              {isAuthEnabled && (
+                <ClientOnly
+                  fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
+                >
+                  {!isAuthenticated ? (
+                    <Button variant="ghost" onClick={() => auth.login()}>
+                      Login
+                    </Button>
+                  ) : (
+                    accountItems.length > 0 && (
+                      <DropdownMenu modal={false}>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost">
+                            {profile?.email ? `${profile.email}` : "My Account"}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56">
+                          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          {accountItems}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )
+                  )}
+                </ClientOnly>
+              )}
               <ThemeSwitch />
               <Slotlet name="head-navigation-end" />
             </div>
