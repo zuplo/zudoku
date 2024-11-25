@@ -62,7 +62,6 @@
     "build:standalone:html": {
       "dependsOn": ["^build"],
       "dependsOn": ["build:standalone:vite"]
-    },
-    "codegen": {}
+    }
   }
 }

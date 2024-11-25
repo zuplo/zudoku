@@ -44,7 +44,7 @@ export const useCurrentItem = () => {
   const location = useLocation();
   const nav = useCurrentNavigation();
 
-  const currentSidebar = nav.data.sidebar;
+  const currentSidebar = nav.sidebar;
 
   return traverseSidebar(currentSidebar, (item) => {
     if (item.type === "doc" && joinPath(item.id) === location.pathname) {
@@ -79,7 +79,7 @@ export const usePrevNext = (): {
 } => {
   const currentId = useLocation().pathname;
   const nav = useCurrentNavigation();
-  const currentSidebar = nav.data.sidebar;
+  const currentSidebar = nav.sidebar;
 
   let prev;
   let next;

@@ -31,3 +31,5 @@ export const createServer = () =>
       }),
     ],
   });
+
+export type LocalServer = ReturnType<typeof createServer>;

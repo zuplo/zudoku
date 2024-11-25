@@ -1,17 +1,13 @@
 import { ResultOf } from "@graphql-typed-document-node/core";
-import type { CSSProperties } from "react";
-import { useQuery } from "urql";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
-import { DeveloperHint } from "../../components/DeveloperHint.js";
-import { ErrorPage } from "../../components/ErrorPage.js";
 import { Heading } from "../../components/Heading.js";
-import { InlineCode } from "../../components/InlineCode.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
-import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
 import { Endpoint } from "./Endpoint.js";
 import { OperationListItem } from "./OperationListItem.js";
 import StaggeredRender from "./StaggeredRender.js";
+import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 
@@ -100,41 +96,10 @@ const AllOperationsQuery = graphql(/* GraphQL */ `
   }
 `);
 
-const suspenseContext = { suspense: true };
-
 export const OperationList = () => {
-  const { type, input } = useOasConfig();
-
-  const [result] = useQuery({
-    query: AllOperationsQuery,
-    variables: { type, input },
-    context: suspenseContext,
-  });
-
-  const error = result.error?.graphQLErrors.at(0);
-
-  // Looks like there is no Suspense level error handling (yet)?
-  // So we handle the error case in the component directly
-  if (error) {
-    return (
-      <ErrorPage
-        category="Error"
-        title="Schema cannot be displayed"
-        message={
-          <>
-            <DeveloperHint className="mb-4">
-              Check your configuration value <InlineCode>apis.type</InlineCode>{" "}
-              and <InlineCode>apis.input</InlineCode> in the Zudoku config.
-            </DeveloperHint>
-            An error occurred while trying to fetch the API reference:
-            <SyntaxHighlight code={error.toString()} language="plain" />
-          </>
-        }
-      />
-    );
-  }
-
-  if (!result.data) return null;
+  const { input, type } = useOasConfig();
+  const query = useCreateQuery(AllOperationsQuery, { input, type });
+  const result = useSuspenseQuery(query);
 
   return (
     <div className="pt-[--padding-content-top]">

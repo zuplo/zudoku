@@ -1,9 +1,10 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState, useTransition } from "react";
-import { useQuery } from "urql";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Button } from "../../ui/Button.js";
+import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 import { SimpleSelect } from "./SimpleSelect.js";
@@ -42,18 +43,12 @@ const CopyButton = ({ url }: { url: string }) => {
   );
 };
 
-const context = { suspense: true } as const;
-
 export const Endpoint = () => {
-  const [result] = useQuery({
-    query: ServersQuery,
-    variables: useOasConfig(),
-    context,
-  });
+  const { input, type } = useOasConfig();
+  const query = useCreateQuery(ServersQuery, { input, type });
+  const result = useSuspenseQuery(query);
   const [, startTransition] = useTransition();
   const { selectedServer, setSelectedServer } = useSelectedServerStore();
-
-  if (!result.data) return null;
 
   const { servers } = result.data.schema;
 

@@ -1,4 +1,4 @@
-export const createWaitForNotify = <T extends NonNullable<unknown>>() => {
+export const createWaitForNotify = <T>() => {
   const resolveMap = new Map<string, (value: T | PromiseLike<T>) => void>();
 
   const waitFor = (id: string) =>

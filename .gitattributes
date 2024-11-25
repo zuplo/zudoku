@@ -1,0 +1,3 @@
+* text=auto
+packages/zudoku/src/lib/plugins/openapi/graphql/** linguist-generated
+packages/zudoku/schema.graphql linguist-generated

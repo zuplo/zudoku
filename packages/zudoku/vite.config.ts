@@ -22,7 +22,6 @@ const entries: Record<string, string> = {
   "plugin-redirect": "./src/lib/plugins/redirect/index.tsx",
   "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
-  "openapi-worker": "./src/lib/plugins/openapi-worker.ts",
   ...uiComponents,
 };
 
@@ -76,10 +75,6 @@ export default defineConfig({
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
         ...Object.keys(pkgJson.optionalDependencies),
-
-        // This is here because otherwise it tries to resolve at build time
-        // we only want this to be resolved when the end app gets built
-        "zudoku/openapi-worker",
       ],
       plugins: [visualizer(), fixWorkerPathsPlugin()],
       onwarn(warning, warn) {

@@ -204,11 +204,6 @@ export async function getViteConfig(
           : getAppClientEntryPath(),
       ],
       include: ["react-dom/client"],
-      exclude: [
-        // Vite does not like optimizing the worker dependency
-        "zudoku/openapi-worker",
-        "worker",
-      ],
     },
     // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
     assetsInclude: ["/__z/entry.client.tsx"],
