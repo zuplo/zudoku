@@ -80,6 +80,7 @@ export const ColorizedParam = ({
         "after:pointer-events-none after:border-[--border-color] after:opacity-30 after:data-[active=true]:opacity-100",
         className,
       )}
+      suppressHydrationWarning
       ref={ref}
       onClick={onClick}
       style={
