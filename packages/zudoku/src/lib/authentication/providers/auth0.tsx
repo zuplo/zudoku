@@ -47,11 +47,10 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     // so we use the IdP logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
       const logoutUrl = new URL(as.end_session_endpoint);
-      // TODO: get id_token and set hint
-      // const { id_token } = session;
-      // if (id_token) {
-      //   logoutUrl.searchParams.set("id_token_hint", id_token);
-      // }
+      const id_token = await this.getAccessToken();
+      if (id_token) {
+        logoutUrl.searchParams.set("id_token_hint", id_token);
+      }
       logoutUrl.searchParams.set(
         "post_logout_redirect_uri",
         redirectUrl.toString(),
@@ -59,7 +58,9 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
 
       window.location.href = logoutUrl.toString();
     } else {
-      const logoutUrl = new URL(`${this.issuer.replace(/\/$/, "")}/oidc/logout`);
+      const logoutUrl = new URL(
+        `${this.issuer.replace(/\/$/, "")}/oidc/logout`,
+      );
       window.location.href = logoutUrl.toString();
     }
   };
