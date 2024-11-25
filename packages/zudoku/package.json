@@ -34,7 +34,6 @@
     "./plugins/redirect": "./src/lib/plugins/redirect/index.ts",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.ts",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
-    "./openapi-worker": "./src/lib/plugins/openapi-worker.ts",
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
@@ -96,10 +95,6 @@
         "import": "./lib/zudoku.plugin-search-inkeep.js",
         "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
       },
-      "./openapi-worker": {
-        "import": "./lib/zudoku.openapi-worker.js",
-        "types": "./dist/lib/plugins/openapi-worker.d.ts"
-      },
       "./components": {
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
@@ -132,6 +127,7 @@
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html",
     "hack:fix-worker-paths": "node ./scripts/hack-worker.mjs",
     "clean": "tsc --build --clean",
+    "codegen": "graphql-codegen --config ./src/codegen.ts",
     "test": "node --test --enable-source-maps"
   },
   "dependencies": {
@@ -169,7 +165,7 @@
     "@sindresorhus/slugify": "2.2.1",
     "@stefanprobst/rehype-extract-toc": "2.2.0",
     "@tailwindcss/typography": "0.5.15",
-    "@tanstack/react-query": "5.59.13",
+    "@tanstack/react-query": "5.61.0",
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.1",
@@ -233,6 +229,8 @@
     "zustand": "5.0.0"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "5.0.3",
+    "@graphql-codegen/client-preset": "4.5.0",
     "@types/express": "5.0.0",
     "@types/har-format": "1.2.15",
     "@types/json-schema": "7.0.15",

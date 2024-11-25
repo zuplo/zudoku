@@ -1,8 +1,8 @@
 import { cx } from "class-variance-authority";
 import { Suspense } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../authentication/hook.js";
 import { TopNavigationItem } from "../../config/validators/validate.js";
+import { useAuth } from "../authentication/hook.js";
 import { joinPath } from "../util/joinPath.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
@@ -32,7 +32,7 @@ export const TopNavigation = () => {
       <nav className="hidden lg:block border-b text-sm px-12 h-[--top-nav-height]">
         <ul className="flex flex-row items-center gap-8">
           {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
-          <li key={item.id}>
+            <li key={item.id}>
               <TopNavItem {...item} />
             </li>
           ))}
@@ -66,7 +66,7 @@ const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
   }
 
   // Manually set the active sidebar based on our logic of what is active
-  const isActive = nav.data.topNavItem?.id === id;
+  const isActive = nav.topNavItem?.id === id;
 
   return (
     <Link

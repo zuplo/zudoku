@@ -15,10 +15,10 @@ export const Sidebar = () => {
     <>
       <SidebarWrapper
         ref={navRef}
-        pushMainContent={navigation.data.sidebar.length > 0}
+        pushMainContent={navigation.sidebar.length > 0}
       >
         <Slotlet name="zudoku-before-navigation" />
-        {navigation.data.sidebar.map((item) => (
+        {navigation.sidebar.map((item) => (
           <SidebarItem key={item.label} item={item} />
         ))}
         <Slotlet name="zudoku-after-navigation" />
@@ -30,7 +30,7 @@ export const Sidebar = () => {
         <VisuallyHidden>
           <DrawerTitle>Sidebar</DrawerTitle>
         </VisuallyHidden>
-        {navigation.data.sidebar.map((item) => (
+        {navigation.sidebar.map((item) => (
           <SidebarItem key={item.label} item={item} />
         ))}
       </DrawerContent>

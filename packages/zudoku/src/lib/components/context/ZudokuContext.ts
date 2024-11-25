@@ -49,18 +49,13 @@ export const useCurrentNavigation = () => {
     topNavigation.find((t) => t.id === currentSidebarItem?.[0]) ??
     topNavigation.find((item) => matchPath(item.id, location.pathname));
 
-  return useSuspenseQuery({
-    queryFn: async () => {
-      const pluginSidebar = await getPluginSidebar(location.pathname);
-
-      return {
-        sidebar: [
-          ...(currentSidebarItem ? currentSidebarItem[1] : []),
-          ...pluginSidebar,
-        ],
-        topNavItem: currentTopNavItem,
-      };
-    },
-    queryKey: ["navigation", location.pathname],
+  const { data } = useSuspenseQuery({
+    queryFn: () => getPluginSidebar(location.pathname),
+    queryKey: ["plugin-sidebar", location.pathname],
   });
+
+  return {
+    sidebar: [...(currentSidebarItem ? currentSidebarItem[1] : []), ...data],
+    topNavItem: currentTopNavItem,
+  };
 };

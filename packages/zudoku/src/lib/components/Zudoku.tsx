@@ -1,5 +1,5 @@
 import { MDXProvider } from "@mdx-js/react";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
@@ -78,22 +78,28 @@ const ZudokoInner = memo(
 
     return (
       <QueryClientProvider client={queryClient}>
-        <Helmet>{heads}</Helmet>
-        <StaggeredRenderContext.Provider value={staggeredValue}>
-          <ZudokuProvider context={zudokuContext}>
-            <MDXProvider components={mdxComponents}>
-              <ThemeProvider attribute="class" disableTransitionOnChange>
-                <ComponentsProvider value={components}>
-                  <SlotletProvider slotlets={props.slotlets}>
-                    <ViewportAnchorProvider>
-                      {children ?? <Outlet />}
-                    </ViewportAnchorProvider>
-                  </SlotletProvider>
-                </ComponentsProvider>
-              </ThemeProvider>
-            </MDXProvider>
-          </ZudokuProvider>
-        </StaggeredRenderContext.Provider>
+        <HydrationBoundary
+          state={
+            typeof window !== "undefined" ? (window as any).DATA : undefined
+          }
+        >
+          <Helmet>{heads}</Helmet>
+          <StaggeredRenderContext.Provider value={staggeredValue}>
+            <ZudokuProvider context={zudokuContext}>
+              <MDXProvider components={mdxComponents}>
+                <ThemeProvider attribute="class" disableTransitionOnChange>
+                  <ComponentsProvider value={components}>
+                    <SlotletProvider slotlets={props.slotlets}>
+                      <ViewportAnchorProvider>
+                        {children ?? <Outlet />}
+                      </ViewportAnchorProvider>
+                    </SlotletProvider>
+                  </ComponentsProvider>
+                </ThemeProvider>
+              </MDXProvider>
+            </ZudokuProvider>
+          </StaggeredRenderContext.Provider>
+        </HydrationBoundary>
       </QueryClientProvider>
     );
   },

@@ -1,13 +1,14 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { Fragment, useMemo, useTransition } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "urql";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
+import { useCreateQuery } from "./client/useCreateQuery.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { useOasConfig } from "./context.js";
@@ -75,8 +76,6 @@ export const GetServerQuery = graphql(/* GraphQL */ `
   }
 `);
 
-const context = { suspense: true };
-
 const methodToColor = {
   get: TextColorMap.green,
   post: TextColorMap.blue,
@@ -111,12 +110,10 @@ export const Sidecar = ({
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
 }) => {
-  const oasConfig = useOasConfig();
-  const [result] = useQuery({
-    query: GetServerQuery,
-    variables: oasConfig,
-    context,
-  });
+  const { input, type } = useOasConfig();
+  const query = useCreateQuery(GetServerQuery, { input, type });
+  const result = useSuspenseQuery(query);
+
   const methodTextColor =
     methodToColor[
       operation.method.toLocaleLowerCase() as keyof typeof methodToColor
@@ -165,7 +162,7 @@ export const Sidecar = ({
     const snippet = new HTTPSnippet({
       method: operation.method.toLocaleUpperCase(),
       url:
-        (selectedServer ?? result.data?.schema.url ?? "") +
+        (selectedServer ?? result.data.schema.url ?? "") +
         operation.path.replaceAll("{", ":").replaceAll("}", ""),
       postData: example
         ? {
@@ -187,7 +184,7 @@ export const Sidecar = ({
     operation.method,
     operation.path,
     selectedServer,
-    result.data?.schema.url,
+    result.data.schema.url,
     selectedLang,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
@@ -208,9 +205,9 @@ export const Sidecar = ({
           </span>
           {isOnScreen && (
             <PlaygroundDialogWrapper
-              server={result.data?.schema.url ?? ""}
+              server={result.data.schema.url ?? ""}
               servers={
-                result.data?.schema.servers.map((server) => server.url) ?? []
+                result.data.schema.servers.map((server) => server.url) ?? []
               }
               operation={operation}
             />

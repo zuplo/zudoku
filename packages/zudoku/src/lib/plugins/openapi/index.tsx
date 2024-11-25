@@ -1,11 +1,9 @@
 import { matchPath, useRouteError, type RouteObject } from "react-router-dom";
-import { Client as UrqlClient, cacheExchange, fetchExchange } from "urql";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 
 import { useQuery } from "@tanstack/react-query";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { createClient } from "zudoku/openapi-worker";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ErrorPage } from "../../components/ErrorPage.js";
@@ -13,14 +11,15 @@ import { ColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { Button } from "../../ui/Button.js";
 import { joinPath } from "../../util/joinPath.js";
+import { GraphQLClient } from "./client/GraphQLClient.js";
 import { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { GetServerQuery } from "./Sidecar.js";
 
 const GetCategoriesQuery = graphql(`
   query GetCategories($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
+      url
       tags {
         __typename
         name
@@ -69,12 +68,7 @@ export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");
 
-  const client = config.server
-    ? new UrqlClient({
-        url: config.server,
-        exchanges: [cacheExchange, fetchExchange],
-      })
-    : createClient({ useMemoryClient: config.inMemory ?? false });
+  const client = new GraphQLClient(config);
 
   return {
     getHead: () => {
@@ -102,15 +96,13 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         ...props
       }: Partial<PlaygroundContentProps> & { requireAuth: boolean }) => {
         const auth = useAuth();
+        // We don't have the GraphQL context here
         const serverQuery = useQuery({
-          queryFn: async () => {
-            const result = await client.query(GetServerQuery, {
+          queryFn: () =>
+            client.fetch(GetCategoriesQuery, {
               type: config.type,
               input: config.input,
-            });
-
-            return result.data;
-          },
+            }),
           enabled: !server,
           queryKey: ["playground-server"],
         });
@@ -148,12 +140,10 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
 
-      const { data } = await client.query(GetCategoriesQuery, {
-        input: config.input,
+      const data = await client.fetch(GetCategoriesQuery, {
         type: config.type,
+        input: config.input,
       });
-
-      if (!data) return [];
 
       const categories = data.schema.tags
         .filter((tag) => tag.operations.length > 0)
@@ -186,9 +176,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         {
           async lazy() {
             const { OpenApiRoute } = await import("./Route.js");
-            return {
-              element: <OpenApiRoute client={client} config={config} />,
-            };
+            return { element: <OpenApiRoute config={config} /> };
           },
           errorElement: <OpenApiErrorPage />,
           children: [
