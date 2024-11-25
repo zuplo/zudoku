@@ -1,4 +1,4 @@
-import { matchPath, useRouteError, type RouteObject } from "react-router-dom";
+import { matchPath, type RouteObject } from "react-router-dom";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 
@@ -6,9 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
-import { ErrorPage } from "../../components/ErrorPage.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
-import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { Button } from "../../ui/Button.js";
 import { joinPath } from "../../util/joinPath.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
@@ -36,20 +34,6 @@ const GetCategoriesQuery = graphql(`
     }
   }
 `);
-
-const OpenApiErrorPage = () => {
-  const error = useRouteError();
-  const message =
-    error instanceof Error ? (
-      <SyntaxHighlight code={error.message} />
-    ) : (
-      "An unknown error occurred"
-    );
-
-  return (
-    <ErrorPage category="Error" title="An error occurred" message={message} />
-  );
-};
 
 type InternalOasPluginConfig = { inMemory?: boolean };
 
@@ -140,36 +124,40 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
 
-      const data = await client.fetch(GetCategoriesQuery, {
-        type: config.type,
-        input: config.input,
-      });
+      try {
+        const data = await client.fetch(GetCategoriesQuery, {
+          type: config.type,
+          input: config.input,
+        });
 
-      const categories = data.schema.tags
-        .filter((tag) => tag.operations.length > 0)
-        .map<SidebarItem>((tag) => ({
-          type: "category",
-          label: tag.name || "Other endpoints",
-          collapsible: true,
-          collapsed: false,
-          items: tag.operations.map((operation) => ({
-            type: "link",
-            label: operation.summary ?? operation.path,
-            href: `#${operation.slug}`,
-            badge: {
-              label: operation.method,
-              color: MethodColorMap[operation.method.toLowerCase()]!,
-            },
-          })),
-        }));
+        const categories = data.schema.tags
+          .filter((tag) => tag.operations.length > 0)
+          .map<SidebarItem>((tag) => ({
+            type: "category",
+            label: tag.name || "Other endpoints",
+            collapsible: true,
+            collapsed: false,
+            items: tag.operations.map((operation) => ({
+              type: "link",
+              label: operation.summary ?? operation.path,
+              href: `#${operation.slug}`,
+              badge: {
+                label: operation.method,
+                color: MethodColorMap[operation.method.toLowerCase()]!,
+              },
+            })),
+          }));
 
-      categories.unshift({
-        type: "link",
-        label: "Overview",
-        href: "#description",
-      });
+        categories.unshift({
+          type: "link",
+          label: "Overview",
+          href: "#description",
+        });
 
-      return categories;
+        return categories;
+      } catch {
+        return [];
+      }
     },
     getRoutes: () =>
       [
@@ -178,7 +166,6 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             const { OpenApiRoute } = await import("./Route.js");
             return { element: <OpenApiRoute config={config} /> };
           },
-          errorElement: <OpenApiErrorPage />,
           children: [
             {
               path: basePath,

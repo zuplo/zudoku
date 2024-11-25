@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Callout } from "../ui/Callout.js";
+import { Markdown } from "./Markdown.js";
 
 export const DeveloperHint = ({
   children,
@@ -13,7 +14,11 @@ export const DeveloperHint = ({
   return (
     <Callout type="caution" title="Developer hint" className={className}>
       <div className="flex flex-col gap-2">
-        <div>{children}</div>
+        {typeof children === "string" ? (
+          <Markdown content={children} />
+        ) : (
+          <div>{children}</div>
+        )}
         <small className="italic">
           Note: This hint is only shown in development mode.
         </small>

@@ -14,5 +14,6 @@ export const useCreateQuery = <TResult, TVariables>(
   return {
     queryFn: () => graphqlClient.fetch(query, ...variables),
     queryKey: [query, variables],
+    retry: false,
   } as const;
 };

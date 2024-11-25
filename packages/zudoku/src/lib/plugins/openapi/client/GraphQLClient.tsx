@@ -1,5 +1,7 @@
+import type { GraphQLError } from "graphql/error/index.js";
 import { ulid } from "ulidx";
 import { createWaitForNotify } from "../../../util/createWaitForNotify.js";
+import { ZudokuError } from "../../../util/invariant.js";
 import type { TypedDocumentString } from "../graphql/graphql.js";
 import type { OpenApiPluginOptions } from "../index.js";
 import type { LocalServer } from "./createServer.js";
@@ -7,6 +9,20 @@ import type { WorkerGraphQLMessage } from "./worker.js";
 
 let localServerPromise: Promise<LocalServer> | undefined;
 let worker: SharedWorker | undefined;
+
+type GraphQLResponse<TResult> = {
+  errors?: GraphQLError[];
+  data: TResult;
+};
+
+const throwIfError = (response: GraphQLResponse<unknown>) => {
+  if (!response.errors?.[0]) return;
+
+  throw new ZudokuError(response.errors[0].message, {
+    developerHint:
+      "Check your configuration value `apis.type` and `apis.input` in the Zudoku config.",
+  });
+};
 
 export class GraphQLClient {
   readonly #mode: "remote" | "in-memory" | "worker";
@@ -56,7 +72,11 @@ export class GraphQLClient {
           throw new Error("Network response was not ok");
         }
 
-        return (await response.json()).data as TResult;
+        const result = (await response.json()) as GraphQLResponse<TResult>;
+
+        throwIfError(result);
+
+        return result.data;
       }
 
       case "in-memory": {
@@ -71,24 +91,35 @@ export class GraphQLClient {
           }),
         );
 
-        if (!response.ok) throw new Error("Network response was not ok");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
 
-        return (await response.json()).data as TResult;
+        const result = (await response.json()) as GraphQLResponse<TResult>;
+
+        throwIfError(result);
+
+        return result.data;
       }
 
       case "worker": {
         if (!worker) throw new Error("Worker not initialized");
 
-        const [waitFor, notify] = createWaitForNotify<TResult>();
+        const [waitFor, notify] =
+          createWaitForNotify<GraphQLResponse<TResult>>();
 
         worker.port.onmessage = (e: MessageEvent<WorkerGraphQLMessage>) => {
-          notify(e.data.id, JSON.parse(e.data.body).data as TResult);
+          notify(e.data.id, JSON.parse(e.data.body));
         };
 
         const id = ulid();
         worker.port.postMessage({ id, body } as WorkerGraphQLMessage);
 
-        return await waitFor(id);
+        const result = await waitFor(id);
+
+        throwIfError(result);
+
+        return result.data;
       }
     }
   };
