@@ -25,17 +25,19 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
   };
 
   signOut = async (): Promise<void> => {
+    const as = await this.getAuthServer();
+    const idToken = await this.getAccessToken();
+
     useAuthState.setState({
       isAuthenticated: false,
       isPending: false,
       profile: undefined,
     });
     sessionStorage.clear();
-    const as = await this.getAuthServer();
-
     const redirectUrl = new URL(
       window.location.origin + this.logoutRedirectUrlPath,
     );
+
     redirectUrl.pathname = this.logoutRedirectUrlPath;
 
     // SEE: https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0
@@ -47,9 +49,8 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     // so we use the IdP logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
       const logoutUrl = new URL(as.end_session_endpoint);
-      const id_token = await this.getAccessToken();
-      if (id_token) {
-        logoutUrl.searchParams.set("id_token_hint", id_token);
+      if (idToken) {
+        logoutUrl.searchParams.set("id_token_hint", idToken);
       }
       logoutUrl.searchParams.set(
         "post_logout_redirect_uri",
