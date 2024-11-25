@@ -34,6 +34,7 @@
     "./plugins/redirect": "./src/lib/plugins/redirect/index.ts",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.ts",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
+    "./openapi-worker": "./src/lib/plugins/openapi-worker.ts",
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
@@ -94,6 +95,10 @@
       "./plugins/search-inkeep": {
         "import": "./lib/zudoku.plugin-search-inkeep.js",
         "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
+      },
+      "./openapi-worker": {
+        "import": "./lib/zudoku.openapi-worker.js",
+        "types": "./dist/lib/plugins/openapi-worker.d.ts"
       },
       "./components": {
         "import": "./lib/zudoku.components.js",
