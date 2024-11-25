@@ -1,4 +1,4 @@
-import { dehydrate } from "@tanstack/react-query";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
 import { type HelmetData } from "@zudoku/react-helmet-async";
 import type express from "express";
 import logger from "loglevel";
@@ -12,7 +12,6 @@ import {
 import "virtual:zudoku-theme.css";
 import { BootstrapStatic, ServerError } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import { queryClient } from "../lib/core/ZudokuContext.js";
 import type { FileWritingResponse } from "../vite/prerender.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
@@ -34,6 +33,7 @@ export const render = async ({
   const { query, dataRoutes } = createStaticHandler(routes, {
     basename: config.basePath,
   });
+  const queryClient = new QueryClient();
 
   const request =
     baseRequest instanceof Request
@@ -65,72 +65,72 @@ export const render = async ({
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
 
-  const { pipe } = renderToPipeableStream(
+  const App = (
     <BootstrapStatic
       router={router}
       context={context}
+      queryClient={queryClient}
       helmetContext={helmetContext}
-    />,
-    {
-      onShellError(error) {
-        response.status(500);
-        response.set({ "Content-Type": "text/html" });
-
-        const html = renderToStaticMarkup(<ServerError error={error} />);
-
-        response.send(html);
-      },
-      // for SSG we could use onAllReady instead of onShellReady
-      // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
-      onAllReady() {
-        response.set({ "Content-Type": "text/html" });
-        response.status(status);
-
-        const transformStream = new Transform({
-          transform(chunk, encoding, callback) {
-            response.write(chunk, encoding);
-            callback();
-          },
-        });
-
-        const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
-
-        if (!htmlStart) {
-          throw new Error("No <!--app-html--> found in template");
-        }
-
-        response.write(
-          htmlStart.replace(
-            "<!--app-helmet-->",
-            [
-              helmetContext.helmet.title.toString(),
-              helmetContext.helmet.meta.toString(),
-              helmetContext.helmet.link.toString(),
-              helmetContext.helmet.style.toString(),
-              helmetContext.helmet.script.toString(),
-            ].join("\n"),
-          ),
-        );
-
-        const reactQueryData = dehydrate(queryClient);
-
-        transformStream.on("finish", () =>
-          response.end(
-            htmlEnd?.replace(
-              "</body>",
-              `<script>window.DATA = ${JSON.stringify(reactQueryData)}</script></body>`,
-            ),
-          ),
-        );
-
-        pipe(transformStream);
-      },
-      onError(error) {
-        status = 500;
-        logger.error(error);
-      },
-    },
+    />
   );
+
+  const { pipe } = renderToPipeableStream(App, {
+    onShellError(error) {
+      response.status(500);
+      response.set({ "Content-Type": "text/html" });
+
+      const html = renderToStaticMarkup(<ServerError error={error} />);
+
+      response.send(html);
+    },
+    // for SSG we could use onAllReady instead of onShellReady
+    // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
+    onAllReady() {
+      response.set({ "Content-Type": "text/html" });
+      response.status(status);
+
+      const transformStream = new Transform({
+        transform(chunk, encoding, callback) {
+          response.write(chunk, encoding);
+          callback();
+        },
+      });
+
+      const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
+
+      if (!htmlStart) {
+        throw new Error("No <!--app-html--> found in template");
+      }
+
+      response.write(
+        htmlStart.replace(
+          "<!--app-helmet-->",
+          [
+            helmetContext.helmet.title.toString(),
+            helmetContext.helmet.meta.toString(),
+            helmetContext.helmet.link.toString(),
+            helmetContext.helmet.style.toString(),
+            helmetContext.helmet.script.toString(),
+          ].join("\n"),
+        ),
+      );
+
+      transformStream.on("finish", () => {
+        response.end(
+          htmlEnd?.replace(
+            "</body>",
+            `<script>window.DATA = ${JSON.stringify(dehydrate(queryClient))}</script></body>`,
+          ),
+        );
+      });
+
+      pipe(transformStream);
+    },
+    onError(error) {
+      status = 500;
+      logger.error(error);
+    },
+  });
 };
 
 export function createFetchRequest(

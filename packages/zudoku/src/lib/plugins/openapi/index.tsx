@@ -4,12 +4,12 @@ import { graphql } from "./graphql/index.js";
 
 import { useQuery } from "@tanstack/react-query";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { GraphQLClient } from "zudoku/openapi-worker";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
 import { Button } from "../../ui/Button.js";
 import { joinPath } from "../../util/joinPath.js";
+import { GraphQLClient } from "./client/GraphQLClient.js";
 import { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
@@ -164,7 +164,9 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         {
           async lazy() {
             const { OpenApiRoute } = await import("./Route.js");
-            return { element: <OpenApiRoute config={config} /> };
+            return {
+              element: <OpenApiRoute client={client} config={config} />,
+            };
           },
           children: [
             {
