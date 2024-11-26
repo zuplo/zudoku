@@ -56,14 +56,15 @@ export const SyntaxHighlight = ({
   language = "plain",
   ...props
 }: SyntaxHighlightProps) => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   const [isCopied, setIsCopied] = useState(false);
 
   if (!props.code) {
     return null;
   }
 
-  const highlightTheme = theme === "dark" ? themes.vsDark : themes.github;
+  const highlightTheme =
+    resolvedTheme === "dark" ? themes.vsDark : themes.github;
 
   // hardcoded values from the themes to avoid color flash in SSR
   const themeColorClasses =
