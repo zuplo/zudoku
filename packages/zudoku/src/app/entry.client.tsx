@@ -38,6 +38,13 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
 function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
+    future: {
+      v7_relativeSplatPath: true,
+      v7_fetcherPersist: true,
+      v7_partialHydration: true,
+      v7_skipActionErrorRevalidation: true,
+      v7_normalizeFormMethod: true,
+    },
   });
   createRoot(root).render(<Bootstrap router={router} />);
 }
@@ -46,6 +53,13 @@ async function hydrate(routes: RouteObject[]) {
   await hydrateLazyRoutes(routes);
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
+    future: {
+      v7_relativeSplatPath: true,
+      v7_fetcherPersist: true,
+      v7_partialHydration: true,
+      v7_skipActionErrorRevalidation: true,
+      v7_normalizeFormMethod: true,
+    },
   });
 
   hydrateRoot(root, <Bootstrap hydrate router={router} />);

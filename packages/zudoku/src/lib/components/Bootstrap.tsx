@@ -4,7 +4,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
-import { StrictMode, useMemo } from "react";
+import { StrictMode, useState } from "react";
 import { type createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
   type createStaticRouter,
@@ -20,7 +20,16 @@ const Bootstrap = ({
   hydrate?: boolean;
   router: ReturnType<typeof createBrowserRouter>;
 }) => {
-  const queryClient = useMemo(() => new QueryClient(), []);
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 5,
+          },
+        },
+      }),
+  );
 
   return (
     <StrictMode>
@@ -28,7 +37,10 @@ const Bootstrap = ({
         <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
           <HelmetProvider>
             <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
-              <RouterProvider router={router} />
+              <RouterProvider
+                router={router}
+                future={{ v7_startTransition: true }}
+              />
             </StaggeredRenderContext.Provider>
           </HelmetProvider>
         </HydrationBoundary>
