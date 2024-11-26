@@ -6,14 +6,13 @@ export const useCreateQuery = <TResult, TVariables>(
   query: TypedDocumentString<TResult, TVariables>,
   ...variables: TVariables extends Record<string, never> ? [] : [TVariables]
 ) => {
-  const graphqlClient = useContext(GraphQLContext);
-  if (graphqlClient === undefined) {
+  const graphQLClient = useContext(GraphQLContext);
+  if (graphQLClient === undefined) {
     throw new Error("useGraphQL must be used within a GraphQLProvider");
   }
 
   return {
-    queryFn: () => graphqlClient.fetch(query, ...variables),
-    queryKey: [query, variables],
-    retry: false,
+    queryFn: () => graphQLClient.fetch(query, ...variables),
+    queryKey: [query, variables[0]],
   } as const;
 };

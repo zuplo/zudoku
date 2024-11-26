@@ -1,6 +1,6 @@
 import type { GraphQLError } from "graphql/error/index.js";
 import { ulid } from "ulidx";
-import { createWaitForNotify } from "../../../util/createWaitForNotify.js";
+import { initializeWorker } from "zudoku/openapi-worker";
 import { ZudokuError } from "../../../util/invariant.js";
 import type { TypedDocumentString } from "../graphql/graphql.js";
 import type { OpenApiPluginOptions } from "../index.js";
@@ -26,32 +26,21 @@ const throwIfError = (response: GraphQLResponse<unknown>) => {
 
 export class GraphQLClient {
   readonly #mode: "remote" | "in-memory" | "worker";
+  #pendingRequests = new Map<string, (value: any) => void>();
+  #port: MessagePort | undefined;
 
   constructor(private config: OpenApiPluginOptions) {
     if (config.server) {
       this.#mode = "remote";
     } else if (config.inMemory || typeof SharedWorker === "undefined") {
       this.#mode = "in-memory";
-      localServerPromise = this.initializeLocalServer();
     } else {
       this.#mode = "worker";
-      worker = this.initializeWorker();
     }
   }
 
-  private initializeLocalServer = async () =>
-    await import("./createServer.js").then((m) => m.createServer());
-
-  private initializeWorker = () => {
-    const worker = new SharedWorker(new URL("./worker.ts", import.meta.url), {
-      type: "module",
-    });
-    // eslint-disable-next-line no-console
-    worker.onerror = (e) => console.error(e);
-    worker.port.start();
-
-    return worker;
-  };
+  #initializeLocalServer = () =>
+    import("./createServer.js").then((m) => m.createServer());
 
   fetch = async <TResult, TVariables>(
     query: TypedDocumentString<TResult, TVariables>,
@@ -73,13 +62,16 @@ export class GraphQLClient {
         }
 
         const result = (await response.json()) as GraphQLResponse<TResult>;
-
         throwIfError(result);
 
         return result.data;
       }
 
       case "in-memory": {
+        if (!localServerPromise) {
+          localServerPromise = this.#initializeLocalServer();
+        }
+
         const localServer = await localServerPromise;
         if (!localServer) throw new Error("Local server not initialized");
 
@@ -96,27 +88,49 @@ export class GraphQLClient {
         }
 
         const result = (await response.json()) as GraphQLResponse<TResult>;
-
         throwIfError(result);
 
         return result.data;
       }
 
       case "worker": {
-        if (!worker) throw new Error("Worker not initialized");
+        if (!worker) {
+          worker = initializeWorker();
+        }
 
-        const [waitFor, notify] =
-          createWaitForNotify<GraphQLResponse<TResult>>();
+        if (!this.#port) {
+          const channel = new MessageChannel();
 
-        worker.port.onmessage = (e: MessageEvent<WorkerGraphQLMessage>) => {
-          notify(e.data.id, JSON.parse(e.data.body));
-        };
+          worker.port.postMessage({ port: channel.port2 }, [channel.port2]);
+
+          this.#port = channel.port1;
+
+          this.#port.onmessage = (e: MessageEvent<WorkerGraphQLMessage>) => {
+            const { id, body } = e.data;
+            const resolve = this.#pendingRequests.get(id);
+            if (resolve) {
+              const result = JSON.parse(body);
+              resolve(result);
+              this.#pendingRequests.delete(id);
+            } else {
+              // eslint-disable-next-line no-console
+              console.error(`No pending request found for id: ${id}`);
+            }
+          };
+
+          this.#port.start();
+        }
 
         const id = ulid();
-        worker.port.postMessage({ id, body } as WorkerGraphQLMessage);
 
-        const result = await waitFor(id);
+        const resultPromise = new Promise<GraphQLResponse<TResult>>(
+          (resolve) => {
+            this.#pendingRequests.set(id, resolve);
+            this.#port!.postMessage({ id, body } as WorkerGraphQLMessage);
+          },
+        );
 
+        const result = await resultPromise;
         throwIfError(result);
 
         return result.data;

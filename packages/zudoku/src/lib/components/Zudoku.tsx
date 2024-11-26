@@ -1,5 +1,4 @@
 import { MDXProvider } from "@mdx-js/react";
-import { HydrationBoundary, QueryClientProvider } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
@@ -14,11 +13,7 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useNavigation } from "react-router-dom";
 import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
-import {
-  queryClient,
-  ZudokuContext,
-  ZudokuContextOptions,
-} from "../core/ZudokuContext.js";
+import { ZudokuContext, ZudokuContextOptions } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { MdxComponents } from "../util/MdxComponents.js";
@@ -77,30 +72,24 @@ const ZudokoInner = memo(
       .map((plugin, i) => <Fragment key={i}>{plugin.getHead?.()}</Fragment>);
 
     return (
-      <QueryClientProvider client={queryClient}>
-        <HydrationBoundary
-          state={
-            typeof window !== "undefined" ? (window as any).DATA : undefined
-          }
-        >
-          <Helmet>{heads}</Helmet>
-          <StaggeredRenderContext.Provider value={staggeredValue}>
-            <ZudokuProvider context={zudokuContext}>
-              <MDXProvider components={mdxComponents}>
-                <ThemeProvider attribute="class" disableTransitionOnChange>
-                  <ComponentsProvider value={components}>
-                    <SlotletProvider slotlets={props.slotlets}>
-                      <ViewportAnchorProvider>
-                        {children ?? <Outlet />}
-                      </ViewportAnchorProvider>
-                    </SlotletProvider>
-                  </ComponentsProvider>
-                </ThemeProvider>
-              </MDXProvider>
-            </ZudokuProvider>
-          </StaggeredRenderContext.Provider>
-        </HydrationBoundary>
-      </QueryClientProvider>
+      <>
+        <Helmet>{heads}</Helmet>
+        <StaggeredRenderContext.Provider value={staggeredValue}>
+          <ZudokuProvider context={zudokuContext}>
+            <MDXProvider components={mdxComponents}>
+              <ThemeProvider attribute="class" disableTransitionOnChange>
+                <ComponentsProvider value={components}>
+                  <SlotletProvider slotlets={props.slotlets}>
+                    <ViewportAnchorProvider>
+                      {children ?? <Outlet />}
+                    </ViewportAnchorProvider>
+                  </SlotletProvider>
+                </ComponentsProvider>
+              </ThemeProvider>
+            </MDXProvider>
+          </ZudokuProvider>
+        </StaggeredRenderContext.Provider>
+      </>
     );
   },
 );

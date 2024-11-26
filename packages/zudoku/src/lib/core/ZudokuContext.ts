@@ -1,4 +1,3 @@
-import { QueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import { TopNavigationItem } from "../../config/validators/validate.js";
@@ -21,10 +20,7 @@ export interface ApiIdentity {
   id: string;
 }
 
-export const queryClient = new QueryClient();
-
 export type ApiKeyCache = "api-keys";
-export type ZudokuCacheKey = ApiKeyCache | string;
 
 type Metadata = Partial<{
   title: string;
@@ -96,10 +92,6 @@ export class ZudokuContext {
         .filter(needsInitialization)
         .map((plugin) => plugin.initialize?.(this)),
     );
-  };
-
-  invalidateCache = async (key: ZudokuCacheKey[]) => {
-    await queryClient.invalidateQueries({ queryKey: key });
   };
 
   getApiIdentities = async () => {

@@ -8,7 +8,7 @@ const viteAliasPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       const config = getConfig();
 
       const replacements = {
-        "zudoku/openapi-worker": `${config.moduleDir}/src/lib/plugins/openapi/client/GraphQLClient.tsx`,
+        "zudoku/openapi-worker": `${config.moduleDir}/src/lib/plugins/openapi-worker.ts`,
         "zudoku/components": `${config.moduleDir}/src/lib/components/index.ts`,
         "zudoku/plugins/openapi": `${config.moduleDir}/src/lib/plugins/openapi/index.tsx`,
         "zudoku/plugins/search-inkeep": `${config.moduleDir}/src/lib/plugins/search-inkeep/index.tsx`,

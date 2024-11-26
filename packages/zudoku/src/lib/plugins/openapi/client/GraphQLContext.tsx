@@ -1,16 +1,16 @@
-import { createContext, type ReactNode, useMemo } from "react";
-import { GraphQLClient } from "zudoku/openapi-worker";
-import { useOasConfig } from "../context.js";
+import { createContext, type ReactNode } from "react";
+import { GraphQLClient } from "./GraphQLClient.js";
 
 export const GraphQLContext = createContext<GraphQLClient | undefined>(
   undefined,
 );
 
-export const GraphQLProvider = ({ children }: { children: ReactNode }) => {
-  const config = useOasConfig();
-  const client = useMemo(() => new GraphQLClient(config), [config]);
-
-  return (
-    <GraphQLContext.Provider value={client}>{children}</GraphQLContext.Provider>
-  );
-};
+export const GraphQLProvider = ({
+  children,
+  client,
+}: {
+  children: ReactNode;
+  client: GraphQLClient;
+}) => (
+  <GraphQLContext.Provider value={client}>{children}</GraphQLContext.Provider>
+);

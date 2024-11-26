@@ -51,10 +51,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div
-        className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12"
-        suppressHydrationWarning
-      >
+      <div className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12">
         <Suspense
           fallback={
             <main className="grid h-[calc(100vh-var(--header-height))] place-items-center">
