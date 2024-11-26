@@ -35,11 +35,23 @@ export default async function runRelease({ github, context }) {
     });
   } else {
     if (existingPrerelease) {
-      await github.rest.repos.deleteRelease({
+      const lastRelease = releases.find((r) => !r.prerelease);
+
+      // Release notes are not re-generated if the release is updated so we do it manually
+      const releaseNotes = await github.rest.repos.generateReleaseNotes({
         owner,
         repo,
-        release_id: existingPrerelease.id,
+        tag_name,
+        previous_tag_name: lastRelease.tag_name,
       });
+
+      await github.rest.repos.updateRelease({
+        ...shared,
+        release_id: existingPrerelease.id,
+        body: releaseNotes.body,
+        prerelease: true,
+      });
+      return;
     }
 
     await github.rest.repos.createRelease({
