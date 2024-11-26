@@ -1,11 +1,9 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { cx } from "class-variance-authority";
 import { MenuIcon } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
 import { useAuth } from "../authentication/hook.js";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
   DrawerTitle,
   DrawerTrigger,
@@ -13,14 +11,19 @@ import {
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Search } from "./Search.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { isHiddenItem } from "./TopNavigation.js";
+import { isHiddenItem, TopNavItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
   const { topNavigation } = useZudoku();
   const { isAuthenticated } = useAuth();
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <Drawer direction="right">
+    <Drawer
+      direction="right"
+      open={drawerOpen}
+      onOpenChange={(open) => setDrawerOpen(open)}
+    >
       <div className="flex lg:hidden justify-self-end">
         <DrawerTrigger className="lg:hidden">
           <MenuIcon size={22} />
@@ -42,19 +45,9 @@ export const MobileTopNavigation = () => {
           </li>
           {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
             <li key={item.label}>
-              <NavLink
-                className={({ isActive }) =>
-                  cx(
-                    "block font-medium border-b-2",
-                    isActive
-                      ? "border-primary text-foreground"
-                      : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
-                  )
-                }
-                to={item.id}
-              >
-                <DrawerClose>{item.label}</DrawerClose>
-              </NavLink>
+              <button onClick={() => setDrawerOpen(false)}>
+                <TopNavItem {...item} />
+              </button>
             </li>
           ))}
         </ul>
