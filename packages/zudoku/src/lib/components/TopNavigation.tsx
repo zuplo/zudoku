@@ -1,10 +1,11 @@
 import { cx } from "class-variance-authority";
 import { Suspense } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { TopNavigationItem } from "../../config/validators/validate.js";
 import { useAuth } from "../authentication/hook.js";
+import { ZudokuError } from "../util/invariant.js";
 import { joinPath } from "../util/joinPath.js";
-import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
+import { useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
 
 export const isHiddenItem =
@@ -44,7 +45,6 @@ export const TopNavigation = () => {
 
 const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
   const { sidebars } = useZudoku();
-  const nav = useCurrentNavigation();
   const currentSidebar = sidebars[id];
 
   // TODO: This is a bit of a hack to get the first link in the sidebar
@@ -60,25 +60,24 @@ const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
       : joinPath(id));
 
   if (!first) {
-    throw new Error(
-      `No links found in top navigation for top navigation '${id}'. Check that the sidebar isn't empty or that a default link set.`,
-    );
+    throw new ZudokuError("Page not found.", {
+      developerHint: `No links found in top navigation for '${id}'. Check that the sidebar isn't empty or that a default link is set.`,
+    });
   }
 
-  // Manually set the active sidebar based on our logic of what is active
-  const isActive = nav.topNavItem?.id === id;
-
   return (
-    <Link
-      className={cx(
-        "block py-3.5 font-medium -mb-px border-b-2",
-        isActive
-          ? "border-primary text-foreground"
-          : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
-      )}
+    <NavLink
+      className={({ isActive, isPending }) =>
+        cx(
+          "block py-3.5 font-medium -mb-px border-b-2",
+          isActive || isPending
+            ? "border-primary text-foreground"
+            : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
+        )
+      }
       to={first}
     >
       {label}
-    </Link>
+    </NavLink>
   );
 };
