@@ -6,10 +6,10 @@ import { pastellize } from "../../util/pastellize.js";
 export const DATA_ATTR = "data-linked-param";
 
 export const usePastellizedColor = (name: string) => {
-  const { theme } = useTheme();
+  const { resolvedTheme } = useTheme();
   return pastellize(
     name,
-    theme === "light" ? { saturation: 85, lightness: 50 } : undefined,
+    resolvedTheme === "light" ? { saturation: 85, lightness: 50 } : undefined,
   );
 };
 

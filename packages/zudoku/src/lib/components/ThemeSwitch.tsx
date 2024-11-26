@@ -4,18 +4,20 @@ import { Button } from "zudoku/ui/Button.js";
 import { ClientOnly } from "./ClientOnly.js";
 
 export const ThemeSwitch = () => {
-  const { theme, setTheme } = useTheme();
-  const ThemeIcon = theme === "dark" ? MoonStarIcon : SunIcon;
+  const { resolvedTheme, setTheme } = useTheme();
+  const ThemeIcon = resolvedTheme === "dark" ? MoonStarIcon : SunIcon;
 
   return (
     <ClientOnly>
       <Button
         variant="ghost"
         aria-label={
-          theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+          resolvedTheme === "dark"
+            ? "Switch to light mode"
+            : "Switch to dark mode"
         }
         className="p-2.5 -m-2.5 rounded-full"
-        onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       >
         <ThemeIcon size={18} />
       </Button>
