@@ -107,7 +107,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
     };
-    sessionStorage.setItem("token-state", JSON.stringify(tokens));
+    localStorage.setItem("token-state", JSON.stringify(tokens));
   }
 
   async signUp({ redirectTo }: { redirectTo?: string } = {}) {
@@ -194,7 +194,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
-    const tokenState = sessionStorage.getItem("token-state");
+    const tokenState = localStorage.getItem("token-state");
     if (!tokenState) {
       throw new AuthorizationError("User is not authenticated");
     }
@@ -235,7 +235,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       isPending: false,
       profile: undefined,
     });
-    sessionStorage.clear();
+    localStorage.removeItem("token-state");
 
     const as = await this.getAuthServer();
 
