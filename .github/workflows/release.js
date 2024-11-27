@@ -48,7 +48,7 @@ export default async function runRelease({ github, context }) {
       await github.rest.repos.updateRelease({
         ...shared,
         release_id: existingPrerelease.id,
-        body: releaseNotes.body,
+        body: releaseNotes.data.body,
         prerelease: true,
       });
       return;
