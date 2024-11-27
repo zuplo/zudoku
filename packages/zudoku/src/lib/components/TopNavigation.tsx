@@ -1,11 +1,11 @@
 import { cx } from "class-variance-authority";
 import { Suspense } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigation } from "react-router-dom";
 import { TopNavigationItem } from "../../config/validators/validate.js";
 import { useAuth } from "../authentication/hook.js";
 import { ZudokuError } from "../util/invariant.js";
 import { joinPath } from "../util/joinPath.js";
-import { useZudoku } from "./context/ZudokuContext.js";
+import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
 
 export const isHiddenItem =
@@ -43,9 +43,16 @@ export const TopNavigation = () => {
   );
 };
 
-const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
+export const TopNavItem = ({
+  id,
+  label,
+  default: defaultLink,
+}: TopNavigationItem) => {
   const { sidebars } = useZudoku();
   const currentSidebar = sidebars[id];
+  const currentNav = useCurrentNavigation();
+  const isNavigating = Boolean(useNavigation().location);
+  const isActive = currentNav.topNavItem?.id === id && !isNavigating;
 
   // TODO: This is a bit of a hack to get the first link in the sidebar
   // We should really process this when we load the config so we can validate
@@ -66,10 +73,12 @@ const TopNavItem = ({ id, label, default: defaultLink }: TopNavigationItem) => {
   }
 
   return (
+    // We don't use isActive here because it has to be inside the sidebar,
+    // the top nav id doesn't necessarily start with the sidebar id
     <NavLink
-      className={({ isActive, isPending }) =>
+      className={({ isPending }) =>
         cx(
-          "block py-3.5 font-medium -mb-px border-b-2",
+          "block lg:py-3.5 font-medium -mb-px border-b-2",
           isActive || isPending
             ? "border-primary text-foreground"
             : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
