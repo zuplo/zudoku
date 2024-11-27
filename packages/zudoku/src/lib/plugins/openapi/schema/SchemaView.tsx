@@ -73,7 +73,7 @@ export const SchemaView = ({
     ) {
       return (
         <Card className="p-4 flex gap-2 items-center">
-          {"name" in schema && <>{schema.name}</>}
+          {"name" in schema && <>{schema.name as string}</>}
           <span className="text-sm text-muted-foreground">object</span>
           {schema.description && (
             <Markdown
