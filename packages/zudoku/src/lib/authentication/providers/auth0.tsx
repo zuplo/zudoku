@@ -31,9 +31,10 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     useAuthState.setState({
       isAuthenticated: false,
       isPending: false,
-      profile: undefined,
+      profile: null,
+      providerData: null,
     });
-    sessionStorage.clear();
+
     const redirectUrl = new URL(
       window.location.origin + this.logoutRedirectUrlPath,
     );

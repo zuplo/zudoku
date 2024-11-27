@@ -1,23 +1,57 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { shared } from "./use-broadcast/shared.js";
+import { create, type Mutate, type StoreApi } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
-export interface AuthState {
+export interface AuthState<ProviderData = unknown> {
   isAuthenticated: boolean;
   isPending: boolean;
-  profile?: UserProfile;
+  profile: UserProfile | null;
+  providerData: ProviderData | null;
 }
 
-export const useAuthState = create<AuthState>(
-  shared(
-    (_) => ({
+export class Authentication {
+  async setLoggedIn(isLoggedIn: boolean) {}
+  async setProfile() {}
+  async setPersistentProviderData() {}
+}
+
+export type StoreWithPersist<T> = Mutate<
+  StoreApi<T>,
+  [["zustand/persist", unknown]]
+>;
+
+export const withStorageDOMEvents = <T>(store: StoreWithPersist<T>) => {
+  const storageEventCallback = (e: StorageEvent) => {
+    if (e.key === store.persist.getOptions().name && e.newValue) {
+      void store.persist.rehydrate();
+    }
+  };
+
+  window.addEventListener("storage", storageEventCallback);
+
+  return () => {
+    window.removeEventListener("storage", storageEventCallback);
+  };
+};
+
+export const useAuthState = create<AuthState>()(
+  persist(
+    (state) => ({
       isAuthenticated: false,
       isPending: false,
-      profile: undefined,
+      profile: null,
+      providerData: null,
     }),
-    { name: "auth-state" },
+    {
+      name: "auth-state",
+      storage: createJSONStorage(() => localStorage),
+      // partialize: (s) => ({ state: s }),
+    },
   ),
 );
+
+if (typeof window !== "undefined") {
+  withStorageDOMEvents(useAuthState);
+}
 
 export interface UserProfile {
   sub: string;
