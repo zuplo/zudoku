@@ -4,7 +4,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
-import { StrictMode, useState } from "react";
+import { StrictMode } from "react";
 import { type createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
   type createStaticRouter,
@@ -13,41 +13,36 @@ import {
 } from "react-router-dom/server.js";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+    },
+  },
+});
+
 const Bootstrap = ({
   router,
   hydrate = false,
 }: {
   hydrate?: boolean;
   router: ReturnType<typeof createBrowserRouter>;
-}) => {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 1000 * 60 * 5,
-          },
-        },
-      }),
-  );
-
-  return (
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
-          <HelmetProvider>
-            <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
-              <RouterProvider
-                router={router}
-                future={{ v7_startTransition: true }}
-              />
-            </StaggeredRenderContext.Provider>
-          </HelmetProvider>
-        </HydrationBoundary>
-      </QueryClientProvider>
-    </StrictMode>
-  );
-};
+}) => (
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
+        <HelmetProvider>
+          <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
+            <RouterProvider
+              router={router}
+              future={{ v7_startTransition: true }}
+            />
+          </StaggeredRenderContext.Provider>
+        </HelmetProvider>
+      </HydrationBoundary>
+    </QueryClientProvider>
+  </StrictMode>
+);
 
 const BootstrapStatic = ({
   router,
