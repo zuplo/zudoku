@@ -26,7 +26,7 @@ importers:
         version: 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@19.8.4)
       '@nx/vite':
         specifier: 19.8.4
-        version: 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0(@types/node@22.7.5)(@vitest/ui@1.6.0))
+        version: 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0)
       '@nx/web':
         specifier: 19.8.4
         version: 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)
@@ -545,6 +545,9 @@ importers:
       sitemap:
         specifier: 8.0.0
         version: 8.0.0
+      spin-delay:
+        specifier: 2.0.1
+        version: 2.0.1(react@18.3.1)
       strip-ansi:
         specifier: 7.1.0
         version: 7.1.0
@@ -8264,6 +8267,11 @@ packages:
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
 
+  spin-delay@2.0.1:
+    resolution: {integrity: sha512-ilggKXKqAMwk21PSYvxuF/KCnrsGFDrnO6mXa629mj8fvfo+dOQfubDViqsRjRX5U1jd3Xb8FTsV+m4Tg7YeUg==}
+    peerDependencies:
+      react: '>=17.0.1'
+
   sponge-case@1.0.1:
     resolution: {integrity: sha512-dblb9Et4DAtiZ5YSUZHLl4XhH4uK80GhAZrVXdN4O2P4gQ40Wa5UIOPUHlA/nFd2PLblBZWUioLMMAVrgpoYcA==}
 
@@ -11418,9 +11426,9 @@ snapshots:
       - '@swc/core'
       - debug
 
-  '@nrwl/vite@19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0(@types/node@22.7.5)(@vitest/ui@1.6.0))':
+  '@nrwl/vite@19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0)':
     dependencies:
-      '@nx/vite': 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0(@types/node@22.7.5)(@vitest/ui@1.6.0))
+      '@nx/vite': 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -11625,9 +11633,9 @@ snapshots:
   '@nx/nx-win32-x64-msvc@19.8.4':
     optional: true
 
-  '@nx/vite@19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0(@types/node@22.7.5)(@vitest/ui@1.6.0))':
+  '@nx/vite@19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0)':
     dependencies:
-      '@nrwl/vite': 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0(@types/node@22.7.5)(@vitest/ui@1.6.0))
+      '@nrwl/vite': 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)(vite@5.4.9(@types/node@22.7.5))(vitest@1.6.0)
       '@nx/devkit': 19.8.4(nx@19.8.4)
       '@nx/js': 19.8.4(@babel/traverse@7.25.7)(@types/node@22.7.5)(nx@19.8.4)(typescript@5.7.2)
       '@phenomnomnominal/tsquery': 5.0.1(typescript@5.7.2)
@@ -15633,7 +15641,7 @@ snapshots:
       debug: 4.3.7
       enhanced-resolve: 5.17.1
       eslint: 8.57.0
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       fast-glob: 3.3.1
       get-tsconfig: 4.8.1
@@ -15645,7 +15653,7 @@ snapshots:
       - eslint-import-resolver-webpack
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.57.0))(eslint@8.57.0):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -15667,7 +15675,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-plugin-import@2.31.0)(eslint@8.57.0))(eslint@8.57.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.13.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.6.1)(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -19381,6 +19389,10 @@ snapshots:
   source-map@0.7.4: {}
 
   space-separated-tokens@2.0.2: {}
+
+  spin-delay@2.0.1(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   sponge-case@1.0.1:
     dependencies:

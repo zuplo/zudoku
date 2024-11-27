@@ -2,6 +2,7 @@ import { Helmet } from "@zudoku/react-helmet-async";
 import { PanelLeftIcon } from "lucide-react";
 import { Suspense, useEffect, useRef, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
+import { useSpinDelay } from "spin-delay";
 import { Drawer, DrawerTrigger } from "../ui/Drawer.js";
 import { cn } from "../util/cn.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
@@ -44,6 +45,10 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   // Page transition is happening: https://reactrouter.com/start/framework/pending-ui#global-pending-navigation
   const isNavigating = Boolean(useNavigation().location);
+  const showSpinner = useSpinDelay(isNavigating, {
+    delay: 300,
+    minDuration: 500,
+  });
 
   return (
     <>
@@ -61,7 +66,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Slotlet name="layout-after-head" />
 
       <div className="w-full max-w-screen-2xl mx-auto px-10 lg:px-12">
-        {isNavigating ? (
+        {showSpinner ? (
           <LoadingFallback />
         ) : (
           <Suspense fallback={<LoadingFallback />}>
