@@ -24,7 +24,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./ui/*": "./src/ui/*",
+    "./ui/*": "./src/lib/ui/*",
     "./auth/clerk": "./src/lib/authentication/providers/clerk.ts",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",

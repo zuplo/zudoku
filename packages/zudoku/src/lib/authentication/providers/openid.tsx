@@ -107,7 +107,10 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
     };
-    sessionStorage.setItem("token-state", JSON.stringify(tokens));
+
+    useAuthState.setState({
+      providerData: tokens,
+    });
   }
 
   async signUp({ redirectTo }: { redirectTo?: string } = {}) {
@@ -194,14 +197,14 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
-    const tokenState = sessionStorage.getItem("token-state");
-    if (!tokenState) {
+    const { providerData } = useAuthState.getState();
+    if (!providerData) {
       throw new AuthorizationError("User is not authenticated");
     }
+    const tokenState = providerData as TokenState;
 
-    const state = JSON.parse(tokenState) as TokenState;
-    if (state.expiresOn < new Date()) {
-      if (!state.refreshToken) {
+    if (tokenState.expiresOn < new Date()) {
+      if (!tokenState.refreshToken) {
         await this.signIn();
         return "";
       }
@@ -209,7 +212,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       const request = await oauth.refreshTokenGrantRequest(
         as,
         this.client,
-        state.refreshToken,
+        tokenState.refreshToken,
       );
       const response = await oauth.processRefreshTokenResponse(
         as,
@@ -225,7 +228,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
       return response.access_token.toString();
     } else {
-      return state.accessToken;
+      return tokenState.accessToken;
     }
   }
 
@@ -234,8 +237,8 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       isAuthenticated: false,
       isPending: false,
       profile: undefined,
+      providerData: undefined,
     });
-    sessionStorage.clear();
 
     const as = await this.getAuthServer();
 
@@ -342,31 +345,10 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       profile,
     });
 
-    sessionStorage.setItem(
-      "profile-state",
-      JSON.stringify(useAuthState.getState().profile),
-    );
-
     const redirectTo = sessionStorage.getItem("redirect-to") ?? "/";
     sessionStorage.removeItem("redirect-to");
     return redirectTo;
   };
-
-  pageLoad(): void {
-    const profileState = sessionStorage.getItem("profile-state");
-    if (profileState) {
-      try {
-        const profile = JSON.parse(profileState);
-        useAuthState.setState({
-          isAuthenticated: true,
-          isPending: false,
-          profile,
-        });
-      } catch (err) {
-        logger.error("Error parsing auth state", err);
-      }
-    }
-  }
 
   getAuthenticationPlugin() {
     // TODO: This API is a bit messy, we need to refactor auth plugins/providers
