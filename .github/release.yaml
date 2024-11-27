@@ -1,4 +1,7 @@
 changelog:
+  exclude:
+    labels:
+      - skip-changelog
   categories:
     - title: Breaking Changes 🛠
       labels:
@@ -13,6 +16,9 @@ changelog:
     - title: Documentation 📚
       labels:
         - docs
+    - title: Dependency Updates 📦
+      labels:
+        - dependencies
     - title: Other Changes 🔄
       labels:
         - "*"
