@@ -121,8 +121,6 @@ const executeFunction = async (
 };
 
 export const remarkStaticGeneration = () => async (tree: Root, file: VFile) => {
-  const collectedImports = new Set<string>();
-
   const imports: ImportDeclaration[] = [];
   const nodesToProcess: MdxjsEsm[] = [];
 
@@ -130,10 +128,11 @@ export const remarkStaticGeneration = () => async (tree: Root, file: VFile) => {
     const innerTree = node.data?.estree;
     if (!innerTree) return;
 
-    if (innerTree.body[0]?.type === "ImportDeclaration") {
-      imports.push(innerTree.body[0]);
-      collectedImports.add(node.value);
-    }
+    innerTree.body.forEach((node) => {
+      if (node.type !== "ImportDeclaration") return;
+
+      imports.push(node);
+    });
 
     if (isStaticExport(innerTree)) {
       nodesToProcess.push(node);
