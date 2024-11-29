@@ -39,7 +39,7 @@ export type ProfileNavigationItem = {
   weight?: number;
   category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];
-  icon?: React.ComponentType;
+  icon?: React.ComponentType<{ size: number }>;
 };
 
 export interface CommonPlugin {

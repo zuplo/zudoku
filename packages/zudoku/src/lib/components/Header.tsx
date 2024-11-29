@@ -32,7 +32,6 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
       <DropdownMenuSubTrigger>{item.label}</DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          {item.icon && <item.icon />}
           {item.children.map((item, i) => (
             // eslint-disable-next-line react/no-array-index-key
             <RecursiveMenu key={i} item={item} />
@@ -42,7 +41,10 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
     </DropdownMenuSub>
   ) : (
     <Link to={item.path ?? ""}>
-      <DropdownMenuItem key={item.label}>{item.label}</DropdownMenuItem>
+      <DropdownMenuItem key={item.label} className="flex gap-2">
+        {item.icon && <item.icon size={16} />}
+        {item.label}
+      </DropdownMenuItem>
     </Link>
   );
 };
@@ -126,7 +128,7 @@ export const Header = memo(function HeaderInner() {
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost">
-                            {profile?.email ? `${profile.email}` : "My Account"}
+                            {profile?.name ? `${profile.name}` : "My Account"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
