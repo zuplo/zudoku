@@ -42,7 +42,9 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
   ) : (
     <Link to={item.path ?? ""}>
       <DropdownMenuItem key={item.label} className="flex gap-2">
-        {item.icon && <item.icon size={16} />}
+        {item.icon && (
+          <item.icon size={16} strokeWidth={1} absoluteStrokeWidth />
+        )}
         {item.label}
       </DropdownMenuItem>
     </Link>
@@ -132,7 +134,14 @@ export const Header = memo(function HeaderInner() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
-                          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                          <DropdownMenuLabel>
+                            {profile?.name ? `${profile.name}` : "My Account"}
+                            {profile?.email && (
+                              <div className="font-normal text-muted-foreground">
+                                {profile.email}
+                              </div>
+                            )}
+                          </DropdownMenuLabel>
                           {accountItems.filter((i) => i.category === "top")
                             .length > 0 && <DropdownMenuSeparator />}
                           {accountItems
