@@ -32,7 +32,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   useEffect(() => {
     // Initialize the authentication plugin
-    authentication?.pageLoad?.();
+    authentication?.onPageLoad?.();
   }, [authentication]);
 
   useEffect(() => {
