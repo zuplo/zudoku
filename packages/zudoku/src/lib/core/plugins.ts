@@ -36,6 +36,8 @@ export interface ProfileMenuPlugin {
 export type ProfileNavigationItem = {
   label: string;
   path?: string;
+  weight?: number;
+  category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];
 };
 

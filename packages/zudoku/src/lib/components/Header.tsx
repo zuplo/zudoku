@@ -52,10 +52,13 @@ export const Header = memo(function HeaderInner() {
   const context = useZudoku();
   const { page, plugins } = context;
 
-  const accountItems = plugins
-    .filter((p) => isProfileMenuPlugin(p))
-    .flatMap((p) => p.getProfileMenuItems(context))
-    .map((i) => <RecursiveMenu key={i.label} item={i} />);
+  const accountItems = Object.groupBy(
+    plugins
+      .filter((p) => isProfileMenuPlugin(p))
+      .flatMap((p) => p.getProfileMenuItems(context))
+      .sort((i) => i.weight ?? 0),
+    (p) => p.category ?? "middle",
+  );
 
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
@@ -121,7 +124,7 @@ export const Header = memo(function HeaderInner() {
                       Login
                     </Button>
                   ) : (
-                    accountItems.length > 0 && (
+                    Object.values(accountItems).length > 0 && (
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost">
@@ -130,8 +133,18 @@ export const Header = memo(function HeaderInner() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
                           <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {accountItems}
+                          {accountItems.top && <DropdownMenuSeparator />}
+                          {accountItems.top?.map((i) => (
+                            <RecursiveMenu key={i.label} item={i} />
+                          ))}
+                          {accountItems.middle && <DropdownMenuSeparator />}
+                          {accountItems.middle?.map((i) => (
+                            <RecursiveMenu key={i.label} item={i} />
+                          ))}
+                          {accountItems.bottom && <DropdownMenuSeparator />}
+                          {accountItems.bottom?.map((i) => (
+                            <RecursiveMenu key={i.label} item={i} />
+                          ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )
