@@ -32,6 +32,7 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
       <DropdownMenuSubTrigger>{item.label}</DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
+          {item.icon && <item.icon />}
           {item.children.map((item, i) => (
             // eslint-disable-next-line react/no-array-index-key
             <RecursiveMenu key={i} item={item} />
@@ -52,13 +53,10 @@ export const Header = memo(function HeaderInner() {
   const context = useZudoku();
   const { page, plugins } = context;
 
-  const accountItems = Object.groupBy(
-    plugins
-      .filter((p) => isProfileMenuPlugin(p))
-      .flatMap((p) => p.getProfileMenuItems(context))
-      .sort((i) => i.weight ?? 0),
-    (p) => p.category ?? "middle",
-  );
+  const accountItems = plugins
+    .filter((p) => isProfileMenuPlugin(p))
+    .flatMap((p) => p.getProfileMenuItems(context))
+    .sort((i) => i.weight ?? 0);
 
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
@@ -133,18 +131,30 @@ export const Header = memo(function HeaderInner() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
                           <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                          {accountItems.top && <DropdownMenuSeparator />}
-                          {accountItems.top?.map((i) => (
-                            <RecursiveMenu key={i.label} item={i} />
-                          ))}
-                          {accountItems.middle && <DropdownMenuSeparator />}
-                          {accountItems.middle?.map((i) => (
-                            <RecursiveMenu key={i.label} item={i} />
-                          ))}
-                          {accountItems.bottom && <DropdownMenuSeparator />}
-                          {accountItems.bottom?.map((i) => (
-                            <RecursiveMenu key={i.label} item={i} />
-                          ))}
+                          {accountItems.filter((i) => i.category === "top")
+                            .length > 0 && <DropdownMenuSeparator />}
+                          {accountItems
+                            .filter((i) => i.category === "top")
+                            .map((i) => (
+                              <RecursiveMenu key={i.label} item={i} />
+                            ))}
+                          {accountItems.filter(
+                            (i) => !i.category || i.category === "middle",
+                          ).length > 0 && <DropdownMenuSeparator />}
+                          {accountItems
+                            .filter(
+                              (i) => !i.category || i.category === "middle",
+                            )
+                            .map((i) => (
+                              <RecursiveMenu key={i.label} item={i} />
+                            ))}
+                          {accountItems.filter((i) => i.category === "bottom")
+                            .length > 0 && <DropdownMenuSeparator />}
+                          {accountItems
+                            .filter((i) => i.category === "bottom")
+                            .map((i) => (
+                              <RecursiveMenu key={i.label} item={i} />
+                            ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )
