@@ -1,3 +1,4 @@
+import { FileKey2Icon } from "lucide-react";
 import { type RouteObject } from "react-router-dom";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import {
@@ -105,6 +106,8 @@ export const apiKeyPlugin = (
       {
         label: "API Keys",
         path: "/settings/api-keys",
+        category: "middle",
+        icon: FileKey2Icon,
       },
     ],
     getIdentities: async (context) => {

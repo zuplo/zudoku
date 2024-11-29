@@ -41,7 +41,12 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
     </DropdownMenuSub>
   ) : (
     <Link to={item.path ?? ""}>
-      <DropdownMenuItem key={item.label}>{item.label}</DropdownMenuItem>
+      <DropdownMenuItem key={item.label} className="flex gap-2">
+        {item.icon && (
+          <item.icon size={16} strokeWidth={1} absoluteStrokeWidth />
+        )}
+        {item.label}
+      </DropdownMenuItem>
     </Link>
   );
 };
@@ -55,7 +60,7 @@ export const Header = memo(function HeaderInner() {
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
     .flatMap((p) => p.getProfileMenuItems(context))
-    .map((i) => <RecursiveMenu key={i.label} item={i} />);
+    .sort((i) => i.weight ?? 0);
 
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
@@ -121,17 +126,46 @@ export const Header = memo(function HeaderInner() {
                       Login
                     </Button>
                   ) : (
-                    accountItems.length > 0 && (
+                    Object.values(accountItems).length > 0 && (
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost">
-                            {profile?.email ? `${profile.email}` : "My Account"}
+                            {profile?.name ? `${profile.name}` : "My Account"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
-                          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          {accountItems}
+                          <DropdownMenuLabel>
+                            {profile?.name ? `${profile.name}` : "My Account"}
+                            {profile?.email && (
+                              <div className="font-normal text-muted-foreground">
+                                {profile.email}
+                              </div>
+                            )}
+                          </DropdownMenuLabel>
+                          {accountItems.filter((i) => i.category === "top")
+                            .length > 0 && <DropdownMenuSeparator />}
+                          {accountItems
+                            .filter((i) => i.category === "top")
+                            .map((i) => (
+                              <RecursiveMenu key={i.label} item={i} />
+                            ))}
+                          {accountItems.filter(
+                            (i) => !i.category || i.category === "middle",
+                          ).length > 0 && <DropdownMenuSeparator />}
+                          {accountItems
+                            .filter(
+                              (i) => !i.category || i.category === "middle",
+                            )
+                            .map((i) => (
+                              <RecursiveMenu key={i.label} item={i} />
+                            ))}
+                          {accountItems.filter((i) => i.category === "bottom")
+                            .length > 0 && <DropdownMenuSeparator />}
+                          {accountItems
+                            .filter((i) => i.category === "bottom")
+                            .map((i) => (
+                              <RecursiveMenu key={i.label} item={i} />
+                            ))}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )
