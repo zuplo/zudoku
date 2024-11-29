@@ -1,3 +1,4 @@
+import type { LucideProps } from "lucide-react";
 import { type ReactElement } from "react";
 import { type RouteObject } from "react-router-dom";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
@@ -39,10 +40,11 @@ export type ProfileNavigationItem = {
   weight?: number;
   category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];
-  icon?: React.ComponentType<{
-    size: number;
-    [key: string]: any;
-  }>;
+  icon?: React.ComponentType<
+    LucideProps & {
+      [key: string]: any;
+    }
+  >;
 };
 
 export interface CommonPlugin {
