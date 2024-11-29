@@ -105,6 +105,7 @@ export const apiKeyPlugin = (
       {
         label: "API Keys",
         path: "/settings/api-keys",
+        category: "middle",
       },
     ],
     getIdentities: async (context) => {

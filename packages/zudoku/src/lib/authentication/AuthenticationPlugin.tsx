@@ -32,7 +32,8 @@ export class AuthenticationPlugin implements PluginInterface {
       {
         label: "Logout",
         path: "/signout",
-      },
+        category: "bottom",
+      } as const,
     ];
   }
 }
