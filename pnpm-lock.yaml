@@ -408,7 +408,7 @@ importers:
         specifier: 4.3.1
         version: 4.3.1(patch_hash=jb2tifk2jsavdxlrb3gpff2s3i)(vite@5.4.9(@types/node@20.16.11))
       '@zudoku/config':
-        specifier: 0.18.2
+        specifier: 0.18.3
         version: link:../config
       '@zudoku/httpsnippet':
         specifier: 10.0.9
