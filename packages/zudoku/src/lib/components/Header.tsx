@@ -87,7 +87,6 @@ export const Header = memo(function HeaderInner() {
                       loading="lazy"
                     />
                     <img
-                      data-hide-on-theme="light"
                       src={
                         /https?:\/\//.test(page.logo.src.dark)
                           ? page.logo.src.dark
@@ -98,7 +97,7 @@ export const Header = memo(function HeaderInner() {
                       }
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className="h-10"
+                      className="h-10 hidden dark:block"
                       loading="lazy"
                     />
                   </>
