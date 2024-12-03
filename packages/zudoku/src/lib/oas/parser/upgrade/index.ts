@@ -64,9 +64,7 @@ export const upgradeSchema = (schema: Record<string, any>): OpenAPIDocument => {
   schema = traverse(schema, (sub) => {
     if (sub.example !== undefined) {
       sub.examples = {
-        default: {
-          value: sub.example,
-        },
+        default: sub.example,
       };
       delete sub.example;
     }
