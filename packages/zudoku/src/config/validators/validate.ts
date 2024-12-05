@@ -11,6 +11,7 @@ import z, {
 import { fromError } from "zod-validation-error";
 import type { ExposedComponentProps } from "../../lib/components/SlotletProvider.js";
 import { ZudokuContext } from "../../lib/core/ZudokuContext.js";
+import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
@@ -45,13 +46,26 @@ const ApiConfigSchema = z.object({
   navigationId: z.string().optional(),
 });
 
+const ApiPostProcessorSchema = z
+  .function()
+  .args(z.custom<OpenAPIDocument>())
+  .returns(
+    z.union([
+      z.custom<OpenAPIDocument>(),
+      z.promise(z.custom<OpenAPIDocument>()),
+    ]),
+  );
+
 const ApiSchema = z.union([
   z
     .object({ type: z.literal("url"), input: z.string() })
     .merge(ApiConfigSchema),
   z
     .object({ type: z.literal("file"), input: z.string() })
-    .merge(ApiConfigSchema),
+    .merge(ApiConfigSchema)
+    .merge(
+      z.object({ postProcessors: ApiPostProcessorSchema.array().optional() }),
+    ),
   z
     .object({ type: z.literal("raw"), input: z.string() })
     .merge(ApiConfigSchema),
