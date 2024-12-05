@@ -74,7 +74,7 @@ export async function loadZudokuConfig<TConfig>(
     __meta: {
       dependencies,
       path: filepath,
-      registerDependency: dependencies.push,
+      registerDependency: (...files: string[]) => dependencies.push(...files),
     },
   };
 
