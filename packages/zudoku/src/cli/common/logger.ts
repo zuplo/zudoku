@@ -7,8 +7,8 @@ export const logger = createLogger(
   },
 );
 
+// See https://vite.dev/config/shared-options.html#customlogger
 const loggerError = logger.error;
-
 logger.error = (msg, options) => {
   loggerError(msg, options);
   if (options?.error) {
