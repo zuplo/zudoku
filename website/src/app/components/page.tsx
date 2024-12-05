@@ -176,7 +176,7 @@ const Page = async () => {
             Get started with <span className="text-[#ff00bd]">your</span> docs
           </h3>
           <p className="text-center text-gray-400">
-            Get going with Zudoku is super easy.
+            Getting started with Zudoku is super easy.
             <br />
             Add it to your HTML, get the package or let{" "}
             <a
