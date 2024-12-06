@@ -1,12 +1,12 @@
 import { type RecordAny, traverse } from "./traverse.js";
 
 interface RemoveExtensionsOptions {
-  names?: string[];
+  keys?: string[];
 }
 
 // Remove all `x-` prefixed key/value pairs, or filter by names if provided
 export const removeExtensions =
-  ({ names }: RemoveExtensionsOptions = {}) =>
+  ({ keys }: RemoveExtensionsOptions = {}) =>
   (doc: RecordAny): RecordAny =>
     traverse(doc, (spec) => {
       const result: RecordAny = {};
@@ -14,7 +14,7 @@ export const removeExtensions =
       for (const [key, value] of Object.entries(spec)) {
         const isExtension = key.startsWith("x-");
         const shouldRemove =
-          isExtension && (names === undefined || names.includes(key));
+          isExtension && (keys === undefined || keys.includes(key));
 
         if (shouldRemove) continue;
 

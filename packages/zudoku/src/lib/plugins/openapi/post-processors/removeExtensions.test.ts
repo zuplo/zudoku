@@ -94,7 +94,7 @@ describe("removeExtensions", () => {
     };
 
     const processed = removeExtensions({
-      names: ["x-path-ext", "x-param-ext"],
+      keys: ["x-path-ext", "x-param-ext"],
     })(docWithExtraExtensions);
 
     // Assert specified extensions are removed

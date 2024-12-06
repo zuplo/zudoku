@@ -6,7 +6,7 @@ interface RemovePathsOptions {
   shouldRemove?: (options: {
     path: string;
     method: true | string;
-    obj: RecordAny;
+    operation: RecordAny;
   }) => boolean;
 }
 
@@ -19,22 +19,27 @@ export const removePaths =
       const updatedPaths: RecordAny = {};
 
       for (const [path, methods] of Object.entries(spec.paths)) {
-        const obj = spec.paths[path];
+        const operations = spec.paths[path];
 
         // If the path is explicitly marked for removal in `paths`
         if (paths[path] === true) continue;
 
         // If the path should be removed via `shouldRemove`
-        if (shouldRemove?.({ path, method: true, obj })) continue;
+        if (shouldRemove?.({ path, method: true, operation: operations }))
+          continue;
 
         if (typeof methods === "object" && methods !== null) {
           const filteredPath = Object.fromEntries(
             Object.entries(methods).filter(([method]) => {
-              const obj = spec.paths[path][method];
+              const operations = spec.paths[path][method];
               const isMethodToRemove =
                 Array.isArray(paths[path]) && paths[path].includes(method);
 
-              const isMethodFiltered = shouldRemove?.({ path, method, obj });
+              const isMethodFiltered = shouldRemove?.({
+                path,
+                method,
+                operation: operations,
+              });
 
               return !isMethodToRemove && !isMethodFiltered;
             }),
