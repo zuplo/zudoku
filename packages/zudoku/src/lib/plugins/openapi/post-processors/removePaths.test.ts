@@ -17,10 +17,12 @@ const baseDoc = {
   },
 };
 
-describe("removePaths with filter callback", () => {
-  it("keeps paths based on filter callback", () => {
+describe("removePaths", () => {
+  it("removes paths specified in the paths option", () => {
     const processed = removePaths({
-      filter: (path) => !path.startsWith("/remove"),
+      paths: {
+        "/remove-me": true,
+      },
     })(baseDoc);
 
     expect(processed.paths["/remove-me"]).toBeUndefined();
@@ -28,9 +30,45 @@ describe("removePaths with filter callback", () => {
     expect(processed.paths["/another"]).toBeDefined();
   });
 
-  it("keeps methods based on filter callback", () => {
+  it("removes specific methods in the paths option", () => {
     const processed = removePaths({
-      filter: (_, method) => method !== "post",
+      paths: {
+        "/example": ["get"],
+      },
+    })(baseDoc);
+
+    expect(processed.paths["/example"].get).toBeUndefined();
+    expect(processed.paths["/example"].post).toBeDefined();
+    expect(processed.paths["/remove-me"]).toBeDefined();
+  });
+
+  it("removes paths and methods using paths and shouldRemove together", () => {
+    const processed = removePaths({
+      paths: {
+        "/example": ["post"],
+      },
+      shouldRemove: ({ path }) => path.startsWith("/remove"),
+    })(baseDoc);
+
+    expect(processed.paths["/remove-me"]).toBeUndefined();
+    expect(processed.paths["/example"].get).toBeDefined();
+    expect(processed.paths["/example"].post).toBeUndefined();
+    expect(processed.paths["/another"]).toBeDefined();
+  });
+
+  it("removes paths based on shouldRemove callback", () => {
+    const processed = removePaths({
+      shouldRemove: ({ path }) => path.startsWith("/remove"),
+    })(baseDoc);
+
+    expect(processed.paths["/remove-me"]).toBeUndefined();
+    expect(processed.paths["/example"]).toBeDefined();
+    expect(processed.paths["/another"]).toBeDefined();
+  });
+
+  it("removes methods based on shouldRemove callback", () => {
+    const processed = removePaths({
+      shouldRemove: ({ method }) => method === "post",
     })(baseDoc);
 
     expect(processed.paths["/example"].post).toBeUndefined();
@@ -38,10 +76,10 @@ describe("removePaths with filter callback", () => {
     expect(processed.paths["/remove-me"]).toBeDefined();
   });
 
-  it("keeps both paths and methods based on filter callback", () => {
+  it("removes both paths and methods based on shouldRemove callback", () => {
     const processed = removePaths({
-      filter: (path, method) =>
-        !path.startsWith("/remove") && method !== "post",
+      shouldRemove: ({ path, method }) =>
+        path.startsWith("/remove") || method === "post",
     })(baseDoc);
 
     expect(processed.paths["/remove-me"]).toBeUndefined();
@@ -50,29 +88,39 @@ describe("removePaths with filter callback", () => {
     expect(processed.paths["/another"]).toBeDefined();
   });
 
-  it("does nothing if filter always returns true", () => {
+  it("does nothing if shouldRemove always returns false", () => {
     const processed = removePaths({
-      filter: () => true,
+      shouldRemove: () => false,
     })(baseDoc);
 
     expect(processed).toEqual(baseDoc);
   });
 
-  it("removes everything if filter always returns false", () => {
+  it("removes everything if shouldRemove always returns true", () => {
     const processed = removePaths({
-      filter: () => false,
+      shouldRemove: () => true,
     })(baseDoc);
 
     expect(processed.paths).toEqual({});
   });
 
-  it("keeps entire paths when filter matches them", () => {
+  it("removes entire paths via shouldRemove callback", () => {
     const processed = removePaths({
-      filter: (path, method) => path === "/example" || method === true,
+      shouldRemove: ({ path, method }) =>
+        method === true && path === "/remove-me",
     })(baseDoc);
 
-    expect(processed.paths["/example"]).toBeDefined();
     expect(processed.paths["/remove-me"]).toBeUndefined();
-    expect(processed.paths["/another"]).toBeUndefined();
+    expect(processed.paths["/example"]).toBeDefined();
+    expect(processed.paths["/another"]).toBeDefined();
+  });
+
+  it("removes specific methods while keeping paths", () => {
+    const processed = removePaths({
+      shouldRemove: ({ method }) => method === "delete",
+    })(baseDoc);
+
+    expect(processed.paths["/remove-me"]).toBeDefined();
+    expect(processed.paths["/remove-me"].delete).toBeUndefined();
   });
 });
