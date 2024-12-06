@@ -3,7 +3,6 @@ import path from "node:path";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
 
 const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
@@ -39,14 +38,12 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             if (apiConfig.type === "file") {
               const fileContent = await fs.readFile(apiConfig.input, "utf-8");
 
-              const data = /\.ya?ml$/.test(apiConfig.input)
+              let schema = /\.ya?ml$/.test(apiConfig.input)
                 ? yaml.parse(fileContent)
                 : JSON.parse(fileContent);
 
-              let processedSchema = data as OpenAPIDocument;
-
               for (const postProcessor of apiConfig.postProcessors ?? []) {
-                processedSchema = await postProcessor(processedSchema);
+                schema = await postProcessor(schema);
               }
 
               const processedFilePath = path.posix.join(
@@ -54,10 +51,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
                 `${path.basename(apiConfig.input)}.json`,
               );
 
-              await fs.writeFile(
-                processedFilePath,
-                JSON.stringify(processedSchema),
-              );
+              await fs.writeFile(processedFilePath, JSON.stringify(schema));
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",
                 '  type: "file",',
