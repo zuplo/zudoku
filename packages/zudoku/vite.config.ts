@@ -4,12 +4,6 @@ import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig, type Plugin } from "vite";
 import pkgJson from "./package.json";
 
-const uiComponents = Object.fromEntries(
-  glob.sync("./src/lib/ui/**/*.{ts,tsx}").map((file) => {
-    return [`ui/${path.basename(file).replace(/\.tsx?$/, "")}`, file];
-  }),
-);
-
 const entries: Record<string, string> = {
   components: "./src/lib/components/index.ts",
   icons: "./src/lib/icons.ts",
@@ -23,22 +17,12 @@ const entries: Record<string, string> = {
   "plugin-redirect": "./src/lib/plugins/redirect/index.tsx",
   "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
-  ...uiComponents,
+  ...globEntries("./src/lib/ui/**/*.{ts,tsx}", "ui"),
+  ...globEntries(
+    "./src/lib/plugins/openapi/post-processors/*.ts",
+    "post-processors",
+  ),
 };
-
-// Fixes the worker import paths
-// See: https://github.com/vitejs/vite/issues/15618
-const fixWorkerPathsPlugin = (): Plugin => ({
-  name: "fix-worker-paths",
-  apply: "build",
-  generateBundle(_, bundle) {
-    Object.values(bundle).forEach((chunk) => {
-      if (chunk.type === "chunk" && chunk.fileName.endsWith(".js")) {
-        chunk.code = chunk.code.replaceAll('"/assets/', '"./assets/');
-      }
-    });
-  },
-});
 
 export default defineConfig({
   worker: {
@@ -46,7 +30,7 @@ export default defineConfig({
   },
   resolve: {
     alias: [
-      { find: /^zudoku\/ui\/(.*).js/, replacement: `./src/lib/ui/$1.tsx` },
+      { find: /^zudoku\/ui\/(.*)\.js/, replacement: `./src/lib/ui/$1.tsx` },
     ],
   },
   build: {
@@ -59,11 +43,10 @@ export default defineConfig({
       }, {}),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (_format, fileName) => {
-        return fileName.startsWith("ui/")
+      fileName: (_format, fileName) =>
+        fileName.startsWith("ui/") || fileName.startsWith("post-processors/")
           ? `${fileName}.js`
-          : `zudoku.${fileName}.js`;
-      },
+          : `zudoku.${fileName}.js`,
     },
     rollupOptions: {
       external: [
@@ -95,3 +78,27 @@ export default defineConfig({
     },
   },
 });
+
+// Fixes the worker import paths
+// See: https://github.com/vitejs/vite/issues/15618
+function fixWorkerPathsPlugin(): Plugin {
+  return {
+    name: "fix-worker-paths",
+    apply: "build",
+    generateBundle(_, bundle) {
+      Object.values(bundle).forEach((chunk) => {
+        if (chunk.type === "chunk" && chunk.fileName.endsWith(".js")) {
+          chunk.code = chunk.code.replaceAll('"/assets/', '"./assets/');
+        }
+      });
+    },
+  };
+}
+// Globs files and returns all entries without file extension in a given folder
+function globEntries(globString: string, distSubFolder = "") {
+  return Object.fromEntries(
+    glob
+      .sync(globString, { ignore: "**/*.test.ts" })
+      .map((file) => [path.join(distSubFolder, path.parse(file).name), file]),
+  );
+}

@@ -1,3 +1,4 @@
+import path from "node:path";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 
@@ -7,32 +8,24 @@ const viteAliasPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
     config: () => {
       const config = getConfig();
 
-      const replacements = {
-        "zudoku/openapi-worker": `${config.moduleDir}/src/lib/plugins/openapi-worker.ts`,
-        "zudoku/components": `${config.moduleDir}/src/lib/components/index.ts`,
-        "zudoku/plugins/openapi": `${config.moduleDir}/src/lib/plugins/openapi/index.tsx`,
-        "zudoku/plugins/search-inkeep": `${config.moduleDir}/src/lib/plugins/search-inkeep/index.tsx`,
-      };
+      const replacements = [
+        ["zudoku/openapi-worker", "src/lib/plugins/openapi-worker.ts"],
+        ["zudoku/components", "src/lib/components/index.ts"],
+        ["zudoku/plugins/openapi", "src/lib/plugins/openapi/index.tsx"],
+        [
+          "zudoku/plugins/search-inkeep",
+          "src/lib/plugins/search-inkeep/index.tsx",
+        ],
+        [/^zudoku\/ui\/(.*)\.js/, "src/lib/ui/$1.tsx"],
+      ] as const;
 
-      const expandedReplacements = Object.entries(replacements).map(
-        ([find, replacement]) => ({
-          find,
-          replacement,
-        }),
-      );
+      const aliases = replacements.map(([find, replacement]) => ({
+        find,
+        replacement: path.posix.join(config.moduleDir, replacement),
+      }));
 
       return config.mode === "internal" || config.mode === "standalone"
-        ? {
-            resolve: {
-              alias: [
-                ...expandedReplacements,
-                {
-                  find: /^zudoku\/ui\/(.*).js/,
-                  replacement: `${config.moduleDir}/src/lib/ui/$1.tsx`,
-                },
-              ],
-            },
-          }
+        ? { resolve: { alias: aliases } }
         : undefined;
     },
   };
