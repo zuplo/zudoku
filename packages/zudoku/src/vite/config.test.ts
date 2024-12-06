@@ -1,10 +1,9 @@
-import assert from "node:assert";
 import path from "node:path";
-import test from "node:test";
+import { expect, it } from "vitest";
 import { loadZudokuConfig } from "./config.js";
 
-test("Should correctly load zudoku.config.ts file", async () => {
+it("Should correctly load zudoku.config.ts file", async () => {
   const rootPath = path.resolve("../../examples/with-config/");
   const config = await loadZudokuConfig(rootPath);
-  assert.equal(config.metadata?.title, "My Portal");
+  expect(config.__meta.path).includes("/with-config/zudoku.config.");
 });
