@@ -138,7 +138,7 @@
     "hack:fix-worker-paths": "node ./scripts/hack-worker.mjs",
     "clean": "tsc --build --clean",
     "codegen": "graphql-codegen --config ./src/codegen.ts",
-    "test": "node --test --enable-source-maps"
+    "test": "vitest run"
   },
   "dependencies": {
     "@envelop/core": "5.0.2",
