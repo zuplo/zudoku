@@ -1,6 +1,6 @@
 type OasSource =
   | { type: "url"; input: string }
-  | { type: "file"; input: any }
+  | { type: "file"; input: () => Promise<unknown> }
   | { type: "raw"; input: string };
 
 export type OasPluginConfig = {

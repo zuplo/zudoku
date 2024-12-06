@@ -37,7 +37,11 @@ async function getConfigFilePath(rootDir: string): Promise<string> {
 }
 
 export type ConfigWithMeta<TConfig> = TConfig & {
-  __meta: { dependencies: string[]; path: string };
+  __meta: {
+    dependencies: string[];
+    path: string;
+    registerDependency: (...file: string[]) => void;
+  };
 };
 
 export async function loadZudokuConfig<TConfig>(
@@ -67,7 +71,11 @@ export async function loadZudokuConfig<TConfig>(
 
   const config: ConfigWithMeta<TConfig> = {
     ...loadedConfig,
-    __meta: { dependencies, path: filepath },
+    __meta: {
+      dependencies,
+      path: filepath,
+      registerDependency: (...files: string[]) => dependencies.push(...files),
+    },
   };
 
   return config;

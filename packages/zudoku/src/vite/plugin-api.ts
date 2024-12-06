@@ -1,7 +1,8 @@
-import { readFile } from "fs/promises";
+import fs from "node:fs/promises";
+import path from "node:path";
 import { type Plugin } from "vite";
+import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import { OpenApiPluginOptions } from "../lib/plugins/openapi/index.js";
 
 const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
@@ -25,37 +26,54 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
 
         if (config.apis) {
           const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-          for (const c of apis) {
-            let apiConfig: OpenApiPluginOptions;
-            if (c.type === "file") {
-              let data = await readFile(c.input, "utf-8");
 
-              if (!data.trim().startsWith("{")) {
-                const yaml = await import("yaml");
-                data = yaml.parse(data);
+          const tmpDir = path.posix.join(
+            config.rootDir,
+            "node_modules/.zudoku/processed",
+          );
+          await fs.rm(tmpDir, { recursive: true, force: true });
+          await fs.mkdir(tmpDir, { recursive: true });
+
+          for (const apiConfig of apis) {
+            if (apiConfig.type === "file") {
+              const fileContent = await fs.readFile(apiConfig.input, "utf-8");
+
+              let schema = /\.ya?ml$/.test(apiConfig.input)
+                ? yaml.parse(fileContent)
+                : JSON.parse(fileContent);
+
+              for (const postProcessor of apiConfig.postProcessors ?? []) {
+                schema = await postProcessor(schema);
               }
 
-              apiConfig = {
-                ...c,
-                type: "raw",
-                input: data,
-              };
-            } else {
-              apiConfig = c;
-            }
+              const processedFilePath = path.posix.join(
+                tmpDir,
+                `${path.basename(apiConfig.input)}.json`,
+              );
 
-            code.push(
-              ...[
+              await fs.writeFile(processedFilePath, JSON.stringify(schema));
+              code.push(
+                "configuredApiPlugins.push(openApiPlugin({",
+                '  type: "file",',
+                `  input: () => import("${processedFilePath}"),`,
+                `  navigationId: "${apiConfig.navigationId}",`,
+                "}));",
+              );
+            } else {
+              code.push(
                 `// @ts-ignore`, // To make tests pass
-                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, inMemory: options?.ssr ?? config.mode === "internal" })}));`,
-              ],
-            );
+                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({
+                  ...apiConfig,
+                  inMemory: options?.ssr ?? config.mode === "internal",
+                })}));`,
+              );
+            }
           }
         }
 
         code.push(`export { configuredApiPlugins };`);
 
-        return { code: code.join("\n") };
+        return code.join("\n");
       }
     },
   };

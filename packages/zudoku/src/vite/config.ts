@@ -41,6 +41,23 @@ const getDocsConfigFiles = (
   return docsArray.map((doc) => path.posix.join(baseDir, doc.files));
 };
 
+// We extend the dependencies with the files from configured APIs
+// so that the server restarts when these files change.
+const registerApiFileImportDependencies = (
+  config: ConfigWithMeta<ZudokuConfig>,
+  rootDir: string,
+) => {
+  if (!config.apis) return;
+
+  const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
+
+  const files = apis
+    .filter((c) => c.type === "file")
+    .map((c) => path.posix.join(rootDir, c.input));
+
+  config.__meta.registerDependency(...files);
+};
+
 export async function loadZudokuConfig(
   rootDir: string,
   forceReload?: boolean,
@@ -51,6 +68,8 @@ export async function loadZudokuConfig(
 
   try {
     const loadedConfig = await loadZudokuConfigInner<ZudokuConfig>(rootDir);
+
+    registerApiFileImportDependencies(loadedConfig, rootDir);
 
     logger.info(
       colors.yellow(`loaded config file `) +
