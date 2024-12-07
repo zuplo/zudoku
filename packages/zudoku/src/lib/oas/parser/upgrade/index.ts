@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { type RecordAny, traverse } from "../../../util/traverse.js";
 import type { OpenAPIDocument } from "../index.js";
 /**
  * Upgrade from OpenAPI 3.0.x to 3.1.0
@@ -6,30 +7,8 @@ import type { OpenAPIDocument } from "../index.js";
  * Taken from https://github.com/scalar/openapi-parser/blob/main/packages/openapi-parser/src/utils/upgradeFromThreeToThreeOne.ts
  * https://www.openapis.org/blog/2021/02/16/migrating-from-openapi-3-0-to-3-1-0
  */
-export function traverse(
-  specification: Record<string, any>,
-  transform: (specification: Record<string, any>) => Record<string, any>,
-) {
-  const result: Record<string, any> = {};
 
-  for (const [key, value] of Object.entries(specification)) {
-    if (Array.isArray(value)) {
-      result[key] = value.map((item) =>
-        typeof item === "object" && item !== null
-          ? traverse(item, transform)
-          : item,
-      );
-    } else if (typeof value === "object" && value !== null) {
-      result[key] = traverse(value, transform);
-    } else {
-      result[key] = value;
-    }
-  }
-
-  return transform(result);
-}
-
-export const upgradeSchema = (schema: Record<string, any>): OpenAPIDocument => {
+export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
   if (schema.openapi?.startsWith("3.0")) {
     schema.openapi = "3.1.0";
   }
@@ -75,7 +54,7 @@ export const upgradeSchema = (schema: Record<string, any>): OpenAPIDocument => {
   schema = traverse(schema, (sub) => {
     if (sub.type === "object" && sub.properties !== undefined) {
       for (const [, value] of Object.entries(sub.properties)) {
-        const v = (value ?? {}) as Record<string, any>;
+        const v = (value ?? {}) as RecordAny;
         if (v.type === "string" && v.format === "binary") {
           v.contentEncoding = "application/octet-stream";
           delete v.format;

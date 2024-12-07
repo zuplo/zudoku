@@ -15,6 +15,20 @@ type GraphQLResponse<TResult> = {
   data: TResult;
 };
 
+const resolveVariables = async (variables?: unknown) => {
+  if (!variables) return;
+
+  if (
+    typeof variables === "object" &&
+    "type" in variables &&
+    variables.type === "file" &&
+    "input" in variables &&
+    typeof variables.input === "function"
+  ) {
+    variables.input = await variables.input();
+  }
+};
+
 const throwIfError = (response: GraphQLResponse<unknown>) => {
   if (!response.errors?.[0]) return;
 
@@ -47,6 +61,9 @@ export class GraphQLClient {
     ...[variables]: TVariables extends Record<string, never> ? [] : [TVariables]
   ) => {
     const operationName = query.match(/query (\w+)/)?.[1];
+
+    await resolveVariables(variables);
+
     const body = JSON.stringify({ query, variables, operationName });
 
     switch (this.#mode) {

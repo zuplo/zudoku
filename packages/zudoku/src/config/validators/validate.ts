@@ -15,6 +15,8 @@ import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
 
+const AnyObject = z.object({}).passthrough();
+
 const ThemeSchema = z
   .object({
     background: z.string(),
@@ -45,13 +47,21 @@ const ApiConfigSchema = z.object({
   navigationId: z.string().optional(),
 });
 
+const ApiPostProcessorSchema = z
+  .function()
+  .args(AnyObject)
+  .returns(z.union([AnyObject, z.promise(AnyObject)]));
+
 const ApiSchema = z.union([
   z
     .object({ type: z.literal("url"), input: z.string() })
     .merge(ApiConfigSchema),
   z
     .object({ type: z.literal("file"), input: z.string() })
-    .merge(ApiConfigSchema),
+    .merge(ApiConfigSchema)
+    .merge(
+      z.object({ postProcessors: ApiPostProcessorSchema.array().optional() }),
+    ),
   z
     .object({ type: z.literal("raw"), input: z.string() })
     .merge(ApiConfigSchema),

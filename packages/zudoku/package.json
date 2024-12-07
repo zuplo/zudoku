@@ -39,7 +39,8 @@
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
     "./tailwind": "./src/app/tailwind.ts",
-    "./app/*": "./src/app/*"
+    "./app/*": "./src/app/*",
+    "./post-processors/*": "./src/lib/plugins/openapi/post-processors/*.ts"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -104,6 +105,10 @@
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
       },
+      "./post-processors/*": {
+        "import": "./lib/post-processors/*.js",
+        "types": "./dist/lib/plugins/openapi/post-processors/*.d.ts"
+      },
       "./icons": {
         "import": "./lib/zudoku.icons.js",
         "types": "./dist/lib/icons.d.ts"
@@ -133,7 +138,7 @@
     "hack:fix-worker-paths": "node ./scripts/hack-worker.mjs",
     "clean": "tsc --build --clean",
     "codegen": "graphql-codegen --config ./src/codegen.ts",
-    "test": "node --test --enable-source-maps"
+    "test": "vitest run"
   },
   "dependencies": {
     "@envelop/core": "5.0.2",
@@ -174,7 +179,7 @@
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",
     "@vitejs/plugin-react": "4.3.4",
-    "@zudoku/config": "0.18.3",
+    "@zudoku/config": "workspace:*",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.4",
     "autoprefixer": "10.4.20",
@@ -250,11 +255,13 @@
     "@types/react-is": "18.3.0",
     "@types/semver": "7.5.8",
     "@types/yargs": "17.0.33",
+    "@vitest/coverage-v8": "2.1.8",
     "mdast-util-mdx": "3.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "rollup-plugin-visualizer": "5.12.0",
-    "typescript": "5.7.2"
+    "typescript": "5.7.2",
+    "vitest": "2.1.8"
   },
   "peerDependencies": {
     "react": ">=18",
