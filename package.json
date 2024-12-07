@@ -54,7 +54,6 @@
       "serve-handler>path-to-regexp": ">=3.3.0"
     },
     "patchedDependencies": {
-      "@vitejs/plugin-react@4.3.1": "patches/@vitejs__plugin-react@4.3.1.patch",
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"
     }
   }

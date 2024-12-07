@@ -1,7 +1,7 @@
 import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { type PropsWithChildren } from "react";
+import { type PropsWithChildren, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
@@ -14,6 +14,14 @@ import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { cn } from "../../util/cn.js";
 import { Toc } from "./Toc.js";
 import { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
+
+declare global {
+  interface Window {
+    __getReactRefreshIgnoredExports?: (args: {
+      id: string;
+    }) => string[] | undefined;
+  }
+}
 
 const MarkdownHeadings = {
   h2: ({ children, id }) => (
@@ -30,11 +38,13 @@ const MarkdownHeadings = {
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
+  file,
   frontmatter = {},
   defaultOptions,
   tableOfContents,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
+    file: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
   }
@@ -56,6 +66,20 @@ export const MdxPage = ({
   const showToc = !hideToc && tocEntries.length > 0;
 
   const { prev, next } = usePrevNext();
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") {
+      window.__getReactRefreshIgnoredExports = ({ id }) => {
+        if (!id.endsWith(file)) return;
+
+        return ["frontmatter", "tableOfContents"];
+      };
+
+      return () => {
+        window.__getReactRefreshIgnoredExports = undefined;
+      };
+    }
+  }, [file]);
 
   return (
     <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
