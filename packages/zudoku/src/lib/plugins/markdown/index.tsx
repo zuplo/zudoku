@@ -57,6 +57,7 @@ export const markdownPlugin = (
             return {
               element: (
                 <MdxPage
+                  file={file}
                   mdxComponent={Component}
                   {...props}
                   defaultOptions={defaultOptions}
