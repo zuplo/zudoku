@@ -10,7 +10,11 @@ const config: ZudokuConfig = {
       {
         type: "category",
         label: "Get started",
-        items: ["documentation/introduction", "documentation/installation"],
+        items: [
+          "documentation/introduction",
+          "documentation/installation",
+          "documentation/shiki",
+        ],
       },
     ],
   },
