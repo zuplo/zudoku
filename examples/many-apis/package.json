@@ -3,9 +3,8 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "serve --cors -p 5942 apis & zudoku dev",
-    "_build": "echo 'Not implemented yet'",
-    "build": "zudoku build",
+    "build": "echo 'Not implemented yet'",
+    "disabled_build": "zudoku build",
     "download": "node download.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
