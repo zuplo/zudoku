@@ -14,8 +14,7 @@
     "prepare": "husky",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
-    "local": "cp .env.example .env",
-    "too": "ZUDOKU_INTERNAL_CLI=1 nx run with-config:dev"
+    "local": "cp .env.example .env"
   },
   "lint-staged": {
     "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
