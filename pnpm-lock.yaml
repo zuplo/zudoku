@@ -293,9 +293,6 @@ importers:
       '@graphql-typed-document-node/core':
         specifier: 3.2.0
         version: 3.2.0(graphql@16.9.0)
-      '@hiogawa/vite-plugin-ssr-css':
-        specifier: 0.0.1
-        version: 0.0.1(vite@6.0.3(@types/node@20.16.11)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.6.1))
       '@hookform/resolvers':
         specifier: 3.9.1
         version: 3.9.1(react-hook-form@7.54.0(react@19.0.0))
@@ -2420,11 +2417,6 @@ packages:
   '@graphql-yoga/typed-event-target@3.0.0':
     resolution: {integrity: sha512-w+liuBySifrstuHbFrHoHAEyVnDFVib+073q8AeAJ/qqJfvFvAwUPLLtNohR/WDVRgSasfXtl3dcNuVJWN+rjg==}
     engines: {node: '>=18.0.0'}
-
-  '@hiogawa/vite-plugin-ssr-css@0.0.1':
-    resolution: {integrity: sha512-jt6E7T5Qd9YDUTUBvgTAxTVZi+eFOe73oerZqu7aqhN+kd2DzLsfYyuDmJOyBP+DAjOTit2QEpDYcHKzyImZUA==}
-    peerDependencies:
-      vite: '*'
 
   '@hookform/resolvers@3.9.1':
     resolution: {integrity: sha512-ud2HqmGBM0P0IABqoskKWI6PEf6ZDDBZkFqe2Vnl+mTHCEHzr3ISjjZyCwTjC/qpL25JC9aIDkloQejvMeq0ug==}
@@ -11819,10 +11811,6 @@ snapshots:
     dependencies:
       '@repeaterjs/repeater': 3.0.6
       tslib: 2.8.1
-
-  '@hiogawa/vite-plugin-ssr-css@0.0.1(vite@6.0.3(@types/node@20.16.11)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.6.1))':
-    dependencies:
-      vite: 6.0.3(@types/node@20.16.11)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.6.1)
 
   '@hookform/resolvers@3.9.1(react-hook-form@7.54.0(react@19.0.0))':
     dependencies:
