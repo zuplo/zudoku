@@ -1,6 +1,6 @@
 import type { LucideProps } from "lucide-react";
 import { type ReactElement } from "react";
-import { type RouteObject } from "react-router-dom";
+import { type RouteObject } from "react-router";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
 import { MdxComponentsType } from "../util/MdxComponents.js";
 import { ZudokuContext, type ApiIdentity } from "./ZudokuContext.js";

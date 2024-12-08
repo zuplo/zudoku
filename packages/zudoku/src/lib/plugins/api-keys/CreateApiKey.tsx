@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 import {
   Select,
   SelectContent,

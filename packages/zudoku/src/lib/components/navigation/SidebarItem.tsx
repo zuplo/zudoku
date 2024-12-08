@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
-import { NavLink, useSearchParams } from "react-router-dom";
+import { NavLink, useSearchParams } from "react-router";
 
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
 import { joinPath } from "../../util/joinPath.js";

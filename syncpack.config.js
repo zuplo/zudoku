@@ -35,7 +35,7 @@ export default {
         "@mdxjs/react",
         "react",
         "react-dom",
-        "react-router-dom",
+        "react-router",
       ],
       packages: ["**"],
       snapTo: ["zudoku"],

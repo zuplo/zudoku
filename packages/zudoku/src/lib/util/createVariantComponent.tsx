@@ -2,11 +2,11 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva } from "class-variance-authority";
 import type { ClassValue } from "clsx";
 import * as React from "react";
-import type { JSX } from "react/jsx-runtime";
+import { type HTMLElementType, type JSX } from "react";
 import { cn } from "./cn.js";
 
 const createVariantComponent = <
-  E extends keyof React.ReactHTML,
+  E extends HTMLElementType,
   C extends ReturnType<typeof cva>,
 >(
   tag: E,

@@ -1,6 +1,7 @@
 import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import type { MDXProps } from "mdx/types.js";
-import { RouteObject } from "react-router-dom";
+import { type JSX } from "react";
+import { RouteObject } from "react-router";
 import { ZudokuDocsConfig } from "../../../config/validators/common.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { DocResolver } from "./resolver.js";
