@@ -29,7 +29,7 @@ export default function vitePlugin(
   return [
     viteMdxPlugin(getCurrentConfig),
     vitePluginSsrCss(getCurrentConfig, {
-      entries: [`${getCurrentConfig().moduleDir}/src/app/entry.server.tsx`],
+      entries: ["zudoku/app/entry.server.tsx"],
     }),
     react({ include: /\.(mdx?|jsx?|tsx?)$/ }),
     viteConfigPlugin(getCurrentConfig),

@@ -1,4 +1,3 @@
-// import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
 import autoprefixer from "autoprefixer";
 import path from "node:path";
 import { fileURLToPath } from "node:url";

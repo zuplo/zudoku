@@ -1,3 +1,5 @@
+// Taken and adapted from
+// https://github.com/hi-ogawa/vite-plugins/tree/main/packages/ssr-css
 import path from "node:path";
 import { type DevEnvironment, isCSSRequest, type Plugin } from "vite";
 import type { ZudokuPluginOptions } from "../../config/config.js";
