@@ -1,5 +1,5 @@
 import { UnlinkIcon } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import { CategoryHeading } from "./CategoryHeading.js";
 import { DeveloperHint } from "./DeveloperHint.js";
 import { Heading } from "./Heading.js";

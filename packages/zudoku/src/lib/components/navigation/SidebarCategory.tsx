@@ -1,7 +1,7 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ChevronRightIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { NavLink, useMatch } from "react-router-dom";
+import { NavLink, useMatch } from "react-router";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinPath } from "../../util/joinPath.js";

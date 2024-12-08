@@ -10,7 +10,7 @@ import {
   type NavigateFunction,
   type Params,
   type SetURLSearchParams,
-} from "react-router-dom";
+} from "react-router";
 import { useExposedProps } from "../util/useExposedProps.js";
 
 export type Slotlets = Record<
