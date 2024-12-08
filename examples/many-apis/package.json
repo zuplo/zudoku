@@ -4,19 +4,17 @@
   "type": "module",
   "scripts": {
     "dev": "serve --cors -p 5942 apis & zudoku dev",
-    "build": "echo 'Not implemented yet'",
-    "disabled_build": "zudoku build",
+    "_build": "echo 'Not implemented yet'",
+    "build": "zudoku build",
     "download": "node download.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "zudoku": "workspace:*"
   },
   "devDependencies": {
-    "@mdx-js/react": "3.0.1",
-    "@types/react": "18.3.11",
     "js-yaml": "4.1.0",
     "serve": "14.2.3"
   }

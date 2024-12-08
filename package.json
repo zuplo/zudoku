@@ -14,7 +14,8 @@
     "prepare": "husky",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
-    "local": "cp .env.example .env"
+    "local": "cp .env.example .env",
+    "too": "ZUDOKU_INTERNAL_CLI=1 nx run with-config:dev"
   },
   "lint-staged": {
     "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
@@ -54,7 +55,6 @@
       "serve-handler>path-to-regexp": ">=3.3.0"
     },
     "patchedDependencies": {
-      "@vitejs/plugin-react@4.3.1": "patches/@vitejs__plugin-react@4.3.1.patch",
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"
     }
   }
