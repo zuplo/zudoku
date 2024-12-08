@@ -74,7 +74,8 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         remarkDirectiveRehype,
         remarkLinkRewritePlugin,
         ...(config.build?.remarkPlugins ?? []),
-      ],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ] as any,
       rehypePlugins: [
         rehypeSlug,
         rehypeCodeBlockPlugin,
@@ -83,10 +84,11 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         withToc,
         withTocExport,
         ...(config.build?.rehypePlugins ?? []),
-      ],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ] as any,
     }),
     name: "zudoku-mdx-plugin",
-  };
+  } as const;
 };
 
 export default viteMdxPlugin;
