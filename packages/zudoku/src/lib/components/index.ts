@@ -1,6 +1,6 @@
 import { useMDXComponents as useMDXComponentsImport } from "@mdx-js/react";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { Link as LinkImport } from "react-router-dom";
+import { Link as LinkImport } from "react-router";
 import { useAuthState } from "../authentication/state.js";
 import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
