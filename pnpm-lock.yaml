@@ -658,27 +658,27 @@ importers:
       clsx:
         specifier: 2.1.1
         version: 2.1.1
-      framer-motion:
-        specifier: 11.3.31
-        version: 11.3.31(@emotion/is-prop-valid@0.8.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       lucide-react:
         specifier: 0.452.0
-        version: 0.452.0(react@18.3.1)
+        version: 0.452.0(react@19.0.0)
+      motion:
+        specifier: 12.0.0-alpha.2
+        version: 12.0.0-alpha.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next:
-        specifier: 14.2.10
-        version: 14.2.10(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 15.0.4
+        version: 15.0.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next-sitemap:
         specifier: 4.2.3
-        version: 4.2.3(next@14.2.10(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+        version: 4.2.3(next@15.0.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))
       react:
-        specifier: 18.3.1
-        version: 18.3.1
+        specifier: 'catalog:'
+        version: 19.0.0
       react-dom:
-        specifier: 18.3.1
-        version: 18.3.1(react@18.3.1)
+        specifier: 'catalog:'
+        version: 19.0.0(react@19.0.0)
       react-simple-typewriter:
         specifier: 5.0.1
-        version: 5.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.0.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       sharp:
         specifier: 0.33.5
         version: 0.33.5
@@ -2651,62 +2651,56 @@ packages:
   '@next/env@13.5.6':
     resolution: {integrity: sha512-Yac/bV5sBGkkEXmAX5FWPS9Mmo2rthrOPRQQNfycJPkjUAUclomCPH7QFVCDQ4Mp2k2K1SSM6m0zrxYrOwtFQw==}
 
-  '@next/env@14.2.10':
-    resolution: {integrity: sha512-dZIu93Bf5LUtluBXIv4woQw2cZVZ2DJTjax5/5DOs3lzEOeKLy7GxRSr4caK9/SCPdaW6bCgpye6+n4Dh9oJPw==}
+  '@next/env@15.0.4':
+    resolution: {integrity: sha512-WNRvtgnRVDD4oM8gbUcRc27IAhaL4eXQ/2ovGbgLnPGUvdyDr8UdXP4Q/IBDdAdojnD2eScryIDirv0YUCjUVw==}
 
   '@next/eslint-plugin-next@15.0.3':
     resolution: {integrity: sha512-3Ln/nHq2V+v8uIaxCR6YfYo7ceRgZNXfTd3yW1ukTaFbO+/I8jNakrjYWODvG9BuR2v5kgVtH/C8r0i11quOgw==}
 
-  '@next/swc-darwin-arm64@14.2.10':
-    resolution: {integrity: sha512-V3z10NV+cvMAfxQUMhKgfQnPbjw+Ew3cnr64b0lr8MDiBJs3eLnM6RpGC46nhfMZsiXgQngCJKWGTC/yDcgrDQ==}
+  '@next/swc-darwin-arm64@15.0.4':
+    resolution: {integrity: sha512-QecQXPD0yRHxSXWL5Ff80nD+A56sUXZG9koUsjWJwA2Z0ZgVQfuy7gd0/otjxoOovPVHR2eVEvPMHbtZP+pf9w==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@next/swc-darwin-x64@14.2.10':
-    resolution: {integrity: sha512-Y0TC+FXbFUQ2MQgimJ/7Ina2mXIKhE7F+GUe1SgnzRmwFY3hX2z8nyVCxE82I2RicspdkZnSWMn4oTjIKz4uzA==}
+  '@next/swc-darwin-x64@15.0.4':
+    resolution: {integrity: sha512-pb7Bye3y1Og3PlCtnz2oO4z+/b3pH2/HSYkLbL0hbVuTGil7fPen8/3pyyLjdiTLcFJ+ymeU3bck5hd4IPFFCA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@next/swc-linux-arm64-gnu@14.2.10':
-    resolution: {integrity: sha512-ZfQ7yOy5zyskSj9rFpa0Yd7gkrBnJTkYVSya95hX3zeBG9E55Z6OTNPn1j2BTFWvOVVj65C3T+qsjOyVI9DQpA==}
+  '@next/swc-linux-arm64-gnu@15.0.4':
+    resolution: {integrity: sha512-12oSaBFjGpB227VHzoXF3gJoK2SlVGmFJMaBJSu5rbpaoT5OjP5OuCLuR9/jnyBF1BAWMs/boa6mLMoJPRriMA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@next/swc-linux-arm64-musl@14.2.10':
-    resolution: {integrity: sha512-n2i5o3y2jpBfXFRxDREr342BGIQCJbdAUi/K4q6Env3aSx8erM9VuKXHw5KNROK9ejFSPf0LhoSkU/ZiNdacpQ==}
+  '@next/swc-linux-arm64-musl@15.0.4':
+    resolution: {integrity: sha512-QARO88fR/a+wg+OFC3dGytJVVviiYFEyjc/Zzkjn/HevUuJ7qGUUAUYy5PGVWY1YgTzeRYz78akQrVQ8r+sMjw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@next/swc-linux-x64-gnu@14.2.10':
-    resolution: {integrity: sha512-GXvajAWh2woTT0GKEDlkVhFNxhJS/XdDmrVHrPOA83pLzlGPQnixqxD8u3bBB9oATBKB//5e4vpACnx5Vaxdqg==}
+  '@next/swc-linux-x64-gnu@15.0.4':
+    resolution: {integrity: sha512-Z50b0gvYiUU1vLzfAMiChV8Y+6u/T2mdfpXPHraqpypP7yIT2UV9YBBhcwYkxujmCvGEcRTVWOj3EP7XW/wUnw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@next/swc-linux-x64-musl@14.2.10':
-    resolution: {integrity: sha512-opFFN5B0SnO+HTz4Wq4HaylXGFV+iHrVxd3YvREUX9K+xfc4ePbRrxqOuPOFjtSuiVouwe6uLeDtabjEIbkmDA==}
+  '@next/swc-linux-x64-musl@15.0.4':
+    resolution: {integrity: sha512-7H9C4FAsrTAbA/ENzvFWsVytqRYhaJYKa2B3fyQcv96TkOGVMcvyS6s+sj4jZlacxxTcn7ygaMXUPkEk7b78zw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@next/swc-win32-arm64-msvc@14.2.10':
-    resolution: {integrity: sha512-9NUzZuR8WiXTvv+EiU/MXdcQ1XUvFixbLIMNQiVHuzs7ZIFrJDLJDaOF1KaqttoTujpcxljM/RNAOmw1GhPPQQ==}
+  '@next/swc-win32-arm64-msvc@15.0.4':
+    resolution: {integrity: sha512-Z/v3WV5xRaeWlgJzN9r4PydWD8sXV35ywc28W63i37G2jnUgScA4OOgS8hQdiXLxE3gqfSuHTicUhr7931OXPQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@next/swc-win32-ia32-msvc@14.2.10':
-    resolution: {integrity: sha512-fr3aEbSd1GeW3YUMBkWAu4hcdjZ6g4NBl1uku4gAn661tcxd1bHs1THWYzdsbTRLcCKLjrDZlNp6j2HTfrw+Bg==}
-    engines: {node: '>= 10'}
-    cpu: [ia32]
-    os: [win32]
-
-  '@next/swc-win32-x64-msvc@14.2.10':
-    resolution: {integrity: sha512-UjeVoRGKNL2zfbcQ6fscmgjBAS/inHBh63mjIlfPg/NG8Yn2ztqylXt5qilYb6hoHIwaU2ogHknHWWmahJjgZQ==}
+  '@next/swc-win32-x64-msvc@15.0.4':
+    resolution: {integrity: sha512-NGLchGruagh8lQpDr98bHLyWJXOBSmkEAfK980OiNBa7vNm6PsNoPvzTfstT78WyOeMRQphEQ455rggd7Eo+Dw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
@@ -3828,11 +3822,11 @@ packages:
   '@swc/counter@0.1.3':
     resolution: {integrity: sha512-e2BR4lsJkkRlKZ/qCHPw9ZaSxc0MVUd7gtbtaB7aMvHeJVYe8sOB8DBZkP2DtISHGSku9sCK6T6cnY0CtXrOCQ==}
 
+  '@swc/helpers@0.5.13':
+    resolution: {integrity: sha512-UoKGxQ3r5kYI9dALKJapMmuK+1zWM/H17Z1+iwnNmzcJRnfFuevZs375TA5rW31pu4BS4NoSy1fRsexDXfWn5w==}
+
   '@swc/helpers@0.5.15':
     resolution: {integrity: sha512-JQ5TuMi45Owi4/BIMAJBoSQoOJu12oOk/gADqlcUL9JEdHB8vyjUSsxqeNXnmXHjYKMi2WcYtezGEEhqUI/E2g==}
-
-  '@swc/helpers@0.5.5':
-    resolution: {integrity: sha512-KGYxvIOXcceOAbEk4bi/dVLEK9z8sZ0uBB3Il5b1rhfClSpcX0yfRO0KmTkqR2cnQDymwLB+25ZyMzICg/cm/A==}
 
   '@tailwindcss/typography@0.5.15':
     resolution: {integrity: sha512-AqhlCXl+8grUz8uqExv5OTtgpjuVIwFTSXTrh8y9/pw6q2ek7fJ+Y8ZEVw7EB2DCcuCOtEjf9w3+J3rzts01uA==}
@@ -6064,12 +6058,12 @@ packages:
       react-dom:
         optional: true
 
-  framer-motion@11.3.31:
-    resolution: {integrity: sha512-Xmxs08WBXnc2tNzNZbFSpquI33lvleJg4Y+hmZ+vFkn+laN9ZnR3gbZnNGKDtuz7c/x3u8dLg05OU3EhLobCsg==}
+  framer-motion@12.0.0-alpha.2:
+    resolution: {integrity: sha512-s603YLhCoX3GKaPDZnywwoFdd1T6gDFCfevVRek+TCpbvazUkITh+YZ3a6kqTvn4Aj7qQWT3vAmzWIjl/LsCFA==}
     peerDependencies:
       '@emotion/is-prop-valid': '*'
-      react: ^18.0.0
-      react-dom: ^18.0.0
+      react: ^19.0.0-rc.1
+      react-dom: ^19.0.0-rc.1
     peerDependenciesMeta:
       '@emotion/is-prop-valid':
         optional: true
@@ -7511,6 +7505,20 @@ packages:
   module-details-from-path@1.0.3:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
 
+  motion@12.0.0-alpha.2:
+    resolution: {integrity: sha512-pslRUURjyS1Xb6lSdyc4LzOKhaCRj0PIqstb5dDIB/RxNO3MqSMU43o1rGtZs5h8DgRzRSPHE+E7yhh2NpwI8A==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^19.0.0-rc.1
+      react-dom: ^19.0.0-rc.1
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -7552,20 +7560,23 @@ packages:
       react: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
       react-dom: ^16.8 || ^17 || ^18 || ^19 || ^19.0.0-rc
 
-  next@14.2.10:
-    resolution: {integrity: sha512-sDDExXnh33cY3RkS9JuFEKaS4HmlWmDKP1VJioucCG6z5KuA008DPsDZOzi8UfqEk3Ii+2NCQSJrfbEWtZZfww==}
-    engines: {node: '>=18.17.0'}
+  next@15.0.4:
+    resolution: {integrity: sha512-nuy8FH6M1FG0lktGotamQDCXhh5hZ19Vo0ht1AOIQWrYJLP598TIUagKtvJrfJ5AGwB/WmDqkKaKhMpVifvGPA==}
+    engines: {node: ^18.18.0 || ^19.8.0 || >= 20.0.0}
     hasBin: true
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
       '@playwright/test': ^1.41.2
-      react: ^18.2.0
-      react-dom: ^18.2.0
+      babel-plugin-react-compiler: '*'
+      react: ^18.2.0 || 19.0.0-rc-66855b96-20241106 || ^19.0.0
+      react-dom: ^18.2.0 || 19.0.0-rc-66855b96-20241106 || ^19.0.0
       sass: ^1.3.0
     peerDependenciesMeta:
       '@opentelemetry/api':
         optional: true
       '@playwright/test':
+        optional: true
+      babel-plugin-react-compiler:
         optional: true
       sass:
         optional: true
@@ -8173,11 +8184,6 @@ packages:
     resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
     hasBin: true
 
-  react-dom@18.3.1:
-    resolution: {integrity: sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==}
-    peerDependencies:
-      react: ^18.3.1
-
   react-dom@19.0.0:
     resolution: {integrity: sha512-4GV5sHFG0e/0AD4X+ySy6UJd3jVl1iNsNHdpad0qhABJ11twS3TTBnseqsKurKcsNqCEFeGL3uLpVChpIO3QfQ==}
     peerDependencies:
@@ -8294,10 +8300,6 @@ packages:
     engines: {node: '>=10'}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
-
-  react@18.3.1:
-    resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
-    engines: {node: '>=0.10.0'}
 
   react@19.0.0:
     resolution: {integrity: sha512-V8AVnmPIICiWpGfm6GLzCR/W5FXLchHop40W4nXBmdlEceh16rCN8O8LNWm5bh5XUX91fh7KpA+W0TgMKmgTpQ==}
@@ -8579,9 +8581,6 @@ packages:
 
   sax@1.4.1:
     resolution: {integrity: sha512-+aWOz7yVScEGoKNd4PA10LZ8sk0A/z5+nXQG5giUO5rprX9jgYsTdov9qCchZiPIZezbZH+jRut8nPodFAX4Jg==}
-
-  scheduler@0.23.2:
-    resolution: {integrity: sha512-UOShsPwz7NrMUqhR6t0hWjFduvOzbtv7toDH1/hIrfRNIDBnnBWd0CwJTGvTpngVlmwGCdP9/Zl/tVrDqcuYzQ==}
 
   scheduler@0.25.0:
     resolution: {integrity: sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==}
@@ -8887,13 +8886,13 @@ packages:
   style-to-object@1.0.8:
     resolution: {integrity: sha512-xT47I/Eo0rwJmaXC4oilDGDWLohVhR6o/xAQcPQN8q6QBuZVL8qMYL85kLmST5cPjAorwvqIA4qXTRQoYHaL6g==}
 
-  styled-jsx@5.1.1:
-    resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
+  styled-jsx@5.1.6:
+    resolution: {integrity: sha512-qSVyDTeMotdvQYoHWLNGwRFJHC+i+ZvdBRYosOFgC+Wg1vx4frN2/RG/NA7SYqqvKNLf39P2LSRA2pu6n0XYZA==}
     engines: {node: '>= 12.0.0'}
     peerDependencies:
       '@babel/core': '*'
       babel-plugin-macros: '*'
-      react: '>= 16.8.0 || 17.x.x || ^18.0.0-0'
+      react: '>= 16.8.0 || 17.x.x || ^18.0.0-0 || ^19.0.0-0'
     peerDependenciesMeta:
       '@babel/core':
         optional: true
@@ -11527,7 +11526,7 @@ snapshots:
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       dataloader: 2.2.2
       graphql: 16.9.0
-      tslib: 2.7.0
+      tslib: 2.8.1
       value-or-promise: 1.0.12
 
   '@graphql-tools/code-file-loader@8.1.2(graphql@16.9.0)':
@@ -11549,7 +11548,7 @@ snapshots:
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       dataloader: 2.2.2
       graphql: 16.9.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@graphql-tools/documents@1.0.1(graphql@16.9.0)':
     dependencies:
@@ -11564,7 +11563,7 @@ snapshots:
       graphql: 16.9.0
       graphql-ws: 5.16.0(graphql@16.9.0)
       isomorphic-ws: 5.0.0(ws@8.17.1)
-      tslib: 2.7.0
+      tslib: 2.8.1
       ws: 8.17.1
     transitivePeerDependencies:
       - bufferutil
@@ -11578,7 +11577,7 @@ snapshots:
       extract-files: 11.0.0
       graphql: 16.9.0
       meros: 1.3.0(@types/node@20.16.11)
-      tslib: 2.7.0
+      tslib: 2.8.1
       value-or-promise: 1.0.12
     transitivePeerDependencies:
       - '@types/node'
@@ -11589,7 +11588,7 @@ snapshots:
       '@types/ws': 8.5.10
       graphql: 16.9.0
       isomorphic-ws: 5.0.0(ws@8.17.1)
-      tslib: 2.7.0
+      tslib: 2.8.1
       ws: 8.17.1
     transitivePeerDependencies:
       - bufferutil
@@ -11649,7 +11648,7 @@ snapshots:
       '@babel/types': 7.25.8
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.7.0
+      tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
 
@@ -11658,7 +11657,7 @@ snapshots:
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       graphql: 16.9.0
       resolve-from: 5.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@graphql-tools/json-file-loader@8.0.1(graphql@16.9.0)':
     dependencies:
@@ -11686,12 +11685,12 @@ snapshots:
     dependencies:
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@graphql-tools/optimize@2.0.0(graphql@16.9.0)':
     dependencies:
       graphql: 16.9.0
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   '@graphql-tools/prisma-loader@8.0.4(@types/node@20.16.11)(graphql@16.9.0)':
     dependencies:
@@ -11724,7 +11723,7 @@ snapshots:
       '@ardatan/relay-compiler': 12.0.0(graphql@16.9.0)
       '@graphql-tools/utils': 10.6.2(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.6.3
+      tslib: 2.8.1
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -11742,7 +11741,7 @@ snapshots:
       '@graphql-tools/merge': 9.0.3(graphql@16.9.0)
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.7.0
+      tslib: 2.8.1
       value-or-promise: 1.0.12
 
   '@graphql-tools/url-loader@8.0.2(@types/node@20.16.11)(graphql@16.9.0)':
@@ -11789,7 +11788,7 @@ snapshots:
       '@graphql-tools/schema': 10.0.11(graphql@16.9.0)
       '@graphql-tools/utils': 10.5.4(graphql@16.9.0)
       graphql: 16.9.0
-      tslib: 2.7.0
+      tslib: 2.8.1
       value-or-promise: 1.0.12
 
   '@graphql-typed-document-node/core@3.2.0(graphql@16.9.0)':
@@ -12112,37 +12111,34 @@ snapshots:
 
   '@next/env@13.5.6': {}
 
-  '@next/env@14.2.10': {}
+  '@next/env@15.0.4': {}
 
   '@next/eslint-plugin-next@15.0.3':
     dependencies:
       fast-glob: 3.3.1
 
-  '@next/swc-darwin-arm64@14.2.10':
+  '@next/swc-darwin-arm64@15.0.4':
     optional: true
 
-  '@next/swc-darwin-x64@14.2.10':
+  '@next/swc-darwin-x64@15.0.4':
     optional: true
 
-  '@next/swc-linux-arm64-gnu@14.2.10':
+  '@next/swc-linux-arm64-gnu@15.0.4':
     optional: true
 
-  '@next/swc-linux-arm64-musl@14.2.10':
+  '@next/swc-linux-arm64-musl@15.0.4':
     optional: true
 
-  '@next/swc-linux-x64-gnu@14.2.10':
+  '@next/swc-linux-x64-gnu@15.0.4':
     optional: true
 
-  '@next/swc-linux-x64-musl@14.2.10':
+  '@next/swc-linux-x64-musl@15.0.4':
     optional: true
 
-  '@next/swc-win32-arm64-msvc@14.2.10':
+  '@next/swc-win32-arm64-msvc@15.0.4':
     optional: true
 
-  '@next/swc-win32-ia32-msvc@14.2.10':
-    optional: true
-
-  '@next/swc-win32-x64-msvc@14.2.10':
+  '@next/swc-win32-x64-msvc@15.0.4':
     optional: true
 
   '@nodelib/fs.scandir@2.1.5':
@@ -13684,13 +13680,12 @@ snapshots:
 
   '@swc/counter@0.1.3': {}
 
-  '@swc/helpers@0.5.15':
+  '@swc/helpers@0.5.13':
     dependencies:
       tslib: 2.8.1
 
-  '@swc/helpers@0.5.5':
+  '@swc/helpers@0.5.15':
     dependencies:
-      '@swc/counter': 0.1.3
       tslib: 2.8.1
 
   '@tailwindcss/typography@0.5.15(tailwindcss@3.4.16(ts-node@10.9.1(@types/node@20.16.11)(typescript@5.7.2)))':
@@ -14186,7 +14181,7 @@ snapshots:
       '@kamilkisiela/fast-url-parser': 1.1.4
       busboy: 1.6.0
       fast-querystring: 1.1.2
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   '@whatwg-node/node-fetch@0.7.4':
     dependencies:
@@ -14204,27 +14199,27 @@ snapshots:
 
   '@wry/caches@1.0.1':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   '@wry/context@0.7.4':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   '@wry/equality@0.5.7':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   '@wry/trie@0.4.3':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   '@wry/trie@0.5.0':
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   '@yarnpkg/lockfile@1.1.0': {}
@@ -15672,7 +15667,7 @@ snapshots:
   camel-case@4.1.2:
     dependencies:
       pascal-case: 3.1.2
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   camelcase-css@2.0.1: {}
 
@@ -15695,7 +15690,7 @@ snapshots:
   capital-case@1.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   ccount@2.0.1: {}
@@ -15757,7 +15752,7 @@ snapshots:
       path-case: 3.0.4
       sentence-case: 3.0.4
       snake-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   character-entities-html4@2.1.0: {}
 
@@ -15946,7 +15941,7 @@ snapshots:
   constant-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
       upper-case: 2.0.2
 
   content-disposition@0.5.2: {}
@@ -16206,7 +16201,7 @@ snapshots:
   dot-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   dot-prop@9.0.0:
     dependencies:
@@ -17041,13 +17036,13 @@ snapshots:
       react-dom: 19.0.0(react@19.0.0)
     optional: true
 
-  framer-motion@11.3.31(@emotion/is-prop-valid@0.8.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  framer-motion@12.0.0-alpha.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       tslib: 2.8.1
     optionalDependencies:
       '@emotion/is-prop-valid': 0.8.8
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   fresh@0.5.2: {}
 
@@ -17235,7 +17230,7 @@ snapshots:
   graphql-tag@2.12.6(graphql@16.9.0):
     dependencies:
       graphql: 16.9.0
-      tslib: 2.6.3
+      tslib: 2.8.1
 
   graphql-type-json@0.3.2(graphql@16.9.0):
     dependencies:
@@ -17479,7 +17474,7 @@ snapshots:
   header-case@2.0.4:
     dependencies:
       capital-case: 1.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   hoist-non-react-statics@3.3.2:
     dependencies:
@@ -17761,7 +17756,7 @@ snapshots:
 
   is-lower-case@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   is-map@2.0.3: {}
 
@@ -17828,7 +17823,7 @@ snapshots:
 
   is-upper-case@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   is-weakmap@2.0.2: {}
 
@@ -18137,11 +18132,11 @@ snapshots:
 
   lower-case-first@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   lower-case@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   lru-cache@10.4.3: {}
 
@@ -18151,9 +18146,9 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@0.452.0(react@18.3.1):
+  lucide-react@0.452.0(react@19.0.0):
     dependencies:
-      react: 18.3.1
+      react: 19.0.0
 
   lucide-react@0.468.0(react@19.0.0):
     dependencies:
@@ -19147,6 +19142,15 @@ snapshots:
 
   module-details-from-path@1.0.3: {}
 
+  motion@12.0.0-alpha.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+    dependencies:
+      framer-motion: 12.0.0-alpha.2(@emotion/is-prop-valid@0.8.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      tslib: 2.8.1
+    optionalDependencies:
+      '@emotion/is-prop-valid': 0.8.8
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+
   mri@1.2.0:
     optional: true
 
@@ -19168,41 +19172,41 @@ snapshots:
 
   negotiator@0.6.3: {}
 
-  next-sitemap@4.2.3(next@14.2.10(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)):
+  next-sitemap@4.2.3(next@15.0.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)):
     dependencies:
       '@corex/deepmerge': 4.0.43
       '@next/env': 13.5.6
       fast-glob: 3.3.1
       minimist: 1.2.8
-      next: 14.2.10(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next: 15.0.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
 
   next-themes@0.4.4(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  next@14.2.10(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  next@15.0.4(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      '@next/env': 14.2.10
-      '@swc/helpers': 0.5.5
+      '@next/env': 15.0.4
+      '@swc/counter': 0.1.3
+      '@swc/helpers': 0.5.13
       busboy: 1.6.0
       caniuse-lite: 1.0.30001687
-      graceful-fs: 4.2.11
       postcss: 8.4.31
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-      styled-jsx: 5.1.1(@babel/core@7.26.0)(react@18.3.1)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+      styled-jsx: 5.1.6(@babel/core@7.26.0)(react@19.0.0)
     optionalDependencies:
-      '@next/swc-darwin-arm64': 14.2.10
-      '@next/swc-darwin-x64': 14.2.10
-      '@next/swc-linux-arm64-gnu': 14.2.10
-      '@next/swc-linux-arm64-musl': 14.2.10
-      '@next/swc-linux-x64-gnu': 14.2.10
-      '@next/swc-linux-x64-musl': 14.2.10
-      '@next/swc-win32-arm64-msvc': 14.2.10
-      '@next/swc-win32-ia32-msvc': 14.2.10
-      '@next/swc-win32-x64-msvc': 14.2.10
+      '@next/swc-darwin-arm64': 15.0.4
+      '@next/swc-darwin-x64': 15.0.4
+      '@next/swc-linux-arm64-gnu': 15.0.4
+      '@next/swc-linux-arm64-musl': 15.0.4
+      '@next/swc-linux-x64-gnu': 15.0.4
+      '@next/swc-linux-x64-musl': 15.0.4
+      '@next/swc-win32-arm64-msvc': 15.0.4
+      '@next/swc-win32-x64-msvc': 15.0.4
       '@opentelemetry/api': 1.9.0
+      sharp: 0.33.5
     transitivePeerDependencies:
       - '@babel/core'
       - babel-plugin-macros
@@ -19210,7 +19214,7 @@ snapshots:
   no-case@3.0.4:
     dependencies:
       lower-case: 2.0.2
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   node-eval@2.0.0:
     dependencies:
@@ -19393,7 +19397,7 @@ snapshots:
       '@wry/caches': 1.0.1
       '@wry/context': 0.7.4
       '@wry/trie': 0.4.3
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   optionator@0.9.4:
@@ -19484,7 +19488,7 @@ snapshots:
   param-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   parent-module@1.0.1:
     dependencies:
@@ -19526,7 +19530,7 @@ snapshots:
   pascal-case@3.1.2:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   path-browserify@1.0.1:
     optional: true
@@ -19534,7 +19538,7 @@ snapshots:
   path-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   path-exists@4.0.0: {}
 
@@ -19855,12 +19859,6 @@ snapshots:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  react-dom@18.3.1(react@18.3.1):
-    dependencies:
-      loose-envify: 1.4.0
-      react: 18.3.1
-      scheduler: 0.23.2
-
   react-dom@19.0.0(react@19.0.0):
     dependencies:
       react: 19.0.0
@@ -19943,7 +19941,7 @@ snapshots:
     dependencies:
       react: 19.0.0
       react-style-singleton: 2.2.1(@types/react@19.0.1)(react@19.0.0)
-      tslib: 2.7.0
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.0.1
 
@@ -19968,17 +19966,17 @@ snapshots:
     optionalDependencies:
       react-dom: 19.0.0(react@19.0.0)
 
-  react-simple-typewriter@5.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-simple-typewriter@5.0.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
 
   react-style-singleton@2.2.1(@types/react@19.0.1)(react@19.0.0):
     dependencies:
       get-nonce: 1.0.1
       invariant: 2.2.4
       react: 19.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.0.1
 
@@ -20001,10 +19999,6 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
     optional: true
-
-  react@18.3.1:
-    dependencies:
-      loose-envify: 1.4.0
 
   react@19.0.0: {}
 
@@ -20411,10 +20405,6 @@ snapshots:
 
   sax@1.4.1: {}
 
-  scheduler@0.23.2:
-    dependencies:
-      loose-envify: 1.4.0
-
   scheduler@0.25.0: {}
 
   scuid@1.1.0: {}
@@ -20453,7 +20443,7 @@ snapshots:
   sentence-case@3.0.4:
     dependencies:
       no-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
       upper-case-first: 2.0.2
 
   serve-handler@6.1.5:
@@ -20616,7 +20606,7 @@ snapshots:
   snake-case@3.0.4:
     dependencies:
       dot-case: 3.0.4
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   source-map-js@1.2.1: {}
 
@@ -20639,7 +20629,7 @@ snapshots:
 
   sponge-case@1.0.1:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   sprintf-js@1.0.3: {}
 
@@ -20787,10 +20777,10 @@ snapshots:
     dependencies:
       inline-style-parser: 0.2.4
 
-  styled-jsx@5.1.1(@babel/core@7.26.0)(react@18.3.1):
+  styled-jsx@5.1.6(@babel/core@7.26.0)(react@19.0.0):
     dependencies:
       client-only: 0.0.1
-      react: 18.3.1
+      react: 19.0.0
     optionalDependencies:
       '@babel/core': 7.26.0
 
@@ -20818,7 +20808,7 @@ snapshots:
 
   swap-case@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   swr@2.2.5(react@18.3.1):
     dependencies:
@@ -20968,7 +20958,7 @@ snapshots:
 
   title-case@3.0.3:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   tmp@0.0.33:
     dependencies:
@@ -21010,7 +21000,7 @@ snapshots:
 
   ts-invariant@0.10.3:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
     optional: true
 
   ts-log@2.2.5: {}
@@ -21339,11 +21329,11 @@ snapshots:
 
   upper-case-first@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   upper-case@2.0.2:
     dependencies:
-      tslib: 2.7.0
+      tslib: 2.8.1
 
   uri-js@4.4.1:
     dependencies:
@@ -21367,7 +21357,7 @@ snapshots:
   use-callback-ref@1.3.2(@types/react@19.0.1)(react@19.0.0):
     dependencies:
       react: 19.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.0.1
 
@@ -21395,7 +21385,7 @@ snapshots:
     dependencies:
       detect-node-es: 1.1.0
       react: 19.0.0
-      tslib: 2.7.0
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 19.0.1
 
