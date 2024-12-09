@@ -183,7 +183,7 @@ export async function writeOutput(dir: string, config: LoadedConfig) {
   const output = generateOutput(config);
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
-  const outputDir = path.join(dir, "dist", ".output");
+  const outputDir = path.join(dir, "dist/.vercel/output");
   await mkdir(outputDir, { recursive: true });
   await writeFile(
     path.join(outputDir, "config.json"),
