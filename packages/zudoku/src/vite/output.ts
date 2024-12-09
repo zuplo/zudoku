@@ -1,3 +1,4 @@
+import assert from "node:assert";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -152,6 +153,28 @@ export function generateOutput(config: LoadedConfig): Config {
       };
     }),
   };
+
+  if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
+    assert(process.env.VERCEL_DEPLOYMENT_ID);
+
+    const cookiePath = config.basePath?.replace(/\/$/, "") ?? "/";
+
+    output.routes ??= [];
+    output.routes.push({
+      src: "/.*",
+      has: [
+        {
+          type: "header",
+          key: "Sec-Fetch-Dest",
+          value: "document",
+        },
+      ],
+      headers: {
+        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${cookiePath}; SameSite=Strict; Secure; HttpOnly`,
+      },
+      continue: true,
+    });
+  }
 
   return output;
 }
