@@ -19,6 +19,7 @@ export default {
       argv,
       event: "zudoku build",
     });
+    process.env.NODE_ENV = "production";
     await build(argv as Arguments);
   },
 };
