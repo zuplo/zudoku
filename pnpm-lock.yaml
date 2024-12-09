@@ -208,9 +208,6 @@ importers:
       rollup-plugin-visualizer:
         specifier: 5.12.0
         version: 5.12.0(rollup@4.28.1)
-      vite-plugin-dynamic-import:
-        specifier: 1.5.0
-        version: 1.5.0
       zudoku:
         specifier: workspace:*
         version: link:../../packages/zudoku
@@ -9438,9 +9435,6 @@ packages:
     resolution: {integrity: sha512-uPAwSr57kYjAUux+8E2j0q0Fxpn8M9VoyfGiRI8Kfktz9NcYMCenwY5RnZxnF1WTu3TGiYipirIzacLL3VVGFg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
-
-  vite-plugin-dynamic-import@1.5.0:
-    resolution: {integrity: sha512-Qp85c+AVJmLa8MLni74U4BDiWpUeFNx7NJqbGZyR2XJOU7mgW0cb7nwlAMucFyM4arEd92Nfxp4j44xPi6Fu7g==}
 
   vite@5.4.9:
     resolution: {integrity: sha512-20OVpJHh0PAM0oSOELa5GaZNWeDjcAvQjGXy2Uyr+Tp+/D2/Hdz6NLgpJLsarPTA2QJ6v8mX2P1ZfbsSKvdMkg==}
@@ -21500,13 +21494,6 @@ snapshots:
       - sugarss
       - supports-color
       - terser
-
-  vite-plugin-dynamic-import@1.5.0:
-    dependencies:
-      acorn: 8.14.0
-      es-module-lexer: 1.5.4
-      fast-glob: 3.3.1
-      magic-string: 0.30.12
 
   vite@5.4.9(@types/node@20.16.11):
     dependencies:
