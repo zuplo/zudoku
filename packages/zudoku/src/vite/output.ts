@@ -157,8 +157,6 @@ export function generateOutput(config: LoadedConfig): Config {
   if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
     assert(process.env.VERCEL_DEPLOYMENT_ID);
 
-    const cookiePath = config.basePath?.replace(/\/$/, "") ?? "/";
-
     output.routes ??= [];
     output.routes.push({
       src: "/.*",
@@ -170,7 +168,7 @@ export function generateOutput(config: LoadedConfig): Config {
         },
       ],
       headers: {
-        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${cookiePath}; SameSite=Strict; Secure; HttpOnly`,
+        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${joinPath(config.basePath)}; SameSite=Strict; Secure; HttpOnly`,
       },
       continue: true,
     });
@@ -183,7 +181,11 @@ export async function writeOutput(dir: string, config: LoadedConfig) {
   const output = generateOutput(config);
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
-  const outputDir = path.join(dir, "dist", ".output");
+
+  const outputDir = process.env.VERCEL
+    ? path.join(dir, "dist/.vercel/output")
+    : path.join(dir, "dist/.output");
+
   await mkdir(outputDir, { recursive: true });
   await writeFile(
     path.join(outputDir, "config.json"),
