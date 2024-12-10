@@ -157,8 +157,6 @@ export function generateOutput(config: LoadedConfig): Config {
   if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
     assert(process.env.VERCEL_DEPLOYMENT_ID);
 
-    const cookiePath = config.basePath?.replace(/\/$/, "") ?? "/";
-
     output.routes ??= [];
     output.routes.push({
       src: "/.*",
@@ -170,7 +168,7 @@ export function generateOutput(config: LoadedConfig): Config {
         },
       ],
       headers: {
-        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${cookiePath}; SameSite=Strict; Secure; HttpOnly`,
+        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${joinPath(config.basePath)}; SameSite=Strict; Secure; HttpOnly`,
       },
       continue: true,
     });
