@@ -44,27 +44,27 @@ export async function runBuild(options: { dir: string }) {
       cssEntry: joinPath(viteClientConfig.base, cssEntry),
     });
 
+    const buildDir = path.join(
+      options.dir,
+      "dist",
+      viteClientConfig.base ?? "",
+    );
+
+    const outputDir = path.join(
+      options.dir,
+      "dist",
+      process.env.VERCEL ? ".vercel/output/static" : "",
+      viteClientConfig.base ?? "",
+    );
+
     try {
-      const writtenFiles = await prerender({
-        html,
-        dir: options.dir,
-        base: viteClientConfig.base,
-      });
+      const writtenFiles = await prerender({ html, buildDir, outputDir });
 
       if (writtenFiles.includes("index.html")) {
         return;
       }
 
-      await writeFile(
-        path.join(
-          options.dir,
-          "dist",
-          viteClientConfig.base ?? "",
-          "index.html",
-        ),
-        html,
-        "utf-8",
-      );
+      await writeFile(path.join(outputDir, "index.html"), html, "utf-8");
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
