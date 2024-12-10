@@ -71,21 +71,22 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
 
 export const prerender = async ({
   html,
-  buildDir,
-  outputDir,
+  dir,
+  base = "",
 }: {
   html: string;
-  buildDir: string;
-  outputDir: string;
+  dir: string;
+  base?: string;
 }) => {
   // eslint-disable-next-line no-console
   console.log("Prerendering...");
+  const distDir = path.join(dir, "dist", base);
   const config: ZudokuConfig = await import(
-    pathToFileURL(path.join(buildDir, "server/zudoku.config.js")).href
+    pathToFileURL(path.join(distDir, "server/zudoku.config.js")).href
   ).then((m) => m.default);
 
   const module = await import(
-    pathToFileURL(path.join(buildDir, "server/entry.server.js")).href
+    pathToFileURL(path.join(distDir, "server/entry.server.js")).href
   );
   const render = module.render as typeof serverRender;
 
@@ -102,7 +103,7 @@ export const prerender = async ({
 
     const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
 
-    const response = new FileWritingResponse(path.join(outputDir, filename));
+    const response = new FileWritingResponse(path.join(distDir, filename));
 
     await render({ template: html, request: req, response, config });
     await response.isSent();
@@ -113,7 +114,7 @@ export const prerender = async ({
     basePath: config.basePath,
     outputUrls: paths,
     config: config.sitemap,
-    baseOutputDir: outputDir,
+    baseOutputDir: distDir,
   });
 
   // eslint-disable-next-line no-console

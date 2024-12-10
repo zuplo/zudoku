@@ -1,4 +1,4 @@
-import { writeFile } from "fs/promises";
+import fs, { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { joinPath } from "../lib/util/joinPath.js";
@@ -44,27 +44,44 @@ export async function runBuild(options: { dir: string }) {
       cssEntry: joinPath(viteClientConfig.base, cssEntry),
     });
 
-    const buildDir = path.join(
-      options.dir,
-      "dist",
-      viteClientConfig.base ?? "",
-    );
-
-    const outputDir = path.join(
-      options.dir,
-      "dist",
-      process.env.VERCEL ? ".vercel/output/static" : "",
-      viteClientConfig.base ?? "",
-    );
-
     try {
-      const writtenFiles = await prerender({ html, buildDir, outputDir });
+      const writtenFiles = await prerender({
+        html,
+        dir: options.dir,
+        base: viteClientConfig.base,
+      });
 
       if (writtenFiles.includes("index.html")) {
         return;
       }
 
-      await writeFile(path.join(outputDir, "index.html"), html, "utf-8");
+      await writeFile(
+        path.join(
+          options.dir,
+          "dist",
+          viteClientConfig.base ?? "",
+          "index.html",
+        ),
+        html,
+        "utf-8",
+      );
+
+      const distDir = path.join(
+        options.dir,
+        "dist",
+        viteClientConfig.base ?? "",
+      );
+
+      // move all from dist to .vercel/output/static:
+      // create .vercel/output/static if it doesn't exist:
+      await fs.mkdir(path.join(options.dir, "dist/.vercel/output/static"), {
+        recursive: true,
+      });
+
+      await fs.rename(
+        distDir,
+        path.join(options.dir, "dist/.vercel/output/static/docs"),
+      );
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
