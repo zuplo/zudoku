@@ -86,7 +86,7 @@ export const MdxPage = ({
     <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
       <Helmet>
         <title>{pageTitle}</title>
-        <meta name="description" content={excerpt} />
+        {excerpt && <meta name="description" content={excerpt} />}
       </Helmet>
       <div
         className={cn(

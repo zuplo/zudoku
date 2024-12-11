@@ -74,6 +74,8 @@ const rehypeExcerptWithMdxExport = () => (tree: any, _vfile: any) => {
     return EXIT;
   });
 
+  if (!excerpt) return;
+
   // Inject the excerpt as a named export into the MDX AST
   // Injection code taken from @stefanprobst/rehype-extract-toc/mdx
   tree.children.unshift({
