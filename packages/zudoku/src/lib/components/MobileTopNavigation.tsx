@@ -30,27 +30,27 @@ export const MobileTopNavigation = () => {
         </DrawerTrigger>
       </div>
       <DrawerContent
-        className="lg:hidden h-screen right-0 left-auto w-[320px] rounded-none overflow-auto"
+        className="lg:hidden h-[100dvh] right-0 left-auto w-[320px] rounded-none"
         aria-describedby={undefined}
       >
-        <VisuallyHidden>
-          <DrawerTitle>Navigation</DrawerTitle>
-        </VisuallyHidden>
-        <div className="flex p-4">
-          <Search />
-        </div>
-        <ul className="flex flex-col items-center gap-4 p-4">
-          <li>
-            <ThemeSwitch />
-          </li>
-          {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
-            <li key={item.label}>
-              <button onClick={() => setDrawerOpen(false)}>
-                <TopNavItem {...item} />
-              </button>
+        <div className="p-6 overflow-y-auto overscroll-none">
+          <VisuallyHidden>
+            <DrawerTitle>Navigation</DrawerTitle>
+          </VisuallyHidden>
+          <Search className="flex p-4" />
+          <ul className="flex flex-col items-center gap-4 p-4">
+            <li>
+              <ThemeSwitch />
             </li>
-          ))}
-        </ul>
+            {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+              <li key={item.label}>
+                <button onClick={() => setDrawerOpen(false)}>
+                  <TopNavItem {...item} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
       </DrawerContent>
     </Drawer>
   );

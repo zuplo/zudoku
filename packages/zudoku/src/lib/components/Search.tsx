@@ -3,7 +3,7 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { isSearchPlugin } from "../core/plugins.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
-export const Search = () => {
+export const Search = ({ className }: { className?: string }) => {
   const ctx = useZudoku();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -35,7 +35,7 @@ export const Search = () => {
   }
 
   return (
-    <>
+    <div className={className}>
       <button
         type="button"
         onClick={() => setIsOpen(true)}
@@ -55,6 +55,6 @@ export const Search = () => {
           onClose,
         })}
       </Suspense>
-    </>
+    </div>
   );
 };
