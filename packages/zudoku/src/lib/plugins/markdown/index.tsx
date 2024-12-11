@@ -24,6 +24,7 @@ export type Frontmatter = {
 export type MDXImport = {
   tableOfContents: Toc;
   frontmatter: Frontmatter;
+  excerpt?: string;
   default: (props: MDXProps) => JSX.Element;
 };
 
