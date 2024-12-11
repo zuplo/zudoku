@@ -37,17 +37,24 @@ export const DATA_ANCHOR_ATTR = "data-anchor";
 export const SidebarItem = ({
   item,
   level = 0,
+  onRequestClose,
 }: {
   item: SidebarItemType;
-  basePath?: string;
   level?: number;
+  onRequestClose?: () => void;
 }) => {
   const { activeAnchor } = useViewportAnchor();
   const [searchParams] = useSearchParams();
 
   switch (item.type) {
     case "category":
-      return <SidebarCategory category={item} level={level} />;
+      return (
+        <SidebarCategory
+          category={item}
+          level={level}
+          onRequestClose={onRequestClose}
+        />
+      );
     case "doc":
       return (
         <NavLink
@@ -55,6 +62,7 @@ export const SidebarItem = ({
             navigationListItem({ isActive, isTopLevel: level === 0 })
           }
           to={joinPath(item.id)}
+          onClick={onRequestClose}
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
@@ -79,6 +87,7 @@ export const SidebarItem = ({
             isTopLevel: level === 0,
             className: item.badge?.placement !== "start" && "justify-between",
           })}
+          onClick={onRequestClose}
         >
           {item.badge ? (
             <>
@@ -115,6 +124,7 @@ export const SidebarItem = ({
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={onRequestClose}
         >
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}

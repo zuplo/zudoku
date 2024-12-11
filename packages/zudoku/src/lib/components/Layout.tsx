@@ -1,6 +1,6 @@
 import { Helmet } from "@zudoku/react-helmet-async";
 import { PanelLeftIcon } from "lucide-react";
-import { Suspense, useEffect, useRef, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { useSpinDelay } from "spin-delay";
 import { Drawer, DrawerTrigger } from "../ui/Drawer.js";
@@ -49,6 +49,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
     delay: 300,
     minDuration: 500,
   });
+  const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>
@@ -70,8 +71,12 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
           <LoadingFallback />
         ) : (
           <Suspense fallback={<LoadingFallback />}>
-            <Drawer direction="left">
-              <Sidebar />
+            <Drawer
+              direction="left"
+              open={isDrawerOpen}
+              onOpenChange={(open) => setDrawerOpen(open)}
+            >
+              <Sidebar onRequestClose={() => setDrawerOpen(false)} />
               <div
                 className={cn(
                   "lg:hidden -mx-10 px-10 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b",

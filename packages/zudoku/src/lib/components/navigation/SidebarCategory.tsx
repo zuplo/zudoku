@@ -11,9 +11,11 @@ import { useIsCategoryOpen } from "./utils.js";
 export const SidebarCategory = ({
   category,
   level,
+  onRequestClose,
 }: {
   category: SidebarItemCategory;
   level: number;
+  onRequestClose?: () => void;
 }) => {
   const isCategoryOpen = useIsCategoryOpen(category);
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -126,6 +128,7 @@ export const SidebarCategory = ({
                 ("href" in item ? item.href : "") +
                 item.label
               }
+              onRequestClose={onRequestClose}
               level={level + 1}
               item={item}
             />
