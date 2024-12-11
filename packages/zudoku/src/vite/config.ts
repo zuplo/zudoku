@@ -214,6 +214,16 @@ export async function getViteConfig(
               ? ["zudoku/app/entry.server.tsx", config.__meta.path]
               : "zudoku/app/entry.client.tsx"
             : undefined,
+        output: {
+          manualChunks: (id) => {
+            // SSR fails with "ReferenceError: Prism is not defined" so we don't chunk it
+            if (id.includes("prism")) return;
+
+            if (id.includes("node_modules")) {
+              return "vendor";
+            }
+          },
+        },
       },
     },
     optimizeDeps: {
