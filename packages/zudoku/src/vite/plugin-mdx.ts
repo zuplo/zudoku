@@ -29,7 +29,11 @@ const remarkLinkRewritePlugin = () => (tree: Root) => {
   visit(tree, "link", (node) => {
     if (!node.url) return;
 
-    if (!node.url.startsWith("http") && !node.url.startsWith("/")) {
+    if (
+      !node.url.startsWith("http") &&
+      !node.url.startsWith("mailto:") &&
+      !node.url.startsWith("/")
+    ) {
       node.url = path.join("../", node.url);
     }
 
