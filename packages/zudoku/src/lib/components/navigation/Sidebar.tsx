@@ -24,7 +24,7 @@ export const Sidebar = () => {
         <Slotlet name="zudoku-after-navigation" />
       </SidebarWrapper>
       <DrawerContent
-        className="lg:hidden h-screen left-0 p-6 w-[320px] rounded-none overflow-auto"
+        className="lg:hidden h-[100dvh] left-0 w-[320px] rounded-none"
         aria-describedby={undefined}
       >
         <VisuallyHidden>
@@ -33,6 +33,14 @@ export const Sidebar = () => {
         {navigation.sidebar.map((item) => (
           <SidebarItem key={item.label} item={item} />
         ))}
+        <div className="p-6 overflow-y-auto overscroll-none">
+          <VisuallyHidden>
+            <DrawerTitle>Sidebar</DrawerTitle>
+          </VisuallyHidden>
+          {navigation.sidebar.map((item) => (
+            <SidebarItem key={item.label} item={item} />
+          ))}
+        </div>
       </DrawerContent>
     </>
   );
