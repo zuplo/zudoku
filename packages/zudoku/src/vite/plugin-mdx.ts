@@ -25,21 +25,27 @@ const rehypeCodeBlockPlugin = () => (tree: any) => {
   });
 };
 
-const remarkLinkRewritePlugin = () => (tree: Root) => {
-  visit(tree, "link", (node) => {
-    if (!node.url) return;
+const remarkLinkRewritePlugin =
+  (basePath = "") =>
+  (tree: Root) => {
+    visit(tree, "link", (node) => {
+      if (!node.url) return;
 
-    if (
-      !node.url.startsWith("http") &&
-      !node.url.startsWith("mailto:") &&
-      !node.url.startsWith("/")
-    ) {
-      node.url = path.join("../", node.url);
-    }
+      const base = path.join(basePath);
+      if (node.url.startsWith(base)) {
+        node.url = node.url.slice(base.length);
+      } else if (
+        !node.url.startsWith("http") &&
+        !node.url.startsWith("mailto:") &&
+        !node.url.startsWith("/") &&
+        !node.url.startsWith("#")
+      ) {
+        node.url = path.join("../", node.url);
+      }
 
-    node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
-  });
-};
+      node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
+    });
+  };
 
 const rehypeMediaBasePath =
   (basePath = "") =>
@@ -76,7 +82,7 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         remarkMdxFrontmatter,
         remarkDirective,
         remarkDirectiveRehype,
-        remarkLinkRewritePlugin,
+        [remarkLinkRewritePlugin, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
       ],
       rehypePlugins: [
