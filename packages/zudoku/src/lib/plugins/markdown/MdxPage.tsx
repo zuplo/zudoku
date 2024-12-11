@@ -42,6 +42,7 @@ export const MdxPage = ({
   frontmatter = {},
   defaultOptions,
   tableOfContents,
+  excerpt,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
     file: string;
@@ -85,6 +86,7 @@ export const MdxPage = ({
     <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
       <Helmet>
         <title>{pageTitle}</title>
+        {excerpt && <meta name="description" content={excerpt} />}
       </Helmet>
       <div
         className={cn(
