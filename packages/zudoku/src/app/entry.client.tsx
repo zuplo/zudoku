@@ -64,3 +64,11 @@ async function hydrate(routes: RouteObject[]) {
 
   hydrateRoot(root, <Bootstrap hydrate router={router} />);
 }
+
+// This is a workaround to avoid version skewing
+// See https://vite.dev/guide/build.html#load-error-handling
+// TODO: Implement a more advanced solution if there are CDN urls or e.g. Vercel Skew Protection
+window.addEventListener("vite:preloadError", (e) => {
+  e.preventDefault();
+  window.location.reload();
+});
