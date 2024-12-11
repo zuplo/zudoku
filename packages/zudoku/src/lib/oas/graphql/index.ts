@@ -390,6 +390,10 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
       resolve: (root) => root.info.description,
       nullable: true,
     }),
+    summary: t.string({
+      resolve: (root) => root.info.summary,
+      nullable: true,
+    }),
     paths: t.field({
       type: [PathItem],
       resolve: (root) =>

@@ -60,3 +60,12 @@ const config = {
   // ...
 };
 ```
+
+## Metadata
+
+Your API reference page metadata is sourced directly from your OpenAPI spec. The [`info`](https://spec.openapis.org/oas/v3.1.0#info-object) object is used set the corresponding tags in the page's `head`.
+
+| Metadata Property | OpenAPI Property | Comment                                                                                                                                        |
+| ----------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| title             | `info.title`     | If `metadata.title` is set as a template string (ex. `%s - My Company`) it will be used                                                        |
+| description       | `info.summary`   | `info.summary` is preferred as it is shorter and plaintext-only, but Zudoku will fall back to the `info.description` if no summary is provided |
