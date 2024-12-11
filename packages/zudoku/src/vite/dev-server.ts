@@ -50,6 +50,14 @@ export class DevServer {
       "/__z/entry.client.tsx",
     );
 
+    app.use((req, res, next) => {
+      const base = this.currentConfig?.basePath;
+      if (req.method.toLowerCase() === "get" && req.url === "/" && base) {
+        return res.redirect(307, base);
+      }
+      next();
+    });
+
     app.use(graphql.graphqlEndpoint, graphql);
     app.use(proxiedEntryClientPath, async (_req, res) => {
       const transformed = await vite.transformRequest(getAppClientEntryPath());
