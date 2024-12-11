@@ -10,6 +10,7 @@ import {
   createStaticRouter,
 } from "react-router-dom/server.js";
 import "virtual:zudoku-theme.css";
+import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
 import type { FileWritingResponse } from "../vite/prerender.js";

@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import config from "virtual:zudoku-config";
 import "virtual:zudoku-theme.css";
+import "vite/modulepreload-polyfill";
 import { Bootstrap } from "zudoku/components";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
