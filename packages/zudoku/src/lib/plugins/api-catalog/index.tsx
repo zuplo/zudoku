@@ -23,6 +23,7 @@ export type ApiCatalogPluginOptions = {
 export const apiCatalogPlugin = ({
   navigationId,
   items,
+  label,
   categories,
 }: {
   navigationId: string;
@@ -35,7 +36,13 @@ export const apiCatalogPlugin = ({
       return [
         {
           path: navigationId,
-          element: <Catalog items={items} categories={categories ?? []} />,
+          element: (
+            <Catalog
+              label={label}
+              items={items}
+              categories={categories ?? []}
+            />
+          ),
         },
       ];
     },
