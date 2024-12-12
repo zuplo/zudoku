@@ -17,7 +17,7 @@ const documents = {
     types.ServersQueryDocument,
   "\n  fragment OperationsFragment on OperationItem {\n    slug\n    summary\n    method\n    description\n    operationId\n    contentTypes\n    path\n    parameters {\n      name\n      in\n      description\n      required\n      schema\n      style\n      examples {\n        name\n        description\n        externalValue\n        value\n        summary\n      }\n    }\n    requestBody {\n      content {\n        mediaType\n        encoding {\n          name\n        }\n        examples {\n          name\n          description\n          externalValue\n          value\n          summary\n        }\n        schema\n      }\n      description\n      required\n    }\n    responses {\n      statusCode\n      links\n      description\n      content {\n        examples {\n          name\n          description\n          externalValue\n          value\n          summary\n        }\n        mediaType\n        encoding {\n          name\n        }\n        schema\n      }\n    }\n  }\n":
     types.OperationsFragmentFragmentDoc,
-  "\n  query AllOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      description\n      title\n      url\n      version\n      tags {\n        name\n        description\n        operations {\n          slug\n          ...OperationsFragment\n        }\n      }\n    }\n  }\n":
+  "\n  query AllOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      description\n      summary\n      title\n      url\n      version\n      tags {\n        name\n        description\n        operations {\n          slug\n          ...OperationsFragment\n        }\n      }\n    }\n  }\n":
     types.AllOperationsDocument,
   "\n  query getServerQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n":
     types.GetServerQueryDocument,
@@ -41,7 +41,7 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: "\n  query AllOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      description\n      title\n      url\n      version\n      tags {\n        name\n        description\n        operations {\n          slug\n          ...OperationsFragment\n        }\n      }\n    }\n  }\n",
+  source: "\n  query AllOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      description\n      summary\n      title\n      url\n      version\n      tags {\n        name\n        description\n        operations {\n          slug\n          ...OperationsFragment\n        }\n      }\n    }\n  }\n",
 ): typeof import("./graphql.js").AllOperationsDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.

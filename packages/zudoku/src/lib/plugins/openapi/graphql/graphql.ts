@@ -136,6 +136,7 @@ export type Schema = {
   title: Scalars["String"]["output"];
   url: Scalars["String"]["output"];
   version: Scalars["String"]["output"];
+  summary?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type SchemaOperationsArgs = {
@@ -261,6 +262,7 @@ export type AllOperationsQuery = {
   schema: {
     __typename?: "Schema";
     description?: string | null;
+    summary?: string | null;
     title: string;
     url: string;
     version: string;
@@ -419,6 +421,7 @@ export const AllOperationsDocument = new TypedDocumentString(`
     query AllOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
     description
+    summary
     title
     url
     version
