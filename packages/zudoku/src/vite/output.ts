@@ -139,25 +139,30 @@ type Cron = {
 type CronsConfig = Cron[];
 
 export function generateOutput(config: LoadedConfig): Config {
-  const output: Config = {
-    version: 3,
-    framework: {
-      version: pkgJson.version,
-    },
-    routes: config.redirects?.map((redirect) => {
-      return {
+  const routes: Route[] = [];
+
+  if (config.basePath) {
+    routes.push({
+      src: "/",
+      dest: config.basePath,
+    });
+  }
+
+  if (config.redirects) {
+    for (const redirect of config.redirects) {
+      routes.push({
         src: joinPath(config.basePath, redirect.from),
         dest: joinPath(config.basePath, redirect.to),
         status: 301,
         headers: { Location: joinPath(config.basePath, redirect.to) },
-      };
-    }),
-  };
+      });
+    }
+  }
 
   if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
     assert(process.env.VERCEL_DEPLOYMENT_ID);
 
-    output.routes?.push({
+    routes.push({
       src: "/.*",
       has: [
         {
@@ -172,6 +177,14 @@ export function generateOutput(config: LoadedConfig): Config {
       continue: true,
     });
   }
+
+  const output: Config = {
+    version: 3,
+    framework: {
+      version: pkgJson.version,
+    },
+    routes,
+  };
 
   return output;
 }
