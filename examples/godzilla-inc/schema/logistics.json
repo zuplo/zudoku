@@ -1,0 +1,215 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Godzilla Logistics API",
+    "description": "**Godzilla Logistics API** helps you manage the giant lizard's insatiable appetite and logistical needs. From feeding schedules to cleanup operations, this API is your go-to for keeping the King of Monsters satisfied. (Pro tip: He has a *suspicious* preference for gorillas.)",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.godzilla.example.com/logistics",
+      "description": "Main Logistics API server"
+    }
+  ],
+  "paths": {
+    "/food": {
+      "get": {
+        "summary": "Get Godzilla's feeding log",
+        "description": "Retrieve a list of all food items that have been fed to Godzilla. Great for understanding his diet trends (spoiler: it's mostly gorillas).",
+        "responses": {
+          "200": {
+            "description": "List of food items",
+            "content": {
+              "application/json": {
+                "example": {
+                  "foodLog": [
+                    { "name": "Shark", "quantity": 5, "dateFed": "2024-12-01" },
+                    {
+                      "name": "Gorilla",
+                      "quantity": 3,
+                      "dateFed": "2024-12-03"
+                    },
+                    {
+                      "name": "Bus full of tourists",
+                      "quantity": 1,
+                      "dateFed": "2024-12-05"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Feed Godzilla",
+        "description": "Send food to Godzilla. He’ll eat *anything* but has a strong preference for meat—particularly gorillas. Avoid serving vegetables unless you're prepared for him to fling them back at you.",
+        "requestBody": {
+          "description": "Food item to feed Godzilla",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoodItem"
+              },
+              "example": {
+                "name": "Gorilla",
+                "quantity": 2
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Food accepted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Godzilla happily devoured 2 gorillas. A satisfied roar echoed across the city.",
+                  "status": "success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid food item",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Godzilla refused the tofu. He prefers his meals more... lively.",
+                  "status": "error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/feeding-schedule": {
+      "put": {
+        "summary": "Update Godzilla's feeding schedule",
+        "description": "Modify the feeding schedule to ensure Godzilla remains well-fed and less inclined to *snack on nearby cities*.",
+        "requestBody": {
+          "description": "New feeding schedule details",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedingSchedule"
+              },
+              "example": {
+                "time": "12:00 PM",
+                "frequency": "Twice a day",
+                "preferredFoods": ["Gorilla", "Shark"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Schedule updated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Godzilla's feeding schedule updated to twice a day at 12:00 PM. He looks forward to the gorillas.",
+                  "status": "success"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid schedule format",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Invalid feeding frequency. Godzilla prefers predictable meal times.",
+                  "status": "error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/food-log": {
+      "delete": {
+        "summary": "Delete a food log entry",
+        "description": "Remove a specific entry from Godzilla's feeding log. Useful if you accidentally logged a 'bus full of tourists' as a snack.",
+        "parameters": [
+          {
+            "name": "logId",
+            "in": "query",
+            "description": "The ID of the food log entry to delete",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Log entry deleted",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Food log entry deleted successfully. Godzilla won’t miss the paperwork.",
+                  "status": "success"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Log entry not found",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Log entry not found. Maybe it got eaten?",
+                  "status": "error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FoodItem": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the food item. (Tip: Stick to meat-based options.)"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The amount of the food item, in metric tons."
+          }
+        },
+        "required": ["name", "quantity"]
+      },
+      "FeedingSchedule": {
+        "type": "object",
+        "properties": {
+          "time": {
+            "type": "string",
+            "description": "The time of day to feed Godzilla (in HH:MM format)."
+          },
+          "frequency": {
+            "type": "string",
+            "description": "How often Godzilla should be fed (e.g., 'Twice a day')."
+          },
+          "preferredFoods": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of Godzilla's preferred food items."
+          }
+        },
+        "required": ["time", "frequency"]
+      }
+    }
+  }
+}

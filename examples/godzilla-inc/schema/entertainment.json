@@ -1,0 +1,229 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Godzilla Entertainment API",
+    "description": "The **Entertainment API** allows fans and developers to interact with Godzilla in fun and creative ways. Generate selfies, trigger iconic roars, and even schedule meet-and-greets (if you're brave enough). Perfect for games, apps, or just some monster-sized fun!",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.godzilla.example.com/entertainment",
+      "description": "Production server"
+    }
+  ],
+  "paths": {
+    "/roar": {
+      "post": {
+        "summary": "Trigger Godzilla's roar",
+        "description": "Make Godzilla roar at any volume or duration you choose. **Warning:** Side effects may include shattered windows and terrified neighbors.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RoarRequest"
+              },
+              "example": {
+                "volume": "high",
+                "duration": 5
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Godzilla roared successfully!",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "ROOOOOAAAAARRRR!!!",
+                  "volume": "high",
+                  "duration": "5 seconds",
+                  "effect": "Nearby buildings vibrated, and a flock of birds evacuated the city."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid roar settings.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Duration must be between 1 and 10 seconds."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/selfie": {
+      "get": {
+        "summary": "Generate a selfie with Godzilla",
+        "description": "Get a **dynamic selfie** with Godzilla. Choose his pose, and we’ll create a unique photo. *Pro tip:* He loves flexing his biceps after defeating a certain gorilla. 🦍",
+        "parameters": [
+          {
+            "name": "pose",
+            "in": "query",
+            "description": "The pose for Godzilla. Valid options: `smile`, `roar`, `peace-sign`, `flex`.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["smile", "roar", "peace-sign", "flex"]
+            },
+            "example": "flex"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selfie generated successfully!",
+            "content": {
+              "application/json": {
+                "example": {
+                  "imageUrl": "https://api.godzilla.example.com/images/selfies/flex.jpg",
+                  "description": "Godzilla is flexing his biceps with a smirk."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid pose option.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Pose 'dab' is not supported. Please choose from `smile`, `roar`, `peace-sign`, or `flex`."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meet-and-greet": {
+      "put": {
+        "summary": "Schedule a meet-and-greet with Godzilla",
+        "description": "Plan a personal meetup with Godzilla. Be careful—he doesn't like tardiness, and bringing bananas (or gorillas) is strictly prohibited. 🍌❌",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MeetAndGreetRequest"
+              },
+              "example": {
+                "date": "2024-12-25",
+                "location": "Tokyo Bay",
+                "guestCount": 10
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Meet-and-greet scheduled successfully!",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "message": "Meet-and-greet scheduled for 2024-12-25 at Tokyo Bay with 10 guests.",
+                  "warning": "Ensure you arrive on time to avoid accidental stomping."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid scheduling data.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "The date must be at least 7 days from today."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/selfie": {
+      "delete": {
+        "summary": "Delete a selfie",
+        "description": "Remove an embarrassing selfie with Godzilla. *For example, if he photobombed your romantic pose.*",
+        "parameters": [
+          {
+            "name": "selfieId",
+            "in": "query",
+            "description": "The unique ID of the selfie to delete.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "selfie12345"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selfie deleted successfully.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "message": "The selfie with ID 'selfie12345' has been deleted."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Selfie not found.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "No selfie found with the provided ID."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RoarRequest": {
+        "type": "object",
+        "properties": {
+          "volume": {
+            "type": "string",
+            "description": "The roar volume: `low`, `medium`, or `high`.",
+            "enum": ["low", "medium", "high"]
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Duration of the roar in seconds. Must be between 1 and 10.",
+            "minimum": 1,
+            "maximum": 10
+          }
+        }
+      },
+      "MeetAndGreetRequest": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "The date for the meet-and-greet in ISO 8601 format.",
+            "example": "2024-12-25"
+          },
+          "location": {
+            "type": "string",
+            "description": "The location of the meet-and-greet.",
+            "example": "Tokyo Bay"
+          },
+          "guestCount": {
+            "type": "integer",
+            "description": "The number of guests attending the meet-and-greet.",
+            "minimum": 1
+          }
+        }
+      }
+    }
+  }
+}

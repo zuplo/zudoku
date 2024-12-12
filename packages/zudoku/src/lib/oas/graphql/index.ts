@@ -443,7 +443,6 @@ const SchemaSource = builder.enumType("SchemaType", {
 
 builder.queryType({
   fields: (t) => ({
-    // https://tan-cow-main-bce8a06.d2.zuplo.dev/openapi
     schema: t.field({
       type: Schema,
       args: {

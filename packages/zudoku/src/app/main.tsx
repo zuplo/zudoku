@@ -1,6 +1,9 @@
 import { type RouteObject } from "react-router-dom";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
-import { configuredApiPlugins } from "virtual:zudoku-api-plugins";
+import {
+  configuredApiCatalogPlugins,
+  configuredApiPlugins,
+} from "virtual:zudoku-api-plugins";
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugins } from "virtual:zudoku-docs-plugins";
@@ -57,6 +60,7 @@ export const convertZudokuConfigToOptions = (
       ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
+      ...configuredApiCatalogPlugins,
       ...(configuredAuthProvider?.getAuthenticationPlugin
         ? [configuredAuthProvider.getAuthenticationPlugin()]
         : []),

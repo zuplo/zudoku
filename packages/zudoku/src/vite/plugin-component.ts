@@ -12,6 +12,7 @@ const viteAliasPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         ["zudoku/openapi-worker", "src/lib/plugins/openapi-worker.ts"],
         ["zudoku/components", "src/lib/components/index.ts"],
         ["zudoku/plugins/openapi", "src/lib/plugins/openapi/index.tsx"],
+        ["zudoku/plugins/api-catalog", "src/lib/plugins/api-catalog/index.tsx"],
         [
           "zudoku/plugins/search-inkeep",
           "src/lib/plugins/search-inkeep/index.tsx",
