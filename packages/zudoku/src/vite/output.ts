@@ -157,8 +157,7 @@ export function generateOutput(config: LoadedConfig): Config {
   if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
     assert(process.env.VERCEL_DEPLOYMENT_ID);
 
-    output.routes ??= [];
-    output.routes.push({
+    output.routes?.push({
       src: "/.*",
       has: [
         {
@@ -183,13 +182,15 @@ export async function writeOutput(dir: string, config: LoadedConfig) {
   // expand this to support the full vercel build output API
 
   const outputDir = process.env.VERCEL
-    ? path.join(dir, "dist/.vercel/output")
+    ? path.join(dir, ".vercel/output")
     : path.join(dir, "dist/.output");
 
   await mkdir(outputDir, { recursive: true });
-  await writeFile(
-    path.join(outputDir, "config.json"),
-    JSON.stringify(output, null, 2),
-    "utf-8",
-  );
+  const outputFile = path.join(outputDir, "config.json");
+  await writeFile(outputFile, JSON.stringify(output, null, 2), "utf-8");
+
+  if (process.env.VERCEL) {
+    // eslint-disable-next-line no-console
+    console.log("Wrote Vercel output to", outputDir);
+  }
 }

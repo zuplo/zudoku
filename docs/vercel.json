@@ -8,17 +8,7 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/docs/introduction",
-      "permanent": false
-    },
-    {
-      "source": "/docs",
-      "destination": "/docs/introduction",
-      "permanent": false
-    },
-    {
-      "source": "/docs/getting-started",
-      "destination": "/docs/introduction",
+      "destination": "/docs",
       "permanent": false
     }
   ]
