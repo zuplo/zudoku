@@ -4,22 +4,5 @@
   "buildCommand": "npx nx run docs:build",
   "outputDirectory": "dist",
   "installCommand": "pnpm install",
-  "cleanUrls": true,
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "/docs/introduction",
-      "permanent": false
-    },
-    {
-      "source": "/docs",
-      "destination": "/docs/introduction",
-      "permanent": false
-    },
-    {
-      "source": "/docs/getting-started",
-      "destination": "/docs/introduction",
-      "permanent": false
-    }
-  ]
+  "cleanUrls": true
 }

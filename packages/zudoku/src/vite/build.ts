@@ -1,4 +1,4 @@
-import { writeFile } from "fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { joinPath } from "../lib/util/joinPath.js";
@@ -69,6 +69,16 @@ export async function runBuild(options: { dir: string }) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
       console.error(e);
+    }
+
+    if (process.env.VERCEL) {
+      await mkdir(path.join(options.dir, ".vercel/output/static"), {
+        recursive: true,
+      });
+      await rename(
+        path.join(options.dir, "dist"),
+        path.join(options.dir, ".vercel/output/static"),
+      );
     }
 
     // Write the build output file
