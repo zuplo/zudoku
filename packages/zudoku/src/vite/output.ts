@@ -139,28 +139,23 @@ type Cron = {
 type CronsConfig = Cron[];
 
 export function generateOutput(config: LoadedConfig): Config {
-  const output: Config = {
-    version: 3,
-    framework: {
-      version: pkgJson.version,
-    },
-    routes: config.redirects?.map((redirect) => {
-      return {
+  const routes: Route[] = [];
+
+  if (config.redirects) {
+    for (const redirect of config.redirects) {
+      routes.push({
         src: joinPath(config.basePath, redirect.from),
         dest: joinPath(config.basePath, redirect.to),
         status: 301,
         headers: { Location: joinPath(config.basePath, redirect.to) },
-      };
-    }),
-  };
+      });
+    }
+  }
 
   if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
     assert(process.env.VERCEL_DEPLOYMENT_ID);
 
-    const cookiePath = config.basePath?.replace(/\/$/, "") ?? "/";
-
-    output.routes ??= [];
-    output.routes.push({
+    routes.push({
       src: "/.*",
       has: [
         {
@@ -170,11 +165,19 @@ export function generateOutput(config: LoadedConfig): Config {
         },
       ],
       headers: {
-        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${cookiePath}; SameSite=Strict; Secure; HttpOnly`,
+        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${joinPath(config.basePath)}; SameSite=Strict; Secure; HttpOnly`,
       },
       continue: true,
     });
   }
+
+  const output: Config = {
+    version: 3,
+    framework: {
+      version: pkgJson.version,
+    },
+    routes,
+  };
 
   return output;
 }
@@ -183,11 +186,17 @@ export async function writeOutput(dir: string, config: LoadedConfig) {
   const output = generateOutput(config);
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
-  const outputDir = path.join(dir, "dist", ".output");
+
+  const outputDir = process.env.VERCEL
+    ? path.join(dir, ".vercel/output")
+    : path.join(dir, "dist/.output");
+
   await mkdir(outputDir, { recursive: true });
-  await writeFile(
-    path.join(outputDir, "config.json"),
-    JSON.stringify(output, null, 2),
-    "utf-8",
-  );
+  const outputFile = path.join(outputDir, "config.json");
+  await writeFile(outputFile, JSON.stringify(output, null, 2), "utf-8");
+
+  if (process.env.VERCEL) {
+    // eslint-disable-next-line no-console
+    console.log("Wrote Vercel output to", outputDir);
+  }
 }
