@@ -118,9 +118,15 @@ export const SidebarCategory = ({
         className={cn(
           // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
           hasInteracted && "CollapsibleContent",
+          level === 0 ? "-ms-1" : "ms-[calc(var(--padding-nav-item)*1.25)]",
         )}
       >
-        <ul className="mt-1 border-l ms-0.5">
+        <ul
+          className={cn(
+            "my-1 border-l",
+            level === 0 ? "ms-1.5" : "ms-[--padding-nav-item]",
+          )}
+        >
           {category.items.map((item) => (
             <SidebarItem
               key={
