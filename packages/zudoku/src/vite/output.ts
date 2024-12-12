@@ -141,15 +141,6 @@ type CronsConfig = Cron[];
 export function generateOutput(config: LoadedConfig): Config {
   const routes: Route[] = [];
 
-  if (config.basePath) {
-    routes.push({
-      src: "^/$",
-      dest: config.basePath,
-      status: 301,
-      headers: { Location: config.basePath },
-    });
-  }
-
   if (config.redirects) {
     for (const redirect of config.redirects) {
       routes.push({
