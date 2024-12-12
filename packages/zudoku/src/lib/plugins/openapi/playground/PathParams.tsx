@@ -37,6 +37,7 @@ export const PathParams = ({
                         !field.value && "opacity-60",
                       )}
                     />
+                    *
                   </div>
                 )}
               />
