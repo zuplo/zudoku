@@ -1,0 +1,30 @@
+{
+  "name": "godzilla-inc",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "zudoku dev",
+    "build": "zudoku build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "@mdx-js/react": "3.0.1",
+    "@types/react": "18.3.11",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zudoku": "workspace:*",
+    "@clerk/clerk-js": "5.11.0"
+  }
+}

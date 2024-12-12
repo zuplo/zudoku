@@ -42,9 +42,16 @@ const ThemeSchema = z
   })
   .partial();
 
+const ApiCatalogCategorySchema = z.object({
+  label: z.string(),
+  tags: z.array(z.string()),
+});
+
 const ApiConfigSchema = z.object({
   server: z.string().optional(),
+  id: z.string().optional(),
   navigationId: z.string().optional(),
+  categories: z.array(ApiCatalogCategorySchema).optional(),
 });
 
 const ApiPostProcessorSchema = z
@@ -66,6 +73,12 @@ const ApiSchema = z.union([
     .object({ type: z.literal("raw"), input: z.string() })
     .merge(ApiConfigSchema),
 ]);
+
+const ApiCatalogSchema = z.object({
+  navigationId: z.string(),
+  label: z.string(),
+  items: z.array(z.string()).optional(),
+});
 
 const ApiKeysSchema = z.union([
   z.object({
@@ -286,6 +299,7 @@ const ConfigSchema = z
     }),
     docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
     apis: z.union([ApiSchema, z.array(ApiSchema)]),
+    catalog: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
     apiKeys: ApiKeysSchema,
     redirects: z.array(Redirect),
     customPages: z.array(

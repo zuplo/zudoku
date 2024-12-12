@@ -34,6 +34,7 @@
     "./plugins/redirect": "./src/lib/plugins/redirect/index.ts",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.ts",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
+    "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.ts",
     "./openapi-worker": "./src/lib/plugins/openapi-worker.ts",
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
@@ -77,6 +78,10 @@
       "./plugins/api-keys": {
         "import": "./lib/zudoku.plugin-api-keys.js",
         "types": "./dist/lib/plugins/api-keys/index.d.ts"
+      },
+      "./plugins/api-catalog": {
+        "import": "./lib/zudoku.plugin-api-catalog.js",
+        "types": "./dist/lib/plugins/api-catalog/index.d.ts"
       },
       "./plugins/markdown": {
         "import": "./lib/zudoku.plugin-markdown.js",
