@@ -76,10 +76,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
                   path: apiConfig.navigationId,
                   label: openAPISchema.info.title,
                   description: openAPISchema.info.description ?? "",
-                  categories:
-                    apiConfig.categories?.flatMap(
-                      (category) => category.tags,
-                    ) ?? [],
+                  categories: apiConfig.categories ?? [],
                 });
               }
 
@@ -121,6 +118,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             const apiCatalogConfig: ApiCatalogPluginOptions = {
               ...catalog,
               items: apiMetadata,
+              label: catalog.label,
               categories: categoriesx,
             };
 

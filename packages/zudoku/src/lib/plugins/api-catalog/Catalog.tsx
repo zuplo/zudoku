@@ -4,27 +4,29 @@ import { Head, Link } from "zudoku/components";
 import { Markdown } from "../../components/Markdown.js";
 import { useExposedProps } from "../../util/useExposedProps.js";
 import type { ApiCatalogItem, CatalogCategory } from "./index.js";
+
 export const Catalog = ({
   items,
   categories,
+  label = "API Library",
 }: {
+  label: string;
   items: ApiCatalogItem[];
   categories: CatalogCategory[];
 }) => {
   const { searchParams, setSearchParams } = useExposedProps();
   const activeCategory = searchParams.get("category");
-
   return (
     <section className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
       <Head>
-        <title>API Library</title>
+        <title>{label}</title>
       </Head>
       <div className="grid grid-cols-12 gap-12">
         <div className="flex flex-col gap-4 col-span-3 px-4 not-prose sticky top-48">
           <div className="justify-between">
             {categories.map((category, idx) => (
               <Fragment key={category.label}>
-                <div className="flex justify-between mb-5">
+                <div className="flex justify-between mb-2.5">
                   <span className="font-medium text-sm">{category.label}</span>
                   {idx === 0 && activeCategory && (
                     <button
@@ -43,9 +45,7 @@ export const Catalog = ({
                         .map((tag) => ({
                           tag,
                           count: items.filter((api) =>
-                            api.categories.includes(
-                              slugify(category.label + " " + tag),
-                            ),
+                            api.categories.find((c) => c.tags.includes(tag)),
                           ).length,
                         }))
                         .map(({ tag, count }) => (
@@ -82,13 +82,18 @@ export const Catalog = ({
           </div>
         </div>
         <div className="col-span-9">
-          <h3 className="mt-0 text-2xl font-bold mb-4">Browse our APIs</h3>
+          <h3 className="mt-0 text-2xl font-bold mb-4">{label}</h3>
 
           <div className="grid grid-cols-2 gap-4">
             {items
               .filter(
                 (api) =>
-                  !activeCategory || api.categories.includes(activeCategory),
+                  !activeCategory ||
+                  api.categories.find((c) =>
+                    c.tags.find(
+                      (t) => slugify(c.label + " " + t) === activeCategory,
+                    ),
+                  ),
               )
               .map((api, i) => (
                 <Link
@@ -108,11 +113,6 @@ export const Catalog = ({
                       className="text-sm whitespace-pre-wrap mb-6 line-clamp-2"
                       content={api.description}
                     />
-
-                    <span className="text-sm whitespace-pre-wrap">
-                      <span className="font-medium">Use for: </span>
-                      {api.categories.join(", ")}
-                    </span>
                   </div>
                 </Link>
               ))}

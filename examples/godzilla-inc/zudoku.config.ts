@@ -3,7 +3,7 @@ import type { ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   topNavigation: [
     { id: "general", label: "General" },
-    { id: "api", label: "API Reference" },
+    { id: "catalog", label: "APIs" },
   ],
   redirects: [{ from: "/", to: "/general" }],
   sidebar: {
@@ -23,31 +23,25 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/operational.json",
       navigationId: "api-operational",
-      categories: [{ label: "General", tags: ["General", "Operational"] }],
+      categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./schema/entertainment.json",
       navigationId: "api-entertainment",
-      categories: [
-        { label: "General", tags: ["End User"] },
-        { label: "End User", tags: ["General"] },
-      ],
+      categories: [{ label: "General", tags: ["End-User"] }],
     },
     {
       type: "file",
       input: "./schema/logistics.json",
       navigationId: "api-logistics",
-      categories: [{ label: "General", tags: ["Logistics"] }],
+      categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./schema/destructive.json",
       navigationId: "api-destructive",
-      categories: [
-        { label: "General", tags: ["Operational"] },
-        { label: "End User", tags: ["General"] },
-      ],
+      categories: [{ label: "General", tags: ["End-User"] }],
     },
   ],
   docs: {

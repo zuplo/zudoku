@@ -5,7 +5,7 @@ export type ApiCatalogItem = {
   path: string;
   label: string;
   description: string;
-  categories: string[];
+  categories: CatalogCategory[];
 };
 
 export type CatalogCategory = {
