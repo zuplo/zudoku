@@ -13,10 +13,6 @@ export const navigationListItem = cva(
   "flex items-center gap-2 px-[--padding-nav-item] py-1.5 rounded-lg hover:bg-accent transition-colors duration-300",
   {
     variants: {
-      isTopLevel: {
-        true: "font-medium -mx-[--padding-nav-item]",
-        false: "-mr-[--padding-nav-item] ml-[--padding-nav-item]",
-      },
       isActive: {
         true: "text-primary font-medium",
         false: "text-foreground/80",
@@ -36,11 +32,9 @@ export const DATA_ANCHOR_ATTR = "data-anchor";
 
 export const SidebarItem = ({
   item,
-  level = 0,
   onRequestClose,
 }: {
   item: SidebarItemType;
-  level?: number;
   onRequestClose?: () => void;
 }) => {
   const { activeAnchor } = useViewportAnchor();
@@ -49,18 +43,12 @@ export const SidebarItem = ({
   switch (item.type) {
     case "category":
       return (
-        <SidebarCategory
-          category={item}
-          level={level}
-          onRequestClose={onRequestClose}
-        />
+        <SidebarCategory category={item} onRequestClose={onRequestClose} />
       );
     case "doc":
       return (
         <NavLink
-          className={({ isActive }) =>
-            navigationListItem({ isActive, isTopLevel: level === 0 })
-          }
+          className={({ isActive }) => navigationListItem({ isActive })}
           to={joinPath(item.id)}
           onClick={onRequestClose}
         >
@@ -84,7 +72,6 @@ export const SidebarItem = ({
           {...{ [DATA_ANCHOR_ATTR]: item.href.slice(1) }}
           className={navigationListItem({
             isActive: item.href.slice(1) === activeAnchor,
-            isTopLevel: level === 0,
             className: item.badge?.placement !== "start" && "justify-between",
           })}
           onClick={onRequestClose}
@@ -120,7 +107,7 @@ export const SidebarItem = ({
         </NavLink>
       ) : (
         <a
-          className={navigationListItem({ isTopLevel: level === 0 })}
+          className={navigationListItem()}
           href={item.href}
           target="_blank"
           rel="noopener noreferrer"
