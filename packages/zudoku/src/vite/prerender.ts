@@ -73,16 +73,18 @@ export const prerender = async ({
   html,
   dir,
   base = "",
+  serverConfigFilename,
 }: {
   html: string;
   dir: string;
   base?: string;
+  serverConfigFilename: string;
 }) => {
   // eslint-disable-next-line no-console
   console.log("Prerendering...");
   const distDir = path.join(dir, "dist", base);
   const config: ZudokuConfig = await import(
-    pathToFileURL(path.join(distDir, "server/zudoku.config.js")).href
+    pathToFileURL(path.join(distDir, "server", serverConfigFilename)).href
   ).then((m) => m.default);
 
   const module = await import(

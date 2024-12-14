@@ -1,8 +1,4 @@
 import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
-import {
-  ConfigWithMeta,
-  loadZudokuConfig as loadZudokuConfigInner,
-} from "@zudoku/config";
 import autoprefixer from "autoprefixer";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -19,7 +15,7 @@ import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import { isPortAvailable } from "../cli/common/utils/ports.js";
 import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
-import { validateConfig } from "../config/validators/validate.js";
+import { ConfigWithMeta, tryLoadZudokuConfig } from "../config/loader.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
@@ -27,9 +23,7 @@ export type ZudokuConfigEnv = ConfigEnv & {
   forceReload?: boolean;
 };
 
-export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
-
-let config: LoadedConfig | undefined;
+let config: ConfigWithMeta | undefined;
 
 const getDocsConfigFiles = (
   docsConfig: ZudokuConfig["docs"],
@@ -44,7 +38,7 @@ const getDocsConfigFiles = (
 // We extend the dependencies with the files from configured APIs
 // so that the server restarts when these files change.
 const registerApiFileImportDependencies = (
-  config: ConfigWithMeta<ZudokuConfig>,
+  config: ConfigWithMeta,
   rootDir: string,
 ) => {
   if (!config.apis) return;
@@ -61,13 +55,13 @@ const registerApiFileImportDependencies = (
 export async function loadZudokuConfig(
   rootDir: string,
   forceReload?: boolean,
-): Promise<LoadedConfig> {
+): Promise<ConfigWithMeta> {
   if (!forceReload && config) {
     return config;
   }
 
   try {
-    const loadedConfig = await loadZudokuConfigInner<ZudokuConfig>(rootDir);
+    const loadedConfig = await tryLoadZudokuConfig(rootDir);
 
     registerApiFileImportDependencies(loadedConfig, rootDir);
 
@@ -137,7 +131,7 @@ export function getPluginOptions({
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
-  onConfigChange?: (config: LoadedConfig) => void,
+  onConfigChange?: (config: ConfigWithMeta) => void,
 ): Promise<InlineConfig> {
   const config = await loadZudokuConfig(dir);
 
@@ -147,8 +141,6 @@ export async function getViteConfig(
 
     return config;
   };
-
-  validateConfig(config);
 
   let websocketPort = 9800;
   while (

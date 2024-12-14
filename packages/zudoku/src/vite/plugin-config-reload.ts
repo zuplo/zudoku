@@ -2,11 +2,11 @@ import path from "node:path";
 import { type Plugin } from "vite";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import { type LoadedConfig } from "./config.js";
+import { type ConfigWithMeta } from "../config/loader.js";
 
 export const createConfigReloadPlugin = (
   initialConfig: ZudokuPluginOptions,
-  onConfigChange?: () => Promise<LoadedConfig>,
+  onConfigChange?: () => Promise<ConfigWithMeta>,
 ): [Plugin, () => ZudokuPluginOptions] => {
   let currentConfig = initialConfig;
   let importDependencies = initialConfig.__meta.dependencies;

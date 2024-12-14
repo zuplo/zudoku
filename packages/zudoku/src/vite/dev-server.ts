@@ -6,12 +6,12 @@ import { createServer as createViteServer, type ViteDevServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
+import type { ConfigWithMeta } from "../config/loader.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
 import {
   getAppClientEntryPath,
   getAppServerEntryPath,
   getViteConfig,
-  type LoadedConfig,
   loadZudokuConfig,
 } from "./config.js";
 import { errorMiddleware } from "./error-handler.js";
@@ -19,7 +19,7 @@ import { getDevHtml } from "./html.js";
 
 export class DevServer {
   private server: Server | undefined;
-  private currentConfig: LoadedConfig | undefined;
+  private currentConfig: ConfigWithMeta | undefined;
   private terminator: HttpTerminator | undefined;
 
   constructor(private options: { port: number; dir: string; ssr?: boolean }) {}

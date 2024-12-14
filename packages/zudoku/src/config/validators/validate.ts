@@ -2,6 +2,7 @@ import type { Options } from "@mdx-js/rollup";
 import type { ComponentType, ReactNode } from "react";
 import type { ZudokuPlugin } from "src/lib/core/plugins.js";
 import z, {
+  RefinementCtx,
   type ZodEnumDef,
   ZodOptional,
   ZodString,
@@ -192,143 +193,181 @@ const Redirect = z.object({
   to: z.string(),
 });
 
-const ConfigSchema = z
-  .object({
-    basePath: z.string().optional(),
-    page: z
-      .object({
-        pageTitle: z.string(),
-        logoUrl: z.string(),
-        logo: LogoSchema,
-        banner: z
-          .object({
-            message: z.custom<NonNullable<ReactNode>>(),
-            color: z
-              .enum(["note", "tip", "info", "caution", "danger"])
-              .or(z.string())
-              .optional() as BannerColorType,
-            dismissible: z.boolean().optional(),
-          })
-          .optional(),
-      })
-      .partial(),
-    topNavigation: z.array(TopNavigationItemSchema),
-    sidebar: z.record(InputSidebarSchema),
-    // slotlets are a concept we are working on and not yet finalized
-    UNSAFE_slotlets: z.record(
-      z.string(),
-      z.custom<ReactNode | ComponentType<ExposedComponentProps>>(),
-    ),
-    theme: z
-      .object({
-        light: ThemeSchema,
-        dark: ThemeSchema,
-      })
-      .partial(),
-    metadata: z
-      .object({
-        title: z.string(),
-        description: z.string(),
-        logo: z.string(),
-        favicon: z.string(),
-        generator: z.string(),
-        applicationName: z.string(),
-        referrer: z.string(),
-        keywords: z.array(z.string()),
-        authors: z.array(z.string()),
-        creator: z.string(),
-        publisher: z.string(),
-      })
-      .partial(),
-    mdx: z
-      .object({
-        components: z.custom<MdxComponentsType>(),
-      })
-      .partial(),
-    authentication: z.union([
-      z.object({
-        type: z.literal("clerk"),
-        clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>(
-          (val) =>
-            typeof val === "string" ? /^pk_(test|live)_\w+$/.test(val) : false,
-        ),
-        redirectToAfterSignUp: z.string().optional(),
-        redirectToAfterSignIn: z.string().optional(),
-        redirectToAfterSignOut: z.string().optional(),
-      }),
-      z.object({
-        type: z.literal("openid"),
-        clientId: z.string(),
-        issuer: z.string(),
-        audience: z.string().optional(),
-        scopes: z.array(z.string()).optional(),
-        redirectToAfterSignUp: z.string().optional(),
-        redirectToAfterSignIn: z.string().optional(),
-        redirectToAfterSignOut: z.string().optional(),
-      }),
-      z.object({
-        type: z.literal("auth0"),
-        clientId: z.string(),
-        domain: z.string(),
-        audience: z.string().optional(),
-        redirectToAfterSignUp: z.string().optional(),
-        redirectToAfterSignIn: z.string().optional(),
-        redirectToAfterSignOut: z.string().optional(),
-      }),
-    ]),
-    search: z.object({
-      type: z.literal("inkeep"),
-      apiKey: z.string(),
-      integrationId: z.string(),
-      organizationId: z.string(),
-      primaryBrandColor: z.string(),
-      organizationDisplayName: z.string(),
+/**
+ * These are the config settings that are available in all configuration
+ * formats.
+ */
+const CommonConfigSchema = z.object({
+  basePath: z.string().optional(),
+  page: z
+    .object({
+      pageTitle: z.string(),
+      logoUrl: z.string(),
+      logo: LogoSchema,
+      banner: z
+        .object({
+          message: z.custom<NonNullable<ReactNode>>(),
+          color: z
+            .enum(["note", "tip", "info", "caution", "danger"])
+            .or(z.string())
+            .optional() as BannerColorType,
+          dismissible: z.boolean().optional(),
+        })
+        .optional(),
+    })
+    .partial(),
+  topNavigation: z.array(TopNavigationItemSchema),
+  sidebar: z.record(InputSidebarSchema),
+  theme: z
+    .object({
+      light: ThemeSchema,
+      dark: ThemeSchema,
+    })
+    .partial(),
+  metadata: z
+    .object({
+      title: z.string(),
+      description: z.string(),
+      logo: z.string(),
+      favicon: z.string(),
+      generator: z.string(),
+      applicationName: z.string(),
+      referrer: z.string(),
+      keywords: z.array(z.string()),
+      authors: z.array(z.string()),
+      creator: z.string(),
+      publisher: z.string(),
+    })
+    .partial(),
+  authentication: z.union([
+    z.object({
+      type: z.literal("clerk"),
+      clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
+        typeof val === "string" ? /^pk_(test|live)_\w+$/.test(val) : false,
+      ),
+      redirectToAfterSignUp: z.string().optional(),
+      redirectToAfterSignIn: z.string().optional(),
+      redirectToAfterSignOut: z.string().optional(),
     }),
-    docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
-    apis: z.union([ApiSchema, z.array(ApiSchema)]),
-    apiKeys: ApiKeysSchema,
-    redirects: z.array(Redirect),
-    customPages: z.array(
-      z.object({
-        path: z.string(),
-        element: z.custom<NonNullable<ReactNode>>().optional(),
-        render: z.custom<ComponentType<ExposedComponentProps>>().optional(),
-        prose: z.boolean().optional(),
-      }),
-    ),
-    plugins: z.array(z.custom<ZudokuPlugin>()),
-    sitemap: SiteMapSchema,
-    build: z.custom<{
-      remarkPlugins?: Options["remarkPlugins"];
-      rehypePlugins?: Options["rehypePlugins"];
-    }>(),
-  })
-  .partial()
-  .superRefine((config, ctx) => {
-    // check if sidebar ids are found in top navigation
-    if (!config.sidebar || !config.topNavigation) return;
+    z.object({
+      type: z.literal("openid"),
+      clientId: z.string(),
+      issuer: z.string(),
+      audience: z.string().optional(),
+      scopes: z.array(z.string()).optional(),
+      redirectToAfterSignUp: z.string().optional(),
+      redirectToAfterSignIn: z.string().optional(),
+      redirectToAfterSignOut: z.string().optional(),
+    }),
+    z.object({
+      type: z.literal("auth0"),
+      clientId: z.string(),
+      domain: z.string(),
+      audience: z.string().optional(),
+      redirectToAfterSignUp: z.string().optional(),
+      redirectToAfterSignIn: z.string().optional(),
+      redirectToAfterSignOut: z.string().optional(),
+    }),
+  ]),
+  search: z.object({
+    type: z.literal("inkeep"),
+    apiKey: z.string(),
+    integrationId: z.string(),
+    organizationId: z.string(),
+    primaryBrandColor: z.string(),
+    organizationDisplayName: z.string(),
+  }),
+  docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
+  apis: z.union([ApiSchema, z.array(ApiSchema)]),
+  apiKeys: ApiKeysSchema,
+  redirects: z.array(Redirect),
+  sitemap: SiteMapSchema,
+});
 
-    const topNavIds = config.topNavigation.map((item) => item.id);
+/**
+ * These are the configuration elements that are only available if using
+ * zudoku.config.{js,ts,tsx,jsx} files.
+ */
+const CodeConfigSchema = z.object({
+  // slotlets are a concept we are working on and not yet finalized
+  UNSAFE_slotlets: z.record(
+    z.string(),
+    z.custom<ReactNode | ComponentType<ExposedComponentProps>>(),
+  ),
+  mdx: z
+    .object({
+      components: z.custom<MdxComponentsType>(),
+    })
+    .partial(),
+  customPages: z.array(
+    z.object({
+      path: z.string(),
+      element: z.custom<NonNullable<ReactNode>>().optional(),
+      render: z.custom<ComponentType<ExposedComponentProps>>().optional(),
+      prose: z.boolean().optional(),
+    }),
+  ),
+  plugins: z.array(z.custom<ZudokuPlugin>()),
+  build: z.custom<{
+    remarkPlugins?: Options["remarkPlugins"];
+    rehypePlugins?: Options["rehypePlugins"];
+  }>(),
+});
 
-    const nonExistentKeys = Object.keys(config.sidebar).filter(
-      (key) => !topNavIds.includes(key),
-    );
+const refine = (
+  config: z.output<typeof CommonConfigSchemaPartial>,
+  ctx: RefinementCtx,
+) => {
+  // check if sidebar ids are found in top navigation
+  if (!config.sidebar || !config.topNavigation) return;
 
-    if (nonExistentKeys.length > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `Sidebar ID [${nonExistentKeys.map((v) => `"${v}"`).join(", ")}] not found in top navigation.
+  const topNavIds = config.topNavigation.map((item) => item.id);
+
+  const nonExistentKeys = Object.keys(config.sidebar).filter(
+    (key) => !topNavIds.includes(key),
+  );
+
+  if (nonExistentKeys.length > 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: `Sidebar ID [${nonExistentKeys.map((v) => `"${v}"`).join(", ")}] not found in top navigation.
 Following IDs are available: ${topNavIds.join(", ")}`,
-      });
-    }
-  });
+    });
+  }
+};
+
+const CommonConfigSchemaPartial = CommonConfigSchema.partial();
+const DevPortalConfig = CommonConfigSchemaPartial.superRefine(refine);
+const ConfigSchema = CommonConfigSchema.merge(CodeConfigSchema)
+  .partial()
+  .superRefine(refine);
+
+/**
+ * Type for the dev-portal.json file
+ */
+export type DevPortalConfig = z.infer<typeof DevPortalConfig>;
+
+/**
+ * Type for the zudoku.config.{js,ts,tsx,jsx} files
+ */
+export type ZudokuConfig = z.infer<typeof ConfigSchema>;
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
-export type ZudokuConfig = z.infer<typeof ConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type TopNavigationItem = z.infer<typeof TopNavigationItemSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
+
+export function validateDevPortalConfig(config: unknown) {
+  const validationResult = DevPortalConfig.safeParse(config);
+
+  if (!validationResult.success) {
+    // eslint-disable-next-line no-console
+    console.log("Validation errors:");
+    // eslint-disable-next-line no-console
+    console.log(fromError(validationResult.error).toString());
+  }
+}
 
 export function validateConfig(config: unknown) {
   const validationResult = ConfigSchema.safeParse(config);
