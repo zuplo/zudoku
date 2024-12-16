@@ -1,8 +1,7 @@
 import path from "node:path";
 import { type Plugin } from "vite";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
-import { type ZudokuPluginOptions } from "../config/config.js";
-import { type LoadedConfig } from "./config.js";
+import { LoadedConfig, type ZudokuPluginOptions } from "../config/config.js";
 
 export const createConfigReloadPlugin = (
   initialConfig: ZudokuPluginOptions,

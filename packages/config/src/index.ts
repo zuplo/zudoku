@@ -1,5 +1,1 @@
-export {
-  ConfigWithMeta,
-  loadZudokuConfig,
-  zudokuConfigFiles,
-} from "./config.js";
+export { tryLoadZudokuConfig } from "../../zudoku/src/config/loader.js";

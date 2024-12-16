@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "composite": false,
-    "baseUrl": ".",
     "rootDir": "src",
     "outDir": "dist",
     "target": "ESNext",
@@ -23,12 +22,12 @@
     "jsx": "react-jsx",
     "types": ["vite/client"],
     "paths": {
-      "zudoku/openapi-worker": ["src/lib/plugins/openapi-worker.ts"],
-      "zudoku/components": ["src/lib/components/index.ts"],
-      "zudoku/ui/*": ["src/lib/ui/*"],
-      "zudoku/plugins/openapi": ["src/lib/plugins/openapi/index.ts"],
+      "zudoku/openapi-worker": ["./src/lib/plugins/openapi-worker.ts"],
+      "zudoku/components": ["./src/lib/components/index.ts"],
+      "zudoku/ui/*": ["./src/lib/ui/*"],
+      "zudoku/plugins/openapi": ["./src/lib/plugins/openapi/index.ts"],
       "zudoku/plugins/search-inkeep": [
-        "src/lib/plugins/search-inkeep/index.tsx"
+        "./src/lib/plugins/search-inkeep/index.tsx"
       ]
     }
   },

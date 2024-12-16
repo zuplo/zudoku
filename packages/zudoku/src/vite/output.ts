@@ -2,8 +2,8 @@ import assert from "node:assert";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { LoadedConfig } from "../config/config.js";
 import { joinPath } from "../lib/util/joinPath.js";
-import { LoadedConfig } from "./config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgJsonPath = path.join(__dirname, "../../package.json");

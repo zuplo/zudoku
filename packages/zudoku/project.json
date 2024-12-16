@@ -2,8 +2,12 @@
   "name": "zudoku",
   "$schema": "../../node_modules/nx/schemas/nx-schema.json",
   "targets": {
+    "cli": {
+      "dependsOn": ["build:vite"],
+      "command": "node ./cli.js"
+    },
     "build:ci": {
-      "dependsOn": ["build", "build:vite", "build:standalone"],
+      "dependsOn": ["build:vite", "build:standalone"],
       "executor": "nx:noop"
     },
     "build:standalone": {

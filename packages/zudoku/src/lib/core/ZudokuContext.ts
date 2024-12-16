@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
+import { TopNavigationItem } from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
-import { TopNavigationItem } from "../../config/validators/validate.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import { Slotlets } from "../components/SlotletProvider.js";

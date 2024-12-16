@@ -1,9 +1,8 @@
-import { ZudokuConfig } from "../config/config.js";
-import { ZudokuApiConfig } from "../config/validators/validate.js";
+import { CommonConfig, ZudokuApiConfig } from "../config/validators/common.js";
 import { removeExtensions } from "../lib/plugins/openapi/post-processors/removeExtensions.js";
 import { removePaths } from "../lib/plugins/openapi/post-processors/removePaths.js";
 
-function withZuplo(config: ZudokuConfig): ZudokuConfig {
+function withZuplo<TConfig extends CommonConfig>(config: TConfig): TConfig {
   if (config.apis) {
     if (Array.isArray(config.apis)) {
       config.apis = config.apis.map(configureApis);

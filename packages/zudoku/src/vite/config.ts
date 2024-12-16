@@ -1,8 +1,4 @@
 import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
-import {
-  ConfigWithMeta,
-  loadZudokuConfig as loadZudokuConfigInner,
-} from "@zudoku/config";
 import autoprefixer from "autoprefixer";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,16 +14,18 @@ import {
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import { isPortAvailable } from "../cli/common/utils/ports.js";
-import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
-import { validateConfig } from "../config/validators/validate.js";
+import type {
+  LoadedConfig,
+  ZudokuConfig,
+  ZudokuPluginOptions,
+} from "../config/config.js";
+import { tryLoadZudokuConfig } from "../config/loader.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
   forceReload?: boolean;
 };
-
-export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
 
 let config: LoadedConfig | undefined;
 
@@ -44,7 +42,7 @@ const getDocsConfigFiles = (
 // We extend the dependencies with the files from configured APIs
 // so that the server restarts when these files change.
 const registerApiFileImportDependencies = (
-  config: ConfigWithMeta<ZudokuConfig>,
+  config: LoadedConfig,
   rootDir: string,
 ) => {
   if (!config.apis) return;
@@ -67,7 +65,7 @@ export async function loadZudokuConfig(
   }
 
   try {
-    const loadedConfig = await loadZudokuConfigInner<ZudokuConfig>(rootDir);
+    const loadedConfig = await tryLoadZudokuConfig(rootDir);
 
     registerApiFileImportDependencies(loadedConfig, rootDir);
 
@@ -147,8 +145,6 @@ export async function getViteConfig(
 
     return config;
   };
-
-  validateConfig(config);
 
   let websocketPort = 9800;
   while (

@@ -1,16 +1,24 @@
 {
   "compilerOptions": {
+    "composite": false,
+    "outDir": "dist",
     "target": "ESNext",
     "lib": ["ESNext"],
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
-    "outDir": "dist",
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    "useUnknownInCatchVariables": false,
+    "noUncheckedIndexedAccess": true,
     "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "declaration": true,
     "sourceMap": true,
-    "declaration": true
+    "esModuleInterop": true,
+    "useDefineForClassFields": true,
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "isolatedModules": true,
+    "noEmit": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src"]
 }

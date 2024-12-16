@@ -1,7 +1,7 @@
 import { cx } from "class-variance-authority";
 import { Suspense } from "react";
 import { NavLink, useNavigation } from "react-router-dom";
-import { TopNavigationItem } from "../../config/validators/validate.js";
+import { TopNavigationItem } from "../../config/validators/common.js";
 import { useAuth } from "../authentication/hook.js";
 import { ZudokuError } from "../util/invariant.js";
 import { joinPath } from "../util/joinPath.js";

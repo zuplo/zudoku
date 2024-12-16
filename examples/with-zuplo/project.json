@@ -1,0 +1,13 @@
+{
+  "name": "with-zuplo",
+  "$schema": "../node_modules/nx/schemas/nx-schema.json",
+  "targets": {
+    "build": {
+      "options": {
+        "env": {
+          "ZUPLO": "1"
+        }
+      }
+    }
+  }
+}

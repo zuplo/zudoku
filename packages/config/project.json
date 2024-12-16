@@ -4,15 +4,20 @@
   "targets": {
     "build": {
       "inputs": [
-        "{projectRoot}/**/*.ts",
+        "{workspaceRoot}/zudoku/src/**/*.ts",
+        "{projectRoot}/src/**/*.ts",
         "{projectRoot}/tsconfig.json",
-        "{projectRoot}/package.json"
+        "{projectRoot}/package.json",
+        "{projectRoot}/scripts/build.mjs"
       ],
       "outputs": ["{projectRoot}/dist"],
       "cache": true
     },
-    "build:ci": {
+    "build:types": {
       "dependsOn": ["build"]
+    },
+    "build:ci": {
+      "dependsOn": ["build:types"]
     }
   }
 }

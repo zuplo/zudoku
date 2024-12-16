@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "inputs": [
+    {
+      "type": "promptString",
+      "description": "The example to use",
+      "id": "example",
+      "default": "with-config"
+    }
+  ],
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "zudoku:build",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "smartStep": true,
+      "runtimeExecutable": "nx",
+      "args": ["run", "${input:example}:build", "--debugPort=9229"],
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "sourceMaps": true,
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/apps/**/dist/**",
+        "${workspaceFolder}/packages/**/dist/**",
+        "${workspaceFolder}/sdks/**/dist/**",
+        "${workspaceFolder}/test-fixtures/**/dist/**",
+        "!**/node_modules/**"
+      ]
+    }
+  ]
+}

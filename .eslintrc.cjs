@@ -2,7 +2,7 @@
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
-  ignorePatterns: ["dist", ".eslintrc.cjs"],
+  ignorePatterns: ["dist", ".eslintrc.cjs", "packages/config/src/index.d.ts"],
   parserOptions: {
     project: "./tsconfig.eslint.json",
     ecmaFeatures: {

@@ -1,0 +1,32 @@
+{
+  "name": "with-zuplo",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "zudoku dev",
+    "build": "zudoku build"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "@mdx-js/react": "3.0.1",
+    "zudoku": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "typescript": "^5"
+  }
+}

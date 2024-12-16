@@ -1,6 +1,7 @@
 import { mkdir, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
+import { findOutputPathOfServerConfig } from "../config/loader.js";
 import { joinPath } from "../lib/util/joinPath.js";
 import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
@@ -21,8 +22,7 @@ export async function runBuild(options: { dir: string }) {
 
   // Don't run in parallel because it might overwrite itself
   const clientResult = await viteBuild(viteClientConfig);
-  await viteBuild(viteServerConfig);
-
+  const serverResult = await viteBuild(viteServerConfig);
   if (Array.isArray(clientResult)) {
     throw new Error("Build failed");
   }
@@ -44,11 +44,14 @@ export async function runBuild(options: { dir: string }) {
       cssEntry: joinPath(viteClientConfig.base, cssEntry),
     });
 
+    const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
+
     try {
       const writtenFiles = await prerender({
         html,
         dir: options.dir,
         base: viteClientConfig.base,
+        serverConfigFilename,
       });
 
       if (writtenFiles.includes("index.html")) {
