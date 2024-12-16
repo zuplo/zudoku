@@ -1,6 +1,6 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
-import { matchPath, useLocation } from "react-router-dom";
+import { matchPath, useLocation } from "react-router";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinPath } from "../../util/joinPath.js";
 import { traverseSidebar } from "../navigation/utils.js";

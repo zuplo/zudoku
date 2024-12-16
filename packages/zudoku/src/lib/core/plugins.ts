@@ -1,6 +1,6 @@
-import type { LucideProps } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { type ReactElement } from "react";
-import { type RouteObject } from "react-router-dom";
+import { type RouteObject } from "react-router";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
 import { MdxComponentsType } from "../util/MdxComponents.js";
 import { ZudokuContext, type ApiIdentity } from "./ZudokuContext.js";
@@ -40,11 +40,7 @@ export type ProfileNavigationItem = {
   weight?: number;
   category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];
-  icon?: React.ComponentType<
-    LucideProps & {
-      [key: string]: any;
-    }
-  >;
+  icon?: LucideIcon;
 };
 
 export interface CommonPlugin {
