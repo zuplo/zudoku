@@ -234,6 +234,7 @@
     "strip-ansi": "7.1.0",
     "tailwind-merge": "2.5.4",
     "tailwindcss": "3.4.13",
+    "tsx": "^4.19.2",
     "ulidx": "2.4.1",
     "unist-util-visit": "5.0.0",
     "urql": "4.1.0",

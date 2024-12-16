@@ -10,11 +10,13 @@
     "lint:ci": "eslint .",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
-    "clean": "git clean -Xfde !.env",
     "prepare": "husky",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
-    "local": "cp .env.example .env"
+    "local": "cp .env.example .env",
+    "build:clean": "tsc --build --clean",
+    "reset": "nx reset && npm run build:clean",
+    "clean": "git clean -Xfde !.env"
   },
   "lint-staged": {
     "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [

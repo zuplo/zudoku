@@ -20,13 +20,17 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "node ./scripts/build.mjs",
+    "build:tsc": "tsc",
+    "build:types": "api-extractor run --local"
   },
   "engines": {
     "node": ">=20"
   },
   "devDependencies": {
+    "@microsoft/api-extractor": "^7.48.1",
     "@types/node": "20.16.11",
+    "esbuild": "^0.24.0",
     "typescript": "5.7.2"
   }
 }

@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ConfigWithMeta } from "../config/loader.js";
+import { LoadedConfig } from "../config/config.js";
 import { joinPath } from "../lib/util/joinPath.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -138,7 +138,7 @@ type Cron = {
 
 type CronsConfig = Cron[];
 
-export function generateOutput(config: ConfigWithMeta): Config {
+export function generateOutput(config: LoadedConfig): Config {
   const output: Config = {
     version: 3,
     framework: {
@@ -179,7 +179,7 @@ export function generateOutput(config: ConfigWithMeta): Config {
   return output;
 }
 
-export async function writeOutput(dir: string, config: ConfigWithMeta) {
+export async function writeOutput(dir: string, config: LoadedConfig) {
   const output = generateOutput(config);
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API

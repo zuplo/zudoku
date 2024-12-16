@@ -1,9 +1,7 @@
 import fs from "fs";
 import path from "path";
-import {
-  ZudokuConfig,
-  ZudokuDocsConfig,
-} from "../../../config/validators/validate.js";
+import { ZudokuDocsConfig } from "../../../config/validators/common.js";
+import { ZudokuConfig } from "../../../config/validators/validate.js";
 
 const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 

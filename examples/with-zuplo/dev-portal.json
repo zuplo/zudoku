@@ -20,6 +20,6 @@
     "navigationId": "api"
   },
   "docs": {
-    "files": "docs/pages/**/*.mdx"
+    "files": "/pages/**/*.mdx"
   }
 }

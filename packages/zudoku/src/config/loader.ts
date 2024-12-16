@@ -4,12 +4,9 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { RollupOutput, RollupWatcher } from "rollup";
 import { tsImport } from "tsx/esm/api";
 import withZuplo from "../zuplo/with-zuplo.js";
-import { ZudokuConfig } from "./config.js";
-import {
-  DevPortalConfig,
-  validateConfig,
-  validateDevPortalConfig,
-} from "./validators/validate.js";
+import { ConfigWithMeta } from "./common.js";
+import { CommonConfig, validateCommonConfig } from "./validators/common.js";
+import { validateConfig } from "./validators/validate.js";
 
 const zudokuConfigFiles = [
   "zudoku.config.js",
@@ -58,18 +55,10 @@ async function getConfigFilePath(
   throw new Error(`No zudoku config file found in project root.`);
 }
 
-export type ConfigWithMeta = ZudokuConfig & {
-  __meta: {
-    dependencies: string[];
-    path: string;
-    registerDependency: (...file: string[]) => void;
-  };
-};
-
-async function loadZudokuCodeConfig(
+async function loadZudokuCodeConfig<TConfig>(
   rootDir: string,
   configPath: string,
-): Promise<{ dependencies: string[]; config: ZudokuConfig }> {
+): Promise<{ dependencies: string[]; config: TConfig }> {
   const configFilePath = pathToFileURL(configPath).href;
 
   const dependencies: string[] = [];
@@ -84,7 +73,7 @@ async function loadZudokuCodeConfig(
         dependencies.push(path);
       }
     },
-  }).then((m) => m.default as ZudokuConfig);
+  }).then((m) => m.default as TConfig);
 
   if (!config) {
     throw new Error(`Failed to load config file: ${configPath}`);
@@ -95,10 +84,12 @@ async function loadZudokuCodeConfig(
   return { dependencies, config };
 }
 
-async function loadDevPortalConfig(configPath: string) {
+async function loadDevPortalConfig<TConfig extends CommonConfig>(
+  configPath: string,
+) {
   const json = await readFile(configPath, "utf-8");
 
-  let config: DevPortalConfig;
+  let config: TConfig;
   try {
     config = JSON.parse(json);
   } catch {
@@ -107,29 +98,29 @@ async function loadDevPortalConfig(configPath: string) {
     );
   }
 
-  validateDevPortalConfig(config);
+  validateCommonConfig(config);
 
   return withZuplo(config);
 }
 
-export async function tryLoadZudokuConfig(
+export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
-): Promise<ConfigWithMeta> {
+): Promise<ConfigWithMeta<TConfig>> {
   const { configPath, configType } = await getConfigFilePath(rootDir);
 
-  let config: ZudokuConfig;
+  let config: TConfig;
   let dependencies: string[];
   if (configType === "dev-portal") {
-    config = await loadDevPortalConfig(configPath);
+    config = await loadDevPortalConfig<TConfig>(configPath);
     dependencies = [];
   } else {
-    ({ config, dependencies } = await loadZudokuCodeConfig(
+    ({ config, dependencies } = await loadZudokuCodeConfig<TConfig>(
       rootDir,
       configPath,
     ));
   }
 
-  const configWithMetadata: ConfigWithMeta = {
+  const configWithMetadata: ConfigWithMeta<TConfig> = {
     ...config,
     __meta: {
       dependencies,

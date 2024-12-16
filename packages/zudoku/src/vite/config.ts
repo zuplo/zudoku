@@ -14,8 +14,12 @@ import {
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import { isPortAvailable } from "../cli/common/utils/ports.js";
-import type { ZudokuConfig, ZudokuPluginOptions } from "../config/config.js";
-import { ConfigWithMeta, tryLoadZudokuConfig } from "../config/loader.js";
+import type {
+  LoadedConfig,
+  ZudokuConfig,
+  ZudokuPluginOptions,
+} from "../config/config.js";
+import { tryLoadZudokuConfig } from "../config/loader.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
@@ -23,7 +27,7 @@ export type ZudokuConfigEnv = ConfigEnv & {
   forceReload?: boolean;
 };
 
-let config: ConfigWithMeta | undefined;
+let config: LoadedConfig | undefined;
 
 const getDocsConfigFiles = (
   docsConfig: ZudokuConfig["docs"],
@@ -38,7 +42,7 @@ const getDocsConfigFiles = (
 // We extend the dependencies with the files from configured APIs
 // so that the server restarts when these files change.
 const registerApiFileImportDependencies = (
-  config: ConfigWithMeta,
+  config: LoadedConfig,
   rootDir: string,
 ) => {
   if (!config.apis) return;
@@ -55,7 +59,7 @@ const registerApiFileImportDependencies = (
 export async function loadZudokuConfig(
   rootDir: string,
   forceReload?: boolean,
-): Promise<ConfigWithMeta> {
+): Promise<LoadedConfig> {
   if (!forceReload && config) {
     return config;
   }
@@ -131,7 +135,7 @@ export function getPluginOptions({
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
-  onConfigChange?: (config: ConfigWithMeta) => void,
+  onConfigChange?: (config: LoadedConfig) => void,
 ): Promise<InlineConfig> {
   const config = await loadZudokuConfig(dir);
 

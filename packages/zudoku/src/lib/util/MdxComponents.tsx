@@ -1,14 +1,11 @@
-import { MDXProvider } from "@mdx-js/react";
-import type { ComponentProps } from "react";
+import { MDXComponents } from "mdx/types.js";
 import { Link } from "react-router-dom";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { SyntaxHighlight } from "../components/SyntaxHighlight.js";
 import { Callout } from "../ui/Callout.js";
 
-export type MdxComponentsType = ComponentProps<
-  typeof MDXProvider
->["components"];
+export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
 export const MdxComponents = {
   // @ts-expect-error Node is not in types but still gets passed

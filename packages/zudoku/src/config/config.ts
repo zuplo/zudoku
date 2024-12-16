@@ -1,11 +1,13 @@
-import { ConfigWithMeta } from "./loader.js";
+import { ConfigWithMeta } from "./common.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 
 export type URLString = `https://${string}` | `http://${string}`;
 
 export { type ZudokuConfig };
 
-export interface ZudokuPluginOptions extends ConfigWithMeta {
+export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
+
+export interface ZudokuPluginOptions extends ConfigWithMeta<ZudokuConfig> {
   rootDir: string;
   moduleDir: string;
 
