@@ -6,7 +6,7 @@ import { createServer as createViteServer, type ViteDevServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
-import { LoadedConfig } from "../config/config.js";
+import type { LoadedConfig } from "../config/config.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
 import {
   getAppClientEntryPath,

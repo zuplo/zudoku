@@ -39,9 +39,16 @@ const ThemeSchema = z
   })
   .partial();
 
+const ApiCatalogCategorySchema = z.object({
+  label: z.string(),
+  tags: z.array(z.string()),
+});
+
 const ApiConfigSchema = z.object({
+  id: z.string().optional(),
   server: z.string().optional(),
   navigationId: z.string().optional(),
+  categories: z.array(ApiCatalogCategorySchema).optional(),
 });
 
 const ApiPostProcessorSchema = z
@@ -265,6 +272,12 @@ const PageSchema = z
   })
   .partial();
 
+const ApiCatalogSchema = z.object({
+  navigationId: z.string(),
+  label: z.string(),
+  items: z.array(z.string()).optional(),
+});
+
 /**
  * These are the config settings that are available in all configuration
  * formats.
@@ -285,6 +298,7 @@ export const CommonConfigSchema = z.object({
   search: SearchSchema,
   docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
+  catalog: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
