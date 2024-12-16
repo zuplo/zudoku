@@ -171,6 +171,9 @@ export async function getViteConfig(
     worker: {
       format: "es",
     },
+    define: {
+      "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+    },
     ssr: {
       target: "node",
       noExternal: [],

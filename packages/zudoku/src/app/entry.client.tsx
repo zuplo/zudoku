@@ -14,9 +14,9 @@ import { getRoutesByConfig } from "./main.js";
 const routes = getRoutesByConfig(config);
 const root = document.getElementById("root")!;
 
-if (config.sentry?.enabled) {
+if (process.env.SENTRY_DSN) {
   void import("./sentry.js").then((mod) => {
-    mod.initSentry(config.sentry!);
+    mod.initSentry({ dsn: process.env.SENTRY_DSN as string });
   });
 }
 

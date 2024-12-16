@@ -6,11 +6,10 @@ import {
   useLocation,
   useNavigationType,
 } from "react-router-dom";
-import type { ZudokuConfig } from "../config/validators/validate.js";
 
-export const initSentry = (config: NonNullable<ZudokuConfig["sentry"]>) => {
+export const initSentry = ({ dsn }: { dsn: string }) => {
   Sentry.init({
-    dsn: config.dsn,
+    dsn,
     integrations: [
       Sentry.reactRouterV6BrowserTracingIntegration({
         useEffect,

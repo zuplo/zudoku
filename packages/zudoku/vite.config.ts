@@ -55,6 +55,7 @@ export default defineConfig({
         "react-dom",
         "lucide-react",
         /@radix-ui/,
+        "@sentry/react",
 
         // Optional Modules (i.e. auth providers) are external as we don't
         // want to bundle these in the library. Users will install these
