@@ -4,11 +4,11 @@ import type express from "express";
 import logger from "loglevel";
 import { Transform } from "node:stream";
 import { renderToPipeableStream, renderToStaticMarkup } from "react-dom/server";
-import { isRouteErrorResponse } from "react-router-dom";
 import {
   createStaticHandler,
   createStaticRouter,
-} from "react-router-dom/server.js";
+  isRouteErrorResponse,
+} from "react-router";
 import "virtual:zudoku-theme.css";
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
