@@ -132,7 +132,7 @@ export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   return configWithMetadata;
 }
 
-const outputFileNames = ["dev-portal.js", "zuduoku.config.js"];
+const outputFileNames = ["dev-portal.js", "zudoku.config.js"];
 
 export function findOutputPathOfServerConfig(
   output: RollupOutput | RollupOutput[] | RollupWatcher,
@@ -149,4 +149,5 @@ export function findOutputPathOfServerConfig(
       return result.fileName;
     }
   }
+  throw new Error("Could not find server config output file");
 }

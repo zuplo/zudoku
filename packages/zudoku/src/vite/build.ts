@@ -45,34 +45,33 @@ export async function runBuild(options: { dir: string }) {
     });
 
     const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
-    if (serverConfigFilename) {
-      try {
-        const writtenFiles = await prerender({
-          html,
-          dir: options.dir,
-          base: viteClientConfig.base,
-          serverConfigFilename,
-        });
 
-        if (writtenFiles.includes("index.html")) {
-          return;
-        }
+    try {
+      const writtenFiles = await prerender({
+        html,
+        dir: options.dir,
+        base: viteClientConfig.base,
+        serverConfigFilename,
+      });
 
-        await writeFile(
-          path.join(
-            options.dir,
-            "dist",
-            viteClientConfig.base ?? "",
-            "index.html",
-          ),
-          html,
-          "utf-8",
-        );
-      } catch (e) {
-        // dynamic imports in prerender swallow the stack trace, so we log it here
-        // eslint-disable-next-line no-console
-        console.error(e);
+      if (writtenFiles.includes("index.html")) {
+        return;
       }
+
+      await writeFile(
+        path.join(
+          options.dir,
+          "dist",
+          viteClientConfig.base ?? "",
+          "index.html",
+        ),
+        html,
+        "utf-8",
+      );
+    } catch (e) {
+      // dynamic imports in prerender swallow the stack trace, so we log it here
+      // eslint-disable-next-line no-console
+      console.error(e);
     }
 
     if (process.env.VERCEL) {
