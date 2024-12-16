@@ -103,6 +103,8 @@ async function loadDevPortalConfig<TConfig extends CommonConfig>(
   return withZuplo(config);
 }
 
+// WARNING: If you change function signature, you must also change the
+// corresponding type in packages/config/src/index.d.ts
 export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
 ): Promise<ConfigWithMeta<TConfig>> {
