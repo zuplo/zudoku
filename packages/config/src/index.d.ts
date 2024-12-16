@@ -6,7 +6,7 @@
  */
 
 // This file is generated as part of the build script
-import { CommonConfig } from "./config";
+import { CommonConfig } from "./config.d.ts";
 
 export { CommonConfig };
 
