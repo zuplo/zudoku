@@ -2,7 +2,6 @@ import react from "@vitejs/plugin-react";
 import { type PluginOption } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { type LoadedConfig } from "./config.js";
-import { vitePluginSsrCss } from "./css/plugin.js";
 import viteApiKeysPlugin from "./plugin-api-keys.js";
 import viteApiPlugin from "./plugin-api.js";
 import viteAuthPlugin from "./plugin-auth.js";
@@ -29,9 +28,6 @@ export default function vitePlugin(
 
   return [
     viteMdxPlugin(getCurrentConfig),
-    vitePluginSsrCss(getCurrentConfig, {
-      entries: ["zudoku/app/entry.server.tsx"],
-    }),
     react({ include: /\.(mdx?|jsx?|tsx?)$/ }),
     viteConfigPlugin(getCurrentConfig),
     viteApiKeysPlugin(getCurrentConfig),

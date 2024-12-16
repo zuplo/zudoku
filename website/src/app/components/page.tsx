@@ -57,12 +57,12 @@ const Brand = () => (
 );
 
 const Page = async () => {
-  const allHeaders = await headers();
+  const allHeaders = headers();
   const domain =
     allHeaders.get("x-forwarded-host") ||
     allHeaders.get("host") ||
     "zudoku.dev";
-  const protocol = allHeaders.get("x-forwarded-proto") || "https";
+  const protocol = headers().get("x-forwarded-proto") || "https";
 
   const baseExampleUrl = `${protocol}://${domain}`;
 

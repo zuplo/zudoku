@@ -1,4 +1,4 @@
-import { isRouteErrorResponse, useRouteError } from "react-router";
+import { isRouteErrorResponse, useRouteError } from "react-router-dom";
 import { NotFoundPage } from "../components/NotFoundPage.js";
 import { ErrorAlert } from "./ErrorAlert.js";
 

@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Navigate } from "react-router";
+import { Navigate } from "react-router-dom";
 import { ZudokuError } from "../../util/invariant.js";
 
 export function CallbackHandler({

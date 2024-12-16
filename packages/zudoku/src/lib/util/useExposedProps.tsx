@@ -3,7 +3,7 @@ import {
   useNavigate,
   useParams,
   useSearchParams,
-} from "react-router";
+} from "react-router-dom";
 import type { ExposedComponentProps } from "../components/SlotletProvider.js";
 
 export const useExposedProps = (): ExposedComponentProps => {

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 
 export const SignOut = () => {

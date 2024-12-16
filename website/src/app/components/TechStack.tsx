@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/app/utils/cn";
-import { animate } from "motion";
+import { animate } from "framer-motion";
 import Image from "next/image";
 import { useEffect } from "react";
 
@@ -36,22 +36,48 @@ export const TechStack = () => {
 };
 
 export const TechStackBubble = () => {
-  useEffect(() => {
-    const transform = [
-      "translateY(0px)",
-      "translateY(-2px)",
-      "translateY(0px)",
-    ];
-    const sequence = [
-      [".circle-1", { transform }, { duration: 0.8 }],
-      [".circle-2", { transform }, { duration: 0.8 }],
-      [".circle-3", { transform }, { duration: 0.8 }],
-      [".circle-4", { transform }, { duration: 0.8 }],
-      [".circle-5", { transform }, { duration: 0.8 }],
-    ] as const;
+  const transform = ["translateY(0px)", "translateY(-2px)", "translateY(0px)"];
+  const sequence = [
+    [
+      ".circle-1",
+      {
+        transform,
+      },
+      { duration: 0.8 },
+    ],
+    [
+      ".circle-2",
+      {
+        transform,
+      },
+      { duration: 0.8 },
+    ],
+    [
+      ".circle-3",
+      {
+        transform,
+      },
+      { duration: 0.8 },
+    ],
+    [
+      ".circle-4",
+      {
+        transform,
+      },
+      { duration: 0.8 },
+    ],
+    [
+      ".circle-5",
+      {
+        transform,
+      },
+      { duration: 0.8 },
+    ],
+  ] as const;
 
+  useEffect(() => {
+    // @ts-ignore
     animate(sequence, {
-      // @ts-ignore
       repeat: Infinity,
       repeatDelay: 1,
     });
