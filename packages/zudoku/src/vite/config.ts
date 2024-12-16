@@ -228,7 +228,7 @@ export async function getViteConfig(
           ? getAppServerEntryPath()
           : getAppClientEntryPath(),
       ],
-      include: ["react-dom/client"],
+      include: ["react-dom/client", "@sentry/react"],
       exclude: [
         // Vite does not like optimizing the worker dependency
         "zudoku/openapi-worker",
