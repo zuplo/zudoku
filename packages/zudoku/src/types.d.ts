@@ -12,6 +12,7 @@ declare module "virtual:zudoku-sidebar" {
 
 declare module "virtual:zudoku-api-plugins" {
   export const configuredApiPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
+  export const configuredApiCatalogPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
 }
 
 declare module "virtual:zudoku-search-plugin" {

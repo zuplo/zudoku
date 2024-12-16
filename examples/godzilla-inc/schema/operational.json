@@ -1,0 +1,187 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Godzilla Operational API",
+    "version": "1.0.0",
+    "description": "Manage **Godzilla's operations** with this API. From tracking his movements to keeping him fed, this is your go-to toolkit for handling the King of Monsters. *(Tip: If he seems grumpy, he's probably hungry...and yes, he still prefers gorillas.)*"
+  },
+  "servers": [
+    {
+      "url": "https://api.godzilla.example.com/operational",
+      "description": "Production server for Godzilla Inc."
+    }
+  ],
+  "paths": {
+    "/godzilla/location": {
+      "get": {
+        "summary": "Get Godzilla's current location",
+        "description": "Retrieve Godzilla's **current stomping grounds**. Use this to track his whereabouts, but don't get too close. Includes a human-readable description for convenience.",
+        "responses": {
+          "200": {
+            "description": "Godzilla's location successfully retrieved.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "latitude": 35.6895,
+                  "longitude": 139.6917,
+                  "description": "Godzilla is stomping around Tokyo. Again."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/godzilla/feed": {
+      "post": {
+        "summary": "Feed Godzilla",
+        "description": "Provide Godzilla with **his next meal**. He'll eat anything, but let's be honest: *he has a thing for gorillas.* 🍖",
+        "requestBody": {
+          "description": "Details about the food you're offering Godzilla.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FoodItem"
+              },
+              "example": {
+                "foodItem": "Gorilla",
+                "quantity": 2
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Godzilla happily munches on the meal.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Godzilla is satisfied with 2 gorillas. He gives you an approving roar."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid food item provided.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Godzilla threw the salad back at you. He expects meat!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/godzilla/mood": {
+      "put": {
+        "summary": "Update Godzilla's mood",
+        "description": "Use this endpoint to **set Godzilla's mood**. Valid moods include `calm`, `angry`, and `hungry`. *(Spoiler: Angry and hungry are often the same thing for him.)*",
+        "requestBody": {
+          "description": "Specify the new mood for Godzilla.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mood": {
+                    "type": "string",
+                    "enum": ["calm", "angry", "hungry"],
+                    "description": "The desired mood for Godzilla."
+                  }
+                },
+                "required": ["mood"],
+                "example": {
+                  "mood": "calm"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Godzilla's mood successfully updated.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "Godzilla is now calm and enjoying the ocean breeze."
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Invalid mood provided.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "Mood 'happy' is not supported. Try 'calm', 'angry', or 'hungry'."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/godzilla/targets": {
+      "delete": {
+        "summary": "Remove a city from Godzilla's destruction list",
+        "description": "Spare a city from imminent **Godzilla destruction**. Pro tip: Start with your hometown.",
+        "parameters": [
+          {
+            "name": "city",
+            "in": "query",
+            "description": "Name of the city to remove from Godzilla's destruction list.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "New York"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "City successfully removed.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "message": "New York has been removed from Godzilla's target list. Citizens breathe a sigh of relief."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "City not found on the target list.",
+            "content": {
+              "application/json": {
+                "example": {
+                  "error": "City not on target list. Either it's safe or already destroyed."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FoodItem": {
+        "type": "object",
+        "properties": {
+          "foodItem": {
+            "type": "string",
+            "description": "The food item you're feeding to Godzilla. He prefers *meat*."
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "The quantity of the food item (in metric tons)."
+          }
+        },
+        "required": ["foodItem", "quantity"]
+      }
+    }
+  }
+}

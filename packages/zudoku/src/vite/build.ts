@@ -1,4 +1,4 @@
-import { writeFile } from "fs/promises";
+import { mkdir, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { findOutputPathOfServerConfig } from "../config/loader.js";
@@ -74,6 +74,17 @@ export async function runBuild(options: { dir: string }) {
         console.error(e);
       }
     }
+
+    if (process.env.VERCEL) {
+      await mkdir(path.join(options.dir, ".vercel/output/static"), {
+        recursive: true,
+      });
+      await rename(
+        path.join(options.dir, "dist"),
+        path.join(options.dir, ".vercel/output/static"),
+      );
+    }
+
     // Write the build output file
     const config = await loadZudokuConfig(options.dir);
     await writeOutput(options.dir, config);

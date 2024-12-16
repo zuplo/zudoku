@@ -50,6 +50,7 @@ export const PathParams = ({
                   render={({ field }) => (
                     <Input
                       {...field}
+                      required
                       placeholder="Enter value"
                       className="border-0 shadow-none ring-0 font-mono text-xs"
                     />

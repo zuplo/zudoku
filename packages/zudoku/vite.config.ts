@@ -17,6 +17,7 @@ const entries: Record<string, string> = {
   "plugin-redirect": "./src/lib/plugins/redirect/index.tsx",
   "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
+  "plugin-api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
   ...globEntries("./src/lib/ui/**/*.{ts,tsx}", "ui"),
   ...globEntries(
     "./src/lib/plugins/openapi/post-processors/*.ts",

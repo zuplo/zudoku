@@ -10,11 +10,9 @@ import { useIsCategoryOpen } from "./utils.js";
 
 export const SidebarCategory = ({
   category,
-  level,
   onRequestClose,
 }: {
   category: SidebarItemCategory;
-  level: number;
   onRequestClose?: () => void;
 }) => {
   const isCategoryOpen = useIsCategoryOpen(category);
@@ -67,7 +65,6 @@ export const SidebarCategory = ({
           onClick={() => setHasInteracted(true)}
           className={navigationListItem({
             isActive: false,
-            isTopLevel: level === 0,
             className: [
               "text-start",
               isCollapsible
@@ -79,10 +76,7 @@ export const SidebarCategory = ({
           {category.icon && (
             <category.icon
               size={16}
-              className={cn(
-                "align-[-0.125em] -translate-x-1",
-                isActive && "text-primary",
-              )}
+              className={cn("align-[-0.125em] ", isActive && "text-primary")}
             />
           )}
           {category.link?.type === "doc" ? (
@@ -118,9 +112,14 @@ export const SidebarCategory = ({
         className={cn(
           // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
           hasInteracted && "CollapsibleContent",
+          "ms-6 my-1",
         )}
       >
-        <ul className="mt-1 border-l ms-0.5">
+        <ul
+          className={
+            "relative after:absolute after:-left-[--padding-nav-item] after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border"
+          }
+        >
           {category.items.map((item) => (
             <SidebarItem
               key={
@@ -129,7 +128,6 @@ export const SidebarCategory = ({
                 item.label
               }
               onRequestClose={onRequestClose}
-              level={level + 1}
               item={item}
             />
           ))}

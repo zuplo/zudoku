@@ -1,0 +1,196 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Godzilla Destruction API",
+    "version": "1.0.0",
+    "description": "The **Godzilla Destruction API** allows you to manage and simulate the destruction caused by Godzilla. Save cities, plan evacuations, or even have some fun simulating how your city would fare under his mighty foot! Note: King Kong references included for comedic relief."
+  },
+  "servers": [
+    {
+      "url": "https://api.godzilla.example.com/destructive",
+      "description": "Production server for the Destruction API"
+    }
+  ],
+  "paths": {
+    "/destruction/simulate": {
+      "post": {
+        "summary": "Simulate destruction of a city",
+        "description": "Plan your evacuation or just satisfy your curiosity by simulating **Godzilla** unleashing his wrath on a city. *(No gorillas were harmed in these simulations.)*",
+        "requestBody": {
+          "description": "City details for simulation",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CitySimulation"
+              },
+              "example": {
+                "cityName": "San Francisco",
+                "population": 870000,
+                "keyLandmarks": ["Golden Gate Bridge", "Alcatraz Island"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Simulation results",
+            "content": {
+              "application/json": {
+                "example": {
+                  "city": "San Francisco",
+                  "estimatedDamage": "75%",
+                  "landmarksDestroyed": ["Golden Gate Bridge"],
+                  "casualties": 820000,
+                  "message": "Golden Gate Bridge fell faster than King Kong in a wrestling match."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/targets": {
+      "put": {
+        "summary": "Add or update a city on Godzilla's target list",
+        "description": "Add a new city to Godzilla's destruction list or update an existing target. **Use responsibly!**",
+        "requestBody": {
+          "description": "City details to add or update",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CityTarget"
+              },
+              "example": {
+                "cityName": "Tokyo",
+                "priority": "high"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "City successfully added or updated",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "message": "Tokyo added to the target list. Godzilla smirks in approval."
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Remove a city from Godzilla's target list",
+        "description": "Save a city from destruction by removing it from the target list. **Pro tip:** Removing a city that starts with \"Kong\" might prevent some awkward dinners. :wink:",
+        "parameters": [
+          {
+            "name": "cityName",
+            "in": "query",
+            "description": "The name of the city to remove",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "New York"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "City successfully removed",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "success",
+                  "message": "New York removed from the target list. Godzilla grumbles but agrees to spare it."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "City not found on the target list",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": "error",
+                  "message": "City not found. Maybe it was never on the list, or maybe it's already rubble."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/destruction/status": {
+      "get": {
+        "summary": "Get the current status of destruction",
+        "description": "Retrieve a report of Godzilla's ongoing or recently completed rampages. Includes city names, damage levels, and a humorous side note on King Kong (because why not?).",
+        "responses": {
+          "200": {
+            "description": "Destruction status retrieved successfully",
+            "content": {
+              "application/json": {
+                "example": {
+                  "activeDestruction": true,
+                  "cities": [
+                    {
+                      "city": "Los Angeles",
+                      "damage": "60%",
+                      "note": "Hollywood sign is now a Hollywood pancake."
+                    },
+                    {
+                      "city": "Paris",
+                      "damage": "45%",
+                      "note": "Eiffel Tower bent but not broken. Still better than King Kong's balancing act."
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CitySimulation": {
+        "type": "object",
+        "properties": {
+          "cityName": {
+            "type": "string",
+            "description": "The name of the city to simulate destruction for."
+          },
+          "population": {
+            "type": "integer",
+            "description": "The population of the city. Used to calculate casualties."
+          },
+          "keyLandmarks": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Important landmarks in the city (e.g., bridges, towers)."
+          }
+        }
+      },
+      "CityTarget": {
+        "type": "object",
+        "properties": {
+          "cityName": {
+            "type": "string",
+            "description": "The name of the city to add or update on the target list."
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "The priority level for targeting this city."
+          }
+        }
+      }
+    }
+  }
+}

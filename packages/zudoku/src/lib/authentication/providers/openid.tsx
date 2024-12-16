@@ -203,9 +203,14 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     }
     const tokenState = providerData as TokenState;
 
-    if (tokenState.expiresOn < new Date()) {
+    if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
-        await this.signIn();
+        useAuthState.setState({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        });
         return "";
       }
 
