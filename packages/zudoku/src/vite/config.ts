@@ -1,3 +1,4 @@
+import { vitePluginSsrCss } from "@hiogawa/vite-plugin-ssr-css";
 import {
   ConfigWithMeta,
   loadZudokuConfig as loadZudokuConfigInner,
@@ -174,17 +175,9 @@ export async function getViteConfig(
     worker: {
       format: "es",
     },
-    resolve: {
-      alias: {
-        "@mdx-js/react": path.resolve(
-          pluginOptions.moduleDir,
-          "node_modules/@mdx-js/react",
-        ),
-      },
-    },
     ssr: {
       target: "node",
-      noExternal: ["@mdx-js/react"],
+      noExternal: [],
     },
     server: {
       middlewareMode: true,
@@ -247,15 +240,12 @@ export async function getViteConfig(
     },
     // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
     assetsInclude: ["/__z/entry.client.tsx"],
-    plugins: [vitePlugin(pluginOptions, handleConfigChange)],
-    future: {
-      removeServerModuleGraph: "warn",
-      removeSsrLoadModule: "warn",
-      removeServerTransformRequest: "warn",
-      removePluginHookHandleHotUpdate: "warn",
-      removePluginHookSsrArgument: "warn",
-      removeServerHot: "warn",
-    },
+    plugins: [
+      vitePluginSsrCss({
+        entries: [`${pluginOptions.moduleDir}/src/app/entry.client.tsx`],
+      }),
+      vitePlugin(pluginOptions, handleConfigChange),
+    ],
     css: {
       postcss: {
         plugins: [

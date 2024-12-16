@@ -2,11 +2,7 @@ import express, { type Express } from "express";
 import { createHttpTerminator, HttpTerminator } from "http-terminator";
 import { Server } from "node:http";
 import path from "node:path";
-import {
-  createServer as createViteServer,
-  isRunnableDevEnvironment,
-  type ViteDevServer,
-} from "vite";
+import { createServer as createViteServer, type ViteDevServer } from "vite";
 import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
@@ -64,9 +60,7 @@ export class DevServer {
 
     app.use(graphql.graphqlEndpoint, graphql);
     app.use(proxiedEntryClientPath, async (_req, res) => {
-      const transformed = await vite.environments.client.transformRequest(
-        getAppClientEntryPath(),
-      );
+      const transformed = await vite.transformRequest(getAppClientEntryPath());
       if (!transformed) throw new Error("Error transforming client entry");
 
       res
@@ -83,12 +77,6 @@ export class DevServer {
     app.use("*", async (request, response, next) => {
       const url = request.originalUrl;
 
-      const ssrEnvironment = vite.environments.ssr;
-
-      if (!isRunnableDevEnvironment(ssrEnvironment)) {
-        throw new Error("Server-side rendering is not enabled");
-      }
-
       try {
         const rawHtml = getDevHtml("/__z/entry.client.tsx");
         const template = await vite.transformIndexHtml(url, rawHtml);
@@ -98,9 +86,7 @@ export class DevServer {
             throw new Error("Error loading configuration.");
           }
 
-          const module = await ssrEnvironment.runner.import(
-            getAppServerEntryPath(),
-          );
+          const module = await vite.ssrLoadModule(getAppServerEntryPath());
           const render = module.render as typeof serverRender;
 
           void render({

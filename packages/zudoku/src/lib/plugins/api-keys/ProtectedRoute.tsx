@@ -1,4 +1,4 @@
-import { Outlet } from "react-router";
+import { Outlet } from "react-router-dom";
 import { useAuth } from "../../authentication/hook.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Button } from "../../ui/Button.js";

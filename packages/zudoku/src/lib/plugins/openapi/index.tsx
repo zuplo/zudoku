@@ -1,4 +1,4 @@
-import { matchPath, type RouteObject } from "react-router";
+import { matchPath, type RouteObject } from "react-router-dom";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 

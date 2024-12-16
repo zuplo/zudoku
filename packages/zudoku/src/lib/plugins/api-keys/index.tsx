@@ -1,5 +1,5 @@
 import { FileKey2Icon } from "lucide-react";
-import { type RouteObject } from "react-router";
+import { type RouteObject } from "react-router-dom";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import {
   type ApiIdentityPlugin,

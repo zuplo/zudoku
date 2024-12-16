@@ -1,6 +1,6 @@
 import logger from "loglevel";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter } from "react-router-dom";
 import { Bootstrap } from "zudoku/components";
 import type { ZudokuConfig } from "../config/validators/validate.js";
 import DemoAnnouncement from "../lib/demo/DemoAnnouncement.js";
