@@ -1,1 +1,4 @@
-export { tryLoadZudokuConfig } from "../../zudoku/src/config/loader.js";
+export {
+  findConfigFilePath,
+  tryLoadZudokuConfig,
+} from "../../zudoku/src/config/loader.js";

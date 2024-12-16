@@ -6,7 +6,7 @@
  */
 
 // This file is generated as part of the build script
-import { CommonConfig } from "./config";
+import { CommonConfig } from "./config.d.ts";
 
 export { CommonConfig };
 
@@ -21,3 +21,9 @@ export type ConfigWithMeta<TConfig extends CommonConfig> = TConfig & {
 export declare function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
 ): Promise<ConfigWithMeta<TConfig>>;
+
+export declare function findConfigFilePath(
+  rootDir: string,
+): Promise<
+  { configPath: string; configType: "zudoku" | "dev-portal" } | undefined
+>;
