@@ -26,9 +26,12 @@ const fileExists = (path: string) =>
 let configPath: string | undefined;
 let configType: "zudoku" | "dev-portal" | undefined;
 
-async function getConfigFilePath(
+export async function findConfigFilePath(
   rootDir: string,
-): Promise<{ configPath: string; configType: "zudoku" | "dev-portal" }> {
+): Promise<
+  | { configPath: string; configType: "zudoku" | "dev-portal" }
+  | { configPath: undefined; configType: undefined }
+> {
   // Also check if file exists, so renaming the file will trigger a restart as well
   if (configPath && configType && (await fileExists(configPath))) {
     return { configPath, configType };
@@ -50,8 +53,19 @@ async function getConfigFilePath(
       return { configPath, configType };
     }
   }
+
   configPath = undefined;
   configType = undefined;
+  return { configPath, configType };
+}
+
+async function getConfigFilePath(
+  rootDir: string,
+): Promise<{ configPath: string; configType: "zudoku" | "dev-portal" }> {
+  const result = await findConfigFilePath(rootDir);
+  if (result.configType) {
+    return result;
+  }
   throw new Error(`No zudoku config file found in project root.`);
 }
 
