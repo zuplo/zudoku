@@ -254,21 +254,29 @@ const MetadataSchema = z
   })
   .partial();
 
+const FontConfigSchema = z.object({
+  url: z.string(),
+  fontFamily: z.string(),
+});
+
+const FontsConfigSchema = z.object({
+  sans: FontConfigSchema.optional(),
+  mono: FontConfigSchema.optional(),
+});
+
 const PageSchema = z
   .object({
     pageTitle: z.string(),
     logoUrl: z.string(),
     logo: LogoSchema,
-    banner: z
-      .object({
-        message: z.custom<NonNullable<ReactNode>>(),
-        color: z
-          .enum(["note", "tip", "info", "caution", "danger"])
-          .or(z.string())
-          .optional() as BannerColorType,
-        dismissible: z.boolean().optional(),
-      })
-      .optional(),
+    banner: z.object({
+      message: z.custom<NonNullable<ReactNode>>(),
+      color: z
+        .enum(["note", "tip", "info", "caution", "danger"])
+        .or(z.string())
+        .optional() as BannerColorType,
+      dismissible: z.boolean().optional(),
+    }),
   })
   .partial();
 
@@ -291,6 +299,7 @@ export const CommonConfigSchema = z.object({
     .object({
       light: ThemeSchema,
       dark: ThemeSchema,
+      fonts: FontsConfigSchema,
     })
     .partial(),
   metadata: MetadataSchema,

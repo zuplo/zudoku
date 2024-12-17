@@ -7,7 +7,6 @@ import viteAuthPlugin from "./plugin-auth.js";
 import viteAliasPlugin from "./plugin-component.js";
 import { createConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
-import viteCustomCss from "./plugin-custom-css.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
@@ -15,6 +14,7 @@ import viteMdxPlugin from "./plugin-mdx.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSearchPlugin } from "./plugin-search.js";
 import { viteSidebarPlugin } from "./plugin-sidebar.js";
+import { viteThemeCss } from "./plugin-theme-css.js";
 
 export default function vitePlugin(
   initialConfig: ZudokuPluginOptions,
@@ -39,7 +39,7 @@ export default function vitePlugin(
     viteSearchPlugin(getCurrentConfig),
     viteAliasPlugin(getCurrentConfig),
     viteRedirectPlugin(getCurrentConfig),
-    viteCustomCss(getCurrentConfig),
+    viteThemeCss(getCurrentConfig),
     configReloadPlugin,
   ];
 }
