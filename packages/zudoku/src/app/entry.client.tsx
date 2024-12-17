@@ -14,6 +14,12 @@ import { getRoutesByConfig } from "./main.js";
 const routes = getRoutesByConfig(config);
 const root = document.getElementById("root")!;
 
+if (process.env.SENTRY_DSN) {
+  void import("./sentry.js").then((mod) => {
+    mod.initSentry({ dsn: process.env.SENTRY_DSN as string });
+  });
+}
+
 if (root.childElementCount > 0) {
   void hydrate(routes);
 } else {

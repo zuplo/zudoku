@@ -1,0 +1,41 @@
+---
+sidebar_icon: bug
+---
+
+# Sentry
+
+Sentry is a popular error tracking tool that helps you monitor and fix crashes in real time. It provides you with detailed error reports, so you can quickly identify and resolve issues before they affect your users.
+
+## Enable Sentry
+
+1. To enable it you have to first install the optional dependency `@sentry/react`.
+
+```bash
+npm install --save @sentry/react
+```
+
+2. And then set the `SENTRY_DSN` environment variable in your Zudoku project.
+
+```bash
+
+SENTRY_DSN=https://your-sentry-dsn
+```
+
+## Release management
+
+However this does not handle release management for you. For that you can [create a custom `vite.config.ts`](./vite-config) and use the `@sentry/vite-plugin` plugin.
+
+```ts
+import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+  plugins: [
+    sentryVitePlugin({
+      authToken: "your-token",
+      org: "your-org",
+      project: "your-project",
+    }),
+  ],
+});
+```
