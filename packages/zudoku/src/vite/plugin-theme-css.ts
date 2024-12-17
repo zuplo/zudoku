@@ -53,19 +53,21 @@ export const viteThemeCss = (getConfig: () => ZudokuPluginOptions): Plugin => {
       const config = getConfig();
 
       const cssParts = [];
+
+      // It's important that @import statements come first:
+      // > "@import must precede all other statements (besides @charset or empty @layer)"
+      if (config.theme?.fonts?.sans) {
+        cssParts.push(`@import url('${config.theme.fonts.sans.url}');`);
+      }
+      if (config.theme?.fonts?.mono) {
+        cssParts.push(`@import url('${config.theme.fonts.mono.url}');`);
+      }
+
       if (config.theme?.light) {
         cssParts.push(`:root:root { ${generateCss(config.theme.light)} }`);
       }
       if (config.theme?.dark) {
         cssParts.push(`.dark.dark { ${generateCss(config.theme.dark)} }`);
-      }
-
-      if (config.theme?.fonts?.sans) {
-        cssParts.push(`@import url('${config.theme.fonts.sans.url}');`);
-      }
-
-      if (config.theme?.fonts?.mono) {
-        cssParts.push(`@import url('${config.theme.fonts.mono.url}');`);
       }
 
       return cssParts.join("\n");
