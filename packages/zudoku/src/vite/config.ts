@@ -249,7 +249,7 @@ export async function getViteConfig(
       postcss: {
         plugins: [
           tailwindcss({
-            ...tailwindConfig,
+            ...tailwindConfig(config),
             content: [
               // Zudoku components and styles
               // Tailwind seems to crash if it tries to parse compiled .js files
