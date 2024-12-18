@@ -14,7 +14,7 @@ export const Catalog = ({
   filterCatalogItems = (items) => items,
   categories,
   label = "API Library",
-}: ApiCatalogPluginOptions) => {
+}: Omit<ApiCatalogPluginOptions, "navigationId">) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category");
   const auth = useAuthState();
