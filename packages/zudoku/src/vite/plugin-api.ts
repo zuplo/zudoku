@@ -104,7 +104,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             }
           }
 
-          const categoriesx = Array.from(categories.entries()).map(
+          const categorieList = Array.from(categories.entries()).map(
             ([label, tags]) => ({
               label,
               tags: Array.from(tags),
@@ -119,7 +119,8 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
               ...catalog,
               items: apiMetadata,
               label: catalog.label,
-              categories: categoriesx,
+              categories: categorieList,
+              filterCatalogItems: catalog.filterItems,
             };
 
             code.push(

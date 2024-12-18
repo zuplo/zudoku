@@ -53,7 +53,39 @@ const config = {
 
 ## Advanced Configuration
 
-### Filter APIs
+### Select APIs to show in the catalog
+
+You can select which APIs are shown in the catalog by using the `items` property. The `items` property is an array of navigation IDs of the APIs you want to show in the catalog.
+
+```js
+const config = {
+  // ...
+  catalog: {
+    navigationId: "catalog",
+    label: "API Catalog",
+    // Only show the operational API in the catalog
+    items: ["api-operational"],
+  },
+  apis: [
+    // ...
+    {
+      type: "file",
+      input: "./operational.json",
+      navigationId: "api-operational",
+      categories: [{ label: "General", tags: ["Operational"] }],
+    },
+    {
+      type: "file",
+      input: "./enduser.json",
+      navigationId: "api-enduser",
+      categories: [{ label: "General", tags: ["End-User"] }],
+    },
+  ],
+  // ...
+};
+```
+
+### Adding authentication & filter items for user
 
 You can filter which APIs are shown in the catalog by using the `filter` property.
 
