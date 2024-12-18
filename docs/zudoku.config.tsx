@@ -55,6 +55,7 @@ const config: ZudokuConfig = {
         link: "configuration/overview",
         items: [
           "configuration/api-reference",
+          "configuration/api-catalog",
           "configuration/navigation",
           "configuration/search",
           "configuration/authentication",
