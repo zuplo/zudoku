@@ -1,23 +1,42 @@
 import slugify from "@sindresorhus/slugify";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import { Head, Link } from "zudoku/components";
+import { type AuthState, useAuthState } from "../../authentication/state.js";
 import { Markdown } from "../../components/Markdown.js";
 import { cn } from "../../util/cn.js";
 import type { ApiCatalogItem, CatalogCategory } from "./index.js";
 
 const getKey = (category: string, tag: string) => slugify(`${category}-${tag}`);
 
+type CatalogContext<ProviderData = unknown> = {
+  auth: AuthState<ProviderData>;
+};
+
+type filterCatalogItems<G> = (
+  items: ApiCatalogItem[],
+  { auth }: CatalogContext,
+) => ApiCatalogItem[];
+
 export const Catalog = ({
   items,
+  filterCatalogItems = (items) => items,
   categories,
   label = "API Library",
 }: {
   label: string;
   items: ApiCatalogItem[];
   categories: CatalogCategory[];
+  filterCatalogItems?: filterCatalogItems;
 }) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const activeCategory = searchParams.get("category");
+  const auth = useAuthState();
+
+  const catalogItems = useSuspenseQuery({
+    queryFn: () => filterCatalogItems(items, { auth }),
+    queryKey: ["catalogItems", auth],
+  });
 
   return (
     <section className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
@@ -84,7 +103,7 @@ export const Catalog = ({
           <h3 className="mt-0 text-2xl font-bold mb-4">{label}</h3>
 
           <div className="grid grid-cols-2 gap-4">
-            {items
+            {catalogItems.data
               .filter(
                 (api) =>
                   !activeCategory ||
