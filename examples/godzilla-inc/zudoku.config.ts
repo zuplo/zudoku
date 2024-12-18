@@ -9,7 +9,7 @@ const config: ZudokuConfig = {
   sidebar: {
     general: ["general"],
   },
-  catalog: {
+  catalogs: {
     navigationId: "catalog",
     label: "API Catalog",
   },
