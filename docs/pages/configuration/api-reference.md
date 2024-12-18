@@ -33,28 +33,14 @@ If you are using a URL to reference your OpenAPI document, you may need to ensur
 
 If you have a local OpenAPI document that you want to use, you import it into your Zudoku configuration file using a standard `import` statement.
 
-**For JSON files:**
+**Configure like so:**
 
 ```ts
 const config = {
   // ...
   apis: {
     type: "file",
-    input: "./openapi.json",
-    navigationId: "api",
-  },
-  // ...
-};
-```
-
-**For YAML files:**
-
-```ts
-const config = {
-  // ...
-  apis: {
-    type: "file",
-    input: "./openapi.yaml",
+    input: "./openapi.json", // Supports JSON and YAML files (ex. openapi.yaml)
     navigationId: "api",
   },
   // ...
