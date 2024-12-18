@@ -13,9 +13,9 @@ type CatalogContext<ProviderData = unknown> = {
   auth: AuthState<ProviderData>;
 };
 
-type filterCatalogItems<G = unknown> = (
+type filterCatalogItems<ProviderData = unknown> = (
   items: ApiCatalogItem[],
-  { auth }: CatalogContext,
+  { auth }: CatalogContext<ProviderData>,
 ) => ApiCatalogItem[];
 
 export const Catalog = ({
