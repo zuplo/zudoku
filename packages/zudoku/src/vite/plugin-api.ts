@@ -24,6 +24,10 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
+        if (config.mode === "standalone") {
+          return `export const configuredApiPlugins = undefined; export const configuredApiCatalogPlugins = undefined;`;
+        }
+
         const code = [
           `import config from "virtual:zudoku-config";`,
           `import { openApiPlugin } from "zudoku/plugins/openapi";`,
