@@ -284,6 +284,7 @@ const ApiCatalogSchema = z.object({
   navigationId: z.string(),
   label: z.string(),
   items: z.array(z.string()).optional(),
+  filterCatalogItems: z.function().args(AnyObject).returns(z.array(z.string())),
 });
 
 /**
