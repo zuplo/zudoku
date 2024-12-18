@@ -13,7 +13,7 @@ type CatalogContext<ProviderData = unknown> = {
   auth: AuthState<ProviderData>;
 };
 
-type filterCatalogItems<G> = (
+type filterCatalogItems<G = unknown> = (
   items: ApiCatalogItem[],
   { auth }: CatalogContext,
 ) => ApiCatalogItem[];
