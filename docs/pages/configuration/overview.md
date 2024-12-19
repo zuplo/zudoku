@@ -85,7 +85,7 @@ export default config;
 
 ### `apis`
 
-There are multiple options for referencing your OpenAPI document. The example below uses a URL to an OpenAPI document, but you can also use a local file path. For full details on the options available, see the [API Reference](/docs/configuration/api-reference).
+There are multiple options for referencing your OpenAPI document. The example below uses a URL to an OpenAPI document, but you can also use a local file path. For full details on the options available, see the [API Reference](./api-reference.md).
 
 ```json
 {
@@ -124,7 +124,7 @@ Controls global page attributes across the site, including logos and the site ti
 
 ### `topNavigation`
 
-Defines the links and headings for the top horizontal navigation that persists through every page on the site. For full details on the options available, see the [Navigation](/docs/configuration/navigation) page.
+Defines the links and headings for the top horizontal navigation that persists through every page on the site. For full details on the options available, see the [Navigation](./navigation.mdx) page.
 
 _Note: `topNavigation` will only display if there is more than one item in the navigation_
 
@@ -143,7 +143,7 @@ _Note: `topNavigation` will only display if there is more than one item in the n
 
 ### `sidebar`
 
-Defines the sidebar navigation including top level categories and their sub pages. For full details on the options available, see the [Navigation](/docs/configuration/navigation) page.
+Defines the sidebar navigation including top level categories and their sub pages. For full details on the options available, see the [Navigation](./navigation.mdx) page.
 
 The example below uses a key of `documentation` which can be referenced as an `id` in `topNavigation`.
 

@@ -5,15 +5,15 @@ sidebar_icon: file-stack
 
 Zudoku supports creating documentation and API references for multiple APIs and can work with as many OpenAPI documents as you need.
 
-In order to do this you will need to modify the [Zudoku Configuration](/docs/configuration/overview) file to include additional APIs.
+In order to do this you will need to modify the [Zudoku Configuration](./configuration/overview.md) file to include additional APIs.
 
 ## Configuration
 
-Using multiple APIs is a configuration setting that you can add in the [Zudoku Configuration](/docs/configuration/overview) file.
+Using multiple APIs is a configuration setting that you can add in the [Zudoku Configuration](./configuration/overview.md) file.
 
 ### Step 1: Add all your APIs
 
-First, create a new array in [Zudoku Configuration](/docs/configuration/overview) that lists each API you want to include as its own object:
+First, create a new array in [Zudoku Configuration](./configuration/overview.md) that lists each API you want to include as its own object:
 
 ```typescript
 const navigation = [
@@ -30,7 +30,7 @@ const navigation = [
 
 ### Step 2: Modify the config
 
-Modify the [Zudoku Configuration](/docs/configuration/overview) file so that the `sidebar` and `apis` settings look the same as below:
+Modify the [Zudoku Configuration](./configuration/overview.md) file so that the `sidebar` and `apis` settings look the same as below:
 
 ```typescript
 import { type ZudokuConfig } from "zudoku";

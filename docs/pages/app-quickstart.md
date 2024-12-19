@@ -30,4 +30,4 @@ If your OpenAPI file is in JSON format you can create an `openapi.json`. Set the
 npm run dev
 ```
 
-You now have a fully functional Zudoku site running on your local machine. Next, commit your changes to a source repository and [deploy the site](/docs/deployment) to your hosting provider or CDN.
+You now have a fully functional Zudoku site running on your local machine. Next, commit your changes to a source repository and [deploy the site](./deployment.md) to your hosting provider or CDN.

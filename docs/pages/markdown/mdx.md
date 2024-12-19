@@ -9,7 +9,7 @@ Zudoku support MDX files for creating rich content pages. MDX is a markdown form
 
 Zudoku supports the use of custom components in your MDX files. This allows you to create reusable components that can be used across multiple pages.
 
-You can create a custom component in your project and reference it in the [Zudoku Configuration](/docs/configuration/overview) file.
+You can create a custom component in your project and reference it in the [Zudoku Configuration](./overview.md) file.
 
 For example, create the `<MyCustomComponent />` component in a file called `MyCustomComponent.tsx` in the `src` directory at the root of your project.
 
@@ -19,7 +19,7 @@ export default function MyCustomComponent() {
 }
 ```
 
-In [Zudoku Configuration](/docs/configuration/overview) you will need to import the component and add it to the `customComponents` option in the configuration.
+In [Zudoku Configuration](./overview.md) you will need to import the component and add it to the `customComponents` option in the configuration.
 
 ```ts
 import MyCustomComponent from "./src/MyCustomComponent";

@@ -32,8 +32,8 @@ Zudoku comes in two flavors. Which one you choose depends on how quickly you wan
 
 The two options are:
 
-- **[Custom App (Recommended)](/docs/app-quickstart)**: Create a new React app using `create-zudoku-app` and customize it to your heart's content. This is the most flexible option and allows you to take full advantage of the Zudoku framework. [Open Quickstart](/docs/app-quickstart)
-- **[Standalone HTML](/docs/html-quickstart)**: This is the quickest way to get started. Create a single HTML page and drop in the Zudoku script and stylesheet. [Open Quickstart](/docs/html-quickstart)
+- **[Custom App (Recommended)](./app-quickstart.md)**: Create a new React app using `create-zudoku-app` and customize it to your heart's content. This is the most flexible option and allows you to take full advantage of the Zudoku framework. [Open Quickstart](./app-quickstart.md)
+- **[Standalone HTML](./html-quickstart.md)**: This is the quickest way to get started. Create a single HTML page and drop in the Zudoku script and stylesheet. [Open Quickstart](./html-quickstart.md)
 
 ## Try Zudoku
 
