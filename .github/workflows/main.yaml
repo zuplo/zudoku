@@ -196,7 +196,7 @@ jobs:
         uses: google-github-actions/upload-cloud-storage@v2
         with:
           path: docs.zip
-          destination: cdn.zudoku.dev/release/docs.zip
+          destination: cdn.zudoku.dev/release
           parent: false
           headers: |-
             content-type: application/zip
