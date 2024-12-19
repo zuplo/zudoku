@@ -180,7 +180,8 @@ export const OperationList = () => {
       {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (
-          <div key={tag.name} className="[content-visibility:auto]">
+          // px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#'
+          <div key={tag.name} className="px-6 -mx-6 [content-visibility:auto]">
             {tag.name && <CategoryHeading>{tag.name}</CategoryHeading>}
             {tag.description && (
               <Markdown

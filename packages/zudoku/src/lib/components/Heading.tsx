@@ -38,23 +38,22 @@ const getComponent = (level: number) => {
   }
 };
 
-export interface HeadingProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof heading> {
-  children: ReactNode;
-  className?: string;
-  id?: string;
-  level?: 1 | 2 | 3 | 4 | 5 | 6;
-  registerSidebarAnchor?: boolean;
-}
+export type HeadingProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+  VariantProps<typeof heading> & {
+    children: ReactNode;
+    className?: string;
+    id?: string;
+    level?: 1 | 2 | 3 | 4 | 5 | 6;
+    registerSidebarAnchor?: boolean;
+  };
 
-export const Heading: React.FC<HeadingProps> = ({
+export const Heading = ({
   level,
   children,
   id,
   className,
   registerSidebarAnchor,
-}) => {
+}: HeadingProps) => {
   const Component = getComponent(level ?? 1);
   const { ref } = useRegisterAnchorElement();
 
@@ -67,10 +66,11 @@ export const Heading: React.FC<HeadingProps> = ({
       {id && (
         <a
           href={`#${id}`}
-          className="no-underline absolute text-primary -left-[0.8em] pr-2.5 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity duration-200"
+          className="before:content-['#'] no-underline absolute text-primary -left-[0.8em] pr-2.5 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity duration-200"
           aria-label={`Link to ${id}`}
         >
-          #
+          {/* Zero width space */}
+          &#8203;
         </a>
       )}
       {children}
