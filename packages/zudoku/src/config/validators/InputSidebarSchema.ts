@@ -1,7 +1,5 @@
-import type dynamicIconImports from "lucide-react/dynamicIconImports.js";
 import { z } from "zod";
-
-type IconNames = keyof typeof dynamicIconImports;
+import { IconNames } from "./icon-types.js";
 
 const BadgeSchema = z.object({
   label: z.string(),
