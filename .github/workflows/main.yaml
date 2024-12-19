@@ -187,6 +187,20 @@ jobs:
           headers: |-
             content-type: text/html
 
+      - name: Zip Docs Folder
+        if: github.event_name == 'workflow_dispatch'
+        run: zip -r docs.zip docs -x "docs/node_modules/*" "docs/dist/*"
+
+      - name: Upload Docs Zip
+        if: github.event_name == 'workflow_dispatch'
+        uses: google-github-actions/upload-cloud-storage@v2
+        with:
+          path: docs.zip
+          destination: cdn.zudoku.dev/release
+          parent: false
+          headers: |-
+            content-type: application/zip
+
       - name: Clear CDN Cache
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'

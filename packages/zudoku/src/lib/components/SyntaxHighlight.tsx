@@ -13,11 +13,7 @@ void import("prismjs/components/prism-bash.min.js");
 // @ts-expect-error This is untyped
 void import("prismjs/components/prism-ruby.min.js");
 // @ts-expect-error This is untyped
-void import("prismjs/components/prism-markup-templating.js");
-// @ts-expect-error This is untyped
 void import("prismjs/components/prism-markup.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-php.min.js");
 // @ts-expect-error This is untyped
 void import("prismjs/components/prism-json.min.js");
 // @ts-expect-error This is untyped

@@ -44,7 +44,7 @@
     "husky": "9.0.11",
     "lint-staged": "15.2.10",
     "nx": "19.8.4",
-    "prettier": "3.3.3",
+    "prettier": "3.4.2",
     "prettier-plugin-organize-imports": "4.1.0",
     "syncpack": "12.4.0",
     "typescript": "5.7.2"
