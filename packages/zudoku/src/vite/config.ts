@@ -20,6 +20,7 @@ import type {
   ZudokuPluginOptions,
 } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
+import { ZuploEnv } from "../zuplo/env.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
@@ -159,6 +160,17 @@ export async function getViteConfig(
     mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
   });
 
+  const envPrefix = ZuploEnv.isZuplo ? "ZUPLO_PUBLIC_" : "ZUDOKU_PUBLIC_";
+  const publicEnv = Object.entries(process.env).reduce(
+    (val, [key]) => {
+      if (key.startsWith(envPrefix)) {
+        val[key] = JSON.stringify(process.env[key]);
+      }
+      return val;
+    },
+    {} as Record<string, string>,
+  );
+
   const viteConfig: InlineConfig = {
     root: dir,
     base: config.basePath,
@@ -167,12 +179,13 @@ export async function getViteConfig(
     clearScreen: false,
     logLevel: (process.env.LOG_LEVEL ?? "info") as LogLevel,
     customLogger: logger,
-    envPrefix: "PUBLIC_",
+    envPrefix,
     worker: {
       format: "es",
     },
     define: {
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+      ...publicEnv,
     },
     ssr: {
       target: "node",
