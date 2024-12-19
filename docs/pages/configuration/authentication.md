@@ -7,7 +7,7 @@ If you use a managed authentication service, such as Auth0, Clerk or OpenID you 
 
 ## Configuration
 
-To implement the authentication option for your site, add the `authentication` property to the [Zudoku Configuration](/docs/configuration/overview) file. The configuration is slightly different depending on the authentication provider you use.
+To implement the authentication option for your site, add the `authentication` property to the [Zudoku Configuration](./overview.md) file. The configuration is slightly different depending on the authentication provider you use.
 
 ### Auth0
 
