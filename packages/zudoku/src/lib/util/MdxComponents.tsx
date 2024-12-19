@@ -1,5 +1,5 @@
 import { MDXComponents } from "mdx/types.js";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { SyntaxHighlight } from "../components/SyntaxHighlight.js";
@@ -8,7 +8,6 @@ import { Callout } from "../ui/Callout.js";
 export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
 export const MdxComponents = {
-  // @ts-expect-error Node is not in types but still gets passed
   img: ({ node, ...props }) => {
     if (/\.(mp4|webm|mov|avi)$/.test(props.src ?? "")) {
       return <video src={props.src} controls playsInline autoPlay loop />;
@@ -45,7 +44,6 @@ export const MdxComponents = {
       {children}
     </Heading>
   ),
-  // @ts-expect-error Node is not in types but still gets passed
   a: ({ href, node, ...props }) =>
     href && !href.startsWith("http") ? (
       <Link to={href} relative="path" {...props} />

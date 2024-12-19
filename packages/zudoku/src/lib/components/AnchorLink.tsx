@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, type LinkProps, useLocation } from "react-router-dom";
+import { Link, type LinkProps, useLocation } from "react-router";
 
 /**
  * Link that scrolls to anchor even if the hash is already set in the URL.

@@ -1,5 +1,5 @@
 import { type ComponentType, type ReactNode } from "react";
-import type { RouteObject } from "react-router-dom";
+import type { RouteObject } from "react-router";
 import { type ExposedComponentProps } from "../../components/SlotletProvider.js";
 import type { NavigationPlugin, ZudokuPlugin } from "../../core/plugins.js";
 import { CustomPage } from "./CustomPage.js";

@@ -1,7 +1,7 @@
 import { Helmet } from "@zudoku/react-helmet-async";
 import { PanelLeftIcon } from "lucide-react";
 import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
-import { Outlet, useLocation, useNavigation } from "react-router-dom";
+import { Outlet, useLocation, useNavigation } from "react-router";
 import { useSpinDelay } from "spin-delay";
 import { Drawer, DrawerTrigger } from "../ui/Drawer.js";
 import { cn } from "../util/cn.js";
