@@ -606,6 +606,9 @@ importers:
       tailwindcss:
         specifier: 3.4.13
         version: 3.4.13(ts-node@10.9.1(@swc/core@1.10.1(@swc/helpers@0.5.12))(@types/node@20.16.11)(typescript@5.7.2))
+      tsx:
+        specifier: ^4.19.2
+        version: 4.19.2
       ulidx:
         specifier: 2.4.1
         version: 2.4.1
@@ -704,9 +707,6 @@ importers:
       rollup-plugin-visualizer:
         specifier: 5.12.0
         version: 5.12.0(rollup@4.24.0)
-      tsx:
-        specifier: ^4.19.2
-        version: 4.19.2
       typescript:
         specifier: 5.7.2
         version: 5.7.2
