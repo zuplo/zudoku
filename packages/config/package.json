@@ -1,7 +1,7 @@
 {
   "name": "@zudoku/config",
   "type": "module",
-  "version": "0.21.11",
+  "version": "0.21.12",
   "keywords": [
     "zudoku"
   ],
