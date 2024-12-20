@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { Fragment, useMemo, useTransition } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { TextColorMap } from "../../components/navigation/SidebarBadge.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";

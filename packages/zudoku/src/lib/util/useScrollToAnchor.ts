@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation } from "react-router";
 import { useViewportAnchor } from "../components/context/ViewportAnchorContext.js";
 import { DATA_ANCHOR_ATTR } from "../components/navigation/SidebarItem.js";
 

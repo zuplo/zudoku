@@ -2,7 +2,7 @@ import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { type PropsWithChildren, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
