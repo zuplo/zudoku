@@ -10,6 +10,7 @@ import {
   type LogLevel,
   loadConfigFromFile,
   mergeConfig,
+  loadEnv as viteLoadEnv,
 } from "vite";
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
@@ -27,8 +28,6 @@ export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
   forceReload?: boolean;
 };
-
-let config: LoadedConfig | undefined;
 
 const getDocsConfigFiles = (
   docsConfig: ZudokuConfig["docs"],
@@ -57,13 +56,45 @@ const registerApiFileImportDependencies = (
   config.__meta.registerDependency(...files);
 };
 
+function loadEnv(configEnv: ConfigEnv, rootDir: string) {
+  const envPrefix = [
+    ...(ZuploEnv.isZuplo ? ["ZUPLO_PUBLIC_"] : []),
+    "ZUDOKU_PUBLIC_",
+  ];
+  const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
+  process.env = { ...localEnv, ...process.env };
+
+  const publicEnv = Object.entries(process.env).reduce(
+    (val, [key]) => {
+      if (envPrefix.some((prefix) => key.startsWith(prefix))) {
+        val[key] = JSON.stringify(process.env[key]);
+      }
+      return val;
+    },
+    {} as Record<string, string>,
+  );
+
+  return { publicEnv, envPrefix };
+}
+
+let config: LoadedConfig | undefined;
+let envPrefix: string[] | undefined;
+let publicEnv: Record<string, string> | undefined;
+
 export async function loadZudokuConfig(
+  configEnv: ConfigEnv,
   rootDir: string,
   forceReload?: boolean,
-): Promise<LoadedConfig> {
-  if (!forceReload && config) {
-    return config;
+): Promise<{
+  config: LoadedConfig;
+  envPrefix: string[];
+  publicEnv: Record<string, string>;
+}> {
+  if (!forceReload && config && envPrefix && publicEnv) {
+    return { config, envPrefix, publicEnv };
   }
+
+  ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
     const loadedConfig = await tryLoadZudokuConfig(rootDir);
@@ -80,7 +111,7 @@ export async function loadZudokuConfig(
 
     config = loadedConfig;
 
-    return loadedConfig;
+    return { config, envPrefix, publicEnv };
   } catch (error) {
     logger.error(colors.red(`Error loading Zudoku config`), {
       timestamp: true,
@@ -138,10 +169,13 @@ export async function getViteConfig(
   configEnv: ZudokuConfigEnv,
   onConfigChange?: (config: LoadedConfig) => void,
 ): Promise<InlineConfig> {
-  const config = await loadZudokuConfig(dir);
+  const { config, publicEnv, envPrefix } = await loadZudokuConfig(
+    configEnv,
+    dir,
+  );
 
   const handleConfigChange = async () => {
-    const config = await loadZudokuConfig(dir, true);
+    const { config } = await loadZudokuConfig(configEnv, dir, true);
     onConfigChange?.(config);
 
     return config;
@@ -159,17 +193,6 @@ export async function getViteConfig(
     dir,
     mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
   });
-
-  const envPrefix = ZuploEnv.isZuplo ? "ZUPLO_PUBLIC_" : "ZUDOKU_PUBLIC_";
-  const publicEnv = Object.entries(process.env).reduce(
-    (val, [key]) => {
-      if (key.startsWith(envPrefix)) {
-        val[key] = JSON.stringify(process.env[key]);
-      }
-      return val;
-    },
-    {} as Record<string, string>,
-  );
 
   const viteConfig: InlineConfig = {
     root: dir,

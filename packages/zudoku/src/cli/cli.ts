@@ -1,6 +1,3 @@
-// import * as dotenv from "dotenv";
-// dotenv.config();
-
 import * as Sentry from "@sentry/node";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
