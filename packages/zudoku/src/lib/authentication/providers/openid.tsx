@@ -12,8 +12,9 @@ import { useAuthState, UserProfile } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 
-interface TokenState {
+export interface OpenIdProviderData {
   accessToken: string;
+  idToken?: string;
   refreshToken?: string;
   expiresOn: Date;
   tokenType: string;
@@ -101,9 +102,10 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       throw new AuthorizationError("No expires_in in response");
     }
 
-    const tokens: TokenState = {
+    const tokens: OpenIdProviderData = {
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
+      idToken: response.id_token,
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
     };
@@ -201,7 +203,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     if (!providerData) {
       throw new AuthorizationError("User is not authenticated");
     }
-    const tokenState = providerData as TokenState;
+    const tokenState = providerData as OpenIdProviderData;
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
