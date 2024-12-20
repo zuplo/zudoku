@@ -13,6 +13,7 @@ import {
   getAppServerEntryPath,
   getViteConfig,
   loadZudokuConfig,
+  ZudokuConfigEnv,
 } from "./config.js";
 import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
@@ -27,19 +28,21 @@ export class DevServer {
   async start() {
     const app = express();
 
+    const configEnv: ZudokuConfigEnv = {
+      mode: "development",
+      command: "serve",
+      isSsrBuild: this.options.ssr,
+    };
     const viteConfig = await getViteConfig(
       this.options.dir,
-      {
-        mode: "development",
-        command: "serve",
-        isSsrBuild: this.options.ssr,
-      },
+      configEnv,
       (zudokuConfig) => (this.currentConfig = zudokuConfig),
     );
 
     const vite = await createViteServer(viteConfig);
 
-    this.currentConfig = await loadZudokuConfig(this.options.dir);
+    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+    this.currentConfig = config;
 
     const graphql = createGraphQLServer({
       graphqlEndpoint: "/__z/graphql",
