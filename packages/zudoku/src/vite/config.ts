@@ -97,7 +97,13 @@ export async function loadZudokuConfig(
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
-    const loadedConfig = await tryLoadZudokuConfig(rootDir);
+    const envVars: Record<string, string | undefined> = {};
+    for (const key in process.env) {
+      if (envPrefix.some((prefix) => key.startsWith(prefix))) {
+        envVars[key] = process.env[key];
+      }
+    }
+    const loadedConfig = await tryLoadZudokuConfig(rootDir, envVars);
 
     registerApiFileImportDependencies(loadedConfig, rootDir);
 

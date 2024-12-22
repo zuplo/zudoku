@@ -100,6 +100,7 @@ async function loadZudokuCodeConfig<TConfig>(
 
 async function loadDevPortalConfig<TConfig extends CommonConfig>(
   configPath: string,
+  envVars: Record<string, string | undefined>,
 ) {
   const json = await readFile(configPath, "utf-8");
 
@@ -112,22 +113,62 @@ async function loadDevPortalConfig<TConfig extends CommonConfig>(
     );
   }
 
+  // 1. Validate the config
   validateCommonConfig(config);
 
-  return withZuplo(config);
+  // 2. Replace $env() placeholders with actual environment
+  config = replaceEnvVariables(config, envVars);
+
+  // 3. Add Zuplo to the config
+  config = withZuplo(config);
+
+  return config;
+}
+
+/**
+ * Replaces the $env() placeholders in the config with the actual environment
+ */
+
+function replaceEnvVariables(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: any,
+  envVars: Record<string, string | undefined>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
+  if (typeof obj === "string") {
+    const envVarMatch = obj.match(/^\$env\(([^)]+)\)$/);
+    if (envVarMatch) {
+      const envVarName = envVarMatch[1]!;
+      return envVars[envVarName];
+    }
+    return obj;
+  } else if (Array.isArray(obj)) {
+    return obj.map((o) => replaceEnvVariables(o, envVars));
+  } else if (typeof obj === "object" && obj !== null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const newObj: any = {};
+    for (const key in obj) {
+      if (Object.hasOwn(obj, key)) {
+        newObj[key] = replaceEnvVariables(obj[key], envVars);
+      }
+    }
+    return newObj;
+  }
+  return obj;
 }
 
 // WARNING: If you change function signature, you must also change the
 // corresponding type in packages/config/src/index.d.ts
 export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
+  envVars: Record<string, string | undefined>,
 ): Promise<ConfigWithMeta<TConfig>> {
   const { configPath, configType } = await getConfigFilePath(rootDir);
 
   let config: TConfig;
   let dependencies: string[];
   if (configType === "dev-portal") {
-    config = await loadDevPortalConfig<TConfig>(configPath);
+    config = await loadDevPortalConfig<TConfig>(configPath, envVars);
     dependencies = [];
   } else {
     ({ config, dependencies } = await loadZudokuCodeConfig<TConfig>(
