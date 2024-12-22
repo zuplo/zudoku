@@ -20,6 +20,7 @@ export type ConfigWithMeta<TConfig extends CommonConfig> = TConfig & {
 
 export declare function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
+  envPrefix: string[],
 ): Promise<ConfigWithMeta<TConfig>>;
 
 export declare function findConfigFilePath(
