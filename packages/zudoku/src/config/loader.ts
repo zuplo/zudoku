@@ -94,8 +94,6 @@ async function loadZudokuCodeConfig<TConfig>(
     throw new Error(`Failed to load config file: ${configPath}`);
   }
 
-  validateConfig(config);
-
   return { dependencies, config };
 }
 
@@ -192,6 +190,9 @@ export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
       configPath,
       envVars,
     ));
+    // This is here instead of in the load function so that
+    // it works even if we are overriding the load function
+    validateConfig(config);
   }
 
   const configWithMetadata: ConfigWithMeta<TConfig> = {
