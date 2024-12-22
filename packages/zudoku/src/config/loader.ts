@@ -100,7 +100,7 @@ async function loadZudokuCodeConfig<TConfig>(
 
 async function loadDevPortalConfig<TConfig extends CommonConfig>(
   configPath: string,
-  envPrefix: string[],
+  envVars: Record<string, string | undefined>,
 ) {
   const json = await readFile(configPath, "utf-8");
 
@@ -117,7 +117,7 @@ async function loadDevPortalConfig<TConfig extends CommonConfig>(
   validateCommonConfig(config);
 
   // 2. Replace $env() placeholders with actual environment
-  config = replaceEnvVariables(config, envPrefix);
+  config = replaceEnvVariables(config, envVars);
 
   // 3. Add Zuplo to the config
   config = withZuplo(config);
@@ -128,27 +128,28 @@ async function loadDevPortalConfig<TConfig extends CommonConfig>(
 /**
  * Replaces the $env() placeholders in the config with the actual environment
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function replaceEnvVariables(obj: any, envPrefix: string[]): any {
+
+function replaceEnvVariables(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  obj: any,
+  envVars: Record<string, string | undefined>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): any {
   if (typeof obj === "string") {
     const envVarMatch = obj.match(/^\$env\(([^)]+)\)$/);
     if (envVarMatch) {
       const envVarName = envVarMatch[1]!;
-      if (envPrefix.some((prefix) => envVarName.startsWith(prefix))) {
-        return process.env[envVarName];
-      } else {
-        return undefined;
-      }
+      return envVars[envVarName];
     }
     return obj;
   } else if (Array.isArray(obj)) {
-    return obj.map((o) => replaceEnvVariables(o, envPrefix));
+    return obj.map((o) => replaceEnvVariables(o, envVars));
   } else if (typeof obj === "object" && obj !== null) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newObj: any = {};
     for (const key in obj) {
       if (Object.hasOwn(obj, key)) {
-        newObj[key] = replaceEnvVariables(obj[key], envPrefix);
+        newObj[key] = replaceEnvVariables(obj[key], envVars);
       }
     }
     return newObj;
@@ -160,14 +161,14 @@ function replaceEnvVariables(obj: any, envPrefix: string[]): any {
 // corresponding type in packages/config/src/index.d.ts
 export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
-  envPrefix: string[],
+  envVars: Record<string, string | undefined>,
 ): Promise<ConfigWithMeta<TConfig>> {
   const { configPath, configType } = await getConfigFilePath(rootDir);
 
   let config: TConfig;
   let dependencies: string[];
   if (configType === "dev-portal") {
-    config = await loadDevPortalConfig<TConfig>(configPath, envPrefix);
+    config = await loadDevPortalConfig<TConfig>(configPath, envVars);
     dependencies = [];
   } else {
     ({ config, dependencies } = await loadZudokuCodeConfig<TConfig>(
