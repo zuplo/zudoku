@@ -4,6 +4,12 @@ import { loadZudokuConfig } from "./config.js";
 
 it("Should correctly load zudoku.config.ts file", async () => {
   const rootPath = path.resolve("../../examples/with-config/");
-  const config = await loadZudokuConfig(rootPath);
+  const { config } = await loadZudokuConfig(
+    {
+      mode: "development",
+      command: "serve",
+    },
+    rootPath,
+  );
   expect(config.__meta.path).includes("/with-config/zudoku.config.");
 });

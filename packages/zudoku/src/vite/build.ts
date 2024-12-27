@@ -85,7 +85,13 @@ export async function runBuild(options: { dir: string }) {
     }
 
     // Write the build output file
-    const config = await loadZudokuConfig(options.dir);
+    const { config } = await loadZudokuConfig(
+      {
+        mode: "production",
+        command: "build",
+      },
+      options.dir,
+    );
     await writeOutput(options.dir, config);
 
     return;

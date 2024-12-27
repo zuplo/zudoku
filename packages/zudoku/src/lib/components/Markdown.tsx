@@ -1,8 +1,8 @@
-import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
 import { MdxComponents } from "../util/MdxComponents.js";
+import { ReactMarkdown } from "./ReactMarkdown.js";
 
 // same as in packages/dev-portal/framework/vite.ts
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
