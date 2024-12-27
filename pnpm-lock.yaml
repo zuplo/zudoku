@@ -661,9 +661,6 @@ importers:
       '@clerk/clerk-js':
         specifier: 5.11.0
         version: 5.11.0(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@inkeep/widgets':
-        specifier: ^0.2.289
-        version: 0.2.289(@internationalized/date@3.5.5)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)
       '@sentry/react':
         specifier: ^8.45.1
         version: 8.45.1(react@18.3.1)
@@ -674,6 +671,9 @@ importers:
       '@graphql-codegen/client-preset':
         specifier: 4.5.0
         version: 4.5.0(graphql@16.9.0)
+      '@inkeep/uikit':
+        specifier: ^0.3.19
+        version: 0.3.19(@internationalized/date@3.6.0)(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)
       '@types/estree':
         specifier: 1.0.6
         version: 1.0.6
@@ -814,13 +814,13 @@ packages:
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
 
-  '@apollo/client@3.11.4':
-    resolution: {integrity: sha512-bmgYKkULpym8wt8aXlAZ1heaYo0skLJ5ru0qJ+JCRoo03Pe+yIDbBCnqlDw6Mjj76hFkDw3HwFMgZC2Hxp30Mg==}
+  '@apollo/client@3.12.4':
+    resolution: {integrity: sha512-S/eC9jxEW9Jg1BjD6AZonE1fHxYuvC3gFHop8FRQkUdeK63MmBD5r0DOrN2WlJbwha1MSD6A97OwXwjaujEQpA==}
     peerDependencies:
       graphql: ^15.0.0 || ^16.0.0
       graphql-ws: ^5.5.5
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc <19.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || >=19.0.0-rc
       subscriptions-transport-ws: ^0.9.0 || ^0.11.0
     peerDependenciesMeta:
       graphql-ws:
@@ -1424,12 +1424,16 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
-  '@babel/runtime-corejs3@7.25.0':
-    resolution: {integrity: sha512-BOehWE7MgQ8W8Qn0CQnMtg2tHPHPulcS/5AVpFvs2KCK1ET+0WqZqPvnpRpFN81gYoFopdIEJX9Sgjw3ZBccPg==}
+  '@babel/runtime-corejs3@7.26.0':
+    resolution: {integrity: sha512-YXHu5lN8kJCb1LOb9PgV6pvak43X2h4HvRApcN5SdWeaItQOzfn1hgP6jasD6KWQyJDBxrVmA9o9OivlnNJK/w==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.25.7':
     resolution: {integrity: sha512-FjoyLe754PMiYsFaN5C94ttGiOmBNYTf6pLr4xXHAT5uctHb092PBszndLDR5XA/jghQvn4n7JMHl7dmTgbm9w==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/runtime@7.26.0':
+    resolution: {integrity: sha512-FDSOghenHTiToteC/QRlv2q3DhPZ/oOXTBoirfWNx1Cx3TMVcGWQtMMmQcSvb/JjpNeGzx8Pq/b4fKEJuWm1sw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.25.9':
@@ -1447,8 +1451,8 @@ packages:
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
 
-  '@clack/core@0.3.4':
-    resolution: {integrity: sha512-H4hxZDXgHtWTwV3RAVenqcC4VbJZNegbBjlPvzOzCouXtS2y3sDvlO3IsbrPNWuLWPPlYVYPghQdSF64683Ldw==}
+  '@clack/core@0.3.5':
+    resolution: {integrity: sha512-5cfhQNH+1VQ2xLQlmzXMqUoiaH0lRBq9/CLW9lTyMbuKLC3+xEK01tHVvyut++mLOn5urSHmkm6I0Lg9MaJSTQ==}
 
   '@clack/prompts@0.6.3':
     resolution: {integrity: sha512-AM+kFmAHawpUQv2q9+mcB6jLKxXGjgu/r2EQjEwujgpCdzrST6BJqYw00GRn56/L/Izw5U7ImoLmy00X/r80Pw==}
@@ -2536,42 +2540,39 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@inkeep/color-mode@0.0.24':
-    resolution: {integrity: sha512-P/ZqGqeKsSuVRk7vk2tucGZlmadY4XlrCF/BalFTdZ/i6CtRIrXaQWy1723/GVYabzvPAbzhZ89PI3YWXGL4Rw==}
+  '@inkeep/color-mode@0.1.4':
+    resolution: {integrity: sha512-gEZRuj8v4TDQQKflXshmkNZIfeZ5dfMrNrbJMrCVwz2WhHjH1xEuy4LHhpkWrRnHKF0Nhlu76yQkFZg0SNTaBA==}
     peerDependencies:
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@inkeep/components@0.0.24':
-    resolution: {integrity: sha512-n10+DXRSyq0K/GgUQ4+vbWEbWyE7YyhhQ9jq3YI8ST8BwAm0mDfFodE8nAGbHrvT9c4Hjzp2l5s7WS99oqr5eg==}
+  '@inkeep/components@0.1.4':
+    resolution: {integrity: sha512-9llXugoJL7s8Yl4PEk4zVO87k3rJrcrB0bejpPLHz29PUwn59nnsRl566hQpPyjTerTK/WdBkJX+rhfHC7b7IQ==}
     peerDependencies:
       '@ark-ui/react': '>=0.15.0'
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@inkeep/preset-chakra@0.0.24':
-    resolution: {integrity: sha512-kHzJunsKULuT2QrNnrzVdBrFR986LmO+YWZ4XAe5mRBxlNl+ODNyVZ/xWLC4xUcMnRlnVHHUhfIv9lYTrAR2fg==}
+  '@inkeep/preset-chakra@0.1.4':
+    resolution: {integrity: sha512-6yYHfCw/6qPhZeer4fVr4eNBOgb96HRsiYeFtk77sHFcO4wadiSN55F36u9QP0EWtCUz+7TI2fZNQ6wdjqqhgw==}
 
-  '@inkeep/preset@0.0.24':
-    resolution: {integrity: sha512-9pcnBejUz+gh9IrZLfEQye5hJDRUCOKvrcRzlwpypnx8dFWpUYaTNg+Ja3ySoj3yzr5Keuu/5ZRxzy1WF1CLQg==}
+  '@inkeep/preset@0.1.4':
+    resolution: {integrity: sha512-FlQX/DycPRPdwy5hsl6/YYSiS2TaCHHKm6x4LO3Cyetg8cT56PZGhBfKB1+fRmhgOavpx8oagB+FTDKXkbeJUg==}
 
-  '@inkeep/shared@0.0.25':
-    resolution: {integrity: sha512-O4+vIgH12vwnMtD5RIv4y6jrKZTuIXFm7e7TkHtZTWNBRL8jPQuY73URbKCxaaGrcOY9XKKp+J4RZe5Wac07ug==}
+  '@inkeep/shared@0.1.4':
+    resolution: {integrity: sha512-I1uOmYv9QTH+kY2anS80jf9ycr2HepNf6H0d0F7TygTc1jqOeYj+GIECfQ9yjObURgQ00Zbw4eTc4XIqUUCdjg==}
 
-  '@inkeep/styled-system@0.0.44':
-    resolution: {integrity: sha512-dz2OjHGUD4C4ass6Rdzor0lmN1siYjFiboRMR9N7ACtVKbDgN6SYfNnb57K47jykIPFjhDNClg95R7x7ldDlpw==}
+  '@inkeep/styled-system@0.1.14':
+    resolution: {integrity: sha512-2+dL8xU5cq7xxfRDuuWkhbirgZym5feQP4KSZpFWCTsphjiqGGXTPfcALRhLsQtLb901YyhiJFkuKridvyxMKg==}
 
-  '@inkeep/styled-system@0.0.46':
-    resolution: {integrity: sha512-nL3jywgLkiDPTbIgi195AEgw7W/JvLGw5FDqTVI+o28syjgqvEohCSSpiIBDYkUEoz1XRZDImva1jNg17qzfXw==}
-
-  '@inkeep/widgets@0.2.289':
-    resolution: {integrity: sha512-M4bET7C6ZAX1jlMoUkVcl8Rc/17J909sgeCP+KC3lBouf4H7MVUvtRUYypdIm1W3A7df/MjkbaAYFWUJsM22iQ==}
+  '@inkeep/uikit@0.3.19':
+    resolution: {integrity: sha512-T11rUQSWkrKgtuiF9qOymlt0rMf6yjlJoyp+Oa+Z6gtINiV1OmwGmU94iKN+k2QAvBE3sssqiehZbISr+HAeQA==}
     peerDependencies:
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@internationalized/date@3.5.5':
-    resolution: {integrity: sha512-H+CfYvOZ0LTJeeLOqm19E3uj/4YjrmOFtBufDHPfvtI80hFAMqtrp7oCACpe4Cil5l8S0Qu/9dYfZc/5lY8WQQ==}
+  '@internationalized/date@3.6.0':
+    resolution: {integrity: sha512-+z6ti+CcJnRlLHok/emGEsWQhe7kfSmEW+/6qCzvKY67YPh7YOBfvc7+/+NXq+zJlbArg30tYpqLjNgcAYv2YQ==}
 
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
@@ -3993,8 +3994,8 @@ packages:
   '@types/lodash.isequal@4.5.8':
     resolution: {integrity: sha512-uput6pg4E/tj2LGxCZo9+y27JNyB2OZuuI/T5F+ylVDYuqICLG2/ktjxx0v6GvVntAf8TvEzeQLcV0ffRirXuA==}
 
-  '@types/lodash@4.17.7':
-    resolution: {integrity: sha512-8wTvZawATi/lsmNu10/j2hk1KEP0IvjubqPE3cu1Xz7xfXXt5oCq3SNUz4fMIP4XGF9Ky+Ue2tBA3hcS7LSBlA==}
+  '@types/lodash@4.17.13':
+    resolution: {integrity: sha512-lfx+dftrEZcdBPczf9d0Qv0x+j/rfNCMuC6OcfXmO8gkfeNAY88PgKUbvG56whcN23gc27yenwF6oJZXGFpYxg==}
 
   '@types/mdast@3.0.15':
     resolution: {integrity: sha512-LnwD+mUEfxWMa1QpDraczIn6k0Ee3SMicuYSSzS6ZYl2gKS09EClnJYGd8Du6rfc5r/GZEk5o1mRb8TaTj03sQ==}
@@ -4212,20 +4213,20 @@ packages:
   '@vitest/utils@2.1.8':
     resolution: {integrity: sha512-dwSoui6djdwbfFmIgbIjX2ZhIoG7Ex/+xpxyiEgIGzjliY8xGkcpITKTlp6B4MgtGkF2ilvm97cPM96XZaAgcA==}
 
-  '@vue/compiler-core@3.4.38':
-    resolution: {integrity: sha512-8IQOTCWnLFqfHzOGm9+P8OPSEDukgg3Huc92qSG49if/xI2SAwLHQO2qaPQbjCWPBcQoO1WYfXfTACUrWV3c5A==}
+  '@vue/compiler-core@3.5.13':
+    resolution: {integrity: sha512-oOdAkwqUfW1WqpwSYJce06wvt6HljgY3fGeM9NcVA1HaYOij3mZG9Rkysn0OHuyUAGMbEbARIpsG+LPVlBJ5/Q==}
 
-  '@vue/compiler-dom@3.4.38':
-    resolution: {integrity: sha512-Osc/c7ABsHXTsETLgykcOwIxFktHfGSUDkb05V61rocEfsFDcjDLH/IHJSNJP+/Sv9KeN2Lx1V6McZzlSb9EhQ==}
+  '@vue/compiler-dom@3.5.13':
+    resolution: {integrity: sha512-ZOJ46sMOKUjO3e94wPdCzQ6P1Lx/vhp2RSvfaab88Ajexs0AHeV0uasYhi99WPaogmBlRHNRuly8xV75cNTMDA==}
 
-  '@vue/compiler-sfc@3.4.38':
-    resolution: {integrity: sha512-s5QfZ+9PzPh3T5H4hsQDJtI8x7zdJaew/dCGgqZ2630XdzaZ3AD8xGZfBqpT8oaD/p2eedd+pL8tD5vvt5ZYJQ==}
+  '@vue/compiler-sfc@3.5.13':
+    resolution: {integrity: sha512-6VdaljMpD82w6c2749Zhf5T9u5uLBWKnVue6XWxprDobftnletJ8+oel7sexFfM3qIxNmVE7LSFGTpv6obNyaQ==}
 
-  '@vue/compiler-ssr@3.4.38':
-    resolution: {integrity: sha512-YXznKFQ8dxYpAz9zLuVvfcXhc31FSPFDcqr0kyujbOwNhlmaNvL2QfIy+RZeJgSn5Fk54CWoEUeW+NVBAogGaw==}
+  '@vue/compiler-ssr@3.5.13':
+    resolution: {integrity: sha512-wMH6vrYHxQl/IybKJagqbquvxpWCuVYpoUJfCqFZwa/JY1GdATAQ+TgVtgrwwMZ0D07QhA99rs/EAAWfvG6KpA==}
 
-  '@vue/shared@3.4.38':
-    resolution: {integrity: sha512-q0xCiLkuWWQLzVrecPb0RMsNWyxICOjPrcrwxTUEHb1fsnvni4dcuyG7RT/Ie7VPTvnjzIaWzRMUBsrqNj/hhw==}
+  '@vue/shared@3.5.13':
+    resolution: {integrity: sha512-/hnE/qP5ZoGpol0a5mDi45bOd7t3tjYJBjsgCsivow7D48cJeV5l05RD82lPqi7gRiphZM37rnhW1l6ZoCNNnQ==}
 
   '@whatwg-node/events@0.1.1':
     resolution: {integrity: sha512-AyQEn5hIPV7Ze+xFoXVU3QTHXVbWPrzaOkxtENMPMuNL6VVHrp4hHfDt9nrQpjO7BgvuM95dMtkycX5M/DZR3w==}
@@ -4253,10 +4254,6 @@ packages:
 
   '@wry/equality@0.5.7':
     resolution: {integrity: sha512-BRFORjsTuQv5gxcXsuDXx6oGRhuVsEGwZy6LOzRRfgu+eSfxbhUQ9L9YtSEIuIjY/o7g3iWFjrc5eSY1GXP2Dw==}
-    engines: {node: '>=8'}
-
-  '@wry/trie@0.4.3':
-    resolution: {integrity: sha512-I6bHwH0fSf6RqQcnnXLJKhkSXG45MFral3GxPaY4uAl0LYDZM+YDVDAiU9bYwjTuysy1S0IeecWtmq1SZA3M1w==}
     engines: {node: '>=8'}
 
   '@wry/trie@0.5.0':
@@ -5220,8 +5217,8 @@ packages:
     resolution: {integrity: sha512-l9Uwc9eOnz39oADzGO2cSBDi7siv8lwO+31ocQ2nOJijnDiW3pxqm9VV10DPYUO28wW83DjABoUqY1nfHRR2hQ==}
     engines: {node: '>=18'}
 
-  confbox@0.1.7:
-    resolution: {integrity: sha512-uJcB/FKZtBMCJpK8MQji6bJHgu1tixKPxRLeGkNzBoOZzpnZUJm0jm2/sBDWcuBx1dYgxV4JU+g5hmNxCyAmdA==}
+  confbox@0.1.8:
+    resolution: {integrity: sha512-RMtmw0iFkeR4YV+fUOSucriAQNb9g8zFR52MWCtl+cCZOFRNL6zeB395vPzFhEjjn4fMxXudmELnl/KF/WrK6w==}
 
   constant-case@3.0.4:
     resolution: {integrity: sha512-I2hSBi7Vvs7BEuJDr5dDHfzb/Ruj3FyvFyh7KLilAjNQw3Be+xgqUBA2W6scVEcL0hL1dwPRtIqEPVUCKkSsyQ==}
@@ -5257,8 +5254,8 @@ packages:
   core-js-compat@3.38.1:
     resolution: {integrity: sha512-JRH6gfXxGmrzF3tZ57lFx97YARxCXPaMzPo6jELZhv88pBH5VXpQ+y0znKGlFnzuaihqhLbefxSJxWJMPtfDzw==}
 
-  core-js-pure@3.38.0:
-    resolution: {integrity: sha512-8balb/HAXo06aHP58mZMtXgD8vcnXz9tUDePgqBgJgKdmTlMt+jw3ujqniuBDQXMvTzxnMpxHFeuSM3g1jWQuQ==}
+  core-js-pure@3.39.0:
+    resolution: {integrity: sha512-7fEcWwKI4rJinnK+wLTezeg2smbFFdSBP6E2kQZNbnzM2s1rpKQ6aaRteZSSg7FLU3P0HGGVo/gbpfanU36urg==}
 
   core-js@3.26.1:
     resolution: {integrity: sha512-21491RRQVzUn0GGM9Z1Jrpr6PNPxPi+Za8OM9q4tksTSnlbXXGKK1nXNg/QvwFYettXvSX6zWKCtHHfjN4puyA==}
@@ -5500,8 +5497,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  domutils@3.1.0:
-    resolution: {integrity: sha512-H78uMmQtI2AhgDJjWeQmHwJJ2bLPD3GMmO7Zja/ZZh84wkm+4ut+IUnUdRa8uCGX88DiVx1j6FRe1XfxEgjEZA==}
+  domutils@3.2.1:
+    resolution: {integrity: sha512-xWXmuRnN9OMP6ptPd2+H0cCbcYBULa5YDTbMm/2lvkWvNA3O4wcW+GvzooqBuNM8yy6pl3VIAeJTUUWUbfI5Fw==}
 
   dot-case@3.0.4:
     resolution: {integrity: sha512-Kv5nKlh6yRrdrGvxeJ2e5y2eRUpkUosIW4A2AS38zwSz27zu7ufDwQPi5Jhs3XAlGNetl3bmnGhQsMtkKJnj3w==}
@@ -5960,8 +5957,8 @@ packages:
   filelist@1.0.4:
     resolution: {integrity: sha512-w1cEuf3S+DrLCQL7ET6kz+gmlJdbq9J7yXCSjK/OZCPA+qEN1WyF4ZAf0YYJa4/shHJra2t/d/r8SV4Ji+x+8Q==}
 
-  filesize@10.1.4:
-    resolution: {integrity: sha512-ryBwPIIeErmxgPnm6cbESAzXjuEFubs+yKYLBZvg3CaiNcmkJChoOGcBSrZ6IwkMwPABwPpVXE6IlNdGJJrvEg==}
+  filesize@10.1.6:
+    resolution: {integrity: sha512-sJslQKU2uM33qH5nqewAwVB2QgR6w1aMNsYUp3aN5rMRyXEwJGmZvaWzeJFNTOXWlHQyBFCWrdj3fV/fsTOX8w==}
     engines: {node: '>= 10.4.0'}
 
   fill-range@7.1.1:
@@ -6807,9 +6804,6 @@ packages:
   jsonc-parser@3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
 
-  jsonc-parser@3.3.1:
-    resolution: {integrity: sha512-HUgH65KyejrUFPvHFPbqOY0rsFip3Bo5wb4ngvdi1EpCYWUQDC5V+Y7mZws+DLkr4M//zQJoanu1SP+87Dv1oQ==}
-
   jsonfile@6.1.0:
     resolution: {integrity: sha512-5dgndWOriYSm5cnYaJNhalLNDKOqFwyDB/rr1E9ZsGciGvKPs8R2xYGCacuf3z6K1YKDz182fd+fY3cn3pMqXQ==}
 
@@ -7100,8 +7094,8 @@ packages:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
     engines: {node: '>= 0.6'}
 
-  microdiff@1.4.0:
-    resolution: {integrity: sha512-OBKBOa1VBznvLPb/3ljeJaENVe0fO0lnWl77lR4vhPlQD71UpjEoRV5P0KdQkcjbFlBu1Oy2mEUBMU3wxcBAGg==}
+  microdiff@1.5.0:
+    resolution: {integrity: sha512-Drq+/THMvDdzRYrK0oxJmOKiC24ayUV8ahrt8l3oRK51PWt6gdtrIGrlIH3pT/lFh1z93FbAcidtsHcWbnRz8Q==}
 
   micromark-core-commonmark@1.1.0:
     resolution: {integrity: sha512-BgHO1aRbolh2hcrzL2d1La37V0Aoz73ymF8rAcKnohLy93titmv62E0gP8Hrx9PKcKrqCZ1BbLGbP3bEhoXYlw==}
@@ -7366,8 +7360,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  mlly@1.7.1:
-    resolution: {integrity: sha512-rrVRZRELyQzrIUAVMHxP97kv+G786pHmOKzuFII8zDYahFBS7qnHh2AlYSl1GAHhaMPCz6/oHjVMcfFYgFYHgA==}
+  mlly@1.7.3:
+    resolution: {integrity: sha512-xUsx5n/mN0uQf4V548PKQ+YShA4/IW0KI1dZhrNrPCLG+xizETbHTkOa1f8/xut9JRPp8kQuMnz0oqwkTiLo/A==}
 
   module-details-from-path@1.0.3:
     resolution: {integrity: sha512-ySViT69/76t8VhE1xXHK6Ch4NcDd26gx0MzKXLO+F7NOtnqH68d9zF94nT8ZWSxXh8ELOERsnJO/sWt1xZYw5A==}
@@ -7576,8 +7570,8 @@ packages:
     resolution: {integrity: sha512-ur5UIdyw5Y7yEj9wLzhqXiy6GZ3Mwx0yGI+5sMn2r0N0v3cKJvUmFH5yPP+WXh9e0xfyzyJX95D8l088DNFj7A==}
     hasBin: true
 
-  optimism@0.18.0:
-    resolution: {integrity: sha512-tGn8+REwLRNFnb9WmcY5IfpOqeX2kpaYJ1s6Ae3mn12AeydLkR3j+jSCmVQFoXqU8D41PAJ1RG1rCRNWmNZVmQ==}
+  optimism@0.18.1:
+    resolution: {integrity: sha512-mLXNwWPa9dgFyDqkNi54sjDyNJ9/fTI6WGBLgnXku1vdKY/jovHfZT5r+aiVeFFLOz+foPNOm5YJ4mqgld2GBQ==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -7758,6 +7752,9 @@ packages:
   picocolors@1.1.0:
     resolution: {integrity: sha512-TQ92mBOW0l3LeMeyLV6mzy/kWr8lkd/hp3mTg7wYK7zJhuBStmGMBG0BdeDZS/dZx1IukaX6Bk11zcln25o1Aw==}
 
+  picocolors@1.1.1:
+    resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
+
   picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
@@ -7786,8 +7783,8 @@ packages:
   pkg-types@1.0.3:
     resolution: {integrity: sha512-nN7pYi0AQqJnoLPC9eHFQ8AcyaixBUOwvqc5TDnIKCMEE6I0y8P7OKA7fPexsXGCGxQDl/cmrLAp26LhcwxZ4A==}
 
-  pkg-types@1.1.1:
-    resolution: {integrity: sha512-ko14TjmDuQJ14zsotODv7dBlwxKhUKQEhuhmbqo1uCi9BB0Z2alo/wAXg6q1dTR5TyuqYyWhjtfe/Tsh+X28jQ==}
+  pkg-types@1.3.0:
+    resolution: {integrity: sha512-kS7yWjVFCkIw9hqdJBoMxDdzEngmkr5FXeWZZfQ6GoYacjVnsW6l2CcYW/0ThD0vF4LPJgVYnrg4d0uuhwYQbg==}
 
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
@@ -7880,6 +7877,10 @@ packages:
     resolution: {integrity: sha512-56rxCq7G/XfB4EkXq9Egn5GCqugWvDFjafDOThIdMBsI15iqPqR5r15TfSr1YPYeEI19YeaXMCbY6u88Y76GLQ==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.4.49:
+    resolution: {integrity: sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==}
+    engines: {node: ^10 || ^12 || >=14}
+
   postgres-array@2.0.0:
     resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
     engines: {node: '>=4'}
@@ -7900,8 +7901,8 @@ packages:
     resolution: {integrity: sha512-l+fsjYEkTik3m/G0pE7gMr4qBJP84LhK779oQm6MBzhBGpd4By4qieTW+4FUAlNCyzQTynn3Nhsa50c0IELSxQ==}
     engines: {node: '>=15.0.0'}
 
-  preferred-pm@3.1.3:
-    resolution: {integrity: sha512-MkXsENfftWSRpzCzImcp4FRsCc3y1opwB73CfCNWyzMqArju2CrlMHlqB7VexKiPEOjGMbttv1r9fSCn5S610w==}
+  preferred-pm@3.1.4:
+    resolution: {integrity: sha512-lEHd+yEm22jXdCphDrkvIJQU66EuLojPPtvZkpKIkiD+l0DMThF/niqZKJSoU8Vl7iuvtmzyMhir9LdVy5WMnA==}
     engines: {node: '>=10'}
 
   prelude-ls@1.2.1:
@@ -8029,8 +8030,8 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
 
-  react-hotkeys-hook@4.5.0:
-    resolution: {integrity: sha512-Samb85GSgAWFQNvVt3PS90LPPGSf9mkH/r4au81ZP1yOIFayLC3QAvqTgGtJ8YEDMXtPmaVBs6NgipHO6h4Mug==}
+  react-hotkeys-hook@4.6.1:
+    resolution: {integrity: sha512-XlZpbKUj9tkfgPgT9gA+1p7Ey6vFIZHttUjPqpTdyT5nqQ8mHL7elxvSbaC+dpSiHUSmr21Ya1mDxBZG3aje4Q==}
     peerDependencies:
       react: '>=16.8.1'
       react-dom: '>=16.8.1'
@@ -8109,17 +8110,17 @@ packages:
       '@types/react':
         optional: true
 
-  react-svg@16.1.34:
-    resolution: {integrity: sha512-L4ak1qNFLgzVbHm0xQEpHoIOqb3um/B0ybahd3U2TKoGZxb0JaPVI5lsAhvSng2P1kcsYEok2Z7RpcKx7arJGw==}
+  react-svg@16.2.0:
+    resolution: {integrity: sha512-qx02E8tPEMmrs6zwaZyyDnC2CxzNWcw0AOayN4tfogVfDAsNxYxuYrcGKuzr5RrD+rdmtS2GnIzW0RG03Fgerw==}
     peerDependencies:
       react: ^16.0.0 || ^17.0.0 || ^18.0.0
       react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
 
-  react-textarea-autosize@8.5.3:
-    resolution: {integrity: sha512-XT1024o2pqCuZSuBt9FwHlaDeNtVrtCXu0Rnz88t1jUGheCLa3PhjE1GH8Ctm2axEtvdCl5SUHYschyQ0L5QHQ==}
+  react-textarea-autosize@8.5.6:
+    resolution: {integrity: sha512-aT3ioKXMa8f6zHYGebhbdMD2L00tKeRX1zuVuDx9YQK/JLLRSaSxq3ugECEmUB9z2kvk6bFSIoRHLkkUv0RJiw==}
     engines: {node: '>=10'}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react@18.3.1:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
@@ -8969,8 +8970,8 @@ packages:
   ua-parser-js@1.0.38:
     resolution: {integrity: sha512-Aq5ppTOfvrCMgAPneW1HfWj66Xi7XL+/mIy996R1/CLS/rcyJQm6QZdsKrUeivDFQ+Oc9Wyuwor8Ze8peEoUoQ==}
 
-  ufo@1.5.3:
-    resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}
+  ufo@1.5.4:
+    resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}
 
   uint8array-extras@1.4.0:
     resolution: {integrity: sha512-ZPtzy0hu4cZjv3z5NW9gfKnNLjoz4y6uv4HlelAjDK7sY/xOkKZv9xK/WQpcsBB3jEybChz9DPC2U/+cusjJVQ==}
@@ -9117,25 +9118,29 @@ packages:
       '@types/react':
         optional: true
 
-  use-composed-ref@1.3.0:
-    resolution: {integrity: sha512-GLMG0Jc/jiKov/3Ulid1wbv3r54K9HlMW29IWcDFPEqFkSO2nS0MuefWgMJpeHQ9YJeXDL3ZUF+P3jdXlZX/cQ==}
-    peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-
-  use-isomorphic-layout-effect@1.1.2:
-    resolution: {integrity: sha512-49L8yCO3iGT/ZF9QttjwLF/ZD9Iwto5LnH5LmEdk/6cFmXddqi2ulF0edxTwjj+7mqvpVVGQWvbXZdn32wRSHA==}
+  use-composed-ref@1.4.0:
+    resolution: {integrity: sha512-djviaxuOOh7wkj0paeO1Q/4wMZ8Zrnag5H6yBvzN7AKKe8beOaED9SF5/ByLqsku8NP4zQqsvM2u3ew/tJK8/w==}
     peerDependencies:
       '@types/react': '*'
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
       '@types/react':
         optional: true
 
-  use-latest@1.2.1:
-    resolution: {integrity: sha512-xA+AVm/Wlg3e2P/JiItTziwS7FK92LWrDB0p+hgXloIMuVCeJJ8v6f0eeHyPZaJrM+usM1FkFfbNCrJGs8A/zw==}
+  use-isomorphic-layout-effect@1.2.0:
+    resolution: {integrity: sha512-q6ayo8DWoPZT0VdG4u3D3uxcgONP3Mevx2i2b0434cwWBoL+aelL1DzkXI6w3PhTZzUeR2kaVlZn70iCiseP6w==}
     peerDependencies:
       '@types/react': '*'
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  use-latest@1.3.0:
+    resolution: {integrity: sha512-mhg3xdm9NaM8q+gLT8KryJPnRFOz1/5XPBhmDEVZK1webPzDjrPk7f/mbpeLqTgB9msytYWANxgALOCJKnLvcQ==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -9303,8 +9308,8 @@ packages:
   which-module@2.0.1:
     resolution: {integrity: sha512-iBdZ57RDvnOR9AGBhML2vFZf7h8vmBjhoaZqODJBFWHVtKkDmKuHai3cx5PgVMrX5YDNp27AofYbAwctSS+vhQ==}
 
-  which-pm@2.0.0:
-    resolution: {integrity: sha512-Lhs9Pmyph0p5n5Z3mVnN0yWcbQYUAD7rbQUiMsQxOJ3T57k7RFe35SUwWMf7dsbDZks1uOmw4AecB/JMDj3v/w==}
+  which-pm@2.2.0:
+    resolution: {integrity: sha512-MOiaDbA5ZZgUjkeMWM5EkJp4loW5ZRoa5bc3/aeMox/PJelMhE6t7S/mLuiY43DBupyxH+S0U1bTui9kWUlmsw==}
     engines: {node: '>=8.15'}
 
   which-typed-array@1.1.15:
@@ -9480,7 +9485,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  '@apollo/client@3.11.4(@types/react@18.3.11)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@apollo/client@3.12.4(@types/react@18.3.11)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@graphql-typed-document-node/core': 3.2.0(graphql@16.9.0)
       '@wry/caches': 1.0.1
@@ -9489,7 +9494,7 @@ snapshots:
       graphql: 16.9.0
       graphql-tag: 2.12.6(graphql@16.9.0)
       hoist-non-react-statics: 3.3.2
-      optimism: 0.18.0
+      optimism: 0.18.1
       prop-types: 15.8.1
       rehackt: 0.1.0(@types/react@18.3.11)(react@18.3.1)
       response-iterator: 0.2.6
@@ -9503,7 +9508,6 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
-    optional: true
 
   '@ardatan/relay-compiler@12.0.0(graphql@16.9.0)':
     dependencies:
@@ -9535,7 +9539,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@ark-ui/anatomy@0.1.0(@internationalized/date@3.5.5)':
+  '@ark-ui/anatomy@0.1.0(@internationalized/date@3.6.0)':
     dependencies:
       '@zag-js/accordion': 0.20.0
       '@zag-js/anatomy': 0.20.0
@@ -9546,7 +9550,7 @@ snapshots:
       '@zag-js/color-utils': 0.20.0
       '@zag-js/combobox': 0.20.0
       '@zag-js/date-picker': 0.20.0
-      '@zag-js/date-utils': 0.20.0(@internationalized/date@3.5.5)
+      '@zag-js/date-utils': 0.20.0(@internationalized/date@3.6.0)
       '@zag-js/dialog': 0.20.0
       '@zag-js/editable': 0.20.0
       '@zag-js/hover-card': 0.20.0
@@ -9571,9 +9575,8 @@ snapshots:
       '@zag-js/tooltip': 0.20.0
     transitivePeerDependencies:
       - '@internationalized/date'
-    optional: true
 
-  '@ark-ui/react@0.15.0(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@ark-ui/react@0.15.0(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@zag-js/accordion': 0.19.1
       '@zag-js/anatomy': 0.19.1
@@ -9585,7 +9588,7 @@ snapshots:
       '@zag-js/combobox': 0.19.1
       '@zag-js/core': 0.19.1
       '@zag-js/date-picker': 0.19.1
-      '@zag-js/date-utils': 0.19.1(@internationalized/date@3.5.5)
+      '@zag-js/date-utils': 0.19.1(@internationalized/date@3.6.0)
       '@zag-js/dialog': 0.19.1
       '@zag-js/editable': 0.19.1
       '@zag-js/hover-card': 0.19.1
@@ -9614,7 +9617,6 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
     transitivePeerDependencies:
       - '@internationalized/date'
-    optional: true
 
   '@babel/code-frame@7.26.2':
     dependencies:
@@ -10361,13 +10363,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/runtime-corejs3@7.25.0':
+  '@babel/runtime-corejs3@7.26.0':
     dependencies:
-      core-js-pure: 3.38.0
+      core-js-pure: 3.39.0
       regenerator-runtime: 0.14.1
-    optional: true
 
   '@babel/runtime@7.25.7':
+    dependencies:
+      regenerator-runtime: 0.14.1
+
+  '@babel/runtime@7.26.0':
     dependencies:
       regenerator-runtime: 0.14.1
 
@@ -10396,18 +10401,16 @@ snapshots:
 
   '@bcoe/v8-coverage@0.2.3': {}
 
-  '@clack/core@0.3.4':
+  '@clack/core@0.3.5':
     dependencies:
       picocolors: 1.1.0
       sisteransi: 1.0.5
-    optional: true
 
   '@clack/prompts@0.6.3':
     dependencies:
-      '@clack/core': 0.3.4
+      '@clack/core': 0.3.5
       picocolors: 1.1.0
       sisteransi: 1.0.5
-    optional: true
 
   '@clerk/clerk-js@5.11.0(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -10870,13 +10873,11 @@ snapshots:
     dependencies:
       '@floating-ui/core': 1.6.1
       '@floating-ui/utils': 0.1.6
-    optional: true
 
   '@floating-ui/dom@1.5.2':
     dependencies:
       '@floating-ui/core': 1.6.1
       '@floating-ui/utils': 0.1.6
-    optional: true
 
   '@floating-ui/dom@1.6.5':
     dependencies:
@@ -11457,19 +11458,18 @@ snapshots:
   '@img/sharp-win32-x64@0.33.5':
     optional: true
 
-  '@inkeep/color-mode@0.0.24(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@inkeep/color-mode@0.1.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-    optional: true
 
-  '@inkeep/components@0.0.24(@ark-ui/react@0.15.0(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)':
+  '@inkeep/components@0.1.4(@ark-ui/react@0.15.0(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)':
     dependencies:
-      '@ark-ui/react': 0.15.0(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@inkeep/preset': 0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)
-      '@inkeep/preset-chakra': 0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)
-      '@inkeep/shared': 0.0.25
-      '@inkeep/styled-system': 0.0.44
+      '@ark-ui/react': 0.15.0(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@inkeep/preset': 0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)
+      '@inkeep/preset-chakra': 0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)
+      '@inkeep/shared': 0.1.4
+      '@inkeep/styled-system': 0.1.14
       '@pandacss/dev': 0.22.1(typescript@5.7.2)
       framer-motion: 10.18.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
@@ -11478,51 +11478,44 @@ snapshots:
       - '@internationalized/date'
       - jsdom
       - typescript
-    optional: true
 
-  '@inkeep/preset-chakra@0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)':
+  '@inkeep/preset-chakra@0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)':
     dependencies:
-      '@ark-ui/anatomy': 0.1.0(@internationalized/date@3.5.5)
-      '@inkeep/shared': 0.0.25
+      '@ark-ui/anatomy': 0.1.0(@internationalized/date@3.6.0)
+      '@inkeep/shared': 0.1.4
       '@pandacss/dev': 0.22.1(typescript@5.7.2)
     transitivePeerDependencies:
       - '@internationalized/date'
       - jsdom
       - typescript
-    optional: true
 
-  '@inkeep/preset@0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)':
+  '@inkeep/preset@0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)':
     dependencies:
-      '@ark-ui/anatomy': 0.1.0(@internationalized/date@3.5.5)
-      '@inkeep/preset-chakra': 0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)
-      '@inkeep/shared': 0.0.25
+      '@ark-ui/anatomy': 0.1.0(@internationalized/date@3.6.0)
+      '@inkeep/preset-chakra': 0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)
+      '@inkeep/shared': 0.1.4
       '@pandacss/dev': 0.22.1(typescript@5.7.2)
       colorjs.io: 0.4.5
     transitivePeerDependencies:
       - '@internationalized/date'
       - jsdom
       - typescript
-    optional: true
 
-  '@inkeep/shared@0.0.25':
-    optional: true
+  '@inkeep/shared@0.1.4': {}
 
-  '@inkeep/styled-system@0.0.44':
-    optional: true
+  '@inkeep/styled-system@0.1.14': {}
 
-  '@inkeep/styled-system@0.0.46':
-    optional: true
-
-  '@inkeep/widgets@0.2.289(@internationalized/date@3.5.5)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)':
+  '@inkeep/uikit@0.3.19(@internationalized/date@3.6.0)(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)':
     dependencies:
-      '@apollo/client': 3.11.4(@types/react@18.3.11)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@ark-ui/react': 0.15.0(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@inkeep/color-mode': 0.0.24(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@inkeep/components': 0.0.24(@ark-ui/react@0.15.0(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@internationalized/date@3.5.5)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)
-      '@inkeep/preset': 0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)
-      '@inkeep/preset-chakra': 0.0.24(@internationalized/date@3.5.5)(typescript@5.7.2)
-      '@inkeep/shared': 0.0.25
-      '@inkeep/styled-system': 0.0.46
+      '@apollo/client': 3.12.4(@types/react@18.3.11)(graphql-ws@5.16.0(graphql@16.9.0))(graphql@16.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@ark-ui/react': 0.15.0(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@inkeep/color-mode': 0.1.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@inkeep/components': 0.1.4(@ark-ui/react@0.15.0(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@internationalized/date@3.6.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.7.2)
+      '@inkeep/preset': 0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)
+      '@inkeep/preset-chakra': 0.1.4(@internationalized/date@3.6.0)(typescript@5.7.2)
+      '@inkeep/shared': 0.1.4
+      '@inkeep/styled-system': 0.1.14
+      '@radix-ui/react-scroll-area': 1.2.1(@types/react-dom@18.3.1)(@types/react@18.3.11)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/lodash.isequal': 4.5.8
       graphql: 16.9.0
       graphql-ws: 5.16.0(graphql@16.9.0)
@@ -11535,26 +11528,25 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-error-boundary: 4.1.2(react@18.3.1)
       react-hook-form: 7.53.0(react@18.3.1)
-      react-hotkeys-hook: 4.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-hotkeys-hook: 4.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-icons: 4.12.0(react@18.3.1)
       react-markdown: 8.0.7(@types/react@18.3.11)(react@18.3.1)
-      react-svg: 16.1.34(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react-textarea-autosize: 8.5.3(@types/react@18.3.11)(react@18.3.1)
+      react-svg: 16.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-textarea-autosize: 8.5.6(@types/react@18.3.11)(react@18.3.1)
       rehype-raw: 6.1.1
       xregexp: 5.1.1
     transitivePeerDependencies:
       - '@internationalized/date'
       - '@types/react'
+      - '@types/react-dom'
       - jsdom
       - subscriptions-transport-ws
       - supports-color
       - typescript
-    optional: true
 
-  '@internationalized/date@3.5.5':
+  '@internationalized/date@3.6.0':
     dependencies:
       '@swc/helpers': 0.5.12
-    optional: true
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -12288,7 +12280,6 @@ snapshots:
       jiti: 1.21.0
       merge-anything: 5.1.7
       typescript: 5.7.2
-    optional: true
 
   '@pandacss/core@0.22.1':
     dependencies:
@@ -12309,7 +12300,6 @@ snapshots:
       postcss-normalize-whitespace: 6.0.2(postcss@8.4.47)
       postcss-selector-parser: 6.0.16
       ts-pattern: 5.0.5
-    optional: true
 
   '@pandacss/dev@0.22.1(typescript@5.7.2)':
     dependencies:
@@ -12329,10 +12319,8 @@ snapshots:
     transitivePeerDependencies:
       - jsdom
       - typescript
-    optional: true
 
-  '@pandacss/error@0.22.1':
-    optional: true
+  '@pandacss/error@0.22.1': {}
 
   '@pandacss/extractor@0.22.1(typescript@5.7.2)':
     dependencies:
@@ -12341,7 +12329,6 @@ snapshots:
     transitivePeerDependencies:
       - jsdom
       - typescript
-    optional: true
 
   '@pandacss/generator@0.22.1':
     dependencies:
@@ -12357,16 +12344,13 @@ snapshots:
       pluralize: 8.0.0
       postcss: 8.4.47
       ts-pattern: 5.0.5
-    optional: true
 
-  '@pandacss/is-valid-prop@0.22.1':
-    optional: true
+  '@pandacss/is-valid-prop@0.22.1': {}
 
   '@pandacss/logger@0.22.1':
     dependencies:
       kleur: 4.1.5
       lil-fp: 1.4.5
-    optional: true
 
   '@pandacss/node@0.22.1(typescript@5.7.2)':
     dependencies:
@@ -12384,7 +12368,7 @@ snapshots:
       chokidar: 3.6.0
       fast-glob: 3.3.1
       file-size: 1.0.0
-      filesize: 10.1.4
+      filesize: 10.1.6
       fs-extra: 11.1.1
       glob-parent: 6.0.2
       hookable: 5.5.3
@@ -12392,13 +12376,13 @@ snapshots:
       lil-fp: 1.4.5
       lodash.merge: 4.6.2
       look-it-up: 2.1.0
-      microdiff: 1.4.0
+      microdiff: 1.5.0
       outdent: 0.8.0
       pathe: 1.1.2
       pkg-types: 1.0.3
       pluralize: 8.0.0
       postcss: 8.4.47
-      preferred-pm: 3.1.3
+      preferred-pm: 3.1.4
       prettier: 2.8.8
       ts-morph: 19.0.0
       ts-pattern: 5.0.5
@@ -12406,7 +12390,6 @@ snapshots:
     transitivePeerDependencies:
       - jsdom
       - typescript
-    optional: true
 
   '@pandacss/parser@0.22.1(typescript@5.7.2)':
     dependencies:
@@ -12416,7 +12399,7 @@ snapshots:
       '@pandacss/logger': 0.22.1
       '@pandacss/shared': 0.22.1
       '@pandacss/types': 0.22.1
-      '@vue/compiler-sfc': 3.4.38
+      '@vue/compiler-sfc': 3.5.13
       lil-fp: 1.4.5
       magic-string: 0.30.12
       ts-morph: 19.0.0
@@ -12424,7 +12407,6 @@ snapshots:
     transitivePeerDependencies:
       - jsdom
       - typescript
-    optional: true
 
   '@pandacss/postcss@0.22.1(typescript@5.7.2)':
     dependencies:
@@ -12433,30 +12415,24 @@ snapshots:
     transitivePeerDependencies:
       - jsdom
       - typescript
-    optional: true
 
   '@pandacss/preset-base@0.22.1':
     dependencies:
       '@pandacss/types': 0.22.1
-    optional: true
 
   '@pandacss/preset-panda@0.22.1':
     dependencies:
       '@pandacss/types': 0.22.1
-    optional: true
 
-  '@pandacss/shared@0.22.1':
-    optional: true
+  '@pandacss/shared@0.22.1': {}
 
   '@pandacss/token-dictionary@0.22.1':
     dependencies:
       '@pandacss/shared': 0.22.1
       '@pandacss/types': 0.22.1
       ts-pattern: 5.0.5
-    optional: true
 
-  '@pandacss/types@0.22.1':
-    optional: true
+  '@pandacss/types@0.22.1': {}
 
   '@phenomnomnominal/tsquery@5.0.1(typescript@5.7.2)':
     dependencies:
@@ -13313,10 +13289,9 @@ snapshots:
 
   '@tanem/svg-injector@10.1.68':
     dependencies:
-      '@babel/runtime': 7.25.7
+      '@babel/runtime': 7.26.0
       content-type: 1.0.5
       tslib: 2.7.0
-    optional: true
 
   '@tanstack/query-core@5.60.6': {}
 
@@ -13331,7 +13306,6 @@ snapshots:
       minimatch: 7.4.6
       mkdirp: 2.1.6
       path-browserify: 1.0.1
-    optional: true
 
   '@tsconfig/node10@1.0.11': {}
 
@@ -13435,16 +13409,13 @@ snapshots:
 
   '@types/lodash.isequal@4.5.8':
     dependencies:
-      '@types/lodash': 4.17.7
-    optional: true
+      '@types/lodash': 4.17.13
 
-  '@types/lodash@4.17.7':
-    optional: true
+  '@types/lodash@4.17.13': {}
 
   '@types/mdast@3.0.15':
     dependencies:
       '@types/unist': 2.0.10
-    optional: true
 
   '@types/mdast@4.0.4':
     dependencies:
@@ -13474,8 +13445,7 @@ snapshots:
 
   '@types/parse-json@4.0.2': {}
 
-  '@types/parse5@6.0.3':
-    optional: true
+  '@types/parse5@6.0.3': {}
 
   '@types/pg-pool@2.0.6':
     dependencies:
@@ -13724,42 +13694,37 @@ snapshots:
       loupe: 3.1.2
       tinyrainbow: 1.2.0
 
-  '@vue/compiler-core@3.4.38':
+  '@vue/compiler-core@3.5.13':
     dependencies:
       '@babel/parser': 7.26.3
-      '@vue/shared': 3.4.38
+      '@vue/shared': 3.5.13
       entities: 4.5.0
       estree-walker: 2.0.2
       source-map-js: 1.2.1
-    optional: true
 
-  '@vue/compiler-dom@3.4.38':
+  '@vue/compiler-dom@3.5.13':
     dependencies:
-      '@vue/compiler-core': 3.4.38
-      '@vue/shared': 3.4.38
-    optional: true
+      '@vue/compiler-core': 3.5.13
+      '@vue/shared': 3.5.13
 
-  '@vue/compiler-sfc@3.4.38':
+  '@vue/compiler-sfc@3.5.13':
     dependencies:
       '@babel/parser': 7.26.3
-      '@vue/compiler-core': 3.4.38
-      '@vue/compiler-dom': 3.4.38
-      '@vue/compiler-ssr': 3.4.38
-      '@vue/shared': 3.4.38
+      '@vue/compiler-core': 3.5.13
+      '@vue/compiler-dom': 3.5.13
+      '@vue/compiler-ssr': 3.5.13
+      '@vue/shared': 3.5.13
       estree-walker: 2.0.2
       magic-string: 0.30.12
-      postcss: 8.4.47
+      postcss: 8.4.49
       source-map-js: 1.2.1
-    optional: true
 
-  '@vue/compiler-ssr@3.4.38':
+  '@vue/compiler-ssr@3.5.13':
     dependencies:
-      '@vue/compiler-dom': 3.4.38
-      '@vue/shared': 3.4.38
-    optional: true
+      '@vue/compiler-dom': 3.5.13
+      '@vue/shared': 3.5.13
 
-  '@vue/shared@3.4.38':
-    optional: true
+  '@vue/shared@3.5.13': {}
 
   '@whatwg-node/events@0.1.1': {}
 
@@ -13783,27 +13748,18 @@ snapshots:
   '@wry/caches@1.0.1':
     dependencies:
       tslib: 2.7.0
-    optional: true
 
   '@wry/context@0.7.4':
     dependencies:
       tslib: 2.7.0
-    optional: true
 
   '@wry/equality@0.5.7':
     dependencies:
       tslib: 2.7.0
-    optional: true
-
-  '@wry/trie@0.4.3':
-    dependencies:
-      tslib: 2.7.0
-    optional: true
 
   '@wry/trie@0.5.0':
     dependencies:
       tslib: 2.7.0
-    optional: true
 
   '@yarnpkg/lockfile@1.1.0': {}
 
@@ -13820,7 +13776,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/accordion@0.20.0':
     dependencies:
@@ -13830,33 +13785,26 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
-  '@zag-js/anatomy@0.19.1':
-    optional: true
+  '@zag-js/anatomy@0.19.1': {}
 
-  '@zag-js/anatomy@0.20.0':
-    optional: true
+  '@zag-js/anatomy@0.20.0': {}
 
   '@zag-js/aria-hidden@0.19.1':
     dependencies:
       '@zag-js/dom-query': 0.19.1
-    optional: true
 
   '@zag-js/aria-hidden@0.20.0':
     dependencies:
       '@zag-js/dom-query': 0.20.0
-    optional: true
 
   '@zag-js/auto-resize@0.19.1':
     dependencies:
       '@zag-js/dom-query': 0.19.1
-    optional: true
 
   '@zag-js/auto-resize@0.20.0':
     dependencies:
       '@zag-js/dom-query': 0.20.0
-    optional: true
 
   '@zag-js/avatar@0.19.1':
     dependencies:
@@ -13866,7 +13814,6 @@ snapshots:
       '@zag-js/mutation-observer': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/avatar@0.20.0':
     dependencies:
@@ -13876,7 +13823,6 @@ snapshots:
       '@zag-js/mutation-observer': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/carousel@0.19.1':
     dependencies:
@@ -13885,7 +13831,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/carousel@0.20.0':
     dependencies:
@@ -13894,7 +13839,6 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/checkbox@0.19.1':
     dependencies:
@@ -13905,7 +13849,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/checkbox@0.20.0':
     dependencies:
@@ -13916,13 +13859,10 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
-  '@zag-js/collection@0.19.1':
-    optional: true
+  '@zag-js/collection@0.19.1': {}
 
-  '@zag-js/collection@0.20.0':
-    optional: true
+  '@zag-js/collection@0.20.0': {}
 
   '@zag-js/color-picker@0.19.1':
     dependencies:
@@ -13937,7 +13877,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/color-picker@0.20.0':
     dependencies:
@@ -13952,13 +13891,10 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
-  '@zag-js/color-utils@0.19.1':
-    optional: true
+  '@zag-js/color-utils@0.19.1': {}
 
-  '@zag-js/color-utils@0.20.0':
-    optional: true
+  '@zag-js/color-utils@0.20.0': {}
 
   '@zag-js/combobox@0.19.1':
     dependencies:
@@ -13973,7 +13909,6 @@ snapshots:
       '@zag-js/popper': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/combobox@0.20.0':
     dependencies:
@@ -13988,26 +13923,23 @@ snapshots:
       '@zag-js/popper': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/core@0.19.1':
     dependencies:
       '@zag-js/store': 0.19.1
       klona: 2.0.6
-    optional: true
 
   '@zag-js/core@0.20.0':
     dependencies:
       '@zag-js/store': 0.20.0
       klona: 2.0.6
-    optional: true
 
   '@zag-js/date-picker@0.19.1':
     dependencies:
-      '@internationalized/date': 3.5.5
+      '@internationalized/date': 3.6.0
       '@zag-js/anatomy': 0.19.1
       '@zag-js/core': 0.19.1
-      '@zag-js/date-utils': 0.19.1(@internationalized/date@3.5.5)
+      '@zag-js/date-utils': 0.19.1(@internationalized/date@3.6.0)
       '@zag-js/dismissable': 0.19.1
       '@zag-js/dom-event': 0.19.1
       '@zag-js/dom-query': 0.19.1
@@ -14017,14 +13949,13 @@ snapshots:
       '@zag-js/text-selection': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/date-picker@0.20.0':
     dependencies:
-      '@internationalized/date': 3.5.5
+      '@internationalized/date': 3.6.0
       '@zag-js/anatomy': 0.20.0
       '@zag-js/core': 0.20.0
-      '@zag-js/date-utils': 0.20.0(@internationalized/date@3.5.5)
+      '@zag-js/date-utils': 0.20.0(@internationalized/date@3.6.0)
       '@zag-js/dismissable': 0.20.0
       '@zag-js/dom-event': 0.20.0
       '@zag-js/dom-query': 0.20.0
@@ -14034,17 +13965,14 @@ snapshots:
       '@zag-js/text-selection': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
-  '@zag-js/date-utils@0.19.1(@internationalized/date@3.5.5)':
+  '@zag-js/date-utils@0.19.1(@internationalized/date@3.6.0)':
     dependencies:
-      '@internationalized/date': 3.5.5
-    optional: true
+      '@internationalized/date': 3.6.0
 
-  '@zag-js/date-utils@0.20.0(@internationalized/date@3.5.5)':
+  '@zag-js/date-utils@0.20.0(@internationalized/date@3.6.0)':
     dependencies:
-      '@internationalized/date': 3.5.5
-    optional: true
+      '@internationalized/date': 3.6.0
 
   '@zag-js/dialog@0.19.1':
     dependencies:
@@ -14057,7 +13985,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       focus-trap: 7.5.2
-    optional: true
 
   '@zag-js/dialog@0.20.0':
     dependencies:
@@ -14070,7 +13997,6 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       focus-trap: 7.5.2
-    optional: true
 
   '@zag-js/dismissable@0.19.1':
     dependencies:
@@ -14078,7 +14004,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/interact-outside': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/dismissable@0.20.0':
     dependencies:
@@ -14086,25 +14011,20 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/interact-outside': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/dom-event@0.19.1':
     dependencies:
       '@zag-js/text-selection': 0.19.1
       '@zag-js/types': 0.19.1
-    optional: true
 
   '@zag-js/dom-event@0.20.0':
     dependencies:
       '@zag-js/text-selection': 0.20.0
       '@zag-js/types': 0.20.0
-    optional: true
 
-  '@zag-js/dom-query@0.19.1':
-    optional: true
+  '@zag-js/dom-query@0.19.1': {}
 
-  '@zag-js/dom-query@0.20.0':
-    optional: true
+  '@zag-js/dom-query@0.20.0': {}
 
   '@zag-js/editable@0.19.1':
     dependencies:
@@ -14116,7 +14036,6 @@ snapshots:
       '@zag-js/interact-outside': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/editable@0.20.0':
     dependencies:
@@ -14128,29 +14047,22 @@ snapshots:
       '@zag-js/interact-outside': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
-  '@zag-js/element-rect@0.19.1':
-    optional: true
+  '@zag-js/element-rect@0.19.1': {}
 
-  '@zag-js/element-rect@0.20.0':
-    optional: true
+  '@zag-js/element-rect@0.20.0': {}
 
-  '@zag-js/element-size@0.19.1':
-    optional: true
+  '@zag-js/element-size@0.19.1': {}
 
-  '@zag-js/element-size@0.20.0':
-    optional: true
+  '@zag-js/element-size@0.20.0': {}
 
   '@zag-js/form-utils@0.19.1':
     dependencies:
       '@zag-js/mutation-observer': 0.19.1
-    optional: true
 
   '@zag-js/form-utils@0.20.0':
     dependencies:
       '@zag-js/mutation-observer': 0.20.0
-    optional: true
 
   '@zag-js/hover-card@0.19.1':
     dependencies:
@@ -14161,7 +14073,6 @@ snapshots:
       '@zag-js/popper': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/hover-card@0.20.0':
     dependencies:
@@ -14172,7 +14083,6 @@ snapshots:
       '@zag-js/popper': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/interact-outside@0.19.1':
     dependencies:
@@ -14180,7 +14090,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/tabbable': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/interact-outside@0.20.0':
     dependencies:
@@ -14188,17 +14097,14 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/tabbable': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/live-region@0.19.1':
     dependencies:
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/live-region@0.20.0':
     dependencies:
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
   '@zag-js/menu@0.19.1':
     dependencies:
@@ -14211,7 +14117,6 @@ snapshots:
       '@zag-js/rect-utils': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/menu@0.20.0':
     dependencies:
@@ -14224,13 +14129,10 @@ snapshots:
       '@zag-js/rect-utils': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
-  '@zag-js/mutation-observer@0.19.1':
-    optional: true
+  '@zag-js/mutation-observer@0.19.1': {}
 
-  '@zag-js/mutation-observer@0.20.0':
-    optional: true
+  '@zag-js/mutation-observer@0.20.0': {}
 
   '@zag-js/number-input@0.19.1':
     dependencies:
@@ -14242,7 +14144,6 @@ snapshots:
       '@zag-js/number-utils': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/number-input@0.20.0':
     dependencies:
@@ -14254,19 +14155,14 @@ snapshots:
       '@zag-js/number-utils': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
-  '@zag-js/number-utils@0.19.1':
-    optional: true
+  '@zag-js/number-utils@0.19.1': {}
 
-  '@zag-js/number-utils@0.20.0':
-    optional: true
+  '@zag-js/number-utils@0.20.0': {}
 
-  '@zag-js/numeric-range@0.19.1':
-    optional: true
+  '@zag-js/numeric-range@0.19.1': {}
 
-  '@zag-js/numeric-range@0.20.0':
-    optional: true
+  '@zag-js/numeric-range@0.20.0': {}
 
   '@zag-js/pagination@0.19.1':
     dependencies:
@@ -14275,7 +14171,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/pagination@0.20.0':
     dependencies:
@@ -14284,7 +14179,6 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/pin-input@0.19.1':
     dependencies:
@@ -14296,7 +14190,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/pin-input@0.20.0':
     dependencies:
@@ -14308,7 +14201,6 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
   '@zag-js/popover@0.19.1':
     dependencies:
@@ -14323,7 +14215,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       focus-trap: 7.5.2
-    optional: true
 
   '@zag-js/popover@0.20.0':
     dependencies:
@@ -14338,7 +14229,6 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       focus-trap: 7.5.2
-    optional: true
 
   '@zag-js/popper@0.19.1':
     dependencies:
@@ -14346,7 +14236,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/element-rect': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/popper@0.20.0':
     dependencies:
@@ -14354,19 +14243,16 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/element-rect': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/presence@0.19.1':
     dependencies:
       '@zag-js/core': 0.19.1
       '@zag-js/types': 0.19.1
-    optional: true
 
   '@zag-js/presence@0.20.0':
     dependencies:
       '@zag-js/core': 0.20.0
       '@zag-js/types': 0.20.0
-    optional: true
 
   '@zag-js/pressable@0.19.1':
     dependencies:
@@ -14377,7 +14263,6 @@ snapshots:
       '@zag-js/text-selection': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/pressable@0.20.0':
     dependencies:
@@ -14388,7 +14273,6 @@ snapshots:
       '@zag-js/text-selection': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/radio-group@0.19.1':
     dependencies:
@@ -14400,7 +14284,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/radio-group@0.20.0':
     dependencies:
@@ -14412,7 +14295,6 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
   '@zag-js/range-slider@0.19.1':
     dependencies:
@@ -14426,7 +14308,6 @@ snapshots:
       '@zag-js/slider': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/range-slider@0.20.0':
     dependencies:
@@ -14440,7 +14321,6 @@ snapshots:
       '@zag-js/slider': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/rating-group@0.19.1':
     dependencies:
@@ -14451,7 +14331,6 @@ snapshots:
       '@zag-js/form-utils': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/rating-group@0.20.0':
     dependencies:
@@ -14462,7 +14341,6 @@ snapshots:
       '@zag-js/form-utils': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/react@0.19.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -14472,23 +14350,18 @@ snapshots:
       proxy-compare: 2.5.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-    optional: true
 
-  '@zag-js/rect-utils@0.19.1':
-    optional: true
+  '@zag-js/rect-utils@0.19.1': {}
 
-  '@zag-js/rect-utils@0.20.0':
-    optional: true
+  '@zag-js/rect-utils@0.20.0': {}
 
   '@zag-js/remove-scroll@0.19.1':
     dependencies:
       '@zag-js/dom-query': 0.19.1
-    optional: true
 
   '@zag-js/remove-scroll@0.20.0':
     dependencies:
       '@zag-js/dom-query': 0.20.0
-    optional: true
 
   '@zag-js/select@0.19.1':
     dependencies:
@@ -14505,7 +14378,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/select@0.20.0':
     dependencies:
@@ -14522,7 +14394,6 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
   '@zag-js/slider@0.19.1':
     dependencies:
@@ -14535,7 +14406,6 @@ snapshots:
       '@zag-js/numeric-range': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/slider@0.20.0':
     dependencies:
@@ -14548,7 +14418,6 @@ snapshots:
       '@zag-js/numeric-range': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/splitter@0.19.1':
     dependencies:
@@ -14559,7 +14428,6 @@ snapshots:
       '@zag-js/number-utils': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/splitter@0.20.0':
     dependencies:
@@ -14570,17 +14438,14 @@ snapshots:
       '@zag-js/number-utils': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/store@0.19.1':
     dependencies:
       proxy-compare: 2.5.1
-    optional: true
 
   '@zag-js/store@0.20.0':
     dependencies:
       proxy-compare: 2.5.1
-    optional: true
 
   '@zag-js/switch@0.19.1':
     dependencies:
@@ -14591,7 +14456,6 @@ snapshots:
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
       '@zag-js/visually-hidden': 0.19.1
-    optional: true
 
   '@zag-js/switch@0.20.0':
     dependencies:
@@ -14602,17 +14466,14 @@ snapshots:
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
       '@zag-js/visually-hidden': 0.20.0
-    optional: true
 
   '@zag-js/tabbable@0.19.1':
     dependencies:
       '@zag-js/dom-query': 0.19.1
-    optional: true
 
   '@zag-js/tabbable@0.20.0':
     dependencies:
       '@zag-js/dom-query': 0.20.0
-    optional: true
 
   '@zag-js/tabs@0.19.1':
     dependencies:
@@ -14624,7 +14485,6 @@ snapshots:
       '@zag-js/tabbable': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/tabs@0.20.0':
     dependencies:
@@ -14636,7 +14496,6 @@ snapshots:
       '@zag-js/tabbable': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/tags-input@0.19.1':
     dependencies:
@@ -14650,7 +14509,6 @@ snapshots:
       '@zag-js/live-region': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/tags-input@0.20.0':
     dependencies:
@@ -14664,17 +14522,14 @@ snapshots:
       '@zag-js/live-region': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/text-selection@0.19.1':
     dependencies:
       '@zag-js/dom-query': 0.19.1
-    optional: true
 
   '@zag-js/text-selection@0.20.0':
     dependencies:
       '@zag-js/dom-query': 0.20.0
-    optional: true
 
   '@zag-js/toast@0.19.1':
     dependencies:
@@ -14684,7 +14539,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/toast@0.20.0':
     dependencies:
@@ -14694,7 +14548,6 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/toggle-group@0.19.1':
     dependencies:
@@ -14704,7 +14557,6 @@ snapshots:
       '@zag-js/dom-query': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/toggle-group@0.20.0':
     dependencies:
@@ -14714,7 +14566,6 @@ snapshots:
       '@zag-js/dom-query': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/tooltip@0.19.1':
     dependencies:
@@ -14725,7 +14576,6 @@ snapshots:
       '@zag-js/popper': 0.19.1
       '@zag-js/types': 0.19.1
       '@zag-js/utils': 0.19.1
-    optional: true
 
   '@zag-js/tooltip@0.20.0':
     dependencies:
@@ -14736,29 +14586,22 @@ snapshots:
       '@zag-js/popper': 0.20.0
       '@zag-js/types': 0.20.0
       '@zag-js/utils': 0.20.0
-    optional: true
 
   '@zag-js/types@0.19.1':
     dependencies:
       csstype: 3.1.2
-    optional: true
 
   '@zag-js/types@0.20.0':
     dependencies:
       csstype: 3.1.2
-    optional: true
 
-  '@zag-js/utils@0.19.1':
-    optional: true
+  '@zag-js/utils@0.19.1': {}
 
-  '@zag-js/utils@0.20.0':
-    optional: true
+  '@zag-js/utils@0.20.0': {}
 
-  '@zag-js/visually-hidden@0.19.1':
-    optional: true
+  '@zag-js/visually-hidden@0.19.1': {}
 
-  '@zag-js/visually-hidden@0.20.0':
-    optional: true
+  '@zag-js/visually-hidden@0.20.0': {}
 
   '@zeit/schemas@2.36.0': {}
 
@@ -15000,7 +14843,6 @@ snapshots:
       picocolors: 1.1.0
       postcss: 8.4.47
       postcss-value-parser: 4.2.0
-    optional: true
 
   autoprefixer@10.4.20(postcss@8.4.47):
     dependencies:
@@ -15202,7 +15044,6 @@ snapshots:
     dependencies:
       esbuild: 0.20.2
       node-eval: 2.0.0
-    optional: true
 
   busboy@1.6.0:
     dependencies:
@@ -15241,7 +15082,6 @@ snapshots:
       caniuse-lite: 1.0.30001668
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
-    optional: true
 
   caniuse-lite@1.0.30001668: {}
 
@@ -15410,8 +15250,7 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  code-block-writer@12.0.0:
-    optional: true
+  code-block-writer@12.0.0: {}
 
   collapse-white-space@2.1.0: {}
 
@@ -15433,8 +15272,7 @@ snapshots:
 
   colorette@2.0.20: {}
 
-  colorjs.io@0.4.5:
-    optional: true
+  colorjs.io@0.4.5: {}
 
   columnify@1.6.0:
     dependencies:
@@ -15483,8 +15321,7 @@ snapshots:
       semver: 7.6.3
       uint8array-extras: 1.4.0
 
-  confbox@0.1.7:
-    optional: true
+  confbox@0.1.8: {}
 
   constant-case@3.0.4:
     dependencies:
@@ -15516,8 +15353,7 @@ snapshots:
     dependencies:
       browserslist: 4.24.0
 
-  core-js-pure@3.38.0:
-    optional: true
+  core-js-pure@3.39.0: {}
 
   core-js@3.26.1: {}
 
@@ -15578,7 +15414,6 @@ snapshots:
   crosspath@2.0.0:
     dependencies:
       '@types/node': 17.0.45
-    optional: true
 
   crypto-js@4.2.0: {}
 
@@ -15587,12 +15422,10 @@ snapshots:
   cssnano-utils@4.0.2(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
-    optional: true
 
   csstype@3.1.1: {}
 
-  csstype@3.1.2:
-    optional: true
+  csstype@3.1.2: {}
 
   csstype@3.1.3: {}
 
@@ -15701,8 +15534,7 @@ snapshots:
 
   diff@4.0.2: {}
 
-  diff@5.2.0:
-    optional: true
+  diff@5.2.0: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -15723,22 +15555,18 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
       entities: 4.5.0
-    optional: true
 
-  domelementtype@2.3.0:
-    optional: true
+  domelementtype@2.3.0: {}
 
   domhandler@5.0.3:
     dependencies:
       domelementtype: 2.3.0
-    optional: true
 
-  domutils@3.1.0:
+  domutils@3.2.1:
     dependencies:
       dom-serializer: 2.0.0
       domelementtype: 2.3.0
       domhandler: 5.0.3
-    optional: true
 
   dot-case@3.0.4:
     dependencies:
@@ -15956,7 +15784,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.20.2
       '@esbuild/win32-ia32': 0.20.2
       '@esbuild/win32-x64': 0.20.2
-    optional: true
 
   esbuild@0.21.5:
     optionalDependencies:
@@ -16038,8 +15865,7 @@ snapshots:
       '@esbuild/win32-ia32': 0.24.0
       '@esbuild/win32-x64': 0.24.0
 
-  escalade@3.1.1:
-    optional: true
+  escalade@3.1.1: {}
 
   escalade@3.2.0: {}
 
@@ -16475,15 +16301,13 @@ snapshots:
     dependencies:
       flat-cache: 3.2.0
 
-  file-size@1.0.0:
-    optional: true
+  file-size@1.0.0: {}
 
   filelist@1.0.4:
     dependencies:
       minimatch: 5.1.6
 
-  filesize@10.1.4:
-    optional: true
+  filesize@10.1.6: {}
 
   fill-range@7.1.1:
     dependencies:
@@ -16517,7 +16341,6 @@ snapshots:
     dependencies:
       micromatch: 4.0.8
       pkg-dir: 4.2.0
-    optional: true
 
   flat-cache@3.2.0:
     dependencies:
@@ -16532,7 +16355,6 @@ snapshots:
   focus-trap@7.5.2:
     dependencies:
       tabbable: 6.2.0
-    optional: true
 
   follow-redirects@1.15.9: {}
 
@@ -16564,7 +16386,6 @@ snapshots:
       '@emotion/is-prop-valid': 0.8.8
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-    optional: true
 
   framer-motion@11.3.31(@emotion/is-prop-valid@0.8.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
@@ -16587,7 +16408,6 @@ snapshots:
       graceful-fs: 4.2.11
       jsonfile: 6.1.0
       universalify: 2.0.1
-    optional: true
 
   fs.realpath@1.0.0: {}
 
@@ -16808,7 +16628,6 @@ snapshots:
       vfile: 5.3.7
       vfile-location: 4.1.0
       web-namespaces: 2.0.1
-    optional: true
 
   hast-util-from-parse5@8.0.1:
     dependencies:
@@ -16850,7 +16669,6 @@ snapshots:
       vfile: 5.3.7
       web-namespaces: 2.0.1
       zwitch: 2.0.4
-    optional: true
 
   hast-util-raw@9.0.4:
     dependencies:
@@ -16917,7 +16735,6 @@ snapshots:
       space-separated-tokens: 2.0.2
       web-namespaces: 2.0.1
       zwitch: 2.0.4
-    optional: true
 
   hast-util-to-parse5@8.0.0:
     dependencies:
@@ -16937,8 +16754,7 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.4
 
-  hast-util-whitespace@2.0.1:
-    optional: true
+  hast-util-whitespace@2.0.1: {}
 
   hast-util-whitespace@3.0.0:
     dependencies:
@@ -16971,8 +16787,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hookable@5.5.3:
-    optional: true
+  hookable@5.5.3: {}
 
   hosted-git-info@7.0.2:
     dependencies:
@@ -16982,7 +16797,6 @@ snapshots:
     dependencies:
       domhandler: 5.0.3
       htmlparser2: 8.0.2
-    optional: true
 
   html-encoding-sniffer@3.0.0:
     dependencies:
@@ -16997,12 +16811,10 @@ snapshots:
       react: 18.3.1
       react-property: 2.0.0
       style-to-js: 1.1.3
-    optional: true
 
   html-url-attributes@3.0.1: {}
 
-  html-void-elements@2.0.1:
-    optional: true
+  html-void-elements@2.0.1: {}
 
   html-void-elements@3.0.0: {}
 
@@ -17010,9 +16822,8 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
       domhandler: 5.0.3
-      domutils: 3.1.0
+      domutils: 3.2.1
       entities: 4.5.0
-    optional: true
 
   http-errors@2.0.0:
     dependencies:
@@ -17074,8 +16885,7 @@ snapshots:
 
   human-signals@5.0.0: {}
 
-  humps@2.0.1:
-    optional: true
+  humps@2.0.1: {}
 
   husky@9.0.11: {}
 
@@ -17192,8 +17002,7 @@ snapshots:
       call-bind: 1.0.7
       has-tostringtag: 1.0.2
 
-  is-buffer@2.0.5:
-    optional: true
+  is-buffer@2.0.5: {}
 
   is-callable@1.2.7: {}
 
@@ -17325,8 +17134,7 @@ snapshots:
       call-bind: 1.0.7
       get-intrinsic: 1.2.4
 
-  is-what@4.1.16:
-    optional: true
+  is-what@4.1.16: {}
 
   is-windows@1.0.2: {}
 
@@ -17390,8 +17198,7 @@ snapshots:
       filelist: 1.0.4
       minimatch: 3.1.2
 
-  javascript-stringify@2.1.0:
-    optional: true
+  javascript-stringify@2.1.0: {}
 
   jest-diff@29.7.0:
     dependencies:
@@ -17448,15 +17255,11 @@ snapshots:
 
   jsonc-parser@3.2.0: {}
 
-  jsonc-parser@3.3.1:
-    optional: true
-
   jsonfile@6.1.0:
     dependencies:
       universalify: 2.0.1
     optionalDependencies:
       graceful-fs: 4.2.11
-    optional: true
 
   jsx-ast-utils@3.3.5:
     dependencies:
@@ -17473,11 +17276,9 @@ snapshots:
 
   kleur@3.0.3: {}
 
-  kleur@4.1.5:
-    optional: true
+  kleur@4.1.5: {}
 
-  klona@2.0.6:
-    optional: true
+  klona@2.0.6: {}
 
   language-subtag-registry@0.3.23: {}
 
@@ -17492,8 +17293,7 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
 
-  lil-fp@1.4.5:
-    optional: true
+  lil-fp@1.4.5: {}
 
   lilconfig@2.1.0: {}
 
@@ -17546,7 +17346,6 @@ snapshots:
       js-yaml: 3.14.1
       pify: 4.0.1
       strip-bom: 3.0.0
-    optional: true
 
   locate-path@5.0.0:
     dependencies:
@@ -17560,20 +17359,17 @@ snapshots:
 
   lodash.debounce@4.0.8: {}
 
-  lodash.isequal@4.5.0:
-    optional: true
+  lodash.isequal@4.5.0: {}
 
   lodash.isplainobject@4.0.6: {}
 
-  lodash.memoize@4.1.2:
-    optional: true
+  lodash.memoize@4.1.2: {}
 
   lodash.merge@4.6.2: {}
 
   lodash.sortby@4.7.0: {}
 
-  lodash.uniq@4.5.0:
-    optional: true
+  lodash.uniq@4.5.0: {}
 
   lodash@4.17.21: {}
 
@@ -17606,8 +17402,7 @@ snapshots:
 
   longest-streak@3.1.0: {}
 
-  look-it-up@2.1.0:
-    optional: true
+  look-it-up@2.1.0: {}
 
   loose-envify@1.4.0:
     dependencies:
@@ -17662,7 +17457,6 @@ snapshots:
       '@types/mdast': 3.0.15
       '@types/unist': 2.0.10
       unist-util-visit: 4.1.2
-    optional: true
 
   mdast-util-directive@3.0.0:
     dependencies:
@@ -17700,7 +17494,6 @@ snapshots:
       uvu: 0.5.6
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   mdast-util-from-markdown@2.0.0:
     dependencies:
@@ -17852,7 +17645,6 @@ snapshots:
       unist-util-generated: 2.0.1
       unist-util-position: 4.0.4
       unist-util-visit: 4.1.2
-    optional: true
 
   mdast-util-to-hast@13.1.0:
     dependencies:
@@ -17880,7 +17672,6 @@ snapshots:
   mdast-util-to-string@3.2.0:
     dependencies:
       '@types/mdast': 3.0.15
-    optional: true
 
   mdast-util-to-string@4.0.0:
     dependencies:
@@ -17891,7 +17682,6 @@ snapshots:
   merge-anything@5.1.7:
     dependencies:
       is-what: 4.1.16
-    optional: true
 
   merge-descriptors@1.0.3: {}
 
@@ -17905,8 +17695,7 @@ snapshots:
 
   methods@1.1.2: {}
 
-  microdiff@1.4.0:
-    optional: true
+  microdiff@1.5.0: {}
 
   micromark-core-commonmark@1.1.0:
     dependencies:
@@ -17926,7 +17715,6 @@ snapshots:
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
       uvu: 0.5.6
-    optional: true
 
   micromark-core-commonmark@2.0.0:
     dependencies:
@@ -18078,7 +17866,6 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
-    optional: true
 
   micromark-factory-destination@2.0.0:
     dependencies:
@@ -18092,7 +17879,6 @@ snapshots:
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
       uvu: 0.5.6
-    optional: true
 
   micromark-factory-label@2.0.0:
     dependencies:
@@ -18128,7 +17914,6 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
-    optional: true
 
   micromark-factory-title@2.0.0:
     dependencies:
@@ -18143,7 +17928,6 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
-    optional: true
 
   micromark-factory-whitespace@2.0.0:
     dependencies:
@@ -18165,7 +17949,6 @@ snapshots:
   micromark-util-chunked@1.1.0:
     dependencies:
       micromark-util-symbol: 1.1.0
-    optional: true
 
   micromark-util-chunked@2.0.0:
     dependencies:
@@ -18176,7 +17959,6 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
-    optional: true
 
   micromark-util-classify-character@2.0.0:
     dependencies:
@@ -18188,7 +17970,6 @@ snapshots:
     dependencies:
       micromark-util-chunked: 1.1.0
       micromark-util-types: 1.1.0
-    optional: true
 
   micromark-util-combine-extensions@2.0.0:
     dependencies:
@@ -18198,7 +17979,6 @@ snapshots:
   micromark-util-decode-numeric-character-reference@1.1.0:
     dependencies:
       micromark-util-symbol: 1.1.0
-    optional: true
 
   micromark-util-decode-numeric-character-reference@2.0.1:
     dependencies:
@@ -18210,7 +17990,6 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-decode-numeric-character-reference: 1.1.0
       micromark-util-symbol: 1.1.0
-    optional: true
 
   micromark-util-decode-string@2.0.0:
     dependencies:
@@ -18219,8 +17998,7 @@ snapshots:
       micromark-util-decode-numeric-character-reference: 2.0.1
       micromark-util-symbol: 2.0.0
 
-  micromark-util-encode@1.1.0:
-    optional: true
+  micromark-util-encode@1.1.0: {}
 
   micromark-util-encode@2.0.0: {}
 
@@ -18235,15 +18013,13 @@ snapshots:
       micromark-util-types: 2.0.0
       vfile-message: 4.0.2
 
-  micromark-util-html-tag-name@1.2.0:
-    optional: true
+  micromark-util-html-tag-name@1.2.0: {}
 
   micromark-util-html-tag-name@2.0.0: {}
 
   micromark-util-normalize-identifier@1.1.0:
     dependencies:
       micromark-util-symbol: 1.1.0
-    optional: true
 
   micromark-util-normalize-identifier@2.0.0:
     dependencies:
@@ -18252,7 +18028,6 @@ snapshots:
   micromark-util-resolve-all@1.1.0:
     dependencies:
       micromark-util-types: 1.1.0
-    optional: true
 
   micromark-util-resolve-all@2.0.0:
     dependencies:
@@ -18263,7 +18038,6 @@ snapshots:
       micromark-util-character: 1.2.0
       micromark-util-encode: 1.1.0
       micromark-util-symbol: 1.1.0
-    optional: true
 
   micromark-util-sanitize-uri@2.0.0:
     dependencies:
@@ -18277,7 +18051,6 @@ snapshots:
       micromark-util-symbol: 1.1.0
       micromark-util-types: 1.1.0
       uvu: 0.5.6
-    optional: true
 
   micromark-util-subtokenize@2.0.0:
     dependencies:
@@ -18315,7 +18088,6 @@ snapshots:
       uvu: 0.5.6
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   micromark@4.0.0:
     dependencies:
@@ -18379,7 +18151,6 @@ snapshots:
   minimatch@7.4.6:
     dependencies:
       brace-expansion: 2.0.1
-    optional: true
 
   minimatch@9.0.3:
     dependencies:
@@ -18404,23 +18175,20 @@ snapshots:
     dependencies:
       minimist: 1.2.8
 
-  mkdirp@2.1.6:
-    optional: true
+  mkdirp@2.1.6: {}
 
   mkdirp@3.0.1: {}
 
-  mlly@1.7.1:
+  mlly@1.7.3:
     dependencies:
       acorn: 8.14.0
       pathe: 1.1.2
-      pkg-types: 1.1.1
-      ufo: 1.5.3
-    optional: true
+      pkg-types: 1.3.0
+      ufo: 1.5.4
 
   module-details-from-path@1.0.3: {}
 
-  mri@1.2.0:
-    optional: true
+  mri@1.2.0: {}
 
   ms@2.0.0: {}
 
@@ -18487,7 +18255,6 @@ snapshots:
   node-eval@2.0.0:
     dependencies:
       path-is-absolute: 1.0.1
-    optional: true
 
   node-fetch@2.7.0:
     dependencies:
@@ -18592,8 +18359,7 @@ snapshots:
 
   object-keys@1.1.1: {}
 
-  object-path@0.11.8:
-    optional: true
+  object-path@0.11.8: {}
 
   object.assign@4.1.5:
     dependencies:
@@ -18659,13 +18425,12 @@ snapshots:
 
   opener@1.5.2: {}
 
-  optimism@0.18.0:
+  optimism@0.18.1:
     dependencies:
       '@wry/caches': 1.0.1
       '@wry/context': 0.7.4
-      '@wry/trie': 0.4.3
+      '@wry/trie': 0.5.0
       tslib: 2.7.0
-    optional: true
 
   optionator@0.9.4:
     dependencies:
@@ -18713,8 +18478,7 @@ snapshots:
 
   os-tmpdir@1.0.2: {}
 
-  outdent@0.8.0:
-    optional: true
+  outdent@0.8.0: {}
 
   p-finally@1.0.0: {}
 
@@ -18783,8 +18547,7 @@ snapshots:
       json-parse-even-better-errors: 2.3.1
       lines-and-columns: 1.2.4
 
-  parse5@6.0.1:
-    optional: true
+  parse5@6.0.1: {}
 
   parse5@7.1.2:
     dependencies:
@@ -18797,8 +18560,7 @@ snapshots:
       no-case: 3.0.4
       tslib: 2.7.0
 
-  path-browserify@1.0.1:
-    optional: true
+  path-browserify@1.0.1: {}
 
   path-case@3.0.4:
     dependencies:
@@ -18841,15 +18603,13 @@ snapshots:
 
   path-type@5.0.0: {}
 
-  pathe@1.1.1:
-    optional: true
+  pathe@1.1.1: {}
 
   pathe@1.1.2: {}
 
   pathval@2.0.0: {}
 
-  perfect-debounce@1.0.0:
-    optional: true
+  perfect-debounce@1.0.0: {}
 
   pg-int8@1.0.1: {}
 
@@ -18865,38 +18625,35 @@ snapshots:
 
   picocolors@1.1.0: {}
 
+  picocolors@1.1.1: {}
+
   picomatch@2.3.1: {}
 
   pidtree@0.6.0: {}
 
   pify@2.3.0: {}
 
-  pify@4.0.1:
-    optional: true
+  pify@4.0.1: {}
 
   pirates@4.0.6: {}
 
   pkg-dir@4.2.0:
     dependencies:
       find-up: 4.1.0
-    optional: true
 
   pkg-types@1.0.3:
     dependencies:
-      jsonc-parser: 3.3.1
-      mlly: 1.7.1
+      jsonc-parser: 3.2.0
+      mlly: 1.7.3
       pathe: 1.1.2
-    optional: true
 
-  pkg-types@1.1.1:
+  pkg-types@1.3.0:
     dependencies:
-      confbox: 0.1.7
-      mlly: 1.7.1
+      confbox: 0.1.8
+      mlly: 1.7.3
       pathe: 1.1.2
-    optional: true
 
-  pluralize@8.0.0:
-    optional: true
+  pluralize@8.0.0: {}
 
   portfinder@1.0.32:
     dependencies:
@@ -18911,12 +18668,10 @@ snapshots:
   postcss-discard-duplicates@6.0.3(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
-    optional: true
 
   postcss-discard-empty@6.0.3(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
-    optional: true
 
   postcss-import@15.1.0(postcss@8.4.47):
     dependencies:
@@ -18945,13 +18700,11 @@ snapshots:
       cssnano-utils: 4.0.2(postcss@8.4.47)
       postcss: 8.4.47
       postcss-selector-parser: 6.0.16
-    optional: true
 
   postcss-minify-selectors@6.0.4(postcss@8.4.47):
     dependencies:
       postcss: 8.4.47
       postcss-selector-parser: 6.0.16
-    optional: true
 
   postcss-nested@6.0.1(postcss@8.4.47):
     dependencies:
@@ -18962,7 +18715,6 @@ snapshots:
     dependencies:
       postcss: 8.4.47
       postcss-value-parser: 4.2.0
-    optional: true
 
   postcss-selector-parser@6.0.10:
     dependencies:
@@ -18988,6 +18740,12 @@ snapshots:
       picocolors: 1.1.0
       source-map-js: 1.2.1
 
+  postcss@8.4.49:
+    dependencies:
+      nanoid: 3.3.7
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+
   postgres-array@2.0.0: {}
 
   postgres-bytea@1.0.0: {}
@@ -19005,13 +18763,12 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  preferred-pm@3.1.3:
+  preferred-pm@3.1.4:
     dependencies:
       find-up: 5.0.0
       find-yarn-workspace-root2: 1.2.16
       path-exists: 4.0.0
-      which-pm: 2.0.0
-    optional: true
+      which-pm: 2.2.0
 
   prelude-ls@1.2.1: {}
 
@@ -19020,8 +18777,7 @@ snapshots:
       prettier: 3.4.2
       typescript: 5.7.2
 
-  prettier@2.8.8:
-    optional: true
+  prettier@2.8.8: {}
 
   prettier@3.4.2: {}
 
@@ -19065,8 +18821,7 @@ snapshots:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
 
-  proxy-compare@2.5.1:
-    optional: true
+  proxy-compare@2.5.1: {}
 
   proxy-from-env@1.1.0: {}
 
@@ -19121,16 +18876,14 @@ snapshots:
     dependencies:
       react: 18.3.1
 
-  react-hotkeys-hook@4.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-hotkeys-hook@4.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-    optional: true
 
   react-icons@4.12.0(react@18.3.1):
     dependencies:
       react: 18.3.1
-    optional: true
 
   react-is@16.13.1: {}
 
@@ -19157,10 +18910,8 @@ snapshots:
       vfile: 5.3.7
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
-  react-property@2.0.0:
-    optional: true
+  react-property@2.0.0: {}
 
   react-refresh@0.14.2: {}
 
@@ -19209,25 +18960,23 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.11
 
-  react-svg@16.1.34(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-svg@16.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      '@babel/runtime': 7.25.7
+      '@babel/runtime': 7.26.0
       '@tanem/svg-injector': 10.1.68
       '@types/prop-types': 15.7.13
       prop-types: 15.8.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-    optional: true
 
-  react-textarea-autosize@8.5.3(@types/react@18.3.11)(react@18.3.1):
+  react-textarea-autosize@8.5.6(@types/react@18.3.11)(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.25.7
       react: 18.3.1
-      use-composed-ref: 1.3.0(react@18.3.1)
-      use-latest: 1.2.1(@types/react@18.3.11)(react@18.3.1)
+      use-composed-ref: 1.4.0(@types/react@18.3.11)(react@18.3.1)
+      use-latest: 1.3.0(@types/react@18.3.11)(react@18.3.1)
     transitivePeerDependencies:
       - '@types/react'
-    optional: true
 
   react@18.3.1:
     dependencies:
@@ -19341,14 +19090,12 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.11
       react: 18.3.1
-    optional: true
 
   rehype-raw@6.1.1:
     dependencies:
       '@types/hast': 2.3.10
       hast-util-raw: 7.2.3
       unified: 10.1.2
-    optional: true
 
   rehype-raw@7.0.0:
     dependencies:
@@ -19443,7 +19190,6 @@ snapshots:
       unified: 10.1.2
     transitivePeerDependencies:
       - supports-color
-    optional: true
 
   remark-parse@11.0.0:
     dependencies:
@@ -19460,7 +19206,6 @@ snapshots:
       '@types/mdast': 3.0.15
       mdast-util-to-hast: 12.3.0
       unified: 10.1.2
-    optional: true
 
   remark-rehype@11.1.1:
     dependencies:
@@ -19516,8 +19261,7 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  response-iterator@0.2.6:
-    optional: true
+  response-iterator@0.2.6: {}
 
   restore-cursor@3.1.0:
     dependencies:
@@ -19600,7 +19344,6 @@ snapshots:
   sade@1.8.1:
     dependencies:
       mri: 1.2.0
-    optional: true
 
   safe-array-concat@1.1.2:
     dependencies:
@@ -19978,12 +19721,10 @@ snapshots:
   style-to-js@1.1.3:
     dependencies:
       style-to-object: 0.4.1
-    optional: true
 
   style-to-object@0.4.1:
     dependencies:
       inline-style-parser: 0.1.1
-    optional: true
 
   style-to-object@0.4.4:
     dependencies:
@@ -20028,8 +19769,7 @@ snapshots:
       react: 18.3.1
       use-sync-external-store: 1.2.2(react@18.3.1)
 
-  symbol-observable@4.0.0:
-    optional: true
+  symbol-observable@4.0.0: {}
 
   syncpack@12.4.0(typescript@5.7.2):
     dependencies:
@@ -20169,14 +19909,12 @@ snapshots:
       crosspath: 2.0.0
       object-path: 0.11.8
       typescript: 5.7.2
-    optional: true
 
   ts-interface-checker@0.1.13: {}
 
   ts-invariant@0.10.3:
     dependencies:
       tslib: 2.7.0
-    optional: true
 
   ts-log@2.2.5: {}
 
@@ -20184,7 +19922,6 @@ snapshots:
     dependencies:
       '@ts-morph/common': 0.20.0
       code-block-writer: 12.0.0
-    optional: true
 
   ts-node@10.9.1(@swc/core@1.10.1(@swc/helpers@0.5.12))(@types/node@20.16.11)(typescript@5.7.2):
     dependencies:
@@ -20247,15 +19984,13 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.10.1(@swc/helpers@0.5.12)
 
-  ts-pattern@5.0.5:
-    optional: true
+  ts-pattern@5.0.5: {}
 
   ts-toolbelt@9.6.0: {}
 
   tsconfck@2.1.2(typescript@5.7.2):
     optionalDependencies:
       typescript: 5.7.2
-    optional: true
 
   tsconfig-paths@3.15.0:
     dependencies:
@@ -20336,8 +20071,7 @@ snapshots:
 
   ua-parser-js@1.0.38: {}
 
-  ufo@1.5.3:
-    optional: true
+  ufo@1.5.4: {}
 
   uint8array-extras@1.4.0: {}
 
@@ -20378,7 +20112,6 @@ snapshots:
       is-plain-obj: 4.1.0
       trough: 2.2.0
       vfile: 5.3.7
-    optional: true
 
   unified@11.0.5:
     dependencies:
@@ -20394,8 +20127,7 @@ snapshots:
     dependencies:
       qs: 6.13.0
 
-  unist-util-generated@2.0.1:
-    optional: true
+  unist-util-generated@2.0.1: {}
 
   unist-util-is@5.2.1:
     dependencies:
@@ -20416,7 +20148,6 @@ snapshots:
   unist-util-position@4.0.4:
     dependencies:
       '@types/unist': 2.0.10
-    optional: true
 
   unist-util-position@5.0.0:
     dependencies:
@@ -20430,7 +20161,6 @@ snapshots:
   unist-util-stringify-position@3.0.3:
     dependencies:
       '@types/unist': 2.0.10
-    optional: true
 
   unist-util-stringify-position@4.0.0:
     dependencies:
@@ -20458,8 +20188,7 @@ snapshots:
       unist-util-is: 6.0.0
       unist-util-visit-parents: 6.0.1
 
-  universalify@2.0.1:
-    optional: true
+  universalify@2.0.1: {}
 
   unixify@1.0.0:
     dependencies:
@@ -20512,25 +20241,24 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.11
 
-  use-composed-ref@1.3.0(react@18.3.1):
-    dependencies:
-      react: 18.3.1
-    optional: true
-
-  use-isomorphic-layout-effect@1.1.2(@types/react@18.3.11)(react@18.3.1):
+  use-composed-ref@1.4.0(@types/react@18.3.11)(react@18.3.1):
     dependencies:
       react: 18.3.1
     optionalDependencies:
       '@types/react': 18.3.11
-    optional: true
 
-  use-latest@1.2.1(@types/react@18.3.11)(react@18.3.1):
+  use-isomorphic-layout-effect@1.2.0(@types/react@18.3.11)(react@18.3.1):
     dependencies:
       react: 18.3.1
-      use-isomorphic-layout-effect: 1.1.2(@types/react@18.3.11)(react@18.3.1)
     optionalDependencies:
       '@types/react': 18.3.11
-    optional: true
+
+  use-latest@1.3.0(@types/react@18.3.11)(react@18.3.1):
+    dependencies:
+      react: 18.3.1
+      use-isomorphic-layout-effect: 1.2.0(@types/react@18.3.11)(react@18.3.1)
+    optionalDependencies:
+      '@types/react': 18.3.11
 
   use-sidecar@1.1.2(@types/react@18.3.11)(react@18.3.1):
     dependencies:
@@ -20554,7 +20282,6 @@ snapshots:
       diff: 5.2.0
       kleur: 4.1.5
       sade: 1.8.1
-    optional: true
 
   v8-compile-cache-lib@3.0.1: {}
 
@@ -20577,7 +20304,6 @@ snapshots:
     dependencies:
       '@types/unist': 2.0.10
       vfile: 5.3.7
-    optional: true
 
   vfile-location@5.0.3:
     dependencies:
@@ -20588,7 +20314,6 @@ snapshots:
     dependencies:
       '@types/unist': 2.0.10
       unist-util-stringify-position: 3.0.3
-    optional: true
 
   vfile-message@4.0.2:
     dependencies:
@@ -20601,7 +20326,6 @@ snapshots:
       is-buffer: 2.0.5
       unist-util-stringify-position: 3.0.3
       vfile-message: 3.1.4
-    optional: true
 
   vfile@6.0.3:
     dependencies:
@@ -20790,11 +20514,10 @@ snapshots:
 
   which-module@2.0.1: {}
 
-  which-pm@2.0.0:
+  which-pm@2.2.0:
     dependencies:
       load-yaml-file: 0.2.0
       path-exists: 4.0.0
-    optional: true
 
   which-typed-array@1.1.15:
     dependencies:
@@ -20851,8 +20574,7 @@ snapshots:
 
   xregexp@5.1.1:
     dependencies:
-      '@babel/runtime-corejs3': 7.25.0
-    optional: true
+      '@babel/runtime-corejs3': 7.26.0
 
   xtend@4.0.2: {}
 
@@ -20910,10 +20632,8 @@ snapshots:
   zen-observable-ts@1.2.5:
     dependencies:
       zen-observable: 0.8.15
-    optional: true
 
-  zen-observable@0.8.15:
-    optional: true
+  zen-observable@0.8.15: {}
 
   zod-to-ts@1.2.0(typescript@5.7.2)(zod@3.23.8):
     dependencies:

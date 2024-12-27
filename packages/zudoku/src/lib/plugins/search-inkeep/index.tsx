@@ -1,5 +1,8 @@
-import type { InkeepWidgetBaseSettings } from "@inkeep/widgets";
-import { lazy } from "react";
+import type {
+  InkeepBaseSettings,
+  InkeepCustomTriggerCoreProps,
+} from "@inkeep/uikit";
+import { useEffect, useMemo, useRef } from "react";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { aiChatSettings, baseSettings } from "./inkeep.js";
@@ -12,11 +15,25 @@ type PickedPluginInkeepBaseSettings =
   | "organizationDisplayName";
 
 type PluginInkeepBaseSettings = Pick<
-  InkeepWidgetBaseSettings,
+  InkeepBaseSettings,
   PickedPluginInkeepBaseSettings
 >;
 
-const Inkeep = lazy(() => import("./InkeepCustomTrigger.js"));
+interface InkeepEmbedConfig {
+  componentType: string;
+  targetElement: HTMLElement;
+  properties: InkeepCustomTriggerCoreProps;
+}
+
+interface InkeepWidget {
+  render: (config: InkeepEmbedConfig & { isOpen: boolean }) => void;
+}
+
+declare global {
+  let Inkeep: () => {
+    embed: (config: InkeepEmbedConfig) => InkeepWidget;
+  };
+}
 
 const InkeepSearch = ({
   prefilledQuery,
@@ -29,23 +46,50 @@ const InkeepSearch = ({
   prefilledQuery?: string | null;
   settings: PluginInkeepBaseSettings;
 }) => {
-  return (
-    <Inkeep
-      isOpen={isOpen}
-      onClose={onClose}
-      baseSettings={{ ...baseSettings, ...settings }}
-      aiChatSettings={aiChatSettings}
-      searchSettings={{
-        prefilledQuery: prefilledQuery || undefined,
-      }}
-    />
+  const ref = useRef<HTMLDivElement>(null);
+
+  const config: InkeepEmbedConfig = useMemo(
+    () => ({
+      componentType: "CustomTrigger",
+      targetElement: ref.current!,
+      properties: {
+        isOpen,
+        onClose,
+        onOpen: undefined,
+        baseSettings: { ...baseSettings, ...settings },
+        searchSettings: {
+          prefilledQuery: prefilledQuery || undefined,
+        },
+        aiChatSettings,
+      },
+    }),
+    [isOpen, onClose, prefilledQuery, settings, ref],
   );
+
+  useEffect(() => {
+    const inkeepWidget = Inkeep().embed(config);
+    inkeepWidget.render({
+      ...config,
+      isOpen,
+    });
+  });
+
+  return <div ref={ref} />;
 };
 
 export const inkeepSearchPlugin = (
   settings: PluginInkeepBaseSettings,
 ): ZudokuPlugin => {
   return {
+    getHead: () => {
+      return (
+        <script
+          type="module"
+          src="https://unpkg.com/@inkeep/uikit-js@0.3.19/dist/embed.js"
+          defer
+        ></script>
+      );
+    },
     renderSearch: ({
       isOpen,
       onClose,

@@ -260,6 +260,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.3",
     "@graphql-codegen/client-preset": "4.5.0",
+    "@inkeep/uikit": "^0.3.19",
     "@types/estree": "1.0.6",
     "@types/express": "5.0.0",
     "@types/har-format": "1.2.15",
@@ -287,7 +288,6 @@
   },
   "optionalDependencies": {
     "@clerk/clerk-js": "5.11.0",
-    "@inkeep/widgets": "^0.2.289",
     "@sentry/react": "^8.45.1"
   }
 }

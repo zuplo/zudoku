@@ -1,8 +1,8 @@
-import {
+import type {
   InkeepAIChatSettings,
   InkeepModalSettings,
   InkeepSearchSettings,
-} from "@inkeep/widgets";
+} from "@inkeep/uikit";
 
 const baseSettings = {
   theme: {
