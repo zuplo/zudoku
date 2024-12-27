@@ -1,28 +1,20 @@
-import type {
-  InkeepBaseSettings,
-  InkeepCustomTriggerCoreProps,
-} from "@inkeep/uikit";
 import { useEffect, useMemo, useRef } from "react";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { aiChatSettings, baseSettings } from "./inkeep.js";
 
-type PickedPluginInkeepBaseSettings =
-  | "apiKey"
-  | "integrationId"
-  | "organizationId"
-  | "primaryBrandColor"
-  | "organizationDisplayName";
-
-type PluginInkeepBaseSettings = Pick<
-  InkeepBaseSettings,
-  PickedPluginInkeepBaseSettings
->;
+interface PluginInkeepBaseSettings {
+  apiKey?: string;
+  integrationId: string;
+  organizationId: string;
+  organizationDisplayName?: string;
+  primaryBrandColor: string;
+}
 
 interface InkeepEmbedConfig {
   componentType: string;
   targetElement: HTMLElement;
-  properties: InkeepCustomTriggerCoreProps;
+  properties: unknown;
 }
 
 interface InkeepWidget {
