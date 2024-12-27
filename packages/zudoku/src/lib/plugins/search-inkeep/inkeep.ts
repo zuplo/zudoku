@@ -1,9 +1,3 @@
-import {
-  InkeepAIChatSettings,
-  InkeepModalSettings,
-  InkeepSearchSettings,
-} from "@inkeep/widgets";
-
 const baseSettings = {
   theme: {
     components: {
@@ -23,10 +17,10 @@ const baseSettings = {
   },
 } as const;
 
-const modalSettings: InkeepModalSettings = {};
+const modalSettings = {};
 
-const searchSettings: InkeepSearchSettings = {};
+const searchSettings = {};
 
-const aiChatSettings: InkeepAIChatSettings = {};
+const aiChatSettings = {};
 
 export { aiChatSettings, baseSettings, modalSettings, searchSettings };
