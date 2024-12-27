@@ -158,7 +158,7 @@ const Page = async () => {
                   <li>
                     <a
                       className="inline-block w-full py-1.5 px-2 border-2 border-slate-700 md:bg-slate-700 text-gray-400 rounded-md hover:bg-slate-400 hover:text-gray-900 transition-colors"
-                      href="https://docs-zudoku.pages.dev/"
+                      href="https://zuplo.com/docs/"
                       target="_blank"
                     >
                       Zuplo
