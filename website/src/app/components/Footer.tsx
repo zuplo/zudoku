@@ -13,6 +13,7 @@ export const Footer = () => (
                   <a
                     className="hover:text-white"
                     href="https://docs-zudoku.pages.dev"
+                    target="_blank"
                   >
                     Zuplo Docs
                   </a>
@@ -48,6 +49,7 @@ export const Footer = () => (
                   <a
                     className="hover:text-white"
                     href="https://discord.gg/9tfNGyN4de"
+                    target="_blank"
                   >
                     Discord
                   </a>
@@ -56,6 +58,7 @@ export const Footer = () => (
                   <a
                     className="hover:text-white"
                     href="https://twitter.com/Zuplo"
+                    target="_blank"
                   >
                     Twitter
                   </a>
@@ -64,6 +67,7 @@ export const Footer = () => (
                   <a
                     className="hover:text-white"
                     href="https://github.com/zuplo"
+                    target="_blank"
                   >
                     GitHub
                   </a>
@@ -77,6 +81,7 @@ export const Footer = () => (
                   <a
                     className="hover:text-white"
                     href="https://github.com/zuplo/zudoku"
+                    target="_blank"
                   >
                     Zudoku on GitHub
                   </a>
@@ -85,6 +90,7 @@ export const Footer = () => (
                   <a
                     className="hover:text-white"
                     href="https://github.com/zuplo/"
+                    target="_blank"
                   >
                     Zuplo on GitHub
                   </a>
@@ -94,7 +100,7 @@ export const Footer = () => (
           </ul>
         </div>
         <div className="w-full flex justify-center md:justify-start">
-          <a href="https://zuplo.com">
+          <a href="https://zuplo.com" target="_blank">
             <Image
               src="/zuplo.svg"
               height="12"
