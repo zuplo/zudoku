@@ -68,3 +68,6 @@ gha-creds-*.json
 
 # Vercel
 .vercel
+
+vite.config.*.timestamp*
+vitest.config.*.timestamp*
