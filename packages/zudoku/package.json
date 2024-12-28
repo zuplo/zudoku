@@ -282,11 +282,11 @@
     "vitest": "2.1.8"
   },
   "peerDependencies": {
-    "react": ">=18",
-    "react-dom": ">=18"
+    "react": ">=19",
+    "react-dom": ">=19"
   },
   "optionalDependencies": {
-    "@clerk/clerk-js": "5.11.0",
+    "@clerk/clerk-js": "^5.43.4",
     "@sentry/react": "^8.45.1"
   }
 }
