@@ -46,7 +46,7 @@
     "nx": "20.3.0",
     "prettier": "3.4.2",
     "prettier-plugin-organize-imports": "4.1.0",
-    "syncpack": "12.4.0",
+    "syncpack": "13.0.0",
     "typescript": "5.7.2"
   },
   "pnpm": {
