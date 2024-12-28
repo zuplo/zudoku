@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { Outlet, useNavigation } from "react-router-dom";
+import { Outlet, useNavigation } from "react-router";
 import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
 import { ZudokuContext, ZudokuContextOptions } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";

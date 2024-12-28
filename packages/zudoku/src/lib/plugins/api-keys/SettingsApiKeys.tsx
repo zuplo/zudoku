@@ -12,7 +12,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slotlet } from "../../components/SlotletProvider.js";
 import { Button } from "../../ui/Button.js";

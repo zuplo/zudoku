@@ -5,12 +5,13 @@ import {
 } from "@tanstack/react-query";
 import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
 import { StrictMode } from "react";
-import { type createBrowserRouter, RouterProvider } from "react-router-dom";
 import {
+  type createBrowserRouter,
   type createStaticRouter,
   type StaticHandlerContext,
   StaticRouterProvider,
-} from "react-router-dom/server.js";
+} from "react-router";
+import { RouterProvider } from "react-router/dom";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 
 const queryClient = new QueryClient({
@@ -33,10 +34,7 @@ const Bootstrap = ({
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
         <HelmetProvider>
           <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
-            <RouterProvider
-              router={router}
-              future={{ v7_startTransition: true }}
-            />
+            <RouterProvider router={router} />
           </StaggeredRenderContext.Provider>
         </HelmetProvider>
       </HydrationBoundary>

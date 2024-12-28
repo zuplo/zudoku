@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter } from "react-router";
 import { Bootstrap } from "zudoku/components";
 import type { ZudokuConfig } from "../config/validators/validate.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";

@@ -5,7 +5,7 @@ import {
   matchRoutes,
   useLocation,
   useNavigationType,
-} from "react-router-dom";
+} from "react-router";
 
 export const initSentry = ({ dsn }: { dsn: string }) => {
   Sentry.init({
