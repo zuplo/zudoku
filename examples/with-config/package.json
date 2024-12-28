@@ -20,9 +20,9 @@
     }
   },
   "devDependencies": {
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "zudoku": "workspace:*",
-    "@clerk/clerk-js": "5.11.0"
+    "@clerk/clerk-js": "^5.43.4"
   }
 }
