@@ -33,7 +33,7 @@ export const MobileTopNavigation = () => {
         className="lg:hidden h-[100dvh] right-0 left-auto w-[320px] rounded-none"
         aria-describedby={undefined}
       >
-        <div className="p-6 overflow-y-auto overscroll-none">
+        <div className="p-4 overflow-y-auto overscroll-none">
           <VisuallyHidden>
             <DrawerTitle>Navigation</DrawerTitle>
           </VisuallyHidden>
