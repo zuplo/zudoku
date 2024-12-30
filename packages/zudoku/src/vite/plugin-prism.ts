@@ -37,7 +37,7 @@ const vitePrismPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             const loc = import.meta.resolve(
               `prismjs/components/prism-${lang}.min.js`,
             );
-            return `await import("${loc}");`;
+            return `import("${loc}");`;
           }),
         ].join("\n");
       }
