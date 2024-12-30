@@ -1,38 +1,18 @@
+import { CheckIcon, CopyIcon } from "lucide-react";
+import { useTheme } from "next-themes";
 import {
   Highlight,
   Prism,
   themes,
   type HighlightProps,
 } from "prism-react-renderer";
-
-import { CheckIcon, CopyIcon } from "lucide-react";
-
-globalThis.Prism = Prism;
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-bash.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-ruby.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-markup.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-json.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-java.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-csharp.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-objectivec.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-markdown.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-javascript.min.js");
-// @ts-expect-error This is untyped
-void import("prismjs/components/prism-typescript.min.js");
-
-import { useTheme } from "next-themes";
 import { useState } from "react";
 import { cn } from "../util/cn.js";
 import { ClientOnly } from "./ClientOnly.js";
+
+globalThis.Prism = Prism;
+
+await import("virtual:zudoku-prism");
 
 type SyntaxHighlightProps = {
   className?: string;

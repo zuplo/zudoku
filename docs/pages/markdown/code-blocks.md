@@ -37,8 +37,24 @@ Currently, Zudoku supports the following languages for syntax highlighting:
 - JavaScript - `javascript`, `js`
 - TypeScript - `typescript`, `ts`
 
-:::note
+### Additional Languages
 
-Language customization is coming soon! See [#86](https://github.com/zuplo/zudoku/issues/86)
+If you need to add support for additional languages, you can do so by specifying the language name in your configuration file. You can find the list of supported languages in the [Prism.js documentation](https://prismjs.com/#supported-languages).
+
+:::note{title="Note"}
+
+Each additional language has to be a valid Prism component name. For example, Prism would map the language cs to csharp, but only prism-csharp.js exists as a component, so you need to use additionalLanguages: ['csharp']. You can look into node_modules/prismjs/components to find all components (languages) available.
 
 :::
+
+```typescript
+import { ZudokuConfig } from "zudoku";
+
+const config: ZudokuConfig = {
+  theme: {
+    code: {
+      additionalLanguages: ["python", "go", "rust"],
+    },
+  },
+};
+```
