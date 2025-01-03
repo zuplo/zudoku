@@ -47,3 +47,5 @@ declare module "virtual:zudoku-auth" {
     | import("./lib/authentication/authentication.ts").AuthenticationProvider
     | undefined;
 }
+
+declare module "virtual:zudoku-prism";

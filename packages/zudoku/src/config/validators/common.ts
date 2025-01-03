@@ -300,6 +300,11 @@ export const CommonConfigSchema = z.object({
       light: ThemeSchema,
       dark: ThemeSchema,
       fonts: FontsConfigSchema,
+      code: z.optional(
+        z.object({
+          additionalLanguages: z.array(z.string()).optional(),
+        }),
+      ),
     })
     .partial(),
   metadata: MetadataSchema,
