@@ -58,7 +58,7 @@ const getConverted = (snippet: HTTPSnippet, option: string) => {
       converted = snippet.convert("swift");
       break;
     default:
-      converted = snippet.convert("shell");
+      converted = snippet.convert("javascript", "fetch");
       break;
   }
 
@@ -122,7 +122,7 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const selectedLang = searchParams.get("lang") ?? "shell";
+  const selectedLang = searchParams.get("lang") ?? "js";
 
   const requestBodyContent = operation.requestBody?.content;
 
