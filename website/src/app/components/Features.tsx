@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export const Features = () => {
   const features = [
     {
@@ -73,9 +75,10 @@ export const Features = () => {
           </div>
         </div>
         <div className="mt-12 lg:mt-0">
-          <img
+          <Image
             src="https://raw.githubusercontent.com/sidiDev/remote-assets/main/Safari%20(Big%20Sur)%20-%20Light.png"
             className="w-full shadow-lg rounded-lg border"
+            alt="Safari"
           />
         </div>
       </div>
