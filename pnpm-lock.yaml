@@ -282,8 +282,8 @@ importers:
         specifier: 4.0.2
         version: 4.0.2
       '@vercel/ncc':
-        specifier: 0.38.1
-        version: 0.38.1
+        specifier: 0.38.3
+        version: 0.38.3
       async-retry:
         specifier: 1.3.1
         version: 1.3.1
@@ -3976,8 +3976,8 @@ packages:
   '@urql/core@5.0.4':
     resolution: {integrity: sha512-gl86J6B6gWXvvkx5omZ+CaGiPQ0chCUGM0jBsm0zTtkDQPRqufv0NSUN6sp2JhGGtTOB0NR6Pd+w7XAVGGyUOA==}
 
-  '@vercel/ncc@0.38.1':
-    resolution: {integrity: sha512-IBBb+iI2NLu4VQn3Vwldyi2QwaXt5+hTyh58ggAMoCGE6DJmPvwL3KPBWcJl1m9LYPChBLE980Jw+CS4Wokqxw==}
+  '@vercel/ncc@0.38.3':
+    resolution: {integrity: sha512-rnK6hJBS6mwc+Bkab+PGPs9OiS0i/3kdTO+CkI8V0/VrW3vmz7O2Pxjw/owOlmo6PKEIxRSeZKv/kuL9itnpYA==}
     hasBin: true
 
   '@vitejs/plugin-react@4.3.4':
@@ -12208,7 +12208,7 @@ snapshots:
     transitivePeerDependencies:
       - graphql
 
-  '@vercel/ncc@0.38.1': {}
+  '@vercel/ncc@0.38.3': {}
 
   '@vitejs/plugin-react@4.3.4(vite@6.0.3(@types/node@20.16.11)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.6.1))':
     dependencies:
