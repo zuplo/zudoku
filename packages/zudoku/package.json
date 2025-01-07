@@ -202,7 +202,7 @@
     "estree-util-value-to-estree": "3.2.1",
     "express": "4.21.2",
     "glob": "11.0.0",
-    "graphql": "16.9.0",
+    "graphql": "16.10.0",
     "graphql-type-json": "0.3.2",
     "graphql-yoga": "5.10.4",
     "gray-matter": "4.0.3",
