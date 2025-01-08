@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { aiChatSettings, baseSettings } from "./inkeep.js";
@@ -39,6 +39,10 @@ const InkeepSearch = ({
   settings: PluginInkeepBaseSettings;
 }) => {
   const ref = useRef<HTMLDivElement>(null);
+  const widgetRef = useRef<InkeepWidget | null>(null);
+  const [isInkeepAvailable, setIsInkeepAvailable] = useState(
+    typeof Inkeep !== "undefined",
+  );
 
   const config: InkeepEmbedConfig = useMemo(
     () => ({
@@ -59,12 +63,27 @@ const InkeepSearch = ({
   );
 
   useEffect(() => {
-    const inkeepWidget = Inkeep().embed(config);
-    inkeepWidget.render({
-      ...config,
-      isOpen,
-    });
-  });
+    if (isInkeepAvailable) return;
+
+    const checkInkeep = setInterval(() => {
+      if (typeof Inkeep !== "undefined") {
+        setIsInkeepAvailable(true);
+        clearInterval(checkInkeep);
+      }
+    }, 100);
+
+    return () => clearInterval(checkInkeep);
+  }, [isInkeepAvailable]);
+
+  useEffect(() => {
+    if (!isInkeepAvailable || widgetRef.current) return;
+
+    widgetRef.current = Inkeep().embed(config);
+  }, [config, isInkeepAvailable]);
+
+  useEffect(() => {
+    widgetRef.current?.render({ ...config, isOpen });
+  }, [config, isOpen]);
 
   return <div ref={ref} />;
 };
@@ -79,7 +98,7 @@ export const inkeepSearchPlugin = (
           type="module"
           src="https://unpkg.com/@inkeep/uikit-js@0.3.19/dist/embed.js"
           defer
-        ></script>
+        />
       );
     },
     renderSearch: ({
