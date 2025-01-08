@@ -178,15 +178,18 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             async lazy() {
               const { OpenApiRoute } = await import("./Route.js");
               const input =
-                config.type === "file" ? config.input[version] : config.input;
-              if (!input) {
+                config.type === "file"
+                  ? { type: config.type, input: config.input[version]! }
+                  : { type: config.type, input: config.input };
+
+              if (!input.input) {
                 throw new Error("No input found");
               }
               return {
                 element: (
                   <OpenApiRoute
                     client={client}
-                    config={{ ...config, input: input }}
+                    config={{ ...config, ...input }}
                   />
                 ),
               };
@@ -213,18 +216,20 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           path: basePath,
           async lazy() {
             const { OpenApiRoute } = await import("./Route.js");
+
             const input =
               config.type === "file"
-                ? Object.values(config.input).at(0)
-                : config.input;
-            if (!input) {
-              throw new Error("No input found");
-            }
+                ? {
+                    type: config.type,
+                    input: Object.values(config.input).at(0)!,
+                  }
+                : { type: config.type, input: config.input };
+
             return {
               element: (
                 <OpenApiRoute
                   client={client}
-                  config={{ ...config, input: input }}
+                  config={{ ...config, ...input }}
                 />
               ),
             };
