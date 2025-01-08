@@ -64,37 +64,78 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           const apiMetadata: ApiCatalogItem[] = [];
           for (const apiConfig of apis) {
             if (apiConfig.type === "file") {
-              const fileContent = await fs.readFile(apiConfig.input, "utf-8");
+              const postProcessors = apiConfig.postProcessors ?? [];
+              const inputs = Array.isArray(apiConfig.input)
+                ? apiConfig.input
+                : [apiConfig.input];
 
-              let schema = /\.ya?ml$/.test(apiConfig.input)
-                ? yaml.parse(fileContent)
-                : JSON.parse(fileContent);
+              const inputFiles = await Promise.all(
+                inputs.map(async (input) =>
+                  /\.ya?ml$/.test(input)
+                    ? yaml.parse(await fs.readFile(input, "utf-8"))
+                    : JSON.parse(await fs.readFile(input, "utf-8")),
+                ),
+              );
 
-              for (const postProcessor of apiConfig.postProcessors ?? []) {
-                schema = await postProcessor(schema);
+              const processedSchemas = await Promise.all(
+                inputFiles
+                  .map((schema) =>
+                    postProcessors.reduce(
+                      async (acc, postProcessor) => postProcessor(await acc),
+                      schema,
+                    ),
+                  )
+                  .map(async (schema) => await validate(schema)),
+              );
+
+              const latestSchema = processedSchemas.at(0);
+
+              if (!latestSchema) {
+                throw new Error("No schema found");
               }
-
-              const openAPISchema = await validate(schema);
 
               if (apiConfig.navigationId) {
                 apiMetadata.push({
                   path: apiConfig.navigationId,
-                  label: openAPISchema.info.title,
-                  description: openAPISchema.info.description ?? "",
+                  label: latestSchema.info.title,
+                  description: latestSchema.info.description ?? "",
                   categories: apiConfig.categories ?? [],
                 });
               }
 
-              const processedFilePath = path.posix.join(
-                tmpDir,
-                `${path.basename(apiConfig.input)}.json`,
+              const processedFilePaths = inputs.map((input) =>
+                path.posix.join(tmpDir, `${path.basename(input)}.json`),
               );
 
-              await fs.writeFile(processedFilePath, JSON.stringify(schema));
+              const versionMap = Object.fromEntries(
+                processedSchemas.map((schema, index) => [
+                  schema.info.version || "default",
+                  processedFilePaths[index],
+                ]),
+              );
+
+              if (Object.keys(versionMap).length === 0) {
+                throw new Error("No schema versions found");
+              }
+
+              await Promise.all(
+                processedSchemas.map((schema, i) => {
+                  if (!processedFilePaths[i]) {
+                    throw new Error("No processed file path found");
+                  }
+                  fs.writeFile(processedFilePaths[i], JSON.stringify(schema));
+                }),
+              );
+
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",
                 '  type: "file",',
-                `  input: () => import("${processedFilePath}"),`,
+                `  input: {${Object.entries(versionMap)
+                  .map(
+                    ([version, path]) =>
+                      `"${version}": () => import("${path}")`,
+                  )
+                  .join(",")}},`,
                 `  navigationId: "${apiConfig.navigationId}",`,
                 "}));",
               );
@@ -109,7 +150,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             }
           }
 
-          const categorieList = Array.from(categories.entries()).map(
+          const categoryList = Array.from(categories.entries()).map(
             ([label, tags]) => ({
               label,
               tags: Array.from(tags),
@@ -125,7 +166,8 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
               ...catalog,
               items: apiMetadata,
               label: catalog.label,
-              categories: categorieList,
+              categories: categoryList,
+              filterCatalogItems: catalog.filterItems,
             };
 
             code.push(

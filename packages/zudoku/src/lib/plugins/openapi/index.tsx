@@ -1,4 +1,4 @@
-import { matchPath, type RouteObject } from "react-router";
+import { matchPath } from "react-router";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 
@@ -51,6 +51,8 @@ export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");
+
+  const versions = config.type === "file" ? Object.keys(config.input) : [];
 
   const client = new GraphQLClient(config);
 
@@ -125,9 +127,14 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       }
 
       try {
+        const version =
+          versions.find((v) => path === joinPath(basePath, v)) ??
+          Object.keys(config.input).at(0);
+
         const data = await client.fetch(GetCategoriesQuery, {
           type: config.type,
-          input: config.input,
+          input: config.type === "file" ? config.input[version!] : config.input,
+          version,
         });
 
         const categories = data.schema.tags
@@ -159,32 +166,32 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
     },
-    getRoutes: () =>
-      [
-        {
-          async lazy() {
-            const { OpenApiRoute } = await import("./Route.js");
-            return {
-              element: <OpenApiRoute client={client} config={config} />,
-            };
-          },
-          children: [
-            {
-              path: basePath,
-              children: [
-                {
-                  index: true,
-                  async lazy() {
-                    const { OperationList } = await import(
-                      "./OperationList.js"
-                    );
-                    return { element: <OperationList /> };
-                  },
-                },
-              ],
-            },
-          ],
+    getRoutes: () => [
+      {
+        path: basePath + "/:version?",
+        async lazy() {
+          const { OpenApiRoute } = await import("./Route.js");
+          return {
+            element: (
+              <OpenApiRoute
+                basePath={basePath}
+                versions={versions}
+                client={client}
+                config={config}
+              />
+            ),
+          };
         },
-      ] satisfies RouteObject[],
+        children: [
+          {
+            index: true,
+            async lazy() {
+              const { OperationList } = await import("./OperationList.js");
+              return { element: <OperationList /> };
+            },
+          },
+        ],
+      },
+    ],
   };
 };

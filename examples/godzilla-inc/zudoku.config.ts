@@ -28,7 +28,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "file",
-      input: "./schema/logistics.json",
+      input: ["./schema/logisticsV2.json", "./schema/logistics.json"],
       navigationId: "api-logistics",
       categories: [{ label: "Non-General", tags: ["Operational"] }],
     },

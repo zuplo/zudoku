@@ -1,13 +1,13 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Godzilla Logistics API",
+    "title": "Godzilla Logistics API v2",
     "description": "**Godzilla Logistics API** helps you manage the giant lizard's insatiable appetite and logistical needs. From feeding schedules to cleanup operations, this API is your go-to for keeping the King of Monsters satisfied. (Pro tip: He has a *suspicious* preference for gorillas.)",
-    "version": "1.0.0"
+    "version": "2.0.0"
   },
   "servers": [
     {
-      "url": "https://api.godzilla.example.com/v1/logistics",
+      "url": "https://api.godzilla.example.com/v2/logistics",
       "description": "Main Logistics API server"
     }
   ],
@@ -123,47 +123,6 @@
               "application/json": {
                 "example": {
                   "message": "Invalid feeding frequency. Godzilla prefers predictable meal times.",
-                  "status": "error"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/food-log/:logId": {
-      "delete": {
-        "summary": "Delete a food log entry",
-        "description": "Remove a specific entry from Godzilla's feeding log. Useful if you accidentally logged a 'bus full of tourists' as a snack.",
-        "parameters": [
-          {
-            "name": "logId",
-            "in": "path",
-            "description": "The ID of the food log entry to delete",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Log entry deleted",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Food log entry deleted successfully. Godzilla won’t miss the paperwork.",
-                  "status": "success"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Log entry not found",
-            "content": {
-              "application/json": {
-                "example": {
-                  "message": "Log entry not found. Maybe it got eaten?",
                   "status": "error"
                 }
               }

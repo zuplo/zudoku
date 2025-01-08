@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import { OasPluginConfig } from "./interfaces.js";
+import { OasPluginContext } from "./interfaces.js";
 
-const OasContext = createContext<{ config: OasPluginConfig } | undefined>(
+const OasContext = createContext<{ config: OasPluginContext } | undefined>(
   undefined,
 );
 
