@@ -1,6 +1,6 @@
 import slugify from "@sindresorhus/slugify";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { Head, Link } from "zudoku/components";
 import { useAuthState } from "../../authentication/state.js";
 import { Markdown } from "../../components/Markdown.js";

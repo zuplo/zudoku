@@ -311,7 +311,7 @@ export const CommonConfigSchema = z.object({
   search: SearchSchema,
   docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
-  catalog: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
+  catalogs: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
