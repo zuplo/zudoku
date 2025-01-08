@@ -24,7 +24,12 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
+        if (config.mode === "standalone") {
+          return `export const configuredApiPlugins = undefined; export const configuredApiCatalogPlugins = undefined;`;
+        }
+
         const code = [
+          `import config from "virtual:zudoku-config";`,
           `import { openApiPlugin } from "zudoku/plugins/openapi";`,
           `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
           `const configuredApiPlugins = [];`,
@@ -33,9 +38,9 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
 
         if (config.apis) {
           const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-          const catalogs = Array.isArray(config.catalog)
-            ? config.catalog
-            : [config.catalog];
+          const catalogs = Array.isArray(config.catalogs)
+            ? config.catalogs
+            : [config.catalogs];
 
           const categories = apis
             .flatMap((api) => api.categories ?? [])
@@ -104,14 +109,15 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
             }
           }
 
-          const categoriesx = Array.from(categories.entries()).map(
+          const categorieList = Array.from(categories.entries()).map(
             ([label, tags]) => ({
               label,
               tags: Array.from(tags),
             }),
           );
 
-          for (const catalog of catalogs) {
+          for (let i = 0; i < catalogs.length; i++) {
+            const catalog = catalogs[i];
             if (!catalog) {
               continue;
             }
@@ -119,11 +125,16 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
               ...catalog,
               items: apiMetadata,
               label: catalog.label,
-              categories: categoriesx,
+              categories: categorieList,
             };
 
             code.push(
-              `configuredApiCatalogPlugins.push(apiCatalogPlugin(${JSON.stringify(apiCatalogConfig)}));`,
+              `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
+              `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
+              `  filterCatalogItems: Array.isArray(config.catalogs)`,
+              `    ? config.catalogs[${i}].filterItems`,
+              `    : config.catalogs.filterItems,`,
+              `}));`,
             );
           }
         }
