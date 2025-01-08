@@ -206,18 +206,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             },
             children: [
               {
-                // path: basePath,
-                children: [
-                  {
-                    index: true,
-                    async lazy() {
-                      const { OperationList } = await import(
-                        "./OperationList.js"
-                      );
-                      return { element: <OperationList /> };
-                    },
-                  },
-                ],
+                index: true,
+                async lazy() {
+                  const { OperationList } = await import("./OperationList.js");
+                  return { element: <OperationList /> };
+                },
               },
             ],
           };
@@ -261,18 +254,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           },
           children: [
             {
-              // path: basePath,
-              children: [
-                {
-                  index: true,
-                  async lazy() {
-                    const { OperationList } = await import(
-                      "./OperationList.js"
-                    );
-                    return { element: <OperationList /> };
-                  },
-                },
-              ],
+              index: true,
+              async lazy() {
+                const { OperationList } = await import("./OperationList.js");
+                return { element: <OperationList /> };
+              },
             },
           ],
         },

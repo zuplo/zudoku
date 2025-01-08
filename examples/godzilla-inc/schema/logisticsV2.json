@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Godzilla Logistics API!",
+    "title": "Godzilla Logistics API v2",
     "description": "**Godzilla Logistics API** helps you manage the giant lizard's insatiable appetite and logistical needs. From feeding schedules to cleanup operations, this API is your go-to for keeping the King of Monsters satisfied. (Pro tip: He has a *suspicious* preference for gorillas.)",
     "version": "2.0.0"
   },
@@ -14,7 +14,7 @@
   "paths": {
     "/food": {
       "get": {
-        "summary": "Get Godzilla's feeding log",
+        "summary": "Get feeding log",
         "description": "Retrieve a list of all food items that have been fed to Godzilla. Great for understanding his diet trends (spoiler: it's mostly gorillas).",
         "responses": {
           "200": {
@@ -87,7 +87,7 @@
     },
     "/feeding-schedule": {
       "put": {
-        "summary": "Update Godzilla's feeding schedule",
+        "summary": "Update feeding schedule",
         "description": "Modify the feeding schedule to ensure Godzilla remains well-fed and less inclined to *snack on nearby cities*.",
         "requestBody": {
           "description": "New feeding schedule details",

@@ -144,7 +144,7 @@ export const OperationList = () => {
             </Heading>
           </div>
           <div>
-            {Object.entries(versions).length > 0 && (
+            {Object.entries(versions).length > 1 && (
               <Select
                 onValueChange={(version) => navigate(versions[version]!)}
                 defaultValue={version}

@@ -101,7 +101,7 @@
     },
     "/meet-and-greet": {
       "put": {
-        "summary": "Schedule a meet-and-greet with Godzilla",
+        "summary": "Schedule a meet-and-greet",
         "description": "Plan a personal meetup with Godzilla. Be careful—he doesn't like tardiness, and bringing bananas (or gorillas) is strictly prohibited. 🍌❌",
         "requestBody": {
           "required": true,
