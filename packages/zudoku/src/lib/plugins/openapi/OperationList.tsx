@@ -1,6 +1,14 @@
 import { ResultOf } from "@graphql-typed-document-node/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
+import { useNavigate } from "react-router";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
@@ -11,6 +19,7 @@ import StaggeredRender from "./StaggeredRender.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
+import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
   fragment OperationsFragment on OperationItem {
@@ -98,63 +107,24 @@ const AllOperationsQuery = graphql(/* GraphQL */ `
   }
 `);
 
-/**
- * @description Clean up a commonmark formatted description for use in the meta
- * description.
- */
-function cleanDescription(
-  description: string,
-  maxLength: number = 160,
-): string {
-  if (!description) {
-    return "";
-  }
-
-  // Replace Markdown links [text](url) with just "text"
-  description = description.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-
-  // Remove Markdown image syntax: ![alt](url)
-  description = description.replace(/!\[.*?\]\(.*?\)/g, "");
-
-  // Remove other Markdown syntax (e.g., **bold**, _italic_, `code`)
-  description = description.replace(/[_*`~]/g, "");
-
-  // Remove headings (# Heading), blockquotes (> Quote), and horizontal rules (--- or ***)
-  description = description.replace(/^(?:>|\s*#+|-{3,}|\*{3,})/gm, "");
-
-  // Remove any remaining formatting characters
-  description = description.replace(/[|>{}[\]]/g, "");
-
-  // Collapse multiple spaces and trim the text
-  description = description.replace(/\s+/g, " ").trim();
-
-  // Limit to the specified maximum length
-  description = description.substring(0, maxLength);
-
-  // Escape for HTML safety
-  return description
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
 export const OperationList = () => {
-  const { input, type } = useOasConfig();
+  const { input, type, versions, version } = useOasConfig();
   const query = useCreateQuery(AllOperationsQuery, { input, type });
   const result = useSuspenseQuery(query);
   const title = result.data.schema.title;
   const summary = result.data.schema.summary;
   const description = result.data.schema.description;
+  const navigate = useNavigate();
+
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
   // commonmark formatting, making it ill-suited for use in the meta description
   const metaDescription = summary
     ? summary
     : description
-      ? cleanDescription(description)
+      ? sanitizeMarkdownForMetatag(description)
       : undefined;
+
   return (
     <div className="pt-[--padding-content-top]">
       <Helmet>
@@ -166,17 +136,39 @@ export const OperationList = () => {
       <div
         className={cn(ProseClasses, "mb-16 max-w-full prose-img:max-w-prose")}
       >
-        <CategoryHeading>Overview</CategoryHeading>
-        <Heading level={1} id="description" registerSidebarAnchor>
-          {title}
-        </Heading>
+        <div className="flex">
+          <div className="flex-1">
+            <CategoryHeading>Overview</CategoryHeading>
+            <Heading level={1} id="description" registerSidebarAnchor>
+              {title}
+            </Heading>
+          </div>
+          <div>
+            {Object.entries(versions).length > 0 && (
+              <Select
+                onValueChange={(version) => navigate(versions[version]!)}
+                defaultValue={version}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select version" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(versions).map(([version]) => (
+                    <SelectItem key={version} value={version}>
+                      {version}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          </div>
+        </div>
         <Markdown content={result.data.schema.description ?? ""} />
       </div>
       <hr />
-      <div className="my-4 flex justify-end">
+      <div className="my-4 flex items-center justify-end gap-4">
         <Endpoint />
       </div>
-
       {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (

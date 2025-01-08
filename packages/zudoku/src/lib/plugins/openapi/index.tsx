@@ -189,7 +189,17 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
                 element: (
                   <OpenApiRoute
                     client={client}
-                    config={{ ...config, ...input }}
+                    config={{
+                      ...config,
+                      version,
+                      versions: Object.fromEntries(
+                        versions.map((version) => [
+                          version,
+                          basePath + "/v" + version,
+                        ]),
+                      ),
+                      ...input,
+                    }}
                   />
                 ),
               };
@@ -225,11 +235,26 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
                   }
                 : { type: config.type, input: config.input };
 
+            const version = versions.at(0);
+            if (!version) {
+              throw new Error("No version found");
+            }
+
             return {
               element: (
                 <OpenApiRoute
                   client={client}
-                  config={{ ...config, ...input }}
+                  config={{
+                    ...config,
+                    version,
+                    versions: Object.fromEntries(
+                      versions.map((version) => [
+                        version,
+                        basePath + "/v" + version,
+                      ]),
+                    ),
+                    ...input,
+                  }}
                 />
               ),
             };

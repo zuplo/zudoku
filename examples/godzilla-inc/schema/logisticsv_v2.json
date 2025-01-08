@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://api.godzilla.example.com/logistics",
+      "url": "https://api.godzilla.example.com/v2/logistics",
       "description": "Main Logistics API server"
     }
   ],

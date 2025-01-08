@@ -8,7 +8,7 @@ type OasSource =
     }
   | { type: "raw"; input: string };
 
-export type ResolvedOasSource =
+export type ContextOasSource =
   | { type: "url"; input: string }
   | {
       type: "file";
@@ -22,8 +22,10 @@ export type OasPluginConfig = {
   skipPreload?: boolean;
 } & OasSource;
 
-export type ResolvedOasPluginConfig = {
+export type OasPluginContext = {
   server?: string;
   navigationId?: string;
   skipPreload?: boolean;
-} & ResolvedOasSource;
+  version: string;
+  versions: Record<string, string>;
+} & ContextOasSource;
