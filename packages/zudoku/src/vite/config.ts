@@ -50,7 +50,8 @@ const registerApiFileImportDependencies = (
 
   const files = apis
     .filter((c) => c.type === "file")
-    .map((c) => path.posix.join(rootDir, c.input));
+    .flatMap((c) => (Array.isArray(c.input) ? c.input : [c.input]))
+    .map((c) => path.posix.join(rootDir, c));
 
   config.__meta.registerDependency(...files);
 };

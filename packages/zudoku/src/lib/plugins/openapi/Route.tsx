@@ -2,13 +2,13 @@ import { Outlet } from "react-router";
 import type { GraphQLClient } from "./client/GraphQLClient.js";
 import { GraphQLProvider } from "./client/GraphQLContext.js";
 import { OasConfigProvider } from "./context.js";
-import { OasPluginConfig } from "./interfaces.js";
+import { ResolvedOasPluginConfig } from "./interfaces.js";
 
 export const OpenApiRoute = ({
   config,
   client,
 }: {
-  config: OasPluginConfig;
+  config: ResolvedOasPluginConfig;
   client: GraphQLClient;
 }) => (
   <OasConfigProvider value={{ config }}>

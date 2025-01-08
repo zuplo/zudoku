@@ -1,9 +1,9 @@
 import { createContext, useContext } from "react";
-import { OasPluginConfig } from "./interfaces.js";
+import { ResolvedOasPluginConfig } from "./interfaces.js";
 
-const OasContext = createContext<{ config: OasPluginConfig } | undefined>(
-  undefined,
-);
+const OasContext = createContext<
+  { config: ResolvedOasPluginConfig } | undefined
+>(undefined);
 
 export const OasConfigProvider = OasContext.Provider;
 

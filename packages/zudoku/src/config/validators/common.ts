@@ -61,7 +61,10 @@ const ApiSchema = z.union([
     .object({ type: z.literal("url"), input: z.string() })
     .merge(ApiConfigSchema),
   z
-    .object({ type: z.literal("file"), input: z.string() })
+    .object({
+      type: z.literal("file"),
+      input: z.union([z.string(), z.array(z.string())]),
+    })
     .merge(ApiConfigSchema)
     .merge(
       z.object({ postProcessors: ApiPostProcessorSchema.array().optional() }),

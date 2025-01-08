@@ -52,6 +52,8 @@ export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");
 
+  const versions = config.type === "file" ? Object.keys(config.input) : [];
+
   const client = new GraphQLClient(config);
 
   return {
@@ -125,9 +127,18 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       }
 
       try {
+        const version =
+          versions.find((v) => path === `${basePath}/v${v}`) ??
+          Object.keys(config.input)[0];
+
+        if (!version) {
+          throw new Error("No version found");
+        }
+
         const data = await client.fetch(GetCategoriesQuery, {
           type: config.type,
-          input: config.input,
+          input: config.type === "file" ? config.input[version] : config.input,
+          version,
         });
 
         const categories = data.schema.tags
@@ -161,16 +172,66 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
     },
     getRoutes: () =>
       [
+        ...versions.map((version) => {
+          return {
+            path: basePath + "/v" + version,
+            async lazy() {
+              const { OpenApiRoute } = await import("./Route.js");
+              const input =
+                config.type === "file" ? config.input[version] : config.input;
+              if (!input) {
+                throw new Error("No input found");
+              }
+              return {
+                element: (
+                  <OpenApiRoute
+                    client={client}
+                    config={{ ...config, input: input }}
+                  />
+                ),
+              };
+            },
+            children: [
+              {
+                // path: basePath,
+                children: [
+                  {
+                    index: true,
+                    async lazy() {
+                      const { OperationList } = await import(
+                        "./OperationList.js"
+                      );
+                      return { element: <OperationList /> };
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+        }),
         {
+          path: basePath,
           async lazy() {
             const { OpenApiRoute } = await import("./Route.js");
+            const input =
+              config.type === "file"
+                ? Object.values(config.input).at(0)
+                : config.input;
+            if (!input) {
+              throw new Error("No input found");
+            }
             return {
-              element: <OpenApiRoute client={client} config={config} />,
+              element: (
+                <OpenApiRoute
+                  client={client}
+                  config={{ ...config, input: input }}
+                />
+              ),
             };
           },
           children: [
             {
-              path: basePath,
+              // path: basePath,
               children: [
                 {
                   index: true,
