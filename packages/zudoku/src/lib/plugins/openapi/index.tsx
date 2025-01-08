@@ -1,4 +1,4 @@
-import { matchPath, type RouteObject } from "react-router";
+import { matchPath } from "react-router";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 
@@ -128,16 +128,12 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
 
       try {
         const version =
-          versions.find((v) => path === `${basePath}/v${v}`) ??
-          Object.keys(config.input)[0];
-
-        if (!version) {
-          throw new Error("No version found");
-        }
+          versions.find((v) => path === joinPath(basePath, v)) ??
+          Object.keys(config.input).at(0);
 
         const data = await client.fetch(GetCategoriesQuery, {
           type: config.type,
-          input: config.type === "file" ? config.input[version] : config.input,
+          input: config.type === "file" ? config.input[version!] : config.input,
           version,
         });
 
@@ -170,98 +166,32 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
     },
-    getRoutes: () =>
-      [
-        ...versions.map((version) => {
+    getRoutes: () => [
+      {
+        path: basePath + "/:version?",
+        async lazy() {
+          const { OpenApiRoute } = await import("./Route.js");
           return {
-            path: basePath + "/v" + version,
-            async lazy() {
-              const { OpenApiRoute } = await import("./Route.js");
-              const input =
-                config.type === "file"
-                  ? { type: config.type, input: config.input[version]! }
-                  : { type: config.type, input: config.input };
-
-              if (!input.input) {
-                throw new Error("No input found");
-              }
-              return {
-                element: (
-                  <OpenApiRoute
-                    client={client}
-                    config={{
-                      ...config,
-                      version,
-                      versions: Object.fromEntries(
-                        versions.map((version) => [
-                          version,
-                          basePath + "/v" + version,
-                        ]),
-                      ),
-                      ...input,
-                    }}
-                  />
-                ),
-              };
-            },
-            children: [
-              {
-                index: true,
-                async lazy() {
-                  const { OperationList } = await import("./OperationList.js");
-                  return { element: <OperationList /> };
-                },
-              },
-            ],
+            element: (
+              <OpenApiRoute
+                basePath={basePath}
+                versions={versions}
+                client={client}
+                config={config}
+              />
+            ),
           };
-        }),
-        {
-          path: basePath,
-          async lazy() {
-            const { OpenApiRoute } = await import("./Route.js");
-
-            const input =
-              config.type === "file"
-                ? {
-                    type: config.type,
-                    input: Object.values(config.input).at(0)!,
-                  }
-                : { type: config.type, input: config.input };
-
-            const version = versions.at(0);
-            if (!version) {
-              throw new Error("No version found");
-            }
-
-            return {
-              element: (
-                <OpenApiRoute
-                  client={client}
-                  config={{
-                    ...config,
-                    version,
-                    versions: Object.fromEntries(
-                      versions.map((version) => [
-                        version,
-                        basePath + "/v" + version,
-                      ]),
-                    ),
-                    ...input,
-                  }}
-                />
-              ),
-            };
-          },
-          children: [
-            {
-              index: true,
-              async lazy() {
-                const { OperationList } = await import("./OperationList.js");
-                return { element: <OperationList /> };
-              },
-            },
-          ],
         },
-      ] satisfies RouteObject[],
+        children: [
+          {
+            index: true,
+            async lazy() {
+              const { OperationList } = await import("./OperationList.js");
+              return { element: <OperationList /> };
+            },
+          },
+        ],
+      },
+    ],
   };
 };

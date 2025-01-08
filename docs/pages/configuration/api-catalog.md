@@ -95,7 +95,9 @@ const config = {
   catalog: {
     navigationId: "catalog",
     label: "API Catalog",
-    filterItems: (item, { auth: AuthState }) => ,
+    filterItems: (items, { auth: AuthState }) => {
+      return items.filter((items) => items.tags.includes(auth));
+    },
   },
   // ...
 };
