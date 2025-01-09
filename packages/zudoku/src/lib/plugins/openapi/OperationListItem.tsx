@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
@@ -26,6 +26,7 @@ export const OperationListItem = ({
     operation.parameters ?? [],
     (param) => param.in,
   );
+  const parentRef = useRef<HTMLDivElement>(null);
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
@@ -33,7 +34,7 @@ export const OperationListItem = ({
   return (
     <div
       key={operation.operationId}
-      className="grid grid-cols-1 lg:grid-cols-[4fr_3fr] gap-8 items-start border-b-2 mb-16 pb-16"
+      className="grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,3fr)] gap-8 items-start border-b-2 mb-16 pb-16"
     >
       <div className="flex flex-col gap-4">
         <Heading level={2} id={operation.slug} registerSidebarAnchor>
@@ -43,9 +44,25 @@ export const OperationListItem = ({
           <span className={methodForColor(operation.method)}>
             {operation.method.toUpperCase()}
           </span>
-          <div className="font-mono">
-            <span className="text-gray-500">{serverUrl}</span>
-            <span className="text-gray-200">{operation.path}</span>
+          <div
+            ref={parentRef}
+            className="max-w-full truncate flex cursor-pointer"
+            onClick={() => {
+              if (parentRef.current) {
+                const range = document.createRange();
+                range.selectNodeContents(parentRef.current);
+                const selection = window.getSelection();
+                selection?.removeAllRanges();
+                selection?.addRange(range);
+              }
+            }}
+          >
+            <div className="text-neutral-400 dark:text-neutral-500 truncate">
+              {serverUrl}
+            </div>
+            <div className="text-neutral-900 dark:text-neutral-200">
+              {operation.path}
+            </div>
           </div>
         </div>
         {operation.description && (

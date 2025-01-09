@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { useSelectedServerStore } from "../../authentication/state.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
@@ -110,6 +111,7 @@ const AllOperationsQuery = graphql(/* GraphQL */ `
 export const OperationList = () => {
   const { input, type, versions, version } = useOasConfig();
   const query = useCreateQuery(AllOperationsQuery, { input, type });
+  const { selectedServer } = useSelectedServerStore();
   const result = useSuspenseQuery(query);
   const title = result.data.schema.title;
   const summary = result.data.schema.summary;
@@ -185,7 +187,7 @@ export const OperationList = () => {
               <StaggeredRender>
                 {tag.operations.map((fragment) => (
                   <OperationListItem
-                    serverUrl={result.data?.schema.url}
+                    serverUrl={selectedServer ?? result.data.schema.url}
                     key={fragment.slug}
                     operationFragment={fragment}
                   />
