@@ -25,7 +25,10 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         const config = getConfig();
 
         if (config.mode === "standalone") {
-          return `export const configuredApiPlugins = undefined; export const configuredApiCatalogPlugins = undefined;`;
+          return [
+            "export const configuredApiPlugins = [];",
+            "export const configuredApiCatalogPlugins = [];",
+          ].join("\n");
         }
 
         const code = [
