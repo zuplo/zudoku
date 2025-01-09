@@ -26,6 +26,6 @@ export type OasPluginContext = {
   server?: string;
   navigationId?: string;
   skipPreload?: boolean;
-  version: string;
+  version?: string;
   versions: Record<string, string>;
 } & ContextOasSource;

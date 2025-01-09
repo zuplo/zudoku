@@ -30,10 +30,6 @@ export const OpenApiRoute = ({
 
   const currentVersion = version ?? versions.at(0);
 
-  if (!currentVersion) {
-    throw new Error("No version found");
-  }
-
   return (
     <OasConfigProvider
       value={{
