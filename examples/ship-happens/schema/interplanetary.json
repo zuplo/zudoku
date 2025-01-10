@@ -1,0 +1,266 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Interplanetary Shipping API",
+    "description": "This API enables interplanetary shipping capabilities through the Ship Happens platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Ship Happens API Support",
+      "email": "api@sh.example.com",
+      "url": "https://developers.sh.example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.sh.example.com/v1",
+      "description": "Production environment"
+    },
+    {
+      "url": "https://api.staging.sh.example.com/v1",
+      "description": "Staging environment"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "InterplanetaryShipment": {
+        "type": "object",
+        "required": [
+          "originPlanet",
+          "destinationPlanet",
+          "cargo",
+          "shippingClass"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "originPlanet": {
+            "type": "string",
+            "enum": ["Earth", "Mars", "Venus", "Mercury", "Jupiter"]
+          },
+          "destinationPlanet": {
+            "type": "string",
+            "enum": ["Earth", "Mars", "Venus", "Mercury", "Jupiter"]
+          },
+          "cargo": {
+            "$ref": "#/components/schemas/Cargo"
+          },
+          "shippingClass": {
+            "type": "string",
+            "enum": ["STANDARD", "EXPRESS", "PRIORITY"],
+            "description": "Shipping speed class"
+          },
+          "radiationShielding": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether cargo needs radiation shielding"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "SCHEDULED",
+              "LAUNCHED",
+              "IN_TRANSIT",
+              "APPROACHING",
+              "LANDED",
+              "DELIVERED"
+            ],
+            "readOnly": true
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "Cargo": {
+        "type": "object",
+        "required": [
+          "weight",
+          "volume",
+          "category"
+        ],
+        "properties": {
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "description": "Weight in metric tons"
+          },
+          "volume": {
+            "type": "number",
+            "format": "float",
+            "description": "Volume in cubic meters"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "GENERAL",
+              "HAZARDOUS",
+              "BIOLOGICAL",
+              "MINERAL",
+              "EQUIPMENT"
+            ]
+          },
+          "temperatureControl": {
+            "type": "object",
+            "properties": {
+              "required": {
+                "type": "boolean"
+              },
+              "minTemp": {
+                "type": "number",
+                "description": "Minimum temperature in Celsius"
+              },
+              "maxTemp": {
+                "type": "number",
+                "description": "Maximum temperature in Celsius"
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/interplanetary/shipments": {
+      "post": {
+        "tags": ["Interplanetary"],
+        "summary": "Create a shipment",
+        "description": "Creates a new interplanetary shipment with the provided details",
+        "operationId": "createInterplanetaryShipment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterplanetaryShipment"
+              },
+              "example": {
+                "originPlanet": "Earth",
+                "destinationPlanet": "Mars",
+                "cargo": {
+                  "weight": 2.5,
+                  "volume": 3.0,
+                  "category": "EQUIPMENT",
+                  "temperatureControl": {
+                    "required": true,
+                    "minTemp": -10,
+                    "maxTemp": 25
+                  }
+                },
+                "shippingClass": "PRIORITY",
+                "radiationShielding": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shipment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterplanetaryShipment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_INPUT",
+                  "message": "Invalid planet combination or cargo specifications"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interplanetary/shipments/{trackingNumber}": {
+      "get": {
+        "tags": ["Interplanetary"],
+        "summary": "Track shipment",
+        "description": "Get the current status and tracking information for an interplanetary shipment",
+        "operationId": "trackInterplanetaryShipment",
+        "parameters": [
+          {
+            "name": "trackingNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment tracking information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InterplanetaryShipment"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Shipment with tracking number not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 
