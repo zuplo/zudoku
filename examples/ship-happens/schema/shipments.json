@@ -1,0 +1,353 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+      "title": "Shipment API",
+      "description": "This API allows you to create and track shipments through the Ship Happens platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+      "version": "1.0.0",
+      "contact": {
+          "name": "Ship Happens API Support",
+          "email": "api@sh.example.com",
+          "url": "https://developers.sh.example.com"
+      }
+  },
+  "servers": [
+      {
+          "url": "https://api.sh.example.com/v1",
+          "description": "Production environment"
+      },
+      {
+          "url": "https://api.staging.sh.example.com/v1",
+          "description": "Staging environment"
+      },
+      {
+          "url": "https://api.dev.sh.example.com/v1",
+          "description": "Development environment"
+      }
+  ],
+  "security": [
+      {
+          "ApiKeyAuth": []
+      }
+  ],
+  "components": {
+      "securitySchemes": {
+          "ApiKeyAuth": {
+              "type": "apiKey",
+              "in": "header",
+              "name": "X-API-Key"
+          }
+      },
+      "schemas": {
+          "Shipment": {
+              "type": "object",
+              "required": [
+                  "recipientAddress",
+                  "senderAddress",
+                  "packages"
+              ],
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true
+                  },
+                  "recipientAddress": {
+                      "$ref": "#/components/schemas/Address"
+                  },
+                  "senderAddress": {
+                      "$ref": "#/components/schemas/Address"
+                  },
+                  "packages": {
+                      "type": "array",
+                      "items": {
+                          "$ref": "#/components/schemas/Package"
+                      }
+                  },
+                  "status": {
+                      "type": "string",
+                      "enum": [
+                          "CREATED",
+                          "IN_TRANSIT",
+                          "DELIVERED",
+                          "EXCEPTION"
+                      ],
+                      "readOnly": true
+                  },
+                  "trackingNumber": {
+                      "type": "string",
+                      "readOnly": true
+                  },
+                  "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true
+                  }
+              }
+          },
+          "Address": {
+              "type": "object",
+              "required": [
+                  "street",
+                  "city",
+                  "country",
+                  "postalCode"
+              ],
+              "properties": {
+                  "street": {
+                      "type": "string"
+                  },
+                  "city": {
+                      "type": "string"
+                  },
+                  "state": {
+                      "type": "string"
+                  },
+                  "country": {
+                      "type": "string"
+                  },
+                  "postalCode": {
+                      "type": "string"
+                  }
+              }
+          },
+          "Package": {
+              "type": "object",
+              "required": [
+                  "weight",
+                  "dimensions"
+              ],
+              "properties": {
+                  "weight": {
+                      "type": "number",
+                      "format": "float",
+                      "description": "Weight in kilograms"
+                  },
+                  "dimensions": {
+                      "$ref": "#/components/schemas/Dimensions"
+                  }
+              }
+          },
+          "Dimensions": {
+              "type": "object",
+              "required": [
+                  "length",
+                  "width",
+                  "height"
+              ],
+              "properties": {
+                  "length": {
+                      "type": "number",
+                      "format": "float",
+                      "description": "Length in centimeters"
+                  },
+                  "width": {
+                      "type": "number",
+                      "format": "float",
+                      "description": "Width in centimeters"
+                  },
+                  "height": {
+                      "type": "number",
+                      "format": "float",
+                      "description": "Height in centimeters"
+                  }
+              }
+          },
+          "Error": {
+              "type": "object",
+              "required": [
+                  "code",
+                  "message"
+              ],
+              "properties": {
+                  "code": {
+                      "type": "string"
+                  },
+                  "message": {
+                      "type": "string"
+                  }
+              }
+          }
+      }
+  },
+  "paths": {
+      "/shipments": {
+          "post": {
+              "tags": [
+                  "Shipments"
+              ],
+              "summary": "Create a new shipment",
+              "description": "Creates a new shipment with the provided details",
+              "operationId": "createShipment",
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/Shipment"
+                          },
+                          "example": {
+                              "recipientAddress": {
+                                  "street": "123 Delivery St",
+                                  "city": "Shiptown",
+                                  "state": "ST",
+                                  "country": "US",
+                                  "postalCode": "12345"
+                              },
+                              "senderAddress": {
+                                  "street": "456 Sender Ave",
+                                  "city": "Packageville",
+                                  "state": "ST",
+                                  "country": "US",
+                                  "postalCode": "67890"
+                              },
+                              "packages": [
+                                  {
+                                      "weight": 2.5,
+                                      "dimensions": {
+                                          "length": 30,
+                                          "width": 20,
+                                          "height": 15
+                                      }
+                                  }
+                              ]
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Shipment created successfully",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Shipment"
+                              },
+                              "example": {
+                                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                                  "recipientAddress": {
+                                      "street": "123 Delivery St",
+                                      "city": "Shiptown",
+                                      "state": "ST",
+                                      "country": "US",
+                                      "postalCode": "12345"
+                                  },
+                                  "senderAddress": {
+                                      "street": "456 Sender Ave",
+                                      "city": "Packageville",
+                                      "state": "ST",
+                                      "country": "US",
+                                      "postalCode": "67890"
+                                  },
+                                  "packages": [
+                                      {
+                                          "weight": 2.5,
+                                          "dimensions": {
+                                              "length": 30,
+                                              "width": 20,
+                                              "height": 15
+                                          }
+                                      }
+                                  ],
+                                  "status": "CREATED",
+                                  "trackingNumber": "SH123456789",
+                                  "createdAt": "2025-01-09T12:00:00Z"
+                              }
+                          }
+                      }
+                  },
+                  "400": {
+                      "description": "Invalid input",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "code": "INVALID_INPUT",
+                                  "message": "Invalid recipient address provided"
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      },
+      "/shipments/{trackingNumber}": {
+          "get": {
+              "tags": [
+                  "Shipments"
+              ],
+              "summary": "Track a shipment",
+              "description": "Get the current status and tracking information for a shipment",
+              "operationId": "trackShipment",
+              "parameters": [
+                  {
+                      "name": "trackingNumber",
+                      "in": "path",
+                      "required": true,
+                      "schema": {
+                          "type": "string"
+                      },
+                      "example": "SH123456789"
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Shipment tracking information retrieved successfully",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Shipment"
+                              },
+                              "example": {
+                                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                                  "recipientAddress": {
+                                      "street": "123 Delivery St",
+                                      "city": "Shiptown",
+                                      "state": "ST",
+                                      "country": "US",
+                                      "postalCode": "12345"
+                                  },
+                                  "senderAddress": {
+                                      "street": "456 Sender Ave",
+                                      "city": "Packageville",
+                                      "state": "ST",
+                                      "country": "US",
+                                      "postalCode": "67890"
+                                  },
+                                  "packages": [
+                                      {
+                                          "weight": 2.5,
+                                          "dimensions": {
+                                              "length": 30,
+                                              "width": 20,
+                                              "height": 15
+                                          }
+                                      }
+                                  ],
+                                  "status": "IN_TRANSIT",
+                                  "trackingNumber": "SH123456789",
+                                  "createdAt": "2025-01-09T12:00:00Z"
+                              }
+                          }
+                      }
+                  },
+                  "404": {
+                      "description": "Shipment not found",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "code": "NOT_FOUND",
+                                  "message": "Shipment with tracking number SH123456789 not found"
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+      "title": "SWebhook API",
+      "description": "This API allows you to register webhooks to receive real-time updates about your shipments.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n\n## Webhook Events\nThe following events are available for subscription:\n- `shipment.created`\n- `shipment.in_transit`\n- `shipment.delivered`\n- `shipment.exception`\n",
+      "version": "1.0.0",
+      "contact": {
+          "name": "Ship Happens API Support",
+          "email": "api@sh.example.com",
+          "url": "https://developers.sh.example.com"
+      }
+  },
+  "servers": [
+      {
+          "url": "https://api.sh.example.com/v1",
+          "description": "Production environment"
+      },
+      {
+          "url": "https://api.staging.sh.example.com/v1",
+          "description": "Staging environment"
+      },
+      {
+          "url": "https://api.dev.sh.example.com/v1",
+          "description": "Development environment"
+      }
+  ],
+  "security": [
+      {
+          "ApiKeyAuth": []
+      }
+  ],
+  "components": {
+      "securitySchemes": {
+          "ApiKeyAuth": {
+              "type": "apiKey",
+              "in": "header",
+              "name": "X-API-Key"
+          }
+      },
+      "schemas": {
+          "Webhook": {
+              "type": "object",
+              "required": [
+                  "url",
+                  "events"
+              ],
+              "properties": {
+                  "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true
+                  },
+                  "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "description": "The URL where webhook events will be sent"
+                  },
+                  "events": {
+                      "type": "array",
+                      "items": {
+                          "type": "string",
+                          "enum": [
+                              "shipment.created",
+                              "shipment.in_transit",
+                              "shipment.delivered",
+                              "shipment.exception"
+                          ]
+                      }
+                  },
+                  "active": {
+                      "type": "boolean",
+                      "default": true
+                  },
+                  "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true
+                  },
+                  "secret": {
+                      "type": "string",
+                      "writeOnly": true,
+                      "description": "Secret used to sign webhook payloads"
+                  }
+              }
+          },
+          "Error": {
+              "type": "object",
+              "required": [
+                  "code",
+                  "message"
+              ],
+              "properties": {
+                  "code": {
+                      "type": "string"
+                  },
+                  "message": {
+                      "type": "string"
+                  }
+              }
+          }
+      }
+  },
+  "paths": {
+      "/webhooks": {
+          "post": {
+              "tags": [
+                  "Webhooks"
+              ],
+              "summary": "Register a new webhook",
+              "description": "Registers a new webhook endpoint to receive shipment updates.\n\nA secret will be generated and returned in the response. This secret should be used to verify the authenticity of webhook payloads.\n",
+              "operationId": "registerWebhook",
+              "requestBody": {
+                  "required": true,
+                  "content": {
+                      "application/json": {
+                          "schema": {
+                              "$ref": "#/components/schemas/Webhook"
+                          },
+                          "example": {
+                              "url": "https://api.myapp.com/webhooks/shipping",
+                              "events": [
+                                  "shipment.created",
+                                  "shipment.delivered"
+                              ]
+                          }
+                      }
+                  }
+              },
+              "responses": {
+                  "201": {
+                      "description": "Webhook registered successfully",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Webhook"
+                              },
+                              "example": {
+                                  "id": "abcdef12-3456-789a-bcde-f0123456789a",
+                                  "url": "https://api.myapp.com/webhooks/shipping",
+                                  "events": [
+                                      "shipment.created",
+                                      "shipment.delivered"
+                                  ],
+                                  "active": true,
+                                  "createdAt": "2025-01-09T12:00:00Z",
+                                  "secret": "whsec_abcdef123456789"
+                              }
+                          }
+                      }
+                  },
+                  "400": {
+                      "description": "Invalid input",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "code": "INVALID_INPUT",
+                                  "message": "Invalid webhook URL provided"
+                              }
+                          }
+                      }
+                  }
+              }
+          },
+          "get": {
+              "tags": [
+                  "Webhooks"
+              ],
+              "summary": "List all webhooks",
+              "description": "Returns a list of all registered webhooks",
+              "operationId": "listWebhooks",
+              "responses": {
+                  "200": {
+                      "description": "List of webhooks retrieved successfully",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "type": "array",
+                                  "items": {
+                                      "$ref": "#/components/schemas/Webhook"
+                                  }
+                              },
+                              "example": [
+                                  {
+                                      "id": "abcdef12-3456-789a-bcde-f0123456789a",
+                                      "url": "https://api.myapp.com/webhooks/shipping",
+                                      "events": [
+                                          "shipment.created",
+                                          "shipment.delivered"
+                                      ],
+                                      "active": true,
+                                      "createdAt": "2025-01-09T12:00:00Z"
+                                  }
+                              ]
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
