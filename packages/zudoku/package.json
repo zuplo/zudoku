@@ -267,7 +267,7 @@
     "@types/json-schema": "7.0.15",
     "@types/mdast": "4.0.4",
     "@types/mdx": "2.0.13",
-    "@types/node": "20.16.11",
+    "@types/node": "22.10.5",
     "@types/object-hash": "3.0.6",
     "@types/react-is": "catalog:",
     "@types/semver": "7.5.8",
