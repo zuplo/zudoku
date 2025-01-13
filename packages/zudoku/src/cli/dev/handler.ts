@@ -7,6 +7,7 @@ export interface Arguments {
   dir: string;
   port?: number;
   ssr: boolean;
+  open?: boolean;
 }
 
 export async function dev(argv: Arguments) {
@@ -21,7 +22,7 @@ export async function dev(argv: Arguments) {
   }
 
   const dir = path.resolve(process.cwd(), argv.dir);
-  const server = new DevServer({ dir, port, ssr: argv.ssr });
+  const server = new DevServer({ dir, port, ssr: argv.ssr, open: argv.open });
 
   const { vite } = await server.start();
 
