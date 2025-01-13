@@ -1,7 +1,7 @@
 packages:
   - "scripts"
   - "packages/*"
-  - "examples/*"
+  - "examples/**"
   - "website"
   - "docs"
 

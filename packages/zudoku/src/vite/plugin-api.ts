@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { tsImport } from "tsx/esm/api";
 import hashit from "object-hash";
 import { type Plugin } from "vite";
 import yaml from "yaml";
@@ -9,10 +10,27 @@ import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import { ZuploEnv } from "../zuplo/env.js";
 
-const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteApiPlugin = async (
+  getConfig: () => ZudokuPluginOptions,
+): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
+
+  // TODO: For now this is Zuplo specific, but we should make it more generic in the future.
+  // Following options might be possible:
+  // a) Have a processors only file
+  // b) Have a build related config (e.g. Vite, Rehype, Remark, etc.)
+  const zuploProcessors = ZuploEnv.isZuplo
+    ? await tsImport("../zuplo/with-zuplo-processors.ts", import.meta.url)
+        .then((m) => m.default(getConfig().rootDir))
+        .catch((e) => {
+          // eslint-disable-next-line no-console
+          console.warn("Failed to load Zuplo processors", e);
+          return [];
+        })
+    : [];
 
   return {
     name: "zudoku-api-plugins",
@@ -68,7 +86,10 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           const apiMetadata: ApiCatalogItem[] = [];
           for (const apiConfig of apis) {
             if (apiConfig.type === "file") {
-              const postProcessors = apiConfig.postProcessors ?? [];
+              const processors = [
+                ...(apiConfig.postProcessors ?? []),
+                ...zuploProcessors,
+              ];
               const inputs = Array.isArray(apiConfig.input)
                 ? apiConfig.input
                 : [apiConfig.input];
@@ -84,7 +105,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
               const processedSchemas = await Promise.all(
                 inputFiles
                   .map((schema) =>
-                    postProcessors.reduce(
+                    processors.reduce(
                       async (acc, postProcessor) => postProcessor(await acc),
                       schema,
                     ),
