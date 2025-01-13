@@ -166,9 +166,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
     },
-    getRoutes: () => [
-      {
-        path: basePath + "/:version?",
+    getRoutes: () => {
+      const versionsInPath = [null, ...versions];
+
+      return versionsInPath.map((version) => ({
+        path: basePath + (version ? `/${version}` : ""),
         async lazy() {
           const { OpenApiRoute } = await import("./Route.js");
           return {
@@ -191,7 +193,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             },
           },
         ],
-      },
-    ],
+      }));
+    },
   };
 };
