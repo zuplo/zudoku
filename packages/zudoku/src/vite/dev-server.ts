@@ -27,7 +27,14 @@ export class DevServer {
   private currentConfig: LoadedConfig | undefined;
   private terminator: HttpTerminator | undefined;
 
-  constructor(private options: { port: number; dir: string; ssr?: boolean }) {}
+  constructor(
+    private options: {
+      port: number;
+      dir: string;
+      ssr?: boolean;
+      open?: boolean;
+    },
+  ) {}
 
   async start() {
     const app = express();
@@ -42,6 +49,11 @@ export class DevServer {
       configEnv,
       (zudokuConfig) => (this.currentConfig = zudokuConfig),
     );
+
+    viteConfig.server = {
+      ...viteConfig.server,
+      open: this.options.open,
+    };
 
     const vite = await createViteServer(viteConfig);
 

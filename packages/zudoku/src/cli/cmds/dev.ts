@@ -22,6 +22,11 @@ export default {
         type: "boolean",
         describe: "Enable server-side rendering",
         default: true,
+      })
+      .option("open", {
+        type: "boolean",
+        describe: "Automatically open the browser",
+        default: false,
       });
   },
   handler: async (argv: unknown) => {
