@@ -12,7 +12,19 @@ export const useCreateQuery = <TResult, TVariables>(
     throw new Error("useGraphQL must be used within a GraphQLProvider");
   }
 
-  const hash = useMemo(() => hashit(variables[0] ?? {}), [variables]);
+  const hash = useMemo(() => {
+    if (
+      typeof variables[0] === "object" &&
+      variables[0] != null &&
+      "input" in variables[0] &&
+      typeof variables[0].input === "function"
+    ) {
+      // This is a pre-hashed name to ensure that the query key is consistent across server and client
+      return variables[0].input.name;
+    }
+
+    return hashit(variables[0] ?? {});
+  }, [variables]);
 
   return {
     queryFn: () => graphQLClient.fetch(query, ...variables),

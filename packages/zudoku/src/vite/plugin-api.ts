@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import hashit from "object-hash";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
@@ -136,7 +137,9 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
                 `  input: {${Object.entries(versionMap)
                   .map(
                     ([version, path]) =>
-                      `"${version}": () => import("${path}")`,
+                      // The function name is a hash of the file name to ensure that each function has a unique and consistent identifier
+                      // We use this hash when creating a GraphQL query to ensure that the query key is consistent across server and client
+                      `"${version}": function _${hashit(path!)}() { return import("${path}"); }`,
                   )
                   .join(",")}},`,
                 `  navigationId: "${apiConfig.navigationId}",`,
