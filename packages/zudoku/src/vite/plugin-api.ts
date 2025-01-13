@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import hashit from "object-hash";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
