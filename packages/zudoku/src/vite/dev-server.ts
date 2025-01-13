@@ -52,7 +52,6 @@ export class DevServer {
 
     viteConfig.server = {
       ...viteConfig.server,
-      port: this.options.port,
       open: this.options.open,
     };
 
