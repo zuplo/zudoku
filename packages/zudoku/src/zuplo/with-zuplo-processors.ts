@@ -3,13 +3,12 @@ import path from "node:path";
 import { removeExtensions } from "../lib/plugins/openapi/post-processors/removeExtensions.js";
 import { removeParameters } from "../lib/plugins/openapi/post-processors/removeParameters.js";
 import { removePaths } from "../lib/plugins/openapi/post-processors/removePaths.js";
+import { enrichWithZuploData } from "./enrich-with-zuplo.js";
 
 export const getProcessors = async (rootDir: string) => {
-  const _loadedPolicies = await fs.readFile(
-    path.join(rootDir, "../config/policies.json"),
-    "utf-8",
+  const policiesConfig = JSON.parse(
+    await fs.readFile(path.join(rootDir, "../config/policies.json"), "utf-8"),
   );
-  // TODO
 
   return [
     removeExtensions({ keys: ["x-zuplo-route", "x-zuplo-path"] }),
@@ -19,6 +18,8 @@ export const getProcessors = async (rootDir: string) => {
     removeParameters({
       shouldRemove: ({ parameter }) => parameter["x-internal"],
     }),
+    enrichWithZuploData({ policiesConfig }),
+    removeExtensions({ shouldRemove: (key) => key.startsWith("x-zuplo") }),
   ];
 };
 
