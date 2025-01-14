@@ -6,6 +6,8 @@ import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
 import { Button as ButtonImport } from "../ui/Button.js";
 import { Callout as CalloutImport } from "../ui/Callout.js";
+import { Spinner as SpinnerImport } from "./Spinner.js";
+import { Markdown as MarkdownImport } from "./Markdown.js";
 import {
   Bootstrap as BootstrapImport,
   BootstrapStatic as BootstrapStaticImport,
@@ -28,6 +30,8 @@ export const useAuth = /*@__PURE__*/ useAuthState;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 
 export const Callout = /*@__PURE__*/ CalloutImport;
+export const Markdown = /*@__PURE__*/ MarkdownImport;
+export const Spinner = /*@__PURE__*/ SpinnerImport;
 export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;
 export const Button = /*@__PURE__*/ ButtonImport;
-export const Link: typeof LinkImport = /*@__PURE__*/ LinkImport;
+export const Link = /*@__PURE__*/ LinkImport;
