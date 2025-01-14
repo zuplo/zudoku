@@ -13,20 +13,17 @@ export const getProcessors = async (rootDir: string) => {
   );
 
   return [
-    removeExtensions({ keys: ["x-zuplo-route", "x-zuplo-path"] }),
-    removePaths({
-      shouldRemove: ({ operation }) => operation["x-internal"],
-    }),
+    removePaths({ shouldRemove: ({ operation }) => operation["x-internal"] }),
     removeParameters({
       shouldRemove: ({ parameter }) => parameter["x-internal"],
     }),
     enrichWithZuploData({ policiesConfig }),
-    removeExtensions({ shouldRemove: (key) => key.startsWith("x-zuplo") }),
     (spec: RecordAny) => {
       const host = ZuploEnv.host;
       if (!host) return spec;
       return { ...spec, servers: [{ url: `https://${host}` }] };
     },
+    removeExtensions({ shouldRemove: (key) => key.startsWith("x-zuplo") }),
   ];
 };
 

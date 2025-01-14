@@ -6,7 +6,7 @@ interface RemoveParametersOptions {
   // Specific locations to remove parameters from ('query', 'header', 'path', 'cookie')
   in?: string[];
   // Custom filter function
-  shouldRemove?: (parameter: RecordAny) => boolean;
+  shouldRemove?: ({ parameter }: { parameter: RecordAny }) => boolean;
 }
 
 export const removeParameters =
@@ -15,10 +15,10 @@ export const removeParameters =
     traverse(doc, (spec) => {
       // Helper function to filter parameters
       const filterParameters = (parameters: RecordAny[]) =>
-        parameters.filter((param) => {
-          if (names?.includes(param.name)) return false;
-          if (locations?.includes(param.in)) return false;
-          if (shouldRemove?.(param)) return false;
+        parameters.filter((p) => {
+          if (names?.includes(p.name)) return false;
+          if (locations?.includes(p.in)) return false;
+          if (shouldRemove?.({ parameter: p })) return false;
           return true;
         });
 
@@ -36,7 +36,7 @@ export const removeParameters =
                   return (
                     !names?.includes(p.name) &&
                     !locations?.includes(p.in) &&
-                    !shouldRemove?.(p)
+                    !shouldRemove?.({ parameter: p })
                   );
                 },
               ),

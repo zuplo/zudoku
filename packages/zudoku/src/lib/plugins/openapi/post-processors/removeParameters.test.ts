@@ -88,8 +88,8 @@ describe("removeParameters", () => {
 
   it("removes parameters using shouldRemove callback", () => {
     const processed = removeParameters({
-      shouldRemove: (param) =>
-        param.in === "header" && param.name.includes("op"),
+      shouldRemove: ({ parameter }) =>
+        parameter.in === "header" && parameter.name.includes("op"),
     })(baseDoc);
 
     expect(processed.paths["/test"].parameters).toHaveLength(2);
@@ -100,7 +100,7 @@ describe("removeParameters", () => {
   it("combines multiple removal criteria", () => {
     const processed = removeParameters({
       in: ["query", "header"],
-      shouldRemove: (param) => param.name === "pathHeader",
+      shouldRemove: ({ parameter }) => parameter.name === "pathHeader",
     })(baseDoc);
 
     expect(processed.paths["/test"].parameters).toHaveLength(1);
