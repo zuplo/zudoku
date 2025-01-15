@@ -1,26 +1,16 @@
-import { minimatch } from "minimatch";
 import { useEffect } from "react";
-import { useLocation } from "react-router";
+import { matchPath, useLocation } from "react-router";
 import { useAuth } from "../authentication/hook.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { ZudokuError } from "../util/invariant.js";
-
-export function isProtectedRoute(
-  path: string,
-  protectedPatterns?: string[],
-): boolean {
-  if (!protectedPatterns?.length) return false;
-  return protectedPatterns.some((pattern) => minimatch(path, pattern));
-}
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const auth = useAuth();
   const zudoku = useZudoku();
   const location = useLocation();
 
-  const isProtected = isProtectedRoute(
-    location.pathname,
-    zudoku.options.protectedRoutes,
+  const isProtected = zudoku.options.protectedRoutes?.some((path) =>
+    matchPath({ path, end: true }, location.pathname),
   );
 
   useEffect(() => {
