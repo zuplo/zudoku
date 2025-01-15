@@ -120,7 +120,7 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
     <div>
       <div
         className={cn(
-          "fixed inset-0 transition duration-300 overflow-hidden pointer-events-none border-2 border-transparent text-transparent grid place-items-center text-4xl font-semibold",
+          "fixed inset-0 transition duration-200 overflow-hidden pointer-events-none border-2 border-transparent text-transparent grid place-items-center text-4xl font-semibold",
           isDragging &&
             "bg-black/35 text-stroke border-white/10 border-dashed text-white",
         )}
