@@ -682,9 +682,6 @@ importers:
       '@types/react-is':
         specifier: 'catalog:'
         version: 19.0.0
-      '@types/react-router-dom':
-        specifier: ^5.3.3
-        version: 5.3.3
       '@types/semver':
         specifier: 7.5.8
         version: 7.5.8
@@ -3831,9 +3828,6 @@ packages:
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
-  '@types/history@4.7.11':
-    resolution: {integrity: sha512-qjDJRrmvBMiTx+jyLxvLfJU7UznFuokDv4f3WRuriHKERccVpFU+8XMQUAbDzoiJCsmexxRExQeMwwCdamSKDA==}
-
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
 
@@ -3902,12 +3896,6 @@ packages:
 
   '@types/react-is@19.0.0':
     resolution: {integrity: sha512-71dSZeeJ0t3aoPyY9x6i+JNSvg5m9EF2i2OlSZI5QoJuI8Ocgor610i+4A10TQmURR+0vLwcVCEYFpXdzM1Biw==}
-
-  '@types/react-router-dom@5.3.3':
-    resolution: {integrity: sha512-kpqnYK4wcdm5UaWI3fLcELopqLrHgLqNsdpHauzlQktfkHL3npOSwtj1Uz9oKBAzs7lFtVkV8j83voAz2D8fhw==}
-
-  '@types/react-router@5.1.20':
-    resolution: {integrity: sha512-jGjmu/ZqS7FjSH6owMcD5qpq19+1RS9DeVRqfl1FeBMxTDQAGwlMWOcs52NDoXaNKyG3d1cYQFMs9rCrb88o9Q==}
 
   '@types/react@19.0.1':
     resolution: {integrity: sha512-YW6614BDhqbpR5KtUYzTA+zlA7nayzJRA9ljz9CQoxthR0sDisYZLuvSMsil36t4EH/uAt8T52Xb4sVw17G+SQ==}
@@ -12372,8 +12360,6 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
-  '@types/history@4.7.11': {}
-
   '@types/http-errors@2.0.4': {}
 
   '@types/js-yaml@4.0.9': {}
@@ -12439,17 +12425,6 @@ snapshots:
 
   '@types/react-is@19.0.0':
     dependencies:
-      '@types/react': 19.0.1
-
-  '@types/react-router-dom@5.3.3':
-    dependencies:
-      '@types/history': 4.7.11
-      '@types/react': 19.0.1
-      '@types/react-router': 5.1.20
-
-  '@types/react-router@5.1.20':
-    dependencies:
-      '@types/history': 4.7.11
       '@types/react': 19.0.1
 
   '@types/react@19.0.1':
