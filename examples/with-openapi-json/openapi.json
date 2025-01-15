@@ -46,7 +46,12 @@
           "description": "Update an existent pet in the store",
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/Pet" }
+              "schema": { "$ref": "#/components/schemas/Pet" },
+              "example": {
+                "id": "123",
+                "name": "Dog",
+                "status": "available"
+              }
             },
             "application/xml": {
               "schema": { "$ref": "#/components/schemas/Pet" }
