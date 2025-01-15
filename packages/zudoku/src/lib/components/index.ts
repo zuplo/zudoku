@@ -1,7 +1,7 @@
 import { useMDXComponents as useMDXComponentsImport } from "@mdx-js/react";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { Link as LinkImport } from "react-router";
-import { useAuthState } from "../authentication/state.js";
+import { useAuth as useAuthImport } from "../authentication/hook.js";
 import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
 import { Button as ButtonImport } from "../ui/Button.js";
@@ -26,7 +26,7 @@ export const BootstrapStatic = /*@__PURE__*/ BootstrapStaticImport;
 export const Head = /*@__PURE__*/ Helmet;
 
 export const useZudoku = /*@__PURE__*/ useZudokuImport;
-export const useAuth = /*@__PURE__*/ useAuthState;
+export const useAuth = /*@__PURE__*/ useAuthImport;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 
 export const Callout = /*@__PURE__*/ CalloutImport;
