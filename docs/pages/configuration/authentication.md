@@ -11,7 +11,7 @@ To implement the authentication option for your site, add the `authentication` p
 
 ## Protected Routes
 
-You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property takes an array of glob patterns that match the routes you want to protect. When a user tries to access a protected route without being authenticated, they will be redirected to the login page.
+You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property takes an array of path patterns that match the routes you want to protect. When a user tries to access a protected route without being authenticated, they will be redirected to the login page.
 
 ```typescript
 {
@@ -19,20 +19,24 @@ You can protect specific routes in your documentation by adding the `protectedRo
   protectedRoutes: [
     "/admin/*",     // Protect all routes under /admin
     "/settings",    // Protect the settings page
-    "/api/**",      // Protect all API-related routes
-    "/*.secret.*"   // Protect any route with 'secret' in the name
+    "/api/*",       // Protect all API-related routes
+    "/private/:id"  // Protect dynamic routes with parameters
   ],
   // ...
 }
 ```
 
-The glob patterns support the following special characters:
+The path patterns follow React Router's syntax:
 
-- `*` matches any number of characters except `/`
-- `**` matches any number of characters including `/`
-- `?` matches a single character except `/`
-- `[...]` matches any character in the brackets
-- `{...}` matches any pattern in the braces
+- `:param` matches a URL segment up to the next `/`, `?`, or `#`
+- `*` matches zero or more characters up to the next `/`, `?`, or `#`
+- `/*` matches all characters after the pattern
+
+For example:
+
+- `/users/:id` matches `/users/123` or `/users/abc`
+- `/docs/*` matches `/docs/getting-started` or `/docs/api/reference`
+- `/settings` matches only the exact path `/settings`
 
 After logging in, users will be automatically redirected back to the protected route they were trying to access.
 
