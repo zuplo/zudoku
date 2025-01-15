@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { RollupOutput, RollupWatcher } from "rollup";
 import { tsImport } from "tsx/esm/api";
+import { withZuplo } from "../zuplo/with-zuplo.js";
 import { ConfigWithMeta } from "./common.js";
 import { CommonConfig, validateCommonConfig } from "./validators/common.js";
 import { validateConfig } from "./validators/validate.js";
@@ -116,6 +117,9 @@ async function loadDevPortalConfig<TConfig extends CommonConfig>(
 
   // 2. Replace $env() placeholders with actual environment
   config = replaceEnvVariables(config, envVars);
+
+  // 3. Add Zuplo to the config
+  config = withZuplo(config);
 
   return config;
 }

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { tsImport } from "tsx/esm/api";
 import hashit from "object-hash";
+import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
@@ -10,7 +10,6 @@ import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
-import { ZuploEnv } from "../zuplo/env.js";
 
 const viteApiPlugin = async (
   getConfig: () => ZudokuPluginOptions,
@@ -18,13 +17,15 @@ const viteApiPlugin = async (
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
+  const initialConfig = getConfig();
+
   // TODO: For now this is Zuplo specific, but we should make it more generic in the future.
   // Following options might be possible:
   // a) Have a processors only file
   // b) Have a build related config (e.g. Vite, Rehype, Remark, etc.)
-  const zuploProcessors = ZuploEnv.isZuplo
+  const zuploProcessors = initialConfig.isZuplo
     ? await tsImport("../zuplo/with-zuplo-processors.ts", import.meta.url)
-        .then((m) => m.default(getConfig().rootDir))
+        .then((m) => m.default(initialConfig.rootDir))
         .catch((e) => {
           // eslint-disable-next-line no-console
           console.warn("Failed to load Zuplo processors", e);
