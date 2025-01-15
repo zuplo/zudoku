@@ -1,0 +1,422 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Shipping Labels & Stamps API",
+    "description": "This API allows you to create shipping labels and stamps for your shipments.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+    "version": "3.0.0",
+    "contact": {
+      "name": "Ship Happens API Support",
+      "email": "api@sh.example.com",
+      "url": "https://developers.sh.example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.sh.example.com/v1",
+      "description": "Production environment"
+    },
+    {
+      "url": "https://api.staging.sh.example.com/v1",
+      "description": "Staging environment"
+    },
+    {
+      "url": "https://api.dev.sh.example.com/v1",
+      "description": "Development environment"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "Stamp": {
+        "type": "object",
+        "required": ["shipmentId", "format"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "shipmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "format": {
+            "type": "string",
+            "enum": ["PDF", "PNG", "ZPL"]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "Label": {
+        "type": "object",
+        "required": ["shipmentId", "format"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "shipmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "format": {
+            "type": "string",
+            "enum": ["PDF", "PNG", "ZPL"]
+          },
+          "size": {
+            "type": "string",
+            "enum": ["4x6", "6x4", "8.5x11"]
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/stamps": {
+      "post": {
+        "tags": ["Stamps"],
+        "summary": "Create a shipping stamp",
+        "description": "Creates a new shipping stamp for a shipment.\n\nThe generated stamp will be available for download through the returned URL for 24 hours.\n",
+        "operationId": "createStamp",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Stamp"
+              },
+              "examples": {
+                "PDF": {
+                  "value": {
+                    "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                    "format": "PDF"
+                  }
+                },
+                "PNG": {
+                  "value": {
+                    "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                    "format": "PNG"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Stamp created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stamp"
+                },
+                "example": {
+                  "id": "987fcdeb-51a2-43f7-9876-543210abcdef",
+                  "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                  "format": "PDF",
+                  "url": "https://assets.sh.example.com/stamps/stamp-123456.pdf",
+                  "createdAt": "2025-01-09T12:00:00Z",
+                  "expiresAt": "2025-01-10T12:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_INPUT",
+                  "message": "Invalid shipment ID provided"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Shipment with ID 123e4567-e89b-12d3-a456-426614174000 not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/stamps/{id}/invalidate": {
+      "put": {
+        "tags": ["Stamps"],
+        "summary": "Invalidate a shipping stamp",
+        "description": "Invalidates a shipping stamp, making it no longer available for download.",
+        "operationId": "invalidateStamp",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the stamp to invalidate",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Stamp invalidated successfully"
+          },
+          "404": {
+            "description": "Stamp not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Stamp with ID 987fcdeb-51a2-43f7-9876-543210abcdef not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/labels": {
+      "post": {
+        "tags": ["Labels"],
+        "summary": "Create a shipping label",
+        "description": "Creates a new shipping label for a shipment.\n\nThe generated label will be available for download through the returned URL for 24 hours.\n",
+        "operationId": "createLabel",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Label"
+              },
+              "example": {
+                "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                "format": "PDF",
+                "size": "4x6"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Label created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Label"
+                },
+                "example": {
+                  "id": "987fcdeb-51a2-43f7-9876-543210abcdef",
+                  "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                  "format": "PDF",
+                  "size": "4x6",
+                  "url": "https://assets.sh.example.com/labels/label-123456.pdf",
+                  "createdAt": "2025-01-09T12:00:00Z",
+                  "expiresAt": "2025-01-10T12:00:00Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_INPUT",
+                  "message": "Invalid shipment ID or label size provided"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Shipment with ID 123e4567-e89b-12d3-a456-426614174000 not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/labels/{id}/invalidate": {
+      "put": {
+        "tags": ["Labels"],
+        "summary": "Invalidate a shipping label",
+        "description": "Invalidates a shipping label, making it no longer available for download.",
+        "operationId": "invalidateLabel",
+        "parameters": [
+          {
+            "name": "id",
+            "example": "987fcdeb",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the label to invalidate",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Label invalidated successfully"
+          },
+          "404": {
+            "description": "Label not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Label with ID 987fcdeb-51a2-43f7-9876-543210abcdef not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/labels/{id}/trackingnumber": {
+      "get": {
+        "tags": ["Labels"],
+        "summary": "Get tracking number",
+        "description": "Retrieves the tracking number associated with a shipping label.",
+        "operationId": "getLabelTrackingNumber",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the shipping label",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking number retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["trackingNumber", "carrier"],
+                  "properties": {
+                    "trackingNumber": {
+                      "type": "string",
+                      "example": "1Z999AA1234567890"
+                    },
+                    "carrier": {
+                      "type": "string",
+                      "example": "UPS"
+                    },
+                    "trackingUrl": {
+                      "type": "string",
+                      "format": "uri",
+                      "example": "https://www.ups.com/track?tracknum=1Z999AA1234567890"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Label not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Label with ID 987fcdeb-51a2-43f7-9876-543210abcdef not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
