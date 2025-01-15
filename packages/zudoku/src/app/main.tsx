@@ -1,4 +1,4 @@
-import { type RouteObject } from "react-router";
+import { Outlet, type RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -13,8 +13,9 @@ import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import { Layout, RouterError, Zudoku } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { ProtectedRoute } from "../lib/core/ProtectedRoute.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -32,6 +33,7 @@ export const convertZudokuConfigToOptions = (
     !config.page?.logo?.src?.dark;
 
   return {
+    protectedRoutes: config.protectedRoutes,
     page: {
       ...config.page,
       logo: {
@@ -102,6 +104,11 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
       ),
       children: [
         {
+          element: (
+            <ProtectedRoute>
+              <Outlet />
+            </ProtectedRoute>
+          ),
           errorElement: <RouterError />,
           children: routes,
         },

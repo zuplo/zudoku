@@ -9,6 +9,33 @@ If you use a managed authentication service, such as Auth0, Clerk or OpenID you 
 
 To implement the authentication option for your site, add the `authentication` property to the [Zudoku Configuration](./overview.md) file. The configuration is slightly different depending on the authentication provider you use.
 
+## Protected Routes
+
+You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property takes an array of glob patterns that match the routes you want to protect. When a user tries to access a protected route without being authenticated, they will be redirected to the login page.
+
+```typescript
+{
+  // ...
+  protectedRoutes: [
+    "/admin/*",     // Protect all routes under /admin
+    "/settings",    // Protect the settings page
+    "/api/**",      // Protect all API-related routes
+    "/*.secret.*"   // Protect any route with 'secret' in the name
+  ],
+  // ...
+}
+```
+
+The glob patterns support the following special characters:
+
+- `*` matches any number of characters except `/`
+- `**` matches any number of characters including `/`
+- `?` matches a single character except `/`
+- `[...]` matches any character in the brackets
+- `{...}` matches any pattern in the braces
+
+After logging in, users will be automatically redirected back to the protected route they were trying to access.
+
 ### Auth0
 
 For Auth0, you will need the `clientId` associated with the domain you are using.
