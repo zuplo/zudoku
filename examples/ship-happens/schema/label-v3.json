@@ -138,9 +138,19 @@
               "schema": {
                 "$ref": "#/components/schemas/Stamp"
               },
-              "example": {
-                "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
-                "format": "PDF"
+              "examples": {
+                "PDF": {
+                  "value": {
+                    "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                    "format": "PDF"
+                  }
+                },
+                "PNG": {
+                  "value": {
+                    "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                    "format": "PNG"
+                  }
+                }
               }
             }
           }
