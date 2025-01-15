@@ -255,7 +255,8 @@
     "yargs": "17.7.2",
     "zod": "3.23.8",
     "zod-validation-error": "3.4.0",
-    "zustand": "5.0.2"
+    "zustand": "5.0.2",
+    "minimatch": "^9.0.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.3",
@@ -279,7 +280,8 @@
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "5.12.0",
     "typescript": "5.7.2",
-    "vitest": "2.1.8"
+    "vitest": "2.1.8",
+    "@types/minimatch": "^5.1.2"
   },
   "peerDependencies": {
     "react": ">=19",

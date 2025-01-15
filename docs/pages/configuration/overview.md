@@ -29,6 +29,11 @@ const config: ZudokuConfig = {
       },
     ],
   },
+  // Protect specific routes that require authentication
+  protectedRoutes: [
+    "/admin/*", // Protect all routes under /admin
+    "/api/private", // Protect private API documentation
+  ],
   redirects: [{ from: "/", to: "/documentation" }],
   apis: {
     type: "url",
