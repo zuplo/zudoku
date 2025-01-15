@@ -10,7 +10,7 @@ import { SidebarBadge } from "./SidebarBadge.js";
 import { SidebarCategory } from "./SidebarCategory.js";
 
 export const navigationListItem = cva(
-  "flex items-center gap-2 px-[--padding-nav-item] py-1.5 rounded-lg hover:bg-accent transition-colors duration-300",
+  "flex items-center gap-2 px-[--padding-nav-item] py-1.5 rounded-lg hover:bg-accent",
   {
     variants: {
       isActive: {
