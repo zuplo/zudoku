@@ -3,7 +3,7 @@ import { type ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   topNavigation: [
     { id: "documentation", label: "Documentation" },
-    { id: "api", label: "Rick & Morty API" },
+    { id: "api", label: "Rick & Morty API", display: "auth" },
   ],
   sidebar: {
     documentation: [
@@ -14,6 +14,10 @@ const config: ZudokuConfig = {
       },
     ],
   },
+  protectedRoutes: [
+    "/documentation/installation",
+    "/api/**",
+  ],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
     files: "/pages/**/*.mdx",

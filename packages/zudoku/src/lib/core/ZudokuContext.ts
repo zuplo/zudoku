@@ -65,6 +65,7 @@ export type ZudokuContextOptions = {
     components?: MdxComponentsType;
   };
   overrides?: ComponentsContextType;
+  protectedRoutes?: string[];
 };
 
 export class ZudokuContext {
@@ -74,16 +75,16 @@ export class ZudokuContext {
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
   public authentication?: ZudokuContextOptions["authentication"];
-  private navigationPlugins: NavigationPlugin[];
+  private readonly navigationPlugins: NavigationPlugin[];
 
-  constructor(config: ZudokuContextOptions) {
-    this.plugins = config.plugins ?? [];
-    this.topNavigation = config.topNavigation ?? [];
-    this.sidebars = config.sidebars ?? {};
+  constructor(public readonly options: ZudokuContextOptions) {
+    this.plugins = options.plugins ?? [];
+    this.topNavigation = options.topNavigation ?? [];
+    this.sidebars = options.sidebars ?? {};
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
-    this.authentication = config.authentication;
-    this.meta = config.metadata;
-    this.page = config.page;
+    this.authentication = options.authentication;
+    this.meta = options.metadata;
+    this.page = options.page;
   }
 
   initialize = async (): Promise<void> => {

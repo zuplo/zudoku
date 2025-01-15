@@ -295,6 +295,7 @@ const ApiCatalogSchema = z.object({
  * formats.
  */
 export const CommonConfigSchema = z.object({
+  protectedRoutes: z.array(z.string()).optional(),
   basePath: z.string().optional(),
   cdnUrl: z.string().optional(),
   page: PageSchema,
