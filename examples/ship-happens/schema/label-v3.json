@@ -315,6 +315,7 @@
         "parameters": [
           {
             "name": "id",
+            "example": "987fcdeb",
             "in": "path",
             "required": true,
             "description": "The ID of the label to invalidate",
