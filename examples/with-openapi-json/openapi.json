@@ -47,7 +47,7 @@
           "content": {
             "application/json": {
               "schema": { "$ref": "#/components/schemas/Pet" },
-              "example": {
+              "examples": {
                 "id": "123",
                 "name": "Dog",
                 "status": "available"

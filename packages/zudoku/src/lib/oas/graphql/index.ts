@@ -330,7 +330,8 @@ const OperationItem = builder
               mediaType,
               schema: content.schema,
               examples: Object.entries(content.examples ?? {}).map(
-                ([name, value]) => ({ name, value }),
+                ([name, value]) =>
+                  value.value ? { name, ...value } : { name, value },
               ),
               encoding: Object.entries(content.encoding ?? {}).map(
                 ([name, value]) => ({ name, ...value }),
