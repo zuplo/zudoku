@@ -8,6 +8,7 @@ import {
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
 import { cn } from "../../../util/cn.js";
+import { EnumSelector } from "./EnumSelector.js";
 import { InlineInput } from "./InlineInput.js";
 import {
   NO_IDENTITY,
@@ -82,19 +83,45 @@ export const QueryParams = ({
                   <div className="flex justify-between items-center">
                     <Controller
                       control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(e.target.value);
-                            if (e.target.value.length > 0) {
+                      render={({ field }) => {
+                        const currentParam = queryParams.find(
+                          (param) => param.name === fields[i]?.name,
+                        );
+                        const hasEnum =
+                          currentParam?.enum && currentParam.enum.length > 0;
+
+                        if (!hasEnum) {
+                          return (
+                            <Input
+                              {...field}
+                              onChange={(e) => {
+                                field.onChange(e.target.value);
+                                if (e.target.value.length > 0) {
+                                  form.setValue(
+                                    `queryParams.${i}.active`,
+                                    true,
+                                  );
+                                }
+                              }}
+                              placeholder="Enter value"
+                              className="w-full border-0 shadow-none text-xs font-mono"
+                            />
+                          );
+                        }
+
+                        const enumValues = currentParam.enum ?? [];
+
+                        return (
+                          <EnumSelector
+                            value={field.value}
+                            enumValues={enumValues}
+                            onChange={field.onChange}
+                            onValueSelected={() => {
                               form.setValue(`queryParams.${i}.active`, true);
-                            }
-                          }}
-                          placeholder="Enter value"
-                          className="w-full border-0 shadow-none text-xs font-mono"
-                        />
-                      )}
+                            }}
+                          />
+                        );
+                      }}
                       name={`queryParams.${i}.value`}
                     />
                     <Controller
