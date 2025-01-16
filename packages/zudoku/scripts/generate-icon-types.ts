@@ -1,9 +1,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { format } from "prettier";
 import * as ts from "typescript";
 
 const path = import.meta.resolve("lucide-react/dynamicIconImports.js");
-const filePath = new URL(path).pathname;
+const filePath = fileURLToPath(new URL(path));
 const fileContent = readFileSync(filePath, "utf-8");
 
 const sourceFile = ts.createSourceFile(
@@ -27,8 +28,7 @@ visit(sourceFile);
 let typeDefinition = `export type IconNames = ${iconNames.map((name) => `"${name}"`).join(" | ")};`;
 typeDefinition = await format(typeDefinition, { parser: "typescript" });
 
-const outputPath = new URL(
-  "../src/config/validators/icon-types.ts",
-  import.meta.url,
-).pathname;
+const outputPath = fileURLToPath(
+  new URL("../src/config/validators/icon-types.ts", import.meta.url),
+);
 writeFileSync(outputPath, typeDefinition);
