@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Button } from "../../../ui/Button.js";
 import {
   Command,
   CommandEmpty,
@@ -33,22 +32,22 @@ export const EnumSelector = ({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <button
+          type="button"
           role="combobox"
           className={cn(
-            "w-full justify-between border-0 shadow-none text-xs font-mono",
+            "px-3 py-2 w-full border-0 shadow-none text-xs font-mono text-start",
             !value && "text-muted-foreground",
           )}
         >
-          {value || "Select value..."}
-        </Button>
+          {value || "Select value"}
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
         <Command>
           <CommandInput
-            placeholder="Search values..."
-            className="h-9"
+            placeholder="Enter value"
+            className="h-9 bg-transparent"
             onValueChange={setSearchValue}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
