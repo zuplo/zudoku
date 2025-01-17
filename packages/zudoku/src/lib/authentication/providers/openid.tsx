@@ -1,6 +1,7 @@
 import logger from "loglevel";
 import * as oauth from "oauth4webapi";
 import { OpenIDAuthenticationConfig } from "../../../config/config.js";
+import { ClientOnly } from "../../components/ClientOnly.js";
 import {
   AuthenticationProvider,
   AuthenticationProviderInitializer,
@@ -32,7 +33,11 @@ class OpenIdAuthPlugin extends AuthenticationPlugin {
       ...super.getRoutes(),
       {
         path: this.callbackUrlPath,
-        element: <CallbackHandler handleCallback={this.handleCallback} />,
+        element: (
+          <ClientOnly>
+            <CallbackHandler handleCallback={this.handleCallback} />
+          </ClientOnly>
+        ),
       },
     ];
   }
