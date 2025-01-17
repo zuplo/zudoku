@@ -42,12 +42,27 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
 
   schema = traverse(schema, (sub) => {
     if (sub.example !== undefined) {
-      sub.examples = {
-        default: sub.example,
-      };
+      const isExampleObject =
+        typeof sub.example === "object" &&
+        (sub.example.summary !== undefined ||
+          sub.example.description !== undefined ||
+          sub.example.value !== undefined ||
+          sub.example.externalValue !== undefined);
+
+      const exampleValue = isExampleObject
+        ? sub.example
+        : { value: sub.example };
+
+      if (!sub.examples) {
+        sub.examples = { default: exampleValue };
+      } else {
+        sub.examples = {
+          default: exampleValue,
+          ...sub.examples,
+        };
+      }
       delete sub.example;
     }
-
     return sub;
   });
 

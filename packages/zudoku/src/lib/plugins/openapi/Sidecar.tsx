@@ -191,10 +191,8 @@ export const Sidecar = ({
           </span>
           {isOnScreen && (
             <PlaygroundDialogWrapper
-              server={result.data.schema.url ?? ""}
-              servers={
-                result.data.schema.servers.map((server) => server.url) ?? []
-              }
+              server={result.data.schema.url}
+              servers={result.data.schema.servers.map((server) => server.url)}
               operation={operation}
             />
           )}
