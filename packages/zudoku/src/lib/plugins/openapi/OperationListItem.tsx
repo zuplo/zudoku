@@ -57,9 +57,11 @@ export const OperationListItem = ({
               }
             }}
           >
-            <div className="text-neutral-400 dark:text-neutral-500 truncate">
-              {serverUrl}
-            </div>
+            {serverUrl && (
+              <div className="text-neutral-400 dark:text-neutral-500 truncate">
+                {serverUrl}
+              </div>
+            )}
             <div className="text-neutral-900 dark:text-neutral-200">
               {operation.path}
             </div>
