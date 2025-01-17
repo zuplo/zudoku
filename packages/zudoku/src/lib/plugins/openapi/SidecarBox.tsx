@@ -7,10 +7,7 @@ type BaseComponentProps<T = unknown> = PropsWithChildren<
 
 export const Root = ({ children, className }: BaseComponentProps) => (
   <div
-    className={cn(
-      "rounded-lg overflow-hidden border dark:border-transparent",
-      className,
-    )}
+    className={cn("rounded-xl overflow-hidden border border-border", className)}
   >
     {children}
   </div>
@@ -19,7 +16,7 @@ export const Root = ({ children, className }: BaseComponentProps) => (
 export const Head = ({ children, className }: BaseComponentProps) => (
   <div
     className={cn(
-      "border-b dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-700 p-2",
+      "border-b bg-muted dark:bg-transparent text-card-foreground p-3",
       className,
     )}
   >
@@ -28,20 +25,11 @@ export const Head = ({ children, className }: BaseComponentProps) => (
 );
 
 export const Body = ({ children, className }: BaseComponentProps) => (
-  <div
-    className={cn("bg-zinc-50 dark:bg-zinc-800 overflow-auto p-2", className)}
-  >
-    {children}
-  </div>
+  <div className={cn("bg-card overflow-auto p-2", className)}>{children}</div>
 );
 
 export const Footer = ({ children, className }: BaseComponentProps) => (
-  <div
-    className={cn(
-      "border-t dark:border-zinc-600 bg-zinc-100 dark:bg-zinc-700 p-2",
-      className,
-    )}
-  >
+  <div className={cn("border-t bg-muted dark:bg-transparent p-3", className)}>
     {children}
   </div>
 );

@@ -58,10 +58,12 @@ const config: ZudokuConfig = {
   },
   theme: {
     light: {
-      primary: "#FF6F56",
+      primary: "#FF00BD",
+      primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#FF6F56",
+      primary: "#FF00BD",
+      primaryForeground: "#FFFFFF",
     },
   },
 };

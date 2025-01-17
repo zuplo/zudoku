@@ -43,23 +43,21 @@ export const CollapsibleCode = ({
       <CollapsibleContent
         forceMount
         className={cn(
-          "relative overflow-hidden",
+          "relative overflow-hidden group",
           !open && isOverflowing && "max-h-[--max-height]",
         )}
       >
         {!open && isOverflowing && (
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/90 dark:to-zinc-800/90 z-10"></div>
+          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/90 dark:to-zinc-800/90 z-10 group-hover:to-primary/20"></div>
         )}
         <div ref={contentRef}>{children}</div>
         {!open && isOverflowing && (
           <CollapsibleTrigger
-            className="absolute inset-0 grid place-items-center z-10"
+            className="absolute inset-0 grid place-items-center z-10 cursor-pointer peer"
             asChild
           >
             <div>
-              <Button className="bg-primary/70 border border-accent-foreground/25">
-                Expand code
-              </Button>
+              <Button variant="outline">Expand code</Button>
             </div>
           </CollapsibleTrigger>
         )}
