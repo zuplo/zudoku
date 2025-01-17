@@ -10,6 +10,16 @@ const config: ZudokuConfig = {
       dismissible: true,
     },
   },
+  theme: {
+    light: {
+      primary: "#1D48E5",
+      primaryForeground: "#FFFFFF",
+    },
+    dark: {
+      primary: "#1D48E5",
+      primaryForeground: "#FFFFFF",
+    },
+  },
   mdx: {
     components: { DocusaurusDocsLicense },
   },
