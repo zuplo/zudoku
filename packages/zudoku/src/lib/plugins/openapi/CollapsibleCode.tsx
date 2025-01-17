@@ -1,3 +1,4 @@
+import { FoldVerticalIcon, UnfoldVerticalIcon } from "lucide-react";
 import { type CSSProperties, type ReactNode, useRef, useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import {
@@ -48,7 +49,7 @@ export const CollapsibleCode = ({
         )}
       >
         {!open && isOverflowing && (
-          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/90 dark:to-zinc-800/90 z-10 group-hover:to-primary/20"></div>
+          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/90 dark:to-zinc-800/90 z-10 group-hover:to-transparent"></div>
         )}
         <div ref={contentRef}>{children}</div>
         {!open && isOverflowing && (
@@ -57,7 +58,10 @@ export const CollapsibleCode = ({
             asChild
           >
             <div>
-              <Button variant="outline">Expand code</Button>
+              <Button variant="outline" className="hidden group-hover:flex">
+                <UnfoldVerticalIcon size={14} className="mr-1.5" />
+                Click to expand
+              </Button>
             </div>
           </CollapsibleTrigger>
         )}
@@ -67,8 +71,9 @@ export const CollapsibleCode = ({
           className={cn("flex justify-center w-full mb-2", !open && "hidden")}
         >
           <CollapsibleTrigger asChild>
-            <Button className="border border-accent-foreground/25">
-              Collapse code
+            <Button variant="outline" size="sm">
+              Collapse
+              <FoldVerticalIcon size={14} className="ml-1.5" />
             </Button>
           </CollapsibleTrigger>
         </div>
