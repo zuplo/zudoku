@@ -3,7 +3,6 @@ import type { ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   page: {
     banner: {
-      color: "white",
       message: (
         <div className="text-center">
           We're announcing 🧑‍🚀 inter-galactic shipping ✨ for 3025!
@@ -59,17 +58,12 @@ const config: ZudokuConfig = {
   },
   theme: {
     light: {
-      primary: "#FF6F56",
-      accent: "#cc5945",
+      primary: "#FF00BD",
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      cardForeground: "#FFFFFF",
-      primary: "#FFFFFF",
-      accent: "#cc5945",
-      primaryForeground: "#000000",
-      background: "#0F0F0F",
-      border: "#2D2D2D",
+      primary: "#FF00BD",
+      primaryForeground: "#FFFFFF",
     },
   },
 };

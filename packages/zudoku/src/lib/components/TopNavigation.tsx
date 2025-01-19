@@ -30,7 +30,7 @@ export const TopNavigation = () => {
 
   return (
     <Suspense>
-      <nav className="hidden lg:block border-b text-sm px-12 h-[--top-nav-height]">
+      <nav className="hidden lg:block text-sm px-12 h-[--top-nav-height]">
         <ul className="flex flex-row items-center gap-8">
           {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
             <li key={item.id}>
@@ -78,7 +78,7 @@ export const TopNavItem = ({
     <NavLink
       className={({ isPending }) =>
         cx(
-          "block lg:py-3.5 font-medium -mb-px border-b-2",
+          "block lg:py-3.5 font-medium -mb-px",
           isActive || isPending
             ? "border-primary text-foreground"
             : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",

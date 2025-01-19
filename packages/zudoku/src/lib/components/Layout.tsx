@@ -66,7 +66,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div className="w-full max-w-screen-2xl mx-auto px-4 lg:px-12">
+      <div className="w-full max-w-screen-2xl mx-auto px-4 lg:px-12 border-l border-r">
         {showSpinner ? (
           <LoadingFallback />
         ) : (
