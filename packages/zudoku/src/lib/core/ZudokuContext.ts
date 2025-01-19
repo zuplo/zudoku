@@ -14,8 +14,13 @@ import {
   type ZudokuPlugin,
 } from "./plugins.js";
 
+export interface AuthorizationInit {
+  headers: Record<string, string>;
+  queryParams: Record<string, string>;
+}
+
 export interface ApiIdentity {
-  authorizeRequest: (request: Request) => Request;
+  getAuthorizationInit: (request: Request) => AuthorizationInit;
   label: string;
   id: string;
 }
@@ -101,7 +106,24 @@ export class ZudokuContext {
         .map((plugin) => plugin.getIdentities(this)),
     );
 
-    return keys.flat();
+    return keys.flat().map((identity) => ({
+      ...identity,
+      authorizeRequest: (request: Request) => {
+        const { headers, queryParams } = identity.getAuthorizationInit(request);
+
+        for (const [key, value] of Object.entries(headers)) {
+          request.headers.append(key, value);
+        }
+
+        const url = new URL(request.url);
+
+        for (const [key, value] of Object.entries(queryParams)) {
+          url.searchParams.set(key, value);
+        }
+
+        return new Request(url.toString(), request);
+      },
+    }));
   };
 
   getPluginSidebar = async (path: string) => {
