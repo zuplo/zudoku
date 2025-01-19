@@ -1,6 +1,11 @@
+# This file was generated. Do not edit manually.
+
 schema {
   query: Query
 }
+
+"Indicates exactly one field must be supplied and this field must not be `null`."
+directive @oneOf on INPUT_OBJECT
 
 type EncodingItem {
   allowReserved: Boolean
@@ -18,16 +23,6 @@ type ExampleItem {
   summary: String
   value: JSON
 }
-
-"""
-The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-"""
-scalar JSON
-
-"""
-The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
-"""
-scalar JSONObject
 
 type MediaTypeObject {
   encoding: [EncodingItem!]
@@ -49,13 +44,6 @@ type OperationItem {
   slug: String!
   summary: String
   tags: [TagItem!]
-}
-
-enum ParameterIn {
-  cookie
-  header
-  path
-  query
 }
 
 type ParameterItem {
@@ -98,17 +86,13 @@ type ResponseItem {
 type Schema {
   description: String
   openapi: String!
-  operations(
-    method: String
-    operationId: String
-    path: String
-    tag: String
-  ): [OperationItem!]!
+  operations(method: String, operationId: String, path: String, tag: String): [OperationItem!]!
   paths: [PathItem!]!
   servers: [Server!]!
+  summary: String
   tags(name: String): [SchemaTag!]!
   title: String!
-  url: String!
+  url: String
   version: String!
 }
 
@@ -116,12 +100,6 @@ type SchemaTag {
   description: String
   name: String
   operations: [OperationItem!]!
-}
-
-enum SchemaType {
-  file
-  raw
-  url
 }
 
 type Server {
@@ -133,3 +111,22 @@ type TagItem {
   description: String
   name: String!
 }
+
+enum ParameterIn {
+  cookie
+  header
+  path
+  query
+}
+
+enum SchemaType {
+  file
+  raw
+  url
+}
+
+"The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."
+scalar JSON
+
+"The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."
+scalar JSONObject
