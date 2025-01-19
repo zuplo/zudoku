@@ -265,6 +265,16 @@ export async function getViteConfig(
             : undefined,
       },
     },
+    experimental: config.cdnUrl
+      ? {
+          renderBuiltUrl(filename, { type, hostType }) {
+            if (type === "asset" && (hostType === "js" || hostType === "css")) {
+              return new URL(filename, config.cdnUrl).href;
+            }
+            return { relative: true };
+          },
+        }
+      : undefined,
     optimizeDeps: {
       entries: [
         configEnv.isSsrBuild

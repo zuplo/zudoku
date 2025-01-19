@@ -296,6 +296,7 @@ const ApiCatalogSchema = z.object({
  */
 export const CommonConfigSchema = z.object({
   basePath: z.string().optional(),
+  cdnUrl: z.string().optional(),
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),
