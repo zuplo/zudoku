@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { Card } from "zudoku/ui/Card.js";
 import { Markdown } from "../../components/Markdown.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
 import { ColorizedParam } from "./ColorizedParam.js";
@@ -13,6 +15,32 @@ const getParameterSchema = (
   return {
     type: "string",
   };
+};
+
+const EnumValues = ({ values }: { values: any[] }) => {
+  const [showAllEnums, setShowAllEnums] = useState(false);
+
+  if (values.length <= 5 || showAllEnums) {
+    return (
+      <div>
+        <span className="text-muted-foreground">enum</span>
+        <Card className="rounded-lg bg-card/75 text-sm px-1 py-0.5 inline-block">
+          <span className="text-xs">{values.join(", ")}</span>
+        </Card>
+      </div>
+    );
+  }
+  return (
+    <button
+      onClick={(e) => {
+        e.preventDefault();
+        setShowAllEnums(true);
+      }}
+      className="py-px px-1.5 font-medium bg-primary/75 text-xs text-muted rounded-lg"
+    >
+      {values.length} enum
+    </button>
+  );
 };
 
 export type ParameterListItemResult = NonNullable<
@@ -45,16 +73,19 @@ export const ParameterListItem = ({
           )}
         </code>
         {parameter.required && (
-          <span className="py-px px-1.5 font-medium bg-primary/75 text-muted rounded-lg">
+          <span className="py-px px-1.5 font-medium bg-primary/75 text-xs text-muted rounded-lg">
             required
           </span>
         )}
         {paramSchema.type && (
-          <span className="text-muted-foreground">
-            {paramSchema.type === "array"
-              ? `${paramSchema.items.type}[]`
-              : paramSchema.type}
-          </span>
+          <div className="flex justify-between w-full gap-4">
+            <div className="text-muted-foreground flex items-center">
+              {paramSchema.type === "array"
+                ? `${paramSchema.items.type}[]`
+                : paramSchema.type}
+            </div>
+            {paramSchema.enum && <EnumValues values={paramSchema.enum} />}
+          </div>
         )}
       </div>
       {parameter.description && (
