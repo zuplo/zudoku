@@ -142,7 +142,8 @@ export const Sidecar = ({
 
   const code = useMemo(() => {
     const example = requestBodyContent?.[0]?.schema
-      ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
+      ? (requestBodyContent.at(0)?.examples?.at(0)?.value ??
+        generateSchemaExample(requestBodyContent[0].schema as SchemaObject))
       : undefined;
 
     const snippet = new HTTPSnippet({
