@@ -4,28 +4,34 @@ import { removeExtensions } from "./removeExtensions.js";
 const baseDoc = {
   openapi: "3.1.0",
   "x-root-ext": "remove me",
+  "x-zuplo-ext": "remove me too",
   info: {
     title: "Test API",
     version: "1.0.0",
     "x-info-ext": "remove me",
+    "x-zuplo-info": "remove me too",
   },
   paths: {
     "/test": {
       "x-path-ext": "remove me",
+      "x-zuplo-path": "remove me too",
       parameters: [
         {
           name: "param1",
           in: "query",
           schema: { type: "string" },
           "x-param-ext": "remove me",
+          "x-zuplo-param": "remove me too",
         },
       ],
       get: {
         "x-operation-ext": "remove me",
+        "x-zuplo-route": "remove me too",
         responses: {
           "200": {
             description: "OK",
             "x-response-ext": "remove me",
+            "x-zuplo-response": "remove me too",
           },
         },
         parameters: [
@@ -34,6 +40,7 @@ const baseDoc = {
             in: "header",
             schema: { type: "string" },
             "x-op-param-ext": "remove me",
+            "x-zuplo-param": "remove me too",
           },
         ],
       },
@@ -43,6 +50,7 @@ const baseDoc = {
     {
       name: "example",
       "x-tag-ext": "remove me",
+      "x-zuplo-tag": "remove me too",
     },
   ],
   components: {
@@ -52,6 +60,7 @@ const baseDoc = {
         name: "api_key",
         in: "header",
         "x-security-ext": "remove me",
+        "x-zuplo-security": "remove me too",
       },
     },
   },
@@ -140,5 +149,54 @@ describe("removeExtensions", () => {
     const processed = removeExtensions()(docWithoutExtensions);
 
     expect(processed).toEqual(docWithoutExtensions);
+  });
+
+  it("removes extensions based on shouldRemove callback", () => {
+    const processed = removeExtensions({
+      shouldRemove: (key) => key.startsWith("x-zuplo"),
+    })(baseDoc);
+
+    // Should remove x-zuplo extensions
+    const removedExtensions = [
+      "x-zuplo-ext",
+      "info.x-zuplo-info",
+      "paths./test.x-zuplo-path",
+      "paths./test.parameters.0.x-zuplo-param",
+      "paths./test.get.x-zuplo-route",
+      "paths./test.get.responses.200.x-zuplo-response",
+      "paths./test.get.parameters.0.x-zuplo-param",
+      "tags.0.x-zuplo-tag",
+      "components.securitySchemes.ApiKeyAuth.x-zuplo-security",
+    ];
+
+    // Should keep other x- extensions
+    const keptExtensions = [
+      "x-root-ext",
+      "info.x-info-ext",
+      "paths./test.x-path-ext",
+      "paths./test.parameters.0.x-param-ext",
+      "paths./test.get.x-operation-ext",
+      "paths./test.get.responses.200.x-response-ext",
+      "paths./test.get.parameters.0.x-op-param-ext",
+      "tags.0.x-tag-ext",
+      "components.securitySchemes.ApiKeyAuth.x-security-ext",
+    ];
+
+    removedExtensions.forEach((ext) => {
+      expect(processed).not.toHaveProperty(ext.split("."));
+    });
+
+    keptExtensions.forEach((ext) => {
+      expect(processed).toHaveProperty(ext.split("."));
+    });
+
+    // Assert that non-x- fields remain unchanged
+    expect(processed).toHaveProperty("openapi", "3.1.0");
+    expect(processed).toHaveProperty("info.title", "Test API");
+    expect(processed).toHaveProperty(
+      "paths./test.get.responses.200.description",
+      "OK",
+    );
+    expect(processed).toHaveProperty("tags.0.name", "example");
   });
 });
