@@ -52,6 +52,26 @@ const clerkAuth: AuthenticationProviderInitializer<
     clerkApi = new Clerk(clerkPubKey);
 
     await clerkApi.load();
+
+    if (clerkApi.user) {
+      const verifiedEmail = clerkApi.user.emailAddresses.find(
+        (email) => email.verification.status === "verified",
+      );
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: clerkApi.user.id,
+          name: clerkApi.user.fullName ?? undefined,
+          email:
+            verifiedEmail?.emailAddress ??
+            clerkApi.user.emailAddresses[0]?.emailAddress,
+          emailVerified: verifiedEmail !== undefined,
+          pictureUrl: clerkApi.user.imageUrl,
+        },
+      });
+    }
+
     return clerkApi;
   })();
 
@@ -73,6 +93,12 @@ const clerkAuth: AuthenticationProviderInitializer<
       await ensureLoaded;
       await clerkApi.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
+      });
+      useAuthState.setState({
+        isAuthenticated: false,
+        isPending: false,
+        profile: null,
+        providerData: null,
       });
     },
     signIn: async () => {
