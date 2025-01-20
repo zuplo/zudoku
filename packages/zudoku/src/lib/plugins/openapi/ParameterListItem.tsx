@@ -45,7 +45,7 @@ export const ParameterListItem = ({
           )}
         </code>
         {parameter.required && (
-          <span className="py-px px-1.5 font-medium bg-primary/75 text-muted rounded-lg">
+          <span className="py-px px-1.5 font-medium bg-primary/75 text-primary-foreground rounded-lg">
             required
           </span>
         )}

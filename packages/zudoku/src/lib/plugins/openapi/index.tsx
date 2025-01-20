@@ -151,6 +151,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               badge: {
                 label: operation.method,
                 color: MethodColorMap[operation.method.toLowerCase()]!,
+                invert: true,
               },
             })),
           }));

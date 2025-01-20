@@ -15,6 +15,7 @@ export const SidebarWrapper = forwardRef<
       "scrollbar peer hidden lg:flex flex-col fixed text-sm overflow-y-auto shrink-0 border-r pr-10",
       "-mx-[--padding-nav-item] pb-20 pt-[--padding-content-top]",
       "w-[--side-nav-width] h-[calc(100%-var(--header-height))] scroll-pt-2 gap-2",
+      !pushMainContent && "border-r-0",
       className,
     )}
     ref={ref}
