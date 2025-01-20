@@ -49,7 +49,7 @@ export const CollapsibleCode = ({
         )}
       >
         {!open && isOverflowing && (
-          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/90 dark:to-zinc-800/90 z-10 group-hover:to-transparent"></div>
+          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/60 dark:to-zinc-950/90 z-10 group-hover:to-transparent"></div>
         )}
         <div ref={contentRef}>{children}</div>
         {!open && isOverflowing && (

@@ -66,7 +66,7 @@ export const SidebarCategory = ({
           className={navigationListItem({
             isActive: false,
             className: [
-              "text-start",
+              "text-start font-medium",
               isCollapsible
                 ? "cursor-pointer"
                 : "cursor-default hover:bg-transparent",
@@ -112,14 +112,10 @@ export const SidebarCategory = ({
         className={cn(
           // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
           hasInteracted && "CollapsibleContent",
-          "ms-6 my-1",
+          "my-1",
         )}
       >
-        <ul
-          className={
-            "relative after:absolute after:-left-[--padding-nav-item] after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border"
-          }
-        >
+        <ul className={"relative"}>
           {category.items.map((item) => (
             <SidebarItem
               key={

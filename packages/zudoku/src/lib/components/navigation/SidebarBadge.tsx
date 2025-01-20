@@ -10,20 +10,32 @@ export const ColorMap = {
   gray: "bg-gray-400 dark:bg-gray-600",
 };
 
+export const ColorMapInvert = {
+  green: "text-green-500 dark:text-green-600",
+  blue: "text-sky-400 dark:text-sky-600",
+  yellow: "text-yellow-400 dark:text-yellow-600",
+  red: "text-red-400 dark:text-red-600",
+  purple: "text-purple-400 dark:text-purple-600",
+  indigo: "text-indigo-400 dark:text-indigo-600",
+  gray: "text-gray-400 dark:text-gray-600",
+};
+
 export const SidebarBadge = ({
   color,
   label,
   className,
+  invert,
 }: {
   color: keyof typeof ColorMap;
   label: string;
   className?: string;
+  invert?: boolean;
 }) => {
   return (
     <span
       className={cn(
         "mt-0.5 flex items-center duration-200 transition-opacity text-center uppercase font-mono text-[0.65rem] font-bold rounded text-background dark:text-zinc-50 h-4 px-1",
-        ColorMap[color],
+        invert ? ColorMapInvert[color] : ColorMap[color],
         className,
       )}
     >
