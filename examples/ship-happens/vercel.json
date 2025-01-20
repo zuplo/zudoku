@@ -1,0 +1,8 @@
+{
+  "framework": null,
+  "devCommand": "npx nx run ship-happens:dev",
+  "buildCommand": "npx nx run ship-happens:build",
+  "outputDirectory": "dist",
+  "installCommand": "pnpm install",
+  "cleanUrls": true
+}
