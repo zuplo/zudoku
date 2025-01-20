@@ -329,9 +329,12 @@ const OperationItem = builder
             ([mediaType, content]) => ({
               mediaType,
               schema: content.schema,
-              examples: Object.entries(content.examples ?? {}).map(
-                ([name, value]) => ({ name, ...value }),
-              ),
+              examples: content.examples
+                ? Object.entries(content.examples).map(([name, value]) => ({
+                    name,
+                    ...(typeof value === "string" ? { value } : value),
+                  }))
+                : [],
               encoding: Object.entries(content.encoding ?? {}).map(
                 ([name, value]) => ({ name, ...value }),
               ),
@@ -351,9 +354,12 @@ const OperationItem = builder
                 ([mediaType, { schema, examples }]) => ({
                   mediaType,
                   schema,
-                  examples: Object.entries(examples ?? {}).map(
-                    ([name, value]) => ({ name, ...value }),
-                  ),
+                  examples: examples
+                    ? Object.entries(examples).map(([name, value]) => ({
+                        name,
+                        ...(typeof value === "string" ? { value } : value),
+                      }))
+                    : [],
                 }),
               ),
               headers: response.headers,
@@ -379,7 +385,10 @@ const OperationItem = builder
 const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
   fields: (t) => ({
     openapi: t.string({ resolve: (root) => root.openapi }),
-    url: t.string({ resolve: (root) => root.servers?.at(0)?.url ?? "/" }),
+    url: t.string({
+      resolve: (root) => root.servers?.at(0)?.url,
+      nullable: true,
+    }),
     servers: t.field({
       type: [ServerItem],
       resolve: (root) => root.servers ?? [],

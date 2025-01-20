@@ -52,6 +52,8 @@ export const Endpoint = () => {
 
   const { servers } = result.data.schema;
 
+  if (servers.length === 0) return null;
+
   if (servers.length === 1) {
     return (
       <div className="flex items-center gap-2">
