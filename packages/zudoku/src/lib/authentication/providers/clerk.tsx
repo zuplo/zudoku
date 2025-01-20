@@ -16,14 +16,19 @@ class ClerkAuthPlugin extends AuthenticationPlugin {
     }
 
     if (clerk.session) {
+      const verifiedEmail = clerk.session.user.emailAddresses.find(
+        (email) => email.verification.status === "verified",
+      );
       useAuthState.setState({
         isAuthenticated: true,
         isPending: false,
         profile: {
           sub: clerk.session.user.id,
           name: clerk.session.user.fullName ?? undefined,
-          email: clerk.session.user.emailAddresses[0]?.emailAddress,
-          emailVerified: false, // TODO: Check this
+          email:
+            verifiedEmail?.emailAddress ??
+            clerk.session.user.emailAddresses[0]?.emailAddress,
+          emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerk.session.user.imageUrl,
         },
       });
