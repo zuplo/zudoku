@@ -23,18 +23,21 @@ const throwIfError = (response: GraphQLResponse<unknown>) => {
 export class GraphQLClient {
   constructor(private readonly config: OpenApiPluginOptions) {}
 
-  #initializeLocalServer = () =>
-    import("./createServer.js").then((m) => m.createServer());
+  #getLocalServer = async () => {
+    if (!localServerPromise) {
+      localServerPromise = import("./createServer.js").then((m) =>
+        m.createServer(this.config),
+      );
+    }
+    return localServerPromise;
+  };
 
   #executeFetch = async (init: RequestInit): Promise<Response> => {
     if (this.config.server) {
       return fetch(this.config.server, init);
     }
 
-    if (!localServerPromise) {
-      localServerPromise = this.#initializeLocalServer();
-    }
-    const localServer = await localServerPromise;
+    const localServer = await this.#getLocalServer();
     return localServer.fetch("http://localhost/graphql", init);
   };
 

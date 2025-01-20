@@ -1,13 +1,17 @@
 import { useLogger } from "@envelop/core";
 import { createGraphQLServer } from "../../../oas/graphql/index.js";
+import type { OpenApiPluginOptions } from "../index.js";
 
 const map = new Map<string, number>();
 
 /**
  * Creates the GraphQL server
  */
-export const createServer = () =>
+export const createServer = (config: OpenApiPluginOptions) =>
   createGraphQLServer({
+    context: {
+      schemaImports: config.schemaImports,
+    },
     plugins: [
       // eslint-disable-next-line react-hooks/rules-of-hooks
       useLogger({

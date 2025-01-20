@@ -7,6 +7,7 @@ import { CirclePlayIcon, LogInIcon } from "lucide-react";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
+import type { SchemaImports } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
 import { joinPath } from "../../util/joinPath.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
@@ -45,7 +46,9 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
   head: "gray",
 };
 
-export type OpenApiPluginOptions = OasPluginConfig;
+export type OpenApiPluginOptions = OasPluginConfig & {
+  schemaImports?: SchemaImports;
+};
 
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");

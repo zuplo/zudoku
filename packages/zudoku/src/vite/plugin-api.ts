@@ -173,13 +173,17 @@ const viteApiPlugin = async (
                 }
 
                 code.push(
-                  "configuredApiPlugins.push(openApiPlugin(",
-                  JSON.stringify({
-                    type: "file",
-                    input: versionMaps[apiConfig.navigationId],
-                    navigationId: apiConfig.navigationId,
-                  }),
-                  "));",
+                  "configuredApiPlugins.push(openApiPlugin({",
+                  `  type: "file",`,
+                  `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
+                  `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
+                  `  schemaImports: {`,
+                  ...Array.from(schemaMap.entries()).map(
+                    ([key, schemaPath]) =>
+                      `    "${key}": () => import("${schemaPath}"),`,
+                  ),
+                  `  },`,
+                  "}));",
                 );
               } else {
                 code.push(
@@ -243,25 +247,6 @@ const viteApiPlugin = async (
 
           return code.join("\n");
         }
-      },
-    },
-    {
-      name: "zudoku-schemas",
-      resolveId(id) {
-        if (id === virtualSchemasModuleId) {
-          return resolvedVirtualSchemasModuleId;
-        }
-      },
-      load(id) {
-        if (id !== resolvedVirtualSchemasModuleId) return;
-
-        return [
-          "export const imports = {",
-          ...Array.from(schemaMap.entries()).map(([key, schemaPath]) => {
-            return `  "${key}": () => import("${schemaPath}"),`;
-          }),
-          "};",
-        ].join("\n");
       },
     },
   ];

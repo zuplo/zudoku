@@ -56,6 +56,11 @@ export const createOperationSlug = (
   );
 };
 
+export type SchemaImports = Record<
+  string,
+  () => Promise<{ schema: OpenAPIDocument }>
+>;
+
 const builder = new SchemaBuilder<{
   Scalars: {
     JSON: any;
@@ -63,6 +68,7 @@ const builder = new SchemaBuilder<{
   };
   Context: {
     schema: OpenAPIDocument;
+    schemaImports?: SchemaImports;
   };
 }>({});
 
@@ -449,9 +455,7 @@ builder.queryType({
         let schema: OpenAPIDocument;
 
         if (args.type === "file" && typeof args.input === "string") {
-          const { imports } = await import("virtual:zudoku-schemas");
-
-          const loadSchema = imports[args.input];
+          const loadSchema = ctx.schemaImports?.[args.input];
 
           if (!loadSchema) {
             throw new Error(`No schema loader found for path: ${args.input}`);
