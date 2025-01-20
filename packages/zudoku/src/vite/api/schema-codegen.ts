@@ -2,13 +2,13 @@ import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 
 // Find all $ref occurrences in the schema and assign them unique variable names
 const createLocalRefMap = (obj: RecordAny) => {
-  const refMap = new Map<string, string>();
+  const refMap = new Map<string, number>();
   let refCounter = 0;
 
   traverse(obj, (node) => {
     if (typeof node.$ref === "string" && node.$ref.startsWith("#/")) {
       if (!refMap.has(node.$ref)) {
-        refMap.set(node.$ref, `__ref_${refCounter++}`);
+        refMap.set(node.$ref, refCounter++);
       }
     }
     return node;
@@ -18,7 +18,7 @@ const createLocalRefMap = (obj: RecordAny) => {
 };
 
 // Replace all $ref occurrences with a special marker that will be transformed into a reference to the __refMap lookup
-const setRefMarkers = (obj: RecordAny, refMap: Map<string, string>) =>
+const setRefMarkers = (obj: RecordAny, refMap: Map<string, number>) =>
   traverse<string | RecordAny>(obj, (node) => {
     if (node.$ref && typeof node.$ref === "string" && refMap.has(node.$ref)) {
       return `__refMap:${node.$ref}`;
@@ -27,7 +27,7 @@ const setRefMarkers = (obj: RecordAny, refMap: Map<string, string>) =>
   });
 
 // Replace the marker strings with actual __refMap lookups in the generated code
-const replaceRefMarkers = (code: string): string =>
+const replaceRefMarkers = (code: string) =>
   code.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
 
 const lookup = (schema: RecordAny, path: string) => {
@@ -57,25 +57,25 @@ export const generateCode = async (schema: RecordAny) => {
 
   const str = (obj: unknown) => JSON.stringify(obj, null, 2);
 
-  for (const name of refMap.values()) {
-    lines.push(`let ${name} = {};`);
-  }
+  lines.push(
+    `const __refs = Array.from({ length: ${refMap.size} }, () => ({}));`,
+  );
 
   lines.push(
     "const __refMap = {",
     Array.from(refMap)
-      .map(([refPath, name]) => `  "${refPath}": ${name}`)
+      .map(([refPath, index]) => `  "${refPath}": __refs[${index}]`)
       .join(",\n"),
     "};",
   );
 
-  for (const [refPath, name] of refMap) {
+  for (const [refPath, index] of refMap) {
     const value = lookup(schema, refPath);
     const transformedValue = setRefMarkers(value, refMap);
 
     lines.push(
       // Use assign so that the object identity is maintained and correctly resolves circular references
-      `Object.assign(${name}, ${replaceRefMarkers(str(transformedValue))});`,
+      `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue))});`,
     );
   }
 

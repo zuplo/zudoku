@@ -195,13 +195,12 @@ describe("Generate OpenAPI schema module", () => {
 
     const code = await generateCode(input);
     expect(code).toMatchInlineSnapshot(`
-      "let __ref_0 = {};
-      let __ref_1 = {};
+      "const __refs = Array.from({ length: 2 }, () => ({}));
       const __refMap = {
-        "#/definitions/pet": __ref_0,
-        "#/definitions/thing": __ref_1
+        "#/definitions/pet": __refs[0],
+        "#/definitions/thing": __refs[1]
       };
-      Object.assign(__ref_0, {
+      Object.assign(__refs[0], {
         "title": "pet",
         "type": "object",
         "properties": {
@@ -222,7 +221,7 @@ describe("Generate OpenAPI schema module", () => {
           }
         }
       });
-      Object.assign(__ref_1, __refMap["#/definitions/thing"]);
+      Object.assign(__refs[1], __refMap["#/definitions/thing"]);
       export const schema = {
         "definitions": {
           "child": {
