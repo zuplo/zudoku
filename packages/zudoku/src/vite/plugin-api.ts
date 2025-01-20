@@ -1,200 +1,267 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import hashit from "object-hash";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import { validate } from "../lib/oas/parser/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import { generateCode } from "./api/schema-codegen.js";
 
-const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+type ProcessedSchema = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  schema: any;
+  version: string;
+  inputPath: string;
+};
+
+const schemaMap = new Map<string, string>();
+
+async function processSchemas(
+  config: ZudokuPluginOptions,
+): Promise<Record<string, ProcessedSchema[]>> {
+  const tmpDir = path.posix.join(
+    config.rootDir,
+    "node_modules/.zudoku/processed",
+  );
+  await fs.rm(tmpDir, { recursive: true, force: true });
+  await fs.mkdir(tmpDir, { recursive: true });
+
+  if (!config.apis) return {};
+
+  const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
+  const processedSchemas: Record<string, ProcessedSchema[]> = {};
+
+  for (const apiConfig of apis) {
+    if (apiConfig.type !== "file" || !apiConfig.navigationId) {
+      continue;
+    }
+
+    const postProcessors = apiConfig.postProcessors ?? [];
+    const inputs = Array.isArray(apiConfig.input)
+      ? apiConfig.input
+      : [apiConfig.input];
+
+    const inputFiles = await Promise.all(
+      inputs.map(async (input) =>
+        /\.ya?ml$/.test(input)
+          ? yaml.parse(await fs.readFile(input, "utf-8"))
+          : JSON.parse(await fs.readFile(input, "utf-8")),
+      ),
+    );
+
+    const processedInputs = await Promise.all(
+      inputFiles.map(async (schema, index) => {
+        const processedSchema = await postProcessors.reduce(
+          async (acc, postProcessor) => postProcessor(await acc),
+          schema,
+        );
+
+        const inputPath = inputs[index]!;
+        const processedPath = path.posix.join(
+          tmpDir,
+          `${path.basename(inputPath)}.js`,
+        );
+
+        const code = await generateCode(processedSchema);
+        await fs.writeFile(processedPath, code);
+        schemaMap.set(inputPath, processedPath);
+
+        return {
+          schema: processedSchema,
+          version: processedSchema.info.version || "default",
+          inputPath,
+        } satisfies ProcessedSchema;
+      }),
+    );
+
+    if (processedInputs.length === 0) {
+      throw new Error("No schema found");
+    }
+
+    processedSchemas[apiConfig.navigationId] = processedInputs;
+  }
+
+  return processedSchemas;
+}
+
+const viteApiPlugin = async (
+  getConfig: () => ZudokuPluginOptions,
+): Promise<Plugin[]> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
-  return {
-    name: "zudoku-api-plugins",
-    resolveId(id) {
-      if (id === virtualModuleId) {
-        return resolvedVirtualModuleId;
-      }
-    },
-    async load(id, options) {
-      if (id === resolvedVirtualModuleId) {
-        const config = getConfig();
+  const virtualSchemasModuleId = "virtual:zudoku-schemas";
+  const resolvedVirtualSchemasModuleId = "\0" + virtualSchemasModuleId;
 
-        if (config.mode === "standalone") {
-          return [
-            "export const configuredApiPlugins = [];",
-            "export const configuredApiCatalogPlugins = [];",
-          ].join("\n");
+  const processedSchemas = await processSchemas(getConfig());
+
+  return [
+    {
+      name: "zudoku-api-plugins",
+      resolveId(id) {
+        if (id === virtualModuleId) {
+          return resolvedVirtualModuleId;
         }
+      },
+      async load(id) {
+        if (id === resolvedVirtualModuleId) {
+          const config = getConfig();
 
-        const code = [
-          `import config from "virtual:zudoku-config";`,
-          `import { openApiPlugin } from "zudoku/plugins/openapi";`,
-          `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
-          `const configuredApiPlugins = [];`,
-          `const configuredApiCatalogPlugins = [];`,
-        ];
+          if (config.mode === "standalone") {
+            return [
+              "export const configuredApiPlugins = [];",
+              "export const configuredApiCatalogPlugins = [];",
+            ].join("\n");
+          }
 
-        if (config.apis) {
-          const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-          const catalogs = Array.isArray(config.catalogs)
-            ? config.catalogs
-            : [config.catalogs];
+          const code = [
+            `import config from "virtual:zudoku-config";`,
+            `import { openApiPlugin } from "zudoku/plugins/openapi";`,
+            `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
+            `const configuredApiPlugins = [];`,
+            `const configuredApiCatalogPlugins = [];`,
+          ];
 
-          const categories = apis
-            .flatMap((api) => api.categories ?? [])
-            .reduce((acc, catalog) => {
-              if (!acc.has(catalog.label)) {
-                acc.set(catalog.label, new Set(catalog.tags));
-              }
-              for (const tag of catalog.tags) {
-                acc.get(catalog.label)?.add(tag);
-              }
-              return acc;
-            }, new Map<string, Set<string>>());
+          if (config.apis) {
+            const apis = Array.isArray(config.apis)
+              ? config.apis
+              : [config.apis];
+            const apiMetadata: ApiCatalogItem[] = [];
+            const versionMaps: Record<string, Record<string, string>> = {};
 
-          const tmpDir = path.posix.join(
-            config.rootDir,
-            "node_modules/.zudoku/processed",
-          );
-          await fs.rm(tmpDir, { recursive: true, force: true });
-          await fs.mkdir(tmpDir, { recursive: true });
+            for (const apiConfig of apis) {
+              if (apiConfig.type === "file" && apiConfig.navigationId) {
+                const schemas = processedSchemas[apiConfig.navigationId];
+                if (!schemas?.length) continue;
 
-          const apiMetadata: ApiCatalogItem[] = [];
-          for (const apiConfig of apis) {
-            if (apiConfig.type === "file") {
-              const postProcessors = apiConfig.postProcessors ?? [];
-              const inputs = Array.isArray(apiConfig.input)
-                ? apiConfig.input
-                : [apiConfig.input];
+                const latestSchema = schemas[0]?.schema;
+                if (!latestSchema?.info) continue;
 
-              const inputFiles = await Promise.all(
-                inputs.map(async (input) =>
-                  /\.ya?ml$/.test(input)
-                    ? yaml.parse(await fs.readFile(input, "utf-8"))
-                    : JSON.parse(await fs.readFile(input, "utf-8")),
-                ),
-              );
-
-              const processedSchemas = await Promise.all(
-                inputFiles
-                  .map((schema) =>
-                    postProcessors.reduce(
-                      async (acc, postProcessor) => postProcessor(await acc),
-                      schema,
-                    ),
-                  )
-                  .map(async (schema) => await validate(schema)),
-              );
-
-              const latestSchema = processedSchemas.at(0);
-
-              if (!latestSchema) {
-                throw new Error("No schema found");
-              }
-
-              if (apiConfig.navigationId) {
                 apiMetadata.push({
                   path: apiConfig.navigationId,
                   label: latestSchema.info.title,
                   description: latestSchema.info.description ?? "",
                   categories: apiConfig.categories ?? [],
                 });
+
+                const versionMap = Object.fromEntries(
+                  schemas.map((processed) => [
+                    processed.version,
+                    processed.inputPath,
+                  ]),
+                );
+
+                if (Object.keys(versionMap).length > 0) {
+                  versionMaps[apiConfig.navigationId] = versionMap;
+                }
               }
+            }
 
-              const processedFilePaths = inputs.map((input) =>
-                path.posix.join(tmpDir, `${path.basename(input)}.json`),
-              );
+            // Generate API plugin code
+            for (const apiConfig of apis) {
+              if (apiConfig.type === "file") {
+                if (
+                  !apiConfig.navigationId ||
+                  !versionMaps[apiConfig.navigationId]
+                ) {
+                  continue;
+                }
 
-              const versionMap = Object.fromEntries(
-                processedSchemas.map((schema, index) => [
-                  schema.info.version || "default",
-                  processedFilePaths[index],
-                ]),
-              );
-
-              if (Object.keys(versionMap).length === 0) {
-                throw new Error("No schema versions found");
+                code.push(
+                  "configuredApiPlugins.push(openApiPlugin(",
+                  JSON.stringify({
+                    type: "file",
+                    input: versionMaps[apiConfig.navigationId],
+                    navigationId: apiConfig.navigationId,
+                  }),
+                  "));",
+                );
+              } else {
+                code.push(
+                  `configuredApiPlugins.push(openApiPlugin(${JSON.stringify(apiConfig)}));`,
+                );
               }
+            }
 
-              await Promise.all(
-                processedSchemas.map((schema, i) => {
-                  if (!processedFilePaths[i]) {
-                    throw new Error("No processed file path found");
+            if (config.catalogs) {
+              const catalogs = Array.isArray(config.catalogs)
+                ? config.catalogs
+                : [config.catalogs];
+
+              const categories = apis
+                .flatMap((api) => api.categories ?? [])
+                .reduce((acc, catalog) => {
+                  if (!acc.has(catalog.label)) {
+                    acc.set(catalog.label ?? "", new Set(catalog.tags));
                   }
-                  fs.writeFile(processedFilePaths[i], JSON.stringify(schema));
+                  for (const tag of catalog.tags) {
+                    acc.get(catalog.label ?? "")?.add(tag);
+                  }
+                  return acc;
+                }, new Map<string, Set<string>>());
+
+              const categoryList = Array.from(categories.entries()).map(
+                ([label, tags]) => ({
+                  label,
+                  tags: Array.from(tags),
                 }),
               );
 
-              code.push(
-                "configuredApiPlugins.push(openApiPlugin({",
-                '  type: "file",',
-                `  input: {${Object.entries(versionMap)
-                  .map(
-                    ([version, path]) =>
-                      // The function name is a hash of the file name to ensure that each function has a unique and consistent identifier
-                      // We use this hash when creating a GraphQL query to ensure that the query key is consistent across server and client
-                      `"${version}": function _${hashit(path!)}() { return import("${path}"); }`,
-                  )
-                  .join(",")}},`,
-                `  navigationId: "${apiConfig.navigationId}",`,
-                "}));",
-              );
-            } else {
-              code.push(
-                `// @ts-ignore`, // To make tests pass
-                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({
-                  ...apiConfig,
-                  inMemory: options?.ssr ?? config.mode === "internal",
-                })}));`,
-              );
+              for (let i = 0; i < catalogs.length; i++) {
+                const catalog = catalogs[i];
+                if (!catalog) {
+                  continue;
+                }
+                const apiCatalogConfig: ApiCatalogPluginOptions = {
+                  ...catalog,
+                  items: apiMetadata,
+                  label: catalog.label,
+                  categories: categoryList,
+                  filterCatalogItems: catalog.filterItems,
+                };
+
+                code.push(
+                  `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
+                  `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
+                  `  filterCatalogItems: Array.isArray(config.catalogs)`,
+                  `    ? config.catalogs[${i}].filterItems`,
+                  `    : config.catalogs.filterItems,`,
+                  `}));`,
+                );
+              }
             }
           }
 
-          const categoryList = Array.from(categories.entries()).map(
-            ([label, tags]) => ({
-              label,
-              tags: Array.from(tags),
-            }),
+          code.push(
+            `export { configuredApiPlugins, configuredApiCatalogPlugins };`,
           );
 
-          for (let i = 0; i < catalogs.length; i++) {
-            const catalog = catalogs[i];
-            if (!catalog) {
-              continue;
-            }
-            const apiCatalogConfig: ApiCatalogPluginOptions = {
-              ...catalog,
-              items: apiMetadata,
-              label: catalog.label,
-              categories: categoryList,
-              filterCatalogItems: catalog.filterItems,
-            };
-
-            code.push(
-              `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
-              `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
-              `  filterCatalogItems: Array.isArray(config.catalogs)`,
-              `    ? config.catalogs[${i}].filterItems`,
-              `    : config.catalogs.filterItems,`,
-              `}));`,
-            );
-          }
+          return code.join("\n");
         }
-
-        code.push(
-          `export { configuredApiPlugins, configuredApiCatalogPlugins };`,
-        );
-
-        return code.join("\n");
-      }
+      },
     },
-  };
+    {
+      name: "zudoku-schemas",
+      resolveId(id) {
+        if (id === virtualSchemasModuleId) {
+          return resolvedVirtualSchemasModuleId;
+        }
+      },
+      load(id) {
+        if (id !== resolvedVirtualSchemasModuleId) return;
+
+        return [
+          "export const imports = {",
+          ...Array.from(schemaMap.entries()).map(([key, schemaPath]) => {
+            return `  "${key}": () => import("${schemaPath}"),`;
+          }),
+          "};",
+        ].join("\n");
+      },
+    },
+  ];
 };
 
 export default viteApiPlugin;
