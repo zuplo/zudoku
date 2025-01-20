@@ -89,167 +89,161 @@ async function processSchemas(
   return processedSchemas;
 }
 
-const viteApiPlugin = async (
-  getConfig: () => ZudokuPluginOptions,
-): Promise<Plugin[]> => {
+const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
-  const virtualSchemasModuleId = "virtual:zudoku-schemas";
-  const resolvedVirtualSchemasModuleId = "\0" + virtualSchemasModuleId;
+  let processedSchemas: Awaited<ReturnType<typeof processSchemas>>;
 
-  const processedSchemas = await processSchemas(getConfig());
+  return {
+    name: "zudoku-api-plugins",
+    async buildStart() {
+      processedSchemas = await processSchemas(getConfig());
+    },
+    resolveId(id) {
+      if (id === virtualModuleId) {
+        return resolvedVirtualModuleId;
+      }
+    },
+    async load(id) {
+      if (id === resolvedVirtualModuleId) {
+        const config = getConfig();
 
-  return [
-    {
-      name: "zudoku-api-plugins",
-      resolveId(id) {
-        if (id === virtualModuleId) {
-          return resolvedVirtualModuleId;
+        if (config.mode === "standalone") {
+          return [
+            "export const configuredApiPlugins = [];",
+            "export const configuredApiCatalogPlugins = [];",
+          ].join("\n");
         }
-      },
-      async load(id) {
-        if (id === resolvedVirtualModuleId) {
-          const config = getConfig();
 
-          if (config.mode === "standalone") {
-            return [
-              "export const configuredApiPlugins = [];",
-              "export const configuredApiCatalogPlugins = [];",
-            ].join("\n");
-          }
+        const code = [
+          `import config from "virtual:zudoku-config";`,
+          `import { openApiPlugin } from "zudoku/plugins/openapi";`,
+          `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
+          `const configuredApiPlugins = [];`,
+          `const configuredApiCatalogPlugins = [];`,
+        ];
 
-          const code = [
-            `import config from "virtual:zudoku-config";`,
-            `import { openApiPlugin } from "zudoku/plugins/openapi";`,
-            `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
-            `const configuredApiPlugins = [];`,
-            `const configuredApiCatalogPlugins = [];`,
-          ];
+        if (config.apis) {
+          const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
+          const apiMetadata: ApiCatalogItem[] = [];
+          const versionMaps: Record<string, Record<string, string>> = {};
 
-          if (config.apis) {
-            const apis = Array.isArray(config.apis)
-              ? config.apis
-              : [config.apis];
-            const apiMetadata: ApiCatalogItem[] = [];
-            const versionMaps: Record<string, Record<string, string>> = {};
+          for (const apiConfig of apis) {
+            if (apiConfig.type === "file" && apiConfig.navigationId) {
+              const schemas = processedSchemas[apiConfig.navigationId];
+              if (!schemas?.length) continue;
 
-            for (const apiConfig of apis) {
-              if (apiConfig.type === "file" && apiConfig.navigationId) {
-                const schemas = processedSchemas[apiConfig.navigationId];
-                if (!schemas?.length) continue;
+              const latestSchema = schemas[0]?.schema;
+              if (!latestSchema?.info) continue;
 
-                const latestSchema = schemas[0]?.schema;
-                if (!latestSchema?.info) continue;
+              apiMetadata.push({
+                path: apiConfig.navigationId,
+                label: latestSchema.info.title,
+                description: latestSchema.info.description ?? "",
+                categories: apiConfig.categories ?? [],
+              });
 
-                apiMetadata.push({
-                  path: apiConfig.navigationId,
-                  label: latestSchema.info.title,
-                  description: latestSchema.info.description ?? "",
-                  categories: apiConfig.categories ?? [],
-                });
-
-                const versionMap = Object.fromEntries(
-                  schemas.map((processed) => [
-                    processed.version,
-                    processed.inputPath,
-                  ]),
-                );
-
-                if (Object.keys(versionMap).length > 0) {
-                  versionMaps[apiConfig.navigationId] = versionMap;
-                }
-              }
-            }
-
-            // Generate API plugin code
-            for (const apiConfig of apis) {
-              if (apiConfig.type === "file") {
-                if (
-                  !apiConfig.navigationId ||
-                  !versionMaps[apiConfig.navigationId]
-                ) {
-                  continue;
-                }
-
-                code.push(
-                  "configuredApiPlugins.push(openApiPlugin({",
-                  `  type: "file",`,
-                  `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
-                  `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
-                  `  schemaImports: {`,
-                  ...Array.from(schemaMap.entries()).map(
-                    ([key, schemaPath]) =>
-                      `    "${key}": () => import("${schemaPath}"),`,
-                  ),
-                  `  },`,
-                  "}));",
-                );
-              } else {
-                code.push(
-                  `configuredApiPlugins.push(openApiPlugin(${JSON.stringify(apiConfig)}));`,
-                );
-              }
-            }
-
-            if (config.catalogs) {
-              const catalogs = Array.isArray(config.catalogs)
-                ? config.catalogs
-                : [config.catalogs];
-
-              const categories = apis
-                .flatMap((api) => api.categories ?? [])
-                .reduce((acc, catalog) => {
-                  if (!acc.has(catalog.label)) {
-                    acc.set(catalog.label ?? "", new Set(catalog.tags));
-                  }
-                  for (const tag of catalog.tags) {
-                    acc.get(catalog.label ?? "")?.add(tag);
-                  }
-                  return acc;
-                }, new Map<string, Set<string>>());
-
-              const categoryList = Array.from(categories.entries()).map(
-                ([label, tags]) => ({
-                  label,
-                  tags: Array.from(tags),
-                }),
+              const versionMap = Object.fromEntries(
+                schemas.map((processed) => [
+                  processed.version,
+                  processed.inputPath,
+                ]),
               );
 
-              for (let i = 0; i < catalogs.length; i++) {
-                const catalog = catalogs[i];
-                if (!catalog) {
-                  continue;
-                }
-                const apiCatalogConfig: ApiCatalogPluginOptions = {
-                  ...catalog,
-                  items: apiMetadata,
-                  label: catalog.label,
-                  categories: categoryList,
-                  filterCatalogItems: catalog.filterItems,
-                };
-
-                code.push(
-                  `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
-                  `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
-                  `  filterCatalogItems: Array.isArray(config.catalogs)`,
-                  `    ? config.catalogs[${i}].filterItems`,
-                  `    : config.catalogs.filterItems,`,
-                  `}));`,
-                );
+              if (Object.keys(versionMap).length > 0) {
+                versionMaps[apiConfig.navigationId] = versionMap;
               }
             }
           }
 
-          code.push(
-            `export { configuredApiPlugins, configuredApiCatalogPlugins };`,
-          );
+          // Generate API plugin code
+          for (const apiConfig of apis) {
+            if (apiConfig.type === "file") {
+              if (
+                !apiConfig.navigationId ||
+                !versionMaps[apiConfig.navigationId]
+              ) {
+                continue;
+              }
 
-          return code.join("\n");
+              code.push(
+                "configuredApiPlugins.push(openApiPlugin({",
+                `  type: "file",`,
+                `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
+                `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
+                `  schemaImports: {`,
+                ...Array.from(schemaMap.entries()).map(
+                  ([key, schemaPath]) =>
+                    `    "${key}": () => import("${schemaPath}"),`,
+                ),
+                `  },`,
+                "}));",
+              );
+            } else {
+              code.push(
+                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify(apiConfig)}));`,
+              );
+            }
+          }
+
+          if (config.catalogs) {
+            const catalogs = Array.isArray(config.catalogs)
+              ? config.catalogs
+              : [config.catalogs];
+
+            const categories = apis
+              .flatMap((api) => api.categories ?? [])
+              .reduce((acc, catalog) => {
+                if (!acc.has(catalog.label)) {
+                  acc.set(catalog.label ?? "", new Set(catalog.tags));
+                }
+                for (const tag of catalog.tags) {
+                  acc.get(catalog.label ?? "")?.add(tag);
+                }
+                return acc;
+              }, new Map<string, Set<string>>());
+
+            const categoryList = Array.from(categories.entries()).map(
+              ([label, tags]) => ({
+                label,
+                tags: Array.from(tags),
+              }),
+            );
+
+            for (let i = 0; i < catalogs.length; i++) {
+              const catalog = catalogs[i];
+              if (!catalog) {
+                continue;
+              }
+              const apiCatalogConfig: ApiCatalogPluginOptions = {
+                ...catalog,
+                items: apiMetadata,
+                label: catalog.label,
+                categories: categoryList,
+                filterCatalogItems: catalog.filterItems,
+              };
+
+              code.push(
+                `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
+                `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
+                `  filterCatalogItems: Array.isArray(config.catalogs)`,
+                `    ? config.catalogs[${i}].filterItems`,
+                `    : config.catalogs.filterItems,`,
+                `}));`,
+              );
+            }
+          }
         }
-      },
+
+        code.push(
+          `export { configuredApiPlugins, configuredApiCatalogPlugins };`,
+        );
+
+        return code.join("\n");
+      }
     },
-  ];
+  };
 };
 
 export default viteApiPlugin;

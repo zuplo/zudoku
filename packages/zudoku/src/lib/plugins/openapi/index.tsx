@@ -36,6 +36,8 @@ const GetCategoriesQuery = graphql(`
   }
 `);
 
+type InternalOasPluginConfig = { schemaImports?: SchemaImports };
+
 const MethodColorMap: Record<string, keyof typeof ColorMap> = {
   get: "green",
   post: "blue",
@@ -46,9 +48,7 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
   head: "gray",
 };
 
-export type OpenApiPluginOptions = OasPluginConfig & {
-  schemaImports?: SchemaImports;
-};
+export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinPath(config.navigationId ?? "/reference");

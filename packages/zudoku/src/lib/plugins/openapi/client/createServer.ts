@@ -26,7 +26,7 @@ export const createServer = (config: OpenApiPluginOptions) =>
             if (start) {
               // eslint-disable-next-line no-console
               console.log(
-                `${args.operationName} query took ${performance.now() - start}ms`,
+                `[zudoku:debug] ${args.operationName} query took ${performance.now() - start}ms`,
               );
               map.delete(`${startEvent}-${args.operationName}`);
             }
