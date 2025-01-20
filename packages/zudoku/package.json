@@ -287,6 +287,6 @@
   },
   "optionalDependencies": {
     "@clerk/clerk-js": "^5.43.4",
-    "@sentry/react": "^8.48.0"
+    "@sentry/react": "^8.50.0"
   }
 }
