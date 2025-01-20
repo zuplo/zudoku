@@ -372,6 +372,17 @@
               "type": "string",
               "format": "uuid"
             }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "description": "The format of the response",
+            "schema": {
+              "type": "string",
+              "enum": ["basic", "detailed", "carrier-specific"],
+              "default": "basic"
+            }
           }
         ],
         "responses": {
