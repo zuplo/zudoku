@@ -3,6 +3,7 @@ import path from "node:path";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
+import { upgradeSchema } from "../lib/oas/parser/upgrade/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -39,6 +40,8 @@ async function processSchemas(
     }
 
     const postProcessors = apiConfig.postProcessors ?? [];
+    postProcessors.unshift(upgradeSchema);
+
     const inputs = Array.isArray(apiConfig.input)
       ? apiConfig.input
       : [apiConfig.input];
