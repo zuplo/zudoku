@@ -23,7 +23,7 @@ With these you can then configure the `search` option in [Zudoku Configuration](
 {
   // ...
   search: {
-    type: "inkeep"
+    type: "inkeep",
     apiKey: "<your-api-key>",
     integrationId: "<your-integration-id>",
     organizationId: "<your-organization-id>",
