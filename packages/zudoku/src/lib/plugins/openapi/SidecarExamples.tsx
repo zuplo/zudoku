@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
@@ -36,11 +36,13 @@ const getLanguage = (mediaType?: string): string => {
 export type SidecarExamplesProps = {
   content: Content;
   description?: string;
+  onExampleChange?: (example: unknown) => void;
 };
 
 export const SidecarExamples = ({
   content,
   description,
+  onExampleChange,
 }: SidecarExamplesProps) => {
   const [selectedContentTypeIndex, setSelectedContentTypeIndex] = useState(0);
   const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
@@ -66,6 +68,10 @@ export const SidecarExamples = ({
       effectiveContent.schema as SchemaObject,
     );
   }
+
+  useEffect(() => {
+    onExampleChange?.(exampleValue);
+  }, [exampleValue, onExampleChange]);
 
   const formattedExample = formatForDisplay(exampleValue);
   const language = getLanguage(effectiveContent?.mediaType);
@@ -104,8 +110,13 @@ export const SidecarExamples = ({
         )}
       </SidecarBox.Body>
       {hasContent && (
-        <SidecarBox.Footer className="flex flex-col gap-2 text-xs py-1">
-          <div className="flex items-center gap-2 justify-between min-w-0">
+        <SidecarBox.Footer className="text-xs p-0">
+          {description && (
+            <div className="text-muted-foreground text-xs border-b px-3 py-2">
+              {description}
+            </div>
+          )}
+          <div className="flex items-center gap-2 justify-between min-w-0 px-3 py-2">
             <div className="flex items-center gap-2 min-w-0">
               {content.length > 1 ? (
                 <SimpleSelect
@@ -145,9 +156,6 @@ export const SidecarExamples = ({
               </div>
             )}
           </div>
-          {description && (
-            <div className="text-muted-foreground text-xs">{description}</div>
-          )}
         </SidecarBox.Footer>
       )}
     </>

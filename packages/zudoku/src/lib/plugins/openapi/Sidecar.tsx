@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
-import { Fragment, useMemo, useTransition } from "react";
+import { Fragment, useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
@@ -107,6 +107,7 @@ export const Sidecar = ({
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
+  const [selectedExample, setSelectedExample] = useState<unknown>();
 
   const selectedLang = searchParams.get("lang") ?? "shell";
 
@@ -141,9 +142,11 @@ export const Sidecar = ({
   const { selectedServer } = useSelectedServerStore();
 
   const code = useMemo(() => {
-    const example = requestBodyContent?.[0]?.schema
-      ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
-      : undefined;
+    const example =
+      selectedExample ??
+      (requestBodyContent?.[0]?.schema
+        ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
+        : undefined);
 
     const snippet = new HTTPSnippet({
       method: operation.method.toLocaleUpperCase(),
@@ -166,6 +169,7 @@ export const Sidecar = ({
 
     return getConverted(snippet, selectedLang);
   }, [
+    selectedExample,
     requestBodyContent,
     operation.method,
     operation.path,
@@ -229,7 +233,10 @@ export const Sidecar = ({
         )}
       </SidecarBox.Root>
       {isOnScreen && requestBodyContent && (
-        <RequestBodySidecarBox content={requestBodyContent} />
+        <RequestBodySidecarBox
+          content={requestBodyContent}
+          onExampleChange={setSelectedExample}
+        />
       )}
       {isOnScreen && operation.responses.length > 0 && (
         <ResponsesSidecarBox
