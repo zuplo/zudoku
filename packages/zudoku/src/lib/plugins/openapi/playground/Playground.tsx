@@ -273,18 +273,16 @@ export const Playground = ({
                 Send
               </Button>
             </div>
-            <Tabs
-              defaultValue={
-                queryParams.length + pathParams.length > 0
-                  ? "parameters"
-                  : "headers"
-              }
-            >
+            <Tabs defaultValue="parameters">
               <div className="flex flex-wrap gap-1 justify-between">
                 <TabsList>
-                  {queryParams.length + pathParams.length > 0 && (
-                    <TabsTrigger value="parameters">Parameters</TabsTrigger>
-                  )}
+                  <TabsTrigger value="parameters">
+                    Parameters
+                    {(formState.pathParams.some((p) => p.value !== "") ||
+                      formState.queryParams.some((p) => p.active)) && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
+                  </TabsTrigger>
                   <TabsTrigger value="headers">
                     Headers
                     {formState.headers.filter((h) => h.active).length > 0 && (
@@ -310,22 +308,31 @@ export const Playground = ({
                     <PathParams control={control} />
                   </div>
                 )}
-                {queryParams.length > 0 && (
-                  <div className="flex flex-col gap-4 my-4">
-                    <span className="font-semibold">Query Parameters</span>
-                    <QueryParams control={control} queryParams={queryParams} />
-                  </div>
-                )}
+                <div className="flex flex-col gap-4 my-4">
+                  <span className="font-semibold">Query Parameters</span>
+                  <QueryParams control={control} queryParams={queryParams} />
+                </div>
               </TabsContent>
               <TabsContent value="body">
                 <textarea
                   {...register("body")}
-                  className="border w-full rounded p-2 bg-muted h-40"
+                  className="border w-full rounded-lg p-2 bg-muted h-40"
+                  placeholder={
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    )
+                      ? "Body is only supported for POST, PUT, PATCH, and DELETE requests"
+                      : undefined
+                  }
+                  disabled={
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    )
+                  }
                 />
               </TabsContent>
               <TabsContent value="auth">
                 <div className="flex flex-col gap-4 my-4">
-                  <span className="font-semibold">Authentication</span>
                   <div className="flex items-center gap-2">
                     <Select
                       onValueChange={(value) => setValue("identity", value)}
