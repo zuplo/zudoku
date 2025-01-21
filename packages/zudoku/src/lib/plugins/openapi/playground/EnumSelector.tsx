@@ -2,9 +2,9 @@ import { useState } from "react";
 import {
   Command,
   CommandEmpty,
-  CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "../../../ui/Command.js";
 import {
   Popover,
@@ -36,18 +36,24 @@ export const EnumSelector = ({
           type="button"
           role="combobox"
           className={cn(
-            "px-3 py-2 w-full border-0 shadow-none text-xs font-mono text-start",
+            "px-3 py-2 w-full border-0 shadow-none text-xs font-mono text-start hover:bg-accent/40 rounded border-transparent hover:bg-accent",
             !value && "text-muted-foreground",
           )}
         >
           {value || "Select value"}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
-        <Command>
+      <PopoverContent
+        className="p-0 w-[--radix-popover-trigger-width] "
+        align="start"
+        sideOffset={3}
+        alignOffset={-3}
+        side="bottom"
+      >
+        <Command className="max-h-[180px]">
           <CommandInput
             placeholder="Enter value"
-            className="h-9 bg-transparent"
+            className="h-9 bg-transparent "
             onValueChange={setSearchValue}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -57,8 +63,8 @@ export const EnumSelector = ({
               }
             }}
           />
-          <CommandEmpty>Use "{searchValue}"</CommandEmpty>
-          <CommandGroup>
+          <CommandList>
+            <CommandEmpty>Use "{searchValue}"</CommandEmpty>
             {enumValues.map((enumValue) => (
               <CommandItem
                 key={enumValue}
@@ -72,7 +78,7 @@ export const EnumSelector = ({
                 {enumValue}
               </CommandItem>
             ))}
-          </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>

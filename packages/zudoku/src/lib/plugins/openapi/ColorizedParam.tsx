@@ -7,20 +7,32 @@ export const DATA_ATTR = "data-linked-param";
 
 export const usePastellizedColor = (name: string) => {
   const { resolvedTheme } = useTheme();
-  return pastellize(
-    name,
-    resolvedTheme === "light" ? { saturation: 85, lightness: 50 } : undefined,
-  );
+
+  return {
+    text: pastellize(
+      name,
+      resolvedTheme === "light" ? { saturation: 95, lightness: 38 } : {},
+    ),
+    background: pastellize(
+      name,
+      resolvedTheme === "light" ? { saturation: 85, lightness: 30 } : {},
+    ),
+  };
+};
+
+export const useParamColor = (name: string) => {
+  const normalized = name.replace(/[{}]/g, "");
+  return usePastellizedColor(normalized);
 };
 
 export const ColorizedParam = ({
   name,
   className,
-  backgroundOpacity = "100%",
-  borderOpacity = "100%",
   slug,
+  title,
   children,
   onClick,
+  alwaysOn = false,
 }: {
   name: string;
   className?: string;
@@ -28,17 +40,19 @@ export const ColorizedParam = ({
   borderOpacity?: string;
   slug?: string;
   children?: ReactNode;
+  title?: string;
+  alwaysOn?: boolean;
   onClick?: () => void;
 }) => {
   const ref = useRef<HTMLSpanElement>(null);
-  const normalized = name.replace(/[{}]/g, "");
   const normalizedSlug = slug?.replace(/[{}]/g, "");
-  const color = usePastellizedColor(normalized);
+  const normalized = name.replace(/[{}]/g, "");
+  const { text } = usePastellizedColor(normalized);
 
-  const borderColor = `hsl(${color} / ${borderOpacity})`;
-  const backgroundColor = `hsl(${color} / ${backgroundOpacity})`;
+  const textColor = `hsl(${text} / 100%)`;
 
   useEffect(() => {
+    if (alwaysOn) return;
     if (!normalizedSlug) return;
     if (!ref.current) return;
 
@@ -70,23 +84,23 @@ export const ColorizedParam = ({
       el.removeEventListener("mouseenter", onMouseEnter);
       el.removeEventListener("mouseleave", onMouseLeave);
     };
-  }, [normalizedSlug]);
+  }, [normalizedSlug, alwaysOn]);
 
   return (
     <span
       {...{ [DATA_ATTR]: normalizedSlug }}
       className={cn(
-        "relative after:rounded after:absolute after:inset-0 after:-bottom-0.5 after:border-b-2 after:transition-opacity after:duration-200",
-        "after:pointer-events-none after:border-[--border-color] after:opacity-30 after:data-[active=true]:opacity-100",
+        "relative inline-block data-[active=true]:text-[--param-color] rounded transition-all duration-200",
         className,
       )}
+      title={title}
       suppressHydrationWarning
       ref={ref}
       onClick={onClick}
+      data-active={alwaysOn || undefined}
       style={
         {
-          "--border-color": borderColor,
-          "--background-color": backgroundColor,
+          "--param-color": textColor,
         } as CSSProperties
       }
     >
