@@ -40,6 +40,7 @@ const statusCodeMap: Record<number, string> = {
 export type Header = {
   name: string;
   defaultValue?: string;
+  defaultActive?: boolean;
 };
 export type QueryParam = {
   name: string;
@@ -67,6 +68,7 @@ export type PlaygroundForm = {
   headers: Array<{
     name: string;
     value: string;
+    active: boolean;
   }>;
   identity?: string;
 };
@@ -111,6 +113,7 @@ export const Playground = ({
         headers: headers.map((header) => ({
           name: header.name,
           value: header.defaultValue ?? "",
+          active: header.defaultActive ?? false,
         })),
         identity: NO_IDENTITY,
       },
@@ -137,7 +140,7 @@ export const Playground = ({
         method: method.toUpperCase(),
         headers: Object.fromEntries(
           data.headers
-            .filter((h) => h.name)
+            .filter((h) => h.name && h.active)
             .map((header) => [header.name, header.value]),
         ),
         body: data.body ? data.body : undefined,
@@ -270,54 +273,30 @@ export const Playground = ({
                 Send
               </Button>
             </div>
-            <Tabs
-              defaultValue={
-                queryParams.length + pathParams.length > 0
-                  ? "parameters"
-                  : "headers"
-              }
-            >
+            <Tabs defaultValue="parameters">
               <div className="flex flex-wrap gap-1 justify-between">
                 <TabsList>
-                  {queryParams.length + pathParams.length > 0 && (
-                    <TabsTrigger value="parameters">Parameters</TabsTrigger>
-                  )}
+                  <TabsTrigger value="parameters">
+                    Parameters
+                    {(formState.pathParams.some((p) => p.value !== "") ||
+                      formState.queryParams.some((p) => p.active)) && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
+                  </TabsTrigger>
                   <TabsTrigger value="headers">
-                    Headers{" "}
-                    {formState.headers.length > 0 &&
-                      `(${formState.headers.length})`}
+                    Headers
+                    {formState.headers.filter((h) => h.active).length > 0 && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="body"
-                    disabled={
-                      !["POST", "PUT", "PATCH", "DELETE"].includes(
-                        method.toUpperCase(),
-                      )
-                    }
-                  >
-                    Body
+                  <TabsTrigger value="auth">
+                    Auth
+                    {formState.identity !== NO_IDENTITY && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
                   </TabsTrigger>
+                  <TabsTrigger value="body">Body</TabsTrigger>
                 </TabsList>
-                <div className="flex gap-2 items-center">
-                  Auth:
-                  <Select
-                    onValueChange={(value) => setValue("identity", value)}
-                    value={formState.identity}
-                    defaultValue={formState.identity}
-                  >
-                    <SelectTrigger className="w-[180px] flex">
-                      {identities.isPending ? <Spinner /> : <SelectValue />}
-                    </SelectTrigger>
-                    <SelectContent align="center">
-                      <SelectItem value={NO_IDENTITY}>None</SelectItem>
-                      {identities.data?.map((identity) => (
-                        <SelectItem key={identity.id} value={identity.id}>
-                          {identity.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
               <TabsContent value="headers">
                 <Headers control={control} register={register} />
@@ -329,18 +308,51 @@ export const Playground = ({
                     <PathParams control={control} />
                   </div>
                 )}
-                {queryParams.length > 0 && (
-                  <div className="flex flex-col gap-4 my-4">
-                    <span className="font-semibold">Query Parameters</span>
-                    <QueryParams control={control} queryParams={queryParams} />
-                  </div>
-                )}
+                <div className="flex flex-col gap-4 my-4">
+                  <span className="font-semibold">Query Parameters</span>
+                  <QueryParams control={control} queryParams={queryParams} />
+                </div>
               </TabsContent>
               <TabsContent value="body">
                 <textarea
                   {...register("body")}
-                  className="border w-full rounded p-2 bg-muted h-40"
+                  className="border w-full rounded-lg p-2 bg-muted h-40"
+                  placeholder={
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    )
+                      ? "Body is only supported for POST, PUT, PATCH, and DELETE requests"
+                      : undefined
+                  }
+                  disabled={
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    )
+                  }
                 />
+              </TabsContent>
+              <TabsContent value="auth">
+                <div className="flex flex-col gap-4 my-4">
+                  <div className="flex items-center gap-2">
+                    <Select
+                      onValueChange={(value) => setValue("identity", value)}
+                      value={formState.identity}
+                      defaultValue={formState.identity}
+                    >
+                      <SelectTrigger className="w-[180px] flex">
+                        {identities.isPending ? <Spinner /> : <SelectValue />}
+                      </SelectTrigger>
+                      <SelectContent align="center">
+                        <SelectItem value={NO_IDENTITY}>None</SelectItem>
+                        {identities.data?.map((identity) => (
+                          <SelectItem key={identity.id} value={identity.id}>
+                            {identity.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
