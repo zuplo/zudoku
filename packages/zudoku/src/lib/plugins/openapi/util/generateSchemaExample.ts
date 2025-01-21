@@ -5,24 +5,35 @@ export const generateSchemaExample = (
   name?: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
-  // Directly return the example or default if they exist
+  // Check for schema-level example first
   if (schema.example !== undefined) {
     return schema.example;
-  } else if (schema.examples) {
-    return Object.values(schema.examples)[0];
-  } else if (schema.default !== undefined) {
-    return schema.default;
   }
 
-  if (schema.properties || schema.type === "object") {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const example: any = {};
+  // Then check for schema-level examples
+  if (
+    schema.examples &&
+    typeof schema.examples === "object" &&
+    "default" in schema.examples
+  ) {
+    const defaultExample = schema.examples.default;
+    if (defaultExample !== null) {
+      return typeof defaultExample === "object" && "value" in defaultExample
+        ? defaultExample.value
+        : defaultExample;
+    }
+  }
 
-    if (schema.properties) {
-      for (const [key, propSchema] of Object.entries(schema.properties)) {
+  // For object schemas with properties
+  if (schema.type === "object" && schema.properties) {
+    const example: Record<string, any> = {};
+
+    for (const [key, propSchema] of Object.entries(schema.properties)) {
+      if (typeof propSchema === "object") {
         example[key] = generateSchemaExample(propSchema as SchemaObject, key);
       }
     }
+
     return example;
   }
 
@@ -31,7 +42,9 @@ export const generateSchemaExample = (
       return schema.items.map((itemSchema) =>
         generateSchemaExample(itemSchema as SchemaObject),
       );
-    } else if (schema.items) {
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- OpenAPI schemas don't always adhere to spec
+    if (schema.items) {
       return [generateSchemaExample(schema.items as SchemaObject)];
     }
     return [];
@@ -51,6 +64,8 @@ export const generateSchemaExample = (
       return true;
     case "null":
       return null;
+    case "object":
+      return {};
     case undefined:
     default:
       return {};
