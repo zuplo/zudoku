@@ -175,7 +175,7 @@ const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
                 `  schemaImports: {`,
                 ...Array.from(schemaMap.entries()).map(
                   ([key, schemaPath]) =>
-                    `    "${key}": () => import("${schemaPath}"),`,
+                    `    "${key}": () => import("${schemaPath.replaceAll("\\", "/")}"),`,
                 ),
                 `  },`,
                 "}));",
