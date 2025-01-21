@@ -51,6 +51,13 @@ export const MdxPage = ({
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
+  const id = useCurrentItem()?.id;
+  let canonicalUrl = null;
+  if (typeof window !== "undefined") {
+    const domain = window.location.origin;
+    canonicalUrl = id ? `${domain}/${id}` : domain;
+  }
+
   const title = frontmatter.title;
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
@@ -87,6 +94,7 @@ export const MdxPage = ({
       <Helmet>
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
+        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       </Helmet>
       <div
         className={cn(
