@@ -1,6 +1,7 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import { CIRCULAR_REF } from "../../../oas/parser/dereference/index.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
@@ -85,7 +86,7 @@ export const SchemaPropertyItem = ({
       <div className="flex flex-col gap-1 justify-between text-sm">
         <div className="flex gap-2 items-center">
           <code>{name}</code>
-          <span className="text-muted-foreground">
+          <Badge variant="secondary">
             {schema.type === "array" && schema.items.type ? (
               <span>{schema.items.type}[]</span>
             ) : Array.isArray(schema.type) ? (
@@ -93,12 +94,8 @@ export const SchemaPropertyItem = ({
             ) : (
               <span>{schema.type}</span>
             )}
-          </span>
-          {group === "optional" && (
-            <span className="py-px px-1.5 font-medium border rounded-lg">
-              optional
-            </span>
-          )}
+          </Badge>
+          {group === "optional" && <Badge variant="outline">optional</Badge>}
         </div>
 
         {schema.description && (

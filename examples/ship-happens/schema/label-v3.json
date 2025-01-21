@@ -371,6 +371,40 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            },
+            "example": "987fcdeb-51a2-43f7-9876-543210abcdef"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "description": "The format of the response",
+            "schema": {
+              "type": "string",
+              "enum": ["basic", "detailed", "carrier-specific"],
+              "default": "basic"
+            },
+            "examples": {
+              "basic": {
+                "summary": "Basic tracking format",
+                "value": "basic"
+              },
+              "detailed": {
+                "summary": "Detailed tracking format with events",
+                "value": "detailed"
+              }
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of tracking events to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 10
             }
           }
         ],
@@ -397,6 +431,105 @@
                       "example": "https://www.ups.com/track?tracknum=1Z999AA1234567890"
                     }
                   }
+                },
+                "examples": {
+                  "basic": {
+                    "summary": "Basic tracking response",
+                    "value": {
+                      "trackingNumber": "1Z999AA1234567890",
+                      "carrier": "UPS",
+                      "trackingUrl": "https://www.ups.com/track?tracknum=1Z999AA1234567890"
+                    }
+                  },
+                  "detailed": {
+                    "summary": "Detailed tracking response",
+                    "value": {
+                      "trackingNumber": "1Z999AA1234567890",
+                      "carrier": "UPS",
+                      "trackingUrl": "https://www.ups.com/track?tracknum=1Z999AA1234567890",
+                      "status": "In Transit",
+                      "estimatedDelivery": "2025-01-10T17:00:00Z",
+                      "events": [
+                        {
+                          "timestamp": "2025-01-09T14:23:00Z",
+                          "location": "San Francisco, CA",
+                          "status": "Out for Delivery"
+                        },
+                        {
+                          "timestamp": "2025-01-09T08:12:00Z",
+                          "location": "Oakland, CA",
+                          "status": "Arrived at Local Facility"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Label not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Label with ID 987fcdeb-51a2-43f7-9876-543210abcdef not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/labels/{id}": {
+      "get": {
+        "tags": ["Labels"],
+        "summary": "Get shipping label",
+        "description": "Retrieves a shipping label by ID. The label can be requested in different formats.",
+        "operationId": "getLabel",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the shipping label",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "987fcdeb-51a2-43f7-9876-543210abcdef"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "description": "The desired format of the label",
+            "schema": {
+              "type": "string",
+              "enum": ["PDF", "PNG", "ZPL", "JPEG", "TIFF", "SVG", "EPS", "BMP", "GIF", "WEBP", "PCX", "EMF", "PS"],
+              "default": "PDF"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Label retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Label"
+                },
+                "example": {
+                  "id": "987fcdeb-51a2-43f7-9876-543210abcdef",
+                  "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                  "format": "PDF",
+                  "size": "4x6",
+                  "url": "https://assets.sh.example.com/labels/label-123456.pdf",
+                  "createdAt": "2025-01-09T12:00:00Z",
+                  "expiresAt": "2025-01-10T12:00:00Z"
                 }
               }
             }
