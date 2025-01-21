@@ -61,7 +61,6 @@ export const QueryParams = ({
                           id={`queryParams.${i}.active`}
                           checked={field.value}
                           onCheckedChange={field.onChange}
-                          disabled={currentParam?.locked}
                         />
                       )}
                     />

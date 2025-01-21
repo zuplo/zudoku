@@ -48,8 +48,6 @@ export type QueryParam = {
   isRequired?: boolean;
   enum?: string[];
   type?: string;
-  locked?: boolean;
-  lockReason?: string;
 };
 export type PathParam = {
   name: string;
@@ -64,15 +62,11 @@ export type PlaygroundForm = {
     value: string;
     active: boolean;
     enum?: string[];
-    locked?: boolean;
-    lockReason?: string;
   }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
     name: string;
     value: string;
-    locked?: boolean;
-    lockReason?: string;
   }>;
   identity?: string;
 };
@@ -109,8 +103,6 @@ export const Playground = ({
           value: param.defaultValue ?? "",
           active: param.defaultActive ?? false,
           enum: param.enum ?? [],
-          locked: param.locked ?? false,
-          lockReason: param.lockReason,
         })),
         pathParams: pathParams.map((param) => ({
           name: param.name,
