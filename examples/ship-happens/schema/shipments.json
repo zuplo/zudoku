@@ -418,6 +418,153 @@
                   "type": "string"
                 }
               }
+          }
+      },
+      "/shipments/regions/{regionCode}/carriers/{carrierId}/dates/{date}": {
+          "get": {
+              "tags": [
+                  "Shipments"
+              ],
+              "summary": "Get shipments by region, carrier and date",
+              "description": "Retrieve all shipments for a specific region, carrier and date combination",
+              "operationId": "getShipmentsByRegionCarrierDate",
+              "parameters": [
+                  {
+                      "name": "regionCode",
+                      "in": "path",
+                      "required": true,
+                      "description": "The ISO 3166-2 region code (e.g. US-CA for California)",
+                      "schema": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}-[A-Z0-9]{1,3}$"
+                      },
+                      "example": "US-CA"
+                  },
+                  {
+                      "name": "carrierId",
+                      "in": "path",
+                      "required": true,
+                      "description": "The unique identifier of the carrier",
+                      "schema": {
+                          "type": "string"
+                      },
+                      "example": "USPS"
+                  },
+                  {
+                      "name": "date",
+                      "in": "path",
+                      "required": true,
+                      "description": "The date in ISO 8601 format (YYYY-MM-DD)",
+                      "schema": {
+                          "type": "string",
+                          "format": "date"
+                      },
+                      "example": "2025-01-15"
+                  }
+              ],
+              "responses": {
+                  "200": {
+                      "description": "Shipments retrieved successfully",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                      "regionCode": {
+                                          "type": "string"
+                                      },
+                                      "carrierId": {
+                                          "type": "string"
+                                      },
+                                      "date": {
+                                          "type": "string",
+                                          "format": "date"
+                                      },
+                                      "shipments": {
+                                          "type": "array",
+                                          "items": {
+                                              "$ref": "#/components/schemas/Shipment"
+                                          }
+                                      },
+                                      "totalCount": {
+                                          "type": "integer"
+                                      }
+                                  }
+                              },
+                              "example": {
+                                  "regionCode": "US-CA",
+                                  "carrierId": "USPS",
+                                  "date": "2025-01-15",
+                                  "shipments": [
+                                      {
+                                          "id": "123e4567-e89b-12d3-a456-426614174000",
+                                          "recipientAddress": {
+                                              "street": "123 Delivery St",
+                                              "city": "San Francisco",
+                                              "state": "CA",
+                                              "country": "US",
+                                              "postalCode": "94105"
+                                          },
+                                          "senderAddress": {
+                                              "street": "456 Sender Ave",
+                                              "city": "Los Angeles",
+                                              "state": "CA",
+                                              "country": "US",
+                                              "postalCode": "90001"
+                                          },
+                                          "packages": [
+                                              {
+                                                  "weight": 2.5,
+                                                  "dimensions": {
+                                                      "length": 30,
+                                                      "width": 20,
+                                                      "height": 15
+                                                  }
+                                              }
+                                          ],
+                                          "status": "IN_TRANSIT",
+                                          "trackingNumber": "SH123456789",
+                                          "createdAt": "2025-01-15T12:00:00Z"
+                                      }
+                                  ],
+                                  "totalCount": 1
+                              }
+                          }
+                      }
+                  },
+                  "400": {
+                      "description": "Invalid input parameters",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "code": "INVALID_INPUT",
+                                  "message": "Invalid region code format"
+                              }
+                          }
+                      }
+                  },
+                  "404": {
+                      "description": "No shipments found",
+                      "content": {
+                          "application/json": {
+                              "schema": {
+                                  "$ref": "#/components/schemas/Error"
+                              },
+                              "example": {
+                                  "code": "NOT_FOUND",
+                                  "message": "No shipments found for the specified criteria"
+                              }
+                          }
+                      }
+                  }
+              }
+          }
+      }
+  }
+}
             ],
             "responses": {
               "200": {

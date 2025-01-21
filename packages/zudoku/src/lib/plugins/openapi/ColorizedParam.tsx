@@ -90,8 +90,16 @@ export const ColorizedParam = ({
     <span
       {...{ [DATA_ATTR]: normalizedSlug }}
       className={cn(
-        "relative inline-block data-[active=true]:text-[--param-color] rounded transition-all duration-200",
+        "relative inline-block rounded transition-all duration-200",
         className,
+        "after:absolute after:-bottom-0.5 after:left-0",
+        "after:content-['']",
+        !alwaysOn &&
+          "after:h-0.5 after:w-full after:bg-[--param-color] after:rounded-full",
+        !alwaysOn &&
+          "after:transition-opacity after:duration-200 after:pointer-events-none",
+        alwaysOn && "text-[--param-color]",
+        "after:opacity-30 after:data-[active=true]:opacity-100",
       )}
       title={title}
       suppressHydrationWarning
@@ -101,6 +109,7 @@ export const ColorizedParam = ({
       style={
         {
           "--param-color": textColor,
+          "--border-color": textColor,
         } as CSSProperties
       }
     >
