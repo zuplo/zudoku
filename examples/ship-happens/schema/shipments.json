@@ -1687,6 +1687,176 @@
             }
           }
         }
+      },
+      "/routes/{originFacilityId}/{destinationFacilityId}/{serviceLevel}/estimate": {
+        "get": {
+          "tags": ["Route Planning"],
+          "summary": "Get estimated delivery time",
+          "description": "Get estimated delivery time between two facilities for a specific service level",
+          "operationId": "getRouteEstimate",
+          "parameters": [
+            {
+              "name": "originFacilityId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}[0-9]{1}$",
+                "example": "LAX1"
+              },
+              "description": "ID of the origin facility"
+            },
+            {
+              "name": "destinationFacilityId",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}[0-9]{1}$",
+                "example": "JFK1"
+              },
+              "description": "ID of the destination facility"
+            },
+            {
+              "name": "serviceLevel",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
+              },
+              "description": "Service level for the route"
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Route estimate retrieved successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "estimatedDeliveryTime": {
+                        "type": "object",
+                        "properties": {
+                          "min": {
+                            "type": "integer",
+                            "description": "Minimum delivery time"
+                          },
+                          "max": {
+                            "type": "integer",
+                            "description": "Maximum delivery time"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "enum": ["HOURS", "DAYS"]
+                          }
+                        }
+                      },
+                      "distance": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "number",
+                            "format": "float"
+                          },
+                          "unit": {
+                            "type": "string",
+                            "enum": ["KM", "MI"]
+                          }
+                        }
+                      },
+                      "route": {
+                        "type": "object",
+                        "properties": {
+                          "transitHubs": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "transportModes": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": ["AIR", "GROUND", "SEA"]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "examples": {
+                    "domestic_ground": {
+                      "summary": "Domestic ground shipping estimate",
+                      "value": {
+                        "estimatedDeliveryTime": {
+                          "min": 2,
+                          "max": 3,
+                          "unit": "DAYS"
+                        },
+                        "distance": {
+                          "value": 2789.4,
+                          "unit": "MI"
+                        },
+                        "route": {
+                          "transitHubs": ["DEN1", "CHI1"],
+                          "transportModes": ["GROUND"]
+                        }
+                      }
+                    },
+                    "express_air": {
+                      "summary": "Express air shipping estimate",
+                      "value": {
+                        "estimatedDeliveryTime": {
+                          "min": 8,
+                          "max": 12,
+                          "unit": "HOURS"
+                        },
+                        "distance": {
+                          "value": 2789.4,
+                          "unit": "MI"
+                        },
+                        "route": {
+                          "transitHubs": [],
+                          "transportModes": ["AIR"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  },
+                  "example": {
+                    "code": "INVALID_FACILITY",
+                    "message": "Invalid facility ID format"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Route not found",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "$ref": "#/components/schemas/Error"
+                  },
+                  "example": {
+                    "code": "ROUTE_NOT_FOUND",
+                    "message": "No route found between specified facilities"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
