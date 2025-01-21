@@ -185,7 +185,7 @@ export const Sidecar = ({
       className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
     >
       <SidecarBox.Root>
-        <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-4 gap-2 text-xs">
+        <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
           <span className="font-mono break-words">
             <span className={cn("font-semibold", methodTextColor)}>
               {operation.method.toLocaleUpperCase()}
@@ -213,7 +213,7 @@ export const Sidecar = ({
                 />
               </CollapsibleCode>
             </SidecarBox.Body>
-            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-3">
+            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
               <span>Show example in</span>
               <SimpleSelect
                 className="self-start max-w-[150px]"

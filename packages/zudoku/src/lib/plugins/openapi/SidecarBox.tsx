@@ -16,7 +16,7 @@ export const Root = ({ children, className }: BaseComponentProps) => (
 export const Head = ({ children, className }: BaseComponentProps) => (
   <div
     className={cn(
-      "border-b bg-muted dark:bg-transparent text-card-foreground p-3",
+      "border-b bg-muted dark:bg-transparent text-card-foreground p-3 py-2.5",
       className,
     )}
   >
