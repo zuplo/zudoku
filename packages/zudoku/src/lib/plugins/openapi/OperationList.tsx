@@ -13,6 +13,7 @@ import { useSelectedServerStore } from "../../authentication/state.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
+import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { cn } from "../../util/cn.js";
 import { Endpoint } from "./Endpoint.js";
 import { OperationListItem } from "./OperationListItem.js";
@@ -117,6 +118,9 @@ export const OperationList = () => {
   const summary = result.data.schema.summary;
   const description = result.data.schema.description;
   const navigate = useNavigate();
+
+  // Prefetch for Playground
+  useApiIdentities();
 
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
