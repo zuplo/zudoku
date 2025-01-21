@@ -1,21 +1,18 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { cn } from "../../util/cn.js";
-import { useSidecarExamples } from "./ExampleDisplay.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
+import { SidecarExamples } from "./SidecarExamples.js";
 
 type Responses = OperationListItemResult["responses"];
 
 const ResponseContent = ({ response }: { response: Responses[number] }) => {
-  const { SidecarBody, SidebarFooter, hasContent } = useSidecarExamples({
-    content: response.content ?? [],
-    description: response.description ?? undefined,
-  });
-
   return (
     <Tabs.Content value={response.statusCode}>
-      <SidecarBody />
-      {hasContent && <SidebarFooter />}
+      <SidecarExamples
+        content={response.content ?? []}
+        description={response.description ?? undefined}
+      />
     </Tabs.Content>
   );
 };

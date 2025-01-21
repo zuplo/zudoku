@@ -40,7 +40,7 @@ async function processSchemas(
     }
 
     const postProcessors = apiConfig.postProcessors ?? [];
-    postProcessors.unshift(upgradeSchema);
+    postProcessors.unshift((schema) => upgradeSchema(schema));
 
     const inputs = Array.isArray(apiConfig.input)
       ? apiConfig.input
