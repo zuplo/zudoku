@@ -15,6 +15,7 @@ export const PlaygroundDialogWrapper = ({
     .map((p) => ({
       name: p.name,
       defaultValue: p.examples?.find((x) => x.value)?.value ?? "",
+      defaultActive: false,
     }));
   const queryParams = operation.parameters
     ?.filter((p) => p.in === "query")
