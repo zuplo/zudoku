@@ -13,7 +13,8 @@ const config: ZudokuConfig = {
   },
   topNavigation: [
     { id: "general", label: "General" },
-    { id: "catalog", label: "APIs" },
+    { id: "api-shipments", label: "Shipments API" },
+    { id: "catalog", label: "All APIs" },
   ],
   redirects: [{ from: "/", to: "/general" }],
   sidebar: {
