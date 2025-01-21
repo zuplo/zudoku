@@ -209,9 +209,6 @@ export async function getViteConfig(
     logLevel: (process.env.LOG_LEVEL ?? "info") as LogLevel,
     customLogger: logger,
     envPrefix,
-    worker: {
-      format: "es",
-    },
     resolve: {
       alias: {
         "@mdx-js/react": path.resolve(
@@ -282,10 +279,6 @@ export async function getViteConfig(
           : getAppClientEntryPath(),
       ],
       include: ["react-dom/client", "@sentry/react"],
-      exclude: [
-        // Vite does not like optimizing the worker dependency
-        "zudoku/openapi-worker",
-      ],
     },
     // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
     assetsInclude: ["/__z/entry.client.tsx"],

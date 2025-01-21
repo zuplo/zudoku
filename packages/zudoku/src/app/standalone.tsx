@@ -43,7 +43,6 @@ const config = {
       type: "url",
       input: apiUrl!,
       navigationId: "/",
-      inMemory: true,
     }),
   ],
 } satisfies ZudokuConfig;

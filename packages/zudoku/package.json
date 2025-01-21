@@ -35,7 +35,6 @@
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.ts",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.ts",
-    "./openapi-worker": "./src/lib/plugins/openapi-worker.ts",
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
@@ -103,10 +102,6 @@
         "import": "./lib/zudoku.plugin-search-inkeep.js",
         "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
       },
-      "./openapi-worker": {
-        "import": "./lib/zudoku.openapi-worker.js",
-        "types": "./dist/lib/plugins/openapi-worker.d.ts"
-      },
       "./components": {
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
@@ -146,7 +141,6 @@
     "generate:icon-types": "tsx ./scripts/generate-icon-types.ts",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html",
-    "hack:fix-worker-paths": "node ./scripts/hack-worker.mjs",
     "clean": "tsc --build --clean",
     "codegen": "graphql-codegen --config ./src/codegen.ts",
     "test": "vitest run"

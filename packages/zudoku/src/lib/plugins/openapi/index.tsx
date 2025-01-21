@@ -7,6 +7,7 @@ import { CirclePlayIcon, LogInIcon } from "lucide-react";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
+import type { SchemaImports } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
 import { joinPath } from "../../util/joinPath.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
@@ -35,7 +36,7 @@ const GetCategoriesQuery = graphql(`
   }
 `);
 
-type InternalOasPluginConfig = { inMemory?: boolean };
+type InternalOasPluginConfig = { schemaImports?: SchemaImports };
 
 const MethodColorMap: Record<string, keyof typeof ColorMap> = {
   get: "green",

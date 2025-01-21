@@ -6,8 +6,6 @@ import {
 } from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
-import { LRUCache } from "lru-cache";
-import hashit from "object-hash";
 import {
   HttpMethods,
   validate,
@@ -58,11 +56,10 @@ export const createOperationSlug = (
   );
 };
 
-const cache = new LRUCache<string, OpenAPIDocument>({
-  ttl: 60 * 10 * 1000,
-  ttlAutopurge: true,
-  fetchMethod: (_key, _oldValue, { context }) => validate(context as string),
-});
+export type SchemaImports = Record<
+  string,
+  () => Promise<{ schema: OpenAPIDocument }>
+>;
 
 const builder = new SchemaBuilder<{
   Scalars: {
@@ -71,6 +68,7 @@ const builder = new SchemaBuilder<{
   };
   Context: {
     schema: OpenAPIDocument;
+    schemaImports?: SchemaImports;
   };
 }>({});
 
@@ -441,11 +439,6 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
   }),
 });
 
-const loadOpenAPISchema = async (input: NonNullable<unknown>) => {
-  const hash = hashit(input);
-  return await cache.forceFetch(hash, { context: input });
-};
-
 const SchemaSource = builder.enumType("SchemaType", {
   values: ["url", "file", "raw"] as const,
 });
@@ -459,10 +452,21 @@ builder.queryType({
         input: t.arg({ type: JSONScalar, required: true }),
       },
       resolve: async (_, args, ctx) => {
-        const schema = await loadOpenAPISchema(args.input!);
-        // for easier access of the whole schema in children resolvers
-        ctx.schema = schema;
+        let schema: OpenAPIDocument;
 
+        if (args.type === "file" && typeof args.input === "string") {
+          const loadSchema = ctx.schemaImports?.[args.input];
+
+          if (!loadSchema) {
+            throw new Error(`No schema loader found for path: ${args.input}`);
+          }
+          const module = await loadSchema();
+          schema = module.schema;
+        } else {
+          schema = await validate(args.input as string);
+        }
+
+        ctx.schema = schema;
         return schema;
       },
     }),
