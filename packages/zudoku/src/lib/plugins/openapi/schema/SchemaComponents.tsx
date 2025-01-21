@@ -86,7 +86,7 @@ export const SchemaPropertyItem = ({
       <div className="flex flex-col gap-1 justify-between text-sm">
         <div className="flex gap-2 items-center">
           <code>{name}</code>
-          <Badge variant="secondary">
+          <Badge variant="muted">
             {schema.type === "array" && schema.items.type ? (
               <span>{schema.items.type}[]</span>
             ) : Array.isArray(schema.type) ? (

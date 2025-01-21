@@ -47,17 +47,13 @@ export const ParameterListItem = ({
           )}
         </code>
         {paramSchema.type && (
-          <Badge variant="secondary">
+          <Badge variant="muted">
             {paramSchema.type === "array"
               ? `${paramSchema.items.type}[]`
               : paramSchema.type}
           </Badge>
         )}
         {parameter.required && <Badge variant="outline">required</Badge>}
-        {/* <span className="py-px px-1.5 font-medium bg-primary/75 text-primary-foreground rounded-lg">
-            required
-          </span>
-        )} */}
       </div>
       {parameter.description && (
         <Markdown
