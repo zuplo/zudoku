@@ -106,7 +106,6 @@ export const QueryParams = ({
                                 }}
                                 placeholder="Enter value"
                                 className="w-full border-0 shadow-none text-xs font-mono hover:bg-accent"
-                                disabled={currentParam?.locked}
                               />
                             );
                           }
@@ -136,13 +135,12 @@ export const QueryParams = ({
                             aria-label="Clear value"
                             className={cn(
                               "ms-2 mr-1",
-                              field.value.length === 0 || currentParam?.locked
+                              field.value.length === 0
                                 ? "opacity-0 pointer-events-none"
                                 : "opacity-100",
                             )}
                             title="Clear value"
                             onClick={() => field.onChange("")}
-                            disabled={currentParam?.locked}
                           >
                             <EraserIcon size={16} />
                           </Button>
