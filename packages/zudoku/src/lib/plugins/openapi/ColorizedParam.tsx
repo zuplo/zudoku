@@ -15,7 +15,7 @@ export const usePastellizedColor = (name: string) => {
     ),
     background: pastellize(
       name,
-      resolvedTheme === "light" ? { saturation: 85, lightness: 30 } : {},
+      resolvedTheme === "light" ? { saturation: 85, lightness: 40 } : {},
     ),
   };
 };
@@ -32,7 +32,6 @@ export const ColorizedParam = ({
   title,
   children,
   onClick,
-  alwaysOn = false,
 }: {
   name: string;
   className?: string;
@@ -41,18 +40,18 @@ export const ColorizedParam = ({
   slug?: string;
   children?: ReactNode;
   title?: string;
-  alwaysOn?: boolean;
   onClick?: () => void;
 }) => {
   const ref = useRef<HTMLSpanElement>(null);
   const normalizedSlug = slug?.replace(/[{}]/g, "");
   const normalized = name.replace(/[{}]/g, "");
-  const { text } = usePastellizedColor(normalized);
+  const { text, background } = usePastellizedColor(normalized);
 
   const textColor = `hsl(${text} / 100%)`;
+  const backgroundColor = `hsl(${background} / 10%)`;
+  const borderColor = `hsl(${background} / 50%)`;
 
   useEffect(() => {
-    if (alwaysOn) return;
     if (!normalizedSlug) return;
     if (!ref.current) return;
 
@@ -84,32 +83,28 @@ export const ColorizedParam = ({
       el.removeEventListener("mouseenter", onMouseEnter);
       el.removeEventListener("mouseleave", onMouseLeave);
     };
-  }, [normalizedSlug, alwaysOn]);
+  }, [normalizedSlug]);
 
   return (
     <span
       {...{ [DATA_ATTR]: normalizedSlug }}
       className={cn(
-        "relative inline-block rounded transition-all duration-200",
+        "relative inline-block rounded transition-all duration-100",
+        "rounded-lg",
+        "border border-[--border-color] p-0.5 text-[--param-color] bg-[--background-color]",
+        "data-[active=true]:border-[--param-color] data-[active=true]:shadow data-[active=true]:-translate-y-px",
+        " data-[active=true]:shadow-[0_1.5px_0_0_var(--param-color)]",
         className,
-        "after:absolute after:-bottom-0.5 after:left-0",
-        "after:content-['']",
-        !alwaysOn &&
-          "after:h-0.5 after:w-full after:bg-[--param-color] after:rounded-full",
-        !alwaysOn &&
-          "after:transition-opacity after:duration-200 after:pointer-events-none",
-        alwaysOn && "text-[--param-color]",
-        "after:opacity-30 after:data-[active=true]:opacity-100",
       )}
       title={title}
       suppressHydrationWarning
       ref={ref}
       onClick={onClick}
-      data-active={alwaysOn || undefined}
       style={
         {
           "--param-color": textColor,
-          "--border-color": textColor,
+          "--border-color": borderColor,
+          "--background-color": backgroundColor,
         } as CSSProperties
       }
     >

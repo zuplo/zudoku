@@ -11,17 +11,16 @@ const PathParamLabel = ({ name }: { name: string }) => {
   const color = useParamColor(name);
 
   return (
-    <div className="flex items-center ms-3">
+    <div className="flex items-center">
       <div
         className="w-2 h-2 rounded-full"
         style={{ backgroundColor: `hsl(${color})` }}
       />
 
       <ColorizedParam
-        alwaysOn
         slug={name}
         name={name}
-        className="font-mono text-xs m-2"
+        className="font-mono text-xs m-2 px-1"
       />
     </div>
   );

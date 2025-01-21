@@ -186,14 +186,12 @@ export const Playground = ({
       <ColorizedParam
         backgroundOpacity="25%"
         name={part}
-        alwaysOn
         slug={part}
         title={
           !value
             ? `Missing value for path parameter \`${replaced}\``
             : undefined
         }
-        className={!value ? "underline decoration-wavy decoration-red-500" : ""}
       >
         {value ? encodeURIComponent(value) : part}
       </ColorizedParam>
