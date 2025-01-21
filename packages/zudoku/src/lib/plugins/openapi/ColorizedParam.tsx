@@ -93,7 +93,6 @@ export const ColorizedParam = ({
         "rounded-lg",
         "border border-[--border-color] p-0.5 text-[--param-color] bg-[--background-color]",
         "data-[active=true]:border-[--param-color] data-[active=true]:shadow data-[active=true]:-translate-y-px",
-        " data-[active=true]:shadow-[0_1.5px_0_0_var(--param-color)]",
         className,
       )}
       title={title}

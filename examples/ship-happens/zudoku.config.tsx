@@ -67,7 +67,7 @@ const config: ZudokuConfig = {
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#FF00BD",
+      primary: "#E20074",
       primaryForeground: "#FFFFFF",
     },
   },
