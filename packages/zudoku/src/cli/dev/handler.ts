@@ -15,8 +15,8 @@ export async function dev(argv: Arguments) {
   const host = "localhost";
   let port = argv.port;
   if (!port) {
-    port = 9000;
-    while (!(await isPortAvailable(host, port)) && port < 9800) {
+    port = 3000;
+    while (!(await isPortAvailable(host, port)) && port < port + 800) {
       port++;
     }
   }

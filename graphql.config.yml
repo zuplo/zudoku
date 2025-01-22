@@ -2,5 +2,5 @@ schema: packages/zudoku/schema.graphql
 extensions:
   endpoints:
     Local:
-      url: http://localhost:9000/__z/graphql
+      url: http://localhost:3000/__z/graphql
       introspect: true

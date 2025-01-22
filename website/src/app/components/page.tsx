@@ -206,7 +206,7 @@ Server-side rendering enabled
 Started local development server
 Ctrl+C to exit
 
-🚀 Zudoku Portal: http://localhost:9000
+🚀 Zudoku Portal: http://localhost:3000
 `.trim()}
             lang="shell"
           />
