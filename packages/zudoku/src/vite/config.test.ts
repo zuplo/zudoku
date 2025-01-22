@@ -11,5 +11,10 @@ it("Should correctly load zudoku.config.ts file", async () => {
     },
     rootPath,
   );
-  expect(config.__meta.path).includes("/with-config/zudoku.config.");
+  // Normalize the path to Unix-style format
+  const normalizedPath = config.__meta.path
+    .split(path.sep)
+    .join(path.posix.sep);
+
+  expect(normalizedPath).includes("/with-config/zudoku.config.");
 });
