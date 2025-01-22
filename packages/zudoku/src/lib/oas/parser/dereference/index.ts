@@ -1,4 +1,5 @@
 import type { JSONSchema4, JSONSchema6 } from "json-schema";
+import { resolveFileRef } from "./resolveFileRef.js";
 import { resolveLocalRef } from "./resolveRef.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6;
@@ -17,6 +18,7 @@ const isIndexableObject = (obj: any): obj is Record<string, any> =>
 export const dereference = async (
   schema: JSONSchema,
   resolvers: CustomResolver[] = [],
+  baseDir?: string,
 ) => {
   if (cache.has(schema)) {
     return cache.get(schema)!;
@@ -39,10 +41,19 @@ export const dereference = async (
         }
       } else {
         if ("$ref" in current && typeof current.$ref === "string") {
+          // Try custom resolvers first
           for (const resolver of resolvers) {
             const resolved = await resolver(current.$ref);
             if (resolved) return await resolve(resolved, path);
           }
+
+          // Try file-based resolution if baseDir is provided
+          if (baseDir) {
+            const resolved = await resolveFileRef(baseDir, current.$ref);
+            if (resolved) return await resolve(resolved, path);
+          }
+
+          // Fall back to local reference resolution
           const resolved = await resolveLocalRef(cloned, current.$ref);
           return await resolve(resolved, path);
         }

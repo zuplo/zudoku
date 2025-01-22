@@ -43,8 +43,9 @@ export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
 //   throw new Error(`Unsupported OpenAPI version: ${openApiVersion}`);
 // };
 
-const parseSchemaInput = async (
+export const parseSchemaInput = async (
   schemaInput: unknown,
+  baseDir?: string,
 ): Promise<JSONSchema & { openapi?: string }> => {
   if (typeof schemaInput === "string") {
     if (schemaInput.trim().startsWith("{")) {
@@ -103,21 +104,25 @@ const parseSchemaInput = async (
 /**
  * Validates, dereferences and upgrades the OpenAPI schema (to v3.1) if necessary.
  */
-export const validate = async (schemaInput: unknown) => {
-  const schema = await parseSchemaInput(schemaInput);
+export const validate = async (
+  schemaInput: unknown,
+  baseDir?: string,
+): Promise<OpenAPIDocument> => {
+  const schema = await parseSchemaInput(schemaInput, baseDir);
 
   if (!schema.openapi) {
-    throw new GraphQLError("OpenAPI version is not defined");
+    throw new GraphQLError("Missing openapi version");
   }
 
   // const validator = await getValidator(schema.openapi);
-  // const result = validator.validate(schema);
-  //
-  // if (!result.valid) {
-  //   throw new ValidationError(result.errors);
+  // const errors = validator.validate(schema);
+
+  // if (errors.length > 0) {
+  //   throw new ValidationError(errors);
   // }
 
-  const dereferenced = await dereference(schema);
+  const upgraded = upgradeSchema(schema);
+  const dereferenced = await dereference(upgraded, [], baseDir);
 
-  return upgradeSchema(dereferenced);
+  return dereferenced as OpenAPIDocument;
 };
