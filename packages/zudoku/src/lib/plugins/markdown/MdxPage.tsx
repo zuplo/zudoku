@@ -2,7 +2,7 @@ import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { type PropsWithChildren, useEffect } from "react";
-import { Link } from "react-router";
+import { Link, useHref } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
@@ -51,6 +51,13 @@ export const MdxPage = ({
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
+  let canonicalUrl = null;
+  const path = useHref("");
+  if (typeof window !== "undefined") {
+    const domain = window.location.origin;
+    canonicalUrl = `${domain}${path}`;
+  }
+
   const title = frontmatter.title;
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
@@ -87,6 +94,7 @@ export const MdxPage = ({
       <Helmet>
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
+        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       </Helmet>
       <div
         className={cn(
