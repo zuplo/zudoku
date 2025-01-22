@@ -1,14 +1,17 @@
 import type { OperationListItemResult } from "./OperationList.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { Content } from "./SidecarExamples.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
   servers,
   operation,
+  examples,
 }: {
   server: string;
   servers?: string[];
   operation: OperationListItemResult;
+  examples?: Content;
 }) => {
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
@@ -40,6 +43,7 @@ export const PlaygroundDialogWrapper = ({
       headers={headers}
       queryParams={queryParams}
       pathParams={pathParams}
+      examples={examples}
     />
   );
 };

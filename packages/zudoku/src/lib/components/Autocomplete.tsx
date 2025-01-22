@@ -59,6 +59,10 @@ const AutocompletePopover = ({
         })}
         align="start"
         side="bottom"
+        onWheel={(e) => {
+          // See: https://github.com/radix-ui/primitives/issues/1159
+          e.stopPropagation();
+        }}
       >
         <CommandList className="max-h-[140px]">
           {options.map((enumValue) => (

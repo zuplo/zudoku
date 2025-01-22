@@ -22,7 +22,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
 import { ColorizedParam } from "../ColorizedParam.js";
+import { Content } from "../SidecarExamples.js";
 import { createUrl } from "./createUrl.js";
+import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
@@ -88,6 +90,7 @@ export type PlaygroundContentProps = {
   queryParams?: QueryParam[];
   pathParams?: PathParam[];
   defaultBody?: string;
+  examples?: Content;
 };
 
 export const Playground = ({
@@ -99,6 +102,7 @@ export const Playground = ({
   queryParams = [],
   pathParams = [],
   defaultBody = "",
+  examples,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServerStore();
   const [, startTransition] = useTransition();
@@ -255,6 +259,7 @@ export const Playground = ({
             });
           }}
           value={selectedServer}
+          defaultValue={selectedServer}
         >
           <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
             <SelectValue />
@@ -352,7 +357,7 @@ export const Playground = ({
                 <Textarea
                   {...register("body")}
                   className={cn(
-                    "border w-full rounded-lg p-2 bg-muted h-40",
+                    "border w-full rounded-lg p-2 bg-muted h-40 font-mono",
                     !["POST", "PUT", "PATCH", "DELETE"].includes(
                       method.toUpperCase(),
                     ) && "h-20",
@@ -370,6 +375,14 @@ export const Playground = ({
                     )
                   }
                 />
+                {examples && (
+                  <ExamplesDropdown
+                    examples={examples}
+                    onSelect={(example) =>
+                      setValue("body", JSON.stringify(example.value, null, 2))
+                    }
+                  />
+                )}
               </TabsContent>
               <TabsContent value="auth">
                 <div className="flex flex-col gap-4 my-4">
