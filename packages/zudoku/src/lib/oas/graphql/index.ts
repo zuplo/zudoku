@@ -450,6 +450,7 @@ builder.queryType({
       args: {
         type: t.arg({ type: SchemaSource, required: true }),
         input: t.arg({ type: JSONScalar, required: true }),
+        baseDir: t.arg({ type: "String", required: false }),
       },
       resolve: async (_, args, ctx) => {
         let schema: OpenAPIDocument;
@@ -463,7 +464,10 @@ builder.queryType({
           const module = await loadSchema();
           schema = module.schema;
         } else {
-          schema = await validate(args.input as string);
+          schema = await validate(
+            args.input as string,
+            args.baseDir ?? undefined,
+          );
         }
 
         ctx.schema = schema;

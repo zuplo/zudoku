@@ -15,7 +15,9 @@ import { Layout as LayoutImport } from "./Layout.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
+import { useCache as useCacheImport } from "./cache.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
+
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
 export const Layout = /*@__PURE__*/ LayoutImport;
 export const RouterError = /*@__PURE__*/ RouterErrorImport;
@@ -27,6 +29,7 @@ export const Head = /*@__PURE__*/ Helmet;
 
 export const useZudoku = /*@__PURE__*/ useZudokuImport;
 export const useAuth = /*@__PURE__*/ useAuthImport;
+export const useCache = /*@__PURE__*/ useCacheImport;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 
 export const Callout = /*@__PURE__*/ CalloutImport;

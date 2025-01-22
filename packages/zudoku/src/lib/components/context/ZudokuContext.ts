@@ -3,6 +3,7 @@ import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinPath } from "../../util/joinPath.js";
+import { CACHE_KEYS } from "../cache.js";
 import { traverseSidebar } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
@@ -21,9 +22,10 @@ export const useZudoku = () => {
 
 export const useApiIdentities = () => {
   const { getApiIdentities } = useZudoku();
+
   return useQuery({
     queryFn: getApiIdentities,
-    queryKey: ["api-identities"],
+    queryKey: [CACHE_KEYS.API_IDENTITIES],
   });
 };
 
