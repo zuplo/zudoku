@@ -337,7 +337,7 @@ export const Playground = ({
                 </div>
               </TabsContent>
               <TabsContent value="body">
-                {["POST", "PUT", "PATCH", "DELETE"].includes(
+                {!["POST", "PUT", "PATCH", "DELETE"].includes(
                   method.toUpperCase(),
                 ) && (
                   <Alert className="mb-2">
