@@ -1,3 +1,4 @@
 * text=auto
+packages/zudoku/src/config/validators/icon-types.ts linguist-generated
 packages/zudoku/src/lib/plugins/openapi/graphql/** linguist-generated
 packages/zudoku/schema.graphql linguist-generated
