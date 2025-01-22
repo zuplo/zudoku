@@ -1,7 +1,9 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { ListPlusIcon } from "lucide-react";
+import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
+import { CIRCULAR_REF } from "../../../oas/parser/dereference/index.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
@@ -39,6 +41,16 @@ export const SchemaLogicalGroup = ({
   }
 };
 
+const isCircularRef = (schema: unknown): schema is string =>
+  schema === CIRCULAR_REF;
+
+const RecursiveIndicator = () => (
+  <div className="flex items-center gap-2 italic text-sm text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">
+    <RefreshCcwDotIcon size={16} />
+    <span>recursive</span>
+  </div>
+);
+
 export const SchemaPropertyItem = ({
   name,
   schema,
@@ -56,12 +68,25 @@ export const SchemaPropertyItem = ({
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
+  if (isCircularRef(schema)) {
+    return (
+      <li className="p-4 bg-border/20 hover:bg-border/30">
+        <div className="flex flex-col gap-1 justify-between text-sm">
+          <div className="flex gap-2 items-center">
+            <code>{name}</code>
+            <RecursiveIndicator />
+          </div>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
       <div className="flex flex-col gap-1 justify-between text-sm">
         <div className="flex gap-2 items-center">
           <code>{name}</code>
-          <span className="text-muted-foreground">
+          <Badge variant="muted">
             {schema.type === "array" && schema.items.type ? (
               <span>{schema.items.type}[]</span>
             ) : Array.isArray(schema.type) ? (
@@ -69,12 +94,8 @@ export const SchemaPropertyItem = ({
             ) : (
               <span>{schema.type}</span>
             )}
-          </span>
-          {group === "optional" && (
-            <span className="py-px px-1.5 font-medium border rounded-lg">
-              optional
-            </span>
-          )}
+          </Badge>
+          {group === "optional" && <Badge variant="outline">optional</Badge>}
         </div>
 
         {schema.description && (

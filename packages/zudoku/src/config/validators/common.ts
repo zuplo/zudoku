@@ -287,7 +287,7 @@ const ApiCatalogSchema = z.object({
   navigationId: z.string(),
   label: z.string(),
   items: z.array(z.string()).optional(),
-  filterItems: z.function().args(z.any()).returns(z.any()),
+  filterItems: z.function().args(z.any()).returns(z.any()).optional(),
 });
 
 /**
@@ -296,6 +296,7 @@ const ApiCatalogSchema = z.object({
  */
 export const CommonConfigSchema = z.object({
   basePath: z.string().optional(),
+  cdnUrl: z.string().optional(),
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),

@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.23.9",
+  "version": "0.25.3",
   "type": "module",
   "homepage": "https://zudoku.dev",
   "repository": {
@@ -35,7 +35,6 @@
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.ts",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.ts",
-    "./openapi-worker": "./src/lib/plugins/openapi-worker.ts",
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
@@ -103,10 +102,6 @@
         "import": "./lib/zudoku.plugin-search-inkeep.js",
         "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
       },
-      "./openapi-worker": {
-        "import": "./lib/zudoku.openapi-worker.js",
-        "types": "./dist/lib/plugins/openapi-worker.d.ts"
-      },
       "./components": {
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
@@ -146,7 +141,6 @@
     "generate:icon-types": "tsx ./scripts/generate-icon-types.ts",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html",
-    "hack:fix-worker-paths": "node ./scripts/hack-worker.mjs",
     "clean": "tsc --build --clean",
     "codegen": "graphql-codegen --config ./src/codegen.ts",
     "test": "vitest run"
@@ -159,7 +153,7 @@
     "@mdx-js/react": "3.1.0",
     "@mdx-js/rollup": "3.1.0",
     "@pothos/core": "3.41.0",
-    "@radix-ui/react-accordion": "1.2.1",
+    "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-aspect-ratio": "1.1.1",
     "@radix-ui/react-checkbox": "1.1.2",
@@ -184,7 +178,7 @@
     "@sentry/node": "8.42.0",
     "@sindresorhus/slugify": "2.2.1",
     "@stefanprobst/rehype-extract-toc": "2.2.0",
-    "@tailwindcss/typography": "0.5.15",
+    "@tailwindcss/typography": "0.5.16",
     "@tanstack/react-query": "5.62.3",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -250,7 +244,7 @@
     "urql": "4.2.1",
     "vaul": "1.1.1",
     "vfile": "6.0.3",
-    "vite": "6.0.3",
+    "vite": "6.0.9",
     "yaml": "2.6.1",
     "yargs": "17.7.2",
     "zod": "3.23.8",
@@ -277,7 +271,7 @@
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "rollup-plugin-visualizer": "5.12.0",
+    "rollup-plugin-visualizer": "5.14.0",
     "typescript": "5.7.2",
     "vitest": "2.1.8"
   },
@@ -287,6 +281,6 @@
   },
   "optionalDependencies": {
     "@clerk/clerk-js": "^5.43.4",
-    "@sentry/react": "^8.45.1"
+    "@sentry/react": "^8.50.0"
   }
 }

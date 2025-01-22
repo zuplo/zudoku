@@ -52,6 +52,8 @@ export const Endpoint = () => {
 
   const { servers } = result.data.schema;
 
+  if (servers.length === 0) return null;
+
   if (servers.length === 1) {
     return (
       <div className="flex items-center gap-2">
@@ -66,9 +68,7 @@ export const Endpoint = () => {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="font-medium text-sm">
-        {servers.length > 1 ? "Endpoints" : "Endpoint"}:
-      </span>
+      <span className="font-medium text-sm">Endpoint</span>
 
       <SimpleSelect
         className="font-mono text-xs bg-border/50 dark:bg-border/70 py-1.5 max-w-[450px] truncate"

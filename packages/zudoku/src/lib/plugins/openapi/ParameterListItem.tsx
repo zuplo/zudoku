@@ -1,3 +1,4 @@
+import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown } from "../../components/Markdown.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
 import { ColorizedParam } from "./ColorizedParam.js";
@@ -38,24 +39,21 @@ export const ParameterListItem = ({
             <ColorizedParam
               name={parameter.name}
               backgroundOpacity="15%"
+              className="px-1"
               slug={id + "-" + parameter.name.toLocaleLowerCase()}
             />
           ) : (
             parameter.name
           )}
         </code>
-        {parameter.required && (
-          <span className="py-px px-1.5 font-medium bg-primary/75 text-muted rounded-lg">
-            required
-          </span>
-        )}
         {paramSchema.type && (
-          <span className="text-muted-foreground">
+          <Badge variant="muted">
             {paramSchema.type === "array"
               ? `${paramSchema.items.type}[]`
               : paramSchema.type}
-          </span>
+          </Badge>
         )}
+        {parameter.required && <Badge variant="outline">required</Badge>}
       </div>
       {parameter.description && (
         <Markdown

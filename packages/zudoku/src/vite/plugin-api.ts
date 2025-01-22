@@ -1,15 +1,100 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import hashit from "object-hash";
 import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import { validate } from "../lib/oas/parser/index.js";
+import { upgradeSchema } from "../lib/oas/parser/upgrade/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import { generateCode } from "./api/schema-codegen.js";
+
+type ProcessedSchema = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  schema: any;
+  version: string;
+  inputPath: string;
+};
+
+const schemaMap = new Map<string, string>();
+
+async function processSchemas(
+  config: ZudokuPluginOptions,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  zuploProcessors: Array<(schema: any) => Promise<any>> = [],
+): Promise<Record<string, ProcessedSchema[]>> {
+  const tmpDir = path.posix.join(
+    config.rootDir,
+    "node_modules/.zudoku/processed",
+  );
+  await fs.rm(tmpDir, { recursive: true, force: true });
+  await fs.mkdir(tmpDir, { recursive: true });
+
+  if (!config.apis) return {};
+
+  const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
+  const processedSchemas: Record<string, ProcessedSchema[]> = {};
+
+  for (const apiConfig of apis) {
+    if (apiConfig.type !== "file" || !apiConfig.navigationId) {
+      continue;
+    }
+
+    const postProcessors = [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (schema: any) => upgradeSchema(schema),
+      ...(apiConfig.postProcessors ?? []),
+      ...zuploProcessors,
+    ];
+
+    const inputs = Array.isArray(apiConfig.input)
+      ? apiConfig.input
+      : [apiConfig.input];
+
+    const inputFiles = await Promise.all(
+      inputs.map(async (input) =>
+        /\.ya?ml$/.test(input)
+          ? yaml.parse(await fs.readFile(input, "utf-8"))
+          : JSON.parse(await fs.readFile(input, "utf-8")),
+      ),
+    );
+
+    const processedInputs = await Promise.all(
+      inputFiles.map(async (schema, index) => {
+        const processedSchema = await postProcessors.reduce(
+          async (acc, postProcessor) => postProcessor(await acc),
+          schema,
+        );
+
+        const inputPath = inputs[index]!;
+        const processedPath = path.posix.join(
+          tmpDir,
+          `${path.basename(inputPath)}.js`,
+        );
+
+        const code = await generateCode(processedSchema);
+        await fs.writeFile(processedPath, code);
+        schemaMap.set(inputPath, processedPath);
+
+        return {
+          schema: processedSchema,
+          version: processedSchema.info.version || "default",
+          inputPath,
+        } satisfies ProcessedSchema;
+      }),
+    );
+
+    if (processedInputs.length === 0) {
+      throw new Error("No schema found");
+    }
+
+    processedSchemas[apiConfig.navigationId] = processedInputs;
+  }
+
+  return processedSchemas;
+}
 
 const viteApiPlugin = async (
   getConfig: () => ZudokuPluginOptions,
@@ -19,10 +104,7 @@ const viteApiPlugin = async (
 
   const initialConfig = getConfig();
 
-  // TODO: For now this is Zuplo specific, but we should make it more generic in the future.
-  // Following options might be possible:
-  // a) Have a processors only file
-  // b) Have a build related config (e.g. Vite, Rehype, Remark, etc.)
+  // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = initialConfig.isZuplo
     ? await tsImport("../zuplo/with-zuplo-processors.ts", import.meta.url)
         .then((m) => m.default(initialConfig.rootDir))
@@ -33,14 +115,19 @@ const viteApiPlugin = async (
         })
     : [];
 
+  let processedSchemas: Record<string, ProcessedSchema[]>;
+
   return {
     name: "zudoku-api-plugins",
+    async buildStart() {
+      processedSchemas = await processSchemas(getConfig(), zuploProcessors);
+    },
     resolveId(id) {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId;
       }
     },
-    async load(id, options) {
+    async load(id) {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
@@ -61,151 +148,113 @@ const viteApiPlugin = async (
 
         if (config.apis) {
           const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-          const catalogs = Array.isArray(config.catalogs)
-            ? config.catalogs
-            : [config.catalogs];
-
-          const categories = apis
-            .flatMap((api) => api.categories ?? [])
-            .reduce((acc, catalog) => {
-              if (!acc.has(catalog.label)) {
-                acc.set(catalog.label, new Set(catalog.tags));
-              }
-              for (const tag of catalog.tags) {
-                acc.get(catalog.label)?.add(tag);
-              }
-              return acc;
-            }, new Map<string, Set<string>>());
-
-          const tmpDir = path.posix.join(
-            config.rootDir,
-            "node_modules/.zudoku/processed",
-          );
-          await fs.rm(tmpDir, { recursive: true, force: true });
-          await fs.mkdir(tmpDir, { recursive: true });
-
           const apiMetadata: ApiCatalogItem[] = [];
+          const versionMaps: Record<string, Record<string, string>> = {};
+
           for (const apiConfig of apis) {
-            if (apiConfig.type === "file") {
-              const processors = [
-                ...(apiConfig.postProcessors ?? []),
-                ...zuploProcessors,
-              ];
-              const inputs = Array.isArray(apiConfig.input)
-                ? apiConfig.input
-                : [apiConfig.input];
+            if (apiConfig.type === "file" && apiConfig.navigationId) {
+              const schemas = processedSchemas[apiConfig.navigationId];
+              if (!schemas?.length) continue;
 
-              const inputFiles = await Promise.all(
-                inputs.map(async (input) =>
-                  /\.ya?ml$/.test(input)
-                    ? yaml.parse(await fs.readFile(input, "utf-8"))
-                    : JSON.parse(await fs.readFile(input, "utf-8")),
-                ),
-              );
+              const latestSchema = schemas[0]?.schema;
+              if (!latestSchema?.info) continue;
 
-              const processedSchemas = await Promise.all(
-                inputFiles
-                  .map((schema) =>
-                    processors.reduce(
-                      async (acc, postProcessor) => postProcessor(await acc),
-                      schema,
-                    ),
-                  )
-                  .map(async (schema) => await validate(schema)),
-              );
-
-              const latestSchema = processedSchemas.at(0);
-
-              if (!latestSchema) {
-                throw new Error("No schema found");
-              }
-
-              if (apiConfig.navigationId) {
-                apiMetadata.push({
-                  path: apiConfig.navigationId,
-                  label: latestSchema.info.title,
-                  description: latestSchema.info.description ?? "",
-                  categories: apiConfig.categories ?? [],
-                });
-              }
-
-              const processedFilePaths = inputs.map((input) =>
-                path.posix.join(tmpDir, `${path.basename(input)}.json`),
-              );
+              apiMetadata.push({
+                path: apiConfig.navigationId,
+                label: latestSchema.info.title,
+                description: latestSchema.info.description ?? "",
+                categories: apiConfig.categories ?? [],
+              });
 
               const versionMap = Object.fromEntries(
-                processedSchemas.map((schema, index) => [
-                  schema.info.version || "default",
-                  processedFilePaths[index],
+                schemas.map((processed) => [
+                  processed.version,
+                  processed.inputPath,
                 ]),
               );
 
-              if (Object.keys(versionMap).length === 0) {
-                throw new Error("No schema versions found");
+              if (Object.keys(versionMap).length > 0) {
+                versionMaps[apiConfig.navigationId] = versionMap;
               }
+            }
+          }
 
-              await Promise.all(
-                processedSchemas.map((schema, i) => {
-                  if (!processedFilePaths[i]) {
-                    throw new Error("No processed file path found");
-                  }
-                  fs.writeFile(processedFilePaths[i], JSON.stringify(schema));
-                }),
-              );
+          // Generate API plugin code
+          for (const apiConfig of apis) {
+            if (apiConfig.type === "file") {
+              if (
+                !apiConfig.navigationId ||
+                !versionMaps[apiConfig.navigationId]
+              ) {
+                continue;
+              }
 
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",
-                '  type: "file",',
-                `  input: {${Object.entries(versionMap)
-                  .map(
-                    ([version, path]) =>
-                      // The function name is a hash of the file name to ensure that each function has a unique and consistent identifier
-                      // We use this hash when creating a GraphQL query to ensure that the query key is consistent across server and client
-                      `"${version}": function _${hashit(path!)}() { return import("${path}"); }`,
-                  )
-                  .join(",")}},`,
-                `  navigationId: "${apiConfig.navigationId}",`,
+                `  type: "file",`,
+                `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
+                `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
+                `  schemaImports: {`,
+                ...Array.from(schemaMap.entries()).map(
+                  ([key, schemaPath]) =>
+                    `    "${key}": () => import("${schemaPath.replace(/\\/g, "/")}"),`,
+                ),
+                `  },`,
                 "}));",
               );
             } else {
               code.push(
-                `// @ts-ignore`, // To make tests pass
-                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({
-                  ...apiConfig,
-                  inMemory: options?.ssr ?? config.mode === "internal",
-                })}));`,
+                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify(apiConfig)}));`,
               );
             }
           }
 
-          const categoryList = Array.from(categories.entries()).map(
-            ([label, tags]) => ({
-              label,
-              tags: Array.from(tags),
-            }),
-          );
+          if (config.catalogs) {
+            const catalogs = Array.isArray(config.catalogs)
+              ? config.catalogs
+              : [config.catalogs];
 
-          for (let i = 0; i < catalogs.length; i++) {
-            const catalog = catalogs[i];
-            if (!catalog) {
-              continue;
-            }
-            const apiCatalogConfig: ApiCatalogPluginOptions = {
-              ...catalog,
-              items: apiMetadata,
-              label: catalog.label,
-              categories: categoryList,
-              filterCatalogItems: catalog.filterItems,
-            };
+            const categories = apis
+              .flatMap((api) => api.categories ?? [])
+              .reduce((acc, catalog) => {
+                if (!acc.has(catalog.label)) {
+                  acc.set(catalog.label ?? "", new Set(catalog.tags));
+                }
+                for (const tag of catalog.tags) {
+                  acc.get(catalog.label ?? "")?.add(tag);
+                }
+                return acc;
+              }, new Map<string, Set<string>>());
 
-            code.push(
-              `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
-              `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
-              `  filterCatalogItems: Array.isArray(config.catalogs)`,
-              `    ? config.catalogs[${i}].filterItems`,
-              `    : config.catalogs.filterItems,`,
-              `}));`,
+            const categoryList = Array.from(categories.entries()).map(
+              ([label, tags]) => ({
+                label,
+                tags: Array.from(tags),
+              }),
             );
+
+            for (let i = 0; i < catalogs.length; i++) {
+              const catalog = catalogs[i];
+              if (!catalog) {
+                continue;
+              }
+              const apiCatalogConfig: ApiCatalogPluginOptions = {
+                ...catalog,
+                items: apiMetadata,
+                label: catalog.label,
+                categories: categoryList,
+                filterCatalogItems: catalog.filterItems,
+              };
+
+              code.push(
+                `configuredApiCatalogPlugins.push(apiCatalogPlugin({`,
+                `  ...${JSON.stringify(apiCatalogConfig, null, 2)},`,
+                `  filterCatalogItems: Array.isArray(config.catalogs)`,
+                `    ? config.catalogs[${i}].filterItems`,
+                `    : config.catalogs.filterItems,`,
+                `}));`,
+              );
+            }
           }
         }
 

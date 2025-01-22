@@ -46,6 +46,8 @@ export type QueryParam = {
   defaultValue?: string;
   defaultActive?: boolean;
   isRequired?: boolean;
+  enum?: string[];
+  type?: string;
 };
 export type PathParam = {
   name: string;
@@ -55,9 +57,17 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
-  queryParams: Array<{ name: string; value: string; active: boolean }>;
+  queryParams: Array<{
+    name: string;
+    value: string;
+    active: boolean;
+    enum?: string[];
+  }>;
   pathParams: Array<{ name: string; value: string }>;
-  headers: Array<{ name: string; value: string }>;
+  headers: Array<{
+    name: string;
+    value: string;
+  }>;
   identity?: string;
 };
 
@@ -92,6 +102,7 @@ export const Playground = ({
           name: param.name,
           value: param.defaultValue ?? "",
           active: param.defaultActive ?? false,
+          enum: param.enum ?? [],
         })),
         pathParams: pathParams.map((param) => ({
           name: param.name,
@@ -171,17 +182,19 @@ export const Playground = ({
     const replaced = part.replace(/[:{}]/g, "");
     const value = formState.pathParams.find((p) => p.name === replaced)?.value;
 
-    const pathParamValue = value ? (
-      <ColorizedParam backgroundOpacity="25%" name={part} slug={part}>
-        {encodeURIComponent(value)}
-      </ColorizedParam>
-    ) : (
-      <span
-        className="underline decoration-wavy decoration-red-500"
-        title={`Missing value for path parameter \`${replaced}\``}
+    const pathParamValue = (
+      <ColorizedParam
+        backgroundOpacity="25%"
+        name={part}
+        slug={part}
+        title={
+          !value
+            ? `Missing value for path parameter \`${replaced}\``
+            : undefined
+        }
       >
-        {part}
-      </span>
+        {value ? encodeURIComponent(value) : part}
+      </ColorizedParam>
     );
 
     return (
@@ -240,7 +253,7 @@ export const Playground = ({
     >
       <form onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}>
         <div className="grid grid-cols-[8fr_7fr] text-sm h-full">
-          <div className="flex flex-col gap-4 p-8 bg-muted/50 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
+          <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono">

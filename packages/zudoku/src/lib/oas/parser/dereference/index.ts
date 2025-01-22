@@ -3,6 +3,8 @@ import { resolveLocalRef } from "./resolveRef.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6;
 
+export const CIRCULAR_REF = "$[Circular Reference]";
+
 type CustomResolver = (ref: string) => Promise<JSONSchema | undefined>;
 
 const cache = new Map<JSONSchema, JSONSchema>();
@@ -21,12 +23,12 @@ export const dereference = async (
   }
 
   const cloned = structuredClone(schema);
-  const visited = new Set();
+  const visited = new Set<unknown>();
 
   const resolve = async (current: unknown, path: string) => {
     if (isIndexableObject(current)) {
       if (visited.has(current)) {
-        return current;
+        return CIRCULAR_REF;
       }
 
       visited.add(current);
@@ -39,15 +41,18 @@ export const dereference = async (
         if ("$ref" in current && typeof current.$ref === "string") {
           for (const resolver of resolvers) {
             const resolved = await resolver(current.$ref);
-            if (resolved) return resolved;
+            if (resolved) return await resolve(resolved, path);
           }
-          return await resolveLocalRef(cloned, current.$ref);
+          const resolved = await resolveLocalRef(cloned, current.$ref);
+          return await resolve(resolved, path);
         }
 
         for (const key in current) {
           current[key] = await resolve(current[key], `${path}/${key}`);
         }
       }
+
+      visited.delete(current);
     }
 
     return current;

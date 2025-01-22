@@ -16,14 +16,19 @@ class ClerkAuthPlugin extends AuthenticationPlugin {
     }
 
     if (clerk.session) {
+      const verifiedEmail = clerk.session.user.emailAddresses.find(
+        (email) => email.verification.status === "verified",
+      );
       useAuthState.setState({
         isAuthenticated: true,
         isPending: false,
         profile: {
           sub: clerk.session.user.id,
           name: clerk.session.user.fullName ?? undefined,
-          email: clerk.session.user.emailAddresses[0]?.emailAddress,
-          emailVerified: false, // TODO: Check this
+          email:
+            verifiedEmail?.emailAddress ??
+            clerk.session.user.emailAddresses[0]?.emailAddress,
+          emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerk.session.user.imageUrl,
         },
       });
@@ -45,19 +50,39 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignUp = "/",
   redirectToAfterSignIn = "/",
 }) => {
-  let clerkApi: Clerk;
+  let clerkApi: Clerk | undefined;
   const ensureLoaded = (async () => {
     if (typeof window === "undefined") return;
     const { Clerk } = await import("@clerk/clerk-js");
     clerkApi = new Clerk(clerkPubKey);
 
     await clerkApi.load();
+
+    if (clerkApi.user) {
+      const verifiedEmail = clerkApi.user.emailAddresses.find(
+        (email) => email.verification.status === "verified",
+      );
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: clerkApi.user.id,
+          name: clerkApi.user.fullName ?? undefined,
+          email:
+            verifiedEmail?.emailAddress ??
+            clerkApi.user.emailAddresses[0]?.emailAddress,
+          emailVerified: verifiedEmail !== undefined,
+          pictureUrl: clerkApi.user.imageUrl,
+        },
+      });
+    }
+
     return clerkApi;
   })();
 
   async function getAccessToken() {
     await ensureLoaded;
-    if (!clerkApi.session) {
+    if (!clerkApi?.session) {
       throw new Error("No session available");
     }
     const response = await clerkApi.session.getToken();
@@ -71,20 +96,26 @@ const clerkAuth: AuthenticationProviderInitializer<
     getAccessToken,
     signOut: async () => {
       await ensureLoaded;
-      await clerkApi.signOut({
+      await clerkApi?.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
+      });
+      useAuthState.setState({
+        isAuthenticated: false,
+        isPending: false,
+        profile: null,
+        providerData: null,
       });
     },
     signIn: async () => {
       await ensureLoaded;
-      await clerkApi.redirectToSignIn({
+      await clerkApi?.redirectToSignIn({
         signInForceRedirectUrl: window.location.origin + redirectToAfterSignIn,
         signUpForceRedirectUrl: window.location.origin + redirectToAfterSignUp,
       });
     },
     signUp: async () => {
       await ensureLoaded;
-      await clerkApi.redirectToSignUp({
+      await clerkApi?.redirectToSignUp({
         signInForceRedirectUrl: window.location.origin + redirectToAfterSignIn,
         signUpForceRedirectUrl: window.location.origin + redirectToAfterSignUp,
       });

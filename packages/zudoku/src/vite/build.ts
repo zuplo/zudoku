@@ -27,21 +27,29 @@ export async function runBuild(options: { dir: string }) {
     throw new Error("Build failed");
   }
 
+  const { config } = await loadZudokuConfig(
+    { mode: "production", command: "build" },
+    options.dir,
+  );
+
   if ("output" in clientResult) {
-    const jsEntry = clientResult.output.find(
-      (o) => "isEntry" in o && o.isEntry,
-    )?.fileName;
-    const cssEntry = clientResult.output.find((o) =>
-      o.fileName.endsWith(".css"),
-    )?.fileName;
+    const [jsEntry, cssEntry] = [
+      clientResult.output.find((o) => "isEntry" in o && o.isEntry)?.fileName,
+      clientResult.output.find((o) => o.fileName.endsWith(".css"))?.fileName,
+    ];
 
     if (!jsEntry || !cssEntry) {
       throw new Error("Build failed. No js or css assets found");
     }
 
+    const getAssetPath = (entry: string) =>
+      config.cdnUrl
+        ? new URL(joinPath(viteClientConfig.base, entry), config.cdnUrl).href
+        : joinPath(viteClientConfig.base, entry);
+
     const html = getBuildHtml({
-      jsEntry: joinPath(viteClientConfig.base, jsEntry),
-      cssEntry: joinPath(viteClientConfig.base, cssEntry),
+      jsEntry: getAssetPath(jsEntry),
+      cssEntry: getAssetPath(cssEntry),
     });
 
     const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
@@ -85,13 +93,6 @@ export async function runBuild(options: { dir: string }) {
     }
 
     // Write the build output file
-    const { config } = await loadZudokuConfig(
-      {
-        mode: "production",
-        command: "build",
-      },
-      options.dir,
-    );
     await writeOutput(options.dir, config);
 
     return;

@@ -22,7 +22,6 @@
     "jsx": "react-jsx",
     "types": ["vite/client"],
     "paths": {
-      "zudoku/openapi-worker": ["./src/lib/plugins/openapi-worker.ts"],
       "zudoku/components": ["./src/lib/components/index.ts"],
       "zudoku/ui/*": ["./src/lib/ui/*"],
       "zudoku/plugins/openapi": ["./src/lib/plugins/openapi/index.ts"],

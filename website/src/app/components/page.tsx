@@ -206,13 +206,13 @@ Server-side rendering enabled
 Started local development server
 Ctrl+C to exit
 
-🚀 Zudoku Portal: http://localhost:9000
+🚀 Zudoku Portal: http://localhost:3000
 `.trim()}
             lang="shell"
           />
         </Frame>
         <Frame
-          className="lg:absolute lg:left-0 lg:right-0 lg:translate-x-[25%] lg:-translate-y-[10%] overflow-hidden border border-gray-800 lg:scale-90 hover:scale-95 transition duration-300 ease-in-out drop-shadow-lg h-min"
+          className="lg:absolute lg:left-0 lg:right-0 lg:translate-x-[25%] lg:-translate-y-[10%] overflow-hidden border border-gray-800 lg:scale-90 hover:scale-95 transition duration-200 ease-in-out drop-shadow-lg h-min"
           innerPadding={false}
         >
           <Image src={DocsScreenshot} alt="" />

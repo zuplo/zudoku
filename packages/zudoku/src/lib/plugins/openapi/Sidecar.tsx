@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
-import { Fragment, useMemo, useTransition } from "react";
+import { Fragment, useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useSelectedServerStore } from "../../authentication/state.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
@@ -107,6 +107,7 @@ export const Sidecar = ({
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
+  const [selectedExample, setSelectedExample] = useState<unknown>();
 
   const selectedLang = searchParams.get("lang") ?? "shell";
 
@@ -141,9 +142,11 @@ export const Sidecar = ({
   const { selectedServer } = useSelectedServerStore();
 
   const code = useMemo(() => {
-    const example = requestBodyContent?.[0]?.schema
-      ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
-      : undefined;
+    const example =
+      selectedExample ??
+      (requestBodyContent?.[0]?.schema
+        ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
+        : undefined);
 
     const snippet = new HTTPSnippet({
       method: operation.method.toLocaleUpperCase(),
@@ -166,6 +169,7 @@ export const Sidecar = ({
 
     return getConverted(snippet, selectedLang);
   }, [
+    selectedExample,
     requestBodyContent,
     operation.method,
     operation.path,
@@ -181,7 +185,7 @@ export const Sidecar = ({
       className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
     >
       <SidecarBox.Root>
-        <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-3 gap-2 text-xs">
+        <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
           <span className="font-mono break-words">
             <span className={cn("font-semibold", methodTextColor)}>
               {operation.method.toLocaleUpperCase()}
@@ -191,10 +195,8 @@ export const Sidecar = ({
           </span>
           {isOnScreen && (
             <PlaygroundDialogWrapper
-              server={result.data.schema.url ?? ""}
-              servers={
-                result.data.schema.servers.map((server) => server.url) ?? []
-              }
+              server={result.data.schema.url}
+              servers={result.data.schema.servers.map((server) => server.url)}
               operation={operation}
             />
           )}
@@ -211,7 +213,7 @@ export const Sidecar = ({
                 />
               </CollapsibleCode>
             </SidecarBox.Body>
-            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-1">
+            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
               <span>Show example in</span>
               <SimpleSelect
                 className="self-start max-w-[150px]"
@@ -231,7 +233,10 @@ export const Sidecar = ({
         )}
       </SidecarBox.Root>
       {isOnScreen && requestBodyContent && (
-        <RequestBodySidecarBox content={requestBodyContent} />
+        <RequestBodySidecarBox
+          content={requestBodyContent}
+          onExampleChange={setSelectedExample}
+        />
       )}
       {isOnScreen && operation.responses.length > 0 && (
         <ResponsesSidecarBox

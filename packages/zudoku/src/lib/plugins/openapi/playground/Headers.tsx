@@ -63,6 +63,7 @@ export const Headers = ({
           className=""
           onClick={() => append({ name: "", value: "" })}
           type="button"
+          variant="secondary"
         >
           Add header
         </Button>

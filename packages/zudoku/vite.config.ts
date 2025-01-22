@@ -1,7 +1,7 @@
 import { glob } from "glob";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig } from "vite";
 import pkgJson from "./package.json";
 
 const entries: Record<string, string> = {
@@ -10,7 +10,6 @@ const entries: Record<string, string> = {
   "auth-clerk": "./src/lib/authentication/providers/clerk.tsx",
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
-  "openapi-worker": "./src/lib/plugins/openapi-worker.ts",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",
@@ -26,9 +25,6 @@ const entries: Record<string, string> = {
 };
 
 export default defineConfig({
-  worker: {
-    format: "es",
-  },
   resolve: {
     alias: [
       { find: /^zudoku\/ui\/(.*)\.js/, replacement: `./src/lib/ui/$1.tsx` },
@@ -61,12 +57,8 @@ export default defineConfig({
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
         ...Object.keys(pkgJson.optionalDependencies),
-
-        // This is here because otherwise it tries to resolve at build time
-        // we only want this to be resolved when the end app gets built
-        "zudoku/openapi-worker",
       ],
-      plugins: [visualizer(), fixWorkerPathsPlugin()],
+      plugins: [visualizer()],
       onwarn(warning, warn) {
         // Suppress "Module level directives cause errors when bundled" warnings
         if (
@@ -81,21 +73,6 @@ export default defineConfig({
   },
 });
 
-// Fixes the worker import paths
-// See: https://github.com/vitejs/vite/issues/15618
-function fixWorkerPathsPlugin(): Plugin {
-  return {
-    name: "fix-worker-paths",
-    apply: "build",
-    generateBundle(_, bundle) {
-      Object.values(bundle).forEach((chunk) => {
-        if (chunk.type === "chunk" && chunk.fileName.endsWith(".js")) {
-          chunk.code = chunk.code.replaceAll('"/assets/', '"./assets/');
-        }
-      });
-    },
-  };
-}
 // Globs files and returns all entries without file extension in a given folder
 function globEntries(globString: string, distSubFolder = "") {
   return Object.fromEntries(
