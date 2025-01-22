@@ -19,9 +19,9 @@ export const getProcessors = async (rootDir: string) => {
     }),
     enrichWithZuploData({ policiesConfig }),
     (spec: RecordAny) => {
-      const host = ZuploEnv.host;
-      if (!host) return spec;
-      return { ...spec, servers: [{ url: `https://${host}` }] };
+      const url = ZuploEnv.serverUrl;
+      if (!url) return spec;
+      return { ...spec, servers: [{ url }] };
     },
     removeExtensions({ shouldRemove: (key) => key.startsWith("x-zuplo") }),
   ];

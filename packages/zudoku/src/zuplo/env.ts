@@ -6,7 +6,7 @@ export const ZuploEnv = {
     return process.env.ZUPLO === "1";
   },
 
-  get host(): string | undefined {
-    return process.env.ZUP_HOST;
+  get serverUrl(): string | undefined {
+    return process.env.ZUPLO_SERVER_URL;
   },
 };
