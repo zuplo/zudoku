@@ -1,35 +1,7 @@
 {
-  "compilerOptions": {
-    "composite": false,
-    "rootDir": "src",
-    "outDir": "dist",
-    "target": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable", "WebWorker"],
-    "moduleResolution": "NodeNext",
-    "module": "NodeNext",
-    "resolveJsonModule": true,
-    "useUnknownInCatchVariables": false,
-    "noUncheckedIndexedAccess": true,
-    "strict": true,
-    "strictNullChecks": true,
-    "declaration": true,
-    "sourceMap": true,
-    "esModuleInterop": true,
-    "useDefineForClassFields": true,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "types": ["vite/client"],
-    "paths": {
-      "zudoku/components": ["./src/lib/components/index.ts"],
-      "zudoku/ui/*": ["./src/lib/ui/*"],
-      "zudoku/plugins/openapi": ["./src/lib/plugins/openapi/index.ts"],
-      "zudoku/plugins/search-inkeep": [
-        "./src/lib/plugins/search-inkeep/index.tsx"
-      ]
-    }
-  },
-  "exclude": ["node_modules", "dist"],
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
 }

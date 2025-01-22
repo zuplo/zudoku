@@ -136,7 +136,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --project tsconfig.json",
+    "build": "tsc --project tsconfig.app.json",
     "build:vite": "vite build",
     "generate:icon-types": "tsx ./scripts/generate-icon-types.ts",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
