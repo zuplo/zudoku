@@ -8,9 +8,39 @@ import {
 } from "react-hook-form";
 import { Card } from "zudoku/ui/Card.js";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
+import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
 import { type PlaygroundForm } from "./Playground.js";
+
+const headerOptions = Object.freeze([
+  "Accept",
+  "Accept-Encoding",
+  "Accept-Language",
+  "Authorization",
+  "Cache-Control",
+  "Connection",
+  "Content-Disposition",
+  "Content-Encoding",
+  "Content-Language",
+  "Content-Length",
+  "Content-Range",
+  "Content-Security-Policy",
+  "Content-Type",
+  "Cookie",
+  "Date",
+  "ETag",
+  "Expires",
+  "Host",
+  "If-Modified-Since",
+  "Location",
+  "Origin",
+  "Pragma",
+  "Referer",
+  "Set-Cookie",
+  "User-Agent",
+  "X-Requested-With",
+]);
 
 export const Headers = ({
   control,
@@ -62,13 +92,11 @@ export const Headers = ({
                     control={control}
                     name={`headers.${i}.name`}
                     render={({ field }) => (
-                      <Input
+                      <Autocomplete
                         {...field}
-                        placeholder="Name"
                         className="border-0 shadow-none text-xs font-mono"
-                        autoComplete="off"
-                        onChange={(e) => {
-                          field.onChange(e);
+                        options={headerOptions}
+                        onValueSelected={(e) => {
                           if (!header.name && e.target.value) {
                             setValue(`headers.${i}.active`, true);
                           }

@@ -52,6 +52,25 @@ const CommandInput = React.forwardRef<
 
 CommandInput.displayName = CommandPrimitive.Input.displayName;
 
+const CommandInlineInput = React.forwardRef<
+  React.ElementRef<typeof CommandPrimitive.Input>,
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
+>(({ className, ...props }, ref) => (
+  // eslint-disable-next-line react/no-unknown-property
+  <div className="flex items-center" cmdk-input-wrapper="">
+    <CommandPrimitive.Input
+      ref={ref}
+      className={cn(
+        "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+        className,
+      )}
+      {...props}
+    />
+  </div>
+));
+
+CommandInlineInput.displayName = CommandPrimitive.Input.displayName;
 const CommandList = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.List>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.List>
@@ -143,6 +162,7 @@ export {
   CommandDialog,
   CommandEmpty,
   CommandGroup,
+  CommandInlineInput,
   CommandInput,
   CommandItem,
   CommandList,

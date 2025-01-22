@@ -406,6 +406,39 @@
               "maximum": 100,
               "default": 10
             }
+          },
+          {
+            "name": "carrier",
+            "in": "query",
+            "required": false,
+            "description": "Filter tracking information by specific carrier",
+            "schema": {
+              "type": "string",
+              "enum": ["UPS", "USPS", "FedEx", "DHL"],
+              "default": null
+            }
+          },
+          {
+            "name": "events_since",
+            "in": "query",
+            "required": false,
+            "description": "Only return tracking events after this timestamp",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2025-01-09T00:00:00Z"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "description": "Sort order for tracking events",
+            "schema": {
+              "type": "string",
+              "enum": ["newest_first", "oldest_first"],
+              "default": "newest_first"
+            }
           }
         ],
         "responses": {

@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "SWebhook API",
+    "title": "Webhook API",
     "description": "This API allows you to register webhooks to receive real-time updates about your shipments.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n\n## Webhook Events\nThe following events are available for subscription:\n- `shipment.created`\n- `shipment.in_transit`\n- `shipment.delivered`\n- `shipment.exception`\n",
     "version": "1.0.0",
     "contact": {
