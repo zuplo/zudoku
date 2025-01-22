@@ -87,7 +87,7 @@ export const SidecarExamples = ({
               href={selectedExample.externalValue}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-primary hover:underline"
+              className="text-sm text-primary hover:underline"
             >
               View External Example →
             </a>
@@ -98,21 +98,21 @@ export const SidecarExamples = ({
               language={language}
               noBackground
               copyable
-              className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
+              className="[--scrollbar-color:gray] text-sm max-h-[500px] p-2"
               code={formattedExample}
             />
           </CollapsibleCode>
         )}
         {selectedExample?.description && (
-          <div className="border-t text-xs px-3 py-1.5 text-muted-foreground">
+          <div className="border-t text-sm px-3 py-1.5 text-muted-foreground">
             {selectedExample.description}
           </div>
         )}
       </SidecarBox.Body>
       {hasContent && (
-        <SidecarBox.Footer className="text-xs p-0">
+        <SidecarBox.Footer className="text-sm p-0">
           {description && (
-            <div className="text-muted-foreground text-xs border-b px-3 py-2">
+            <div className="text-muted-foreground text-sm border-b px-3 py-2">
               {description}
             </div>
           )}
