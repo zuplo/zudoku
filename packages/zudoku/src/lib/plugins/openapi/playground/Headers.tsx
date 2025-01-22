@@ -96,10 +96,9 @@ export const Headers = ({
                         {...field}
                         className="border-0 shadow-none text-xs font-mono"
                         options={headerOptions}
-                        onValueSelected={(e) => {
-                          if (!header.name && e.target.value) {
-                            setValue(`headers.${i}.active`, true);
-                          }
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setValue(`headers.${i}.active`, true);
                         }}
                       />
                     )}
