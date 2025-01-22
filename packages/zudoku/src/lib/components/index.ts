@@ -6,14 +6,14 @@ import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
 import { Button as ButtonImport } from "../ui/Button.js";
 import { Callout as CalloutImport } from "../ui/Callout.js";
-import { Spinner as SpinnerImport } from "./Spinner.js";
-import { Markdown as MarkdownImport } from "./Markdown.js";
 import {
   Bootstrap as BootstrapImport,
   BootstrapStatic as BootstrapStaticImport,
 } from "./Bootstrap.js";
 import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
 import { Layout as LayoutImport } from "./Layout.js";
+import { Markdown as MarkdownImport } from "./Markdown.js";
+import { Spinner as SpinnerImport } from "./Spinner.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;

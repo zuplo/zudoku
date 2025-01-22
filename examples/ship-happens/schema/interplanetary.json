@@ -99,11 +99,7 @@
       },
       "Cargo": {
         "type": "object",
-        "required": [
-          "weight",
-          "volume",
-          "category"
-        ],
+        "required": ["weight", "volume", "category"],
         "properties": {
           "weight": {
             "type": "number",
@@ -263,4 +259,4 @@
       }
     }
   }
-} 
+}

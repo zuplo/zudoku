@@ -214,7 +214,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
-  examples/with-zuplo:
+  examples/with-zuplo/docs:
     dependencies:
       '@mdx-js/react':
         specifier: 3.0.1
@@ -227,7 +227,7 @@ importers:
         version: 19.0.0(react@19.0.0)
       zudoku:
         specifier: workspace:*
-        version: link:../../packages/zudoku
+        version: link:../../../packages/zudoku
     devDependencies:
       '@types/node':
         specifier: ^20

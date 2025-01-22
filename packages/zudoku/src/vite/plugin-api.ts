@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
@@ -21,6 +22,8 @@ const schemaMap = new Map<string, string>();
 
 async function processSchemas(
   config: ZudokuPluginOptions,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  zuploProcessors: Array<(schema: any) => Promise<any>> = [],
 ): Promise<Record<string, ProcessedSchema[]>> {
   const tmpDir = path.posix.join(
     config.rootDir,
@@ -39,8 +42,12 @@ async function processSchemas(
       continue;
     }
 
-    const postProcessors = apiConfig.postProcessors ?? [];
-    postProcessors.unshift((schema) => upgradeSchema(schema));
+    const postProcessors = [
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (schema: any) => upgradeSchema(schema),
+      ...(apiConfig.postProcessors ?? []),
+      ...zuploProcessors,
+    ];
 
     const inputs = Array.isArray(apiConfig.input)
       ? apiConfig.input
@@ -89,16 +96,31 @@ async function processSchemas(
   return processedSchemas;
 }
 
-const viteApiPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteApiPlugin = async (
+  getConfig: () => ZudokuPluginOptions,
+): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
-  let processedSchemas: Awaited<ReturnType<typeof processSchemas>>;
+  const initialConfig = getConfig();
+
+  // Load Zuplo-specific processors if in Zuplo environment
+  const zuploProcessors = initialConfig.isZuplo
+    ? await tsImport("../zuplo/with-zuplo-processors.ts", import.meta.url)
+        .then((m) => m.default(initialConfig.rootDir))
+        .catch((e) => {
+          // eslint-disable-next-line no-console
+          console.warn("Failed to load Zuplo processors", e);
+          return [];
+        })
+    : [];
+
+  let processedSchemas: Record<string, ProcessedSchema[]>;
 
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      processedSchemas = await processSchemas(getConfig());
+      processedSchemas = await processSchemas(getConfig(), zuploProcessors);
     },
     resolveId(id) {
       if (id === virtualModuleId) {

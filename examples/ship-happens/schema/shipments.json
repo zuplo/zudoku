@@ -1,168 +1,247 @@
 {
-    "openapi": "3.0.3",
-    "info": {
-      "title": "Shipment API",
-      "description": "This API allows you to create and track shipments through the Ship Happens platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
-      "version": "1.0.0",
-      "contact": {
-        "name": "Ship Happens API Support",
-        "email": "api@sh.example.com",
-        "url": "https://developers.sh.example.com"
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Shipment API",
+    "description": "This API allows you to create and track shipments through the Ship Happens platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Ship Happens API Support",
+      "email": "api@sh.example.com",
+      "url": "https://developers.sh.example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.sh.example.com/v1",
+      "description": "Production environment"
+    },
+    {
+      "url": "https://api.staging.sh.example.com/v1",
+      "description": "Staging environment"
+    },
+    {
+      "url": "https://api.dev.sh.example.com/v1",
+      "description": "Development environment"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
       }
     },
-    "servers": [
-      {
-        "url": "https://api.sh.example.com/v1",
-        "description": "Production environment"
-      },
-      {
-        "url": "https://api.staging.sh.example.com/v1",
-        "description": "Staging environment"
-      },
-      {
-        "url": "https://api.dev.sh.example.com/v1",
-        "description": "Development environment"
-      }
-    ],
-    "security": [
-      {
-        "ApiKeyAuth": []
-      }
-    ],
-    "components": {
-      "securitySchemes": {
-        "ApiKeyAuth": {
-          "type": "apiKey",
-          "in": "header",
-          "name": "X-API-Key"
+    "schemas": {
+      "Shipment": {
+        "type": "object",
+        "required": ["recipientAddress", "senderAddress", "packages"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true
+          },
+          "recipientAddress": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "senderAddress": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Package"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
+            "readOnly": true
+          },
+          "trackingNumber": {
+            "type": "string",
+            "readOnly": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "readOnly": true
+          }
         }
       },
-      "schemas": {
-        "Shipment": {
-          "type": "object",
-          "required": ["recipientAddress", "senderAddress", "packages"],
-          "properties": {
-            "id": {
-              "type": "string",
-              "format": "uuid",
-              "readOnly": true
-            },
-            "recipientAddress": {
-              "$ref": "#/components/schemas/Address"
-            },
-            "senderAddress": {
-              "$ref": "#/components/schemas/Address"
-            },
-            "packages": {
-              "type": "array",
-              "items": {
-                "$ref": "#/components/schemas/Package"
+      "Address": {
+        "type": "object",
+        "required": ["street", "city", "country", "postalCode"],
+        "properties": {
+          "street": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          }
+        }
+      },
+      "Package": {
+        "type": "object",
+        "required": ["weight", "dimensions"],
+        "properties": {
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "description": "Weight in kilograms"
+          },
+          "dimensions": {
+            "$ref": "#/components/schemas/Dimensions"
+          }
+        }
+      },
+      "Dimensions": {
+        "type": "object",
+        "required": ["length", "width", "height"],
+        "properties": {
+          "length": {
+            "type": "number",
+            "format": "float",
+            "description": "Length in centimeters"
+          },
+          "width": {
+            "type": "number",
+            "format": "float",
+            "description": "Width in centimeters"
+          },
+          "height": {
+            "type": "number",
+            "format": "float",
+            "description": "Height in centimeters"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/shipments": {
+      "post": {
+        "tags": ["Shipment Management"],
+        "summary": "Create a new shipment",
+        "description": "Creates a new shipment with the provided details",
+        "operationId": "createShipment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Shipment"
+              },
+              "examples": {
+                "simple": {
+                  "summary": "Simple domestic shipment",
+                  "value": {
+                    "recipientAddress": {
+                      "street": "123 Delivery St",
+                      "city": "Shiptown",
+                      "state": "ST",
+                      "country": "US",
+                      "postalCode": "12345"
+                    },
+                    "senderAddress": {
+                      "street": "456 Sender Ave",
+                      "city": "Packageville",
+                      "state": "ST",
+                      "country": "US",
+                      "postalCode": "67890"
+                    },
+                    "packages": [
+                      {
+                        "weight": 2.5,
+                        "dimensions": {
+                          "length": 30,
+                          "width": 20,
+                          "height": 15
+                        }
+                      }
+                    ]
+                  }
+                },
+                "international": {
+                  "summary": "International multi-package shipment",
+                  "value": {
+                    "recipientAddress": {
+                      "street": "789 Global Road",
+                      "city": "London",
+                      "country": "GB",
+                      "postalCode": "SW1A 1AA"
+                    },
+                    "senderAddress": {
+                      "street": "321 Export Blvd",
+                      "city": "Los Angeles",
+                      "state": "CA",
+                      "country": "US",
+                      "postalCode": "90001"
+                    },
+                    "packages": [
+                      {
+                        "weight": 1.2,
+                        "dimensions": {
+                          "length": 25,
+                          "width": 15,
+                          "height": 10
+                        }
+                      },
+                      {
+                        "weight": 3.8,
+                        "dimensions": {
+                          "length": 40,
+                          "width": 30,
+                          "height": 20
+                        }
+                      }
+                    ]
+                  }
+                }
               }
-            },
-            "status": {
-              "type": "string",
-              "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
-              "readOnly": true
-            },
-            "trackingNumber": {
-              "type": "string",
-              "readOnly": true
-            },
-            "createdAt": {
-              "type": "string",
-              "format": "date-time",
-              "readOnly": true
             }
           }
         },
-        "Address": {
-          "type": "object",
-          "required": ["street", "city", "country", "postalCode"],
-          "properties": {
-            "street": {
-              "type": "string"
-            },
-            "city": {
-              "type": "string"
-            },
-            "state": {
-              "type": "string"
-            },
-            "country": {
-              "type": "string"
-            },
-            "postalCode": {
-              "type": "string"
-            }
-          }
-        },
-        "Package": {
-          "type": "object",
-          "required": ["weight", "dimensions"],
-          "properties": {
-            "weight": {
-              "type": "number",
-              "format": "float",
-              "description": "Weight in kilograms"
-            },
-            "dimensions": {
-              "$ref": "#/components/schemas/Dimensions"
-            }
-          }
-        },
-        "Dimensions": {
-          "type": "object",
-          "required": ["length", "width", "height"],
-          "properties": {
-            "length": {
-              "type": "number",
-              "format": "float",
-              "description": "Length in centimeters"
-            },
-            "width": {
-              "type": "number",
-              "format": "float",
-              "description": "Width in centimeters"
-            },
-            "height": {
-              "type": "number",
-              "format": "float",
-              "description": "Height in centimeters"
-            }
-          }
-        },
-        "Error": {
-          "type": "object",
-          "required": ["code", "message"],
-          "properties": {
-            "code": {
-              "type": "string"
-            },
-            "message": {
-              "type": "string"
-            }
-          }
-        }
-      }
-    },
-    "paths": {
-      "/shipments": {
-        "post": {
-          "tags": ["Shipment Management"],
-          "summary": "Create a new shipment",
-          "description": "Creates a new shipment with the provided details",
-          "operationId": "createShipment",
-          "requestBody": {
-            "required": true,
+        "responses": {
+          "201": {
+            "description": "Shipment created successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/Shipment"
                 },
                 "examples": {
-                  "simple": {
-                    "summary": "Simple domestic shipment",
+                  "domestic": {
+                    "summary": "Domestic shipment response",
                     "value": {
+                      "id": "123e4567-e89b-12d3-a456-426614174000",
                       "recipientAddress": {
                         "street": "123 Delivery St",
                         "city": "Shiptown",
@@ -186,12 +265,16 @@
                             "height": 15
                           }
                         }
-                      ]
+                      ],
+                      "status": "CREATED",
+                      "trackingNumber": "SH123456789",
+                      "createdAt": "2025-01-09T12:00:00Z"
                     }
                   },
                   "international": {
-                    "summary": "International multi-package shipment",
+                    "summary": "International shipment response",
                     "value": {
+                      "id": "987fcdeb-a654-3210-9876-543210987654",
                       "recipientAddress": {
                         "street": "789 Global Road",
                         "city": "London",
@@ -222,499 +305,415 @@
                             "height": 20
                           }
                         }
-                      ]
+                      ],
+                      "status": "CREATED",
+                      "trackingNumber": "SH987654321",
+                      "createdAt": "2025-01-09T14:30:00Z"
                     }
                   }
                 }
               }
             }
           },
-          "responses": {
-            "201": {
-              "description": "Shipment created successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Shipment"
-                  },
-                  "examples": {
-                    "domestic": {
-                      "summary": "Domestic shipment response",
-                      "value": {
-                        "id": "123e4567-e89b-12d3-a456-426614174000",
-                        "recipientAddress": {
-                          "street": "123 Delivery St",
-                          "city": "Shiptown",
-                          "state": "ST",
-                          "country": "US",
-                          "postalCode": "12345"
-                        },
-                        "senderAddress": {
-                          "street": "456 Sender Ave",
-                          "city": "Packageville",
-                          "state": "ST",
-                          "country": "US",
-                          "postalCode": "67890"
-                        },
-                        "packages": [
-                          {
-                            "weight": 2.5,
-                            "dimensions": {
-                              "length": 30,
-                              "width": 20,
-                              "height": 15
-                            }
-                          }
-                        ],
-                        "status": "CREATED",
-                        "trackingNumber": "SH123456789",
-                        "createdAt": "2025-01-09T12:00:00Z"
-                      }
-                    },
-                    "international": {
-                      "summary": "International shipment response",
-                      "value": {
-                        "id": "987fcdeb-a654-3210-9876-543210987654",
-                        "recipientAddress": {
-                          "street": "789 Global Road",
-                          "city": "London",
-                          "country": "GB",
-                          "postalCode": "SW1A 1AA"
-                        },
-                        "senderAddress": {
-                          "street": "321 Export Blvd",
-                          "city": "Los Angeles",
-                          "state": "CA",
-                          "country": "US",
-                          "postalCode": "90001"
-                        },
-                        "packages": [
-                          {
-                            "weight": 1.2,
-                            "dimensions": {
-                              "length": 25,
-                              "width": 15,
-                              "height": 10
-                            }
-                          },
-                          {
-                            "weight": 3.8,
-                            "dimensions": {
-                              "length": 40,
-                              "width": 30,
-                              "height": 20
-                            }
-                          }
-                        ],
-                        "status": "CREATED",
-                        "trackingNumber": "SH987654321",
-                        "createdAt": "2025-01-09T14:30:00Z"
-                      }
-                    }
-                  }
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_INPUT",
+                  "message": "Invalid recipient address provided"
                 }
               }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{trackingNumber}": {
+      "get": {
+        "tags": ["Shipment Management"],
+        "summary": "Track a shipment",
+        "description": "Get the current status and tracking information for a shipment",
+        "operationId": "trackShipment",
+        "parameters": [
+          {
+            "name": "trackingNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
             },
-            "400": {
-              "description": "Invalid input",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Error"
+            "example": "SH123456789"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Shipment tracking information retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                },
+                "example": {
+                  "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "recipientAddress": {
+                    "street": "123 Delivery St",
+                    "city": "Shiptown",
+                    "state": "ST",
+                    "country": "US",
+                    "postalCode": "12345"
                   },
-                  "example": {
-                    "code": "INVALID_INPUT",
-                    "message": "Invalid recipient address provided"
+                  "senderAddress": {
+                    "street": "456 Sender Ave",
+                    "city": "Packageville",
+                    "state": "ST",
+                    "country": "US",
+                    "postalCode": "67890"
+                  },
+                  "packages": [
+                    {
+                      "weight": 2.5,
+                      "dimensions": {
+                        "length": 30,
+                        "width": 20,
+                        "height": 15
+                      }
+                    }
+                  ],
+                  "status": "IN_TRANSIT",
+                  "trackingNumber": "SH123456789",
+                  "createdAt": "2025-01-09T12:00:00Z"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Shipment with tracking number SH123456789 not found"
+                }
+              }
+            }
+          },
+          "delete": {
+            "tags": ["Shipment Management"],
+            "summary": "Cancel shipment",
+            "description": "Cancel a shipment that hasn't been picked up yet",
+            "operationId": "cancelShipment",
+            "parameters": [
+              {
+                "name": "trackingNumber",
+                "in": "path",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            ],
+            "responses": {
+              "200": {
+                "description": "Shipment cancelled successfully",
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "enum": ["CANCELLED"]
+                        },
+                        "refundAmount": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "currency": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "examples": {
+                      "full_refund": {
+                        "summary": "Full refund issued",
+                        "value": {
+                          "status": "CANCELLED",
+                          "refundAmount": 116.74,
+                          "currency": "USD"
+                        }
+                      }
+                    }
                   }
                 }
               }
             }
           }
         }
-      },
-      "/shipments/{trackingNumber}": {
-        "get": {
-          "tags": ["Shipment Management"],
-          "summary": "Track a shipment",
-          "description": "Get the current status and tracking information for a shipment",
-          "operationId": "trackShipment",
-          "parameters": [
-            {
-              "name": "trackingNumber",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string"
-              },
-              "example": "SH123456789"
+      }
+    },
+    "/shipments/{shipmentId}/hold": {
+      "put": {
+        "tags": ["Shipment Management"],
+        "summary": "Hold shipment",
+        "description": "Place a shipment on hold at a facility",
+        "operationId": "holdShipment",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
-          ],
-          "responses": {
-            "200": {
-              "description": "Shipment tracking information retrieved successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Shipment"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["holdUntil"],
+                "properties": {
+                  "holdUntil": {
+                    "type": "string",
+                    "format": "date-time"
                   },
-                  "example": {
-                    "id": "123e4567-e89b-12d3-a456-426614174000",
-                    "recipientAddress": {
-                      "street": "123 Delivery St",
-                      "city": "Shiptown",
-                      "state": "ST",
-                      "country": "US",
-                      "postalCode": "12345"
-                    },
-                    "senderAddress": {
-                      "street": "456 Sender Ave",
-                      "city": "Packageville",
-                      "state": "ST",
-                      "country": "US",
-                      "postalCode": "67890"
-                    },
-                    "packages": [
-                      {
-                        "weight": 2.5,
-                        "dimensions": {
-                          "length": 30,
-                          "width": 20,
-                          "height": 15
-                        }
-                      }
-                    ],
-                    "status": "IN_TRANSIT",
-                    "trackingNumber": "SH123456789",
-                    "createdAt": "2025-01-09T12:00:00Z"
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Shipment not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Error"
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "RECIPIENT_REQUEST",
+                      "CUSTOMS_HOLD",
+                      "WEATHER_DELAY"
+                    ]
                   },
-                  "example": {
-                    "code": "NOT_FOUND",
-                    "message": "Shipment with tracking number SH123456789 not found"
-                  }
-                }
-              }
-            },
-            "delete": {
-              "tags": ["Shipment Management"],
-              "summary": "Cancel shipment",
-              "description": "Cancel a shipment that hasn't been picked up yet",
-              "operationId": "cancelShipment",
-              "parameters": [
-                {
-                  "name": "trackingNumber",
-                  "in": "path",
-                  "required": true,
-                  "schema": {
+                  "facilityId": {
                     "type": "string"
                   }
                 }
-              ],
-              "responses": {
-                "200": {
-                  "description": "Shipment cancelled successfully",
-                  "content": {
-                    "application/json": {
-                      "schema": {
-                        "type": "object",
-                        "properties": {
-                          "status": {
-                            "type": "string",
-                            "enum": ["CANCELLED"]
-                          },
-                          "refundAmount": {
-                            "type": "number",
-                            "format": "float"
-                          },
-                          "currency": {
-                            "type": "string"
-                          }
-                        }
-                      },
-                      "examples": {
-                        "full_refund": {
-                          "summary": "Full refund issued",
-                          "value": {
-                            "status": "CANCELLED",
-                            "refundAmount": 116.74,
-                            "currency": "USD"
-                          }
-                        }
-                      }
-                    }
+              },
+              "examples": {
+                "recipient_request": {
+                  "summary": "Hold at facility per recipient request",
+                  "value": {
+                    "holdUntil": "2025-01-15T17:00:00Z",
+                    "reason": "RECIPIENT_REQUEST",
+                    "facilityId": "LAX1"
                   }
                 }
               }
             }
           }
-        }
-      },
-      "/shipments/{shipmentId}/hold": {
-        "put": {
-          "tags": ["Shipment Management"],
-          "summary": "Hold shipment",
-          "description": "Place a shipment on hold at a facility",
-          "operationId": "holdShipment",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Shipment placed on hold successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["holdUntil"],
                   "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["ON_HOLD"]
+                    },
+                    "holdLocation": {
+                      "type": "string"
+                    },
                     "holdUntil": {
                       "type": "string",
                       "format": "date-time"
-                    },
-                    "reason": {
-                      "type": "string",
-                      "enum": [
-                        "RECIPIENT_REQUEST",
-                        "CUSTOMS_HOLD",
-                        "WEATHER_DELAY"
-                      ]
-                    },
-                    "facilityId": {
-                      "type": "string"
                     }
                   }
                 },
-                "examples": {
-                  "recipient_request": {
-                    "summary": "Hold at facility per recipient request",
-                    "value": {
-                      "holdUntil": "2025-01-15T17:00:00Z",
-                      "reason": "RECIPIENT_REQUEST",
-                      "facilityId": "LAX1"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Shipment placed on hold successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "status": {
-                        "type": "string",
-                        "enum": ["ON_HOLD"]
-                      },
-                      "holdLocation": {
-                        "type": "string"
-                      },
-                      "holdUntil": {
-                        "type": "string",
-                        "format": "date-time"
-                      }
-                    }
-                  },
-                  "example": {
-                    "status": "ON_HOLD",
-                    "holdLocation": "LAX1 - Los Angeles Hub",
-                    "holdUntil": "2025-01-15T17:00:00Z"
-                  }
+                "example": {
+                  "status": "ON_HOLD",
+                  "holdLocation": "LAX1 - Los Angeles Hub",
+                  "holdUntil": "2025-01-15T17:00:00Z"
                 }
               }
             }
           }
         }
-      },
-      "/shipments/{shipmentId}/rates": {
-        "post": {
-          "tags": ["Rates & Billing"],
-          "summary": "Calculate shipping rates",
-          "description": "Calculate available shipping rates for a shipment based on service level, destination, and package details",
-          "operationId": "calculateRates",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
+      }
+    },
+    "/shipments/{shipmentId}/rates": {
+      "post": {
+        "tags": ["Rates & Billing"],
+        "summary": "Calculate shipping rates",
+        "description": "Calculate available shipping rates for a shipment based on service level, destination, and package details",
+        "operationId": "calculateRates",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
             "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["serviceLevel"],
-                  "properties": {
-                    "serviceLevel": {
-                      "type": "string",
-                      "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
-                    },
-                    "insurance": {
-                      "type": "object",
-                      "properties": {
-                        "value": {
-                          "type": "number",
-                          "format": "float",
-                          "description": "Declared value for insurance in USD"
-                        },
-                        "description": {
-                          "type": "string",
-                          "description": "Description of insured items"
-                        }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["serviceLevel"],
+                "properties": {
+                  "serviceLevel": {
+                    "type": "string",
+                    "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
+                  },
+                  "insurance": {
+                    "type": "object",
+                    "properties": {
+                      "value": {
+                        "type": "number",
+                        "format": "float",
+                        "description": "Declared value for insurance in USD"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "Description of insured items"
                       }
                     }
                   }
+                }
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Basic service level",
+                  "value": {
+                    "serviceLevel": "STANDARD"
+                  }
                 },
-                "examples": {
-                  "basic": {
-                    "summary": "Basic service level",
-                    "value": {
-                      "serviceLevel": "STANDARD"
-                    }
-                  },
-                  "insured": {
-                    "summary": "Express with insurance",
-                    "description": "Express shipping with insurance for high-value electronics",
-                    "value": {
-                      "serviceLevel": "EXPRESS",
-                      "insurance": {
-                        "value": 1500.0,
-                        "description": "Gaming laptop with accessories"
-                      }
+                "insured": {
+                  "summary": "Express with insurance",
+                  "description": "Express shipping with insurance for high-value electronics",
+                  "value": {
+                    "serviceLevel": "EXPRESS",
+                    "insurance": {
+                      "value": 1500.0,
+                      "description": "Gaming laptop with accessories"
                     }
                   }
                 }
               }
             }
-          },
-          "responses": {
-            "200": {
-              "description": "Rates calculated successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "baseRate": {
-                        "type": "number",
-                        "format": "float"
-                      },
-                      "fees": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string"
-                            },
-                            "amount": {
-                              "type": "number",
-                              "format": "float"
-                            },
-                            "description": {
-                              "type": "string"
-                            }
-                          }
-                        }
-                      },
-                      "totalRate": {
-                        "type": "number",
-                        "format": "float"
-                      },
-                      "currency": {
-                        "type": "string"
-                      },
-                      "transitTime": {
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Rates calculated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "baseRate": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "fees": {
+                      "type": "array",
+                      "items": {
                         "type": "object",
                         "properties": {
-                          "min": {
-                            "type": "integer"
+                          "type": {
+                            "type": "string"
                           },
-                          "max": {
-                            "type": "integer"
+                          "amount": {
+                            "type": "number",
+                            "format": "float"
                           },
-                          "unit": {
-                            "type": "string",
-                            "enum": ["HOURS", "DAYS"]
+                          "description": {
+                            "type": "string"
                           }
-                        }
-                      }
-                    }
-                  },
-                  "examples": {
-                    "domestic_ground": {
-                      "summary": "Domestic ground shipping",
-                      "value": {
-                        "baseRate": 15.99,
-                        "fees": [
-                          {
-                            "type": "FUEL_SURCHARGE",
-                            "amount": 1.2,
-                            "description": "Current fuel surcharge"
-                          }
-                        ],
-                        "totalRate": 17.19,
-                        "currency": "USD",
-                        "transitTime": {
-                          "min": 3,
-                          "max": 5,
-                          "unit": "DAYS"
                         }
                       }
                     },
-                    "international_express": {
-                      "summary": "International express with insurance",
-                      "value": {
-                        "baseRate": 89.99,
-                        "fees": [
-                          {
-                            "type": "FUEL_SURCHARGE",
-                            "amount": 6.75,
-                            "description": "Current fuel surcharge"
-                          },
-                          {
-                            "type": "INSURANCE",
-                            "amount": 15.0,
-                            "description": "Insurance for declared value of $1,500.00"
-                          },
-                          {
-                            "type": "REMOTE_AREA",
-                            "amount": 5.0,
-                            "description": "Remote area delivery fee"
-                          }
-                        ],
-                        "totalRate": 116.74,
-                        "currency": "USD",
-                        "transitTime": {
-                          "min": 24,
-                          "max": 48,
-                          "unit": "HOURS"
+                    "totalRate": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "transitTime": {
+                      "type": "object",
+                      "properties": {
+                        "min": {
+                          "type": "integer"
+                        },
+                        "max": {
+                          "type": "integer"
+                        },
+                        "unit": {
+                          "type": "string",
+                          "enum": ["HOURS", "DAYS"]
                         }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "domestic_ground": {
+                    "summary": "Domestic ground shipping",
+                    "value": {
+                      "baseRate": 15.99,
+                      "fees": [
+                        {
+                          "type": "FUEL_SURCHARGE",
+                          "amount": 1.2,
+                          "description": "Current fuel surcharge"
+                        }
+                      ],
+                      "totalRate": 17.19,
+                      "currency": "USD",
+                      "transitTime": {
+                        "min": 3,
+                        "max": 5,
+                        "unit": "DAYS"
+                      }
+                    }
+                  },
+                  "international_express": {
+                    "summary": "International express with insurance",
+                    "value": {
+                      "baseRate": 89.99,
+                      "fees": [
+                        {
+                          "type": "FUEL_SURCHARGE",
+                          "amount": 6.75,
+                          "description": "Current fuel surcharge"
+                        },
+                        {
+                          "type": "INSURANCE",
+                          "amount": 15.0,
+                          "description": "Insurance for declared value of $1,500.00"
+                        },
+                        {
+                          "type": "REMOTE_AREA",
+                          "amount": 5.0,
+                          "description": "Remote area delivery fee"
+                        }
+                      ],
+                      "totalRate": 116.74,
+                      "currency": "USD",
+                      "transitTime": {
+                        "min": 24,
+                        "max": 48,
+                        "unit": "HOURS"
                       }
                     }
                   }
@@ -723,931 +722,915 @@
             }
           }
         }
-      },
-      "/shipments/{shipmentId}/insurance": {
-        "post": {
-          "tags": ["Rates & Billing"],
-          "summary": "Add insurance",
-          "description": "Add or modify insurance coverage for a shipment",
-          "operationId": "addInsurance",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
+      }
+    },
+    "/shipments/{shipmentId}/insurance": {
+      "post": {
+        "tags": ["Rates & Billing"],
+        "summary": "Add insurance",
+        "description": "Add or modify insurance coverage for a shipment",
+        "operationId": "addInsurance",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "string",
-                "format": "uuid"
+                "type": "object",
+                "required": ["coverage"],
+                "properties": {
+                  "coverage": {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "value": {
+                          "type": "number",
+                          "format": "float"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "examples": {
+                "electronics": {
+                  "summary": "Insurance for electronics",
+                  "value": {
+                    "coverage": 2500.0,
+                    "items": [
+                      {
+                        "description": "MacBook Pro 16\"",
+                        "value": 2000.0
+                      },
+                      {
+                        "description": "Apple Magic Keyboard",
+                        "value": 300.0
+                      },
+                      {
+                        "description": "Apple Magic Mouse",
+                        "value": 200.0
+                      }
+                    ]
+                  }
+                }
               }
             }
-          ],
-          "requestBody": {
-            "required": true,
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Insurance added successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "required": ["coverage"],
                   "properties": {
+                    "premium": {
+                      "type": "number",
+                      "format": "float"
+                    },
                     "coverage": {
                       "type": "number",
                       "format": "float"
                     },
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "description": {
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": "number",
-                            "format": "float"
-                          }
-                        }
-                      }
+                    "policyNumber": {
+                      "type": "string"
                     }
                   }
                 },
-                "examples": {
-                  "electronics": {
-                    "summary": "Insurance for electronics",
-                    "value": {
-                      "coverage": 2500.0,
-                      "items": [
-                        {
-                          "description": "MacBook Pro 16\"",
-                          "value": 2000.0
-                        },
-                        {
-                          "description": "Apple Magic Keyboard",
-                          "value": 300.0
-                        },
-                        {
-                          "description": "Apple Magic Mouse",
-                          "value": 200.0
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Insurance added successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "premium": {
-                        "type": "number",
-                        "format": "float"
-                      },
-                      "coverage": {
-                        "type": "number",
-                        "format": "float"
-                      },
-                      "policyNumber": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "example": {
-                    "premium": 75.0,
-                    "coverage": 2500.0,
-                    "policyNumber": "INS-123456"
-                  }
+                "example": {
+                  "premium": 75.0,
+                  "coverage": 2500.0,
+                  "policyNumber": "INS-123456"
                 }
               }
             }
           }
         }
-      },
-      "/shipments/{shipmentId}/customs": {
-        "put": {
-          "tags": ["International Shipping"],
-          "summary": "Update customs documentation",
-          "description": "Update or add customs documentation for international shipments",
-          "operationId": "updateCustoms",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
+      }
+    },
+    "/shipments/{shipmentId}/customs": {
+      "put": {
+        "tags": ["International Shipping"],
+        "summary": "Update customs documentation",
+        "description": "Update or add customs documentation for international shipments",
+        "operationId": "updateCustoms",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
             "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["items"],
-                  "properties": {
-                    "items": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "required": [
-                          "description",
-                          "quantity",
-                          "value",
-                          "hsCode",
-                          "originCountry"
-                        ],
-                        "properties": {
-                          "description": {
-                            "type": "string"
-                          },
-                          "quantity": {
-                            "type": "integer",
-                            "minimum": 1
-                          },
-                          "value": {
-                            "type": "number",
-                            "format": "float"
-                          },
-                          "weight": {
-                            "type": "number",
-                            "format": "float"
-                          },
-                          "hsCode": {
-                            "type": "string",
-                            "pattern": "^[0-9]{6,10}$"
-                          },
-                          "originCountry": {
-                            "type": "string",
-                            "pattern": "^[A-Z]{2}$"
-                          }
-                        }
-                      }
-                    },
-                    "purpose": {
-                      "type": "string",
-                      "enum": [
-                        "COMMERCIAL",
-                        "PERSONAL",
-                        "GIFT",
-                        "RETURN",
-                        "REPAIR"
-                      ]
-                    },
-                    "incoterm": {
-                      "type": "string",
-                      "enum": ["DAP", "DDP", "FCA", "EXW"]
-                    }
-                  }
-                },
-                "examples": {
-                  "commercial": {
-                    "summary": "Commercial electronics shipment",
-                    "value": {
-                      "items": [
-                        {
-                          "description": "Smartphone",
-                          "quantity": 10,
-                          "value": 399.99,
-                          "weight": 0.18,
-                          "hsCode": "851712",
-                          "originCountry": "CN"
-                        },
-                        {
-                          "description": "Protective Cases",
-                          "quantity": 10,
-                          "value": 9.99,
-                          "weight": 0.05,
-                          "hsCode": "392690",
-                          "originCountry": "CN"
-                        }
-                      ],
-                      "purpose": "COMMERCIAL",
-                      "incoterm": "DDP"
-                    }
-                  },
-                  "gift": {
-                    "summary": "Personal gift shipment",
-                    "description": "Handmade items sent as a gift",
-                    "value": {
-                      "items": [
-                        {
-                          "description": "Handmade Wool Sweater",
-                          "quantity": 1,
-                          "value": 75.0,
-                          "weight": 0.5,
-                          "hsCode": "611010",
-                          "originCountry": "IE"
-                        },
-                        {
-                          "description": "Local Chocolate Assortment",
-                          "quantity": 2,
-                          "value": 25.0,
-                          "weight": 0.3,
-                          "hsCode": "180632",
-                          "originCountry": "IE"
-                        }
-                      ],
-                      "purpose": "GIFT",
-                      "incoterm": "DAP"
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Customs documentation updated successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "status": {
-                        "type": "string",
-                        "enum": ["PENDING", "APPROVED", "REJECTED"]
-                      },
-                      "customsValue": {
-                        "type": "number",
-                        "format": "float"
-                      },
-                      "currency": {
-                        "type": "string"
-                      },
-                      "documents": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "type": {
-                              "type": "string",
-                              "enum": [
-                                "COMMERCIAL_INVOICE",
-                                "DECLARATION",
-                                "CERTIFICATE_ORIGIN"
-                              ]
-                            },
-                            "url": {
-                              "type": "string",
-                              "format": "uri"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  "examples": {
-                    "commercial_approved": {
-                      "summary": "Approved commercial shipment",
-                      "value": {
-                        "id": "a1b2c3d4-e5f6-4a5b-9c8d-1a2b3c4d5e6f",
-                        "status": "APPROVED",
-                        "customsValue": 4099.8,
-                        "currency": "USD",
-                        "documents": [
-                          {
-                            "type": "COMMERCIAL_INVOICE",
-                            "url": "https://api.sh.example.com/v1/customs/docs/invoice_12345.pdf"
-                          },
-                          {
-                            "type": "DECLARATION",
-                            "url": "https://api.sh.example.com/v1/customs/docs/declaration_12345.pdf"
-                          }
-                        ]
-                      }
-                    },
-                    "gift_pending": {
-                      "summary": "Pending gift shipment",
-                      "value": {
-                        "id": "f6e5d4c3-b2a1-4c5d-8e9f-2b3a4c5d6e7f",
-                        "status": "PENDING",
-                        "customsValue": 125.0,
-                        "currency": "USD",
-                        "documents": [
-                          {
-                            "type": "DECLARATION",
-                            "url": "https://api.sh.example.com/v1/customs/docs/declaration_67890.pdf"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                }
-              }
+            "schema": {
+              "type": "string",
+              "format": "uuid"
             }
           }
-        }
-      },
-      "/shipments/{shipmentId}/customs/duties": {
-        "post": {
-          "tags": ["International Shipping"],
-          "summary": "Pay import duties",
-          "description": "Pay import duties and taxes for an international shipment",
-          "operationId": "payDuties",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
               "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": ["paymentMethod"],
-                  "properties": {
-                    "paymentMethod": {
-                      "type": "string",
-                      "enum": ["CREDIT_CARD", "BANK_TRANSFER", "ACCOUNT_BALANCE"]
-                    },
-                    "paymentDetails": {
+                "type": "object",
+                "required": ["items"],
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
                       "type": "object",
-                      "additionalProperties": true
-                    }
-                  }
-                },
-                "examples": {
-                  "credit_card": {
-                    "summary": "Pay with credit card",
-                    "value": {
-                      "paymentMethod": "CREDIT_CARD",
-                      "paymentDetails": {
-                        "last4": "4242",
-                        "brand": "visa"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Duties paid successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "amount": {
-                        "type": "number",
-                        "format": "float"
-                      },
-                      "currency": {
-                        "type": "string"
-                      },
-                      "receipt": {
-                        "type": "string",
-                        "format": "uri"
-                      }
-                    }
-                  },
-                  "example": {
-                    "amount": 125.5,
-                    "currency": "GBP",
-                    "receipt": "https://api.sh.example.com/v1/receipts/duty_123456.pdf"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/shipments/{shipmentId}/label": {
-        "get": {
-          "tags": ["Documentation"],
-          "summary": "Get shipping label",
-          "description": "Get the shipping label for a shipment in various formats. Supports both JSON and XML responses. XML format follows the EDIFACT D96A standard for shipping label interchange, while JSON is provided for modern API integrations.",
-          "operationId": "getLabel",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            },
-            {
-              "name": "format",
-              "in": "query",
-              "schema": {
-                "type": "string",
-                "enum": ["PDF", "PNG", "ZPL"]
-              },
-              "description": "Label format"
-            },
-            {
-              "name": "Accept",
-              "in": "header",
-              "schema": {
-                "type": "string",
-                "enum": ["application/json", "application/xml"],
-                "default": "application/json"
-              },
-              "description": "Response format. Use application/xml for EDI-compliant responses following EDIFACT D96A standard."
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Label generated successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "required": ["shipmentId", "format"],
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "readOnly": true
-                      },
-                      "shipmentId": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "format": {
-                        "type": "string",
-                        "enum": ["PDF", "PNG", "ZPL"]
-                      },
-                      "url": {
-                        "type": "string",
-                        "format": "uri",
-                        "readOnly": true
-                      },
-                      "createdAt": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                      },
-                      "expiresAt": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                      }
-                    }
-                  },
-                  "examples": {
-                    "pdf": {
-                      "summary": "PDF Label",
-                      "value": {
-                        "id": "550e8400-e29b-41d4-a716-446655440000",
-                        "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
-                        "format": "PDF",
-                        "url": "https://api.sh.example.com/v1/labels/550e8400-e29b-41d4-a716-446655440000",
-                        "createdAt": "2025-01-09T12:00:00Z",
-                        "expiresAt": "2025-01-16T12:00:00Z"
-                      }
-                    },
-                    "png": {
-                      "summary": "PNG Label",
-                      "value": {
-                        "id": "661f9511-f3ac-52e5-b827-557766551111",
-                        "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
-                        "format": "PNG",
-                        "url": "https://api.sh.example.com/v1/labels/661f9511-f3ac-52e5-b827-557766551111",
-                        "createdAt": "2025-01-09T12:05:00Z",
-                        "expiresAt": "2025-01-16T12:05:00Z"
-                      }
-                    },
-                    "zpl": {
-                      "summary": "ZPL Label (Thermal Printer)",
-                      "description": "Label in ZPL format for direct thermal printing",
-                      "value": {
-                        "id": "772f0622-g4bd-63f6-c938-668877662222",
-                        "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
-                        "format": "ZPL",
-                        "url": "https://api.sh.example.com/v1/labels/772f0622-g4bd-63f6-c938-668877662222",
-                        "createdAt": "2025-01-09T12:10:00Z",
-                        "expiresAt": "2025-01-16T12:10:00Z"
-                      }
-                    }
-                  }
-                },
-                "application/xml": {
-                  "schema": {
-                    "type": "object",
-                    "required": ["shipmentId", "format"],
-                    "properties": {
-                      "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "readOnly": true
-                      },
-                      "shipmentId": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "format": {
-                        "type": "string",
-                        "enum": ["PDF", "PNG", "ZPL"]
-                      },
-                      "url": {
-                        "type": "string",
-                        "format": "uri",
-                        "readOnly": true
-                      },
-                      "createdAt": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                      },
-                      "expiresAt": {
-                        "type": "string",
-                        "format": "date-time",
-                        "readOnly": true
-                      }
-                    }
-                  },
-                  "examples": {
-                    "pdf": {
-                      "summary": "PDF Label (EDIFACT D96A)",
-                      "description": "Label response in EDIFACT D96A XML format for EDI compliance",
-                      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<EDIFACT-Label xmlns=\"urn:un:edifact:d96a:label\">\n  <InterchangeHeader>\n    <SyntaxIdentifier>UNOC</SyntaxIdentifier>\n    <InterchangeSender>SHIPHAPPENS</InterchangeSender>\n    <InterchangeRecipient>CARRIER123</InterchangeRecipient>\n    <DateTime>2025010912000</DateTime>\n  </InterchangeHeader>\n  <Label>\n    <id>550e8400-e29b-41d4-a716-446655440000</id>\n    <shipmentId>123e4567-e89b-12d3-a456-426614174000</shipmentId>\n    <format>PDF</format>\n    <url>https://api.sh.example.com/v1/labels/550e8400-e29b-41d4-a716-446655440000</url>\n    <createdAt>2025-01-09T12:00:00Z</createdAt>\n    <expiresAt>2025-01-16T12:00:00Z</expiresAt>\n  </Label>\n</EDIFACT-Label>"
-                    },
-                    "png": {
-                      "summary": "PNG Label (EDIFACT D96A)",
-                      "description": "Label response in EDIFACT D96A XML format for EDI compliance",
-                      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<EDIFACT-Label xmlns=\"urn:un:edifact:d96a:label\">\n  <InterchangeHeader>\n    <SyntaxIdentifier>UNOC</SyntaxIdentifier>\n    <InterchangeSender>SHIPHAPPENS</InterchangeSender>\n    <InterchangeRecipient>CARRIER123</InterchangeRecipient>\n    <DateTime>2025010912050</DateTime>\n  </InterchangeHeader>\n  <Label>\n    <id>661f9511-f3ac-52e5-b827-557766551111</id>\n    <shipmentId>123e4567-e89b-12d3-a456-426614174000</shipmentId>\n    <format>PNG</format>\n    <url>https://api.sh.example.com/v1/labels/661f9511-f3ac-52e5-b827-557766551111</url>\n    <createdAt>2025-01-09T12:05:00Z</createdAt>\n    <expiresAt>2025-01-16T12:05:00Z</expiresAt>\n  </Label>\n</EDIFACT-Label>"
-                    },
-                    "zpl": {
-                      "summary": "ZPL Label (EDIFACT D96A)",
-                      "description": "Label response in EDIFACT D96A XML format for EDI compliance, suitable for thermal printers",
-                      "value": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<EDIFACT-Label xmlns=\"urn:un:edifact:d96a:label\">\n  <InterchangeHeader>\n    <SyntaxIdentifier>UNOC</SyntaxIdentifier>\n    <InterchangeSender>SHIPHAPPENS</InterchangeSender>\n    <InterchangeRecipient>CARRIER123</InterchangeRecipient>\n    <DateTime>2025010912100</DateTime>\n  </InterchangeHeader>\n  <Label>\n    <id>772f0622-g4bd-63f6-c938-668877662222</id>\n    <shipmentId>123e4567-e89b-12d3-a456-426614174000</shipmentId>\n    <format>ZPL</format>\n    <url>https://api.sh.example.com/v1/labels/772f0622-g4bd-63f6-c938-668877662222</url>\n    <createdAt>2025-01-09T12:10:00Z</createdAt>\n    <expiresAt>2025-01-16T12:10:00Z</expiresAt>\n  </Label>\n</EDIFACT-Label>"
-                    }
-                  }
-                }
-              }
-            },
-            "404": {
-              "description": "Shipment not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Error"
-                  },
-                  "example": {
-                    "code": "NOT_FOUND",
-                    "message": "Shipment not found"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/shipments/{shipmentId}/documents/commercial-invoice": {
-        "get": {
-          "tags": ["Documentation"],
-          "summary": "Get commercial invoice",
-          "description": "Generate a commercial invoice for an international shipment",
-          "operationId": "getCommercialInvoice",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            },
-            {
-              "name": "format",
-              "in": "query",
-              "schema": {
-                "type": "string",
-                "enum": ["PDF", "DOCX"]
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Commercial invoice generated successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "url": {
-                        "type": "string",
-                        "format": "uri"
-                      },
-                      "expiresAt": {
-                        "type": "string",
-                        "format": "date-time"
-                      }
-                    }
-                  },
-                  "example": {
-                    "url": "https://api.sh.example.com/v1/documents/invoice_123456.pdf",
-                    "expiresAt": "2025-01-16T12:00:00Z"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/shipments/{shipmentId}/events": {
-        "get": {
-          "tags": ["Tracking & Notifications"],
-          "summary": "Get shipment tracking events",
-          "description": "Retrieve detailed tracking events for a shipment",
-          "operationId": "getTrackingEvents",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Tracking events retrieved successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "shipmentId": {
-                        "type": "string",
-                        "format": "uuid"
-                      },
-                      "events": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "timestamp": {
-                              "type": "string",
-                              "format": "date-time"
-                            },
-                            "status": {
-                              "type": "string"
-                            },
-                            "location": {
-                              "type": "object",
-                              "properties": {
-                                "city": {
-                                  "type": "string"
-                                },
-                                "state": {
-                                  "type": "string"
-                                },
-                                "country": {
-                                  "type": "string"
-                                },
-                                "coordinates": {
-                                  "type": "object",
-                                  "properties": {
-                                    "latitude": {
-                                      "type": "number"
-                                    },
-                                    "longitude": {
-                                      "type": "number"
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            "description": {
-                              "type": "string"
-                            },
-                            "details": {
-                              "type": "object",
-                              "additionalProperties": true
-                            }
-                          }
+                      "required": [
+                        "description",
+                        "quantity",
+                        "value",
+                        "hsCode",
+                        "originCountry"
+                      ],
+                      "properties": {
+                        "description": {
+                          "type": "string"
+                        },
+                        "quantity": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "value": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "weight": {
+                          "type": "number",
+                          "format": "float"
+                        },
+                        "hsCode": {
+                          "type": "string",
+                          "pattern": "^[0-9]{6,10}$"
+                        },
+                        "originCountry": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{2}$"
                         }
                       }
                     }
                   },
-                  "examples": {
-                    "domestic_delivery": {
-                      "summary": "Successful domestic delivery",
-                      "value": {
-                        "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
-                        "events": [
-                          {
-                            "timestamp": "2025-01-09T16:30:00Z",
-                            "status": "DELIVERED",
-                            "location": {
-                              "city": "Shiptown",
-                              "state": "ST",
-                              "country": "US",
-                              "coordinates": {
-                                "latitude": 37.7749,
-                                "longitude": -122.4194
-                              }
-                            },
-                            "description": "Package delivered to recipient",
-                            "details": {
-                              "signedBy": "John Smith",
-                              "deliveryLocation": "Front Door"
-                            }
-                          },
-                          {
-                            "timestamp": "2025-01-09T09:15:00Z",
-                            "status": "OUT_FOR_DELIVERY",
-                            "location": {
-                              "city": "Shiptown",
-                              "state": "ST",
-                              "country": "US",
-                              "coordinates": {
-                                "latitude": 37.7749,
-                                "longitude": -122.4194
-                              }
-                            },
-                            "description": "Package is out for delivery",
-                            "details": {
-                              "vehicleId": "VAN123",
-                              "estimatedDelivery": "2025-01-09T17:00:00Z"
-                            }
-                          },
-                          {
-                            "timestamp": "2025-01-09T02:30:00Z",
-                            "status": "ARRIVED_AT_FACILITY",
-                            "location": {
-                              "city": "Shiptown",
-                              "state": "ST",
-                              "country": "US",
-                              "coordinates": {
-                                "latitude": 37.7749,
-                                "longitude": -122.4194
-                              }
-                            },
-                            "description": "Package arrived at local facility",
-                            "details": {
-                              "facilityId": "ST123"
-                            }
-                          }
-                        ]
+                  "purpose": {
+                    "type": "string",
+                    "enum": [
+                      "COMMERCIAL",
+                      "PERSONAL",
+                      "GIFT",
+                      "RETURN",
+                      "REPAIR"
+                    ]
+                  },
+                  "incoterm": {
+                    "type": "string",
+                    "enum": ["DAP", "DDP", "FCA", "EXW"]
+                  }
+                }
+              },
+              "examples": {
+                "commercial": {
+                  "summary": "Commercial electronics shipment",
+                  "value": {
+                    "items": [
+                      {
+                        "description": "Smartphone",
+                        "quantity": 10,
+                        "value": 399.99,
+                        "weight": 0.18,
+                        "hsCode": "851712",
+                        "originCountry": "CN"
+                      },
+                      {
+                        "description": "Protective Cases",
+                        "quantity": 10,
+                        "value": 9.99,
+                        "weight": 0.05,
+                        "hsCode": "392690",
+                        "originCountry": "CN"
                       }
-                    },
-                    "international_exception": {
-                      "summary": "International shipment with customs delay",
-                      "value": {
-                        "shipmentId": "987fcdeb-a654-3210-9876-543210987654",
-                        "events": [
-                          {
-                            "timestamp": "2025-01-09T14:20:00Z",
-                            "status": "EXCEPTION",
-                            "location": {
-                              "city": "London",
-                              "country": "GB",
-                              "coordinates": {
-                                "latitude": 51.5074,
-                                "longitude": -0.1278
-                              }
-                            },
-                            "description": "Customs clearance delay",
-                            "details": {
-                              "reason": "Additional documentation required",
-                              "requiredDocs": [
-                                "Commercial Invoice",
-                                "Certificate of Origin"
-                              ],
-                              "contactEmail": "customs@sh.example.com"
-                            }
-                          },
-                          {
-                            "timestamp": "2025-01-09T08:45:00Z",
-                            "status": "ARRIVED_AT_CUSTOMS",
-                            "location": {
-                              "city": "London",
-                              "country": "GB",
-                              "coordinates": {
-                                "latitude": 51.5074,
-                                "longitude": -0.1278
-                              }
-                            },
-                            "description": "Package arrived at customs",
-                            "details": {
-                              "customsOffice": "LHR1",
-                              "declarationNumber": "GB123456789"
-                            }
-                          },
-                          {
-                            "timestamp": "2025-01-08T22:15:00Z",
-                            "status": "DEPARTED",
-                            "location": {
-                              "city": "Los Angeles",
-                              "state": "CA",
-                              "country": "US",
-                              "coordinates": {
-                                "latitude": 34.0522,
-                                "longitude": -118.2437
-                              }
-                            },
-                            "description": "Package departed origin facility",
-                            "details": {
-                              "flightNumber": "BA282",
-                              "destination": "LHR"
-                            }
-                          }
-                        ]
+                    ],
+                    "purpose": "COMMERCIAL",
+                    "incoterm": "DDP"
+                  }
+                },
+                "gift": {
+                  "summary": "Personal gift shipment",
+                  "description": "Handmade items sent as a gift",
+                  "value": {
+                    "items": [
+                      {
+                        "description": "Handmade Wool Sweater",
+                        "quantity": 1,
+                        "value": 75.0,
+                        "weight": 0.5,
+                        "hsCode": "611010",
+                        "originCountry": "IE"
+                      },
+                      {
+                        "description": "Local Chocolate Assortment",
+                        "quantity": 2,
+                        "value": 25.0,
+                        "weight": 0.3,
+                        "hsCode": "180632",
+                        "originCountry": "IE"
                       }
-                    }
+                    ],
+                    "purpose": "GIFT",
+                    "incoterm": "DAP"
                   }
                 }
               }
             }
           }
-        }
-      },
-      "/shipments/{shipmentId}/notifications": {
-        "post": {
-          "tags": ["Tracking & Notifications"],
-          "summary": "Set up notifications",
-          "description": "Configure notification preferences for shipment status updates",
-          "operationId": "setupNotifications",
-          "parameters": [
-            {
-              "name": "shipmentId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "format": "uuid"
-              }
-            }
-          ],
-          "requestBody": {
-            "required": true,
+        },
+        "responses": {
+          "200": {
+            "description": "Customs documentation updated successfully",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "email": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "format": "email"
-                      }
+                    "id": {
+                      "type": "string",
+                      "format": "uuid"
                     },
-                    "sms": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "pattern": "^\\+[1-9]\\d{1,14}$"
-                      }
+                    "status": {
+                      "type": "string",
+                      "enum": ["PENDING", "APPROVED", "REJECTED"]
                     },
-                    "webhooks": {
+                    "customsValue": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "documents": {
                       "type": "array",
                       "items": {
-                        "type": "string",
-                        "format": "uri"
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "COMMERCIAL_INVOICE",
+                              "DECLARATION",
+                              "CERTIFICATE_ORIGIN"
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        }
                       }
+                    }
+                  }
+                },
+                "examples": {
+                  "commercial_approved": {
+                    "summary": "Approved commercial shipment",
+                    "value": {
+                      "id": "a1b2c3d4-e5f6-4a5b-9c8d-1a2b3c4d5e6f",
+                      "status": "APPROVED",
+                      "customsValue": 4099.8,
+                      "currency": "USD",
+                      "documents": [
+                        {
+                          "type": "COMMERCIAL_INVOICE",
+                          "url": "https://api.sh.example.com/v1/customs/docs/invoice_12345.pdf"
+                        },
+                        {
+                          "type": "DECLARATION",
+                          "url": "https://api.sh.example.com/v1/customs/docs/declaration_12345.pdf"
+                        }
+                      ]
+                    }
+                  },
+                  "gift_pending": {
+                    "summary": "Pending gift shipment",
+                    "value": {
+                      "id": "f6e5d4c3-b2a1-4c5d-8e9f-2b3a4c5d6e7f",
+                      "status": "PENDING",
+                      "customsValue": 125.0,
+                      "currency": "USD",
+                      "documents": [
+                        {
+                          "type": "DECLARATION",
+                          "url": "https://api.sh.example.com/v1/customs/docs/declaration_67890.pdf"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/customs/duties": {
+      "post": {
+        "tags": ["International Shipping"],
+        "summary": "Pay import duties",
+        "description": "Pay import duties and taxes for an international shipment",
+        "operationId": "payDuties",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["paymentMethod"],
+                "properties": {
+                  "paymentMethod": {
+                    "type": "string",
+                    "enum": ["CREDIT_CARD", "BANK_TRANSFER", "ACCOUNT_BALANCE"]
+                  },
+                  "paymentDetails": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "examples": {
+                "credit_card": {
+                  "summary": "Pay with credit card",
+                  "value": {
+                    "paymentMethod": "CREDIT_CARD",
+                    "paymentDetails": {
+                      "last4": "4242",
+                      "brand": "visa"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Duties paid successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "number",
+                      "format": "float"
+                    },
+                    "currency": {
+                      "type": "string"
+                    },
+                    "receipt": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  }
+                },
+                "example": {
+                  "amount": 125.5,
+                  "currency": "GBP",
+                  "receipt": "https://api.sh.example.com/v1/receipts/duty_123456.pdf"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/label": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Get shipping label",
+        "description": "Get the shipping label for a shipment in various formats. Supports both JSON and XML responses. XML format follows the EDIFACT D96A standard for shipping label interchange, while JSON is provided for modern API integrations.",
+        "operationId": "getLabel",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["PDF", "PNG", "ZPL"]
+            },
+            "description": "Label format"
+          },
+          {
+            "name": "Accept",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "enum": ["application/json", "application/xml"],
+              "default": "application/json"
+            },
+            "description": "Response format. Use application/xml for EDI-compliant responses following EDIFACT D96A standard."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Label generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": ["shipmentId", "format"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true
+                    },
+                    "shipmentId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "format": {
+                      "type": "string",
+                      "enum": ["PDF", "PNG", "ZPL"]
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "readOnly": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true
+                    }
+                  }
+                },
+                "examples": {
+                  "pdf": {
+                    "summary": "PDF Label",
+                    "value": {
+                      "id": "550e8400-e29b-41d4-a716-446655440000",
+                      "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                      "format": "PDF",
+                      "url": "https://api.sh.example.com/v1/labels/550e8400-e29b-41d4-a716-446655440000",
+                      "createdAt": "2025-01-09T12:00:00Z",
+                      "expiresAt": "2025-01-16T12:00:00Z"
+                    }
+                  },
+                  "png": {
+                    "summary": "PNG Label",
+                    "value": {
+                      "id": "661f9511-f3ac-52e5-b827-557766551111",
+                      "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                      "format": "PNG",
+                      "url": "https://api.sh.example.com/v1/labels/661f9511-f3ac-52e5-b827-557766551111",
+                      "createdAt": "2025-01-09T12:05:00Z",
+                      "expiresAt": "2025-01-16T12:05:00Z"
+                    }
+                  },
+                  "zpl": {
+                    "summary": "ZPL Label (Thermal Printer)",
+                    "description": "Label in ZPL format for direct thermal printing",
+                    "value": {
+                      "id": "772f0622-g4bd-63f6-c938-668877662222",
+                      "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
+                      "format": "ZPL",
+                      "url": "https://api.sh.example.com/v1/labels/772f0622-g4bd-63f6-c938-668877662222",
+                      "createdAt": "2025-01-09T12:10:00Z",
+                      "expiresAt": "2025-01-16T12:10:00Z"
+                    }
+                  }
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "type": "object",
+                  "required": ["shipmentId", "format"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "readOnly": true
+                    },
+                    "shipmentId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "format": {
+                      "type": "string",
+                      "enum": ["PDF", "PNG", "ZPL"]
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri",
+                      "readOnly": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "readOnly": true
+                    }
+                  }
+                },
+                "examples": {
+                  "pdf": {
+                    "summary": "PDF Label (EDIFACT D96A)",
+                    "description": "Label response in EDIFACT D96A XML format for EDI compliance",
+                    "value": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<EDIFACT-Label xmlns=\"urn:un:edifact:d96a:label\">\n  <InterchangeHeader>\n    <SyntaxIdentifier>UNOC</SyntaxIdentifier>\n    <InterchangeSender>SHIPHAPPENS</InterchangeSender>\n    <InterchangeRecipient>CARRIER123</InterchangeRecipient>\n    <DateTime>2025010912000</DateTime>\n  </InterchangeHeader>\n  <Label>\n    <id>550e8400-e29b-41d4-a716-446655440000</id>\n    <shipmentId>123e4567-e89b-12d3-a456-426614174000</shipmentId>\n    <format>PDF</format>\n    <url>https://api.sh.example.com/v1/labels/550e8400-e29b-41d4-a716-446655440000</url>\n    <createdAt>2025-01-09T12:00:00Z</createdAt>\n    <expiresAt>2025-01-16T12:00:00Z</expiresAt>\n  </Label>\n</EDIFACT-Label>"
+                  },
+                  "png": {
+                    "summary": "PNG Label (EDIFACT D96A)",
+                    "description": "Label response in EDIFACT D96A XML format for EDI compliance",
+                    "value": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<EDIFACT-Label xmlns=\"urn:un:edifact:d96a:label\">\n  <InterchangeHeader>\n    <SyntaxIdentifier>UNOC</SyntaxIdentifier>\n    <InterchangeSender>SHIPHAPPENS</InterchangeSender>\n    <InterchangeRecipient>CARRIER123</InterchangeRecipient>\n    <DateTime>2025010912050</DateTime>\n  </InterchangeHeader>\n  <Label>\n    <id>661f9511-f3ac-52e5-b827-557766551111</id>\n    <shipmentId>123e4567-e89b-12d3-a456-426614174000</shipmentId>\n    <format>PNG</format>\n    <url>https://api.sh.example.com/v1/labels/661f9511-f3ac-52e5-b827-557766551111</url>\n    <createdAt>2025-01-09T12:05:00Z</createdAt>\n    <expiresAt>2025-01-16T12:05:00Z</expiresAt>\n  </Label>\n</EDIFACT-Label>"
+                  },
+                  "zpl": {
+                    "summary": "ZPL Label (EDIFACT D96A)",
+                    "description": "Label response in EDIFACT D96A XML format for EDI compliance, suitable for thermal printers",
+                    "value": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<EDIFACT-Label xmlns=\"urn:un:edifact:d96a:label\">\n  <InterchangeHeader>\n    <SyntaxIdentifier>UNOC</SyntaxIdentifier>\n    <InterchangeSender>SHIPHAPPENS</InterchangeSender>\n    <InterchangeRecipient>CARRIER123</InterchangeRecipient>\n    <DateTime>2025010912100</DateTime>\n  </InterchangeHeader>\n  <Label>\n    <id>772f0622-g4bd-63f6-c938-668877662222</id>\n    <shipmentId>123e4567-e89b-12d3-a456-426614174000</shipmentId>\n    <format>ZPL</format>\n    <url>https://api.sh.example.com/v1/labels/772f0622-g4bd-63f6-c938-668877662222</url>\n    <createdAt>2025-01-09T12:10:00Z</createdAt>\n    <expiresAt>2025-01-16T12:10:00Z</expiresAt>\n  </Label>\n</EDIFACT-Label>"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Shipment not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "NOT_FOUND",
+                  "message": "Shipment not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/documents/commercial-invoice": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Get commercial invoice",
+        "description": "Generate a commercial invoice for an international shipment",
+        "operationId": "getCommercialInvoice",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["PDF", "DOCX"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commercial invoice generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "expiresAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "example": {
+                  "url": "https://api.sh.example.com/v1/documents/invoice_123456.pdf",
+                  "expiresAt": "2025-01-16T12:00:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/events": {
+      "get": {
+        "tags": ["Tracking & Notifications"],
+        "summary": "Get shipment tracking events",
+        "description": "Retrieve detailed tracking events for a shipment",
+        "operationId": "getTrackingEvents",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shipmentId": {
+                      "type": "string",
+                      "format": "uuid"
                     },
                     "events": {
                       "type": "array",
                       "items": {
-                        "type": "string",
-                        "enum": [
-                          "PICKUP_SCHEDULED",
-                          "IN_TRANSIT",
-                          "OUT_FOR_DELIVERY",
-                          "DELIVERED",
-                          "EXCEPTION"
-                        ]
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "type": "object",
+                            "properties": {
+                              "city": {
+                                "type": "string"
+                              },
+                              "state": {
+                                "type": "string"
+                              },
+                              "country": {
+                                "type": "string"
+                              },
+                              "coordinates": {
+                                "type": "object",
+                                "properties": {
+                                  "latitude": {
+                                    "type": "number"
+                                  },
+                                  "longitude": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "details": {
+                            "type": "object",
+                            "additionalProperties": true
+                          }
+                        }
                       }
                     }
                   }
                 },
                 "examples": {
-                  "all_channels": {
-                    "summary": "Notifications on all channels",
+                  "domestic_delivery": {
+                    "summary": "Successful domestic delivery",
                     "value": {
-                      "email": ["recipient@example.com", "sender@example.com"],
-                      "sms": ["+14155552671"],
-                      "webhooks": ["https://example.com/webhook"],
+                      "shipmentId": "123e4567-e89b-12d3-a456-426614174000",
                       "events": [
+                        {
+                          "timestamp": "2025-01-09T16:30:00Z",
+                          "status": "DELIVERED",
+                          "location": {
+                            "city": "Shiptown",
+                            "state": "ST",
+                            "country": "US",
+                            "coordinates": {
+                              "latitude": 37.7749,
+                              "longitude": -122.4194
+                            }
+                          },
+                          "description": "Package delivered to recipient",
+                          "details": {
+                            "signedBy": "John Smith",
+                            "deliveryLocation": "Front Door"
+                          }
+                        },
+                        {
+                          "timestamp": "2025-01-09T09:15:00Z",
+                          "status": "OUT_FOR_DELIVERY",
+                          "location": {
+                            "city": "Shiptown",
+                            "state": "ST",
+                            "country": "US",
+                            "coordinates": {
+                              "latitude": 37.7749,
+                              "longitude": -122.4194
+                            }
+                          },
+                          "description": "Package is out for delivery",
+                          "details": {
+                            "vehicleId": "VAN123",
+                            "estimatedDelivery": "2025-01-09T17:00:00Z"
+                          }
+                        },
+                        {
+                          "timestamp": "2025-01-09T02:30:00Z",
+                          "status": "ARRIVED_AT_FACILITY",
+                          "location": {
+                            "city": "Shiptown",
+                            "state": "ST",
+                            "country": "US",
+                            "coordinates": {
+                              "latitude": 37.7749,
+                              "longitude": -122.4194
+                            }
+                          },
+                          "description": "Package arrived at local facility",
+                          "details": {
+                            "facilityId": "ST123"
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  "international_exception": {
+                    "summary": "International shipment with customs delay",
+                    "value": {
+                      "shipmentId": "987fcdeb-a654-3210-9876-543210987654",
+                      "events": [
+                        {
+                          "timestamp": "2025-01-09T14:20:00Z",
+                          "status": "EXCEPTION",
+                          "location": {
+                            "city": "London",
+                            "country": "GB",
+                            "coordinates": {
+                              "latitude": 51.5074,
+                              "longitude": -0.1278
+                            }
+                          },
+                          "description": "Customs clearance delay",
+                          "details": {
+                            "reason": "Additional documentation required",
+                            "requiredDocs": [
+                              "Commercial Invoice",
+                              "Certificate of Origin"
+                            ],
+                            "contactEmail": "customs@sh.example.com"
+                          }
+                        },
+                        {
+                          "timestamp": "2025-01-09T08:45:00Z",
+                          "status": "ARRIVED_AT_CUSTOMS",
+                          "location": {
+                            "city": "London",
+                            "country": "GB",
+                            "coordinates": {
+                              "latitude": 51.5074,
+                              "longitude": -0.1278
+                            }
+                          },
+                          "description": "Package arrived at customs",
+                          "details": {
+                            "customsOffice": "LHR1",
+                            "declarationNumber": "GB123456789"
+                          }
+                        },
+                        {
+                          "timestamp": "2025-01-08T22:15:00Z",
+                          "status": "DEPARTED",
+                          "location": {
+                            "city": "Los Angeles",
+                            "state": "CA",
+                            "country": "US",
+                            "coordinates": {
+                              "latitude": 34.0522,
+                              "longitude": -118.2437
+                            }
+                          },
+                          "description": "Package departed origin facility",
+                          "details": {
+                            "flightNumber": "BA282",
+                            "destination": "LHR"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/notifications": {
+      "post": {
+        "tags": ["Tracking & Notifications"],
+        "summary": "Set up notifications",
+        "description": "Configure notification preferences for shipment status updates",
+        "operationId": "setupNotifications",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "email"
+                    }
+                  },
+                  "sms": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "pattern": "^\\+[1-9]\\d{1,14}$"
+                    }
+                  },
+                  "webhooks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "events": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
                         "PICKUP_SCHEDULED",
+                        "IN_TRANSIT",
                         "OUT_FOR_DELIVERY",
                         "DELIVERED",
                         "EXCEPTION"
@@ -1655,203 +1638,219 @@
                     }
                   }
                 }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Notification preferences updated successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "status": {
-                        "type": "string",
-                        "enum": ["ACTIVE"]
-                      },
-                      "channels": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        }
-                      }
-                    }
-                  },
-                  "example": {
-                    "status": "ACTIVE",
-                    "channels": ["email", "sms", "webhook"]
+              },
+              "examples": {
+                "all_channels": {
+                  "summary": "Notifications on all channels",
+                  "value": {
+                    "email": ["recipient@example.com", "sender@example.com"],
+                    "sms": ["+14155552671"],
+                    "webhooks": ["https://example.com/webhook"],
+                    "events": [
+                      "PICKUP_SCHEDULED",
+                      "OUT_FOR_DELIVERY",
+                      "DELIVERED",
+                      "EXCEPTION"
+                    ]
                   }
                 }
               }
             }
           }
-        }
-      },
-      "/routes/{originFacilityId}/{destinationFacilityId}/{serviceLevel}/estimate": {
-        "get": {
-          "tags": ["Route Planning"],
-          "summary": "Get estimated delivery time",
-          "description": "Get estimated delivery time between two facilities for a specific service level",
-          "operationId": "getRouteEstimate",
-          "parameters": [
-            {
-              "name": "originFacilityId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "pattern": "^[A-Z]{3}[0-9]{1}$",
-                "example": "LAX1"
-              },
-              "description": "ID of the origin facility"
-            },
-            {
-              "name": "destinationFacilityId",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "pattern": "^[A-Z]{3}[0-9]{1}$",
-                "example": "JFK1"
-              },
-              "description": "ID of the destination facility"
-            },
-            {
-              "name": "serviceLevel",
-              "in": "path",
-              "required": true,
-              "schema": {
-                "type": "string",
-                "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
-              },
-              "description": "Service level for the route"
-            }
-          ],
-          "responses": {
-            "200": {
-              "description": "Route estimate retrieved successfully",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "estimatedDeliveryTime": {
-                        "type": "object",
-                        "properties": {
-                          "min": {
-                            "type": "integer",
-                            "description": "Minimum delivery time"
-                          },
-                          "max": {
-                            "type": "integer",
-                            "description": "Maximum delivery time"
-                          },
-                          "unit": {
-                            "type": "string",
-                            "enum": ["HOURS", "DAYS"]
-                          }
-                        }
-                      },
-                      "distance": {
-                        "type": "object",
-                        "properties": {
-                          "value": {
-                            "type": "number",
-                            "format": "float"
-                          },
-                          "unit": {
-                            "type": "string",
-                            "enum": ["KM", "MI"]
-                          }
-                        }
-                      },
-                      "route": {
-                        "type": "object",
-                        "properties": {
-                          "transitHubs": {
-                            "type": "array",
-                            "items": {
-                              "type": "string"
-                            }
-                          },
-                          "transportModes": {
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "enum": ["AIR", "GROUND", "SEA"]
-                            }
-                          }
-                        }
+        },
+        "responses": {
+          "200": {
+            "description": "Notification preferences updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["ACTIVE"]
+                    },
+                    "channels": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
                       }
                     }
-                  },
-                  "examples": {
-                    "domestic_ground": {
-                      "summary": "Domestic ground shipping estimate",
-                      "value": {
-                        "estimatedDeliveryTime": {
-                          "min": 2,
-                          "max": 3,
-                          "unit": "DAYS"
+                  }
+                },
+                "example": {
+                  "status": "ACTIVE",
+                  "channels": ["email", "sms", "webhook"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/routes/{originFacilityId}/{destinationFacilityId}/{serviceLevel}/estimate": {
+      "get": {
+        "tags": ["Route Planning"],
+        "summary": "Get estimated delivery time",
+        "description": "Get estimated delivery time between two facilities for a specific service level",
+        "operationId": "getRouteEstimate",
+        "parameters": [
+          {
+            "name": "originFacilityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}[0-9]{1}$",
+              "example": "LAX1"
+            },
+            "description": "ID of the origin facility"
+          },
+          {
+            "name": "destinationFacilityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z]{3}[0-9]{1}$",
+              "example": "JFK1"
+            },
+            "description": "ID of the destination facility"
+          },
+          {
+            "name": "serviceLevel",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
+            },
+            "description": "Service level for the route"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Route estimate retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "estimatedDeliveryTime": {
+                      "type": "object",
+                      "properties": {
+                        "min": {
+                          "type": "integer",
+                          "description": "Minimum delivery time"
                         },
-                        "distance": {
-                          "value": 2789.4,
-                          "unit": "MI"
+                        "max": {
+                          "type": "integer",
+                          "description": "Maximum delivery time"
                         },
-                        "route": {
-                          "transitHubs": ["DEN1", "CHI1"],
-                          "transportModes": ["GROUND"]
+                        "unit": {
+                          "type": "string",
+                          "enum": ["HOURS", "DAYS"]
                         }
                       }
                     },
-                    "express_air": {
-                      "summary": "Express air shipping estimate",
-                      "value": {
-                        "estimatedDeliveryTime": {
-                          "min": 8,
-                          "max": 12,
-                          "unit": "HOURS"
+                    "distance": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "type": "number",
+                          "format": "float"
                         },
-                        "distance": {
-                          "value": 2789.4,
-                          "unit": "MI"
-                        },
-                        "route": {
-                          "transitHubs": [],
-                          "transportModes": ["AIR"]
+                        "unit": {
+                          "type": "string",
+                          "enum": ["KM", "MI"]
                         }
+                      }
+                    },
+                    "route": {
+                      "type": "object",
+                      "properties": {
+                        "transitHubs": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "transportModes": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": ["AIR", "GROUND", "SEA"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "domestic_ground": {
+                    "summary": "Domestic ground shipping estimate",
+                    "value": {
+                      "estimatedDeliveryTime": {
+                        "min": 2,
+                        "max": 3,
+                        "unit": "DAYS"
+                      },
+                      "distance": {
+                        "value": 2789.4,
+                        "unit": "MI"
+                      },
+                      "route": {
+                        "transitHubs": ["DEN1", "CHI1"],
+                        "transportModes": ["GROUND"]
+                      }
+                    }
+                  },
+                  "express_air": {
+                    "summary": "Express air shipping estimate",
+                    "value": {
+                      "estimatedDeliveryTime": {
+                        "min": 8,
+                        "max": 12,
+                        "unit": "HOURS"
+                      },
+                      "distance": {
+                        "value": 2789.4,
+                        "unit": "MI"
+                      },
+                      "route": {
+                        "transitHubs": [],
+                        "transportModes": ["AIR"]
                       }
                     }
                   }
                 }
               }
-            },
-            "400": {
-              "description": "Invalid input",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Error"
-                  },
-                  "example": {
-                    "code": "INVALID_FACILITY",
-                    "message": "Invalid facility ID format"
-                  }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_FACILITY",
+                  "message": "Invalid facility ID format"
                 }
               }
-            },
-            "404": {
-              "description": "Route not found",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "$ref": "#/components/schemas/Error"
-                  },
-                  "example": {
-                    "code": "ROUTE_NOT_FOUND",
-                    "message": "No route found between specified facilities"
-                  }
+            }
+          },
+          "404": {
+            "description": "Route not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "ROUTE_NOT_FOUND",
+                  "message": "No route found between specified facilities"
                 }
               }
             }
@@ -1860,3 +1859,4 @@
       }
     }
   }
+}

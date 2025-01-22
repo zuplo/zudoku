@@ -509,7 +509,21 @@
             "description": "The desired format of the label",
             "schema": {
               "type": "string",
-              "enum": ["PDF", "PNG", "ZPL", "JPEG", "TIFF", "SVG", "EPS", "BMP", "GIF", "WEBP", "PCX", "EMF", "PS"],
+              "enum": [
+                "PDF",
+                "PNG",
+                "ZPL",
+                "JPEG",
+                "TIFF",
+                "SVG",
+                "EPS",
+                "BMP",
+                "GIF",
+                "WEBP",
+                "PCX",
+                "EMF",
+                "PS"
+              ],
               "default": "PDF"
             }
           }
