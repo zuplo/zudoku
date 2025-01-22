@@ -65,7 +65,7 @@ export const Headers = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <Card className="flex flex-col gap-2">
+      <Card className="flex flex-col gap-2 overflow-hidden">
         <table className="w-full">
           <tbody>
             {fields.map((header, i) => (
@@ -94,7 +94,7 @@ export const Headers = ({
                     render={({ field }) => (
                       <Autocomplete
                         {...field}
-                        className="border-0 shadow-none text-xs font-mono"
+                        className="border-0 shadow-none bg-transparent text-xs font-mono"
                         options={headerOptions}
                         onChange={(e) => {
                           field.onChange(e);
@@ -108,7 +108,7 @@ export const Headers = ({
                   <div className="flex items-center gap-2">
                     <Input
                       placeholder={"Value"}
-                      className="w-full border-0 shadow-none text-xs font-mono hover:bg-accent"
+                      className="w-full border-0 shadow-none text-xs font-mono"
                       {...register(`headers.${i}.value`)}
                       autoComplete="off"
                       autoFocus={false}
