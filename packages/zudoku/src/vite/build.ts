@@ -1,4 +1,4 @@
-import { mkdir, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { findOutputPathOfServerConfig } from "../config/loader.js";
@@ -7,6 +7,8 @@ import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender.js";
+
+const DIST_DIR = "dist";
 
 export async function runBuild(options: { dir: string }) {
   // Shouldn't run in parallel because it's potentially racy
@@ -69,13 +71,16 @@ export async function runBuild(options: { dir: string }) {
       await writeFile(
         path.join(
           options.dir,
-          "dist",
+          DIST_DIR,
           viteClientConfig.base ?? "",
           "index.html",
         ),
         html,
         "utf-8",
       );
+
+      const serverDir = path.join(options.dir, DIST_DIR, "server");
+      await rm(serverDir, { recursive: true, force: true });
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
@@ -87,7 +92,7 @@ export async function runBuild(options: { dir: string }) {
         recursive: true,
       });
       await rename(
-        path.join(options.dir, "dist"),
+        path.join(options.dir, DIST_DIR),
         path.join(options.dir, ".vercel/output/static"),
       );
     }
