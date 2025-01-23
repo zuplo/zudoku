@@ -218,8 +218,8 @@ jobs:
           echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
 
       # Trigger updates of internal projects using Zudoku
-      - run: gh workflow run release.yaml --repo zuplo-poc/docs-zudoku --ref main
+      - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_POC_WORKFLOWS }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
