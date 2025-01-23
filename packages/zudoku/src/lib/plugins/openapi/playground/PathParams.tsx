@@ -1,9 +1,6 @@
-import { EraserIcon } from "lucide-react";
 import { Control, Controller, useFieldArray } from "react-hook-form";
 import { Card } from "zudoku/ui/Card.js";
-import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
-import { cn } from "../../../util/cn.js";
 import { ColorizedParam, useParamColor } from "../ColorizedParam.js";
 import type { PlaygroundForm } from "./Playground.js";
 
@@ -61,28 +58,6 @@ export const PathParams = ({
                         placeholder="Enter value"
                         className="w-full border-0 shadow-none text-xs font-mono hover:bg-accent"
                       />
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name={`pathParams.${i}.value`}
-                    render={({ field }) => (
-                      <Button
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        aria-label="Clear value"
-                        className={cn(
-                          "ms-2 mr-1",
-                          field.value.length === 0
-                            ? "opacity-0 pointer-events-none"
-                            : "opacity-100",
-                        )}
-                        title="Clear value"
-                        onClick={() => field.onChange("")}
-                      >
-                        <EraserIcon size={16} />
-                      </Button>
                     )}
                   />
                 </div>
