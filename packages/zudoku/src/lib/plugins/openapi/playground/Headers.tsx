@@ -12,6 +12,7 @@ import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
+import ParamsGrid from "./ParamsGrid.js";
 import { type PlaygroundForm } from "./Playground.js";
 
 const headerOptions = Object.freeze([
@@ -78,82 +79,75 @@ export const Headers = ({
   return (
     <div className="flex flex-col gap-2">
       <Card className="flex flex-col gap-2 overflow-hidden">
-        <table className="w-full">
-          <tbody>
-            {fields.map((header, i) => (
-              <tr
-                key={header.id}
-                className="group has-[:focus]:bg-muted/50 hover:bg-muted/50"
-              >
-                <td className="flex gap-2 items-center pl-3">
-                  <Controller
-                    control={control}
-                    name={`headers.${i}.active`}
-                    render={({ field }) => (
-                      <Checkbox
-                        variant="outline"
-                        id={`headers.${i}.active`}
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked);
-                        }}
-                      />
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name={`headers.${i}.name`}
-                    render={({ field }) => (
-                      <Autocomplete
-                        {...field}
-                        placeholder="Name"
-                        className="border-0 shadow-none bg-transparent text-xs font-mono"
-                        options={headerOptions}
-                        onEnterPress={() => handleHeaderEnter(i)}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setValue(`headers.${i}.active`, true);
-                        }}
-                        ref={(el) => {
-                          nameRefs.current[i] = el;
-                        }}
-                      />
-                    )}
-                  />
-                </td>
-                <td>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      placeholder="Value"
-                      className="w-full border-0 shadow-none text-xs font-mono"
-                      {...register(`headers.${i}.value`)}
-                      ref={(el) => {
-                        valueRefs.current[i] = el;
+        <ParamsGrid>
+          {fields.map((header, i) => (
+            <>
+              <div className="flex items-center gap-2">
+                <Controller
+                  control={control}
+                  name={`headers.${i}.active`}
+                  render={({ field }) => (
+                    <Checkbox
+                      variant="outline"
+                      id={`headers.${i}.active`}
+                      checked={field.value}
+                      onCheckedChange={(checked) => {
+                        field.onChange(checked);
                       }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                          handleValueEnter(i);
-                        }
-                      }}
-                      autoComplete="off"
                     />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="text-muted-foreground opacity-0 group-hover:opacity-100"
-                      onClick={() => {
-                        remove(i);
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name={`headers.${i}.name`}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      placeholder="Name"
+                      className="border-0 shadow-none bg-transparent text-xs font-mono"
+                      options={headerOptions}
+                      onEnterPress={() => handleHeaderEnter(i)}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setValue(`headers.${i}.active`, true);
                       }}
-                      type="button"
-                    >
-                      <XIcon size={16} />
-                    </Button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      ref={(el) => {
+                        nameRefs.current[i] = el;
+                      }}
+                    />
+                  )}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  placeholder="Value"
+                  className="w-full border-0 shadow-none text-xs font-mono"
+                  {...register(`headers.${i}.value`)}
+                  ref={(el) => {
+                    valueRefs.current[i] = el;
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                      handleValueEnter(i);
+                    }
+                  }}
+                  autoComplete="off"
+                />
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-foreground opacity-0 group-hover:opacity-100"
+                  onClick={() => {
+                    remove(i);
+                  }}
+                  type="button"
+                >
+                  <XIcon size={16} />
+                </Button>
+              </div>
+            </>
+          ))}
+        </ParamsGrid>
       </Card>
       <div className="text-end">
         <Button
