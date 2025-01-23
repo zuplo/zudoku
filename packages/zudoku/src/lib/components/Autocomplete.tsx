@@ -24,34 +24,38 @@ const AutocompletePopover = ({
   className,
 }: AutocompleteProps) => {
   const [open, setOpen] = useState(false);
+  const [dontClose, setDontClose] = useState(false);
   const count = useCommandState((state) => state.filtered.count);
-  const ref = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <Popover open={open}>
       <PopoverAnchor>
         <CommandInlineInput
           key="input"
-          ref={ref}
+          ref={inputRef}
           value={value}
           placeholder="Enter value"
           className={cn("h-9 bg-transparent", className)}
           onFocus={() => setOpen(true)}
           onBlur={() => {
-            setTimeout(() => {
-              setOpen(false);
-            }, 150);
+            if (dontClose) {
+              return;
+            }
+            setOpen(false);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               setOpen(false);
-              ref.current?.blur();
+              inputRef.current?.blur();
             }
           }}
           onValueChange={(e) => onChange(e)}
         />
       </PopoverAnchor>
       <PopoverContent
+        onMouseEnter={() => setDontClose(true)}
+        onMouseLeave={() => setDontClose(false)}
         onOpenAutoFocus={(e) => e.preventDefault()}
         className={cn("p-0 w-[--radix-popover-trigger-width]", {
           "border-0": count === 0,
