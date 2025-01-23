@@ -1,5 +1,8 @@
 import type { ZudokuConfig } from "zudoku";
+import { Button } from "zudoku/ui/Button.js";
+import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
+import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
@@ -114,6 +117,22 @@ const config: ZudokuConfig = {
         items: ["components/callout", "components/icons", "components/shadcn"],
       },
     ],
+  },
+  UNSAFE_slotlets: {
+    "head-navigation-end": () => (
+      <div className="flex items-center border-r pr-2">
+        <Button variant="ghost" size="icon" asChild>
+          <a href="https://github.com/zuplo/zudoku">
+            <GithubIcon className="w-4 h-4 dark:invert" />
+          </a>
+        </Button>
+        <Button variant="ghost" size="icon" asChild>
+          <a href="https://discord.gg/stPRhjbA55">
+            <DiscordIcon className="w-5 h-5 dark:invert" />
+          </a>
+        </Button>
+      </div>
+    ),
   },
 };
 

@@ -171,8 +171,8 @@ export const Header = memo(function HeaderInner() {
                   )}
                 </ClientOnly>
               )}
-              <ThemeSwitch />
               <Slotlet name="head-navigation-end" />
+              <ThemeSwitch />
             </div>
           </div>
         </div>
