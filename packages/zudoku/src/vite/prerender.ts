@@ -95,6 +95,7 @@ export const prerender = async ({
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
   const routes = getRoutes(config);
+  console.log("routes", routes);
   const paths = routesToPaths(routes);
 
   const writtenFiles: string[] = [];

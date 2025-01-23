@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { matchPath, useLocation } from "react-router";
+import { matchPath, Outlet, useLocation } from "react-router";
 import { useAuth } from "../authentication/hook.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { ZudokuError } from "../util/invariant.js";
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
+export const RouteGuard = () => {
   const auth = useAuth();
   const zudoku = useZudoku();
   const location = useLocation();
@@ -31,5 +31,5 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     });
   }
 
-  return children;
-}
+  return <Outlet />;
+};
