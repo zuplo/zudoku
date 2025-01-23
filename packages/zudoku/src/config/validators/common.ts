@@ -320,6 +320,7 @@ export const CommonConfigSchema = z.object({
   isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
+  enableStatusPages: z.boolean().optional(),
 });
 
 export const refine = (
