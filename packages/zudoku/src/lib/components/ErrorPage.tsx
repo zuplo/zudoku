@@ -13,7 +13,7 @@ export const ErrorPage = ({
   category?: ReactNode;
 }) => {
   return (
-    <div className={ProseClasses + " h-full pt-[--padding-content-top]"}>
+    <div className={ProseClasses + "h-full pt-[--padding-content-top]"}>
       {category && <CategoryHeading>{category}</CategoryHeading>}
       {title && (
         <Heading level={1} className="flex gap-3.5 items-center">

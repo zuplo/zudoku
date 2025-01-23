@@ -79,12 +79,24 @@ export const getRoutesByOptions = (options: ZudokuContextOptions) => {
 
   const routes = allPlugins
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
-    .concat({
-      path: "*",
-      loader: () => {
-        throw new Response("Not Found", { status: 404 });
+    .concat(
+      import.meta.env.SSR
+        ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
+            (statusCode) => ({
+              path: `/.static/${statusCode}`,
+              Component: () => <StatusPage statusCode={statusCode} />,
+            }),
+          )
+        : [],
+    )
+    .concat([
+      {
+        path: "*",
+        loader: () => {
+          throw new Response("Not Found", { status: 404 });
+        },
       },
-    });
+    ]);
 
   return routes;
 };
