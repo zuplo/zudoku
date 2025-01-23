@@ -6,7 +6,7 @@ import {
   type render as serverRender,
 } from "../app/entry.server.js";
 import { type ZudokuConfig } from "../config/validators/validate.js";
-import { joinPath } from "../lib/util/joinPath.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { generateSitemap } from "./sitemap.js";
 
 export class FileWritingResponse {
@@ -72,17 +72,17 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
 export const prerender = async ({
   html,
   dir,
-  base = "",
+  basePath = "",
   serverConfigFilename,
 }: {
   html: string;
   dir: string;
-  base?: string;
+  basePath?: string;
   serverConfigFilename: string;
 }) => {
   // eslint-disable-next-line no-console
   console.log("Prerendering...");
-  const distDir = path.join(dir, "dist", base);
+  const distDir = path.join(dir, "dist", basePath);
   const config: ZudokuConfig = await import(
     pathToFileURL(path.join(distDir, "server", serverConfigFilename)).href
   ).then((m) => m.default);
@@ -100,7 +100,7 @@ export const prerender = async ({
   const writtenFiles: string[] = [];
   for (const urlPath of paths) {
     const req = new Request(
-      new URL(joinPath(config.basePath, urlPath), "http://localhost").href,
+      joinUrl("http://localhost", config.basePath, urlPath),
     );
 
     const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;

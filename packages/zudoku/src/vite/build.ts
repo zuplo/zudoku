@@ -2,7 +2,7 @@ import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { findOutputPathOfServerConfig } from "../config/loader.js";
-import { joinPath } from "../lib/util/joinPath.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
@@ -44,14 +44,9 @@ export async function runBuild(options: { dir: string }) {
       throw new Error("Build failed. No js or css assets found");
     }
 
-    const getAssetPath = (entry: string) =>
-      config.cdnUrl
-        ? new URL(joinPath(viteClientConfig.base, entry), config.cdnUrl).href
-        : joinPath(viteClientConfig.base, entry);
-
     const html = getBuildHtml({
-      jsEntry: getAssetPath(jsEntry),
-      cssEntry: getAssetPath(cssEntry),
+      jsEntry: joinUrl(viteClientConfig.base, jsEntry),
+      cssEntry: joinUrl(viteClientConfig.base, cssEntry),
     });
 
     const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
@@ -60,7 +55,7 @@ export async function runBuild(options: { dir: string }) {
       const writtenFiles = await prerender({
         html,
         dir: options.dir,
-        base: viteClientConfig.base,
+        basePath: config.basePath,
         serverConfigFilename,
       });
 
@@ -69,12 +64,7 @@ export async function runBuild(options: { dir: string }) {
       }
 
       await writeFile(
-        path.join(
-          options.dir,
-          DIST_DIR,
-          viteClientConfig.base ?? "",
-          "index.html",
-        ),
+        path.join(options.dir, DIST_DIR, config.basePath ?? "", "index.html"),
         html,
         "utf-8",
       );
