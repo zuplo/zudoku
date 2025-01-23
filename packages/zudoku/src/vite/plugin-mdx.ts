@@ -15,6 +15,7 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -48,17 +49,17 @@ const remarkLinkRewritePlugin =
     });
   };
 
-const rehypeMediaBasePath =
-  (basePath = "") =>
+const rehypeMediaBase =
+  (base = "") =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (tree: any) => {
-    if (!basePath) return;
+    if (!base) return;
 
     visit(tree, "element", (node) => {
       if (node.tagName !== "img" && node.tagName !== "video") return;
 
       if (node.properties.src && !node.properties.src.startsWith("http")) {
-        node.properties.src = path.join(basePath, node.properties.src);
+        node.properties.src = joinUrl(base, node.properties.src);
       }
     });
   };
@@ -113,8 +114,13 @@ const rehypeExcerptWithMdxExport = () => (tree: any, _vfile: any) => {
 
 const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const config = getConfig();
+  let base: string | undefined;
+
   return {
     enforce: "pre",
+    configResolved: (v) => {
+      base = v.base;
+    },
     ...mdx({
       providerImportSource:
         config.mode === "internal" || config.mode === "standalone"
@@ -139,7 +145,7 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
-        [rehypeMediaBasePath, config.basePath],
+        [rehypeMediaBase, base],
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
