@@ -317,6 +317,7 @@ export const CommonConfigSchema = z.object({
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
   isZuplo: z.boolean().optional(),
+  enableStatusPages: z.boolean().optional(),
 });
 
 export const refine = (

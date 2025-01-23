@@ -70,7 +70,10 @@ export const convertZudokuConfigToOptions = (
   };
 };
 
-export const getRoutesByOptions = (options: ZudokuContextOptions) => {
+export const getRoutesByOptions = (
+  options: ZudokuContextOptions,
+  enableStatusPages = false,
+) => {
   const allPlugins = [
     ...(options.plugins ? options.plugins : []),
     ...(options.authentication?.getAuthenticationPlugin
@@ -81,7 +84,7 @@ export const getRoutesByOptions = (options: ZudokuContextOptions) => {
   const routes = allPlugins
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
     .concat(
-      import.meta.env.SSR
+      enableStatusPages
         ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
             (statusCode) => ({
               path: `/.static/${statusCode}`,
@@ -104,7 +107,7 @@ export const getRoutesByOptions = (options: ZudokuContextOptions) => {
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   const options = convertZudokuConfigToOptions(config);
-  const routes = getRoutesByOptions(options);
+  const routes = getRoutesByOptions(options, config.enableStatusPages);
 
   return [
     {

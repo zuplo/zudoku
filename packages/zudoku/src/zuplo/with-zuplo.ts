@@ -6,5 +6,6 @@ export const withZuplo = <TConfig extends CommonConfig>(
   return {
     ...config,
     isZuplo: true,
+    enableStatusPages: true,
   };
 };
