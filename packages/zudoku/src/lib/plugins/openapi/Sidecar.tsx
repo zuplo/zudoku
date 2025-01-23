@@ -108,7 +108,6 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
   const [selectedExample, setSelectedExample] = useState<unknown>();
-  console.log(options);
 
   const selectedLang =
     searchParams.get("lang") ?? options?.examplesDefaultLanguage ?? "shell";
