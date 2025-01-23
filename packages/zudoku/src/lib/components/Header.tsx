@@ -16,7 +16,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
-import { joinPath } from "../util/joinPath.js";
+import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
@@ -76,7 +76,7 @@ export const Header = memo(function HeaderInner() {
                       src={
                         /https?:\/\//.test(page.logo.src.light)
                           ? page.logo.src.light
-                          : joinPath(
+                          : joinUrl(
                               import.meta.env.BASE_URL,
                               page.logo.src.light,
                             )
@@ -90,7 +90,7 @@ export const Header = memo(function HeaderInner() {
                       src={
                         /https?:\/\//.test(page.logo.src.dark)
                           ? page.logo.src.dark
-                          : joinPath(
+                          : joinUrl(
                               import.meta.env.BASE_URL,
                               page.logo.src.dark,
                             )

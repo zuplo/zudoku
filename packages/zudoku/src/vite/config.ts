@@ -200,9 +200,13 @@ export async function getViteConfig(
     mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
   });
 
+  const base = config.cdnUrl
+    ? new URL(config.basePath ?? "/", config.cdnUrl).href
+    : config.basePath;
+
   const viteConfig: InlineConfig = {
     root: dir,
-    base: config.basePath,
+    base,
     appType: "custom",
     configFile: false,
     clearScreen: false,
