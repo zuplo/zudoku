@@ -1,3 +1,4 @@
+import { PopoverAnchor } from "@radix-ui/react-popover";
 import { useCommandState } from "cmdk";
 import { useRef, useState } from "react";
 import {
@@ -6,7 +7,7 @@ import {
   CommandItem,
   CommandList,
 } from "zudoku/ui/Command.js";
-import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
+import { Popover, PopoverContent } from "zudoku/ui/Popover.js";
 import { cn } from "../util/cn.js";
 
 type AutocompleteProps = {
@@ -16,44 +17,42 @@ type AutocompleteProps = {
   className?: string;
 };
 
-type AutocompletePopoverProps = AutocompleteProps & {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-};
-
 const AutocompletePopover = ({
   value,
   options,
   onChange,
   className,
-  open,
-  setOpen,
-}: AutocompletePopoverProps) => {
+}: AutocompleteProps) => {
+  const [open, setOpen] = useState(false);
   const count = useCommandState((state) => state.filtered.count);
   const ref = useRef<HTMLInputElement>(null);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
+    <Popover open={open}>
+      <PopoverAnchor>
         <CommandInlineInput
+          key="input"
           ref={ref}
           value={value}
           placeholder="Enter value"
           className={cn("h-9 bg-transparent", className)}
           onFocus={() => setOpen(true)}
-          onBlur={() => setOpen(false)}
+          onBlur={() => {
+            setTimeout(() => {
+              setOpen(false);
+            }, 150);
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               setOpen(false);
               ref.current?.blur();
             }
           }}
-          onValueChange={(e) => {
-            onChange(e);
-          }}
+          onValueChange={(e) => onChange(e)}
         />
-      </PopoverTrigger>
+      </PopoverAnchor>
       <PopoverContent
+        onOpenAutoFocus={(e) => e.preventDefault()}
         className={cn("p-0 w-[--radix-popover-trigger-width]", {
           "border-0": count === 0,
         })}
@@ -61,6 +60,9 @@ const AutocompletePopover = ({
         side="bottom"
         onWheel={(e) => {
           // See: https://github.com/radix-ui/primitives/issues/1159
+          e.stopPropagation();
+        }}
+        onTouchMove={(e) => {
           e.stopPropagation();
         }}
       >
@@ -90,8 +92,6 @@ export const Autocomplete = ({
   onChange,
   className,
 }: AutocompleteProps) => {
-  const [open, setOpen] = useState(false);
-
   return (
     <Command className="bg-transparent">
       <AutocompletePopover
@@ -99,8 +99,6 @@ export const Autocomplete = ({
         options={options}
         onChange={onChange}
         className={className}
-        open={open}
-        setOpen={setOpen}
       />
     </Command>
   );
