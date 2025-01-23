@@ -198,6 +198,7 @@ export const Sidecar = ({
               server={result.data.schema.url}
               servers={result.data.schema.servers.map((server) => server.url)}
               operation={operation}
+              examples={requestBodyContent ?? undefined}
             />
           )}
         </SidecarBox.Head>

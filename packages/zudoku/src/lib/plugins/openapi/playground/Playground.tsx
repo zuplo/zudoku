@@ -1,6 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
+import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+import { Label } from "zudoku/ui/Label.js";
+import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
   Select,
   SelectContent,
@@ -8,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { Textarea } from "zudoku/ui/Textarea.js";
 import { useSelectedServerStore } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Spinner } from "../../../components/Spinner.js";
@@ -15,8 +20,11 @@ import { Button } from "../../../ui/Button.js";
 import { Callout } from "../../../ui/Callout.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
+import { cn } from "../../../util/cn.js";
 import { ColorizedParam } from "../ColorizedParam.js";
+import { Content } from "../SidecarExamples.js";
 import { createUrl } from "./createUrl.js";
+import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
@@ -40,6 +48,7 @@ const statusCodeMap: Record<number, string> = {
 export type Header = {
   name: string;
   defaultValue?: string;
+  defaultActive?: boolean;
 };
 export type QueryParam = {
   name: string;
@@ -67,6 +76,7 @@ export type PlaygroundForm = {
   headers: Array<{
     name: string;
     value: string;
+    active: boolean;
   }>;
   identity?: string;
 };
@@ -80,6 +90,7 @@ export type PlaygroundContentProps = {
   queryParams?: QueryParam[];
   pathParams?: PathParam[];
   defaultBody?: string;
+  examples?: Content;
 };
 
 export const Playground = ({
@@ -91,6 +102,7 @@ export const Playground = ({
   queryParams = [],
   pathParams = [],
   defaultBody = "",
+  examples,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServerStore();
   const [, startTransition] = useTransition();
@@ -98,20 +110,38 @@ export const Playground = ({
     useForm<PlaygroundForm>({
       defaultValues: {
         body: defaultBody,
-        queryParams: queryParams.map((param) => ({
-          name: param.name,
-          value: param.defaultValue ?? "",
-          active: param.defaultActive ?? false,
-          enum: param.enum ?? [],
-        })),
+        queryParams: queryParams
+          .map((param) => ({
+            name: param.name,
+            value: param.defaultValue ?? "",
+            active: param.defaultActive ?? false,
+            enum: param.enum ?? [],
+          }))
+          .concat([
+            {
+              name: "",
+              value: "",
+              active: false,
+              enum: [],
+            },
+          ]),
         pathParams: pathParams.map((param) => ({
           name: param.name,
           value: param.defaultValue ?? "",
         })),
-        headers: headers.map((header) => ({
-          name: header.name,
-          value: header.defaultValue ?? "",
-        })),
+        headers: headers
+          .map((header) => ({
+            name: header.name,
+            value: header.defaultValue ?? "",
+            active: header.defaultActive ?? false,
+          }))
+          .concat([
+            {
+              name: "",
+              value: "",
+              active: false,
+            },
+          ]),
         identity: NO_IDENTITY,
       },
     });
@@ -137,7 +167,7 @@ export const Playground = ({
         method: method.toUpperCase(),
         headers: Object.fromEntries(
           data.headers
-            .filter((h) => h.name)
+            .filter((h) => h.name && h.active)
             .map((header) => [header.name, header.value]),
         ),
         body: data.body ? data.body : undefined,
@@ -229,6 +259,7 @@ export const Playground = ({
             });
           }}
           value={selectedServer}
+          defaultValue={selectedServer}
         >
           <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
             <SelectValue />
@@ -256,7 +287,7 @@ export const Playground = ({
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
-                <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono">
+                <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
                 <div className="flex items-center flex-wrap p-2 font-mono text-xs">
@@ -270,54 +301,30 @@ export const Playground = ({
                 Send
               </Button>
             </div>
-            <Tabs
-              defaultValue={
-                queryParams.length + pathParams.length > 0
-                  ? "parameters"
-                  : "headers"
-              }
-            >
+            <Tabs defaultValue="parameters">
               <div className="flex flex-wrap gap-1 justify-between">
                 <TabsList>
-                  {queryParams.length + pathParams.length > 0 && (
-                    <TabsTrigger value="parameters">Parameters</TabsTrigger>
-                  )}
+                  <TabsTrigger value="parameters">
+                    Parameters
+                    {(formState.pathParams.some((p) => p.value !== "") ||
+                      formState.queryParams.some((p) => p.active)) && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
+                  </TabsTrigger>
                   <TabsTrigger value="headers">
-                    Headers{" "}
-                    {formState.headers.length > 0 &&
-                      `(${formState.headers.length})`}
+                    Headers
+                    {formState.headers.filter((h) => h.active).length > 0 && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="body"
-                    disabled={
-                      !["POST", "PUT", "PATCH", "DELETE"].includes(
-                        method.toUpperCase(),
-                      )
-                    }
-                  >
-                    Body
+                  <TabsTrigger value="auth">
+                    Auth
+                    {formState.identity !== NO_IDENTITY && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
                   </TabsTrigger>
+                  <TabsTrigger value="body">Body</TabsTrigger>
                 </TabsList>
-                <div className="flex gap-2 items-center">
-                  Auth:
-                  <Select
-                    onValueChange={(value) => setValue("identity", value)}
-                    value={formState.identity}
-                    defaultValue={formState.identity}
-                  >
-                    <SelectTrigger className="w-[180px] flex">
-                      {identities.isPending ? <Spinner /> : <SelectValue />}
-                    </SelectTrigger>
-                    <SelectContent align="center">
-                      <SelectItem value={NO_IDENTITY}>None</SelectItem>
-                      {identities.data?.map((identity) => (
-                        <SelectItem key={identity.id} value={identity.id}>
-                          {identity.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
               </div>
               <TabsContent value="headers">
                 <Headers control={control} register={register} />
@@ -329,18 +336,105 @@ export const Playground = ({
                     <PathParams control={control} />
                   </div>
                 )}
-                {queryParams.length > 0 && (
-                  <div className="flex flex-col gap-4 my-4">
-                    <span className="font-semibold">Query Parameters</span>
-                    <QueryParams control={control} queryParams={queryParams} />
-                  </div>
-                )}
+                <div className="flex flex-col gap-4 my-4">
+                  <span className="font-semibold">Query Parameters</span>
+                  <QueryParams control={control} queryParams={queryParams} />
+                </div>
               </TabsContent>
               <TabsContent value="body">
-                <textarea
+                {!["POST", "PUT", "PATCH", "DELETE"].includes(
+                  method.toUpperCase(),
+                ) && (
+                  <Alert className="mb-2">
+                    <InfoIcon className="w-4 h-4" />
+                    <AlertTitle>Body</AlertTitle>
+                    <AlertDescription>
+                      Body is only supported for POST, PUT, PATCH, and DELETE
+                      requests
+                    </AlertDescription>
+                  </Alert>
+                )}
+                <Textarea
                   {...register("body")}
-                  className="border w-full rounded p-2 bg-muted h-40"
+                  className={cn(
+                    "border w-full rounded-lg p-2 bg-muted h-40 font-mono",
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    ) && "h-20",
+                  )}
+                  placeholder={
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    )
+                      ? "This request does not support a body"
+                      : undefined
+                  }
+                  disabled={
+                    !["POST", "PUT", "PATCH", "DELETE"].includes(
+                      method.toUpperCase(),
+                    )
+                  }
                 />
+                {examples && (
+                  <ExamplesDropdown
+                    examples={examples}
+                    onSelect={(example) =>
+                      setValue("body", JSON.stringify(example.value, null, 2))
+                    }
+                  />
+                )}
+              </TabsContent>
+              <TabsContent value="auth">
+                <div className="flex flex-col gap-4 my-4">
+                  {identities.data?.length === 0 && (
+                    <Alert>
+                      <InfoIcon className="w-4 h-4" />
+                      <AlertTitle>Authentication</AlertTitle>
+                      <AlertDescription>
+                        No identities found. Please create an identity first.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  <div className="flex flex-col items-center gap-2">
+                    <Card className="w-full overflow-hidden">
+                      <RadioGroup
+                        onValueChange={(value) => setValue("identity", value)}
+                        value={formState.identity}
+                        defaultValue={formState.identity}
+                        className="gap-0"
+                        disabled={identities.data?.length === 0}
+                      >
+                        <Label
+                          className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
+                          htmlFor="none"
+                        >
+                          <RadioGroupItem value={NO_IDENTITY} id="none">
+                            None
+                          </RadioGroupItem>
+                          <Label htmlFor="none" className="ml-2">
+                            None
+                          </Label>
+                        </Label>
+                        {identities.data?.map((identity) => (
+                          <Label
+                            key={identity.id}
+                            className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
+                          >
+                            <RadioGroupItem
+                              value={identity.id}
+                              id={identity.id}
+                            >
+                              {identity.label}
+                            </RadioGroupItem>
+                            <Label htmlFor={identity.id} className="ml-2">
+                              {identity.label}
+                            </Label>
+                          </Label>
+                        ))}
+                      </RadioGroup>
+                    </Card>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>

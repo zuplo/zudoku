@@ -1,4 +1,20 @@
 import type { ZudokuConfig } from "zudoku";
+import { ApiIdentity, ApiIdentityPlugin } from "zudoku";
+
+export class ShipHappensApiIdentityPlugin implements ApiIdentityPlugin {
+  async getIdentities() {
+    return [
+      {
+        label: `Unlimited Subscription`,
+        id: "UNLNTD",
+        authorizeRequest: (request: Request) => {
+          request.headers.set("X-Authorization", `Bearer 1234567890`);
+          return request;
+        },
+      },
+    ] satisfies ApiIdentity[];
+  }
+}
 
 const config: ZudokuConfig = {
   page: {
@@ -71,6 +87,7 @@ const config: ZudokuConfig = {
       primaryForeground: "#FFFFFF",
     },
   },
+  plugins: [new ShipHappensApiIdentityPlugin()],
 };
 
 export default config;
