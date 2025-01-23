@@ -72,12 +72,18 @@ export const SyntaxHighlight = ({
     <ClientOnly
       fallback={
         <div className="relative group">
+          {title && (
+            <div className="text-xs text-muted-foreground absolute top-2 font-mono border-b w-full pb-2 px-4 ">
+              {title}
+            </div>
+          )}
           <pre
             className={cn(
               "relative scrollbar overflow-x-auto",
               props.className,
               props.noBackground ? "!bg-transparent" : themeColorClasses,
               props.wrapLines && "whitespace-pre-wrap break-words",
+              title && "pt-10",
             )}
           >
             {props.code}
