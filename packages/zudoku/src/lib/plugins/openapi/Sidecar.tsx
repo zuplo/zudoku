@@ -99,7 +99,7 @@ export const Sidecar = ({
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
 }) => {
-  const { input, type } = useOasConfig();
+  const { input, type, options } = useOasConfig();
   const query = useCreateQuery(GetServerQuery, { input, type });
   const result = useSuspenseQuery(query);
 
@@ -108,8 +108,10 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
   const [selectedExample, setSelectedExample] = useState<unknown>();
+  console.log(options);
 
-  const selectedLang = searchParams.get("lang") ?? "shell";
+  const selectedLang =
+    searchParams.get("lang") ?? options?.examplesDefaultLanguage ?? "shell";
 
   const requestBodyContent = operation.requestBody?.content;
 
