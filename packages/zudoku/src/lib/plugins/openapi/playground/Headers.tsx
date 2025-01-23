@@ -1,4 +1,5 @@
 import { XIcon } from "lucide-react";
+import { useRef } from "react";
 import {
   Control,
   Controller,
@@ -54,6 +55,8 @@ export const Headers = ({
     name: "headers",
   });
   const { setValue } = useFormContext<PlaygroundForm>();
+  const valueRefs = useRef<Array<HTMLInputElement | null>>([]);
+  const nameRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   const addNewHeader = () => {
     append({
@@ -61,6 +64,15 @@ export const Headers = ({
       value: "",
       active: false,
     } as PlaygroundForm["headers"][number]);
+  };
+
+  const handleHeaderEnter = (index: number) => {
+    valueRefs.current[index]?.focus();
+  };
+
+  const handleValueEnter = (index: number) => {
+    addNewHeader();
+    requestAnimationFrame(() => nameRefs.current[index + 1]?.focus());
   };
 
   return (
@@ -94,11 +106,16 @@ export const Headers = ({
                     render={({ field }) => (
                       <Autocomplete
                         {...field}
+                        placeholder="Name"
                         className="border-0 shadow-none bg-transparent text-xs font-mono"
                         options={headerOptions}
+                        onEnterPress={() => handleHeaderEnter(i)}
                         onChange={(e) => {
                           field.onChange(e);
                           setValue(`headers.${i}.active`, true);
+                        }}
+                        ref={(el) => {
+                          nameRefs.current[i] = el;
                         }}
                       />
                     )}
@@ -107,11 +124,18 @@ export const Headers = ({
                 <td>
                   <div className="flex items-center gap-2">
                     <Input
-                      placeholder={"Value"}
+                      placeholder="Value"
                       className="w-full border-0 shadow-none text-xs font-mono"
                       {...register(`headers.${i}.value`)}
+                      ref={(el) => {
+                        valueRefs.current[i] = el;
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                          handleValueEnter(i);
+                        }
+                      }}
                       autoComplete="off"
-                      autoFocus={false}
                     />
                     <Button
                       size="icon"

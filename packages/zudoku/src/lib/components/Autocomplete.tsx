@@ -1,6 +1,6 @@
 import { PopoverAnchor } from "@radix-ui/react-popover";
 import { useCommandState } from "cmdk";
-import { useRef, useState } from "react";
+import { useRef, useState, type Ref } from "react";
 import {
   Command,
   CommandInlineInput,
@@ -15,6 +15,9 @@ type AutocompleteProps = {
   options: readonly string[];
   onChange: (e: string) => void;
   className?: string;
+  placeholder?: string;
+  onEnterPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  ref?: Ref<HTMLInputElement>;
 };
 
 const AutocompletePopover = ({
@@ -22,20 +25,28 @@ const AutocompletePopover = ({
   options,
   onChange,
   className,
+  placeholder = "Enter value",
+  onEnterPress,
+  ref,
 }: AutocompleteProps) => {
   const [open, setOpen] = useState(false);
   const [dontClose, setDontClose] = useState(false);
   const count = useCommandState((state) => state.filtered.count);
   const inputRef = useRef<HTMLInputElement>(null);
-
   return (
     <Popover open={open}>
       <PopoverAnchor>
         <CommandInlineInput
-          key="input"
-          ref={inputRef}
+          ref={(el) => {
+            inputRef.current = el;
+            if (typeof ref === "function") {
+              ref(el);
+            } else if (ref) {
+              ref.current = el;
+            }
+          }}
           value={value}
-          placeholder="Enter value"
+          placeholder={placeholder}
           className={cn("h-9 bg-transparent", className)}
           onFocus={() => setOpen(true)}
           onBlur={() => {
@@ -48,6 +59,7 @@ const AutocompletePopover = ({
             if (e.key === "Enter") {
               setOpen(false);
               inputRef.current?.blur();
+              onEnterPress?.(e);
             }
           }}
           onValueChange={(e) => onChange(e)}
@@ -90,20 +102,10 @@ const AutocompletePopover = ({
   );
 };
 
-export const Autocomplete = ({
-  value,
-  options,
-  onChange,
-  className,
-}: AutocompleteProps) => {
+export const Autocomplete = (props: AutocompleteProps) => {
   return (
     <Command className="bg-transparent">
-      <AutocompletePopover
-        value={value}
-        options={options}
-        onChange={onChange}
-        className={className}
-      />
+      <AutocompletePopover {...props} />
     </Command>
   );
 };
