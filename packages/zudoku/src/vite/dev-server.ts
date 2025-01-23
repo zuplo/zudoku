@@ -71,7 +71,12 @@ export class DevServer {
 
     app.use((req, res, next) => {
       const base = this.currentConfig?.basePath;
-      if (req.method.toLowerCase() === "get" && req.url === "/" && base) {
+      if (
+        req.method.toLowerCase() === "get" &&
+        req.url === "/" &&
+        base &&
+        base !== "/"
+      ) {
         return res.redirect(307, base);
       }
       next();
