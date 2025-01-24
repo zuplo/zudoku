@@ -3,6 +3,7 @@ import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
@@ -16,7 +17,6 @@ import { Textarea } from "zudoku/ui/Textarea.js";
 import { useSelectedServerStore } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Spinner } from "../../../components/Spinner.js";
-import { Button } from "../../../ui/Button.js";
 import { Callout } from "../../../ui/Callout.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
@@ -29,6 +29,7 @@ import { Headers } from "./Headers.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
 import { ResponseTab } from "./ResponseTab.js";
+import SubmitButton from "./SubmitButton.js";
 
 export const NO_IDENTITY = "__none";
 
@@ -158,6 +159,8 @@ export const Playground = ({
     }
   }, [setValue, identities.data]);
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
       const requestUrl = createUrl(selectedServer ?? server, url, data);
@@ -282,7 +285,10 @@ export const Playground = ({
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
     >
-      <form onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}>
+      <form
+        onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
+        ref={formRef}
+      >
         <div className="grid grid-cols-[8fr_7fr] text-sm h-full">
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
@@ -290,16 +296,18 @@ export const Playground = ({
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="flex items-center flex-wrap p-2 font-mono text-xs">
+                <div className="flex items-center flex-wrap p-2 font-mono text-xs break-all">
                   {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
                   {urlQueryParams}
                 </div>
               </div>
-              <Button type="submit" className="h-auto flex gap-1">
-                Send
-              </Button>
+
+              <SubmitButton
+                identities={identities.data ?? []}
+                formRef={formRef}
+              />
             </div>
             <Tabs defaultValue="parameters">
               <div className="flex flex-wrap gap-1 justify-between">
