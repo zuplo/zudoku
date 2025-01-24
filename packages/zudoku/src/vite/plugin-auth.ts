@@ -21,7 +21,10 @@ const viteAuthPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         }
         // TODO: Validate that the authConfig.type is a valid authentication provider
         return [
-          `const config = ${JSON.stringify(config.authentication, null, 2)};`,
+          `const config = {
+            ...${JSON.stringify(config.authentication, null, 2)},
+            basePath: ${config.basePath ? JSON.stringify(config.basePath) : "undefined"},
+          };`,
           config.mode === "internal"
             ? `import authProvider from "${config.moduleDir}/src/lib/authentication/providers/${config.authentication.type}.tsx";`
             : `import authProvider from "zudoku/auth/${config.authentication.type}";`,

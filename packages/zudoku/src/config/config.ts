@@ -27,6 +27,7 @@ export type OpenIDAuthenticationConfig = {
   issuer: string;
   scopes?: string[];
   audience?: string;
+  basePath?: string;
 } & RedirectOptions;
 
 export type Auth0AuthenticationConfig = {

@@ -13,9 +13,10 @@ import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import { Layout, RouterError, Zudoku } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
+import { StatusPage } from "../lib/components/StatusPage.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { RouteGuard } from "../lib/core/RouteGuard.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -84,6 +85,16 @@ export const getRoutesByOptions = (
 
   const routes = allPlugins
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
+    .concat(
+      enableStatusPages
+        ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
+            (statusCode) => ({
+              path: `/.static/${statusCode}`,
+              element: <StatusPage statusCode={statusCode} />,
+            }),
+          )
+        : [],
+    )
     .concat([
       {
         path: "*",
@@ -98,7 +109,7 @@ export const getRoutesByOptions = (
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   const options = convertZudokuConfigToOptions(config);
-  const routes = getRoutesByOptions(options);
+  const routes = getRoutesByOptions(options, config.enableStatusPages);
 
   return [
     {

@@ -35,10 +35,7 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
       providerData: null,
     });
 
-    const redirectUrl = new URL(
-      window.location.origin + this.logoutRedirectUrlPath,
-    );
-
+    const redirectUrl = new URL(window.location.origin);
     redirectUrl.pathname = this.logoutRedirectUrlPath;
 
     // SEE: https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0

@@ -2,6 +2,7 @@ import logger from "loglevel";
 import * as oauth from "oauth4webapi";
 import { OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import {
   AuthenticationProvider,
   AuthenticationProviderInitializer,
@@ -49,8 +50,8 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   protected authorizationServer: oauth.AuthorizationServer | undefined;
 
-  protected callbackUrlPath = "/oauth/callback";
-  protected logoutRedirectUrlPath = "/";
+  protected callbackUrlPath: string;
+  protected logoutRedirectUrlPath: string;
   protected onAuthorizationUrl?: (
     authorizationUrl: URL,
     options: { isSignIn: boolean; isSignUp: boolean },
@@ -67,6 +68,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     redirectToAfterSignUp,
     redirectToAfterSignIn,
     redirectToAfterSignOut,
+    basePath,
   }: OpenIDAuthenticationConfig) {
     this.client = {
       client_id: clientId,
@@ -74,9 +76,14 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     };
     this.audience = audience;
     this.issuer = issuer;
-    this.redirectToAfterSignUp = redirectToAfterSignUp ?? "/";
-    this.redirectToAfterSignIn = redirectToAfterSignIn ?? "/";
-    this.redirectToAfterSignOut = redirectToAfterSignOut ?? "/";
+    this.callbackUrlPath = joinUrl(basePath, "/oauth/callback");
+
+    const root = joinUrl(basePath, "/");
+
+    this.logoutRedirectUrlPath = root;
+    this.redirectToAfterSignUp = redirectToAfterSignUp ?? root;
+    this.redirectToAfterSignIn = redirectToAfterSignIn ?? root;
+    this.redirectToAfterSignOut = redirectToAfterSignOut ?? root;
   }
 
   protected async getAuthServer() {
