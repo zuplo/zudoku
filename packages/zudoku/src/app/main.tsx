@@ -16,6 +16,7 @@ import type { ZudokuConfig } from "../config/config.js";
 import { StatusPage } from "../lib/components/StatusPage.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { RouteGuard } from "../lib/core/RouteGuard.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -33,6 +34,7 @@ export const convertZudokuConfigToOptions = (
     !config.page?.logo?.src?.dark;
 
   return {
+    protectedRoutes: config.protectedRoutes,
     page: {
       ...config.page,
       logo: {
@@ -118,6 +120,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
       ),
       children: [
         {
+          element: <RouteGuard />,
           errorElement: <RouterError />,
           children: routes,
         },
