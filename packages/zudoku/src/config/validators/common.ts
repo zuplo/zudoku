@@ -319,8 +319,9 @@ export const CommonConfigSchema = z.object({
   sitemap: SiteMapSchema,
   isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
-  enableStatusPages: z.boolean().optional(),
-  enableStatusPages: z.boolean().optional(),
+  defaults: z.object({
+    examplesLanguage: z.string().optional(),
+  }),
 });
 
 export const refine = (

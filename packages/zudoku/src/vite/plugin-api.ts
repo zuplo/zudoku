@@ -140,7 +140,7 @@ const viteApiPlugin = async (
 
         const apiPluginOptions = {
           options: {
-            examplesDefaultLanguage: config.examplesDefaultLanguage,
+            examplesDefaultLanguage: config.defaults?.examplesLanguage,
           },
         };
 
