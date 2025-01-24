@@ -78,11 +78,11 @@ export const Headers = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <Card className="flex flex-col gap-2 overflow-hidden">
+      <Card className="overflow-hidden">
         <ParamsGrid>
           {fields.map((header, i) => (
-            <>
-              <div className="flex items-center gap-2">
+            <div key={i} className="group grid col-span-full grid-cols-subgrid">
+              <div className="flex items-center gap-2 ">
                 <Controller
                   control={control}
                   name={`headers.${i}.active`}
@@ -121,7 +121,7 @@ export const Headers = ({
               <div className="flex items-center gap-2">
                 <Input
                   placeholder="Value"
-                  className="w-full border-0 shadow-none text-xs font-mono"
+                  className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
                   {...register(`headers.${i}.value`)}
                   ref={(el) => {
                     valueRefs.current[i] = el;
@@ -136,7 +136,7 @@ export const Headers = ({
                 <Button
                   size="icon"
                   variant="ghost"
-                  className="text-muted-foreground opacity-0 group-hover:opacity-100"
+                  className="text-muted-foreground opacity-0 group-hover:opacity-100 rounded-full w-8 h-7"
                   onClick={() => {
                     remove(i);
                   }}
@@ -145,7 +145,7 @@ export const Headers = ({
                   <XIcon size={16} />
                 </Button>
               </div>
-            </>
+            </div>
           ))}
         </ParamsGrid>
       </Card>

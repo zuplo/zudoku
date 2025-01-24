@@ -307,6 +307,7 @@ export const Playground = ({
               <SubmitButton
                 identities={identities.data ?? []}
                 formRef={formRef}
+                disabled={form.formState.isSubmitting}
               />
             </div>
             <Tabs defaultValue="parameters">
