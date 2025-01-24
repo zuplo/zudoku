@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import SchemaBuilder from "@pothos/core";
 import {
-  slugifyWithCounter,
   type CountableSlugify,
+  slugifyWithCounter,
 } from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
 import {
-  HttpMethods,
-  validate,
   type EncodingObject,
   type ExampleObject,
+  HttpMethods,
   type OpenAPIDocument,
   type OperationObject,
   type ParameterObject,
@@ -18,7 +17,9 @@ import {
   type SchemaObject,
   type ServerObject,
   type TagObject,
+  validate,
 } from "../parser/index.js";
+import { GraphQLJSONSchema } from "./circular.js";
 
 export type {
   EncodingObject,
@@ -45,10 +46,7 @@ export const createOperationSlug = (
 ) => {
   const summary =
     (operation.summary ?? "") +
-    (operation.operationId
-      ? "-" +
-        operation.operationId.slice(0, operation.summary ? Infinity : Infinity)
-      : "");
+    (operation.operationId ? "-" + operation.operationId : "");
 
   return slugify(
     (tag ? tag + "-" : "") +
@@ -65,6 +63,7 @@ const builder = new SchemaBuilder<{
   Scalars: {
     JSON: any;
     JSONObject: any;
+    JSONSchema: any;
   };
   Context: {
     schema: OpenAPIDocument;
@@ -74,6 +73,7 @@ const builder = new SchemaBuilder<{
 
 const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
+const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
 const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
   const tags = schema.tags ?? [];
@@ -238,7 +238,7 @@ const ParameterItem = builder
           })),
         nullable: true,
       }),
-      schema: t.expose("schema", { type: JSONScalar, nullable: true }),
+      schema: t.expose("schema", { type: JSONSchemaScalar, nullable: true }),
     }),
   });
 
@@ -252,7 +252,7 @@ const MediaTypeItem = builder
   .implement({
     fields: (t) => ({
       mediaType: t.exposeString("mediaType"),
-      schema: t.expose("schema", { type: JSONScalar, nullable: true }),
+      schema: t.expose("schema", { type: JSONSchemaScalar, nullable: true }),
       examples: t.expose("examples", { type: [ExampleItem], nullable: true }),
       encoding: t.expose("encoding", { type: [EncodingItem], nullable: true }),
     }),

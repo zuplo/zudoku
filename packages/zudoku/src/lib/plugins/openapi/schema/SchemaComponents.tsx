@@ -3,7 +3,7 @@ import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
-import { CIRCULAR_REF } from "../../../oas/parser/dereference/index.js";
+import { CIRCULAR_REF } from "../../../oas/graphql/circular.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
