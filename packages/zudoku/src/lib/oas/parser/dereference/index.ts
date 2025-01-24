@@ -1,9 +1,8 @@
 import type { JSONSchema4, JSONSchema6 } from "json-schema";
+import { CIRCULAR_REF } from "../../graphql/circular.js";
 import { resolveLocalRef } from "./resolveRef.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6;
-
-export const CIRCULAR_REF = "$[Circular Reference]";
 
 type CustomResolver = (ref: string) => Promise<JSONSchema | undefined>;
 
