@@ -41,6 +41,7 @@ type SyntaxHighlightProps = {
   copyable?: boolean;
   showLanguageIndicator?: boolean;
   language?: string;
+  title?: string;
 } & Omit<HighlightProps, "children" | "language">;
 
 const remapLang = {
@@ -50,6 +51,7 @@ const remapLang = {
 export const SyntaxHighlight = ({
   copyable = true,
   language = "plain",
+  title,
   ...props
 }: SyntaxHighlightProps) => {
   const { resolvedTheme } = useTheme();
@@ -70,12 +72,18 @@ export const SyntaxHighlight = ({
     <ClientOnly
       fallback={
         <div className="relative group">
+          {title && (
+            <div className="text-xs text-muted-foreground absolute top-2 font-mono border-b w-full pb-2 px-4 ">
+              {title}
+            </div>
+          )}
           <pre
             className={cn(
               "relative scrollbar overflow-x-auto",
               props.className,
               props.noBackground ? "!bg-transparent" : themeColorClasses,
               props.wrapLines && "whitespace-pre-wrap break-words",
+              title && "pt-10",
             )}
           >
             {props.code}
@@ -95,6 +103,11 @@ export const SyntaxHighlight = ({
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <div className="relative group">
+            {title && (
+              <div className="text-xs text-muted-foreground absolute top-2 font-mono border-b w-full pb-2 px-4 ">
+                {title}
+              </div>
+            )}
             <pre
               className={cn(
                 "relative scrollbar overflow-x-auto",
@@ -102,6 +115,7 @@ export const SyntaxHighlight = ({
                 props.className,
                 props.noBackground && "!bg-transparent",
                 props.wrapLines && "whitespace-pre-wrap break-words",
+                title && "pt-10",
               )}
               style={style}
             >
