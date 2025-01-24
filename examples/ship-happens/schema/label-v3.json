@@ -12,6 +12,10 @@
   },
   "servers": [
     {
+      "url": "https://eedefc50718545d6b3a6cd7ea38faf06_oas.api.mockbin.io/",
+      "description": "Mockbin"
+    },
+    {
       "url": "https://api.sh.example.com/v1",
       "description": "Production environment"
     },
@@ -205,7 +209,7 @@
         }
       }
     },
-    "/stamps/{id}/invalidate": {
+    "/stamps/{id}/invalid": {
       "put": {
         "tags": ["Stamps"],
         "summary": "Invalidate a shipping stamp",

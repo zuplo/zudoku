@@ -30,7 +30,7 @@ const config: ZudokuConfig = {
   topNavigation: [
     { id: "general", label: "General" },
     { id: "api-shipments", label: "Shipments API" },
-    { id: "catalog", label: "All APIs" },
+    { id: "catalog", label: "API Catalog" },
   ],
   redirects: [{ from: "/", to: "/general" }],
   sidebar: {
@@ -79,12 +79,12 @@ const config: ZudokuConfig = {
   },
   theme: {
     light: {
-      primary: "#FF00BD",
-      primaryForeground: "#FFFFFF",
+      primary: "#ffb703",
+      primaryForeground: "#000",
     },
     dark: {
-      primary: "#E20074",
-      primaryForeground: "#FFFFFF",
+      primary: "#ffb703",
+      primaryForeground: "#000",
     },
   },
   plugins: [new ShipHappensApiIdentityPlugin()],
