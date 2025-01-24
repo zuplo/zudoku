@@ -13,7 +13,6 @@ import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import { Layout, RouterError, Zudoku } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import { StatusPage } from "../lib/components/StatusPage.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { RouteGuard } from "../lib/core/RouteGuard.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
@@ -72,7 +71,10 @@ export const convertZudokuConfigToOptions = (
   };
 };
 
-export const getRoutesByOptions = (options: ZudokuContextOptions) => {
+export const getRoutesByOptions = (
+  options: ZudokuContextOptions,
+  enableStatusPages = false,
+) => {
   const allPlugins = [
     ...(options.plugins ? options.plugins : []),
     ...(options.authentication?.getAuthenticationPlugin
@@ -82,12 +84,14 @@ export const getRoutesByOptions = (options: ZudokuContextOptions) => {
 
   const routes = allPlugins
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
-    .concat({
-      path: "*",
-      loader: () => {
-        throw new Response("Not Found", { status: 404 });
+    .concat([
+      {
+        path: "*",
+        loader: () => {
+          throw new Response("Not Found", { status: 404 });
+        },
       },
-    });
+    ]);
 
   return routes;
 };
