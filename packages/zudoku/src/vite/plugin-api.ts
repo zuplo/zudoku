@@ -106,7 +106,7 @@ const viteApiPlugin = async (
 
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = initialConfig.isZuplo
-    ? await tsImport("../zuplo/with-zuplo-processors.ts", import.meta.url)
+    ? await tsImport("../zuplo/with-zuplo-processors.js", import.meta.url)
         .then((m) => m.default(initialConfig.rootDir))
         .catch((e) => {
           // eslint-disable-next-line no-console
