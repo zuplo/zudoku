@@ -162,7 +162,7 @@ export const enrichWithZuploData = ({
     for (const [, pathItem] of Object.entries<RecordAny>(spec.paths)) {
       for (const method of operations) {
         const operation = pathItem[method];
-        if (!operation["x-zuplo-route"]) continue;
+        if (!operation?.["x-zuplo-route"]) continue;
 
         const inboundPolicies = operation[
           "x-zuplo-route"
