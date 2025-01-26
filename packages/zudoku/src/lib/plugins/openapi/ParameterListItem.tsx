@@ -54,6 +54,7 @@ export const ParameterListItem = ({
           </Badge>
         )}
         {parameter.required && <Badge variant="outline">required</Badge>}
+        {parameter.style === "form" && <Badge variant="secondary">form</Badge>}
       </div>
       {parameter.description && (
         <Markdown

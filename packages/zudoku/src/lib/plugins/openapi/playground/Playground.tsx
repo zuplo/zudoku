@@ -68,6 +68,20 @@ export type PlaygroundForm = {
   identity?: string;
 };
 
+export type PlaygroundResult = {
+  status: number;
+  headers: Array<[string, string]>;
+  size: number;
+  body: string;
+  time: number;
+  request: {
+    method: string;
+    url: string;
+    headers: Array<[string, string]>;
+    body?: string;
+  };
+};
+
 export type PlaygroundContentProps = {
   server: string;
   servers?: string[];
@@ -179,11 +193,17 @@ export const Playground = ({
 
         return {
           status: response.status,
-          headers: response.headers,
+          headers: Array.from(response.headers.entries()),
           size: body.length,
           body,
           time,
-        };
+          request: {
+            method: request.method.toUpperCase(),
+            url: request.url,
+            headers: Array.from(request.headers.entries()),
+            body: data.body ? data.body : undefined,
+          },
+        } satisfies PlaygroundResult;
       } catch (error) {
         if (error instanceof TypeError) {
           throw new Error(
@@ -226,8 +246,6 @@ export const Playground = ({
       </Fragment>
     );
   });
-
-  const headerEntries = Array.from(queryMutation.data?.headers.entries() ?? []);
 
   const urlQueryParams = formState.queryParams
     .filter((p) => p.active)
@@ -434,84 +452,12 @@ export const Playground = ({
               </TabsContent>
             </Tabs>
           </div>
-          <div className="min-w-0 p-8 bg-muted/70">
-            {queryMutation.error ? (
-              <div className="flex flex-col gap-2">
-                {formState.pathParams.some((p) => p.value === "") && (
-                  <Callout type="caution">
-                    Some path parameters are missing values. Please fill them in
-                    to ensure the request is sent correctly.
-                  </Callout>
-                )}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Request failed</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    Error:{" "}
-                    {queryMutation.error.message ||
-                      String(queryMutation.error) ||
-                      "Unexpected error"}
-                  </CardContent>
-                </Card>
-              </div>
-            ) : queryMutation.data ? (
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <div className="flex text-xs gap-6">
-                    <div>
-                      Status: {queryMutation.data.status}{" "}
-                      {statusCodeMap[queryMutation.data.status] ?? ""}
-                    </div>
-                    <div>Time: {queryMutation.data.time.toFixed(0)}ms</div>
-                    <div>Size: {queryMutation.data.size} B</div>
-                  </div>
-                </div>
-                <Tabs defaultValue="response">
-                  <TabsList>
-                    <TabsTrigger value="response">Response</TabsTrigger>
-                    <TabsTrigger value="headers">
-                      {headerEntries.length
-                        ? `Headers (${headerEntries.length})`
-                        : "No headers"}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="response">
-                    <ResponseTab
-                      headers={queryMutation.data.headers}
-                      body={queryMutation.data.body}
-                    />
-                  </TabsContent>
-                  <TabsContent value="headers">
-                    <Card
-                      // playground dialog has h-5/6 ≈ 83.333vh
-                      className="max-h-[calc(83.333vh-140px)] overflow-y-auto grid grid-cols-2 w-full gap-2.5 font-mono text-xs shadow-none p-4"
-                    >
-                      <div className="font-semibold">Key</div>
-                      <div className="font-semibold">Value</div>
-                      {headerEntries.map(([key, value]) => (
-                        <Fragment key={key}>
-                          <div>{key}</div>
-                          <div className="break-words">{value}</div>
-                        </Fragment>
-                      ))}
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : (
-              <div className="grid place-items-center h-full">
-                <span className="text-[16px] font-semibold text-muted-foreground">
-                  {queryMutation.isPending ? (
-                    <Spinner />
-                  ) : (
-                    "Send a request first to see the response here"
-                  )}
-                </span>
-              </div>
+          <ResultPanel
+            queryMutation={queryMutation}
+            showPathParamsWarning={formState.pathParams.some(
+              (p) => p.value === "",
             )}
-          </div>
+          />
         </div>
       </form>
     </FormProvider>
