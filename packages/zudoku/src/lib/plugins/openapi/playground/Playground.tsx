@@ -16,9 +16,7 @@ import {
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { useSelectedServerStore } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { Spinner } from "../../../components/Spinner.js";
-import { Callout } from "../../../ui/Callout.js";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
+import { Card } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
 import { ColorizedParam } from "../ColorizedParam.js";
@@ -28,29 +26,17 @@ import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import { ResponseTab } from "./ResponseTab.js";
+import { ResultPanel } from "./result-panel/ResultPanel.js";
 import SubmitButton from "./SubmitButton.js";
 
 export const NO_IDENTITY = "__none";
-
-const statusCodeMap: Record<number, string> = {
-  200: "OK",
-  201: "Created",
-  202: "Accepted",
-  204: "No Content",
-  400: "Bad Request",
-  401: "Unauthorized",
-  403: "Forbidden",
-  404: "Not Found",
-  405: "Method Not Allowed",
-  500: "Internal Server Error",
-};
 
 export type Header = {
   name: string;
   defaultValue?: string;
   defaultActive?: boolean;
 };
+
 export type QueryParam = {
   name: string;
   defaultValue?: string;
@@ -163,18 +149,19 @@ export const Playground = ({
 
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
-      const requestUrl = createUrl(selectedServer ?? server, url, data);
       const start = performance.now();
-
-      const request = new Request(requestUrl, {
-        method: method.toUpperCase(),
-        headers: Object.fromEntries(
-          data.headers
-            .filter((h) => h.name && h.active)
-            .map((header) => [header.name, header.value]),
-        ),
-        body: data.body ? data.body : undefined,
-      });
+      const request = new Request(
+        createUrl(selectedServer ?? server, url, data),
+        {
+          method: method.toUpperCase(),
+          headers: Object.fromEntries(
+            data.headers
+              .filter((h) => h.name && h.active)
+              .map((header) => [header.name, header.value]),
+          ),
+          body: data.body ? data.body : undefined,
+        },
+      );
 
       if (data.identity !== NO_IDENTITY) {
         identities.data
@@ -289,7 +276,7 @@ export const Playground = ({
         onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
         ref={formRef}
       >
-        <div className="grid grid-cols-[8fr_7fr] text-sm h-full">
+        <div className="grid grid-cols-2 text-sm h-full">
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
