@@ -14,10 +14,7 @@ const config: ZudokuConfig = {
       },
     ],
   },
-  protectedRoutes: [
-    "/documentation/installation",
-    "/api/**",
-  ],
+  protectedRoutes: ["/documentation/installation", "/api/**"],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
     files: "/pages/**/*.mdx",

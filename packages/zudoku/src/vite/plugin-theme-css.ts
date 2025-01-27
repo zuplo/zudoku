@@ -32,11 +32,14 @@ export type Theme = Partial<Record<(typeof THEME_VARIABLES)[number], string>>;
 
 const hexToHSLA = (hex: string): string => {
   // Remove # if present
-  hex = hex.replace('#', '');
+  hex = hex.replace("#", "");
 
   // Convert 3-digit hex to 6-digit
   if (hex.length === 3) {
-    hex = hex.split('').map(char => char + char).join('');
+    hex = hex
+      .split("")
+      .map((char) => char + char)
+      .join("");
   }
 
   // Parse the hex values
@@ -82,7 +85,7 @@ const isHexColor = (value: string): boolean => {
 };
 
 const processColorValue = (value: string | undefined): string => {
-  if (!value) return '';
+  if (!value) return "";
   if (isHexColor(value)) {
     return hexToHSLA(value);
   }

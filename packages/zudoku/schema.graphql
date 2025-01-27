@@ -86,7 +86,12 @@ type ResponseItem {
 type Schema {
   description: String
   openapi: String!
-  operations(method: String, operationId: String, path: String, tag: String): [OperationItem!]!
+  operations(
+    method: String
+    operationId: String
+    path: String
+    tag: String
+  ): [OperationItem!]!
   paths: [PathItem!]!
   servers: [Server!]!
   summary: String
