@@ -60,5 +60,13 @@
     "patchedDependencies": {
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"
     }
+  },
+  "nx": {
+    "includedScripts": [
+      "lint",
+      "lint:ci",
+      "format",
+      "format:ci"
+    ]
   }
 }
