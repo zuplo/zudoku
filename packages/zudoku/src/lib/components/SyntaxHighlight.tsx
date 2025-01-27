@@ -68,15 +68,13 @@ export const SyntaxHighlight = ({
   const themeColorClasses =
     "bg-[#f6f8fa] text-[#393a34] dark:bg-[#1e1e1e] dark:text-[#9cdcfe]";
 
-  const realTitle = title && title !== "undefined" ? title : undefined;
-
   return (
     <ClientOnly
       fallback={
         <div className="relative group">
-          {realTitle && (
+          {title && (
             <div className="text-xs text-muted-foreground absolute top-2 font-mono border-b w-full pb-2 px-4 ">
-              {realTitle}
+              {title}
             </div>
           )}
           <pre
@@ -85,7 +83,7 @@ export const SyntaxHighlight = ({
               props.className,
               props.noBackground ? "!bg-transparent" : themeColorClasses,
               props.wrapLines && "whitespace-pre-wrap break-words",
-              realTitle && "pt-10",
+              title && "pt-10",
             )}
           >
             {props.code}
@@ -105,9 +103,9 @@ export const SyntaxHighlight = ({
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <div className="relative group">
-            {realTitle && (
+            {title && (
               <div className="text-xs text-muted-foreground absolute top-2 font-mono border-b w-full pb-2 px-4 ">
-                {realTitle}
+                {title}
               </div>
             )}
             <pre
@@ -117,7 +115,7 @@ export const SyntaxHighlight = ({
                 props.className,
                 props.noBackground && "!bg-transparent",
                 props.wrapLines && "whitespace-pre-wrap break-words",
-                realTitle && "pt-10",
+                title && "pt-10",
               )}
               style={style}
             >

@@ -61,7 +61,7 @@ export const MdxComponents = {
   code: ({ className, children, ...props }) => {
     // `inline` provided by the rehype plugin, as react-markdown removed support for that
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { inline, title } = props as Record<string, string | boolean>;
+    const { inline, title } = props as Record<string, unknown>;
 
     if (inline === true || inline === "true") {
       return <InlineCode className={className}>{children}</InlineCode>;
@@ -75,7 +75,7 @@ export const MdxComponents = {
         className="rounded-xl p-4 border dark:!bg-foreground/10 dark:border-transparent"
         showLanguageIndicator
         code={String(children).trim()}
-        title={String(title) ?? undefined}
+        title={typeof title === "string" ? title : undefined}
       />
     );
   },
