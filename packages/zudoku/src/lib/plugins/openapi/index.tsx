@@ -1,6 +1,6 @@
 import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { matchPath, RouteObject } from "react-router";
+import { matchPath, redirect, RouteObject } from "react-router";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
@@ -131,9 +131,10 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       }
 
       try {
-        const version =
-          versions.find((v) => path.startsWith(joinUrl(basePath, v))) ??
-          Object.keys(config.input).at(0);
+        const urlVersion = versions.find((v) =>
+          path.startsWith(joinUrl(basePath, v)),
+        );
+        const version = urlVersion ?? Object.keys(config.input).at(0);
 
         const data = await client.fetch(GetCategoriesQuery, {
           type: config.type,
@@ -167,7 +168,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           .map<SidebarItem>((tag) => {
             const categoryLink = joinUrl(
               basePath,
-              version,
+              urlVersion,
               tag.name ? slugify(tag.name) : "~endpoints",
             );
             return {
@@ -181,17 +182,6 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               collapsible: false,
               collapsed: true,
               items: path === categoryLink ? items : [],
-              // TODO left in for single page APIs
-              // items: tag.operations.map((operation) => ({
-              //   type: "link",
-              //   label: operation.summary ?? operation.path,
-              //   href: `#${operation.slug}`,
-              //   badge: {
-              //     label: operation.method,
-              //     color: MethodColorMap[operation.method.toLowerCase()]!,
-              //     invert: true,
-              //   },
-              // })),
             };
           });
 
@@ -214,10 +204,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return {
           path: versionPath,
           async lazy() {
-            const { OpenApiRoute } = await import("./Route.js");
+            const { OpenApiRoute } = await import("./OpenApiRoute.js");
             return {
               element: (
                 <OpenApiRoute
+                  version={version ?? undefined}
                   basePath={basePath}
                   versions={versions}
                   client={client}
@@ -229,10 +220,8 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           children: [
             {
               index: true,
-              async lazy() {
-                // const { OperationList } = await import("./OperationList.js");
-                return { element: <div>im the new index page</div> };
-                // return { element: <OperationList /> };
+              loader: () => {
+                return redirect(joinUrl(versionPath, tagPages.at(0)?.path));
               },
             },
             {
