@@ -31,6 +31,8 @@ export type Scalars = {
   JSON: { input: any; output: any };
   /** The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
   JSONObject: { input: any; output: any };
+  /** OpenAPI schema scalar type that handles circular references */
+  JSONSchema: { input: any; output: any };
 };
 
 export type EncodingItem = {
@@ -57,7 +59,7 @@ export type MediaTypeObject = {
   encoding?: Maybe<Array<EncodingItem>>;
   examples?: Maybe<Array<ExampleItem>>;
   mediaType: Scalars["String"]["output"];
-  schema?: Maybe<Scalars["JSON"]["output"]>;
+  schema?: Maybe<Scalars["JSONSchema"]["output"]>;
 };
 
 export type OperationItem = {
@@ -89,7 +91,7 @@ export type ParameterItem = {
   in: ParameterIn;
   name: Scalars["String"]["output"];
   required?: Maybe<Scalars["Boolean"]["output"]>;
-  schema?: Maybe<Scalars["JSON"]["output"]>;
+  schema?: Maybe<Scalars["JSONSchema"]["output"]>;
   style?: Maybe<Scalars["String"]["output"]>;
 };
 
@@ -132,11 +134,11 @@ export type Schema = {
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
   servers: Array<Server>;
+  summary?: Maybe<Scalars["String"]["output"]>;
   tags: Array<SchemaTag>;
   title: Scalars["String"]["output"];
-  url: Scalars["String"]["output"];
+  url?: Maybe<Scalars["String"]["output"]>;
   version: Scalars["String"]["output"];
-  summary?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type SchemaOperationsArgs = {
@@ -180,7 +182,7 @@ export type ServersQueryQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
-    url: string;
+    url?: string | null;
     servers: Array<{ __typename?: "Server"; url: string }>;
   };
 };
@@ -255,6 +257,7 @@ export type OperationsFragmentFragment = {
 export type AllOperationsQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
+  tag?: InputMaybe<Scalars["String"]["input"]>;
 }>;
 
 export type AllOperationsQuery = {
@@ -264,20 +267,20 @@ export type AllOperationsQuery = {
     description?: string | null;
     summary?: string | null;
     title: string;
-    url: string;
+    url?: string | null;
     version: string;
     tags: Array<{
       __typename?: "SchemaTag";
       name?: string | null;
       description?: string | null;
-      operations: Array<
-        { __typename?: "OperationItem"; slug: string } & {
-          " $fragmentRefs"?: {
-            OperationsFragmentFragment: OperationsFragmentFragment;
-          };
-        }
-      >;
     }>;
+    operations: Array<
+      { __typename?: "OperationItem"; slug: string } & {
+        " $fragmentRefs"?: {
+          OperationsFragmentFragment: OperationsFragmentFragment;
+        };
+      }
+    >;
   };
 };
 
@@ -290,7 +293,7 @@ export type GetServerQueryQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
-    url: string;
+    url?: string | null;
     servers: Array<{ __typename?: "Server"; url: string }>;
   };
 };
@@ -304,19 +307,29 @@ export type GetCategoriesQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
-    url: string;
-    tags: Array<{
-      __typename: "SchemaTag";
-      name?: string | null;
-      operations: Array<{
-        __typename: "OperationItem";
-        slug: string;
-        deprecated?: boolean | null;
-        method: string;
-        summary?: string | null;
-        operationId?: string | null;
-        path: string;
-      }>;
+    url?: string | null;
+    tags: Array<{ __typename?: "SchemaTag"; name?: string | null }>;
+  };
+};
+
+export type GetOperationsQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+  tag?: InputMaybe<Scalars["String"]["input"]>;
+}>;
+
+export type GetOperationsQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    operations: Array<{
+      __typename?: "OperationItem";
+      slug: string;
+      deprecated?: boolean | null;
+      method: string;
+      summary?: string | null;
+      operationId?: string | null;
+      path: string;
     }>;
   };
 };
@@ -418,20 +431,20 @@ export const ServersQueryDocument = new TypedDocumentString(`
   ServersQueryQueryVariables
 >;
 export const AllOperationsDocument = new TypedDocumentString(`
-    query AllOperations($input: JSON!, $type: SchemaType!) {
+    query AllOperations($input: JSON!, $type: SchemaType!, $tag: String) {
   schema(input: $input, type: $type) {
     description
     summary
     title
     url
     version
-    tags {
+    tags(name: $tag) {
       name
       description
-      operations {
-        slug
-        ...OperationsFragment
-      }
+    }
+    operations(tag: $tag) {
+      slug
+      ...OperationsFragment
     }
   }
 }
@@ -517,21 +530,28 @@ export const GetCategoriesDocument = new TypedDocumentString(`
   schema(input: $input, type: $type) {
     url
     tags {
-      __typename
       name
-      operations {
-        __typename
-        slug
-        deprecated
-        method
-        summary
-        operationId
-        path
-      }
     }
   }
 }
     `) as unknown as TypedDocumentString<
   GetCategoriesQuery,
   GetCategoriesQueryVariables
+>;
+export const GetOperationsDocument = new TypedDocumentString(`
+    query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
+  schema(input: $input, type: $type) {
+    operations(tag: $tag) {
+      slug
+      deprecated
+      method
+      summary
+      operationId
+      path
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  GetOperationsQuery,
+  GetOperationsQueryVariables
 >;

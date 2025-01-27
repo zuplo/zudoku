@@ -20,6 +20,7 @@ export type OasPluginConfig = {
   server?: string;
   navigationId?: string;
   skipPreload?: boolean;
+  tagPages?: Array<string>;
 } & OasPluginConfigOptions &
   OasSource;
 

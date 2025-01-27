@@ -17,7 +17,6 @@ import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { cn } from "../../util/cn.js";
 import { Endpoint } from "./Endpoint.js";
 import { OperationListItem } from "./OperationListItem.js";
-import StaggeredRender from "./StaggeredRender.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
@@ -90,35 +89,35 @@ export const OperationsFragment = graphql(/* GraphQL */ `
 export type OperationListItemResult = ResultOf<typeof OperationsFragment>;
 
 const AllOperationsQuery = graphql(/* GraphQL */ `
-  query AllOperations($input: JSON!, $type: SchemaType!) {
+  query AllOperations($input: JSON!, $type: SchemaType!, $tag: String) {
     schema(input: $input, type: $type) {
       description
       summary
       title
       url
       version
-      tags {
+      tags(name: $tag) {
         name
         description
-        operations {
-          slug
-          ...OperationsFragment
-        }
+      }
+      operations(tag: $tag) {
+        slug
+        ...OperationsFragment
       }
     }
   }
 `);
 
-export const OperationList = () => {
+export const OperationList = ({ tag }: { tag: string }) => {
   const { input, type, versions, version } = useOasConfig();
-  const query = useCreateQuery(AllOperationsQuery, { input, type });
+  const query = useCreateQuery(AllOperationsQuery, { input, type, tag });
   const { selectedServer } = useSelectedServerStore();
   const result = useSuspenseQuery(query);
   const title = result.data.schema.title;
   const summary = result.data.schema.summary;
   const description = result.data.schema.description;
   const navigate = useNavigate();
-
+  const operations = result.data.schema.operations;
   // Prefetch for Playground
   useApiIdentities();
 
@@ -175,7 +174,14 @@ export const OperationList = () => {
       <div className="my-4 flex items-center justify-end gap-4">
         <Endpoint />
       </div>
-      {result.data.schema.tags
+      {operations.map((fragment) => (
+        <OperationListItem
+          serverUrl={selectedServer ?? result.data.schema.url ?? ""}
+          key={fragment.slug}
+          operationFragment={fragment}
+        />
+      ))}
+      {/* {result.data.schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (
           // px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#'
@@ -199,7 +205,7 @@ export const OperationList = () => {
               </StaggeredRender>
             </div>
           </div>
-        ))}
+        ))} */}
     </div>
   );
 };

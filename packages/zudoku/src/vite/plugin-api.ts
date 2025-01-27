@@ -162,7 +162,6 @@ const viteApiPlugin = async (
             if (apiConfig.type === "file" && apiConfig.navigationId) {
               const schemas = processedSchemas[apiConfig.navigationId];
               if (!schemas?.length) continue;
-
               const latestSchema = schemas[0]?.schema;
               if (!latestSchema?.info) continue;
 
@@ -196,12 +195,21 @@ const viteApiPlugin = async (
                 continue;
               }
 
+              const schemas = processedSchemas[apiConfig.navigationId];
+              if (!schemas?.length) continue;
+              const latestSchema = schemas[0]?.schema;
+
+              const tags =
+                (
+                  latestSchema?.tags as Array<{ name: string }> | undefined
+                )?.map(({ name }) => name) ?? [];
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",
                 `  ...apiPluginOptions,`,
                 `  type: "file",`,
                 `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
                 `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
+                `  tagPages: ${JSON.stringify(tags)},`,
                 `  schemaImports: {`,
                 ...Array.from(schemaMap.entries()).map(
                   ([key, schemaPath]) =>

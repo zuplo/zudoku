@@ -44,6 +44,8 @@ export const SidecarExamples = ({
   description,
   onExampleChange,
 }: SidecarExamplesProps) => {
+  // TODO: fix this
+  return null;
   const [selectedContentTypeIndex, setSelectedContentTypeIndex] = useState(0);
   const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
 

@@ -1,11 +1,6 @@
-# This file was generated. Do not edit manually.
-
 schema {
   query: Query
 }
-
-"Indicates exactly one field must be supplied and this field must not be `null`."
-directive @oneOf on INPUT_OBJECT
 
 type EncodingItem {
   allowReserved: Boolean
@@ -24,11 +19,26 @@ type ExampleItem {
   value: JSON
 }
 
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
+"""
+The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSONObject
+
+"""
+OpenAPI schema scalar type that handles circular references
+"""
+scalar JSONSchema
+
 type MediaTypeObject {
   encoding: [EncodingItem!]
   examples: [ExampleItem!]
   mediaType: String!
-  schema: JSON
+  schema: JSONSchema
 }
 
 type OperationItem {
@@ -46,6 +56,13 @@ type OperationItem {
   tags: [TagItem!]
 }
 
+enum ParameterIn {
+  cookie
+  header
+  path
+  query
+}
+
 type ParameterItem {
   allowEmptyValue: Boolean
   allowReserved: Boolean
@@ -56,7 +73,7 @@ type ParameterItem {
   in: ParameterIn!
   name: String!
   required: Boolean
-  schema: JSON
+  schema: JSONSchema
   style: String
 }
 
@@ -86,7 +103,12 @@ type ResponseItem {
 type Schema {
   description: String
   openapi: String!
-  operations(method: String, operationId: String, path: String, tag: String): [OperationItem!]!
+  operations(
+    method: String
+    operationId: String
+    path: String
+    tag: String
+  ): [OperationItem!]!
   paths: [PathItem!]!
   servers: [Server!]!
   summary: String
@@ -102,6 +124,12 @@ type SchemaTag {
   operations: [OperationItem!]!
 }
 
+enum SchemaType {
+  file
+  raw
+  url
+}
+
 type Server {
   description: String
   url: String!
@@ -111,22 +139,3 @@ type TagItem {
   description: String
   name: String!
 }
-
-enum ParameterIn {
-  cookie
-  header
-  path
-  query
-}
-
-enum SchemaType {
-  file
-  raw
-  url
-}
-
-"The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."
-scalar JSON
-
-"The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf)."
-scalar JSONObject
