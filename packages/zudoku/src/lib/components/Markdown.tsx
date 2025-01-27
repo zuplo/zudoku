@@ -1,3 +1,4 @@
+import { memo } from "react";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
@@ -20,19 +21,17 @@ const rehypePlugins = [rehypeCodeBlockPlugin, rehypeRaw];
 // other styles are defined in main.css .prose
 export const ProseClasses = "prose dark:prose-invert prose-neutral";
 
-export const Markdown = ({
-  content,
-  className,
-}: {
-  content: string;
-  className?: string;
-}) => (
-  <ReactMarkdown
-    remarkPlugins={remarkPlugins}
-    rehypePlugins={rehypePlugins}
-    components={MdxComponents}
-    className={className}
-  >
-    {content}
-  </ReactMarkdown>
+export const Markdown = memo(
+  ({ content, className }: { content: string; className?: string }) => (
+    <ReactMarkdown
+      remarkPlugins={remarkPlugins}
+      rehypePlugins={rehypePlugins}
+      components={MdxComponents}
+      className={className}
+    >
+      {content}
+    </ReactMarkdown>
+  ),
 );
+
+Markdown.displayName = "Markdown";
