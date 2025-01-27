@@ -2,7 +2,6 @@ import { matchPath } from "react-router";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { graphql } from "./graphql/index.js";
 
-import { useQuery } from "@tanstack/react-query";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
@@ -81,18 +80,15 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         method,
         url,
         ...props
-      }: Partial<PlaygroundContentProps> & { requireAuth: boolean }) => {
+      }: Partial<PlaygroundContentProps> &
+        Pick<PlaygroundContentProps, "server"> & {
+          requireAuth: boolean;
+        }) => {
         const auth = useAuth();
-        // We don't have the GraphQL context here
-        const serverQuery = useQuery({
-          queryFn: () =>
-            client.fetch(GetCategoriesQuery, {
-              type: config.type,
-              input: config.input,
-            }),
-          enabled: !server,
-          queryKey: ["playground-server"],
-        });
+
+        if (!server) {
+          throw new Error("Server is required");
+        }
 
         if (requireAuth && !auth.isAuthenticated) {
           return (
@@ -110,9 +106,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           <PlaygroundDialog
             url={url ?? "/"}
             method={method ?? "get"}
-            server={
-              server ?? serverQuery.data?.schema.url ?? "https://example.com"
-            }
+            server={server}
             {...props}
           >
             <Button className="gap-2 items-center" variant="outline">
