@@ -146,6 +146,7 @@ export type SchemaOperationsArgs = {
   operationId?: InputMaybe<Scalars["String"]["input"]>;
   path?: InputMaybe<Scalars["String"]["input"]>;
   tag?: InputMaybe<Scalars["String"]["input"]>;
+  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type SchemaTagsArgs = {
@@ -258,6 +259,7 @@ export type AllOperationsQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
   tag?: InputMaybe<Scalars["String"]["input"]>;
+  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 }>;
 
 export type AllOperationsQuery = {
@@ -316,6 +318,7 @@ export type GetOperationsQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
   tag?: InputMaybe<Scalars["String"]["input"]>;
+  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 }>;
 
 export type GetOperationsQuery = {
@@ -431,7 +434,7 @@ export const ServersQueryDocument = new TypedDocumentString(`
   ServersQueryQueryVariables
 >;
 export const AllOperationsDocument = new TypedDocumentString(`
-    query AllOperations($input: JSON!, $type: SchemaType!, $tag: String) {
+    query AllOperations($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
   schema(input: $input, type: $type) {
     description
     summary
@@ -442,7 +445,7 @@ export const AllOperationsDocument = new TypedDocumentString(`
       name
       description
     }
-    operations(tag: $tag) {
+    operations(tag: $tag, untagged: $untagged) {
       slug
       ...OperationsFragment
     }
@@ -539,9 +542,9 @@ export const GetCategoriesDocument = new TypedDocumentString(`
   GetCategoriesQueryVariables
 >;
 export const GetOperationsDocument = new TypedDocumentString(`
-    query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
+    query GetOperations($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
   schema(input: $input, type: $type) {
-    operations(tag: $tag) {
+    operations(tag: $tag, untagged: $untagged) {
       slug
       deprecated
       method

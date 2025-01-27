@@ -447,15 +447,18 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         method: t.arg.string(),
         operationId: t.arg.string(),
         tag: t.arg.string(),
+        untagged: t.arg.boolean(),
       },
       resolve: (parent, args, ctx) =>
-        ctx.operations.filter(
-          (item) =>
-            (!args.operationId || item.operationId === args.operationId) &&
-            (!args.path || item.path === args.path) &&
-            (!args.method || item.method === args.method) &&
-            (!args.tag || item.tags?.some((tag) => args.tag?.includes(tag))),
-        ),
+        ctx.operations.filter((op) => {
+          return (
+            (!args.operationId || op.operationId === args.operationId) &&
+            (!args.path || op.path === args.path) &&
+            (!args.method || op.method === args.method) &&
+            (!args.tag || op.tags?.some((tag) => args.tag?.includes(tag))) &&
+            (!args.untagged || (op.tags ?? []).length === 0)
+          );
+        }),
     }),
   }),
 });

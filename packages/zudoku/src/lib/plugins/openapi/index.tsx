@@ -1,20 +1,18 @@
-import { matchPath, RouteObject } from "react-router";
-import { type ZudokuPlugin } from "../../core/plugins.js";
-import { graphql } from "./graphql/index.js";
-
+import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
+import { matchPath, RouteObject } from "react-router";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
+import { type ZudokuPlugin } from "../../core/plugins.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
-import { joinPath } from "../../util/joinPath.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
+import { graphql } from "./graphql/index.js";
 import { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { slugify } from "./util/slugify.js";
 
 const GetCategoriesQuery = graphql(`
   query GetCategories($input: JSON!, $type: SchemaType!) {
@@ -28,9 +26,14 @@ const GetCategoriesQuery = graphql(`
 `);
 
 const GetOperationsQuery = graphql(`
-  query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
+  query GetOperations(
+    $input: JSON!
+    $type: SchemaType!
+    $tag: String
+    $untagged: Boolean
+  ) {
     schema(input: $input, type: $type) {
-      operations(tag: $tag) {
+      operations(tag: $tag, untagged: $untagged) {
         slug
         deprecated
         method
@@ -57,7 +60,7 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
 export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
-  const basePath = joinPath(config.navigationId ?? "/reference");
+  const basePath = joinUrl(config.navigationId ?? "/reference");
   const versions = config.type === "file" ? Object.keys(config.input) : [];
 
   const client = new GraphQLClient(config);
@@ -129,7 +132,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
 
       try {
         const version =
-          versions.find((v) => path === joinPath(basePath, v)) ??
+          versions.find((v) => path.startsWith(joinUrl(basePath, v))) ??
           Object.keys(config.input).at(0);
 
         const data = await client.fetch(GetCategoriesQuery, {
@@ -137,12 +140,15 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           input: config.type === "file" ? config.input[version!] : config.input,
         });
 
+        const tag = config.tagPages?.find(
+          (tag) => path.split("/").at(-1) === slugify(tag),
+        );
+
         const operationsData = await client.fetch(GetOperationsQuery, {
           type: config.type,
           input: config.type === "file" ? config.input[version!] : config.input,
-          tag: config.tagPages?.find(
-            (tag) => path.split("/").at(-1) === slugify(tag),
-          ),
+          tag,
+          untagged: tag === undefined,
         });
 
         const items = operationsData.schema.operations.map((operation) => ({
@@ -158,35 +164,36 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
 
         const categories = data.schema.tags
           // .filter((tag) => tag.operations.length > 0)
-          .map<SidebarItem>((tag) => ({
-            type: "category",
-            label: tag.name!,
-            link: {
-              type: "doc" as const,
-              id: joinUrl(basePath, slugify(tag.name ?? "")),
-              label: tag.name!,
-            },
-            collapsible: false,
-            collapsed: true,
-            items:
-              path === joinUrl(basePath, slugify(tag.name ?? "")) ? items : [],
-            // items: tag.operations.map((operation) => ({
-            //   type: "link",
-            //   label: operation.summary ?? operation.path,
-            //   href: `#${operation.slug}`,
-            //   badge: {
-            //     label: operation.method,
-            //     color: MethodColorMap[operation.method.toLowerCase()]!,
-            //     invert: true,
-            //   },
-            // })),
-          }));
-
-        categories.unshift({
-          type: "link",
-          label: "Overview",
-          href: "#description",
-        });
+          .map<SidebarItem>((tag) => {
+            const categoryLink = joinUrl(
+              basePath,
+              version,
+              tag.name ? slugify(tag.name) : "~endpoints",
+            );
+            return {
+              type: "category",
+              label: tag.name || "Other endpoints",
+              link: {
+                type: "doc" as const,
+                id: categoryLink,
+                label: tag.name!,
+              },
+              collapsible: false,
+              collapsed: true,
+              items: path === categoryLink ? items : [],
+              // TODO left in for single page APIs
+              // items: tag.operations.map((operation) => ({
+              //   type: "link",
+              //   label: operation.summary ?? operation.path,
+              //   href: `#${operation.slug}`,
+              //   badge: {
+              //     label: operation.method,
+              //     color: MethodColorMap[operation.method.toLowerCase()]!,
+              //     invert: true,
+              //   },
+              // })),
+            };
+          });
 
         return categories;
       } catch {
@@ -202,8 +209,10 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       }));
 
       return versionsInPath.map((version) => {
+        const versionPath = joinUrl(basePath, version ? `/${version}` : "");
+
         return {
-          path: basePath + (version ? `/${version}` : ""),
+          path: versionPath,
           async lazy() {
             const { OpenApiRoute } = await import("./Route.js");
             return {
@@ -223,22 +232,19 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               async lazy() {
                 // const { OperationList } = await import("./OperationList.js");
                 return { element: <div>im the new index page</div> };
+                // return { element: <OperationList /> };
+              },
+            },
+            {
+              path: joinUrl(versionPath, "~endpoints"),
+              async lazy() {
+                const { OperationList } = await import("./OperationList.js");
+                return { element: <OperationList untagged={true} /> };
               },
             },
             ...tagPages.map<RouteObject>((tag) => {
-              console.log(
-                joinUrl(
-                  basePath,
-                  version ? `/${version}` : "",
-                  slugify(tag.tag),
-                ),
-              );
               return {
-                path: joinUrl(
-                  basePath,
-                  version ? `/${version}` : "",
-                  slugify(tag.tag),
-                ),
+                path: joinUrl(versionPath, tag.path),
                 async lazy() {
                   const { OperationList } = await import("./OperationList.js");
                   return {

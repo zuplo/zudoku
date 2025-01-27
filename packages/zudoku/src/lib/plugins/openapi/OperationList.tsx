@@ -89,7 +89,12 @@ export const OperationsFragment = graphql(/* GraphQL */ `
 export type OperationListItemResult = ResultOf<typeof OperationsFragment>;
 
 const AllOperationsQuery = graphql(/* GraphQL */ `
-  query AllOperations($input: JSON!, $type: SchemaType!, $tag: String) {
+  query AllOperations(
+    $input: JSON!
+    $type: SchemaType!
+    $tag: String
+    $untagged: Boolean
+  ) {
     schema(input: $input, type: $type) {
       description
       summary
@@ -100,7 +105,7 @@ const AllOperationsQuery = graphql(/* GraphQL */ `
         name
         description
       }
-      operations(tag: $tag) {
+      operations(tag: $tag, untagged: $untagged) {
         slug
         ...OperationsFragment
       }
@@ -108,9 +113,20 @@ const AllOperationsQuery = graphql(/* GraphQL */ `
   }
 `);
 
-export const OperationList = ({ tag }: { tag: string }) => {
+export const OperationList = ({
+  tag,
+  untagged,
+}: {
+  tag?: string;
+  untagged?: boolean;
+}) => {
   const { input, type, versions, version } = useOasConfig();
-  const query = useCreateQuery(AllOperationsQuery, { input, type, tag });
+  const query = useCreateQuery(AllOperationsQuery, {
+    input,
+    type,
+    tag,
+    untagged,
+  });
   const { selectedServer } = useSelectedServerStore();
   const result = useSuspenseQuery(query);
   const title = result.data.schema.title;
