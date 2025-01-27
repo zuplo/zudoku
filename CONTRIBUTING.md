@@ -1,6 +1,21 @@
 # Contributing
 
-## Setup
+## 1. Clone Project
+
+- [Fork the repository](https://github.com/Hyperfoil/Horreum/fork)
+
+- Clone the project locally 
+
+```bash
+git clone https://github.com/your_github_username/zudoku.git
+``` 
+
+- Change the working directory
+```
+cd zudoku
+```
+
+## 2. Project Setup
 
 Run `pnpm install` to install dependancies.
 
@@ -12,25 +27,22 @@ To install nx globally run:
 pnpm add --global nx@latest
 ```
 
-## Environment Variables
+## 3. Environment Variables
 
 When working on Zudoku, you will need to create a `.env` file in the root of the project and set the following environment variable in order to run the project locally.
 
 ```
 ZUDOKU_INTERNAL_DEV=true
 ```
-
-## NX Cache
-
-If you are a Zuplo employee you should authenticate to NX Cloud in order to use the build cache.
-
+> [!IMPORTANT]
+> If you are a Zuplo employee you should authenticate to NX Cloud in order to use the build cache.
+> 
 To authenticate run:
-
 ```
 nx login
 ```
 
-## Build
+## 4. Build
 
 To build the project run:
 
@@ -38,7 +50,7 @@ To build the project run:
 nx run zudoku:build
 ```
 
-## Dev
+## 5. Dev
 
 To run a sample locally, run the following.
 
