@@ -68,6 +68,7 @@ const builder = new SchemaBuilder<{
   Context: {
     schema: OpenAPIDocument;
     operations: GraphQLOperationObject[];
+    tags: TagObject[];
     schemaImports?: SchemaImports;
     currentTag?: string;
     slugify: CountableSlugify;
@@ -85,7 +86,7 @@ const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
-const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
+export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
   const tags = schema.tags ?? [];
 
   // Extract tags from operations
@@ -148,7 +149,7 @@ const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
     operations: t.field({
       type: [OperationItem],
       resolve: (parent, _args, ctx) => {
-        const rootTags = getAllTags(ctx.schema).map((tag) => tag.name);
+        const rootTags = ctx.tags.map((tag) => tag.name);
         return ctx.operations
           .filter((item) =>
             parent.name
@@ -434,8 +435,8 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         name: t.arg.string(),
       },
       type: [SchemaTag],
-      resolve: (root, args) => {
-        const tags = [...getAllTags(root), { name: "" }];
+      resolve: (root, args, ctx) => {
+        const tags = [...ctx.tags, { name: "" }];
         return args.name ? tags.filter((tag) => tag.name === args.name) : tags;
       },
     }),
@@ -489,6 +490,8 @@ builder.queryType({
         ctx.schema = schema;
         ctx.operations = getAllOperations(schema.paths);
         ctx.slugify = slugifyWithCounter();
+        ctx.tags = getAllTags(schema);
+
         return schema;
       },
     }),

@@ -26,6 +26,5 @@ export function slugify(input: string, maxLength: number = 50): string {
       const newResult = [...acc, part].join("-");
       return newResult.length <= maxLength ? [...acc, part] : acc;
     }, [])
-    .reverse()
     .join("-");
 }

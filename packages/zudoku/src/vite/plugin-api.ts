@@ -4,6 +4,7 @@ import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
+import { getAllTags } from "../lib/oas/graphql/index.js";
 import { upgradeSchema } from "../lib/oas/parser/upgrade/index.js";
 import type {
   ApiCatalogItem,
@@ -199,10 +200,8 @@ const viteApiPlugin = async (
               if (!schemas?.length) continue;
               const latestSchema = schemas[0]?.schema;
 
-              const tags =
-                (
-                  latestSchema?.tags as Array<{ name: string }> | undefined
-                )?.map(({ name }) => name) ?? [];
+              const tags = getAllTags(latestSchema).map(({ name }) => name);
+
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",
                 `  ...apiPluginOptions,`,

@@ -160,11 +160,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           // .filter((tag) => tag.operations.length > 0)
           .map<SidebarItem>((tag) => ({
             type: "category",
-            label: tag.name ?? "lol",
+            label: tag.name!,
             link: {
               type: "doc" as const,
               id: joinUrl(basePath, slugify(tag.name ?? "")),
-              label: tag.name ?? "lol",
+              label: tag.name!,
             },
             collapsible: false,
             collapsed: true,
@@ -226,6 +226,13 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               },
             },
             ...tagPages.map<RouteObject>((tag) => {
+              console.log(
+                joinUrl(
+                  basePath,
+                  version ? `/${version}` : "",
+                  slugify(tag.tag),
+                ),
+              );
               return {
                 path: joinUrl(
                   basePath,
