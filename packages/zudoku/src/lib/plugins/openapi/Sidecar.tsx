@@ -1,8 +1,9 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
-import { Fragment, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useSelectedServerStore } from "../../authentication/state.js";
+import { PathRenderer } from "../../components/PathRenderer.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
@@ -114,31 +115,21 @@ export const Sidecar = ({
 
   const requestBodyContent = operation.requestBody?.content;
 
-  const path = operation.path.split("/").map((part, i, arr) => {
-    const isParam =
-      (part.startsWith("{") && part.endsWith("}")) || part.startsWith(":");
-    const paramName = isParam ? part.replace(/[:{}]/g, "") : undefined;
-
-    return (
-      // eslint-disable-next-line react/no-array-index-key
-      <Fragment key={part + i}>
-        {paramName ? (
-          <ColorizedParam
-            name={paramName}
-            backgroundOpacity="0"
-            // same as in `ParameterListItem`
-            slug={`${operation.slug}-${paramName.toLocaleLowerCase()}`}
-          >
-            {part}
-          </ColorizedParam>
-        ) : (
-          part
-        )}
-        {i < arr.length - 1 ? "/" : null}
-        <wbr />
-      </Fragment>
-    );
-  });
+  const path = (
+    <PathRenderer
+      path={operation.path}
+      renderParam={({ name }) => (
+        <ColorizedParam
+          name={name}
+          backgroundOpacity="0"
+          // same as in `ParameterListItem`
+          slug={`${operation.slug}-${name}`}
+        >
+          {`{${name}}`}
+        </ColorizedParam>
+      )}
+    />
+  );
 
   const { selectedServer } = useSelectedServerStore();
 
