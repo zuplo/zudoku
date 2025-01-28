@@ -63,6 +63,7 @@ export const ViewportAnchorProvider = ({
   const [activeAnchor, setActiveAnchor] = useState("");
   const observerRef = useRef<IntersectionObserver | null>(null);
   const registeredElements = useRef(new Set<HTMLElement>());
+  const pendingElements = useRef(new Set<HTMLElement>());
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -80,6 +81,13 @@ export const ViewportAnchorProvider = ({
         threshold: 0.75,
       },
     );
+
+    // Process any elements that tried to register before observer was ready
+    pendingElements.current.forEach((element) => {
+      registeredElements.current.add(element);
+      observerRef.current?.observe(element);
+    });
+    pendingElements.current.clear();
 
     return () => observerRef.current?.disconnect();
   }, []);
@@ -114,14 +122,22 @@ export const ViewportAnchorProvider = ({
   const observeFns = useMemo(() => {
     return {
       observe: (element: HTMLElement | null) => {
-        if (!element || !observerRef.current) return;
+        if (!element) return;
+
+        if (!observerRef.current) {
+          pendingElements.current.add(element);
+          return;
+        }
+
         registeredElements.current.add(element);
         observerRef.current.observe(element);
       },
       unobserve: (element: HTMLElement | null) => {
-        if (!element || !observerRef.current) return;
+        if (!element) return;
+
+        pendingElements.current.delete(element);
         registeredElements.current.delete(element);
-        observerRef.current.unobserve(element);
+        observerRef.current?.unobserve(element);
       },
     };
   }, []);
@@ -132,8 +148,6 @@ export const ViewportAnchorProvider = ({
   );
 
   return (
-    <ViewportAnchorContext.Provider value={value}>
-      {children}
-    </ViewportAnchorContext.Provider>
+    <ViewportAnchorContext value={value}>{children}</ViewportAnchorContext>
   );
 };

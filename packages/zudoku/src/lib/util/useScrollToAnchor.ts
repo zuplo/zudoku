@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useLocation } from "react-router";
 import { useViewportAnchor } from "../components/context/ViewportAnchorContext.js";
 import { DATA_ANCHOR_ATTR } from "../components/navigation/SidebarItem.js";
@@ -22,32 +22,49 @@ const scrollIntoViewIfNeeded = (
   element.scrollIntoView(options);
 };
 
-export const useScrollToAnchor = () => {
-  const location = useLocation();
+export const useScrollToHash = () => {
   const { setActiveAnchor } = useViewportAnchor();
 
-  useEffect(() => {
-    if (!location.hash) return;
-
-    const hash = decodeURIComponent(location.hash.split("/")[0]!.slice(1));
-
-    const scrollToElement = () => {
-      const element = document.getElementById(hash);
-      const link = document.querySelector(`[${DATA_ANCHOR_ATTR}="${hash}"]`);
+  const scrollToHash = useCallback(
+    (hash: string) => {
+      const cleanHash = hash
+        .replace(/^#/, "")
+        // Operation list items might have subdivisions that the sidebar doesn't show.
+        // The subdivisions are separated by a slash so we need to remove everything before the slash to get the sidebar correct item.
+        .split("/")
+        .at(0)!;
+      const element = document.getElementById(decodeURIComponent(cleanHash));
+      const link = document.querySelector(
+        `[${DATA_ANCHOR_ATTR}="${cleanHash}"]`,
+      );
 
       if (element) {
         element.scrollIntoView();
         scrollIntoViewIfNeeded(link);
-        requestIdleCallback(() => setActiveAnchor(hash));
+        requestIdleCallback(() => setActiveAnchor(cleanHash));
         return true;
       }
 
+      // Scroll didn't happen
       return false;
-    };
+    },
+    [setActiveAnchor],
+  );
 
-    if (!scrollToElement()) {
+  return scrollToHash;
+};
+
+export const useScrollToAnchor = () => {
+  const location = useLocation();
+  const { setActiveAnchor } = useViewportAnchor();
+  const scrollToHash = useScrollToHash();
+
+  useEffect(() => {
+    if (!location.hash) return;
+
+    if (!scrollToHash(location.hash)) {
       const observer = new MutationObserver((_, obs) => {
-        if (!scrollToElement()) return;
+        if (!scrollToHash(location.hash)) return;
         obs.disconnect();
       });
 
