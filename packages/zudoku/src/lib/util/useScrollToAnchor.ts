@@ -41,7 +41,7 @@ export const useScrollToHash = () => {
       if (element) {
         element.scrollIntoView();
         scrollIntoViewIfNeeded(link);
-        setTimeout(() => setActiveAnchor(cleanHash), 100);
+        requestIdleCallback(() => setActiveAnchor(cleanHash));
         return true;
       }
 
