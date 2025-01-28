@@ -16,7 +16,7 @@ export const ThemeSwitch = () => {
           ? "Switch to light mode"
           : "Switch to dark mode"
       }
-      className={cn(!resolvedTheme && "opacity-0")}
+      className={cn(resolvedTheme ? "opacity-100" : "opacity-0")}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
       <ThemeIcon size={18} />
