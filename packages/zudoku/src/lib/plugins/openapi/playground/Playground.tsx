@@ -191,6 +191,8 @@ export const Playground = ({
 
         const body = await response.text();
 
+        const url = new URL(request.url);
+
         return {
           status: response.status,
           headers: Array.from(response.headers.entries()),
@@ -200,7 +202,11 @@ export const Playground = ({
           request: {
             method: request.method.toUpperCase(),
             url: request.url,
-            headers: Array.from(request.headers.entries()),
+            headers: [
+              ["Host", url.host],
+              ["User-Agent", "Zudoku Playground"],
+              ...Array.from(request.headers.entries()),
+            ],
             body: data.body ? data.body : undefined,
           },
         } satisfies PlaygroundResult;

@@ -1,15 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRightIcon } from "lucide-react";
-
 import { Fragment, useState } from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "zudoku/ui/Select.js";
 import { SyntaxHighlight } from "../../../../components/SyntaxHighlight.js";
 import { Card } from "../../../../ui/Card.js";
-import { SimpleSelect } from "../../SimpleSelect.js";
+import { convertToTypes } from "./convertToTypes.js";
 
 const statusCodeMap: Record<number, string> = {
   200: "OK",
@@ -54,6 +60,29 @@ const tryParseJson = (body: string) => {
   }
 };
 
+const sortHeadersByRelevance = (
+  headers: Array<[string, string]>,
+): Array<[string, string]> => {
+  const priorityOrder = [
+    "Content-Type",
+    "Content-Length",
+    "Authorization",
+    "X-RateLimit-Remaining",
+    "X-RateLimit-Limit",
+    "Cache-Control",
+    "ETag",
+  ].map((key) => key.toLowerCase());
+
+  return [...headers].sort(([keyA], [keyB]) => {
+    const indexA = priorityOrder.indexOf(keyA.toLowerCase());
+    const indexB = priorityOrder.indexOf(keyB.toLowerCase());
+    if (indexA === indexB) return 0;
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+};
+
 export const ResponseTab = ({
   body = "",
   headers,
@@ -79,43 +108,45 @@ export const ResponseTab = ({
   const types = useQuery({
     queryKey: ["types", beautifiedBody],
     queryFn: async () => {
-      // console.log("queryFn");
-      const { convertJsonToTs } = await import("@typeweaver/json2ts");
-
-      const interfaceName =
-        url
-          .split("/")
-          .pop()
-          ?.replace(/[^a-zA-Z0-9]/g, "")
-          .replace(/^[a-z]/, (letter) => letter.toUpperCase()) +
-        (status >= 400 ? "ErrorResponse" : "Response");
-
-      return convertJsonToTs(JSON.parse(beautifiedBody), interfaceName);
+      return convertToTypes(JSON.parse(beautifiedBody));
     },
     enabled: view === "types",
   });
 
+  const sortedHeaders = sortHeadersByRelevance([...headers]);
+
   return (
-    <div className="flex flex-col gap-2 h-full overflow-y-scroll">
-      <Collapsible>
-        <CollapsibleTrigger className="flex items-center gap-2 hover:text-primary">
-          <ChevronRightIcon className="h-4 w-4" />
+    <div className="flex flex-col gap-2 h-full overflow-y-scroll max-h-[calc(100vh-220px)] py-4">
+      <Collapsible defaultOpen>
+        <CollapsibleTrigger className="flex items-center gap-2 hover:text-primary group">
+          <ChevronRightIcon className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
           <span className="font-semibold">Headers</span>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <Card
-            // playground dialog has h-5/6 ≈ 83.333vh
-            className="h-92 overflow-y-auto grid grid-cols-2 w-full gap-2.5 font-mono text-xs shadow-none p-4"
-          >
-            <div className="font-semibold">Key</div>
-            <div className="font-semibold">Value</div>
-            {headers.map(([key, value]) => (
+          <div className="grid grid-cols-[auto,1fr] gap-x-8 gap-y-1 pl-1.5 pt-2 font-mono text-xs">
+            {sortedHeaders.slice(0, 5).map(([key, value]) => (
               <Fragment key={key}>
-                <div>{key}</div>
-                <div className="break-words">{value}</div>
+                <div className="text-primary whitespace-pre">{key}</div>
+                <div className="break-all">{value}</div>
               </Fragment>
             ))}
-          </Card>
+            {sortedHeaders.length > 5 && (
+              <Collapsible className="col-span-full grid-cols-subgrid grid">
+                <CollapsibleTrigger className="col-span-2 text-xs text-muted-foreground hover:text-primary flex items-center gap-1 py-1">
+                  <ChevronRightIcon className="h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
+                  Show {sortedHeaders.length - 5} more headers
+                </CollapsibleTrigger>
+                <CollapsibleContent className="col-span-full grid grid-cols-subgrid gap-x-8 gap-y-1 ">
+                  {sortedHeaders.slice(5).map(([key, value]) => (
+                    <Fragment key={key}>
+                      <div className="text-primary whitespace-pre">{key}</div>
+                      <div className="break-all">{value}</div>
+                    </Fragment>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+          </div>
         </CollapsibleContent>
       </Collapsible>
 
@@ -123,7 +154,7 @@ export const ResponseTab = ({
         <SyntaxHighlight
           language={
             view === "types"
-              ? "typescript "
+              ? "typescript"
               : view === "raw"
                 ? jsonContent
                   ? "plain"
@@ -137,29 +168,41 @@ export const ResponseTab = ({
             (view === "raw"
               ? body
               : view === "types"
-                ? types.data
+                ? types.data?.lines.join("\n")
                 : beautifiedBody) ?? ""
           }
         />
       </Card>
       <div className="flex gap-2 justify-between">
-        <div className="flex text-xs gap-6 border bg-muted rounded-md p-2 g">
+        <div className="flex text-xs gap-2 border bg-muted rounded-md p-2 items-center h-8 font-mono divide-x">
           <div>
-            Status: {status} {statusCodeMap[status] ?? ""}
+            <span className="text-muted-foreground">Status</span> {status}{" "}
+            {statusCodeMap[status] ?? ""}
           </div>
-          <div>Time: {time.toFixed(0)}ms</div>
-          <div>Size: {size} B</div>
+          <div>
+            <span className="text-muted-foreground">Time</span>{" "}
+            {time.toFixed(0)}ms
+          </div>
+          <div>
+            <span className="text-muted-foreground">Size</span> {size}B
+          </div>
         </div>
         {jsonContent && (
-          <SimpleSelect
-            value={view}
-            onChange={(e) => setView(e.target.value as "formatted" | "raw")}
-            options={[
-              { value: "formatted", label: "Formatted" },
-              { value: "raw", label: "Raw" },
-              { value: "types", label: "Types" },
-            ]}
-          />
+          <div>
+            <Select
+              value={view}
+              onValueChange={(value) => setView(value as "formatted" | "raw")}
+            >
+              <SelectTrigger className="min-w-32">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="formatted">Formatted</SelectItem>
+                <SelectItem value="raw">Raw</SelectItem>
+                <SelectItem value="types">Types</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         )}
       </div>
     </div>

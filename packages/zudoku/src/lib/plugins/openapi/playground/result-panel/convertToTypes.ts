@@ -17,7 +17,7 @@ function inferType(value: JsonValue): string {
   return typeof value;
 }
 
-function generateInterface(obj: JsonObject, indentation = ""): string {
+export function generateInterface(obj: JsonObject, indentation = ""): string {
   const lines: string[] = ["{"];
 
   for (const [key, value] of Object.entries(obj)) {
@@ -34,68 +34,3 @@ export function convertToTypes(json: JsonValue): { lines: string[] } {
   const lines = [`type GeneratedType = ${typeDefinition};`];
   return { lines };
 }
-
-// Tests
-import { describe, expect, it } from "vitest";
-
-describe("generateInterface", () => {
-  it("should handle primitive types", () => {
-    const input = {
-      string: "hello",
-      number: 42,
-      boolean: true,
-      null: null,
-    };
-
-    const expected = [
-      "{",
-      "  string: string;",
-      "  number: number;",
-      "  boolean: boolean;",
-      "  null: null;",
-      "}",
-    ].join("\n");
-
-    expect(generateInterface(input)).toBe(expected);
-  });
-
-  it("should handle nested objects", () => {
-    const input = {
-      user: {
-        name: "John",
-        age: 30,
-      },
-    };
-
-    const expected = [
-      "{",
-      "  user: {",
-      "  name: string;",
-      "  age: number;",
-      "};",
-      "}",
-    ].join("\n");
-
-    expect(generateInterface(input)).toBe(expected);
-  });
-
-  it("should handle arrays", () => {
-    const input = {
-      numbers: [1, 2, 3],
-      empty: [],
-      objects: [{ id: 1 }],
-    };
-
-    const expected = [
-      "{",
-      "  numbers: number[];",
-      "  empty: any[];",
-      "  objects: {",
-      "  id: number;",
-      "}[];",
-      "}",
-    ].join("\n");
-
-    expect(generateInterface(input)).toBe(expected);
-  });
-});
