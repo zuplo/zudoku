@@ -77,14 +77,14 @@ export const Endpoint = () => {
             setSelectedServer(e.target.value);
           })
         }
-        value={selectedServer ?? result.data.schema.url}
+        value={selectedServer ?? servers.at(0)!.url}
         showChevrons={servers.length > 1}
         options={servers.map((server) => ({
           value: server.url,
           label: server.url,
         }))}
       />
-      <CopyButton url={selectedServer ?? result.data.schema.url} />
+      <CopyButton url={selectedServer ?? servers.at(0)!.url} />
     </div>
   );
 };

@@ -67,7 +67,7 @@ export const SidebarCategory = ({
             isActive: false,
             className: [
               "text-start font-medium",
-              isCollapsible
+              isCollapsible || typeof category.link !== "undefined"
                 ? "cursor-pointer"
                 : "cursor-default hover:bg-transparent",
             ],
@@ -82,7 +82,7 @@ export const SidebarCategory = ({
           {category.link?.type === "doc" ? (
             <NavLink
               to={joinPath(category.link.id)}
-              className="flex-1"
+              className="flex-1 truncate"
               onClick={() => {
                 // if it is the current path and closed then open it because there's no path change to trigger the open
                 if (isActive && !open) {
@@ -112,6 +112,7 @@ export const SidebarCategory = ({
         className={cn(
           // CollapsibleContent class is used to animate and it should only be applied when the user has triggered the toggle
           hasInteracted && "CollapsibleContent",
+          category.items.length === 0 && "hidden",
           "ms-6 my-1",
         )}
       >

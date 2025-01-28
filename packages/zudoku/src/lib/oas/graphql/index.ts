@@ -67,15 +67,26 @@ const builder = new SchemaBuilder<{
   };
   Context: {
     schema: OpenAPIDocument;
+    operations: GraphQLOperationObject[];
+    tags: TagObject[];
     schemaImports?: SchemaImports;
+    currentTag?: string;
+    slugify: CountableSlugify;
   };
 }>({});
+
+type GraphQLOperationObject = OperationObject & {
+  path: string;
+  method: string;
+  slug?: string;
+  parentTag?: string;
+};
 
 const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
-const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
+export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
   const tags = schema.tags ?? [];
 
   // Extract tags from operations
@@ -94,10 +105,10 @@ const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
   return [...tags, ...uniqueOperationTags.map((tag) => ({ name: tag }))];
 };
 
-const getAllOperations = (paths?: PathsObject, tag?: string) => {
-  const slugify = slugifyWithCounter();
+const getAllOperations = (paths?: PathsObject) => {
+  const start = performance.now();
 
-  return Object.entries(paths ?? {}).flatMap(([path, value]) =>
+  const operations = Object.entries(paths ?? {}).flatMap(([path, value]) =>
     HttpMethods.flatMap((method) => {
       if (!value?.[method]) return [];
 
@@ -118,23 +129,17 @@ const getAllOperations = (paths?: PathsObject, tag?: string) => {
         ...operationParameters,
       ];
 
-      const slugData = {
-        summary: operation.summary,
-        operationId: operation.operationId,
-        path,
-        method,
-      };
-
       return {
         ...operation,
         method,
         path,
         parameters,
         tags: operation.tags ?? [],
-        slug: createOperationSlug(slugify, slugData, tag),
       };
     }),
   );
+
+  return operations;
 };
 
 const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
@@ -144,15 +149,19 @@ const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
     operations: t.field({
       type: [OperationItem],
       resolve: (parent, _args, ctx) => {
-        const rootTags = getAllTags(ctx.schema).map((tag) => tag.name);
-
-        return getAllOperations(ctx.schema.paths, parent.name).filter((item) =>
-          parent.name
-            ? item.tags.includes(parent.name)
-            : item.tags.length === 0 ||
-              // If none of the tags are present in the root tags, then show them here
-              item.tags.every((tag) => !rootTags.includes(tag)),
-        );
+        const rootTags = ctx.tags.map((tag) => tag.name);
+        return ctx.operations
+          .filter((item) =>
+            parent.name
+              ? item.tags?.includes(parent.name)
+              : item.tags?.length === 0 ||
+                // If none of the tags are present in the root tags, then show them here
+                item.tags?.every((tag) => !rootTags.includes(tag)),
+          )
+          .map((item) => ({
+            ...item,
+            parentTag: parent.name,
+          }));
       },
     }),
   }),
@@ -300,12 +309,24 @@ const ResponseItem = builder
   });
 
 const OperationItem = builder
-  .objectRef<
-    OperationObject & { path: string; method: string; slug: string }
-  >("OperationItem")
+  .objectRef<GraphQLOperationObject>("OperationItem")
   .implement({
     fields: (t) => ({
-      slug: t.exposeString("slug"),
+      slug: t.field({
+        type: "String",
+        resolve: (parent, _, ctx) => {
+          const slugData = {
+            summary: parent.summary,
+            operationId: parent.operationId,
+            path: parent.path,
+            method: parent.method,
+          };
+
+          //TODO: fix parent tag parent.tags
+          return createOperationSlug(ctx.slugify, slugData, parent.parentTag);
+        },
+      }),
+
       path: t.exposeString("path"),
       method: t.exposeString("method"),
       operationId: t.exposeString("operationId", { nullable: true }),
@@ -414,8 +435,8 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         name: t.arg.string(),
       },
       type: [SchemaTag],
-      resolve: (root, args) => {
-        const tags = [...getAllTags(root), { name: "" }];
+      resolve: (root, args, ctx) => {
+        const tags = [...ctx.tags, { name: "" }];
         return args.name ? tags.filter((tag) => tag.name === args.name) : tags;
       },
     }),
@@ -426,15 +447,18 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         method: t.arg.string(),
         operationId: t.arg.string(),
         tag: t.arg.string(),
+        untagged: t.arg.boolean(),
       },
-      resolve: (parent, args) =>
-        getAllOperations(parent.paths).filter(
-          (item) =>
-            (!args.operationId || item.operationId === args.operationId) &&
-            (!args.path || item.path === args.path) &&
-            (!args.method || item.method === args.method) &&
-            (!args.tag || item.tags.includes(args.tag)),
-        ),
+      resolve: (parent, args, ctx) =>
+        ctx.operations.filter((op) => {
+          return (
+            (!args.operationId || op.operationId === args.operationId) &&
+            (!args.path || op.path === args.path) &&
+            (!args.method || op.method === args.method) &&
+            (!args.tag || op.tags?.some((tag) => args.tag?.includes(tag))) &&
+            (!args.untagged || (op.tags ?? []).length === 0)
+          );
+        }),
     }),
   }),
 });
@@ -467,6 +491,10 @@ builder.queryType({
         }
 
         ctx.schema = schema;
+        ctx.operations = getAllOperations(schema.paths);
+        ctx.slugify = slugifyWithCounter();
+        ctx.tags = getAllTags(schema);
+
         return schema;
       },
     }),

@@ -1,4 +1,4 @@
-import { Outlet, useParams } from "react-router";
+import { Outlet } from "react-router";
 import { joinPath } from "../../util/joinPath.js";
 import type { GraphQLClient } from "./client/GraphQLClient.js";
 import { GraphQLProvider } from "./client/GraphQLContext.js";
@@ -8,16 +8,16 @@ import { type OasPluginConfig } from "./interfaces.js";
 export const OpenApiRoute = ({
   basePath,
   versions,
+  version,
   config,
   client,
 }: {
   basePath: string;
+  version?: string;
   versions: string[];
   config: OasPluginConfig;
   client: GraphQLClient;
 }) => {
-  const { version } = useParams<"version">();
-
   const input =
     config.type === "file"
       ? {

@@ -8,6 +8,8 @@ export const RequestBodySidecarBox = ({
   content: Content;
   onExampleChange?: (example: unknown) => void;
 }) => {
+  if (content.length === 0) return null;
+
   return (
     <SidecarBox.Root>
       <SidecarBox.Head className="text-xs flex justify-between items-center">

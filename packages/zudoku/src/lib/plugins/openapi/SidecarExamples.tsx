@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
-import { type SchemaObject } from "../../oas/graphql/index.js";
+import { SchemaObject } from "../../oas/parser/index.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
@@ -57,26 +57,26 @@ export const SidecarExamples = ({
   const examples = effectiveContent?.examples ?? [];
   const selectedExample = examples[selectedExampleIndex];
 
-  let exampleValue = undefined;
-  if (selectedExample) {
-    // If it's a wrapped example with a value field, use that
-    exampleValue =
-      "value" in selectedExample ? selectedExample.value : selectedExample;
-  } else if (effectiveContent?.schema) {
-    // No example provided, generate one from schema
-    exampleValue = generateSchemaExample(
-      effectiveContent.schema as SchemaObject,
-    );
-  }
+  const exampleValue = useMemo(() => {
+    if (selectedExample) {
+      // If it's a wrapped example with a value field, use that
+      return "value" in selectedExample
+        ? selectedExample.value
+        : selectedExample;
+    } else if (effectiveContent?.schema) {
+      // No example provided, generate one from schema
+      return generateSchemaExample(effectiveContent.schema as SchemaObject);
+    }
+  }, [selectedExample, effectiveContent?.schema]);
 
   useEffect(() => {
+    if (!exampleValue) return;
+
     onExampleChange?.(exampleValue);
   }, [exampleValue, onExampleChange]);
 
   const formattedExample = formatForDisplay(exampleValue);
   const language = getLanguage(effectiveContent?.mediaType);
-
-  const hasContent = examples.length > 0 || content.length > 0;
 
   return (
     <>
@@ -109,13 +109,13 @@ export const SidecarExamples = ({
           </div>
         )}
       </SidecarBox.Body>
-      {hasContent && (
-        <SidecarBox.Footer className="text-xs p-0">
-          {description && (
-            <div className="text-muted-foreground text-xs border-b px-3 py-2">
-              {description}
-            </div>
-          )}
+      <SidecarBox.Footer className="text-xs p-0 divide-y divide-border">
+        {description && (
+          <div className="text-muted-foreground text-xs px-3 py-2">
+            {description}
+          </div>
+        )}
+        {(examples.length !== 0 || content.length !== 0) && (
           <div className="flex items-center gap-2 justify-between min-w-0 px-3 py-2">
             <div className="flex items-center gap-2 min-w-0">
               {content.length > 1 ? (
@@ -156,8 +156,8 @@ export const SidecarExamples = ({
               </div>
             )}
           </div>
-        </SidecarBox.Footer>
-      )}
+        )}
+      </SidecarBox.Footer>
     </>
   );
 };
