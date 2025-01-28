@@ -95,7 +95,6 @@ export const OperationListItem = ({
               level={3}
               className="capitalize"
               id={`${operation.slug}/request-body`}
-              registerSidebarAnchor
             >
               Request Body
             </Heading>
@@ -108,7 +107,6 @@ export const OperationListItem = ({
               level={3}
               className="capitalize mt-8 pt-8 border-t"
               id={`${operation.slug}/responses`}
-              registerSidebarAnchor
             >
               Responses
             </Heading>
