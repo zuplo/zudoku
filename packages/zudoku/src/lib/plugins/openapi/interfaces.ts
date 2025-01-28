@@ -20,7 +20,14 @@ export type OasPluginConfig = {
   server?: string;
   navigationId?: string;
   skipPreload?: boolean;
-} & OasSource;
+} & OasPluginConfigOptions &
+  OasSource;
+
+export type OasPluginConfigOptions = {
+  options?: {
+    examplesDefaultLanguage?: string;
+  };
+};
 
 export type OasPluginContext = {
   server?: string;
@@ -28,4 +35,5 @@ export type OasPluginContext = {
   skipPreload?: boolean;
   version?: string;
   versions: Record<string, string>;
-} & ContextOasSource;
+} & ContextOasSource &
+  OasPluginConfigOptions;

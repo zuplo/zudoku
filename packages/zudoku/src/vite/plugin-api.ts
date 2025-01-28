@@ -138,12 +138,19 @@ const viteApiPlugin = async (
           ].join("\n");
         }
 
+        const apiPluginOptions = {
+          options: {
+            examplesDefaultLanguage: config.defaults?.examplesLanguage,
+          },
+        };
+
         const code = [
           `import config from "virtual:zudoku-config";`,
           `import { openApiPlugin } from "zudoku/plugins/openapi";`,
           `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
           `const configuredApiPlugins = [];`,
           `const configuredApiCatalogPlugins = [];`,
+          `const apiPluginOptions = ${JSON.stringify(apiPluginOptions)};`,
         ];
 
         if (config.apis) {
@@ -191,6 +198,7 @@ const viteApiPlugin = async (
 
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",
+                `  ...apiPluginOptions,`,
                 `  type: "file",`,
                 `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
                 `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
@@ -204,7 +212,7 @@ const viteApiPlugin = async (
               );
             } else {
               code.push(
-                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify(apiConfig)}));`,
+                `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, ...apiPluginOptions })}));`,
               );
             }
           }

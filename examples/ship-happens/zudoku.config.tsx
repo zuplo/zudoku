@@ -44,6 +44,9 @@ const config: ZudokuConfig = {
     type: "clerk",
     clerkPubKey: "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ",
   },
+  defaults: {
+    examplesLanguage: "js",
+  },
   apis: [
     {
       type: "file",
