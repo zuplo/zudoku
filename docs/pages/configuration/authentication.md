@@ -64,6 +64,13 @@ You can find this in the Auth0 dashboard under [Application Settings](https://au
 }
 ```
 
+To setup Auth0, create a Single Page Application (SPA) application in the Auth0 dashboard. Set the following options:
+
+- Callback URL to `https://your-site.com/oauth/callback`.
+- For development environments only, we recommend configuring your app to allow the a wildcard callback like `https://*.zuplo.app/oauth/callback` to allow for testing each environment.
+- For local development, set the callback url to `http://localhost:3000/oauth/callback`.
+- Add your site hostname (your-site.com) to the list of allowed CORS origins.
+
 ### Clerk
 
 For Clerk you will need the publishable key for your application. You can find this in the Clerk dashboard on the [API Keys](https://dashboard.clerk.com/last-active?path=api-keys) page.
@@ -89,11 +96,18 @@ For authentication services that support OpenID, you will need to supply an `cli
   authentication: {
     type: "openid",
     clientId: "<your-client-id>",
-    issuer: "<the-issuer-url">
+    issuer: "<the-issuer-url>"
   },
   // ...
 }
 ```
+
+When configuring your OpenID provider, you will need to set the following:
+
+- Callback or Redirect URI to `https://your-site.com/oauth/callback`.
+- If your provider supports wildcard callback urls, we recommend configuring your development identity provider to allow the a wildcard callback like `https://*.zuplo.app/oauth/callback` to allow for testing each environment.
+- For local development set the callback url to `http://localhost:3000/oauth/callback`.
+- Add your site hostname (your-site.com) to the list of allowed CORS origins.
 
 ## User Data
 
