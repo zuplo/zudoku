@@ -31,10 +31,7 @@ const SubmitButton = ({
       <Button
         className="rounded-r-none inset-shadow-sm"
         disabled={disabled}
-        onClick={() => {
-          setValue("identity", dropdownValue);
-          formRef?.current?.requestSubmit();
-        }}
+        onClick={() => formRef?.current?.requestSubmit()}
       >
         Send
       </Button>

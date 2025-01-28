@@ -119,19 +119,25 @@ export const Headers = ({
                 />
               </div>
               <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Value"
-                  className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                  {...register(`headers.${i}.value`)}
-                  ref={(el) => {
-                    valueRefs.current[i] = el;
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && e.currentTarget.value.trim()) {
-                      handleValueEnter(i);
-                    }
-                  }}
-                  autoComplete="off"
+                <Controller
+                  control={control}
+                  name={`headers.${i}.value`}
+                  render={({ field }) => (
+                    <Input
+                      placeholder="Value"
+                      className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                      {...field}
+                      ref={(el) => {
+                        valueRefs.current[i] = el;
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                          handleValueEnter(i);
+                        }
+                      }}
+                      autoComplete="off"
+                    />
+                  )}
                 />
                 <Button
                   size="icon"
