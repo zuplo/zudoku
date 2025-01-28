@@ -40,6 +40,12 @@ For example:
 
 After logging in, users will be automatically redirected back to the protected route they were trying to access.
 
+## Authentication Providers
+
+Zudoku supports Clerk, Auth0, and any OpenID provider that supports the OpenID Connect protocol.
+
+Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
+
 ### Auth0
 
 For Auth0, you will need the `clientId` associated with the domain you are using.
@@ -88,3 +94,14 @@ For authentication services that support OpenID, you will need to supply an `cli
   // ...
 }
 ```
+
+## User Data
+
+After the user authenticates, the user profile is loaded via the provider's [User Info endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo). The following fields are used to display the user profile:
+
+- `name` - The user's full name
+- `email` - The user's email address
+- `picture` - The user's profile picture URL
+- `email_verified` - Whether the user's email address has been verified
+
+If the provider does not return a field, it will be left blank.
