@@ -3,6 +3,7 @@ import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
@@ -15,10 +16,7 @@ import {
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { useSelectedServerStore } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { Spinner } from "../../../components/Spinner.js";
-import { Button } from "../../../ui/Button.js";
-import { Callout } from "../../../ui/Callout.js";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
+import { Card } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
 import { ColorizedParam } from "../ColorizedParam.js";
@@ -28,28 +26,17 @@ import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import { ResponseTab } from "./ResponseTab.js";
+import { ResultPanel } from "./result-panel/ResultPanel.js";
+import SubmitButton from "./SubmitButton.js";
 
 export const NO_IDENTITY = "__none";
-
-const statusCodeMap: Record<number, string> = {
-  200: "OK",
-  201: "Created",
-  202: "Accepted",
-  204: "No Content",
-  400: "Bad Request",
-  401: "Unauthorized",
-  403: "Forbidden",
-  404: "Not Found",
-  405: "Method Not Allowed",
-  500: "Internal Server Error",
-};
 
 export type Header = {
   name: string;
   defaultValue?: string;
   defaultActive?: boolean;
 };
+
 export type QueryParam = {
   name: string;
   defaultValue?: string;
@@ -79,6 +66,20 @@ export type PlaygroundForm = {
     active: boolean;
   }>;
   identity?: string;
+};
+
+export type PlaygroundResult = {
+  status: number;
+  headers: Array<[string, string]>;
+  size: number;
+  body: string;
+  time: number;
+  request: {
+    method: string;
+    url: string;
+    headers: Array<[string, string]>;
+    body?: string;
+  };
 };
 
 export type PlaygroundContentProps = {
@@ -158,20 +159,23 @@ export const Playground = ({
     }
   }, [setValue, identities.data]);
 
+  const formRef = useRef<HTMLFormElement>(null);
+
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
-      const requestUrl = createUrl(selectedServer ?? server, url, data);
       const start = performance.now();
-
-      const request = new Request(requestUrl, {
-        method: method.toUpperCase(),
-        headers: Object.fromEntries(
-          data.headers
-            .filter((h) => h.name && h.active)
-            .map((header) => [header.name, header.value]),
-        ),
-        body: data.body ? data.body : undefined,
-      });
+      const request = new Request(
+        createUrl(selectedServer ?? server, url, data),
+        {
+          method: method.toUpperCase(),
+          headers: Object.fromEntries(
+            data.headers
+              .filter((h) => h.name && h.active)
+              .map((header) => [header.name, header.value]),
+          ),
+          body: data.body ? data.body : undefined,
+        },
+      );
 
       if (data.identity !== NO_IDENTITY) {
         identities.data
@@ -187,13 +191,25 @@ export const Playground = ({
 
         const body = await response.text();
 
+        const url = new URL(request.url);
+
         return {
           status: response.status,
-          headers: response.headers,
+          headers: Array.from(response.headers.entries()),
           size: body.length,
           body,
           time,
-        };
+          request: {
+            method: request.method.toUpperCase(),
+            url: request.url,
+            headers: [
+              ["Host", url.host],
+              ["User-Agent", "Zudoku Playground"],
+              ...Array.from(request.headers.entries()),
+            ],
+            body: data.body ? data.body : undefined,
+          },
+        } satisfies PlaygroundResult;
       } catch (error) {
         if (error instanceof TypeError) {
           throw new Error(
@@ -236,8 +252,6 @@ export const Playground = ({
       </Fragment>
     );
   });
-
-  const headerEntries = Array.from(queryMutation.data?.headers.entries() ?? []);
 
   const urlQueryParams = formState.queryParams
     .filter((p) => p.active)
@@ -282,24 +296,30 @@ export const Playground = ({
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
     >
-      <form onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}>
-        <div className="grid grid-cols-[8fr_7fr] text-sm h-full">
+      <form
+        onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
+        ref={formRef}
+      >
+        <div className="grid grid-cols-2 text-sm h-full">
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="flex items-center flex-wrap p-2 font-mono text-xs">
+                <div className="flex items-center flex-wrap p-2 font-mono text-xs break-all">
                   {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
                   {urlQueryParams}
                 </div>
               </div>
-              <Button type="submit" className="h-auto flex gap-1">
-                Send
-              </Button>
+
+              <SubmitButton
+                identities={identities.data ?? []}
+                formRef={formRef}
+                disabled={form.formState.isSubmitting}
+              />
             </div>
             <Tabs defaultValue="parameters">
               <div className="flex flex-wrap gap-1 justify-between">
@@ -438,84 +458,12 @@ export const Playground = ({
               </TabsContent>
             </Tabs>
           </div>
-          <div className="min-w-0 p-8 bg-muted/70">
-            {queryMutation.error ? (
-              <div className="flex flex-col gap-2">
-                {formState.pathParams.some((p) => p.value === "") && (
-                  <Callout type="caution">
-                    Some path parameters are missing values. Please fill them in
-                    to ensure the request is sent correctly.
-                  </Callout>
-                )}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Request failed</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    Error:{" "}
-                    {queryMutation.error.message ||
-                      String(queryMutation.error) ||
-                      "Unexpected error"}
-                  </CardContent>
-                </Card>
-              </div>
-            ) : queryMutation.data ? (
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2">
-                  <div className="flex text-xs gap-6">
-                    <div>
-                      Status: {queryMutation.data.status}{" "}
-                      {statusCodeMap[queryMutation.data.status] ?? ""}
-                    </div>
-                    <div>Time: {queryMutation.data.time.toFixed(0)}ms</div>
-                    <div>Size: {queryMutation.data.size} B</div>
-                  </div>
-                </div>
-                <Tabs defaultValue="response">
-                  <TabsList>
-                    <TabsTrigger value="response">Response</TabsTrigger>
-                    <TabsTrigger value="headers">
-                      {headerEntries.length
-                        ? `Headers (${headerEntries.length})`
-                        : "No headers"}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="response">
-                    <ResponseTab
-                      headers={queryMutation.data.headers}
-                      body={queryMutation.data.body}
-                    />
-                  </TabsContent>
-                  <TabsContent value="headers">
-                    <Card
-                      // playground dialog has h-5/6 ≈ 83.333vh
-                      className="max-h-[calc(83.333vh-140px)] overflow-y-auto grid grid-cols-2 w-full gap-2.5 font-mono text-xs shadow-none p-4"
-                    >
-                      <div className="font-semibold">Key</div>
-                      <div className="font-semibold">Value</div>
-                      {headerEntries.map(([key, value]) => (
-                        <Fragment key={key}>
-                          <div>{key}</div>
-                          <div className="break-words">{value}</div>
-                        </Fragment>
-                      ))}
-                    </Card>
-                  </TabsContent>
-                </Tabs>
-              </div>
-            ) : (
-              <div className="grid place-items-center h-full">
-                <span className="text-[16px] font-semibold text-muted-foreground">
-                  {queryMutation.isPending ? (
-                    <Spinner />
-                  ) : (
-                    "Send a request first to see the response here"
-                  )}
-                </span>
-              </div>
+          <ResultPanel
+            queryMutation={queryMutation}
+            showPathParamsWarning={formState.pathParams.some(
+              (p) => p.value === "",
             )}
-          </div>
+          />
         </div>
       </form>
     </FormProvider>

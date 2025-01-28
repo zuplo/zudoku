@@ -9,6 +9,7 @@ import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Input } from "../../../ui/Input.js";
 import { InlineInput } from "./InlineInput.js";
+import ParamsGrid from "./ParamsGrid.js";
 import { type PlaygroundForm, type QueryParam } from "./Playground.js";
 
 export const QueryParams = ({
@@ -34,51 +35,51 @@ export const QueryParams = ({
             (param) => param.name === field.name,
           );
           return (
-            <div
-              key={field.id}
-              className="hover:bg-accent/40 grid grid-cols-[min-content_1fr_1fr] gap-2 items-center px-3"
-            >
-              <Controller
-                control={control}
-                name={`queryParams.${i}.active`}
-                render={({ field }) => (
-                  <Checkbox
-                    variant="outline"
-                    id={`queryParams.${i}.active`}
-                    className="mr-2"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-              <Controller
-                control={control}
-                render={({ field }) =>
-                  !requiredFields[i] ? (
-                    <Autocomplete
-                      value={field.value}
-                      options={queryParams.map((param) => param.name)}
-                      onChange={(e) => {
-                        field.onChange(e);
-                      }}
-                      className="border-0 font-mono text-xs bg-transparent hover:bg-transparent"
+            <ParamsGrid key={field.id}>
+              <div className="flex items-center">
+                <Controller
+                  control={control}
+                  name={`queryParams.${i}.active`}
+                  render={({ field }) => (
+                    <Checkbox
+                      variant="outline"
+                      id={`queryParams.${i}.active`}
+                      className="mr-2"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
                     />
-                  ) : (
-                    <InlineInput asChild>
-                      <label
-                        className="flex items-center cursor-pointer gap-1"
-                        htmlFor={`queryParams.${i}.active`}
-                        title={requiredFields[i] ? "Required field" : undefined}
-                      >
-                        {field.value}
-                        {requiredFields[i] && <sup>&nbsp;*</sup>}
-                      </label>
-                    </InlineInput>
-                  )
-                }
-                name={`queryParams.${i}.name`}
-              />
-
+                  )}
+                />
+                <Controller
+                  control={control}
+                  render={({ field }) =>
+                    !requiredFields[i] ? (
+                      <Autocomplete
+                        value={field.value}
+                        options={queryParams.map((param) => param.name)}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                        className="border-0 font-mono text-xs bg-transparent hover:bg-transparent"
+                      />
+                    ) : (
+                      <InlineInput asChild>
+                        <label
+                          className="flex items-center cursor-pointer gap-1"
+                          htmlFor={`queryParams.${i}.active`}
+                          title={
+                            requiredFields[i] ? "Required field" : undefined
+                          }
+                        >
+                          {field.value}
+                          {requiredFields[i] && <sup>&nbsp;*</sup>}
+                        </label>
+                      </InlineInput>
+                    )
+                  }
+                  name={`queryParams.${i}.name`}
+                />
+              </div>
               <div className="flex justify-between items-center">
                 <Controller
                   control={control}
@@ -117,7 +118,7 @@ export const QueryParams = ({
                   name={`queryParams.${i}.value`}
                 />
               </div>
-            </div>
+            </ParamsGrid>
           );
         })}
       </div>
