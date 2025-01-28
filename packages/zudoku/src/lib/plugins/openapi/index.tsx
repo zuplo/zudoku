@@ -59,6 +59,8 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
 
 export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
+const UNTAGGED_PATH = "~endpoints";
+
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinUrl(config.navigationId ?? "/reference");
   const versions = config.type === "file" ? Object.keys(config.input) : [];
@@ -169,7 +171,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             const categoryLink = joinUrl(
               basePath,
               urlVersion,
-              tag.name ? slugify(tag.name) : "~endpoints",
+              tag.name ? slugify(tag.name) : UNTAGGED_PATH,
             );
             return {
               type: "category",
@@ -220,12 +222,13 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           children: [
             {
               index: true,
-              loader: () => {
-                return redirect(joinUrl(versionPath, tagPages.at(0)?.path));
-              },
+              loader: () =>
+                redirect(
+                  joinUrl(versionPath, tagPages.at(0)?.path ?? UNTAGGED_PATH),
+                ),
             },
             {
-              path: joinUrl(versionPath, "~endpoints"),
+              path: joinUrl(versionPath, UNTAGGED_PATH),
               async lazy() {
                 const { OperationList } = await import("./OperationList.js");
                 return { element: <OperationList untagged={true} /> };
