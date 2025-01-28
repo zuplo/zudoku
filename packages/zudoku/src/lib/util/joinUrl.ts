@@ -1,5 +1,5 @@
 // Mostly adapted from https://github.com/moxystudio/js-proper-url-join
-const defaultUrlRegExp = /^(\w+:\/\/[^/?]+)?(.*?)(\?.+)?$/;
+const defaultUrlRegExp = /^(\w+:\/\/[^/?]+)?([^?]*)(\?.*)?$/;
 
 const normalizeParts = (
   parts: (string | number | null | undefined | false)[],
