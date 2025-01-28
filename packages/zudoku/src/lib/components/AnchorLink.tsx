@@ -11,12 +11,11 @@ export const AnchorLink = (props: LinkProps) => {
   const hash = typeof props.to === "string" ? props.to : props.to.hash;
 
   const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    props.onClick?.(event);
     if (!hash?.startsWith("#") || hash !== location.hash) return;
 
     event.preventDefault();
     scrollToHash(hash);
-
-    props.onClick?.(event);
   };
 
   return <Link {...props} onClick={handleClick} />;
