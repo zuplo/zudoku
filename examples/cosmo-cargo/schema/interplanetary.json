@@ -2,10 +2,10 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Interplanetary Shipping API",
-    "description": "This API enables interplanetary shipping capabilities through the Ship Happens platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+    "description": "This API enables interplanetary shipping capabilities through the Cosmo Cargo platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
     "version": "1.0.0",
     "contact": {
-      "name": "Ship Happens API Support",
+      "name": "Cosmo Cargo API Support",
       "email": "api@sh.example.com",
       "url": "https://developers.sh.example.com"
     }

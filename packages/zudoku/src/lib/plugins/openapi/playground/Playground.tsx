@@ -3,6 +3,7 @@ import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+import { PathRenderer } from "../../../components/PathRenderer.js";
 
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
@@ -222,36 +223,27 @@ export const Playground = ({
     },
   });
 
-  const path = url.split("/").map((part, i, arr) => {
-    const isPathParam =
-      (part.startsWith("{") && part.endsWith("}")) || part.startsWith(":");
-    const replaced = part.replace(/[:{}]/g, "");
-    const value = formState.pathParams.find((p) => p.name === replaced)?.value;
+  const path = (
+    <PathRenderer
+      path={url}
+      renderParam={({ name, originalValue, index }) => {
+        const formValue = formState.pathParams.find(
+          (param) => param.name === name,
+        )?.value;
 
-    const pathParamValue = (
-      <ColorizedParam
-        backgroundOpacity="25%"
-        name={part}
-        slug={part}
-        title={
-          !value
-            ? `Missing value for path parameter \`${replaced}\``
-            : undefined
-        }
-      >
-        {value ? encodeURIComponent(value) : part}
-      </ColorizedParam>
-    );
-
-    return (
-      // eslint-disable-next-line react/no-array-index-key
-      <Fragment key={part + i}>
-        {isPathParam ? pathParamValue : part}
-        {i < arr.length - 1 && "/"}
-        <wbr />
-      </Fragment>
-    );
-  });
+        return (
+          <ColorizedParam
+            name={name}
+            backgroundOpacity="0"
+            slug={name}
+            onClick={() => form.setFocus(`pathParams.${index}.value`)}
+          >
+            {formValue || originalValue}
+          </ColorizedParam>
+        );
+      }}
+    />
+  );
 
   const urlQueryParams = formState.queryParams
     .filter((p) => p.active)
@@ -268,9 +260,7 @@ export const Playground = ({
       {servers && servers.length > 1 ? (
         <Select
           onValueChange={(value) => {
-            startTransition(() => {
-              setSelectedServer(value);
-            });
+            startTransition(() => setSelectedServer(value));
           }}
           value={selectedServer}
           defaultValue={selectedServer}
@@ -307,7 +297,7 @@ export const Playground = ({
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="flex items-center flex-wrap p-2 font-mono text-xs break-all">
+                <div className="items-center p-2 font-mono text-xs break-words">
                   {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
