@@ -198,9 +198,11 @@ const viteApiPlugin = async (
 
               const schemas = processedSchemas[apiConfig.navigationId];
               if (!schemas?.length) continue;
-              const latestSchema = schemas[0]?.schema;
 
-              const tags = getAllTags(latestSchema).map(({ name }) => name);
+              const tags = schemas
+                .flatMap((schema) => getAllTags(schema.schema))
+                .map(({ name }) => name)
+                .filter((name, index, array) => array.indexOf(name) === index);
 
               code.push(
                 "configuredApiPlugins.push(openApiPlugin({",

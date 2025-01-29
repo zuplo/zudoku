@@ -53,6 +53,22 @@ export const SidebarCategory = ({
     </button>
   );
 
+  const icon = category.icon && (
+    <category.icon
+      size={16}
+      className={cn("align-[-0.125em] ", isActive && "text-primary")}
+    />
+  );
+
+  const styles = navigationListItem({
+    className: [
+      "text-start font-medium",
+      isCollapsible || typeof category.link !== "undefined"
+        ? "cursor-pointer"
+        : "cursor-default hover:bg-transparent",
+    ],
+  });
+
   return (
     <Collapsible.Root
       className="flex flex-col"
@@ -61,52 +77,38 @@ export const SidebarCategory = ({
       onOpenChange={() => setOpen(true)}
     >
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
-        <div
-          onClick={() => setHasInteracted(true)}
-          className={navigationListItem({
-            isActive: false,
-            className: [
-              "text-start font-medium",
-              isCollapsible || typeof category.link !== "undefined"
-                ? "cursor-pointer"
-                : "cursor-default hover:bg-transparent",
-            ],
-          })}
-        >
-          {category.icon && (
-            <category.icon
-              size={16}
-              className={cn("align-[-0.125em] ", isActive && "text-primary")}
-            />
-          )}
-          {category.link?.type === "doc" ? (
-            <NavLink
-              to={joinPath(category.link.id)}
-              className="flex-1 truncate"
-              onClick={() => {
-                // if it is the current path and closed then open it because there's no path change to trigger the open
-                if (isActive && !open) {
-                  setOpen(true);
-                }
-              }}
+        {category.link?.type === "doc" ? (
+          <NavLink
+            to={joinPath(category.link.id)}
+            className={styles}
+            onClick={() => {
+              setHasInteracted(true);
+              // if it is the current path and closed then open it because there's no path change to trigger the open
+              if (isActive && !open) {
+                setOpen(true);
+              }
+            }}
+          >
+            {icon}
+            <div
+              className={cn(
+                "flex items-center gap-2 justify-between w-full",
+                isActive ? "text-primary" : "text-foreground/80",
+              )}
             >
-              <div
-                className={cn(
-                  "flex items-center gap-2 justify-between w-full",
-                  isActive ? "text-primary" : "text-foreground/80",
-                )}
-              >
-                <div className="truncate">{category.label}</div>
-                {ToggleButton}
-              </div>
-            </NavLink>
-          ) : (
+              <div className="truncate">{category.label}</div>
+              {ToggleButton}
+            </div>
+          </NavLink>
+        ) : (
+          <div onClick={() => setHasInteracted(true)} className={styles}>
+            {icon}
             <div className="flex items-center justify-between w-full">
               <div className="flex gap-2 truncate w-full">{category.label}</div>
               {ToggleButton}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </Collapsible.Trigger>
       <Collapsible.Content
         className={cn(

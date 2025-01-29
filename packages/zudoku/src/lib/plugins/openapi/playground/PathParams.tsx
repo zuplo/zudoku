@@ -22,7 +22,7 @@ export const PathParams = ({
           <>
             <Controller
               control={control}
-              name={`pathParams.${i}.value`}
+              name={`pathParams.${i}.name`}
               render={() => (
                 <div>
                   <ColorizedParam

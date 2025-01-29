@@ -5,11 +5,25 @@
     "description": "This API allows you to create shipping labels and stamps for your shipments.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
     "version": "2.0.0",
     "contact": {
-      "name": "Ship Happens API Support",
+      "name": "Cosmo Cargo API Support",
       "email": "api@sh.example.com",
       "url": "https://developers.sh.example.com"
     }
   },
+  "tags": [
+    {
+      "name": "Labels",
+      "description": "Endpoints for managing shipping labels. Labels are printable documents that contain:\n\n* Shipping address information\n* Tracking barcodes\n* Carrier-specific routing data\n* Package details"
+    },
+    {
+      "name": "Stamps",
+      "description": "Endpoints for managing postage stamps. Stamps provide:\n\n* Proof of postage payment\n* Digital verification\n* Support for multiple output formats (PDF, PNG, ZPL)\n* 24-hour validity period"
+    },
+    {
+      "name": "Analytics",
+      "description": "Endpoints for retrieving shipping analytics and statistics. Analytics provide:\n\n* Shipping volume metrics\n* Cost analysis\n* Delivery performance tracking\n* Regional distribution insights"
+    }
+  ],
   "servers": [
     {
       "url": "https://api.sh.example.com/v1",
@@ -318,6 +332,137 @@
                 "example": {
                   "code": "NOT_FOUND",
                   "message": "Label with ID 987fcdeb-51a2-43f7-9876-543210abcdef not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics/shipping-volume": {
+      "get": {
+        "tags": ["Analytics"],
+        "summary": "Get shipping volume statistics",
+        "description": "Retrieves shipping volume statistics for a specified time period. Includes daily, weekly, and monthly aggregations of shipping data.",
+        "deprecated": true,
+        "operationId": "getShippingVolumeStats",
+        "parameters": [
+          {
+            "name": "start_date",
+            "in": "query",
+            "required": true,
+            "description": "Start date for the analysis period",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2025-01-01"
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "required": true,
+            "description": "End date for the analysis period",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2025-01-31"
+          },
+          {
+            "name": "grouping",
+            "in": "query",
+            "required": false,
+            "description": "How to group the statistics",
+            "schema": {
+              "type": "string",
+              "enum": ["daily", "weekly", "monthly"],
+              "default": "daily"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistics retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "period": {
+                      "type": "object",
+                      "properties": {
+                        "start": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "end": {
+                          "type": "string",
+                          "format": "date"
+                        }
+                      }
+                    },
+                    "grouping": {
+                      "type": "string",
+                      "enum": ["daily", "weekly", "monthly"]
+                    },
+                    "total_shipments": {
+                      "type": "integer"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "date": {
+                            "type": "string",
+                            "format": "date"
+                          },
+                          "shipment_count": {
+                            "type": "integer"
+                          },
+                          "total_weight_kg": {
+                            "type": "number",
+                            "format": "float"
+                          },
+                          "average_cost": {
+                            "type": "number",
+                            "format": "float"
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "period": {
+                    "start": "2025-01-01",
+                    "end": "2025-01-31"
+                  },
+                  "grouping": "daily",
+                  "total_shipments": 1250,
+                  "data": [
+                    {
+                      "date": "2025-01-01",
+                      "shipment_count": 42,
+                      "total_weight_kg": 156.8,
+                      "average_cost": 12.5
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "INVALID_DATE_RANGE",
+                  "message": "End date must be after start date"
                 }
               }
             }
