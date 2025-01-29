@@ -40,7 +40,7 @@ export const ParameterListItem = ({
               name={parameter.name}
               backgroundOpacity="15%"
               className="px-1"
-              slug={id + "-" + parameter.name.toLocaleLowerCase()}
+              slug={`${id}-${parameter.name}`}
             />
           ) : (
             parameter.name
