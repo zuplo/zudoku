@@ -89,6 +89,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
                 </DrawerTrigger>
               </div>
               <main
+                data-pagefind-body
                 className={cn(
                   "h-full dark:border-white/10 translate-x-0",
                   "lg:overflow-visible",

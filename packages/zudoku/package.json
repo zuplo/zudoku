@@ -35,6 +35,7 @@
     "./plugins/redirect": "./src/lib/plugins/redirect/index.ts",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.ts",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.ts",
+    "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.ts",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.ts",
     "./components": "./src/lib/components/index.ts",
     "./icons": "./src/lib/icons.ts",
@@ -111,6 +112,10 @@
       "./plugins/search-inkeep": {
         "import": "./lib/zudoku.plugin-search-inkeep.js",
         "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
+      },
+      "./plugins/search-pagefind": {
+        "import": "./lib/zudoku.plugin-search-pagefind.js",
+        "types": "./dist/lib/plugins/search-pagefind/index.d.ts"
       },
       "./components": {
         "import": "./lib/zudoku.components.js",

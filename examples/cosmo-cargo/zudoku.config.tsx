@@ -47,6 +47,9 @@ const config: ZudokuConfig = {
   defaults: {
     examplesLanguage: "js",
   },
+  search: {
+    type: "pagefind",
+  },
   apis: [
     {
       type: "file",

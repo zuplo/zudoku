@@ -203,14 +203,19 @@ const Redirect = z.object({
 });
 
 const SearchSchema = z
-  .object({
-    type: z.literal("inkeep"),
-    apiKey: z.string(),
-    integrationId: z.string(),
-    organizationId: z.string(),
-    primaryBrandColor: z.string(),
-    organizationDisplayName: z.string(),
-  })
+  .union([
+    z.object({
+      type: z.literal("inkeep"),
+      apiKey: z.string(),
+      integrationId: z.string(),
+      organizationId: z.string(),
+      primaryBrandColor: z.string(),
+      organizationDisplayName: z.string(),
+    }),
+    z.object({
+      type: z.literal("pagefind"),
+    }),
+  ])
   .optional();
 
 const AuthenticationSchema = z.union([
