@@ -1,4 +1,3 @@
-import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown } from "../../components/Markdown.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
 import { ColorizedParam } from "./ColorizedParam.js";
@@ -47,14 +46,14 @@ export const ParameterListItem = ({
           )}
         </code>
         {paramSchema.type && (
-          <Badge variant="muted">
+          <>
             {paramSchema.type === "array"
               ? `${paramSchema.items.type}[]`
               : paramSchema.type}
-          </Badge>
+          </>
         )}
-        {parameter.required && <Badge variant="outline">required</Badge>}
-        {parameter.style === "form" && <Badge variant="secondary">form</Badge>}
+        {parameter.required && "required"}
+        {parameter.style === "form" && "form"}
       </div>
       {parameter.description && (
         <Markdown
