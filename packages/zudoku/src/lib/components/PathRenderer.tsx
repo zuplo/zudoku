@@ -24,16 +24,28 @@ export const PathRenderer = ({
       const startIndex = match.index!;
 
       if (startIndex > lastIndex) {
-        elements.push(part.slice(lastIndex, startIndex));
+        elements.push(
+          <Fragment key={`text-${lastIndex}-${startIndex}`}>
+            {part.slice(lastIndex, startIndex)}
+          </Fragment>,
+        );
       }
 
-      elements.push(renderParam({ name, originalValue, index: matchIndex }));
+      elements.push(
+        <Fragment key={`param-${name}`}>
+          {renderParam({ name, originalValue, index: matchIndex })}
+        </Fragment>,
+      );
 
       lastIndex = startIndex + originalValue.length;
     });
 
     if (lastIndex < part.length) {
-      elements.push(part.slice(lastIndex));
+      elements.push(
+        <Fragment key={`text-${lastIndex}-${part.length}`}>
+          {part.slice(lastIndex)}
+        </Fragment>,
+      );
     }
 
     return (
