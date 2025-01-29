@@ -37,7 +37,12 @@ export const OperationListItem = ({
       className="grid grid-cols-1 lg:grid-cols-[minmax(0,4fr)_minmax(0,3fr)] gap-8 items-start border-b-2 mb-16 pb-16"
     >
       <div className="flex flex-col gap-4">
-        <Heading level={2} id={operation.slug} registerSidebarAnchor>
+        <Heading
+          level={2}
+          id={operation.slug}
+          registerSidebarAnchor
+          className="break-all"
+        >
           {operation.summary}
         </Heading>
         <div className="text-sm flex gap-2 font-mono">
