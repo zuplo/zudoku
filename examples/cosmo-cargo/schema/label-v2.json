@@ -5,7 +5,7 @@
     "description": "This API allows you to create shipping labels and stamps for your shipments.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
     "version": "2.0.0",
     "contact": {
-      "name": "Ship Happens API Support",
+      "name": "Cosmo Cargo API Support",
       "email": "api@sh.example.com",
       "url": "https://developers.sh.example.com"
     }

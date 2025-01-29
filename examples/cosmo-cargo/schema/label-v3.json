@@ -5,7 +5,7 @@
     "description": "This API allows you to create shipping labels and stamps for your shipments.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
     "version": "3.0.0",
     "contact": {
-      "name": "Ship Happens API Support",
+      "name": "Cosmo Cargo API Support",
       "email": "api@sh.example.com",
       "url": "https://developers.sh.example.com"
     }
@@ -31,6 +31,12 @@
   "security": [
     {
       "ApiKeyAuth": []
+    },
+    {
+      "BearerAuth": []
+    },
+    {
+      "OAuth2": ["read:labels", "write:labels"]
     }
   ],
   "components": {
@@ -39,6 +45,26 @@
         "type": "apiKey",
         "in": "header",
         "name": "X-API-Key"
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "OAuth2": {
+        "type": "oauth2",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://auth.sh.example.com/oauth/authorize",
+            "tokenUrl": "https://auth.sh.example.com/oauth/token",
+            "scopes": {
+              "read:labels": "Read access to shipping labels",
+              "write:labels": "Write access to shipping labels",
+              "read:stamps": "Read access to shipping stamps",
+              "write:stamps": "Write access to shipping stamps"
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -253,6 +279,20 @@
             "schema": {
               "type": "string",
               "format": "uuid"
+            }
+          },
+          {
+            "name": "ids",
+            "in": "query",
+            "style": "form",
+            "explode": false,
+            "required": true,
+            "description": "The ID of the stamp to invalidate",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             }
           }
         ],

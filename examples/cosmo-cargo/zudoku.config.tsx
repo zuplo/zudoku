@@ -1,7 +1,7 @@
 import type { ZudokuConfig } from "zudoku";
 import { ApiIdentity, ApiIdentityPlugin } from "zudoku";
 
-export class ShipHappensApiIdentityPlugin implements ApiIdentityPlugin {
+export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities() {
     return [
       {
@@ -90,7 +90,7 @@ const config: ZudokuConfig = {
       primaryForeground: "#000",
     },
   },
-  plugins: [new ShipHappensApiIdentityPlugin()],
+  plugins: [new CosmoCargoApiIdentityPlugin()],
 };
 
 export default config;
