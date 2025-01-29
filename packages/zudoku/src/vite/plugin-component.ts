@@ -16,6 +16,10 @@ const viteAliasPlugin = (getConfig: () => LoadedConfig): Plugin => {
           "zudoku/plugins/search-inkeep",
           "src/lib/plugins/search-inkeep/index.tsx",
         ],
+        [
+          "zudoku/plugins/search-pagefind",
+          "src/lib/plugins/search-pagefind/index.tsx",
+        ],
         [/^zudoku\/ui\/(.*)\.js/, "src/lib/ui/$1.tsx"],
       ] as const;
 
