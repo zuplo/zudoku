@@ -10,6 +10,8 @@ export const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        expand:
+          "mt-2 flex gap-1.5 border bg-transparent rounded-xl text-muted-foreground hover:text-foreground",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:

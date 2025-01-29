@@ -76,41 +76,60 @@
           }
         }
       },
+      "StampInput": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/Stamp"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Stamp"
+            }
+          }
+        ]
+      },
       "Label": {
         "type": "object",
-        "required": ["shipmentId", "format"],
+        "required": ["label"],
         "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "readOnly": true
-          },
-          "shipmentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "format": {
-            "type": "string",
-            "enum": ["PDF", "PNG", "ZPL"]
-          },
-          "size": {
-            "type": "string",
-            "enum": ["4x6", "6x4", "8.5x11"]
-          },
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "readOnly": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "readOnly": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "readOnly": true
+          "label": {
+            "type": "object",
+            "required": ["shipmentId", "format"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "readOnly": true
+              },
+              "shipmentId": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "format": {
+                "type": "string",
+                "enum": ["PDF", "PNG", "ZPL"]
+              },
+              "size": {
+                "type": "string",
+                "enum": ["4x6", "6x4", "8.5x11"]
+              },
+              "url": {
+                "type": "string",
+                "format": "uri",
+                "readOnly": true
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "readOnly": true
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "readOnly": true
+              }
+            }
           }
         }
       },
@@ -169,7 +188,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Stamp"
+                "$ref": "#/components/schemas/StampInput"
               },
               "examples": {
                 "PDF": {
