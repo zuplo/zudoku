@@ -70,7 +70,7 @@ const Page = async () => {
     <div className="min-h-full bg-gray-900 p-4 lg:p-0">
       <header>
         <nav className="pb-5 md:text-sm">
-          <div className="h-24 flex flex-col md:flex-row items-center max-w-screen-xl mx-auto px-4 md:flex md:px-8 justify-between">
+          <div className="h-24 flex flex-col md:flex-row items-center max-w-(--breakpoint-xl) mx-auto px-4 md:flex md:px-8 justify-between">
             <Brand />
             <div className="flex gap-4 items-center">
               <DocumentationButton />
@@ -78,7 +78,7 @@ const Page = async () => {
               <a
                 target="_blank"
                 href="https://github.com/zuplo/zudoku/"
-                className="flex-shrink-0"
+                className="shrink-0"
               >
                 <Image
                   src="/github-logo.svg"
@@ -91,7 +91,7 @@ const Page = async () => {
               <a
                 target="_blank"
                 href="https://discord.zudoku.dev"
-                className="flex-shrink-0"
+                className="shrink-0"
               >
                 <Image
                   src="/discord-logo.svg"
@@ -106,7 +106,7 @@ const Page = async () => {
         </nav>
       </header>
       <section className="relative">
-        <div className="relative max-w-screen-xl mx-auto px-4 py-28 md:px-8">
+        <div className="relative max-w-(--breakpoint-xl) mx-auto px-4 py-28 md:px-8">
           <div className="space-y-8 max-w-3xl mx-auto text-center">
             <AnimatedHeading />
             <p className="max-w-2xl mx-auto text-slate-400">

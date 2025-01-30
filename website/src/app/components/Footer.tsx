@@ -3,7 +3,7 @@ import Image from "next/image";
 export const Footer = () => (
   <footer>
     <div className="flex justify-center pt-8 mt-24 w-full text-zinc-400/80 border-t border-zinc-700 ">
-      <div className="p-8 w-full max-w-screen-xl">
+      <div className="p-8 w-full max-w-(--breakpoint-xl)">
         <div className="mb-10 w-full">
           <ul className="flex flex-wrap flex-row items-stretch w-full gap-6 lg:gap-20 xl:gap-36">
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
