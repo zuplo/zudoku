@@ -11,7 +11,7 @@ import { FragmentType, useFragment } from "./graphql/index.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { methodForColor } from "./util/methodToColor.js";
 
-export const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
+const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
 export type ParameterGroup = (typeof PARAM_GROUPS)[number];
 
 export const OperationListItem = ({

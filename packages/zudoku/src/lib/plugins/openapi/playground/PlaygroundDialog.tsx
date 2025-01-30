@@ -39,9 +39,12 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
     <Dialog onOpenChange={(open) => setOpen(open)}>
       <DialogTrigger asChild>
         {props.children ?? (
-          <button className="flex gap-1 items-center px-2 py-1 rounded-md transition text-xs bg-primary  text-primary-foreground shadow-sm hover:bg-primary/80">
+          <button
+            type="button"
+            className="flex gap-1 items-center px-2 py-1 rounded-md transition text-xs bg-primary  text-primary-foreground shadow-sm hover:bg-primary/80"
+          >
             Test
-            <HeroPlayIcon className="" size={14} />
+            <HeroPlayIcon size={14} />
           </button>
         )}
       </DialogTrigger>

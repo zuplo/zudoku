@@ -30,6 +30,38 @@
     }
   ],
   "components": {
+    "parameters": {
+      "CorrelationId": {
+        "name": "X-Correlation-ID",
+        "in": "header",
+        "description": "Unique identifier for tracking requests across multiple services",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "example": "123e4567-e89b-12d3-a456-426614174000"
+      },
+      "IdempotencyKey": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "description": "Unique key to ensure idempotency of the request",
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "example": "550e8400-e29b-41d4-a716-446655440000"
+      },
+      "ApiVersion": {
+        "name": "X-API-Version",
+        "in": "header",
+        "description": "API version requested by the client",
+        "schema": {
+          "type": "string",
+          "enum": ["2024-01", "2023-12"],
+          "default": "2024-01"
+        }
+      }
+    },
     "securitySchemes": {
       "ApiKeyAuth": {
         "type": "apiKey",
@@ -252,6 +284,27 @@
         "summary": "Create a new shipment",
         "description": "Creates a new shipment with the provided details",
         "operationId": "createShipment",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          },
+          {
+            "name": "X-Request-Priority",
+            "in": "header",
+            "description": "Priority level for processing the shipment request",
+            "schema": {
+              "type": "string",
+              "enum": ["high", "normal", "low"],
+              "default": "normal"
+            }
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -439,6 +492,22 @@
         "description": "Get the current status and tracking information for a shipment",
         "operationId": "trackShipment",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/ApiVersion"
+          },
+          {
+            "name": "X-Cache-Control",
+            "in": "header",
+            "description": "Caching behavior for the tracking response",
+            "schema": {
+              "type": "string",
+              "enum": ["no-cache", "max-age=60"],
+              "default": "max-age=60"
+            }
+          },
           {
             "name": "trackingNumber",
             "in": "path",
@@ -934,6 +1003,22 @@
         "description": "Update or add customs documentation for international shipments",
         "operationId": "updateCustoms",
         "parameters": [
+          {
+            "$ref": "#/components/parameters/CorrelationId"
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "name": "X-Customs-Region",
+            "in": "header",
+            "description": "Customs processing region for the shipment",
+            "schema": {
+              "type": "string",
+              "enum": ["EU", "NA", "APAC"],
+              "default": "NA"
+            }
+          },
           {
             "name": "shipmentId",
             "in": "path",
