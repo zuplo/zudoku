@@ -12,7 +12,7 @@ export const DocumentationButton = () => {
           });
         }
       }}
-      className="bg-white/5 rounded p-2 px-4 hover:bg-white hover:text-gray-950"
+      className="bg-white/5 rounded-sm p-2 px-4 hover:bg-white hover:text-gray-950"
     >
       Documentation
     </a>
