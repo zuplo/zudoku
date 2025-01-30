@@ -2,6 +2,7 @@ import { useMDXComponents as useMDXComponentsImport } from "@mdx-js/react";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { Link as LinkImport } from "react-router";
 import { useAuth as useAuthImport } from "../authentication/hook.js";
+import { RouteGuard as RouteGuardImport } from "../core/RouteGuard.js";
 import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
 import { Button as ButtonImport } from "../ui/Button.js";
@@ -10,16 +11,16 @@ import {
   Bootstrap as BootstrapImport,
   BootstrapStatic as BootstrapStaticImport,
 } from "./Bootstrap.js";
-import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
-import { Layout as LayoutImport } from "./Layout.js";
-import { Markdown as MarkdownImport } from "./Markdown.js";
-import { Spinner as SpinnerImport } from "./Spinner.js";
-import { Zudoku as ZudokuImport } from "./Zudoku.js";
 import {
   CACHE_KEYS as CACHE_KEYS_IMPORT,
   useCache as useCacheImport,
 } from "./cache.js";
+import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
+import { Layout as LayoutImport } from "./Layout.js";
+import { Markdown as MarkdownImport } from "./Markdown.js";
+import { Spinner as SpinnerImport } from "./Spinner.js";
+import { Zudoku as ZudokuImport } from "./Zudoku.js";
 
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
 export const Layout = /*@__PURE__*/ LayoutImport;
@@ -27,6 +28,7 @@ export const RouterError = /*@__PURE__*/ RouterErrorImport;
 export const ServerError = /*@__PURE__*/ ServerErrorImport;
 export const Bootstrap = /*@__PURE__*/ BootstrapImport;
 export const BootstrapStatic = /*@__PURE__*/ BootstrapStaticImport;
+export const RouteGuard = /*@__PURE__*/ RouteGuardImport;
 
 export const Head = /*@__PURE__*/ Helmet;
 
