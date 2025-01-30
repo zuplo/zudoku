@@ -72,6 +72,12 @@
             "type": "string",
             "format": "date-time",
             "readOnly": true
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
           }
         }
       },
@@ -140,6 +146,100 @@
           },
           "message": {
             "type": "string"
+          }
+        }
+      },
+      "ShipmentHistory": {
+        "type": "object",
+        "properties": {
+          "currentShipment": {
+            "$ref": "#/components/schemas/Shipment"
+          },
+          "previousShipment": {
+            "$ref": "#/components/schemas/ShipmentHistory"
+          },
+          "transferredAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "required": ["id", "author", "text", "timestamp"],
+        "description": "A comment on a shipment that can have nested replies",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the comment"
+          },
+          "author": {
+            "type": "string",
+            "description": "Name of the person who wrote the comment"
+          },
+          "text": {
+            "type": "string",
+            "description": "Content of the comment"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the comment was posted"
+          },
+          "replies": {
+            "type": "array",
+            "description": "Nested replies to this comment",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          }
+        }
+      },
+      "Organization": {
+        "type": "object",
+        "description": "A shipping organization that can have sub-organizations (e.g. regional offices)",
+        "required": ["id", "name"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the organization"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the organization"
+          },
+          "parent": {
+            "$ref": "#/components/schemas/Organization",
+            "description": "The parent organization (direct object circular reference)"
+          },
+          "sub": {
+            "type": "array",
+            "description": "Child organizations (array circular reference)",
+            "items": {
+              "$ref": "#/components/schemas/Organization"
+            }
+          }
+        }
+      },
+      "LinkedShipment": {
+        "type": "object",
+        "description": "A shipment that's part of a chain (e.g. multi-leg delivery)",
+        "required": ["id", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the shipment"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "IN_TRANSIT", "DELIVERED"]
+          },
+          "next": {
+            "$ref": "#/components/schemas/LinkedShipment"
+          },
+          "previous": {
+            "$ref": "#/components/schemas/LinkedShipment"
           }
         }
       }
@@ -1681,6 +1781,54 @@
                 "example": {
                   "status": "ACTIVE",
                   "channels": ["email", "sms", "webhook"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/organizations": {
+      "get": {
+        "tags": ["Organization Management"],
+        "summary": "List all organizations",
+        "description": "Returns a list of all organizations in the hierarchy",
+        "operationId": "listOrganizations",
+        "responses": {
+          "200": {
+            "description": "List of organizations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Organization Management"],
+        "summary": "Create a new organization",
+        "description": "Creates a new organization, optionally as part of an existing hierarchy",
+        "operationId": "createOrganization",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Organization created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Organization"
                 }
               }
             }

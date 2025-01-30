@@ -3,7 +3,10 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
-import { SchemaLogicalGroup, SchemaPropertyItem } from "./SchemaComponents.js";
+import {
+  SchemaLogicalGroup,
+  SchemaPropertyItem,
+} from "./SchemaPropertyItem.js";
 import { hasLogicalGroupings } from "./utils.js";
 
 export const SchemaView = ({
