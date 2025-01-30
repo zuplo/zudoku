@@ -1,3 +1,4 @@
+import { CIRCULAR_REF } from "../../../oas/graphql/circular.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 
 export const isComplexType = (value: SchemaObject) =>
@@ -16,3 +17,6 @@ export const LogicalSchemaTypeMap = {
 } as const;
 
 export type LogicalGroupType = "AND" | "OR" | "ONE";
+
+export const isCircularRef = (schema: unknown): schema is string =>
+  schema === CIRCULAR_REF;

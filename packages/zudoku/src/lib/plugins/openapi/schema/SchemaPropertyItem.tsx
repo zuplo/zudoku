@@ -3,7 +3,6 @@ import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
-import { CIRCULAR_REF } from "../../../oas/graphql/circular.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
@@ -12,6 +11,7 @@ import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   hasLogicalGroupings,
+  isCircularRef,
   isComplexType,
   LogicalSchemaTypeMap,
 } from "./utils.js";
@@ -41,13 +41,10 @@ export const SchemaLogicalGroup = ({
   }
 };
 
-const isCircularRef = (schema: unknown): schema is string =>
-  schema === CIRCULAR_REF;
-
 const RecursiveIndicator = () => (
   <div className="flex items-center gap-2 italic text-sm text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">
     <RefreshCcwDotIcon size={16} />
-    <span>recursive</span>
+    <span>circular</span>
   </div>
 );
 
@@ -74,6 +71,8 @@ export const SchemaPropertyItem = ({
         <div className="flex flex-col gap-1 justify-between text-sm">
           <div className="flex gap-2 items-center">
             <code>{name}</code>
+            <Badge variant="muted">object</Badge>
+            {group === "optional" && <Badge variant="outline">optional</Badge>}
             <RecursiveIndicator />
           </div>
         </div>
@@ -96,6 +95,9 @@ export const SchemaPropertyItem = ({
             )}
           </Badge>
           {group === "optional" && <Badge variant="outline">optional</Badge>}
+          {schema.type === "array" &&
+            "items" in schema &&
+            isCircularRef(schema.items) && <RecursiveIndicator />}
         </div>
 
         {schema.description && (
@@ -133,7 +135,9 @@ export const SchemaPropertyItem = ({
                   <SchemaView schema={schema} level={level + 1} />
                 ) : (
                   schema.type === "array" &&
-                  typeof schema.items === "object" && (
+                  "items" in schema &&
+                  typeof schema.items === "object" &&
+                  !isCircularRef(schema.items) && (
                     <SchemaView schema={schema.items} level={level + 1} />
                   )
                 )}
