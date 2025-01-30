@@ -36,6 +36,9 @@ export type Header = {
   name: string;
   defaultValue?: string;
   defaultActive?: boolean;
+  isRequired?: boolean;
+  enum?: string[];
+  type?: string;
 };
 
 export type QueryParam = {
@@ -337,7 +340,7 @@ export const Playground = ({
                 </TabsList>
               </div>
               <TabsContent value="headers">
-                <Headers control={control} register={register} />
+                <Headers control={control} />
               </TabsContent>
               <TabsContent value="parameters">
                 {pathParams.length > 0 && (

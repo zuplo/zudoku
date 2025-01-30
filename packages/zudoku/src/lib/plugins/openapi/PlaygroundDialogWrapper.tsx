@@ -15,10 +15,15 @@ export const PlaygroundDialogWrapper = ({
 }) => {
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
+    .sort((a, b) => (a.required && !b.required ? -1 : 1))
     .map((p) => ({
       name: p.name,
-      defaultValue: p.examples?.find((x) => x.value)?.value ?? "",
-      defaultActive: false,
+      defaultValue:
+        p.schema?.default ?? p.examples?.find((x) => x.value)?.value ?? "",
+      defaultActive: p.required ?? false,
+      isRequired: p.required ?? false,
+      enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
+      type: p.schema?.type ?? "string",
     }));
   const queryParams = operation.parameters
     ?.filter((p) => p.in === "query")

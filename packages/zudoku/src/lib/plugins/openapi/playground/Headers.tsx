@@ -5,7 +5,6 @@ import {
   Controller,
   useFieldArray,
   useFormContext,
-  UseFormRegister,
 } from "react-hook-form";
 import { Card } from "zudoku/ui/Card.js";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
@@ -44,13 +43,7 @@ const headerOptions = Object.freeze([
   "X-Requested-With",
 ]);
 
-export const Headers = ({
-  control,
-  register,
-}: {
-  register: UseFormRegister<PlaygroundForm>;
-  control: Control<PlaygroundForm>;
-}) => {
+export const Headers = ({ control }: { control: Control<PlaygroundForm> }) => {
   const { fields, append, remove } = useFieldArray<PlaygroundForm>({
     control,
     name: "headers",
@@ -81,7 +74,10 @@ export const Headers = ({
       <Card className="overflow-hidden">
         <ParamsGrid>
           {fields.map((header, i) => (
-            <div key={i} className="group grid col-span-full grid-cols-subgrid">
+            <div
+              key={header.name}
+              className="group grid col-span-full grid-cols-subgrid"
+            >
               <div className="flex items-center gap-2 ">
                 <Controller
                   control={control}
