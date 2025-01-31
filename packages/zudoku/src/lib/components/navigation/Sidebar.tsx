@@ -1,7 +1,8 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
+import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
 import { Slotlet } from "../SlotletProvider.js";
 import { SidebarItem } from "./SidebarItem.js";
@@ -14,6 +15,11 @@ export const Sidebar = ({
 }) => {
   const navRef = useRef<HTMLDivElement | null>(null);
   const navigation = useCurrentNavigation();
+
+  useEffect(() => {
+    const active = navRef.current?.querySelector('[aria-current="page"]');
+    scrollIntoViewIfNeeded(active ?? null);
+  }, []);
 
   return (
     <>

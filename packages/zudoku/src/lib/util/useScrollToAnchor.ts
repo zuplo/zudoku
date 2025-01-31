@@ -2,25 +2,7 @@ import { useCallback, useEffect } from "react";
 import { useLocation } from "react-router";
 import { useViewportAnchor } from "../components/context/ViewportAnchorContext.js";
 import { DATA_ANCHOR_ATTR } from "../components/navigation/SidebarItem.js";
-
-const scrollIntoViewIfNeeded = (
-  element: Element | null,
-  options: ScrollIntoViewOptions = { block: "center" },
-) => {
-  if (!element) return;
-
-  const rect = element.getBoundingClientRect();
-  const isInView =
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <=
-      (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth);
-
-  if (isInView) return;
-
-  element.scrollIntoView(options);
-};
+import { scrollIntoViewIfNeeded } from "./scrollIntoViewIfNeeded.js";
 
 export const useScrollToHash = () => {
   const { setActiveAnchor } = useViewportAnchor();
