@@ -87,27 +87,24 @@ const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
 export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
-  const tags = schema.tags ?? [];
-
-  // Extract tags from operations
-  const operationTags = Object.values(schema.paths ?? {})
-    .flatMap((path) => Object.values(path ?? {}))
-    .flatMap((operation) =>
-      typeof operation === "object" && "tags" in operation
-        ? (operation.tags ?? [])
-        : [],
-    );
-
-  // Remove duplicates and tags that appear in the schema
-  const uniqueOperationTags = [...new Set(operationTags)].filter(
-    (tag) => !tags.some((rootTag) => rootTag.name === tag),
+  const rootTags = schema.tags ?? [];
+  const operationTags = new Set(
+    Object.values(schema.paths ?? {})
+      .flatMap((path) => Object.values(path ?? {}))
+      .flatMap((op) => (op as OperationObject).tags ?? []),
   );
-  return [...tags, ...uniqueOperationTags.map((tag) => ({ name: tag }))];
+
+  return [
+    // Keep root tags that are actually used in operations
+    ...rootTags.filter((tag) => operationTags.has(tag.name)),
+    // Add tags found in operations but not defined in root tags
+    ...[...operationTags]
+      .filter((tag) => !rootTags.some((rt) => rt.name === tag))
+      .map((tag) => ({ name: tag })),
+  ];
 };
 
 const getAllOperations = (paths?: PathsObject) => {
-  const start = performance.now();
-
   const operations = Object.entries(paths ?? {}).flatMap(([path, value]) =>
     HttpMethods.flatMap((method) => {
       if (!value?.[method]) return [];
