@@ -27,6 +27,9 @@
       "zudoku/plugins/openapi": ["./src/lib/plugins/openapi/index.ts"],
       "zudoku/plugins/search-inkeep": [
         "./src/lib/plugins/search-inkeep/index.tsx"
+      ],
+      "zudoku/plugins/search-pagefind": [
+        "./src/lib/plugins/search-pagefind/index.tsx"
       ]
     }
   },
