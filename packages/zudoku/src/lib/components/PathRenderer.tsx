@@ -12,13 +12,14 @@ export const PathRenderer = ({
 }: {
   path: string;
   renderParam: (props: PathParamProps) => ReactNode;
-}) =>
-  path.split("/").map((part, i, arr) => {
+}) => {
+  let paramIndex = 0;
+  return path.split("/").map((part, i, arr) => {
     const matches = Array.from(part.matchAll(/{([^}]+)}/g));
     const elements: ReactNode[] = [];
     let lastIndex = 0;
 
-    matches.forEach((match, matchIndex) => {
+    matches.forEach((match) => {
       const [originalValue, name] = match;
       if (!name) return;
       const startIndex = match.index!;
@@ -33,7 +34,7 @@ export const PathRenderer = ({
 
       elements.push(
         <Fragment key={`param-${name}`}>
-          {renderParam({ name, originalValue, index: matchIndex })}
+          {renderParam({ name, originalValue, index: paramIndex++ })}
         </Fragment>,
       );
 
@@ -57,3 +58,4 @@ export const PathRenderer = ({
       </Fragment>
     );
   });
+};
