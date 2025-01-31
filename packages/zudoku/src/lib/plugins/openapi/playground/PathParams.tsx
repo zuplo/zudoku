@@ -2,7 +2,7 @@ import { Control, Controller, useFieldArray } from "react-hook-form";
 import { Card } from "zudoku/ui/Card.js";
 import { Input } from "../../../ui/Input.js";
 import { ColorizedParam } from "../ColorizedParam.js";
-import ParamsGrid from "./ParamsGrid.js";
+import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 
 export const PathParams = ({
@@ -10,7 +10,7 @@ export const PathParams = ({
 }: {
   control: Control<PlaygroundForm>;
 }) => {
-  const { fields } = useFieldArray<PlaygroundForm>({
+  const { fields } = useFieldArray<PlaygroundForm, "pathParams">({
     control,
     name: "pathParams",
   });
@@ -18,16 +18,16 @@ export const PathParams = ({
   return (
     <Card className="rounded-lg">
       <ParamsGrid>
-        {fields.map((part, i) => (
-          <>
+        {fields.map((field, i) => (
+          <ParamsGridItem key={field.id}>
             <Controller
               control={control}
               name={`pathParams.${i}.name`}
               render={() => (
-                <div>
+                <div className="flex items-center">
                   <ColorizedParam
-                    slug={part.name}
-                    name={part.name}
+                    slug={field.name}
+                    name={field.name}
                     className="font-mono text-xs px-2"
                   />
                 </div>
@@ -43,12 +43,12 @@ export const PathParams = ({
                     {...field}
                     required
                     placeholder="Enter value"
-                    className="w-full border-0 shadow-none text-xs font-mono hover:bg-accent"
+                    className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
                   />
                 )}
               />
             </div>
-          </>
+          </ParamsGridItem>
         ))}
       </ParamsGrid>
     </Card>

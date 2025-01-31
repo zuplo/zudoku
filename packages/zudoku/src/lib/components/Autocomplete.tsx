@@ -1,6 +1,6 @@
 import { PopoverAnchor } from "@radix-ui/react-popover";
 import { useCommandState } from "cmdk";
-import { useRef, useState, type Ref } from "react";
+import { useRef, useState, type KeyboardEvent, type Ref } from "react";
 import {
   Command,
   CommandInlineInput,
@@ -16,8 +16,9 @@ type AutocompleteProps = {
   onChange: (e: string) => void;
   className?: string;
   placeholder?: string;
-  onEnterPress?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEnterPress?: (e: KeyboardEvent<HTMLInputElement>) => void;
   ref?: Ref<HTMLInputElement>;
+  shouldFilter?: boolean;
 };
 
 const AutocompletePopover = ({
@@ -33,6 +34,7 @@ const AutocompletePopover = ({
   const [dontClose, setDontClose] = useState(false);
   const count = useCommandState((state) => state.filtered.count);
   const inputRef = useRef<HTMLInputElement>(null);
+
   return (
     <Popover open={open}>
       <PopoverAnchor>
@@ -104,7 +106,7 @@ const AutocompletePopover = ({
 
 export const Autocomplete = (props: AutocompleteProps) => {
   return (
-    <Command className="bg-transparent">
+    <Command className="bg-transparent" shouldFilter={props.shouldFilter}>
       <AutocompletePopover {...props} />
     </Command>
   );

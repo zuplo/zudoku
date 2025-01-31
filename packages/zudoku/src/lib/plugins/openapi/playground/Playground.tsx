@@ -68,6 +68,7 @@ export type PlaygroundForm = {
     name: string;
     value: string;
     active: boolean;
+    enum?: string[];
   }>;
   identity?: string;
 };
@@ -340,7 +341,7 @@ export const Playground = ({
                 </TabsList>
               </div>
               <TabsContent value="headers">
-                <Headers control={control} />
+                <Headers control={control} headers={headers} />
               </TabsContent>
               <TabsContent value="parameters">
                 {pathParams.length > 0 && (
