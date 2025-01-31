@@ -84,7 +84,7 @@ export const Headers = ({
 
   return (
     <div className="flex flex-col gap-2">
-      <Card className="overflow-hidden hover:bg-none">
+      <Card className="overflow-hidden">
         <ParamsGrid>
           {fields.map((field, i) => {
             const currentHeader = schemaHeaders.find(
