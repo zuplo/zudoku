@@ -59,7 +59,7 @@ export const TechStackBubble = () => {
 
   return (
     <div className="overflow-hidden h-full relative flex items-center justify-center w-full">
-      <div className="flex flex-row flex-shrink-0 justify-center items-center gap-2">
+      <div className="flex flex-row shrink-0 justify-center items-center gap-2">
         <Container className="h-8 w-8 circle-1">
           <Image
             src="/logo-ts.svg"
