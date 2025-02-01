@@ -280,7 +280,7 @@
     "react-dom": ">=19"
   },
   "optionalDependencies": {
-    "@clerk/clerk-js": "^5.43.4",
+    "@clerk/clerk-js": "^5.51.0",
     "@sentry/react": "^8.50.0"
   }
 }
