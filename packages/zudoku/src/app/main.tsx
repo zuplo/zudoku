@@ -11,9 +11,14 @@ import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
-import { Layout, RouteGuard, RouterError, Zudoku } from "zudoku/components";
+import {
+  Layout,
+  RouteGuard,
+  RouterError,
+  StatusPage,
+  Zudoku,
+} from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import { StatusPage } from "../lib/components/StatusPage.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 
