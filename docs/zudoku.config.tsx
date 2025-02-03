@@ -88,7 +88,12 @@ const config: ZudokuConfig = {
         type: "category",
         label: "Guide",
         icon: "monitor-check",
-        items: ["environment-variables", "custom-pages", "using-multiple-apis"],
+        items: [
+          "static-files",
+          "environment-variables",
+          "custom-pages",
+          "using-multiple-apis",
+        ],
       },
       {
         type: "category",
