@@ -26,10 +26,14 @@ your-project/
 └── ...
 ```
 
-You can reference these files in your documentation like this:
+You can reference these files using markdown like this:
 
 ```md
 ![API Architecture](/images/diagram.png)
+```
 
-Download our [detailed API specification](/documents/api-spec.pdf)
+If you want users to download a file like a PDF, you can use an anchor tag like this:
+
+```html
+<a href="/documents/api-spec.pdf" download="/documents/api-spec.pdf">Download API specification</a>
 ```
