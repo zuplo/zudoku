@@ -20,6 +20,7 @@ import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
 import { Layout as LayoutImport } from "./Layout.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
+import { StatusPage as StatusPageImport } from "./StatusPage.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
 
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
@@ -38,6 +39,7 @@ export const useCache = /*@__PURE__*/ useCacheImport;
 export const CACHE_KEYS = /*@__PURE__*/ CACHE_KEYS_IMPORT;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 
+export const StatusPage = /*@__PURE__*/ StatusPageImport;
 export const Callout = /*@__PURE__*/ CalloutImport;
 export const Markdown = /*@__PURE__*/ MarkdownImport;
 export const Spinner = /*@__PURE__*/ SpinnerImport;
