@@ -10,3 +10,4 @@ pnpm-lock.yaml
 .next/
 stats.html
 .vercel/
+packages/zudoku/src/app/demo-cdn.html
