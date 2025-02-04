@@ -5,6 +5,7 @@ import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import { toString as hastToString } from "hast-util-to-string";
 import type { Root } from "mdast";
 import path from "node:path";
+import rehypeMdxImportMedia from "rehype-mdx-import-media";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
 import remarkDirective from "remark-directive";
@@ -139,19 +140,18 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         remarkDirectiveRehype,
         [remarkLinkRewritePlugin, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ] as any,
+      ],
       rehypePlugins: [
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
         [rehypeMediaBase, base],
+        rehypeMdxImportMedia,
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
         ...(config.build?.rehypePlugins ?? []),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ] as any,
+      ],
     }),
     name: "zudoku-mdx-plugin",
   } as const;
