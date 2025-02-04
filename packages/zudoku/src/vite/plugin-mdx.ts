@@ -14,6 +14,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
+import { type VFile } from "vfile";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -51,22 +52,31 @@ const remarkLinkRewritePlugin =
   };
 
 const rehypeMediaBase =
-  (base = "") =>
+  (rootDir: string, base = "") =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (tree: any) => {
-    if (!base) return;
-
+  (tree: any, vfile: VFile) => {
     visit(tree, "element", (node) => {
+      if (!base) return;
       if (node.tagName !== "img" && node.tagName !== "video") return;
 
       if (node.properties.src && !node.properties.src.startsWith("http")) {
         node.properties.src = joinUrl(base, node.properties.src);
       }
     });
+
+    // `rehype-mdx-import-media` doesn't handle images in mdxJsxFlowElement so we do it manually
+    visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
+      if (node.name !== "img" && node.name !== "video") return;
+      const src = node.attributes.find((attr: any) => attr?.name === "src");
+      if (!src?.value || /^(http|\/)/i.test(src.value)) return;
+
+      const relativePath = path.dirname(path.relative(rootDir, vfile.path));
+      src.value = "./" + path.join(base, relativePath, src.value);
+    });
   };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rehypeExcerptWithMdxExport = () => (tree: any, _vfile: any) => {
+const rehypeExcerptWithMdxExport = () => (tree: any) => {
   let excerpt: string | undefined;
 
   visit(tree, "element", (node) => {
@@ -142,7 +152,7 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
         rehypeMdxImportMedia,
-        [rehypeMediaBase, config.basePath],
+        [rehypeMediaBase, config.rootDir, config.basePath],
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
