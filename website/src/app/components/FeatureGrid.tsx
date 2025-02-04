@@ -285,9 +285,9 @@ const features = [
     header: (
       <Skeleton>
         <div className="flex flex-col w-full gap-2 p-5">
-          <div className="border border-cyan-700 h-5 w-full rounded bg-cyan-900" />
-          <div className="border border-cyan-700 h-5 rounded bg-cyan-900 w-1/2" />
-          <div className="border border-cyan-700 h-5 rounded bg-cyan-900 w-2/3" />
+          <div className="border border-cyan-700 h-5 w-full rounded-sm bg-cyan-900" />
+          <div className="border border-cyan-700 h-5 rounded-sm bg-cyan-900 w-1/2" />
+          <div className="border border-cyan-700 h-5 rounded-sm bg-cyan-900 w-2/3" />
         </div>
       </Skeleton>
     ),

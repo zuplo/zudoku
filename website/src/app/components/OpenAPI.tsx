@@ -49,7 +49,7 @@ export const OpenAPI = () => {
 
   return (
     <section className="py-14">
-      <div className="max-w-screen-xl mx-auto px-4 gap-16 justify-between md:px-8 lg:flex ">
+      <div className="max-w-(--breakpoint-xl) mx-auto px-4 gap-16 justify-between md:px-8 lg:flex ">
         <div className=" flex-1">
           <div className="max-w-xl space-y-3">
             <h3 className="text-[#ff00bd] font-semibold">

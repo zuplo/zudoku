@@ -127,7 +127,7 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
       >
         Drop to upload
       </div>
-      {error && <div className="p-2 bg-white/5 rounded mb-4">{error}</div>}
+      {error && <div className="p-2 bg-white/5 rounded-sm mb-4">{error}</div>}
       <form
         ref={formRef}
         className="justify-center items-center gap-x-3 sm:flex"
@@ -159,7 +159,7 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
           }
         }}
       >
-        <label className="hidden md:block rounded transition hover:scale-125 cursor-pointer">
+        <label className="hidden md:block rounded-sm transition hover:scale-125 cursor-pointer">
           <input
             type="file"
             name="spec"
@@ -193,7 +193,7 @@ export const PreviewInput = ({ sample }: { sample: string }) => {
           readOnly={file !== undefined}
           placeholder={sample}
           className={cn(
-            "w-full px-4 py-3.5 text-white bg-slate-700 outline-none rounded-lg shadow font-medium text-md",
+            "w-full px-4 py-3.5 text-white bg-slate-700 outline-hidden rounded-lg shadow-sm font-medium text-md",
             "read-only:text-slate-300",
           )}
         />
