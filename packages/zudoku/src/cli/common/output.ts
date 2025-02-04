@@ -56,8 +56,7 @@ export async function printTableToConsoleAndExitGracefully(table: any) {
 
 interface WriteStreamWithHandle {
   _handle: {
-    // eslint-disable-next-line @typescript-eslint/ban-types
-    setBlocking: Function;
+    setBlocking: (blocking: boolean) => void;
   };
   isTTY: boolean;
 }

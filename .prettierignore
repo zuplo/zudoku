@@ -4,9 +4,11 @@ coverage/
 node_modules/
 packages/zudoku/lib/
 packages/zudoku/standalone/
+packages/zudoku/src/app/demo-cdn.html
 /.nx/cache
 /.nx/workspace-data
 pnpm-lock.yaml
 .next/
 stats.html
 .vercel/
+examples/many-apis/apis/

@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "build": "nx run-many -t=build -p zudoku config",
-    "mismatches": "syncpack list-mismatches",
     "lint": "eslint --cache --fix .",
     "lint:ci": "eslint .",
     "format": "prettier --write .",
@@ -46,7 +45,6 @@
     "nx": "20.3.3",
     "prettier": "3.4.2",
     "prettier-plugin-organize-imports": "4.1.0",
-    "syncpack": "13.0.1",
     "typescript": "5.7.3"
   },
   "pnpm": {
@@ -60,5 +58,13 @@
     "patchedDependencies": {
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"
     }
+  },
+  "nx": {
+    "includedScripts": [
+      "lint",
+      "lint:ci",
+      "format",
+      "format:ci"
+    ]
   }
 }

@@ -2,7 +2,15 @@
 module.exports = {
   root: true,
   parser: "@typescript-eslint/parser",
-  ignorePatterns: ["dist", ".eslintrc.cjs", "packages/config/src/index.d.ts"],
+  ignorePatterns: [
+    "dist",
+    ".eslintrc.cjs",
+    "packages/zudoku/cli.js",
+    "packages/zudoku/standalone",
+    "packages/zudoku/scripts/*.js",
+    "packages/config/src/index.d.ts",
+    "examples/many-apis/download.js",
+  ],
   parserOptions: {
     project: "./tsconfig.eslint.json",
     ecmaFeatures: {
