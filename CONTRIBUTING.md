@@ -4,13 +4,14 @@
 
 - [Fork the repository](https://github.com/Hyperfoil/Horreum/fork)
 
-- Clone the project locally 
+- Clone the project locally
 
 ```bash
 git clone https://github.com/your_github_username/zudoku.git
-``` 
+```
 
 - Change the working directory
+
 ```
 cd zudoku
 ```
@@ -34,10 +35,11 @@ When working on Zudoku, you will need to create a `.env` file in the root of the
 ```
 ZUDOKU_INTERNAL_DEV=true
 ```
-> [!IMPORTANT]
-> If you are a Zuplo employee you should authenticate to NX Cloud in order to use the build cache.
-> 
+
+> [!IMPORTANT] If you are a Zuplo employee you should authenticate to NX Cloud in order to use the build cache.
+
 To authenticate run:
+
 ```
 nx login
 ```
