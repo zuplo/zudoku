@@ -104,9 +104,9 @@ const AutocompletePopover = ({
   );
 };
 
-export const Autocomplete = (props: AutocompleteProps) => {
+export const Autocomplete = ({ shouldFilter, ...props }: AutocompleteProps) => {
   return (
-    <Command className="bg-transparent" shouldFilter={props.shouldFilter}>
+    <Command className="bg-transparent" shouldFilter={shouldFilter}>
       <AutocompletePopover {...props} />
     </Command>
   );
