@@ -61,6 +61,12 @@ export async function dev(argv: Arguments) {
       void exit();
     });
     process.on("unhandledRejection", (e) => {
+      if (e instanceof DOMException && e.name === "AbortError") {
+        // eslint-disable-next-line no-console
+        console.log(`[Abort] ${e.message}`);
+        return;
+      }
+
       // eslint-disable-next-line no-console
       console.error("Unhandled rejection", e);
       void exit();
