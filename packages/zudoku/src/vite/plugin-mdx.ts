@@ -68,7 +68,9 @@ const rehypeMediaBase =
     visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
       if (node.name !== "img" && node.name !== "video") return;
       const src = node.attributes.find((attr: any) => attr?.name === "src");
-      if (!src?.value || /^(http|\/)/i.test(src.value)) return;
+
+      if (typeof src?.value !== "string" || /^(http|\/)/i.test(src.value))
+        return;
 
       const relativePath = path.dirname(path.relative(rootDir, vfile.path));
       src.value = "./" + path.join(base, relativePath, src.value);
