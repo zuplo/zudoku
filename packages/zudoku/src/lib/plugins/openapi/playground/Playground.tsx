@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
-import { useSelectedServerStore } from "../../../authentication/state.js";
+import { useSelectedServer } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Card } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
@@ -100,7 +100,7 @@ export type PlaygroundContentProps = {
 
 export const Playground = ({
   server,
-  servers,
+  servers = [],
   url,
   method,
   headers = [],
@@ -109,7 +109,9 @@ export const Playground = ({
   defaultBody = "",
   examples,
 }: PlaygroundContentProps) => {
-  const { selectedServer, setSelectedServer } = useSelectedServerStore();
+  const { selectedServer, setSelectedServer } = useSelectedServer(
+    servers.map((server) => ({ url: server })),
+  );
   const [, startTransition] = useTransition();
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
