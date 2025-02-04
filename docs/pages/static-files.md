@@ -37,3 +37,11 @@ If you want users to download a file like a PDF, you can use an anchor tag like 
 ```html
 <a href="/documents/api-spec.pdf" download="/documents/api-spec.pdf">Download API specification</a>
 ```
+
+## Relative paths
+
+If you want to reference a file that is in the same directory as the current file, you can also use a relative path:
+
+```md title="page.mdx"
+![API Architecture](./image.png)
+```

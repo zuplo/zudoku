@@ -115,13 +115,9 @@ const rehypeExcerptWithMdxExport = () => (tree: any, _vfile: any) => {
 
 const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const config = getConfig();
-  let base: string | undefined;
 
   return {
     enforce: "pre",
-    configResolved: (v) => {
-      base = v.base;
-    },
     ...mdx({
       providerImportSource:
         config.mode === "internal" || config.mode === "standalone"
@@ -145,8 +141,8 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
-        [rehypeMediaBase, base],
         rehypeMdxImportMedia,
+        [rehypeMediaBase, config.basePath],
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
