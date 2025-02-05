@@ -108,6 +108,7 @@ type Schema {
     operationId: String
     path: String
     tag: String
+    untagged: Boolean
   ): [OperationItem!]!
   paths: [PathItem!]!
   servers: [Server!]!
@@ -120,7 +121,7 @@ type Schema {
 
 type SchemaTag {
   description: String
-  name: String
+  name: String!
   operations: [OperationItem!]!
 }
 

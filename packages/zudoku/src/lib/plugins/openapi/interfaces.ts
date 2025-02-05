@@ -1,19 +1,13 @@
+type DynamicInput = () => Promise<unknown>;
+
 type OasSource =
   | { type: "url"; input: string }
-  | {
-      type: "file";
-      input: {
-        [version: string]: () => Promise<unknown>;
-      };
-    }
+  | { type: "file"; input: { [version: string]: DynamicInput } }
   | { type: "raw"; input: string };
 
 export type ContextOasSource =
   | { type: "url"; input: string }
-  | {
-      type: "file";
-      input: () => Promise<unknown>;
-    }
+  | { type: "file"; input: DynamicInput }
   | { type: "raw"; input: string };
 
 export type OasPluginConfig = {
@@ -21,6 +15,7 @@ export type OasPluginConfig = {
   navigationId?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
+  loadTags?: boolean;
 } & OasPluginConfigOptions &
   OasSource;
 

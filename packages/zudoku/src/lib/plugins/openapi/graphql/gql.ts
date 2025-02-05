@@ -23,7 +23,7 @@ const documents = {
     types.GetServerQueryDocument,
   "\n  query GetCategories($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      tags {\n        name\n      }\n    }\n  }\n":
     types.GetCategoriesDocument,
-  "\n  query GetOperations(\n    $input: JSON!\n    $type: SchemaType!\n    $tag: String\n    $untagged: Boolean\n  ) {\n    schema(input: $input, type: $type) {\n      operations(tag: $tag, untagged: $untagged) {\n        slug\n        deprecated\n        method\n        summary\n        operationId\n        path\n      }\n    }\n  }\n":
+  "\n  query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {\n    schema(input: $input, type: $type) {\n      operations(tag: $tag) {\n        slug\n        deprecated\n        method\n        summary\n        operationId\n        path\n        tags {\n          name\n        }\n      }\n      untagged: operations(untagged: true) {\n        slug\n        deprecated\n        method\n        summary\n        operationId\n        path\n      }\n    }\n  }\n":
     types.GetOperationsDocument,
 };
 
@@ -61,7 +61,7 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: "\n  query GetOperations(\n    $input: JSON!\n    $type: SchemaType!\n    $tag: String\n    $untagged: Boolean\n  ) {\n    schema(input: $input, type: $type) {\n      operations(tag: $tag, untagged: $untagged) {\n        slug\n        deprecated\n        method\n        summary\n        operationId\n        path\n      }\n    }\n  }\n",
+  source: "\n  query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {\n    schema(input: $input, type: $type) {\n      operations(tag: $tag) {\n        slug\n        deprecated\n        method\n        summary\n        operationId\n        path\n        tags {\n          name\n        }\n      }\n      untagged: operations(untagged: true) {\n        slug\n        deprecated\n        method\n        summary\n        operationId\n        path\n      }\n    }\n  }\n",
 ): typeof import("./graphql.js").GetOperationsDocument;
 
 export function graphql(source: string) {

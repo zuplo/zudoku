@@ -26,14 +26,20 @@ const GetCategoriesQuery = graphql(`
 `);
 
 const GetOperationsQuery = graphql(`
-  query GetOperations(
-    $input: JSON!
-    $type: SchemaType!
-    $tag: String
-    $untagged: Boolean
-  ) {
+  query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
     schema(input: $input, type: $type) {
-      operations(tag: $tag, untagged: $untagged) {
+      operations(tag: $tag) {
+        slug
+        deprecated
+        method
+        summary
+        operationId
+        path
+        tags {
+          name
+        }
+      }
+      untagged: operations(untagged: true) {
         slug
         deprecated
         method
@@ -138,7 +144,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         );
         const version = urlVersion ?? Object.keys(config.input).at(0);
 
-        const data = await client.fetch(GetCategoriesQuery, {
+        const tagData = await client.fetch(GetCategoriesQuery, {
           type: config.type,
           input: config.type === "file" ? config.input[version!] : config.input,
         });
@@ -150,42 +156,69 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         const operationsData = await client.fetch(GetOperationsQuery, {
           type: config.type,
           input: config.type === "file" ? config.input[version!] : config.input,
-          tag,
-          untagged: tag === undefined,
+          tag: !config.loadTags ? tag : undefined,
         });
 
-        const items = operationsData.schema.operations.map((operation) => ({
-          type: "link" as const,
-          label: operation.summary ?? operation.path,
-          href: `#${operation.slug}`,
-          badge: {
-            label: operation.method,
-            color: MethodColorMap[operation.method.toLowerCase()]!,
-            invert: true,
-          } as const,
-        }));
+        const categories = tagData.schema.tags.flatMap<SidebarItem>((tag) => {
+          const categoryLink = joinUrl(basePath, urlVersion, slugify(tag.name));
 
-        const categories = data.schema.tags
-          // .filter((tag) => tag.operations.length > 0)
-          .map<SidebarItem>((tag) => {
-            const categoryLink = joinUrl(
-              basePath,
-              urlVersion,
-              tag.name ? slugify(tag.name) : UNTAGGED_PATH,
-            );
-            return {
-              type: "category",
-              label: tag.name || "Other endpoints",
-              link: {
-                type: "doc" as const,
-                id: categoryLink,
-                label: tag.name!,
-              },
-              collapsible: false,
-              collapsed: true,
-              items: path === categoryLink ? items : [],
-            };
+          const operations = operationsData.schema.operations
+            .filter(
+              (operation) =>
+                operation.tags?.length !== 0 &&
+                operation.tags?.map((t) => t.name).includes(tag.name),
+            )
+            .map((operation) => ({
+              type: "link" as const,
+              label: operation.summary ?? operation.path,
+              href: `${categoryLink}#${operation.slug}`,
+              badge: {
+                label: operation.method,
+                color: MethodColorMap[operation.method.toLowerCase()]!,
+                invert: true,
+              } as const,
+            }));
+
+          if (config.loadTags && operations.length === 0) {
+            return [];
+          }
+
+          return {
+            type: "category",
+            label: tag.name,
+            link: {
+              type: "doc" as const,
+              id: categoryLink,
+              label: tag.name,
+            },
+            collapsible: config.loadTags,
+            collapsed: !config.loadTags,
+            items: operations,
+          };
+        });
+
+        const { untagged } = operationsData.schema;
+
+        if (untagged.length > 0) {
+          const categoryLink = joinUrl(basePath, urlVersion, UNTAGGED_PATH);
+
+          categories.push({
+            type: "category",
+            label: "Other endpoints",
+            link: {
+              type: "doc" as const,
+              id: categoryLink,
+              label: "Other endpoints",
+            },
+            collapsible: config.loadTags,
+            collapsed: !config.loadTags,
+            items: untagged.map((operation) => ({
+              type: "link" as const,
+              label: operation.summary ?? operation.path,
+              href: `${categoryLink}#${operation.slug}`,
+            })),
           });
+        }
 
         return categories;
       } catch {

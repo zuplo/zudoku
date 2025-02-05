@@ -45,13 +45,12 @@ export const createOperationSlug = (
   tag?: string,
 ) => {
   const summary =
-    (operation.summary ?? "") +
-    (operation.operationId ? "-" + operation.operationId : "");
+    operation.summary ||
+    operation.operationId ||
+    `${operation.method}-${operation.path}`;
+  const prefix = tag ? `${tag}-` : "";
 
-  return slugify(
-    (tag ? tag + "-" : "") +
-      (summary || `${operation.method}-${operation.path}`),
-  );
+  return slugify(prefix + summary);
 };
 
 export type SchemaImports = Record<
@@ -104,7 +103,9 @@ export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
   ];
 };
 
-const getAllOperations = (paths?: PathsObject) => {
+export const getAllOperations = (
+  paths?: PathsObject,
+): GraphQLOperationObject[] => {
   const operations = Object.entries(paths ?? {}).flatMap(([path, value]) =>
     HttpMethods.flatMap((method) => {
       if (!value?.[method]) return [];
@@ -132,7 +133,7 @@ const getAllOperations = (paths?: PathsObject) => {
         path,
         parameters,
         tags: operation.tags ?? [],
-      };
+      } satisfies GraphQLOperationObject;
     }),
   );
 
@@ -141,7 +142,7 @@ const getAllOperations = (paths?: PathsObject) => {
 
 const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
   fields: (t) => ({
-    name: t.exposeString("name", { nullable: true }),
+    name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
     operations: t.field({
       type: [OperationItem],

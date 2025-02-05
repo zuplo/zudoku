@@ -90,6 +90,7 @@ export const SidebarItem = ({
       ) : !item.href.startsWith("http") ? (
         <NavLink
           className={navigationListItem({
+            isActive: item.href.split("#")[1] === activeAnchor,
             className: item.badge?.placement !== "start" && "justify-between",
           })}
           to={item.href}

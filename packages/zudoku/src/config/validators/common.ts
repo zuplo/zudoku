@@ -44,12 +44,15 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
-const ApiConfigSchema = z.object({
-  id: z.string().optional(),
-  server: z.string().optional(),
-  navigationId: z.string().optional(),
-  categories: z.array(ApiCatalogCategorySchema).optional(),
-});
+const ApiConfigSchema = z
+  .object({
+    id: z.string(),
+    server: z.string(),
+    navigationId: z.string(),
+    loadTags: z.boolean(),
+    categories: z.array(ApiCatalogCategorySchema),
+  })
+  .partial();
 
 const ApiPostProcessorSchema = z
   .function()
