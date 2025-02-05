@@ -6,8 +6,13 @@ export const useScrollToTop = () => {
   const previousPath = useRef(location.pathname);
 
   useEffect(() => {
-    if (previousPath.current === location.pathname) return;
-    window.scrollTo(0, 0);
+    const isNewPage = previousPath.current !== location.pathname;
+    const hasAnchor = location.hash !== "";
+
+    if (isNewPage && !hasAnchor) {
+      window.scrollTo(0, 0);
+    }
+
     previousPath.current = location.pathname;
-  }, [location.pathname]);
+  }, [location.pathname, location.hash]);
 };

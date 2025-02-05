@@ -54,5 +54,5 @@ export const useScrollToAnchor = () => {
 
       return () => observer.disconnect();
     }
-  }, [location.hash, setActiveAnchor]);
+  }, [location.hash, scrollToHash, setActiveAnchor]);
 };
