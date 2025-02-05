@@ -4,7 +4,11 @@ import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import { getAllTags } from "../lib/oas/graphql/index.js";
+import {
+  getAllOperations,
+  getAllTags,
+  type OpenAPIDocument,
+} from "../lib/oas/graphql/index.js";
 import { upgradeSchema } from "../lib/oas/parser/upgrade/index.js";
 import type {
   ApiCatalogItem,
@@ -14,10 +18,12 @@ import { generateCode } from "./api/schema-codegen.js";
 
 type ProcessedSchema = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: any;
+  schema: OpenAPIDocument;
   version: string;
   inputPath: string;
 };
+
+const API_COUNT_THRESHOLD = 50;
 
 const schemaMap = new Map<string, string>();
 
@@ -200,10 +206,23 @@ const viteApiPlugin = async (
             const schemas = processedSchemas[apiConfig.navigationId];
             if (!schemas?.length) continue;
 
-            const tags = schemas
-              .flatMap((schema) => getAllTags(schema.schema))
-              .map(({ name }) => name)
-              .filter((name, index, array) => array.indexOf(name) === index);
+            const tags = [
+              ...new Set(
+                schemas
+                  .flatMap((schema) => getAllTags(schema.schema))
+                  .map(({ name }) => name),
+              ),
+            ];
+
+            const maxOperationCount = Math.max(
+              ...schemas.flatMap((schema) => [
+                getAllOperations(schema.schema.paths).length,
+              ]),
+            );
+
+            // If the API has less than 50 operations, we preload all tags to be shown
+            const loadTags =
+              apiConfig.loadTags ?? maxOperationCount < API_COUNT_THRESHOLD;
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
@@ -212,6 +231,7 @@ const viteApiPlugin = async (
               `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
               `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
+              `  loadTags: ${JSON.stringify(loadTags)},`,
               `  schemaImports: {`,
               ...Array.from(schemaMap.entries()).map(
                 ([key, schemaPath]) =>

@@ -278,6 +278,76 @@
     }
   },
   "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Check if the API is up and running",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["healthy"]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "healthy",
+                  "timestamp": "2025-01-09T12:00:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "summary": "Get API version",
+        "description": "Get information about the current API version",
+        "operationId": "getVersion",
+        "responses": {
+          "200": {
+            "description": "Version information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "releaseDate": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "environment": {
+                      "type": "string",
+                      "enum": ["production", "staging", "development"]
+                    }
+                  }
+                },
+                "example": {
+                  "version": "1.0.0",
+                  "releaseDate": "2025-01-01",
+                  "environment": "production"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/shipments": {
       "post": {
         "tags": ["Shipment Management"],

@@ -319,7 +319,6 @@ export type GetOperationsQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
   tag?: InputMaybe<Scalars["String"]["input"]>;
-  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 }>;
 
 export type GetOperationsQuery = {
@@ -327,6 +326,16 @@ export type GetOperationsQuery = {
   schema: {
     __typename?: "Schema";
     operations: Array<{
+      __typename?: "OperationItem";
+      slug: string;
+      deprecated?: boolean | null;
+      method: string;
+      summary?: string | null;
+      operationId?: string | null;
+      path: string;
+      tags?: Array<{ __typename?: "TagItem"; name: string }> | null;
+    }>;
+    untagged: Array<{
       __typename?: "OperationItem";
       slug: string;
       deprecated?: boolean | null;
@@ -546,9 +555,20 @@ export const GetCategoriesDocument = new TypedDocumentString(`
   GetCategoriesQueryVariables
 >;
 export const GetOperationsDocument = new TypedDocumentString(`
-    query GetOperations($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
+    query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
   schema(input: $input, type: $type) {
-    operations(tag: $tag, untagged: $untagged) {
+    operations(tag: $tag) {
+      slug
+      deprecated
+      method
+      summary
+      operationId
+      path
+      tags {
+        name
+      }
+    }
+    untagged: operations(untagged: true) {
       slug
       deprecated
       method
