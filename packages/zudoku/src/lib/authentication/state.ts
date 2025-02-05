@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { create, type Mutate, type StoreApi } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -77,3 +78,20 @@ export const useSelectedServerStore = create<SelectedServerState>()(
     { name: "zudoku-selected-server" },
   ),
 );
+
+/**
+ * Simple wrapper for `useSelectedServerStore` to fall back to first of the provided servers
+ */
+export const useSelectedServer = (servers: Array<{ url: string }>) => {
+  const { selectedServer, setSelectedServer } = useSelectedServerStore();
+
+  const finalSelectedServer = useMemo(
+    () =>
+      selectedServer && servers.some((s) => s.url === selectedServer)
+        ? selectedServer
+        : (servers.at(0)?.url ?? ""),
+    [selectedServer, servers],
+  );
+
+  return { selectedServer: finalSelectedServer, setSelectedServer };
+};

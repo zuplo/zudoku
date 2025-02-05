@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
-import { useSelectedServerStore } from "../../authentication/state.js";
+import { useSelectedServer } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
@@ -131,7 +131,7 @@ export const Sidecar = ({
     />
   );
 
-  const { selectedServer } = useSelectedServerStore();
+  const { selectedServer } = useSelectedServer(result.data.schema.servers);
 
   const code = useMemo(() => {
     const example =
@@ -143,7 +143,7 @@ export const Sidecar = ({
     const snippet = new HTTPSnippet({
       method: operation.method.toLocaleUpperCase(),
       url:
-        (selectedServer ?? result.data.schema.url ?? "") +
+        selectedServer +
         operation.path.replaceAll("{", ":").replaceAll("}", ""),
       postData: example
         ? {
@@ -187,7 +187,7 @@ export const Sidecar = ({
           </span>
           {isOnScreen && (
             <PlaygroundDialogWrapper
-              server={result.data.schema.url ?? ""}
+              server={selectedServer}
               servers={result.data.schema.servers.map((server) => server.url)}
               operation={operation}
               examples={requestBodyContent ?? undefined}

@@ -156,7 +156,7 @@ export type SchemaTagsArgs = {
 export type SchemaTag = {
   __typename?: "SchemaTag";
   description?: Maybe<Scalars["String"]["output"]>;
-  name?: Maybe<Scalars["String"]["output"]>;
+  name: Scalars["String"]["output"];
   operations: Array<OperationItem>;
 };
 
@@ -271,9 +271,10 @@ export type AllOperationsQuery = {
     title: string;
     url?: string | null;
     version: string;
+    servers: Array<{ __typename?: "Server"; url: string }>;
     tags: Array<{
       __typename?: "SchemaTag";
-      name?: string | null;
+      name: string;
       description?: string | null;
     }>;
     operations: Array<
@@ -310,7 +311,7 @@ export type GetCategoriesQuery = {
   schema: {
     __typename?: "Schema";
     url?: string | null;
-    tags: Array<{ __typename?: "SchemaTag"; name?: string | null }>;
+    tags: Array<{ __typename?: "SchemaTag"; name: string }>;
   };
 };
 
@@ -436,6 +437,9 @@ export const ServersQueryDocument = new TypedDocumentString(`
 export const AllOperationsDocument = new TypedDocumentString(`
     query AllOperations($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
   schema(input: $input, type: $type) {
+    servers {
+      url
+    }
     description
     summary
     title

@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState, useTransition } from "react";
-import { useSelectedServerStore } from "../../authentication/state.js";
+import { useSelectedServer } from "../../authentication/state.js";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Button } from "../../ui/Button.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -48,20 +48,24 @@ export const Endpoint = () => {
   const query = useCreateQuery(ServersQuery, { input, type });
   const result = useSuspenseQuery(query);
   const [, startTransition] = useTransition();
-  const { selectedServer, setSelectedServer } = useSelectedServerStore();
+  const { selectedServer, setSelectedServer } = useSelectedServer(
+    result.data.schema.servers,
+  );
 
   const { servers } = result.data.schema;
 
   if (servers.length === 0) return null;
+
+  const firstServer = servers.at(0)!;
 
   if (servers.length === 1) {
     return (
       <div className="flex items-center gap-2">
         <span className="font-medium text-sm">Endpoint:</span>
         <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
-          {servers[0]!.url}
+          {firstServer.url}
         </InlineCode>
-        <CopyButton url={servers[0]!.url} />
+        <CopyButton url={firstServer.url} />
       </div>
     );
   }
@@ -73,18 +77,16 @@ export const Endpoint = () => {
       <SimpleSelect
         className="font-mono text-xs bg-border/50 dark:bg-border/70 py-1.5 max-w-[450px] truncate"
         onChange={(e) =>
-          startTransition(() => {
-            setSelectedServer(e.target.value);
-          })
+          startTransition(() => setSelectedServer(e.target.value))
         }
-        value={selectedServer ?? servers.at(0)!.url}
+        value={selectedServer}
         showChevrons={servers.length > 1}
         options={servers.map((server) => ({
           value: server.url,
           label: server.url,
         }))}
       />
-      <CopyButton url={selectedServer ?? servers.at(0)!.url} />
+      <CopyButton url={selectedServer} />
     </div>
   );
 };

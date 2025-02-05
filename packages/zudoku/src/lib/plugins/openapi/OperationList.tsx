@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { useSelectedServerStore } from "../../authentication/state.js";
+import { useSelectedServer } from "../../authentication/state.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
@@ -96,6 +96,9 @@ const AllOperationsQuery = graphql(/* GraphQL */ `
     $untagged: Boolean
   ) {
     schema(input: $input, type: $type) {
+      servers {
+        url
+      }
       description
       summary
       title
@@ -127,13 +130,16 @@ export const OperationList = ({
     tag,
     untagged,
   });
-  const { selectedServer } = useSelectedServerStore();
   const result = useSuspenseQuery(query);
-  const title = result.data.schema.title;
-  const summary = result.data.schema.summary;
-  const description = result.data.schema.description;
+  const {
+    data: { schema },
+  } = result;
+  const { selectedServer } = useSelectedServer(schema.servers);
+  const title = schema.title;
+  const summary = schema.summary;
+  const description = schema.description;
   const navigate = useNavigate();
-  const operations = result.data.schema.operations;
+  const operations = schema.operations;
   // Prefetch for Playground
   useApiIdentities();
 
@@ -184,7 +190,7 @@ export const OperationList = ({
             )}
           </div>
         </div>
-        <Markdown content={result.data.schema.description ?? ""} />
+        <Markdown content={schema.description ?? ""} />
       </div>
       <hr />
       <div className="my-4 flex items-center justify-end gap-4">
@@ -192,12 +198,12 @@ export const OperationList = ({
       </div>
       {operations.map((fragment) => (
         <OperationListItem
-          serverUrl={selectedServer ?? result.data.schema.url ?? ""}
+          serverUrl={selectedServer}
           key={fragment.slug}
           operationFragment={fragment}
         />
       ))}
-      {/* {result.data.schema.tags
+      {/* {schema.tags
         .filter((tag) => tag.operations.length > 0)
         .map((tag) => (
           // px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#'
@@ -213,7 +219,7 @@ export const OperationList = ({
               <StaggeredRender>
                 {tag.operations.map((fragment) => (
                   <OperationListItem
-                    serverUrl={selectedServer ?? result.data.schema.url}
+                    serverUrl={selectedServer ?? schema.url}
                     key={fragment.slug}
                     operationFragment={fragment}
                   />
