@@ -2,7 +2,6 @@ import DocsScreenshot from "@/app/assets/docs-light.jpg";
 import { CopyButton } from "@/app/components/CopyButton";
 import { FeatureGrid } from "@/app/components/FeatureGrid";
 import { OpenAPI } from "@/app/components/OpenAPI";
-import { PreviewInput } from "@/app/components/PreviewInput";
 import { headers } from "next/headers";
 import Image from "next/image";
 import "../globals.css";
@@ -115,7 +114,14 @@ const Page = async () => {
               experiences.
             </p>
             <div>
-              <PreviewInput sample={`${baseExampleUrl}/petstore.oas.json`} />
+              <a
+                href="https://zuplo.com/docs"
+                target="_blank"
+                className="inline-block rounded-lg bg-white text-black px-4 py-2 drop-shadow-xl hover:-translate-y-px transition active:translate-y-0"
+              >
+                See live example
+              </a>
+              {/*<PreviewInput sample={`${baseExampleUrl}/petstore.oas.json`} />
               <div className="flex flex-col md:flex-row gap-2 mt-6 items-center font-medium text-gray-300 md:text-sm">
                 <strong>Examples:</strong>
                 <ul className="flex gap-4 md:gap-2 flex-col items-stretch w-full md:flex-row md:items-center">
@@ -165,7 +171,7 @@ const Page = async () => {
                     </a>
                   </li>
                 </ul>
-              </div>
+              </div>*/}
             </div>
           </div>
         </div>
