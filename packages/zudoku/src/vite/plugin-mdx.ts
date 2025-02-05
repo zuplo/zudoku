@@ -5,6 +5,7 @@ import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import { toString as hastToString } from "hast-util-to-string";
 import type { Root } from "mdast";
 import path from "node:path";
+import rehypeMdxImportMedia from "rehype-mdx-import-media";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
 import remarkDirective from "remark-directive";
@@ -13,6 +14,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
+import { type VFile } from "vfile";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -50,22 +52,33 @@ const remarkLinkRewritePlugin =
   };
 
 const rehypeMediaBase =
-  (base = "") =>
+  (rootDir: string, base = "") =>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (tree: any) => {
-    if (!base) return;
-
+  (tree: any, vfile: VFile) => {
     visit(tree, "element", (node) => {
+      if (!base) return;
       if (node.tagName !== "img" && node.tagName !== "video") return;
 
       if (node.properties.src && !node.properties.src.startsWith("http")) {
         node.properties.src = joinUrl(base, node.properties.src);
       }
     });
+
+    // `rehype-mdx-import-media` doesn't handle images in mdxJsxFlowElement so we do it manually
+    visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
+      if (node.name !== "img" && node.name !== "video") return;
+      const src = node.attributes.find((attr: any) => attr?.name === "src");
+
+      if (typeof src?.value !== "string" || /^(http|\/)/i.test(src.value))
+        return;
+
+      const relativePath = path.dirname(path.relative(rootDir, vfile.path));
+      src.value = "./" + path.join(base, relativePath, src.value);
+    });
   };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rehypeExcerptWithMdxExport = () => (tree: any, _vfile: any) => {
+const rehypeExcerptWithMdxExport = () => (tree: any) => {
   let excerpt: string | undefined;
 
   visit(tree, "element", (node) => {
@@ -114,13 +127,9 @@ const rehypeExcerptWithMdxExport = () => (tree: any, _vfile: any) => {
 
 const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
   const config = getConfig();
-  let base: string | undefined;
 
   return {
     enforce: "pre",
-    configResolved: (v) => {
-      base = v.base;
-    },
     ...mdx({
       providerImportSource:
         config.mode === "internal" || config.mode === "standalone"
@@ -139,19 +148,18 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         remarkDirectiveRehype,
         [remarkLinkRewritePlugin, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ] as any,
+      ],
       rehypePlugins: [
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
-        [rehypeMediaBase, base],
+        rehypeMdxImportMedia,
+        [rehypeMediaBase, config.rootDir, config.basePath],
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
         ...(config.build?.rehypePlugins ?? []),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ] as any,
+      ],
     }),
     name: "zudoku-mdx-plugin",
   } as const;
