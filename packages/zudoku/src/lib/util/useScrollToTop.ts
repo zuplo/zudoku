@@ -4,7 +4,6 @@ import { useLocation } from "react-router";
 export const useScrollToTop = () => {
   const location = useLocation();
   const previousPath = useRef(location.pathname);
-  const previousHash = useRef(location.hash);
 
   useEffect(() => {
     const isNewPage = previousPath.current !== location.pathname;
@@ -15,6 +14,5 @@ export const useScrollToTop = () => {
     }
 
     previousPath.current = location.pathname;
-    previousHash.current = location.hash;
   }, [location.pathname, location.hash]);
 };
