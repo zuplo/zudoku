@@ -23,3 +23,6 @@ updates:
       prettier-dependencies:
         patterns:
           - "*prettier*"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
