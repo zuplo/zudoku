@@ -19,7 +19,7 @@ const viteConfigPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
     async transform(code, id) {
       if (id !== getConfig().__meta.path) return;
 
-      return code.replaceAll(
+      const replacedCode = code.replaceAll(
         /process\.env\.([a-z_][a-z0-9_]*)/gi,
         (_, envVar) => {
           if (!envVar.startsWith(viteConfig.envPrefix)) {
@@ -40,6 +40,8 @@ const viteConfigPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           return value;
         },
       );
+
+      return { code: replacedCode, map: null };
     },
   };
 };

@@ -13,7 +13,7 @@ import "virtual:zudoku-theme.css";
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import type { FileWritingResponse } from "../vite/prerender.js";
+import type { FileWritingResponse } from "../vite/prerender/FileWritingResponse.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
 
