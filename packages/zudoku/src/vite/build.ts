@@ -24,7 +24,10 @@ export async function runBuild(options: { dir: string }) {
 
   // Don't run in parallel because it might overwrite itself
   const clientResult = await viteBuild(viteClientConfig);
-  const serverResult = await viteBuild(viteServerConfig);
+  const serverResult = await viteBuild({
+    ...viteServerConfig,
+    logLevel: "silent",
+  });
   if (Array.isArray(clientResult)) {
     throw new Error("Build failed");
   }
