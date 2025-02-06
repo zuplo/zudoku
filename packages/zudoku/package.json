@@ -275,7 +275,7 @@
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "5.14.0",
     "typescript": "5.7.3",
-    "vitest": "3.0.2"
+    "vitest": "3.0.5"
   },
   "peerDependencies": {
     "react": ">=19",
