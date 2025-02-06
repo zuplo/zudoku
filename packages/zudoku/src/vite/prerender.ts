@@ -1,12 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import colors from "picocolors";
 import {
   type getRoutesByConfig,
   type render as serverRender,
 } from "../app/entry.server.js";
 import { type ZudokuConfig } from "../config/validators/validate.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { throttle, writeLine } from "./reporter.js";
 import { generateSitemap } from "./sitemap.js";
 
 export class FileWritingResponse {
@@ -80,8 +82,6 @@ export const prerender = async ({
   basePath?: string;
   serverConfigFilename: string;
 }) => {
-  // eslint-disable-next-line no-console
-  console.log("Prerendering...");
   const distDir = path.join(dir, "dist", basePath);
   const config: ZudokuConfig = await import(
     pathToFileURL(path.join(distDir, "server", serverConfigFilename)).href
@@ -98,19 +98,27 @@ export const prerender = async ({
   const paths = routesToPaths(routes);
 
   const writtenFiles: string[] = [];
-  for (const urlPath of paths) {
-    const req = new Request(
-      joinUrl("http://localhost", config.basePath, urlPath),
-    );
+  let prerenderedCount = 0;
+  const logPrerender = throttle((urlPath: string) => {
+    writeLine(`prerendering (${prerenderedCount}) ${colors.dim(urlPath)}`);
+  });
+  await Promise.all(
+    paths.map(async (urlPath) => {
+      logPrerender(urlPath);
+      const req = new Request(
+        joinUrl("http://localhost", config.basePath, urlPath),
+      );
 
-    const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
+      const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
 
-    const response = new FileWritingResponse(path.join(distDir, filename));
+      const response = new FileWritingResponse(path.join(distDir, filename));
 
-    await render({ template: html, request: req, response, config });
-    await response.isSent();
-    writtenFiles.push(filename);
-  }
+      await render({ template: html, request: req, response, config });
+      await response.isSent();
+      writtenFiles.push(filename);
+      prerenderedCount++;
+    }),
+  );
 
   await generateSitemap({
     basePath: config.basePath,
