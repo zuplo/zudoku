@@ -6,7 +6,7 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
-import { prerender } from "./prerender.js";
+import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
 

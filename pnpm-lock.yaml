@@ -46,7 +46,7 @@ importers:
         version: 20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(@zkochan/js-yaml@0.0.7)(eslint@8.57.0)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))
       '@nx/vite':
         specifier: 20.3.3
-        version: 20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))(typescript@5.7.3)(vite@6.0.11(@types/node@22.7.5)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.7.0))(vitest@3.0.2(@types/node@22.7.5)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.7.0))
+        version: 20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))(typescript@5.7.3)(vite@6.0.11(@types/node@22.7.5)(jiti@2.4.2)(lightningcss@1.29.1)(tsx@4.19.2)(yaml@2.7.0))(vitest@3.0.2(@types/node@22.7.5)(jiti@2.4.2)(lightningcss@1.29.1)(tsx@4.19.2)(yaml@2.7.0))
       '@nx/web':
         specifier: 20.3.3
         version: 20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))(typescript@5.7.3)
@@ -515,6 +515,9 @@ importers:
       picocolors:
         specifier: 1.1.1
         version: 1.1.1
+      piscina:
+        specifier: 5.0.0-alpha.1
+        version: 5.0.0-alpha.1
       postcss:
         specifier: 8.5.1
         version: 8.5.1
@@ -2509,6 +2512,106 @@ packages:
     resolution: {integrity: sha512-q4xOtUXpCzeouE8GaJ8StT4rDxm/U5j6lkMHL2srb2Q3Y7cobE0aXyPzXVVlbeIMBi+5R5MpbiaVE5/vJUdnHg==}
     peerDependencies:
       rollup: '>=2'
+
+  '@napi-rs/nice-android-arm-eabi@1.0.1':
+    resolution: {integrity: sha512-5qpvOu5IGwDo7MEKVqqyAxF90I6aLj4n07OzpARdgDRfz8UbBztTByBp0RC59r3J1Ij8uzYi6jI7r5Lws7nn6w==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [android]
+
+  '@napi-rs/nice-android-arm64@1.0.1':
+    resolution: {integrity: sha512-GqvXL0P8fZ+mQqG1g0o4AO9hJjQaeYG84FRfZaYjyJtZZZcMjXW5TwkL8Y8UApheJgyE13TQ4YNUssQaTgTyvA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [android]
+
+  '@napi-rs/nice-darwin-arm64@1.0.1':
+    resolution: {integrity: sha512-91k3HEqUl2fsrz/sKkuEkscj6EAj3/eZNCLqzD2AA0TtVbkQi8nqxZCZDMkfklULmxLkMxuUdKe7RvG/T6s2AA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@napi-rs/nice-darwin-x64@1.0.1':
+    resolution: {integrity: sha512-jXnMleYSIR/+TAN/p5u+NkCA7yidgswx5ftqzXdD5wgy/hNR92oerTXHc0jrlBisbd7DpzoaGY4cFD7Sm5GlgQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@napi-rs/nice-freebsd-x64@1.0.1':
+    resolution: {integrity: sha512-j+iJ/ezONXRQsVIB/FJfwjeQXX7A2tf3gEXs4WUGFrJjpe/z2KB7sOv6zpkm08PofF36C9S7wTNuzHZ/Iiccfw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@napi-rs/nice-linux-arm-gnueabihf@1.0.1':
+    resolution: {integrity: sha512-G8RgJ8FYXYkkSGQwywAUh84m946UTn6l03/vmEXBYNJxQJcD+I3B3k5jmjFG/OPiU8DfvxutOP8bi+F89MCV7Q==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@napi-rs/nice-linux-arm64-gnu@1.0.1':
+    resolution: {integrity: sha512-IMDak59/W5JSab1oZvmNbrms3mHqcreaCeClUjwlwDr0m3BoR09ZiN8cKFBzuSlXgRdZ4PNqCYNeGQv7YMTjuA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/nice-linux-arm64-musl@1.0.1':
+    resolution: {integrity: sha512-wG8fa2VKuWM4CfjOjjRX9YLIbysSVV1S3Kgm2Fnc67ap/soHBeYZa6AGMeR5BJAylYRjnoVOzV19Cmkco3QEPw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/nice-linux-ppc64-gnu@1.0.1':
+    resolution: {integrity: sha512-lxQ9WrBf0IlNTCA9oS2jg/iAjQyTI6JHzABV664LLrLA/SIdD+I1i3Mjf7TsnoUbgopBcCuDztVLfJ0q9ubf6Q==}
+    engines: {node: '>= 10'}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@napi-rs/nice-linux-riscv64-gnu@1.0.1':
+    resolution: {integrity: sha512-3xs69dO8WSWBb13KBVex+yvxmUeEsdWexxibqskzoKaWx9AIqkMbWmE2npkazJoopPKX2ULKd8Fm9veEn0g4Ig==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@napi-rs/nice-linux-s390x-gnu@1.0.1':
+    resolution: {integrity: sha512-lMFI3i9rlW7hgToyAzTaEybQYGbQHDrpRkg+1gJWEpH0PLAQoZ8jiY0IzakLfNWnVda1eTYYlxxFYzW8Rqczkg==}
+    engines: {node: '>= 10'}
+    cpu: [s390x]
+    os: [linux]
+
+  '@napi-rs/nice-linux-x64-gnu@1.0.1':
+    resolution: {integrity: sha512-XQAJs7DRN2GpLN6Fb+ZdGFeYZDdGl2Fn3TmFlqEL5JorgWKrQGRUrpGKbgZ25UeZPILuTKJ+OowG2avN8mThBA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@napi-rs/nice-linux-x64-musl@1.0.1':
+    resolution: {integrity: sha512-/rodHpRSgiI9o1faq9SZOp/o2QkKQg7T+DK0R5AkbnI/YxvAIEHf2cngjYzLMQSQgUhxym+LFr+UGZx4vK4QdQ==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@napi-rs/nice-win32-arm64-msvc@1.0.1':
+    resolution: {integrity: sha512-rEcz9vZymaCB3OqEXoHnp9YViLct8ugF+6uO5McifTedjq4QMQs3DHz35xBEGhH3gJWEsXMUbzazkz5KNM5YUg==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@napi-rs/nice-win32-ia32-msvc@1.0.1':
+    resolution: {integrity: sha512-t7eBAyPUrWL8su3gDxw9xxxqNwZzAqKo0Szv3IjVQd1GpXXVkb6vBBQUuxfIYaXMzZLwlxRQ7uzM2vdUE9ULGw==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@napi-rs/nice-win32-x64-msvc@1.0.1':
+    resolution: {integrity: sha512-JlF+uDcatt3St2ntBG8H02F1mM45i5SF9W+bIKiReVE6wiy3o16oBP/yxt+RZ+N6LbCImJXJ6bXNO2kn9AXicg==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@napi-rs/nice@1.0.1':
+    resolution: {integrity: sha512-zM0mVWSXE0a0h9aKACLwKmD6nHcRiKrPpCfvaKqG1CqDEyjEawId0ocXxVzPMCAm6kkWr2P025msfxXEnt8UGQ==}
+    engines: {node: '>= 10'}
 
   '@napi-rs/wasm-runtime@0.2.4':
     resolution: {integrity: sha512-9zESzOO5aDByvhIAsOy9TbpZ0Ur2AJbUI7UT73kcUTS2mxAMHOBaa1st/jAymNoCtvrit99kkzT1FZuXVcgfIQ==}
@@ -7262,6 +7365,10 @@ packages:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
 
+  piscina@5.0.0-alpha.1:
+    resolution: {integrity: sha512-fPx/ZNkxA35CgLsuGJzrQa4FXgOUamwgag2bft2oV4wI2inOcAwXupa7BxYNdCfNFkMtW6EjwiWdRqqZmaAoNA==}
+    engines: {node: '>=18.x'}
+
   portfinder@1.0.32:
     resolution: {integrity: sha512-on2ZJVVDXRADWE6jnQaX0ioEylzgBpQk8r55NE4wjXW1ZxO+BgDlY6DXwj20i0V8eB4SenDQ00WEaxfiIQPcxg==}
     engines: {node: '>= 0.12.0'}
@@ -10876,6 +10983,74 @@ snapshots:
       - acorn
       - supports-color
 
+  '@napi-rs/nice-android-arm-eabi@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-android-arm64@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-darwin-arm64@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-darwin-x64@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-freebsd-x64@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-arm-gnueabihf@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-arm64-gnu@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-arm64-musl@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-ppc64-gnu@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-riscv64-gnu@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-s390x-gnu@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-x64-gnu@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-linux-x64-musl@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-win32-arm64-msvc@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-win32-ia32-msvc@1.0.1':
+    optional: true
+
+  '@napi-rs/nice-win32-x64-msvc@1.0.1':
+    optional: true
+
+  '@napi-rs/nice@1.0.1':
+    optionalDependencies:
+      '@napi-rs/nice-android-arm-eabi': 1.0.1
+      '@napi-rs/nice-android-arm64': 1.0.1
+      '@napi-rs/nice-darwin-arm64': 1.0.1
+      '@napi-rs/nice-darwin-x64': 1.0.1
+      '@napi-rs/nice-freebsd-x64': 1.0.1
+      '@napi-rs/nice-linux-arm-gnueabihf': 1.0.1
+      '@napi-rs/nice-linux-arm64-gnu': 1.0.1
+      '@napi-rs/nice-linux-arm64-musl': 1.0.1
+      '@napi-rs/nice-linux-ppc64-gnu': 1.0.1
+      '@napi-rs/nice-linux-riscv64-gnu': 1.0.1
+      '@napi-rs/nice-linux-s390x-gnu': 1.0.1
+      '@napi-rs/nice-linux-x64-gnu': 1.0.1
+      '@napi-rs/nice-linux-x64-musl': 1.0.1
+      '@napi-rs/nice-win32-arm64-msvc': 1.0.1
+      '@napi-rs/nice-win32-ia32-msvc': 1.0.1
+      '@napi-rs/nice-win32-x64-msvc': 1.0.1
+    optional: true
+
   '@napi-rs/wasm-runtime@0.2.4':
     dependencies:
       '@emnapi/core': 1.3.1
@@ -11077,7 +11252,7 @@ snapshots:
   '@nx/nx-win32-x64-msvc@20.3.3':
     optional: true
 
-  '@nx/vite@20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))(typescript@5.7.3)(vite@6.0.11(@types/node@22.7.5)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.7.0))(vitest@3.0.2(@types/node@22.7.5)(jiti@2.3.3)(tsx@4.19.2)(yaml@2.7.0))':
+  '@nx/vite@20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))(typescript@5.7.3)(vite@6.0.11(@types/node@22.7.5)(jiti@2.4.2)(lightningcss@1.29.1)(tsx@4.19.2)(yaml@2.7.0))(vitest@3.0.2(@types/node@22.7.5)(jiti@2.4.2)(lightningcss@1.29.1)(tsx@4.19.2)(yaml@2.7.0))':
     dependencies:
       '@nx/devkit': 20.3.3(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))
       '@nx/js': 20.3.3(@babel/traverse@7.26.7)(@swc/core@1.10.1(@swc/helpers@0.5.15))(@types/node@22.7.5)(nx@20.3.3(@swc/core@1.10.1(@swc/helpers@0.5.15)))(typescript@5.7.3)
@@ -14156,7 +14331,7 @@ snapshots:
       '@typescript-eslint/parser': 8.21.0(eslint@8.57.0)(typescript@5.7.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.0)
       eslint-plugin-react: 7.37.4(eslint@8.57.0)
@@ -14180,7 +14355,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@8.57.0):
+  eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0
@@ -14196,14 +14371,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.0):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.21.0(eslint@8.57.0)(typescript@5.7.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -14228,7 +14403,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@8.57.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.21.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -16787,6 +16962,10 @@ snapshots:
   pify@2.3.0: {}
 
   pirates@4.0.6: {}
+
+  piscina@5.0.0-alpha.1:
+    optionalDependencies:
+      '@napi-rs/nice': 1.0.1
 
   portfinder@1.0.32:
     dependencies:
