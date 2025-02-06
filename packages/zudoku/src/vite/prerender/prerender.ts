@@ -1,8 +1,10 @@
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
 import { type ZudokuConfig } from "../../config/validators/validate.js";
+import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import { type WorkerData } from "./worker.js";
 
@@ -40,8 +42,6 @@ export const prerender = async ({
   basePath?: string;
   serverConfigFilename: string;
 }) => {
-  // eslint-disable-next-line no-console
-  console.log("Prerendering...");
   const distDir = path.join(dir, "dist", basePath);
   const config: ZudokuConfig = await import(
     pathToFileURL(path.join(distDir, "server", serverConfigFilename)).href
@@ -60,8 +60,42 @@ export const prerender = async ({
   });
 
   const start = performance.now();
+  const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
+  const INACTIVITY_TIMEOUT_MS = 10_000; // Timeout after 10 seconds of inactivity
+  let lastLogTime = start;
+  let lastActivityTime = start;
+
+  const writeProgress = throttle(
+    (count: number, total: number, urlPath: string) => {
+      writeLine(`prerendering (${count}/${total}) ${colors.dim(urlPath)}`);
+    },
+  );
+
+  if (!isTTY()) {
+    // eslint-disable-next-line no-console
+    console.log(`prerendering ${paths.length} routes...`);
+  }
+
   let completedCount = 0;
-  const writtenFiles = await Promise.all(
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+  const inactivityTimeout = new Promise<never>((_, reject) => {
+    const checkInactivity = () => {
+      const inactiveTime = performance.now() - lastActivityTime;
+      if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
+        reject(
+          new Error(
+            `Prerender timed out after ${INACTIVITY_TIMEOUT_MS}ms of inactivity`,
+          ),
+        );
+        return;
+      }
+      timeoutId = setTimeout(checkInactivity, 1000); // Check every second
+    };
+    timeoutId = setTimeout(checkInactivity, 1000);
+  });
+
+  const prerenderTasks = Promise.all(
     paths.map(async (urlPath) => {
       const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
       const outputPath = path.join(distDir, filename);
@@ -77,18 +111,30 @@ export const prerender = async ({
       } satisfies WorkerData);
 
       completedCount++;
+      lastActivityTime = performance.now();
 
-      if (process.stdout.isTTY) {
-        process.stdout.write(
-          `\rWritten ${completedCount}/${paths.length} pages`,
-        );
+      if (isTTY()) {
+        writeProgress(completedCount, paths.length, urlPath);
+      } else {
+        const now = performance.now();
+        if (
+          now - lastLogTime >= LOG_INTERVAL_MS ||
+          completedCount === paths.length
+        ) {
+          // eslint-disable-next-line no-console
+          console.log(`prerendered ${completedCount}/${paths.length} routes`);
+          lastLogTime = now;
+        }
       }
       return outputPath;
     }),
   );
 
+  const writtenFiles = await Promise.race([prerenderTasks, inactivityTimeout]);
+  clearTimeout(timeoutId);
+
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
-  process.stdout.write(`\rWritten ${paths.length} pages in ${seconds} seconds`);
+  writeLine(`prerendered ${paths.length} routes in ${seconds} seconds\n`);
 
   await pool.destroy();
 
