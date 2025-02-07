@@ -1,47 +1,38 @@
+import path from "node:path";
 import { pathToFileURL } from "node:url";
-import type { render } from "../../app/entry.server.js";
+import Piscina from "piscina";
+import type { render as renderServer } from "../../app/entry.server.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
 
-export type WorkerData = {
+export type StaticWorkerData = {
   template: string;
-  outputPath: string;
-  url: string;
+  distDir: string;
   serverConfigPath: string;
   entryServerPath: string;
 };
 
-let initialized = false;
-let renderFn: typeof render;
-let config: ZudokuConfig;
+export type WorkerData = { urlPath: string };
 
-const initialize = async ({
-  serverConfigPath,
-  entryServerPath,
-}: WorkerData) => {
-  if (initialized) return;
+const { template, distDir, serverConfigPath, entryServerPath } =
+  Piscina.workerData as StaticWorkerData;
 
-  const [module, configModule] = await Promise.all([
-    import(pathToFileURL(entryServerPath).href),
-    import(pathToFileURL(serverConfigPath).href),
-  ]);
+const [render, config] = (await Promise.all([
+  import(pathToFileURL(entryServerPath).href).then((m) => m.render),
+  import(pathToFileURL(serverConfigPath).href).then((m) => m.default),
+])) as [typeof renderServer, ZudokuConfig];
 
-  renderFn = module.render;
-  config = configModule.default;
-  initialized = true;
-};
-
-const renderPage = async (data: WorkerData): Promise<string> => {
-  await initialize(data);
-
-  const { url, template, outputPath } = data;
+const renderPage = async ({ urlPath }: WorkerData): Promise<string> => {
+  const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
+  const url = `http://localhost${config.basePath ?? ""}${urlPath}`;
+  const outputPath = path.join(distDir, filename);
   const request = new Request(url);
   const response = new FileWritingResponse(outputPath);
 
-  await renderFn({ template, request, response, config });
+  await render({ template, request, response, config });
   await response.isSent();
 
-  return data.outputPath;
+  return outputPath;
 };
 
 export default renderPage;
