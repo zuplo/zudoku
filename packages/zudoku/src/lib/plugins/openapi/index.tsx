@@ -226,7 +226,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       }
     },
     getRoutes: () => {
-      const versionsInPath = [null, ...versions];
+      const versionsInPath = versions.length > 1 ? [null, ...versions] : [null];
 
       const tagPages = (config.tagPages ?? []).map((tag) => ({
         tag,
@@ -234,7 +234,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       }));
 
       return versionsInPath.map((version) => {
-        const versionPath = joinUrl(basePath, version ? `/${version}` : "");
+        const versionPath = joinUrl(basePath, version);
 
         return {
           path: versionPath,

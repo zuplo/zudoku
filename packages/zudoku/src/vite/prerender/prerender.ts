@@ -6,7 +6,7 @@ import type { getRoutesByConfig } from "../../app/main.js";
 import { type ZudokuConfig } from "../../config/validators/validate.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
-import { type WorkerData } from "./worker.js";
+import { type StaticWorkerData, type WorkerData } from "./worker.js";
 
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 
@@ -55,10 +55,6 @@ export const prerender = async ({
   const routes = getRoutes(config);
   const paths = routesToPaths(routes);
 
-  const pool = new Piscina({
-    filename: new URL("./worker.js", import.meta.url).href,
-  });
-
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
   const INACTIVITY_TIMEOUT_MS = 10_000; // Timeout after 10 seconds of inactivity
@@ -83,6 +79,7 @@ export const prerender = async ({
     const checkInactivity = () => {
       const inactiveTime = performance.now() - lastActivityTime;
       if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
+        clearTimeout(timeoutId);
         reject(
           new Error(
             `Prerender timed out after ${INACTIVITY_TIMEOUT_MS}ms of inactivity`,
@@ -90,25 +87,26 @@ export const prerender = async ({
         );
         return;
       }
-      timeoutId = setTimeout(checkInactivity, 1000); // Check every second
+      timeoutId = setTimeout(checkInactivity, 1000);
     };
     timeoutId = setTimeout(checkInactivity, 1000);
   });
 
+  const serverOutDir = path.join(distDir, "server");
+  const pool = new Piscina({
+    filename: new URL("./worker.js", import.meta.url).href,
+    idleTimeout: 1000,
+    workerData: {
+      template: html,
+      distDir,
+      serverConfigPath: path.join(serverOutDir, serverConfigFilename),
+      entryServerPath: path.join(serverOutDir, "entry.server.js"),
+    } satisfies StaticWorkerData,
+  });
+
   const prerenderTasks = Promise.all(
     paths.map(async (urlPath) => {
-      const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
-      const outputPath = path.join(distDir, filename);
-      const url = `http://localhost${config.basePath ?? ""}${urlPath}`;
-      const serverPath = path.join(distDir, "server");
-
-      await pool.run({
-        template: html,
-        outputPath,
-        url,
-        serverConfigPath: path.join(serverPath, serverConfigFilename),
-        entryServerPath: path.join(serverPath, "entry.server.js"),
-      } satisfies WorkerData);
+      const outputPath = await pool.run({ urlPath } satisfies WorkerData);
 
       completedCount++;
       lastActivityTime = performance.now();
@@ -135,8 +133,6 @@ export const prerender = async ({
 
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
   writeLine(`prerendered ${paths.length} routes in ${seconds} seconds\n`);
-
-  await pool.destroy();
 
   await generateSitemap({
     basePath: config.basePath,
