@@ -41,7 +41,8 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
   });
 
   schema = traverse(schema, (sub) => {
-    if (sub.example !== undefined) {
+    // may be null or undefined
+    if (sub.example) {
       const isExampleObject =
         typeof sub.example === "object" &&
         (sub.example.summary !== undefined ||
