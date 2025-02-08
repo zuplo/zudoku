@@ -48,90 +48,9 @@
       }
     },
     "schemas": {
-      "Stamp": {
-        "type": "object",
-        "required": ["shipmentId", "format"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "readOnly": true
-          },
-          "shipmentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "format": {
-            "type": "string",
-            "enum": ["PDF", "PNG", "ZPL"]
-          },
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "readOnly": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "readOnly": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "readOnly": true
-          }
-        }
-      },
-      "Label": {
-        "type": "object",
-        "required": ["shipmentId", "format"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid",
-            "readOnly": true
-          },
-          "shipmentId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "format": {
-            "type": "string",
-            "enum": ["PDF", "PNG", "ZPL"]
-          },
-          "size": {
-            "type": "string",
-            "enum": ["4x6", "6x4", "8.5x11"]
-          },
-          "url": {
-            "type": "string",
-            "format": "uri",
-            "readOnly": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "readOnly": true
-          },
-          "expiresAt": {
-            "type": "string",
-            "format": "date-time",
-            "readOnly": true
-          }
-        }
-      },
-      "Error": {
-        "type": "object",
-        "required": ["code", "message"],
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          }
-        }
-      }
+      "Stamp": { "$ref": "label-base.json#/components/schemas/Stamp" },
+      "Label": { "$ref": "label-base.json#/components/schemas/Label" },
+      "Error": { "$ref": "label-base.json#/components/schemas/Error" }
     }
   },
   "paths": {
