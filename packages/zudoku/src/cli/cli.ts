@@ -1,5 +1,5 @@
 import * as Sentry from "@sentry/node";
-import { readFileSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { gte } from "semver";
 import { hideBin } from "yargs/helpers";
@@ -17,12 +17,11 @@ const MIN_NODE_VERSION = "20.0.0";
 if (gte(process.versions.node, MIN_NODE_VERSION)) {
   let packageJson;
   try {
-    packageJson = JSON.parse(
-      readFileSync(
-        fileURLToPath(new URL("../../package.json", import.meta.url)),
-        "utf-8",
-      ),
+    const packageJsonPath = fileURLToPath(
+      new URL("../../package.json", import.meta.url),
     );
+    const packageJsonContent = await readFile(packageJsonPath, "utf8");
+    packageJson = JSON.parse(packageJsonContent);
   } catch (e) {
     logger.error(e);
     await printCriticalFailureToConsoleAndExit(
