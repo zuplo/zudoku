@@ -1,15 +1,15 @@
+import { $RefParser, JSONSchema } from "@apidevtools/json-schema-ref-parser";
+import { upgrade, validate } from "@scalar/openapi-parser";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
-import yaml from "yaml";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import {
   getAllOperations,
   getAllTags,
   type OpenAPIDocument,
 } from "../lib/oas/graphql/index.js";
-import { upgradeSchema } from "../lib/oas/parser/upgrade/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -26,6 +26,20 @@ type ProcessedSchema = {
 const API_COUNT_THRESHOLD = 50;
 
 const schemaMap = new Map<string, string>();
+
+const validateSchema = async (schema: JSONSchema, filePath: string) => {
+  const validated = await validate(schema);
+  if (validated.errors?.length) {
+    // eslint-disable-next-line no-console
+    console.warn(`Schema warnings in ${filePath}:`);
+    for (const error of validated.errors) {
+      // eslint-disable-next-line no-console
+      console.warn(error);
+    }
+  }
+
+  return schema as OpenAPIDocument;
+};
 
 async function processSchemas(
   config: ZudokuPluginOptions,
@@ -51,7 +65,7 @@ async function processSchemas(
 
     const postProcessors = [
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (schema: any) => upgradeSchema(schema),
+      (schema: any) => upgrade(schema).specification,
       ...(apiConfig.postProcessors ?? []),
       ...zuploProcessors,
     ];
@@ -61,29 +75,34 @@ async function processSchemas(
       : [apiConfig.input];
 
     const inputFiles = await Promise.all(
-      inputs.map(async (input) =>
-        /\.ya?ml$/.test(input)
-          ? yaml.parse(await fs.readFile(input, "utf-8"))
-          : JSON.parse(await fs.readFile(input, "utf-8")),
-      ),
+      inputs.map(async (input) => {
+        const fullPath = path.resolve(config.rootDir, input);
+        const parser = new $RefParser();
+        const schema = await parser.bundle(fullPath);
+
+        // console.log(parser.$refs);
+        config.__meta.registerDependency(...parser.$refs.paths());
+
+        return validateSchema(schema, input);
+      }),
     );
 
     const processedInputs = await Promise.all(
       inputFiles.map(async (schema, index) => {
         const processedSchema = await postProcessors.reduce(
           async (acc, postProcessor) => postProcessor(await acc),
-          schema,
+          Promise.resolve(schema),
         );
 
         const inputPath = inputs[index]!;
-        const processedPath = path.posix.join(
+        const code = await generateCode(processedSchema);
+
+        const processedFilePath = path.posix.join(
           tmpDir,
           `${path.basename(inputPath)}.js`,
         );
-
-        const code = await generateCode(processedSchema);
-        await fs.writeFile(processedPath, code);
-        schemaMap.set(inputPath, processedPath);
+        await fs.writeFile(processedFilePath, code);
+        schemaMap.set(inputPath, processedFilePath);
 
         return {
           schema: processedSchema,
