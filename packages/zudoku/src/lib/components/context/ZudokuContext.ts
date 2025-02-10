@@ -1,6 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
+import { useAuth } from "../../authentication/hook.js";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinPath } from "../../util/joinPath.js";
 import { CACHE_KEYS } from "../cache.js";
@@ -30,8 +31,13 @@ export const useApiIdentities = () => {
 };
 
 export const useCurrentNavigation = () => {
-  const { getPluginSidebar, sidebars, topNavigation } = useZudoku();
+  const { getPluginSidebar, sidebars, topNavigation, options } = useZudoku();
   const location = useLocation();
+  const auth = useAuth();
+
+  const isProtectedRoute = options.protectedRoutes?.some((route) =>
+    matchPath(route, location.pathname),
+  );
 
   const currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
     return traverseSidebar(sidebar, (item) => {
@@ -56,8 +62,13 @@ export const useCurrentNavigation = () => {
     queryKey: ["plugin-sidebar", location.pathname],
   });
 
+  const hideSidebar =
+    auth.isAuthEnabled && !auth.isAuthenticated && isProtectedRoute;
+
   return {
-    sidebar: [...(currentSidebarItem ? currentSidebarItem[1] : []), ...data],
+    sidebar: hideSidebar
+      ? []
+      : [...(currentSidebarItem ? currentSidebarItem[1] : []), ...data],
     topNavItem: currentTopNavItem,
   };
 };
