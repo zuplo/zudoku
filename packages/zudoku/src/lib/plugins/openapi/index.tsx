@@ -159,6 +159,9 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           tag: !config.loadTags ? tag : undefined,
         });
 
+        const collapsible = config.loadTags || config.type === "url";
+        const collapsed = !config.loadTags && config.type !== "url";
+
         const categories = tagData.schema.tags.flatMap<SidebarItem>((tag) => {
           const categoryLink = joinUrl(basePath, urlVersion, slugify(tag.name));
 
@@ -191,8 +194,8 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               id: categoryLink,
               label: tag.name,
             },
-            collapsible: config.loadTags,
-            collapsed: !config.loadTags,
+            collapsible,
+            collapsed,
             items: operations,
           };
         });
@@ -210,8 +213,8 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               id: categoryLink,
               label: "Other endpoints",
             },
-            collapsible: config.loadTags,
-            collapsed: !config.loadTags,
+            collapsible,
+            collapsed,
             items: untagged.map((operation) => ({
               type: "link" as const,
               label: operation.summary ?? operation.path,
@@ -228,7 +231,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
     getRoutes: () => {
       const versionsInPath = versions.length > 1 ? [null, ...versions] : [null];
 
-      const tagPages = (config.tagPages ?? []).map((tag) => ({
+      const tagPages = config.tagPages?.map((tag) => ({
         tag,
         path: slugify(tag),
       }));
@@ -253,13 +256,34 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             };
           },
           children: [
-            {
-              index: true,
-              loader: () =>
-                redirect(
-                  joinUrl(versionPath, tagPages.at(0)?.path ?? UNTAGGED_PATH),
-                ),
-            },
+            tagPages
+              ? {
+                  index: true,
+                  loader: () =>
+                    redirect(
+                      joinUrl(
+                        versionPath,
+                        tagPages.at(0)?.path ?? UNTAGGED_PATH,
+                      ),
+                    ),
+                }
+              : {
+                  // Schemas that can't provide all tags upfront as build time schemas do are caught here
+                  path: versionPath + "/:tag?",
+                  async lazy() {
+                    const { OperationList } = await import(
+                      "./OperationList.js"
+                    );
+                    return { element: <OperationList untagged={false} /> };
+                  },
+                },
+            ...(tagPages ?? []).map<RouteObject>((tag) => ({
+              path: joinUrl(versionPath, tag.path),
+              async lazy() {
+                const { OperationList } = await import("./OperationList.js");
+                return { element: <OperationList tag={tag.tag} /> };
+              },
+            })),
             {
               path: joinUrl(versionPath, UNTAGGED_PATH),
               async lazy() {
@@ -267,17 +291,6 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
                 return { element: <OperationList untagged={true} /> };
               },
             },
-            ...tagPages.map<RouteObject>((tag) => {
-              return {
-                path: joinUrl(versionPath, tag.path),
-                async lazy() {
-                  const { OperationList } = await import("./OperationList.js");
-                  return {
-                    element: <OperationList tag={tag.tag} />,
-                  };
-                },
-              };
-            }),
           ],
         };
       });

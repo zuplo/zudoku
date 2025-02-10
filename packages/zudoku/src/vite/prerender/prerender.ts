@@ -15,7 +15,7 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
   const addPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
     for (const route of routes) {
       // skip catch-all routes
-      if (route.path?.includes("*")) {
+      if (route.path?.includes("*") || route.path?.includes(":")) {
         continue;
       }
 
