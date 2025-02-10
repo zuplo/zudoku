@@ -214,6 +214,14 @@ const SearchSchema = z
     }),
     z.object({
       type: z.literal("pagefind"),
+      ranking: z
+        .object({
+          termFrequency: z.number(),
+          pageLength: z.number(),
+          termSimilarity: z.number(),
+          termSaturation: z.number(),
+        })
+        .optional(),
     }),
   ])
   .optional();

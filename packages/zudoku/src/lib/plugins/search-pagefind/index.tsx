@@ -1,25 +1,21 @@
+import type { ZudokuConfig } from "../../../config/validators/validate.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { PagefindSearch } from "./PagefindSearch.js";
 
-export const pagefindSearchPlugin = (settings: unknown): ZudokuPlugin => {
+export type PagefindOptions = Extract<
+  ZudokuConfig["search"],
+  { type: "pagefind" }
+>;
+
+export const pagefindSearchPlugin = (
+  options: PagefindOptions,
+): ZudokuPlugin => {
   return {
-    renderSearch: ({
-      isOpen,
-      onClose,
-    }: {
-      isOpen: boolean;
-      onClose: () => void;
-    }) => {
-      return (
-        <ClientOnly>
-          <PagefindSearch
-            isOpen={isOpen}
-            onClose={onClose}
-            settings={settings}
-          />
-        </ClientOnly>
-      );
-    },
+    renderSearch: ({ isOpen, onClose }) => (
+      <ClientOnly>
+        <PagefindSearch isOpen={isOpen} onClose={onClose} options={options} />
+      </ClientOnly>
+    ),
   };
 };
