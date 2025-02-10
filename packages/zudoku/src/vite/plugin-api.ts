@@ -80,7 +80,6 @@ async function processSchemas(
         const parser = new $RefParser();
         const schema = await parser.bundle(fullPath);
 
-        // console.log(parser.$refs);
         config.__meta.registerDependency(...parser.$refs.paths());
 
         return validateSchema(schema, input);
