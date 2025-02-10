@@ -221,7 +221,8 @@
 
     --R: calc(var(--s) * sqrt(var(--m) * var(--m) + 1) + var(--b) / 2);
     height: calc(2 * var(--R));
-    --_g: #0000 calc(99% - var(--b)), #000 calc(101% - var(--b)) 99%, #0000 101%;
+    --_g:
+      #0000 calc(99% - var(--b)), #000 calc(101% - var(--b)) 99%, #0000 101%;
     mask:
       radial-gradient(
           var(--R) at left 50% bottom calc(-1 * var(--m) * var(--s)),
