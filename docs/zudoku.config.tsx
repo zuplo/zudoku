@@ -10,6 +10,7 @@ import PreviewBanner from "./src/PreviewBanner";
 const config: ZudokuConfig = {
   basePath: "/docs",
   page: {
+    layout: "wide",
     banner: {
       message: <PreviewBanner />,
       dismissible: true,

@@ -4,7 +4,9 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
 import { DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
+import { useCurrentNavigation, useZudoku } from "../context/ZudokuContext.js";
 import { Slotlet } from "../SlotletProvider.js";
+import { SideNavigation } from "../TopNavigation.js";
 import { SidebarItem } from "./SidebarItem.js";
 import { SidebarWrapper } from "./SidebarWrapper.js";
 
@@ -16,6 +18,7 @@ export const Sidebar = ({
   sidebar: SidebarItemType[];
 }) => {
   const navRef = useRef<HTMLDivElement>(null);
+  const { page } = useZudoku();
 
   useEffect(() => {
     const active = navRef.current?.querySelector('[aria-current="page"]');
@@ -26,6 +29,7 @@ export const Sidebar = ({
     <>
       <SidebarWrapper ref={navRef}>
         <Slotlet name="zudoku-before-navigation" />
+        {page?.layout === "wide" && <SideNavigation />}
         {sidebar.map((item) => (
           <SidebarItem key={item.label} item={item} />
         ))}
@@ -39,6 +43,7 @@ export const Sidebar = ({
           <VisuallyHidden>
             <DrawerTitle>Sidebar</DrawerTitle>
           </VisuallyHidden>
+          <SideNavigation />
           {sidebar.map((item) => (
             <SidebarItem
               key={item.label}
