@@ -1,4 +1,5 @@
 import { cx } from "class-variance-authority";
+import { BookIcon } from "lucide-react";
 import { Suspense } from "react";
 import { NavLink, useNavigation } from "react-router";
 import { TopNavigationItem } from "../../config/validators/common.js";
@@ -19,6 +20,27 @@ export const isHiddenItem =
       item.display === "always"
     );
   };
+
+export const SideNavigation = () => {
+  const { topNavigation } = useZudoku();
+  const { isAuthenticated } = useAuth();
+
+  return (
+    <ul className="flex flex-col border rounded-lg p-2">
+      {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+        <li
+          key={item.id}
+          className="hover:bg-accent/60 rounded-lg flex flex-row p-0.5 items-center group"
+        >
+          <div className="p-2 border rounded-lg mr-2 ml-0.5 group-hover:text-accent-foreground">
+            <BookIcon size={16} />
+          </div>
+          <TopNavItem {...item} className="p-0 lg:p-0" />
+        </li>
+      ))}
+    </ul>
+  );
+};
 
 export const TopNavigation = () => {
   const { topNavigation } = useZudoku();
@@ -51,7 +73,8 @@ export const TopNavItem = ({
   id,
   label,
   default: defaultLink,
-}: TopNavigationItem) => {
+  className,
+}: TopNavigationItem & { className?: string }) => {
   const { sidebars } = useZudoku();
   const currentSidebar = sidebars[id];
   const currentNav = useCurrentNavigation();
@@ -86,6 +109,7 @@ export const TopNavItem = ({
           isActive || isPending
             ? "border-primary text-foreground"
             : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
+          className,
         )
       }
       to={first}

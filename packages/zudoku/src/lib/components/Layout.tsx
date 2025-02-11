@@ -23,7 +23,7 @@ const LoadingFallback = () => (
 export const Layout = ({ children }: { children?: ReactNode }) => {
   const location = useLocation();
   const { setActiveAnchor } = useViewportAnchor();
-  const { meta, authentication } = useZudoku();
+  const { meta, authentication, page } = useZudoku();
 
   useScrollToAnchor();
   useScrollToTop();
@@ -66,7 +66,12 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div className="w-full min-h-[calc(100vh-var(--header-height))] max-w-screen-2xl mx-auto px-4 lg:px-8 2xl:border-x">
+      <div
+        className={cn(
+          "w-full min-h-[calc(100vh-var(--header-height))] mx-auto px-4 lg:px-8 2xl:border-x",
+          page?.layout === "default" && "max-w-screen-2xl",
+        )}
+      >
         {showSpinner ? (
           <LoadingFallback />
         ) : (
