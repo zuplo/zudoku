@@ -1,6 +1,6 @@
 import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { matchPath, redirect, RouteObject } from "react-router";
+import { matchPath } from "react-router";
 import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { ColorMap } from "../../components/navigation/SidebarBadge.js";
@@ -13,6 +13,7 @@ import { graphql } from "./graphql/index.js";
 import { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { getRoutes } from "./util/getRoutes.js";
 
 const GetCategoriesQuery = graphql(`
   query GetCategories($input: JSON!, $type: SchemaType!) {
@@ -65,7 +66,7 @@ const MethodColorMap: Record<string, keyof typeof ColorMap> = {
 
 export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
-const UNTAGGED_PATH = "~endpoints";
+export const UNTAGGED_PATH = "~endpoints";
 
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinUrl(config.navigationId ?? "/reference");
@@ -228,72 +229,6 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
     },
-    getRoutes: () => {
-      const versionsInPath = versions.length > 1 ? [null, ...versions] : [null];
-
-      const tagPages = config.tagPages?.map((tag) => ({
-        tag,
-        path: slugify(tag),
-      }));
-
-      return versionsInPath.map((version) => {
-        const versionPath = joinUrl(basePath, version);
-
-        return {
-          path: versionPath,
-          async lazy() {
-            const { OpenApiRoute } = await import("./OpenApiRoute.js");
-            return {
-              element: (
-                <OpenApiRoute
-                  version={version ?? undefined}
-                  basePath={basePath}
-                  versions={versions}
-                  client={client}
-                  config={config}
-                />
-              ),
-            };
-          },
-          children: [
-            tagPages
-              ? {
-                  index: true,
-                  loader: () =>
-                    redirect(
-                      joinUrl(
-                        versionPath,
-                        tagPages.at(0)?.path ?? UNTAGGED_PATH,
-                      ),
-                    ),
-                }
-              : {
-                  // Schemas that can't provide all tags upfront as build time schemas do are caught here
-                  path: versionPath + "/:tag?",
-                  async lazy() {
-                    const { OperationList } = await import(
-                      "./OperationList.js"
-                    );
-                    return { element: <OperationList untagged={false} /> };
-                  },
-                },
-            ...(tagPages ?? []).map<RouteObject>((tag) => ({
-              path: joinUrl(versionPath, tag.path),
-              async lazy() {
-                const { OperationList } = await import("./OperationList.js");
-                return { element: <OperationList tag={tag.tag} /> };
-              },
-            })),
-            {
-              path: joinUrl(versionPath, UNTAGGED_PATH),
-              async lazy() {
-                const { OperationList } = await import("./OperationList.js");
-                return { element: <OperationList untagged={true} /> };
-              },
-            },
-          ],
-        };
-      });
-    },
+    getRoutes: () => getRoutes({ basePath, config, client }),
   };
 };
