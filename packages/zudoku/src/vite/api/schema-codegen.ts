@@ -6,7 +6,7 @@ const createLocalRefMap = (obj: RecordAny) => {
   let refCounter = 0;
 
   traverse(obj, (node) => {
-    if (typeof node.$ref === "string" && node.$ref.startsWith("#/")) {
+    if (typeof node?.$ref === "string" && node.$ref.startsWith("#/")) {
       if (!refMap.has(node.$ref)) {
         refMap.set(node.$ref, refCounter++);
       }
@@ -20,7 +20,7 @@ const createLocalRefMap = (obj: RecordAny) => {
 // Replace all $ref occurrences with a special marker that will be transformed into a reference to the __refMap lookup
 const setRefMarkers = (obj: RecordAny, refMap: Map<string, number>) =>
   traverse<string | RecordAny>(obj, (node) => {
-    if (node.$ref && typeof node.$ref === "string" && refMap.has(node.$ref)) {
+    if (node?.$ref && typeof node.$ref === "string" && refMap.has(node.$ref)) {
       return `__refMap:${node.$ref}`;
     }
     return node;
