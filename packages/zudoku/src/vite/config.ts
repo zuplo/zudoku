@@ -20,6 +20,7 @@ import type {
   ZudokuPluginOptions,
 } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
+import { CdnUrlSchema } from "../config/validators/common.js";
 import { ZuploEnv } from "../zuplo/env.js";
 import vitePlugin from "./plugin.js";
 
@@ -169,6 +170,10 @@ export function getPluginOptions({
     mode,
   };
 }
+// the vite config gets loaded multiple times, so we only log the CDN info once
+let hasLoggedCdnInfo = false;
+const MEDIA_REGEX =
+  /\.(a?png|jpe?g|gif|bmp|svg|webp|tiff|ico|webm|ogg|mp3|wav|m4a|avif|mp4)/i;
 
 export async function getViteConfig(
   dir: string,
@@ -200,9 +205,18 @@ export async function getViteConfig(
     mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
   });
 
-  const base = config.cdnUrl
-    ? new URL(config.basePath ?? "/", config.cdnUrl).href
+  const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
+
+  const base = cdnUrl?.base
+    ? new URL(config.basePath ?? "/", cdnUrl.base).href
     : config.basePath;
+
+  if (cdnUrl && !hasLoggedCdnInfo) {
+    logger.info(colors.blue(`Using CDN URL:`));
+    logger.info(colors.blue(`  base: `) + colors.dim(cdnUrl.base));
+    logger.info(colors.blue(`  media: `) + colors.dim(cdnUrl.media));
+    hasLoggedCdnInfo = true;
+  }
 
   const viteConfig: InlineConfig = {
     root: dir,
@@ -266,16 +280,19 @@ export async function getViteConfig(
             : undefined,
       },
     },
-    experimental: config.cdnUrl
-      ? {
-          renderBuiltUrl(filename, { type, hostType }) {
-            if (type === "asset" && (hostType === "js" || hostType === "css")) {
-              return new URL(filename, config.cdnUrl).href;
-            }
-            return { relative: true };
-          },
+    experimental: {
+      renderBuiltUrl(filename) {
+        if (cdnUrl?.base && [".js", ".css"].includes(path.extname(filename))) {
+          return new URL(filename, cdnUrl.base).href;
         }
-      : undefined,
+
+        if (cdnUrl?.media && MEDIA_REGEX.test(filename)) {
+          return new URL(filename, cdnUrl.media).href;
+        }
+
+        return { relative: true };
+      },
+    },
     optimizeDeps: {
       entries: [
         configEnv.isSsrBuild
