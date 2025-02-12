@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@types/node": "20.16.11",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.0",
     "typescript": "5.7.2",
     "zod-to-ts": "^1.2.0"
   },
