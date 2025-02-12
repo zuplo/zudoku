@@ -14,10 +14,8 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
-import { type VFile } from "vfile";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
-import { joinUrl } from "../lib/util/joinUrl.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +24,41 @@ const rehypeCodeBlockPlugin = () => (tree: any) => {
     if (node.type === "element" && node.tagName === "code") {
       node.properties.inline = parent?.tagName !== "pre";
     }
+  });
+};
+
+// Convert mdxJsxFlowElement img elements to regular element nodes
+// so rehype-mdx-import-media can pick them up
+const rehypeNormalizeMdxImages = () => (tree: any) => {
+  visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
+    if (node.type !== "mdxJsxFlowElement" || node.name !== "img") return;
+
+    const hasStringSrc = node.attributes.some(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (attr: any) =>
+        attr.type === "mdxJsxAttribute" &&
+        attr.name === "src" &&
+        typeof attr.value === "string",
+    );
+
+    if (!hasStringSrc) return;
+
+    node.type = "element";
+    node.tagName = "img";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    node.properties = {} as Record<string, any>;
+
+    for (const attr of node.attributes) {
+      if (attr.type === "mdxJsxAttribute" && typeof attr.value === "string") {
+        node.properties[attr.name] = attr.value;
+      }
+    }
+
+    delete node.name;
+    delete node.attributes;
+    delete node.children;
+    delete node.data;
+    delete node.position;
   });
 };
 
@@ -48,32 +81,6 @@ const remarkLinkRewritePlugin =
       }
 
       node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
-    });
-  };
-
-const rehypeMediaBase =
-  (rootDir: string, base = "") =>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (tree: any, vfile: VFile) => {
-    visit(tree, "element", (node) => {
-      if (!base) return;
-      if (node.tagName !== "img" && node.tagName !== "video") return;
-
-      if (node.properties.src && !node.properties.src.startsWith("http")) {
-        node.properties.src = joinUrl(base, node.properties.src);
-      }
-    });
-
-    // `rehype-mdx-import-media` doesn't handle images in mdxJsxFlowElement so we do it manually
-    visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
-      if (node.name !== "img" && node.name !== "video") return;
-      const src = node.attributes.find((attr: any) => attr?.name === "src");
-
-      if (typeof src?.value !== "string" || /^(http|\/)/i.test(src.value))
-        return;
-
-      const relativePath = path.dirname(path.relative(rootDir, vfile.path));
-      src.value = "./" + path.join(base, relativePath, src.value);
     });
   };
 
@@ -153,12 +160,12 @@ const viteMdxPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         rehypeSlug,
         rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
-        rehypeMdxImportMedia,
-        [rehypeMediaBase, config.rootDir, config.basePath],
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
         ...(config.build?.rehypePlugins ?? []),
+        rehypeNormalizeMdxImages,
+        rehypeMdxImportMedia,
       ],
     }),
     name: "zudoku-mdx-plugin",
