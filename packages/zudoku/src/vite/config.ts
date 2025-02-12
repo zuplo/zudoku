@@ -21,6 +21,7 @@ import type {
 } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { ZuploEnv } from "../zuplo/env.js";
 import vitePlugin from "./plugin.js";
 
@@ -208,7 +209,7 @@ export async function getViteConfig(
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
   const base = cdnUrl?.base
-    ? new URL(config.basePath ?? "/", cdnUrl.base).href
+    ? joinUrl(cdnUrl.base, config.basePath)
     : config.basePath;
 
   if (cdnUrl && !hasLoggedCdnInfo) {
@@ -283,11 +284,11 @@ export async function getViteConfig(
     experimental: {
       renderBuiltUrl(filename) {
         if (cdnUrl?.base && [".js", ".css"].includes(path.extname(filename))) {
-          return new URL(filename, cdnUrl.base).href;
+          return joinUrl(cdnUrl.base, filename);
         }
 
         if (cdnUrl?.media && MEDIA_REGEX.test(filename)) {
-          return new URL(filename, cdnUrl.media).href;
+          return joinUrl(cdnUrl.media, filename);
         }
 
         return { relative: true };
