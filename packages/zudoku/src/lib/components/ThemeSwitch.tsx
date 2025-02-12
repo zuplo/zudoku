@@ -21,8 +21,8 @@ export const ThemeSwitch = () => {
       >
         <div
           className={cn(
-            "border-transparent rounded-full p-0.5 [&>svg>circle]:transition-colors [&>svg>path]:transition-transform transition-all [&>svg>path]:duration-200 [&>svg>circle]:duration-500 [&>svg>circle]:fill-transparent",
-            resolvedTheme === "light" && "border bg-muted/50",
+            "border border-transparent rounded-full p-0.5 [&>svg>circle]:transition-colors [&>svg>path]:transition-transform transition-all [&>svg>path]:duration-200 [&>svg>circle]:duration-500 [&>svg>circle]:fill-transparent",
+            resolvedTheme === "light" && "border-border bg-muted/50",
             resolvedTheme === "dark" &&
               "group-hover:[&>svg>path]:scale-110 group-hover:[&>svg>path]:-translate-x-[1px] group-hover:[&>svg>path]:-translate-y-[1px] group-hover:rotate-[15deg] ",
           )}
@@ -31,9 +31,9 @@ export const ThemeSwitch = () => {
         </div>
         <div
           className={cn(
-            "border-transparent rounded-full p-0.5 transition-transform transform-gpu duration-500",
+            "border border-transparent rounded-full p-0.5 transition-transform transform-gpu duration-500",
             resolvedTheme === "dark" &&
-              "border bg-muted [&>svg>path]:fill-white [&>svg>path]:stroke-transparent",
+              "border-border bg-muted [&>svg>path]:fill-white [&>svg>path]:stroke-transparent",
             resolvedTheme === "light" &&
               "group-hover:rotate-[-10deg] [&>svg>path]:stroke-currentColor",
           )}
