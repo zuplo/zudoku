@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import Piscina from "piscina";
 import type { render as renderServer } from "../../app/entry.server.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
+import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
 
 export type StaticWorkerData = {
@@ -24,7 +25,7 @@ const [render, config] = (await Promise.all([
 
 const renderPage = async ({ urlPath }: WorkerData): Promise<string> => {
   const filename = urlPath === "/" ? "/index.html" : `${urlPath}.html`;
-  const url = `http://localhost${config.basePath ?? ""}${urlPath}`;
+  const url = joinUrl("http://localhost", config.basePath, urlPath);
   const outputPath = path.join(distDir, filename);
   const request = new Request(url);
   const response = new FileWritingResponse(outputPath);
