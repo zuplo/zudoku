@@ -27,8 +27,8 @@ const setRefMarkers = (obj: RecordAny, refMap: Map<string, number>) =>
   });
 
 // Replace the marker strings with actual __refMap lookups in the generated code
-const replaceRefMarkers = (code: string) =>
-  code.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
+const replaceRefMarkers = (code?: string) =>
+  code?.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
 
 const lookup = (schema: RecordAny, path: string) => {
   const parts = path.split("/").slice(1);
