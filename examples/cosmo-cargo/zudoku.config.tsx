@@ -18,6 +18,7 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
 const config: ZudokuConfig = {
   page: {
+    layout: "wide",
     banner: {
       message: (
         <div className="text-center">
