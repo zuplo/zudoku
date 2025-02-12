@@ -44,7 +44,7 @@ const ConfigSchema = CommonConfigSchema.merge(CodeConfigSchema)
 /**
  * Type for the zudoku.config.{js,ts,tsx,jsx} files
  */
-export type ZudokuConfig = z.infer<typeof ConfigSchema>;
+export type ZudokuConfig = z.input<typeof ConfigSchema>;
 
 export function validateConfig(config: unknown) {
   const validationResult = ConfigSchema.safeParse(config);

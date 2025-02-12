@@ -293,6 +293,22 @@ const ApiCatalogSchema = z.object({
   filterItems: z.function().args(z.any()).returns(z.any()).optional(),
 });
 
+export const CdnUrlSchema = z
+  .union([
+    z.string(),
+    z.object({
+      base: z.string().optional(),
+      media: z.string().optional(),
+    }),
+  ])
+  .transform((val) => {
+    if (typeof val === "string") {
+      return { base: val, media: val };
+    }
+    return { base: val.base, media: val.media };
+  })
+  .optional();
+
 /**
  * These are the config settings that are available in all configuration
  * formats.
@@ -300,7 +316,7 @@ const ApiCatalogSchema = z.object({
 export const CommonConfigSchema = z.object({
   protectedRoutes: z.array(z.string()).optional(),
   basePath: z.string().optional(),
-  cdnUrl: z.string().optional(),
+  cdnUrl: CdnUrlSchema.optional(),
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),
@@ -361,7 +377,7 @@ export type ZudokuRedirect = z.infer<typeof Redirect>;
 /**
  * Type for the dev-portal.json file
  */
-export type CommonConfig = z.infer<typeof CommonConfig>;
+export type CommonConfig = z.input<typeof CommonConfig>;
 
 export function validateCommonConfig(config: unknown) {
   const validationResult = CommonConfig.safeParse(config);
