@@ -58,6 +58,13 @@ const config: ZudokuConfig = {
     docs,
     components,
   },
+  apis: [
+    {
+      type: "file",
+      input: "./schema/placeholder.json",
+      navigationId: "api-placeholder",
+    },
+  ],
   UNSAFE_slotlets: {
     "head-navigation-end": () => (
       <div className="flex items-center border-r pr-2">

@@ -1,6 +1,7 @@
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
+import { ReactNode } from "react";
 import { matchPath } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
 import { type ZudokuPlugin } from "../../core/plugins.js";
@@ -89,9 +90,12 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         server,
         method,
         url,
+        children,
         ...props
-      }: Partial<PlaygroundContentProps> &
-        Pick<PlaygroundContentProps, "server"> & {
+      }: Partial<PlaygroundContentProps> & { children: ReactNode } & Pick<
+          PlaygroundContentProps,
+          "server"
+        > & {
           requireAuth: boolean;
         }) => {
         const auth = useAuth();
@@ -120,7 +124,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             {...props}
           >
             <Button className="gap-2 items-center" variant="outline">
-              Open in Playground <CirclePlayIcon size={16} />
+              {children ?? (
+                <>
+                  Open in Playground <CirclePlayIcon size={16} />
+                </>
+              )}
             </Button>
           </PlaygroundDialog>
         );
