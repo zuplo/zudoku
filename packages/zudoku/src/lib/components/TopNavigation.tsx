@@ -27,7 +27,7 @@ export const SideNavigation = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <ul className="flex flex-col border rounded-lg gap-1 p-0.5">
+    <ul className="flex flex-col border rounded-lg gap-1 p-0.5 mb-4">
       {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
         <SideNavItem {...item} key={item.id}>
           <li key={item.id} className="flex flex-row px-1 items-center group">
