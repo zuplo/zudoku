@@ -10,11 +10,10 @@ import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { graphql } from "./graphql/index.js";
 import { OasPluginConfig } from "./interfaces.js";
-import { getVersions } from "./OasProvider.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createSidebarCategory } from "./util/createSidebarCategory.js";
-import { getRoutes } from "./util/getRoutes.js";
+import { getRoutes, getVersions } from "./util/getRoutes.js";
 
 const GetCategoriesQuery = graphql(`
   query GetCategories($input: JSON!, $type: SchemaType!) {

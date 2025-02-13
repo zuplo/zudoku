@@ -3,7 +3,7 @@ import { redirect, type RouteObject } from "react-router";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { GraphQLClient } from "../client/GraphQLClient.js";
 import { type OpenApiPluginOptions, UNTAGGED_PATH } from "../index.js";
-import { getVersions } from "../OasProvider.js";
+import type { OasPluginConfig } from "../interfaces.js";
 
 // Creates the main provider route that wraps operation routes.
 const createOasProvider = (opts: {
@@ -75,6 +75,9 @@ const createVersionRoutes = (
     }),
   ];
 };
+
+export const getVersions = (config: OasPluginConfig) =>
+  config.type === "file" ? Object.keys(config.input) : [];
 
 export const getRoutes = ({
   basePath,

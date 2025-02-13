@@ -5,9 +5,7 @@ import type { GraphQLClient } from "./client/GraphQLClient.js";
 import { GraphQLProvider } from "./client/GraphQLContext.js";
 import { OasConfigProvider } from "./context.js";
 import { type OasPluginConfig } from "./interfaces.js";
-
-export const getVersions = (config: OasPluginConfig) =>
-  config.type === "file" ? Object.keys(config.input) : [];
+import { getVersions } from "./util/getRoutes.js";
 
 export const OasProvider = ({
   basePath,
