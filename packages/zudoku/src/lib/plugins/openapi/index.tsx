@@ -1,9 +1,8 @@
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { matchPath, redirect, RouteObject } from "react-router";
-import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
+import { matchPath } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
-import { ColorMap } from "../../components/navigation/SidebarBadge.js";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
@@ -13,6 +12,8 @@ import { graphql } from "./graphql/index.js";
 import { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { createSidebarCategory } from "./util/createSidebarCategory.js";
+import { getRoutes, getVersions } from "./util/getRoutes.js";
 
 const GetCategoriesQuery = graphql(`
   query GetCategories($input: JSON!, $type: SchemaType!) {
@@ -51,26 +52,18 @@ const GetOperationsQuery = graphql(`
   }
 `);
 
-type InternalOasPluginConfig = { schemaImports?: SchemaImports };
+export type OperationResult = ResultOf<
+  typeof GetOperationsQuery
+>["schema"]["operations"][number];
 
-const MethodColorMap: Record<string, keyof typeof ColorMap> = {
-  get: "green",
-  post: "blue",
-  put: "yellow",
-  delete: "red",
-  patch: "purple",
-  options: "gray",
-  head: "gray",
-};
+type InternalOasPluginConfig = { schemaImports?: SchemaImports };
 
 export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
 
-const UNTAGGED_PATH = "~endpoints";
+export const UNTAGGED_PATH = "~endpoints";
 
 export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
   const basePath = joinUrl(config.navigationId ?? "/reference");
-  const versions = config.type === "file" ? Object.keys(config.input) : [];
-
   const client = new GraphQLClient(config);
 
   return {
@@ -138,86 +131,78 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
 
+      const match = matchPath(
+        { path: `${basePath}/:version?/:tag`, end: true },
+        path,
+      );
+
       try {
-        const urlVersion = versions.find((v) =>
-          path.startsWith(joinUrl(basePath, v)),
+        const versionParam = match?.params.version;
+        const version = versionParam ?? getVersions(config).at(0);
+        const type = config.type;
+        const input =
+          config.type === "file" ? config.input[version!] : config.input;
+
+        const collapsible = config.loadTags === true || config.type === "url";
+        const collapsed = !config.loadTags && config.type !== "url";
+
+        // find  tag name by slug in config.tagPages
+        const tagName = config.tagPages?.find(
+          (tag) => slugify(tag) === match?.params.tag,
         );
-        const version = urlVersion ?? Object.keys(config.input).at(0);
 
-        const tagData = await client.fetch(GetCategoriesQuery, {
-          type: config.type,
-          input: config.type === "file" ? config.input[version!] : config.input,
-        });
+        const [tagData, operationsData] = await Promise.all([
+          client.fetch(GetCategoriesQuery, { type, input }),
+          client.fetch(GetOperationsQuery, {
+            type,
+            input,
+            tag: !config.loadTags ? tagName : undefined,
+          }),
+        ]);
 
-        const tag = config.tagPages?.find(
-          (tag) => path.split("/").at(-1) === slugify(tag),
-        );
+        const categories = tagData.schema.tags.flatMap((tag) => {
+          const categoryPath = joinUrl(
+            basePath,
+            versionParam,
+            slugify(tag.name),
+          );
 
-        const operationsData = await client.fetch(GetOperationsQuery, {
-          type: config.type,
-          input: config.type === "file" ? config.input[version!] : config.input,
-          tag: !config.loadTags ? tag : undefined,
-        });
+          const operations = operationsData.schema.operations.filter(
+            (operation) =>
+              operation.tags?.length !== 0 &&
+              operation.tags?.map((t) => t.name).includes(tag.name),
+          );
 
-        const categories = tagData.schema.tags.flatMap<SidebarItem>((tag) => {
-          const categoryLink = joinUrl(basePath, urlVersion, slugify(tag.name));
-
-          const operations = operationsData.schema.operations
-            .filter(
-              (operation) =>
-                operation.tags?.length !== 0 &&
-                operation.tags?.map((t) => t.name).includes(tag.name),
-            )
-            .map((operation) => ({
-              type: "link" as const,
-              label: operation.summary ?? operation.path,
-              href: `${categoryLink}#${operation.slug}`,
-              badge: {
-                label: operation.method,
-                color: MethodColorMap[operation.method.toLowerCase()]!,
-                invert: true,
-              } as const,
-            }));
-
+          // skip empty categories
           if (config.loadTags && operations.length === 0) {
             return [];
           }
 
-          return {
-            type: "category",
+          return createSidebarCategory({
             label: tag.name,
-            link: {
-              type: "doc" as const,
-              id: categoryLink,
-              label: tag.name,
-            },
-            collapsible: config.loadTags,
-            collapsed: !config.loadTags,
-            items: operations,
-          };
+            path: categoryPath,
+            operations:
+              match?.params.tag !== UNTAGGED_PATH || config.loadTags
+                ? operations
+                : [],
+            collapsible,
+            collapsed,
+          });
         });
 
-        const { untagged } = operationsData.schema;
-
-        if (untagged.length > 0) {
-          const categoryLink = joinUrl(basePath, urlVersion, UNTAGGED_PATH);
-
-          categories.push({
-            type: "category",
-            label: "Other endpoints",
-            link: {
-              type: "doc" as const,
-              id: categoryLink,
+        if (operationsData.schema.untagged.length > 0) {
+          categories.push(
+            createSidebarCategory({
               label: "Other endpoints",
-            },
-            collapsible: config.loadTags,
-            collapsed: !config.loadTags,
-            items: untagged.map((operation) => ({
-              type: "link" as const,
-              label: operation.summary ?? operation.path,
-              href: `${categoryLink}#${operation.slug}`,
-            })),
-          });
+              path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
+              operations:
+                match?.params.tag === UNTAGGED_PATH || config.loadTags
+                  ? operationsData.schema.untagged
+                  : [],
+              collapsible,
+              collapsed,
+            }),
+          );
         }
 
         return categories;
@@ -225,62 +210,6 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return [];
       }
     },
-    getRoutes: () => {
-      const versionsInPath = versions.length > 1 ? [null, ...versions] : [null];
-
-      const tagPages = (config.tagPages ?? []).map((tag) => ({
-        tag,
-        path: slugify(tag),
-      }));
-
-      return versionsInPath.map((version) => {
-        const versionPath = joinUrl(basePath, version);
-
-        return {
-          path: versionPath,
-          async lazy() {
-            const { OpenApiRoute } = await import("./OpenApiRoute.js");
-            return {
-              element: (
-                <OpenApiRoute
-                  version={version ?? undefined}
-                  basePath={basePath}
-                  versions={versions}
-                  client={client}
-                  config={config}
-                />
-              ),
-            };
-          },
-          children: [
-            {
-              index: true,
-              loader: () =>
-                redirect(
-                  joinUrl(versionPath, tagPages.at(0)?.path ?? UNTAGGED_PATH),
-                ),
-            },
-            {
-              path: joinUrl(versionPath, UNTAGGED_PATH),
-              async lazy() {
-                const { OperationList } = await import("./OperationList.js");
-                return { element: <OperationList untagged={true} /> };
-              },
-            },
-            ...tagPages.map<RouteObject>((tag) => {
-              return {
-                path: joinUrl(versionPath, tag.path),
-                async lazy() {
-                  const { OperationList } = await import("./OperationList.js");
-                  return {
-                    element: <OperationList tag={tag.tag} />,
-                  };
-                },
-              };
-            }),
-          ],
-        };
-      });
-    },
+    getRoutes: () => getRoutes({ basePath, config, client }),
   };
 };

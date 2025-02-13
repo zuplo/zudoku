@@ -434,8 +434,9 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
       },
       type: [SchemaTag],
       resolve: (root, args, ctx) => {
-        const tags = [...ctx.tags, { name: "" }];
-        return args.name ? tags.filter((tag) => tag.name === args.name) : tags;
+        return args.name
+          ? ctx.tags.filter((tag) => tag.name === args.name)
+          : ctx.tags;
       },
     }),
     operations: t.field({
