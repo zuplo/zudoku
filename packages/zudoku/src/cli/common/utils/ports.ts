@@ -1,21 +1,21 @@
-import net, { Socket } from "net";
+import net from "node:net";
 
-export function isPortAvailable(host: string, port: number): Promise<boolean> {
-  return new Promise((resolve) => {
-    const socket: Socket = new net.Socket();
-
-    socket.connect(port, host);
-
-    socket.on("connect", () => {
-      // If we can connect, that means that the port is not free
-      socket.destroy(); // Close the socket
-      resolve(false);
-    });
-
-    socket.on("error", () => {
-      // If we cannot connect, that means that the port is not free
-      socket.destroy(); // Close the socket
+const isPortAvailable = (port: number) =>
+  new Promise<boolean>((resolve) => {
+    const server = net.createServer();
+    server.unref();
+    server.once("error", () => resolve(false));
+    server.listen(port, () => {
+      server.close();
       resolve(true);
     });
   });
+
+export async function findAvailablePort(startPort: number) {
+  let port = startPort;
+  for (; port < startPort + 1000; port++) {
+    if (await isPortAvailable(port)) break;
+  }
+
+  return port;
 }

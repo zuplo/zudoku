@@ -13,7 +13,7 @@ import {
 } from "vite";
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
-import { isPortAvailable } from "../cli/common/utils/ports.js";
+import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type {
   LoadedConfig,
   ZudokuConfig,
@@ -193,14 +193,7 @@ export async function getViteConfig(
     return config;
   };
 
-  let websocketPort = 9800;
-  while (
-    !(await isPortAvailable("localhost", websocketPort)) &&
-    websocketPort < 9999
-  ) {
-    websocketPort++;
-  }
-
+  const websocketPort = await findAvailablePort(9800);
   const pluginOptions = getPluginOptions({
     dir,
     mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",

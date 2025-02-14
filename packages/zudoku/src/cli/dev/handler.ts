@@ -1,7 +1,7 @@
 import path from "node:path";
+import { joinUrl } from "../../lib/util/joinUrl.js";
 import { DevServer } from "../../vite/dev-server.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
-import { isPortAvailable } from "../common/utils/ports.js";
 
 export interface Arguments {
   dir: string;
@@ -12,26 +12,24 @@ export interface Arguments {
 
 export async function dev(argv: Arguments) {
   process.env.NODE_ENV = "development";
-  const host = "localhost";
-  let port = argv.port;
-  if (!port) {
-    port = 3000;
-    while (!(await isPortAvailable(host, port)) && port < port + 800) {
-      port++;
-    }
-  }
-
   const dir = path.resolve(process.cwd(), argv.dir);
-  const server = new DevServer({ dir, port, ssr: argv.ssr, open: argv.open });
+  const server = new DevServer({
+    dir,
+    argPort: argv.port,
+    ssr: argv.ssr,
+    open: argv.open,
+  });
 
   const { vite } = await server.start();
 
-  printDiagnosticsToConsole("Started development server");
+  const url = joinUrl(
+    `${server.protocol}://localhost:${server.resolvedPort}`,
+    vite.config.base,
+  );
+
   printDiagnosticsToConsole("Ctrl+C to exit");
   printDiagnosticsToConsole("");
-  printDiagnosticsToConsole(
-    `🚀 Zudoku Portal: http://${host}:${port}${vite.config.base.replace(/\/$/, "")}`,
-  );
+  printDiagnosticsToConsole(`🚀 Zudoku Portal: ${url}`);
   printDiagnosticsToConsole("");
 
   let hasExited = false;

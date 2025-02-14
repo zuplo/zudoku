@@ -317,6 +317,14 @@ export const CommonConfigSchema = z.object({
   protectedRoutes: z.array(z.string()).optional(),
   basePath: z.string().optional(),
   cdnUrl: CdnUrlSchema.optional(),
+  port: z.number().optional(),
+  https: z
+    .object({
+      key: z.string(),
+      cert: z.string(),
+      ca: z.string().optional(),
+    })
+    .optional(),
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),

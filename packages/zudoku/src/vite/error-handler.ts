@@ -4,7 +4,7 @@ import { ViteDevServer } from "vite";
 
 export const errorMiddleware =
   (server: ViteDevServer) =>
-  (err: Error, req: Request, res: Response, next: NextFunction) => {
+  async (err: Error, _req: Request, res: Response, _next: NextFunction) => {
     server.ssrFixStacktrace(err);
     const error = {
       message: err.message,
