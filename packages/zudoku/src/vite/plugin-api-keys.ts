@@ -20,11 +20,11 @@ const viteApiKeysPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         }
 
         const code = [
-          `const config = ${JSON.stringify(config.apiKeys, null, 2)};`,
+          `import config from "virtual:zudoku-config";`,
           config.mode === "internal"
             ? `import { apiKeyPlugin } from "${config.moduleDir}/src/lib/plugins/api-keys/index.tsx";`
             : `import { apiKeyPlugin } from "zudoku/plugins/api-keys";`,
-          `export const configuredApiKeysPlugin = apiKeyPlugin(config);`,
+          `export const configuredApiKeysPlugin = apiKeyPlugin(config.apiKeys);`,
         ];
 
         return {
