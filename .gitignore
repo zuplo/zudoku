@@ -19,6 +19,7 @@ coverage
 dist
 tmp
 /out-tsc
+pagefind/
 
 # dependencies
 node_modules
