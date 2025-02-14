@@ -76,6 +76,7 @@ export const components: SidebarEntry = [
       "components/icons",
       "components/shadcn",
       "components/playground",
+      "components/table",
     ],
   },
 ];
