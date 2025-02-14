@@ -44,7 +44,6 @@ export const docs: SidebarEntry = [
       "guides/environment-variables",
       "guides/custom-pages",
       "guides/using-multiple-apis",
-      "guides/auth-providers",
       "guides/managing-api-keys-and-identities",
     ],
   },
