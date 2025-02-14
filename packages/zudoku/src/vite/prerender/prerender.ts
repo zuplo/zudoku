@@ -31,16 +31,23 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
   return paths;
 };
 
+export type WorkerResult = {
+  outputPath: string;
+  redirect?: { from: string; to: string };
+};
+
 export const prerender = async ({
   html,
   dir,
   basePath = "",
   serverConfigFilename,
+  writeRedirects = true,
 }: {
   html: string;
   dir: string;
   basePath?: string;
   serverConfigFilename: string;
+  writeRedirects: boolean;
 }) => {
   const distDir = path.join(dir, "dist", basePath);
   const config: ZudokuConfig = await import(
@@ -93,7 +100,7 @@ export const prerender = async ({
   });
 
   const serverOutDir = path.join(distDir, "server");
-  const pool = new Piscina({
+  const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
     idleTimeout: 1000,
     workerData: {
@@ -101,12 +108,13 @@ export const prerender = async ({
       distDir,
       serverConfigPath: path.join(serverOutDir, serverConfigFilename),
       entryServerPath: path.join(serverOutDir, "entry.server.js"),
+      writeRedirects,
     } satisfies StaticWorkerData,
   });
 
   const prerenderTasks = Promise.all(
     paths.map(async (urlPath) => {
-      const outputPath = await pool.run({ urlPath } satisfies WorkerData);
+      const result = await pool.run({ urlPath } satisfies WorkerData);
 
       completedCount++;
       lastActivityTime = performance.now();
@@ -124,7 +132,7 @@ export const prerender = async ({
           lastLogTime = now;
         }
       }
-      return outputPath;
+      return result;
     }),
   );
 
