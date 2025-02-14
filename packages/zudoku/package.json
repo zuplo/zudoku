@@ -29,7 +29,7 @@
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",
     "./plugins": "./src/lib/core/plugins.ts",
-    "./plugins/api-keys": "./src/lib/plugins/api-keys/index.ts",
+    "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.ts",
     "./plugins/openapi": "./src/lib/plugins/openapi/index.ts",
     "./plugins/redirect": "./src/lib/plugins/redirect/index.ts",

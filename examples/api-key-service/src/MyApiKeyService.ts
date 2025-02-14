@@ -1,6 +1,4 @@
-import { ZudokuConfig } from "zudoku";
-import { ZudokuContext } from "../../../packages/zudoku/src/lib/core/ZudokuContext";
-import { type ApiKey } from "../../../packages/zudoku/src/lib/plugins/api-keys";
+import { createApiKeyService } from "zudoku/plugins/api-keys";
 
 const now = new Date();
 const thirtyDaysFromNow = new Date(now);
@@ -13,7 +11,7 @@ ninetyDaysFromNow.setDate(now.getDate() + 90);
  * Sample API keys for demonstration purposes.
  * In a real implementation, these would typically come from a database.
  */
-const DEFAULT_KEYS: ApiKey[] = [
+const EXAMPLE_KEYS = [
   {
     id: "prod-key-1",
     description: "Production API Key",
@@ -46,15 +44,15 @@ const DEFAULT_KEYS: ApiKey[] = [
  * - Updating key descriptions
  *
  * Note: This is a simple in-memory implementation for demonstration purposes.
- * In your environment, you would typically:
+ * In a real environment, you would typically:
  * - Store keys in a secure database
  * - Implement proper encryption for the key values
  * - Add validation for key operations
  * - Implement rate limiting and usage tracking
  * - Add audit logging for key operations
  */
-let keys = [...DEFAULT_KEYS];
-export const MyApiKeyService: ZudokuConfig["apiKeys"] = {
+let keys = [...EXAMPLE_KEYS];
+export const MyApiKeyService = createApiKeyService({
   enabled: true,
 
   /*
@@ -65,7 +63,7 @@ export const MyApiKeyService: ZudokuConfig["apiKeys"] = {
    * - Add sorting options
    * - Filter based on user permissions
    */
-  getKeys: async (context: ZudokuContext) => {
+  getKeys: async (context) => {
     return keys;
   },
 
@@ -76,17 +74,14 @@ export const MyApiKeyService: ZudokuConfig["apiKeys"] = {
    * - Handling optional expiration dates
    * - Setting creation timestamps
    */
-  createKey: async (
-    apiKey: { description: string; expiresOn?: string },
-    context: ZudokuContext,
-  ): Promise<void> => {
-    const newKey: ApiKey = {
+  createKey: async (apiKey, context) => {
+    const newKey = {
       id: crypto.randomUUID(),
       description: apiKey.description,
       key: `key-${crypto.randomUUID()}`,
       createdOn: new Date().toISOString(),
       expiresOn: apiKey.expiresOn,
-    };
+    } as const;
     keys.push(newKey);
   },
 
@@ -97,7 +92,7 @@ export const MyApiKeyService: ZudokuConfig["apiKeys"] = {
    * - Archive deleted keys
    * - Add validation for protected keys
    */
-  deleteKey: async (id: string, context: ZudokuContext) => {
+  deleteKey: async (id, context) => {
     keys = keys.filter((key) => key.id !== id);
   },
 
@@ -106,11 +101,10 @@ export const MyApiKeyService: ZudokuConfig["apiKeys"] = {
    * This is useful when a key might have been compromised.
    * The key ID stays the same but gets a new value.
    */
-  rollKey: async (id: string, context: ZudokuContext) => {
+  rollKey: async (id, context) => {
     const key = keys.find((k) => k.id === id);
     if (key) {
       key.key = `key-${crypto.randomUUID()}`;
-      key.updatedOn = new Date().toISOString();
     }
   },
 
@@ -120,14 +114,10 @@ export const MyApiKeyService: ZudokuConfig["apiKeys"] = {
    * - Finding and updating specific keys
    * - Maintaining update timestamps
    */
-  updateKeyDescription: async (
-    apiKey: { id: string; description: string },
-    context: ZudokuContext,
-  ) => {
+  updateKeyDescription: async (apiKey, context) => {
     const key = keys.find((k) => k.id === apiKey.id);
     if (key) {
       key.description = apiKey.description;
-      key.updatedOn = new Date().toISOString();
     }
   },
-};
+});

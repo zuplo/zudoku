@@ -1,6 +1,5 @@
 import { type ZudokuConfig } from "zudoku";
 import { createApiIdentityPlugin } from "zudoku/plugins";
-import { MyApiKeyService } from "./src/MyApiKeyService";
 
 const config: ZudokuConfig = {
   redirects: [
@@ -10,7 +9,7 @@ const config: ZudokuConfig = {
     },
   ],
   topNavigation: [
-    { id: "documentation/introduction", label: "Documentation" },
+    { id: "documentation/introduction", label: "Introduction" },
     { id: "api", label: "Demo API" },
   ],
   docs: {
@@ -21,14 +20,18 @@ const config: ZudokuConfig = {
     domain: "zuplo-samples.us.auth0.com",
     clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
   },
-  apiKeys: MyApiKeyService,
   plugins: [
     createApiIdentityPlugin({
-      getIdentities: async () => [
+      getIdentities: async (context) => [
         {
           id: "api",
-          label: "Demo API",
-          authorizeRequest: (request) => {
+          label: "Demo Key",
+          authorizeRequest: async (request) => {
+            const token = await context.authentication?.getAccessToken();
+            if (!token) {
+              throw new Error("No token found");
+            }
+            request.headers.set("Authorization", `Bearer ${token}`);
             return request;
           },
         },

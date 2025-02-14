@@ -105,6 +105,30 @@ importers:
         specifier: workspace:*
         version: link:../packages/zudoku
 
+  examples/api-identity-plugin:
+    devDependencies:
+      react:
+        specifier: 'catalog:'
+        version: 19.0.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.0.0(react@19.0.0)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+
+  examples/api-key-service:
+    devDependencies:
+      react:
+        specifier: 'catalog:'
+        version: 19.0.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.0.0(react@19.0.0)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+
   examples/cosmo-cargo:
     devDependencies:
       '@clerk/clerk-js':
@@ -116,18 +140,6 @@ importers:
       '@types/react':
         specifier: 'catalog:'
         version: 19.0.7
-      react:
-        specifier: 'catalog:'
-        version: 19.0.0
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.0.0(react@19.0.0)
-      zudoku:
-        specifier: workspace:*
-        version: link:../../packages/zudoku
-
-  examples/custom-jwt-auth:
-    devDependencies:
       react:
         specifier: 'catalog:'
         version: 19.0.0
