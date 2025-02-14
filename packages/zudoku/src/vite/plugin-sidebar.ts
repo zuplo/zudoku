@@ -1,9 +1,12 @@
+import icons from "lucide-react/dynamicIconImports";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { SidebarManager } from "../config/validators/SidebarSchema.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
+
+const iconNames = Object.keys(icons);
 
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
@@ -13,6 +16,11 @@ const replaceSidebarIcons = (code: string) => {
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
+    if (!iconNames.includes(match[1]!)) {
+      // eslint-disable-next-line no-console
+      console.warn(`Icon ${match[1]!} not found`);
+      continue;
+    }
     collectedIcons.add(match[1]!);
   }
 
