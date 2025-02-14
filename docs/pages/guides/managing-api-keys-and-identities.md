@@ -72,7 +72,7 @@ export default {
   },
   plugins: [
     createApiIdentityPlugin({
-      getIdentities: async (context: ZudokuContext) => [
+      getIdentities: async (context) => [
         {
           id: "api-key-one",
           label: "My API Key",
