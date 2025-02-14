@@ -292,3 +292,29 @@ Implements any page redirects you want to use. This gives you control over the r
   // ...
 }
 ```
+
+### `port`
+
+The port on which the development server will run. Defaults to `3000`. This option can also be passed to the CLI as `--port' (which takes precedence).
+
+```json
+{
+  "port": 9001
+}
+```
+
+If the port is already in use, the next available port will be used.
+
+### `https`
+
+Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is optional.
+
+```json
+{
+  "https": {
+    "key": "/path/to/key.pem",
+    "cert": "/path/to/cert.pem",
+    "ca": "/path/to/ca.pem"
+  }
+}
+```
