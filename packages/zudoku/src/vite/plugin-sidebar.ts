@@ -28,7 +28,7 @@ const replaceSidebarIcons = (code: string) => {
       console.warn(
         `Icon ${match[1]!} not found, see: https://lucide.dev/icons/`,
       );
-      collectedIcons.add(["circle-dashed", match[1]!]);
+      collectedIcons.add(["MissingIcon", match[1]!]);
     } else {
       collectedIcons.add([match[1]!, match[1]!]);
     }
