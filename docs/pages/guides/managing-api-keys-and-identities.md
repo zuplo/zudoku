@@ -55,12 +55,15 @@ Each API Identity consists of:
 - `label`: A human-readable name shown in the UI
 - `authorizeRequest`: A function that modifies requests to include the necessary authentication
 
-### Implementing API Identities
+## Implementing API Identities
+
+In this example, we'll use Auth0 as our authentication provider and implement an API Identity for a demo API.
 
 To add API Identities to your Zudoku configuration, you need to implement the `ApiIdentityPlugin` interface. Here's an example:
 
 ```typescript
-// zudoku.config.ts
+import { createApiIdentityPlugin } from "zudoku/plugins";
+
 export default {
   authentication: {
     type: "auth0",
@@ -68,13 +71,14 @@ export default {
     clientId: "my-client-id",
   },
   plugins: [
-    {
+    createApiIdentityPlugin({
       getIdentities: async (context: ZudokuContext) => [
         {
-          id: "api",
-          label: "Demo API",
+          id: "api-key-one",
+          label: "My API Key",
           authorizeRequest: (request) => {
-            // We get the access token from the authentication provider (Auth0) and add it to the request headers
+            // We get the access token from the
+            // authentication provider (Auth0) and add it to the request headers
             const token = context.authentication?.getAccessToken();
             if (token) {
               request.headers.set("Authorization", `Bearer ${token}`);
@@ -83,7 +87,7 @@ export default {
           },
         },
       ],
-    },
+    }),
   ],
 };
 ```

@@ -1,4 +1,5 @@
 import { type ZudokuConfig } from "zudoku";
+import { createApiIdentityPlugin } from "zudoku/plugins";
 import { MyApiKeyService } from "./src/MyApiKeyService";
 
 const config: ZudokuConfig = {
@@ -22,7 +23,7 @@ const config: ZudokuConfig = {
   },
   apiKeys: MyApiKeyService,
   plugins: [
-    {
+    createApiIdentityPlugin({
       getIdentities: async () => [
         {
           id: "api",
@@ -32,7 +33,7 @@ const config: ZudokuConfig = {
           },
         },
       ],
-    },
+    }),
   ],
   apis: {
     type: "url",

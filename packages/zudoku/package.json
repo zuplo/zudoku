@@ -28,6 +28,7 @@
     "./auth/clerk": "./src/lib/authentication/providers/clerk.ts",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",
+    "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.ts",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.ts",
     "./plugins/openapi": "./src/lib/plugins/openapi/index.ts",
@@ -73,6 +74,10 @@
       "./auth/openid": {
         "import": "./lib/zudoku.auth-openid.js",
         "types": "./dist/lib/authentication/providers/openid.d.ts"
+      },
+      "./plugins": {
+        "import": "./lib/zudoku.plugins.js",
+        "types": "./dist/lib/core/plugins.d.ts"
       },
       "./plugins/api-keys": {
         "import": "./lib/zudoku.plugin-api-keys.js",

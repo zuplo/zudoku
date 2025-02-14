@@ -27,7 +27,8 @@
       "zudoku/plugins/openapi": ["./src/lib/plugins/openapi/index.ts"],
       "zudoku/plugins/search-inkeep": [
         "./src/lib/plugins/search-inkeep/index.tsx"
-      ]
+      ],
+      "zudoku/plugins": ["./src/lib/core/plugins.ts"]
     }
   },
   "exclude": ["node_modules", "dist"],
