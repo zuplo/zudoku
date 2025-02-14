@@ -1,3 +1,4 @@
+import icons from "lucide-react/dynamicIconImports";
 import { type Plugin } from "vite";
 import { type ZudokuPluginOptions } from "../config/config.js";
 import { SidebarManager } from "../config/validators/SidebarSchema.js";
@@ -5,18 +6,35 @@ import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
 
+const iconNames = Object.keys(icons);
+
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
 
+const toImport = ([str1, str2]: [string, string]) => {
+  if (str1 === str2) {
+    return toPascalCase(str1);
+  }
+  return `${toPascalCase(str1)} as ${toPascalCase(str2)}`;
+};
+
 const replaceSidebarIcons = (code: string) => {
-  const collectedIcons = new Set<string>();
+  const collectedIcons = new Set<[string, string]>();
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
-    collectedIcons.add(match[1]!);
+    if (!iconNames.includes(match[1]!)) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Icon ${match[1]!} not found, see: https://lucide.dev/icons/`,
+      );
+      collectedIcons.add(["MissingIcon", match[1]!]);
+    } else {
+      collectedIcons.add([match[1]!, match[1]!]);
+    }
   }
 
-  const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
+  const importStatement = `import { ${[...collectedIcons].map(toImport).join(", ")} } from "zudoku/icons";`;
   const replacedString = code.replaceAll(
     matchIconAnnotation,
     // The element will be created by the implementers side
