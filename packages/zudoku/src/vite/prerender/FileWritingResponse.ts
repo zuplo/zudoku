@@ -6,6 +6,7 @@ export class FileWritingResponse {
   private dontSave = false;
   private resolve = () => {};
   private resolved = new Promise<void>((res) => (this.resolve = res));
+  public redirectedTo?: string;
 
   set() {}
   status(status: number) {
@@ -15,12 +16,23 @@ export class FileWritingResponse {
   }
   on() {}
 
-  constructor(private readonly fileName: string) {}
+  constructor(
+    private options: {
+      fileName: string;
+      writeRedirects: boolean;
+    },
+  ) {}
 
-  redirect() {
-    this.buffer = "redirected";
-    this.dontSave = true;
-    this.resolve();
+  redirect(_status: number, url: string) {
+    if (this.options.writeRedirects) {
+      this.write(
+        `<!doctype html><meta http-equiv="refresh" content="0; url=${url}">`,
+      );
+    } else {
+      this.dontSave = true;
+    }
+    this.redirectedTo = url;
+    void this.end();
   }
 
   send = async (chunk: string) => {
@@ -34,8 +46,8 @@ export class FileWritingResponse {
 
   async end(chunk = "") {
     if (!this.dontSave) {
-      await fs.mkdir(path.dirname(this.fileName), { recursive: true });
-      await fs.writeFile(this.fileName, this.buffer + chunk);
+      await fs.mkdir(path.dirname(this.options.fileName), { recursive: true });
+      await fs.writeFile(this.options.fileName, this.buffer + chunk);
     }
     this.resolve();
   }

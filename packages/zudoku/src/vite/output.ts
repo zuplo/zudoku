@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { LoadedConfig } from "../config/config.js";
-import { joinPath } from "../lib/util/joinPath.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkgJsonPath = path.join(__dirname, "../../package.json");
@@ -138,18 +138,22 @@ type Cron = {
 
 type CronsConfig = Cron[];
 
-export function generateOutput(config: LoadedConfig): Config {
+export function generateOutput({
+  config,
+  redirects,
+}: {
+  config: LoadedConfig;
+  redirects: Array<{ from: string; to: string }>;
+}): Config {
   const routes: Route[] = [];
 
-  if (config.redirects) {
-    for (const redirect of config.redirects) {
-      routes.push({
-        src: joinPath(config.basePath, redirect.from),
-        dest: joinPath(config.basePath, redirect.to),
-        status: 301,
-        headers: { Location: joinPath(config.basePath, redirect.to) },
-      });
-    }
+  for (const redirect of redirects) {
+    routes.push({
+      src: redirect.from,
+      dest: redirect.to,
+      status: 301,
+      headers: { Location: redirect.to },
+    });
   }
 
   if (process.env.VERCEL_SKEW_PROTECTION_ENABLED) {
@@ -165,7 +169,7 @@ export function generateOutput(config: LoadedConfig): Config {
         },
       ],
       headers: {
-        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${joinPath(config.basePath)}; SameSite=Strict; Secure; HttpOnly`,
+        "Set-Cookie": `__vdpl=${process.env.VERCEL_DEPLOYMENT_ID}; Path=${joinUrl(config.basePath)}; SameSite=Strict; Secure; HttpOnly`,
       },
       continue: true,
     });
@@ -182,8 +186,17 @@ export function generateOutput(config: LoadedConfig): Config {
   return output;
 }
 
-export async function writeOutput(dir: string, config: LoadedConfig) {
-  const output = generateOutput(config);
+export async function writeOutput(
+  dir: string,
+  {
+    config,
+    redirects,
+  }: {
+    config: LoadedConfig;
+    redirects: Array<{ from: string; to: string }>;
+  },
+) {
+  const output = generateOutput({ config, redirects });
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
 
