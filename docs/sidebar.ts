@@ -70,6 +70,11 @@ export const components: SidebarEntry = [
     icon: "component",
     type: "category",
     label: "Components",
-    items: ["components/callout", "components/icons", "components/shadcn"],
+    items: [
+      "components/callout",
+      "components/icons",
+      "components/shadcn",
+      "components/playground",
+    ],
   },
 ];

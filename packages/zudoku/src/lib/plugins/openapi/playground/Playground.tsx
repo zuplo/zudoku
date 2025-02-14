@@ -88,7 +88,7 @@ export type PlaygroundResult = {
 };
 
 export type PlaygroundContentProps = {
-  server: string;
+  server?: string;
   servers?: string[];
   url: string;
   method: string;
@@ -111,7 +111,7 @@ export const Playground = ({
   examples,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
-    servers.map((server) => ({ url: server })),
+    servers.map((url) => ({ url })),
   );
   const [, startTransition] = useTransition();
   const { register, control, handleSubmit, watch, setValue, ...form } =
@@ -172,7 +172,7 @@ export const Playground = ({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
       const request = new Request(
-        createUrl(selectedServer ?? server, url, data),
+        createUrl(server ?? selectedServer, url, data),
         {
           method: method.toUpperCase(),
           headers: Object.fromEntries(
@@ -263,27 +263,29 @@ export const Playground = ({
 
   const serverSelect = (
     <div className="inline-block opacity-50 hover:opacity-100 transition">
-      {servers && servers.length > 1 ? (
-        <Select
-          onValueChange={(value) => {
-            startTransition(() => setSelectedServer(value));
-          }}
-          value={selectedServer}
-          defaultValue={selectedServer}
-        >
-          <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {servers.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s.replace(/^https?:\/\//, "")}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      ) : (
+      {server ? (
         <span>{server.replace(/^https?:\/\//, "")}</span>
+      ) : (
+        servers.length > 1 && (
+          <Select
+            onValueChange={(value) => {
+              startTransition(() => setSelectedServer(value));
+            }}
+            value={selectedServer}
+            defaultValue={selectedServer}
+          >
+            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {servers.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s.replace(/^https?:\/\//, "")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )
       )}
     </div>
   );

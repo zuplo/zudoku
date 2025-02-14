@@ -8,7 +8,7 @@ export const PlaygroundDialogWrapper = ({
   operation,
   examples,
 }: {
-  server: string;
+  server?: string;
   servers?: string[];
   operation: OperationListItemResult;
   examples?: Content;
