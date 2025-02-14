@@ -185,7 +185,7 @@ export const Playground = ({
       );
 
       if (data.identity !== NO_IDENTITY) {
-        identities.data
+        await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
       }

@@ -15,7 +15,7 @@ import {
 } from "./plugins.js";
 
 export interface ApiIdentity {
-  authorizeRequest: (request: Request) => Request;
+  authorizeRequest: (request: Request) => Promise<Request> | Request;
   label: string;
   id: string;
 }

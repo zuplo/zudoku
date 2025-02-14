@@ -37,13 +37,14 @@ export const docs: SidebarEntry = [
   },
   {
     type: "category",
-    label: "Guide",
+    label: "Guides",
     icon: "monitor-check",
     items: [
-      "static-files",
-      "environment-variables",
-      "custom-pages",
-      "using-multiple-apis",
+      "guides/static-files",
+      "guides/environment-variables",
+      "guides/custom-pages",
+      "guides/using-multiple-apis",
+      "guides/managing-api-keys-and-identities",
     ],
   },
   {

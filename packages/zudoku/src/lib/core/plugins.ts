@@ -19,6 +19,14 @@ export interface NavigationPlugin {
   getSidebar?: (path: string) => Promise<Sidebar>;
 }
 
+export const createApiIdentityPlugin = (
+  plugin: ApiIdentityPlugin,
+): ApiIdentityPlugin => plugin;
+
+export const createProfileMenuPlugin = (
+  plugin: ProfileMenuPlugin,
+): ProfileMenuPlugin => plugin;
+
 export interface ApiIdentityPlugin {
   getIdentities: (context: ZudokuContext) => Promise<ApiIdentity[]>;
 }
