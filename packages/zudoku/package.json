@@ -182,6 +182,7 @@
     "@stefanprobst/rehype-extract-toc": "2.2.1",
     "@tailwindcss/typography": "0.5.16",
     "@tanstack/react-query": "5.64.2",
+    "@tanstack/react-table": "^8.21.2",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "4.3.4",
