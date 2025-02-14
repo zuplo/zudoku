@@ -11,20 +11,30 @@ const iconNames = Object.keys(icons);
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
 
+const toImport = ([str1, str2]: [string, string]) => {
+  if (str1 === str2) {
+    return toPascalCase(str1);
+  }
+  return `${toPascalCase(str1)} as ${toPascalCase(str2)}`;
+};
+
 const replaceSidebarIcons = (code: string) => {
-  const collectedIcons = new Set<string>();
+  const collectedIcons = new Set<[string, string]>();
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
     if (!iconNames.includes(match[1]!)) {
       // eslint-disable-next-line no-console
-      console.warn(`Icon ${match[1]!} not found`);
-      continue;
+      console.warn(
+        `Icon ${match[1]!} not found, see: https://lucide.dev/icons/`,
+      );
+      collectedIcons.add(["circle-dashed", match[1]!]);
+    } else {
+      collectedIcons.add([match[1]!, match[1]!]);
     }
-    collectedIcons.add(match[1]!);
   }
 
-  const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
+  const importStatement = `import { ${[...collectedIcons].map(toImport).join(", ")} } from "zudoku/icons";`;
   const replacedString = code.replaceAll(
     matchIconAnnotation,
     // The element will be created by the implementers side
