@@ -41,7 +41,7 @@ API Identities in Zudoku represent different authentication contexts that can be
 interface ApiIdentity {
   id: string;
   label: string;
-  authorizeRequest: (request: Request) => Request;
+  authorizeRequest: (request: Request) => Promise<Request> | Request;
 }
 
 interface ApiIdentityPlugin {
