@@ -40,7 +40,7 @@ export const RequestTab = ({
               {headers.map(([key, value]) => (
                 <Fragment key={key}>
                   <div className="text-primary">{key}</div>
-                  <div className="break-words">{value}</div>
+                  <div className="break-all">{value}</div>
                 </Fragment>
               ))}
             </div>
