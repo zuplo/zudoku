@@ -17,10 +17,10 @@ export class FileWritingResponse {
 
   constructor(private readonly fileName: string) {}
 
-  redirect() {
-    this.buffer = "redirected";
-    this.dontSave = true;
-    this.resolve();
+  redirect(_status: number, url: string) {
+    void this.end(
+      `<!doctype html><meta http-equiv="refresh" content="0; url=${url}">`,
+    );
   }
 
   send = async (chunk: string) => {
