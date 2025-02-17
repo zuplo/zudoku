@@ -11,15 +11,8 @@ const iconNames = Object.keys(icons);
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
 
-const toImport = ([str1, str2]: [string, string]) => {
-  if (str1 === str2) {
-    return toPascalCase(str1);
-  }
-  return `${toPascalCase(str1)} as ${toPascalCase(str2)}`;
-};
-
 const replaceSidebarIcons = (code: string) => {
-  const collectedIcons = new Set<[string, string]>();
+  const collectedIcons = new Set<string>();
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
@@ -28,13 +21,13 @@ const replaceSidebarIcons = (code: string) => {
       console.warn(
         `Icon ${match[1]!} not found, see: https://lucide.dev/icons/`,
       );
-      collectedIcons.add(["MissingIcon", match[1]!]);
+      collectedIcons.add("MissingIcon as " + toPascalCase(match[1]!));
     } else {
-      collectedIcons.add([match[1]!, match[1]!]);
+      collectedIcons.add(toPascalCase(match[1]!));
     }
   }
 
-  const importStatement = `import { ${[...collectedIcons].map(toImport).join(", ")} } from "zudoku/icons";`;
+  const importStatement = `import { ${[...collectedIcons].join(", ")} } from "zudoku/icons";`;
   const replacedString = code.replaceAll(
     matchIconAnnotation,
     // The element will be created by the implementers side
