@@ -11,6 +11,7 @@ import { fromError } from "zod-validation-error";
 import { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
+import { IconNames } from "./icon-types.js";
 
 const AnyObject = z.object({}).passthrough();
 
@@ -183,6 +184,7 @@ const TopNavigationItemSchema = z.object({
   id: z.string(),
   default: z.string().optional(),
   display: z.enum(["auth", "anon", "always"]).default("always").optional(),
+  icon: z.custom<IconNames>().optional(),
 });
 
 type BannerColorType = ZodOptional<
@@ -275,6 +277,7 @@ const PageSchema = z
     pageTitle: z.string(),
     logoUrl: z.string(),
     logo: LogoSchema,
+    layout: z.enum(["wide", "default"]).optional().default("default"),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
