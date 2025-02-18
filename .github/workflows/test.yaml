@@ -9,6 +9,8 @@ on:
 
 env:
   NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+  COREPACK_ENABLE_STRICT: 0
+  ZUDOKU_INTERNAL_DEV: true
 
 jobs:
   test-examples:
