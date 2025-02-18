@@ -90,7 +90,12 @@ export const MdxPage = ({
   }, [file]);
 
   return (
-    <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
+    <div
+      className={cn(
+        "xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between",
+        hideToc && "grid-cols-1",
+      )}
+    >
       <Helmet>
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
@@ -99,7 +104,7 @@ export const MdxPage = ({
       <div
         className={cn(
           ProseClasses,
-          "max-w-full xl:w-full xl:max-w-prose flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
+          "max-w-full xl:w-full flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
         )}
       >
         {(category || title) && (
