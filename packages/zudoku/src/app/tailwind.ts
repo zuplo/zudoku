@@ -74,6 +74,12 @@ const config = (zudokuConfig?: LoadedConfig): Omit<Config, "content"> => {
             foreground: "hsl(var(--card-foreground))",
           },
         },
+        borderRadius: {
+          xl: "calc(var(--radius) + 4px)",
+          lg: `var(--radius)`,
+          md: `calc(var(--radius) - 2px)`,
+          sm: "calc(var(--radius) - 4px)",
+        },
       },
     },
     plugins: [typographyPlugin],
