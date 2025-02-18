@@ -34,6 +34,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Install nx globally
+      - name: Install nx globally
+        run: pnpm add -g nx
+
       # Build examples using nx
       - name: Build example - api-identity-plugin
         run: nx run api-identity-plugin:build
