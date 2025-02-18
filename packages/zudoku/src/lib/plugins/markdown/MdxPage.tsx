@@ -6,6 +6,7 @@ import { Link, useHref } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import {
   useCurrentItem,
   usePrevNext,
@@ -51,6 +52,7 @@ export const MdxPage = ({
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
+  const { page } = useZudoku();
   let canonicalUrl = null;
   const path = useHref("");
   if (typeof window !== "undefined") {
@@ -90,7 +92,7 @@ export const MdxPage = ({
   }, [file]);
 
   return (
-    <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
+    <div className="max-w-screen-lg mx-auto xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
       <Helmet>
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
