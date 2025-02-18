@@ -92,7 +92,7 @@ export const MdxPage = ({
   return (
     <div
       className={cn(
-        "xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between",
+        "grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between",
         hideToc && "grid-cols-1",
       )}
     >
@@ -104,7 +104,8 @@ export const MdxPage = ({
       <div
         className={cn(
           ProseClasses,
-          "max-w-full xl:w-full flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
+          !hideToc && "xl:max-w-prose",
+          "max-w-full xl:w-full  flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
         )}
       >
         {(category || title) && (
