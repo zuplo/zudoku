@@ -293,7 +293,10 @@ export async function getViteConfig(
           ? getAppServerEntryPath()
           : getAppClientEntryPath(),
       ],
-      include: ["react-dom/client", "@sentry/react"],
+      include: [
+        "react-dom/client",
+        ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
+      ],
     },
     // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
     assetsInclude: ["/__z/entry.client.tsx"],
