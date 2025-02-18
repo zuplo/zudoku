@@ -59,6 +59,7 @@ export type SchemaImports = Record<
 >;
 
 const builder = new SchemaBuilder<{
+  DefaultFieldNullability: false;
   Scalars: {
     JSON: any;
     JSONObject: any;
@@ -72,7 +73,9 @@ const builder = new SchemaBuilder<{
     currentTag?: string;
     slugify: CountableSlugify;
   };
-}>({});
+}>({
+  defaultFieldNullability: false,
+});
 
 type GraphQLOperationObject = OperationObject & {
   path: string;
