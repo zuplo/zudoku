@@ -172,14 +172,14 @@ const viteApiPlugin = async (
 
       const code = [
         `import config from "virtual:zudoku-config";`,
-        `import { openApiPlugin } from "zudoku/plugins/openapi";`,
-        `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
         `const configuredApiPlugins = [];`,
         `const configuredApiCatalogPlugins = [];`,
         `const apiPluginOptions = ${JSON.stringify(apiPluginOptions)};`,
       ];
 
       if (config.apis) {
+        code.push('import { openApiPlugin } from "zudoku/plugins/openapi";');
+
         const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
         const apiMetadata: ApiCatalogItem[] = [];
         const versionMaps: Record<string, Record<string, string>> = {};
@@ -266,6 +266,10 @@ const viteApiPlugin = async (
         }
 
         if (config.catalogs) {
+          code.push(
+            'import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";',
+          );
+
           const catalogs = Array.isArray(config.catalogs)
             ? config.catalogs
             : [config.catalogs];
