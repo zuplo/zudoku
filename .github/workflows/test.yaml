@@ -34,38 +34,39 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Build examples using nx
       - name: Build example - api-identity-plugin
-        run: cd examples/api-identity-plugin && pnpm install && pnpm build
+        run: nx run api-identity-plugin:build
 
       - name: Build example - api-key-service
-        run: cd examples/api-key-service && pnpm install && pnpm build
+        run: nx run api-key-service:build
 
       - name: Build example - with-auth0
-        run: cd examples/with-auth0 && pnpm install && pnpm build
+        run: nx run with-auth0:build
 
       - name: Build example - cosmo-cargo
-        run: cd examples/cosmo-cargo && pnpm install && pnpm build
+        run: nx run cosmo-cargo:build
 
       - name: Build example - with-config
-        run: cd examples/with-config && pnpm install && pnpm build
+        run: nx run with-config:build
 
       - name: Build example - with-openapi-yaml
-        run: cd examples/with-openapi-yaml && pnpm install && pnpm build
+        run: nx run with-openapi-yaml:build
 
       - name: Build example - with-vite-config
-        run: cd examples/with-vite-config && pnpm install && pnpm build
+        run: nx run with-vite-config:build
 
       - name: Build example - many-apis
-        run: cd examples/many-apis && pnpm install && pnpm build
+        run: nx run many-apis:build
 
       - name: Build example - darkmatter
-        run: cd examples/darkmatter && pnpm install && pnpm build
+        run: nx run darkmatter:build
 
       - name: Build example - ship-happens
-        run: cd examples/ship-happens && pnpm install && pnpm build
+        run: nx run ship-happens:build
 
       - name: Build example - with-zuplo
-        run: cd examples/with-zuplo && pnpm install && pnpm build
+        run: nx run with-zuplo:build
 
       - name: Build example - with-openapi-json
-        run: cd examples/with-openapi-json && pnpm install && pnpm build
+        run: nx run with-openapi-json:build
