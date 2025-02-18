@@ -1,6 +1,7 @@
-import { writeFileSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import { type Plugin } from "vite";
+import { logger } from "../cli/common/logger.js";
 
 /**
  * Used for debugging, writes metadata to build.
@@ -8,7 +9,7 @@ import { type Plugin } from "vite";
 const viteBuildMetadata = (): Plugin => {
   return {
     name: "zudoku-build-metadata-plugin",
-    buildEnd() {
+    async buildEnd() {
       const deps = [];
       for (const id of this.getModuleIds()) {
         const m = this.getModuleInfo(id);
@@ -18,11 +19,14 @@ const viteBuildMetadata = (): Plugin => {
           }
         }
       }
-
-      writeFileSync(
-        path.join(__dirname, "graph.json"),
-        JSON.stringify(deps, null, 2),
-      );
+      try {
+        await writeFile(
+          path.join(__dirname, "graph.json"),
+          JSON.stringify(deps, null, 2),
+        );
+      } catch (error) {
+        logger.error("Error writing graph.json:", error);
+      }
     },
   };
 };
