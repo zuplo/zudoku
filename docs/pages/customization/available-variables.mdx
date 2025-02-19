@@ -1,0 +1,110 @@
+---
+sidebar_icon: swatch-book
+title: Custom Theme
+sidebar_label: Custom Theme
+toc: false
+---
+
+# Theme Customization
+
+Zudoku provides a flexible theming system that allows you to customize the look and feel of your documentation site. The theme configuration is set in your `zudoku.config.ts` file under the `theme` property, which supports both light and dark modes:
+
+```typescript
+{
+  theme: {
+    light: {
+      // Light theme variables
+    },
+    dark: {
+      // Dark theme variables
+    }
+  }
+}
+```
+
+## Color Formats
+
+The theme system supports two color formats:
+
+- Hexadecimal colors (e.g., `#ffffff`)
+- HSLA values (e.g., `215.4 16.3% 46.9%`)
+
+## Available Variables
+
+Here's the complete list of variables you can customize in your theme:
+
+### Base Colors
+
+- `--background`: Default background color of `<body />` (Default: `0 0% 100%`)
+- `--foreground`: Default text color (Default: `222.2 47.4% 11.2%`)
+
+### Muted Elements
+
+- `--muted`: Background color for muted elements like `<TabsList />`, `<Skeleton />`, and `<Switch />` (Default: `210 40% 96.1%`)
+- `--muted-foreground`: Text color for muted elements (Default: `215.4 16.3% 46.9%`)
+
+### Card Elements
+
+- `--card`: Background color for `<Card />` components (Default: `0 0% 100%`)
+- `--card-foreground`: Text color for card content (Default: `222.2 47.4% 11.2%`)
+
+### Popover Elements
+
+- `--popover`: Background color for popovers like `<DropdownMenu />`, `<HoverCard />`, `<Popover />` (Default: `0 0% 100%`)
+- `--popover-foreground`: Text color for popover content (Default: `222.2 47.4% 11.2%`)
+
+### Borders
+
+- `--border`: Default border color (Default: `214.3 31.8% 91.4%`)
+- `--input`: Border color for form elements like `<Input />`, `<Select />`, `<Textarea />` (Default: `214.3 31.8% 91.4%`)
+
+### Primary Colors
+
+- `--primary`: Primary color for elements like `<Button />` (Default: `222.2 47.4% 11.2%`)
+- `--primary-foreground`: Text color for primary elements (Default: `210 40% 98%`)
+
+### Secondary Colors
+
+- `--secondary`: Secondary color for elements like `<Button variant="secondary" />` (Default: `210 40% 96.1%`)
+- `--secondary-foreground`: Text color for secondary elements (Default: `222.2 47.4% 11.2%`)
+
+### Accent Colors
+
+- `--accent`: Used for hover effects on interactive elements like `<DropdownMenuItem />`, `<SelectItem />` (Default: `210 40% 96.1%`)
+- `--accent-foreground`: Text color for accented elements (Default: `222.2 47.4% 11.2%`)
+
+### Destructive Colors
+
+- `--destructive`: Used for destructive actions like `<Button variant="destructive" />` (Default: `0 100% 50%`)
+- `--destructive-foreground`: Text color for destructive elements (Default: `210 40% 98%`)
+
+### Focus Ring
+
+- `--ring`: Color used for focus rings (Default: `215 20.2% 65.1%`)
+
+### Border Radius
+
+- `--radius`: Border radius for cards, inputs, and buttons (Default: `0.5rem`)
+
+## Example Configuration
+
+Here's an example of how to customize the theme in your `zudoku.config.ts`:
+
+```typescript
+export default {
+  theme: {
+    light: {
+      background: "0 0% 100%",
+      foreground: "222.2 47.4% 11.2%",
+      primary: "222.2 47.4% 11.2%",
+      // ... other variables
+    },
+    dark: {
+      background: "222.2 84% 4.9%",
+      foreground: "210 40% 98%",
+      primary: "210 40% 98%",
+      // ... other variables
+    },
+  },
+};
+```

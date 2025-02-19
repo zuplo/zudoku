@@ -30,6 +30,12 @@ export const docs: SidebarEntry = [
   },
   {
     type: "category",
+    label: "Customization",
+    icon: "palette",
+    items: ["customization/available-variables"],
+  },
+  {
+    type: "category",
     label: "Markdown",
     icon: "book-open-text",
     link: "markdown/overview",
