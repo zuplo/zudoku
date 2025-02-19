@@ -268,6 +268,7 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",
     "@graphql-codegen/client-preset": "4.6.2",
+    "@testing-library/react": "16.2.0",
     "@types/estree": "1.0.6",
     "@types/express": "5.0.0",
     "@types/har-format": "1.2.16",
@@ -282,6 +283,7 @@
     "@types/unist": "^3.0.3",
     "@types/yargs": "17.0.33",
     "@vitest/coverage-v8": "3.0.5",
+    "happy-dom": "17.1.1",
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
