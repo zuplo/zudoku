@@ -41,6 +41,7 @@
     "./vite": "./src/vite/plugin.ts",
     "./tailwind": "./src/app/tailwind.ts",
     "./app/*": "./src/app/*",
+    "./hooks": "./src/lib/hooks/index.ts",
     "./post-processors/*": "./src/lib/plugins/openapi/post-processors/*.ts",
     "./with-zuplo": "./src/zuplo/with-zuplo.ts"
   },
@@ -59,6 +60,10 @@
       "./ui/*.js": {
         "import": "./lib/ui/*.js",
         "types": "./dist/lib/ui/*.d.ts"
+      },
+      "./hooks": {
+        "import": "./lib/hooks/index.js",
+        "types": "./dist/lib/hooks/index.d.ts"
       },
       "./client": {
         "types": "./client.d.ts"
