@@ -43,15 +43,6 @@ export interface SearchProviderPlugin {
   }) => React.JSX.Element | null;
 }
 
-export interface EventConsumerPlugin<
-  Event extends ZudokuEvents = ZudokuEvents,
-> {
-  events: Record<
-    keyof Event,
-    (...args: Parameters<Event[keyof ZudokuEvents]>) => void
-  >;
-}
-
 export interface ProfileMenuPlugin {
   getProfileMenuItems: (context: ZudokuContext) => ProfileNavigationItem[];
 }
@@ -72,6 +63,15 @@ export interface CommonPlugin {
   getHead?: () => ReactElement | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
+
+export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
+  events: { [K in keyof Event]: Event[K] };
+};
+
+export const isEventConsumerPlugin = (
+  obj: ZudokuPlugin,
+): obj is EventConsumerPlugin =>
+  "events" in obj && typeof obj.events === "object";
 
 export const isProfileMenuPlugin = (
   obj: ZudokuPlugin,

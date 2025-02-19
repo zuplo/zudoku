@@ -8,13 +8,19 @@ import type { ComponentsContextType } from "../components/context/ComponentsCont
 import { Slotlets } from "../components/SlotletProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
+import { objectEntries } from "../util/objectEntries.js";
 import {
   isApiIdentityPlugin,
+  isEventConsumerPlugin,
   isNavigationPlugin,
   type NavigationPlugin,
   needsInitialization,
   type ZudokuPlugin,
 } from "./plugins.js";
+
+export interface ZudokuEvents {
+  location: (event: { from?: Location; to: Location }) => void;
+}
 
 export interface ApiIdentity {
   authorizeRequest: (request: Request) => Promise<Request> | Request;
@@ -70,10 +76,6 @@ export type ZudokuContextOptions = {
   protectedRoutes?: string[];
 };
 
-export interface ZudokuEvents {
-  location: (location: Location) => void;
-}
-
 export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public sidebars: SidebarConfig;
@@ -92,6 +94,14 @@ export class ZudokuContext {
     this.authentication = options.authentication;
     this.meta = options.metadata;
     this.page = options.page;
+
+    this.plugins.forEach((plugin) => {
+      if (!isEventConsumerPlugin(plugin)) return;
+
+      objectEntries(plugin.events).forEach(([event, handler]) => {
+        this.emitter.on(event, handler);
+      });
+    });
   }
 
   initialize = async (): Promise<void> => {
