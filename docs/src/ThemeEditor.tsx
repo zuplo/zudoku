@@ -87,6 +87,7 @@ export const ThemeEditor = () => {
               href="https://ui.shadcn.com/themes"
               target="_blank"
               className="text-xs"
+              rel="noreferrer"
             >
               by shadcn
             </a>
@@ -156,6 +157,17 @@ export const ThemeEditor = () => {
             </Card>
             <Card>
               <CardDescription />
+              <CardContent className="grid grid-cols-2 gap-2 text-sm font-medium">
+                <div>On</div>
+                <Switch defaultChecked={true} />
+                <div>Off</div>
+                <Switch />
+                <div>50%</div>
+                <Progress value={50} />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardDescription />
               <CardContent>
                 <Alert>
                   <AlertTitle>Alert</AlertTitle>
@@ -184,17 +196,6 @@ export const ThemeEditor = () => {
                   This is a callout. It is used to display important
                   information.
                 </Callout>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardDescription />
-              <CardContent className="grid grid-cols-2 gap-2 text-sm font-medium">
-                <div>On</div>
-                <Switch defaultChecked={true} />
-                <div>Off</div>
-                <Switch />
-                <div>50%</div>
-                <Progress value={50} />
               </CardContent>
             </Card>
           </div>
