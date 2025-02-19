@@ -75,9 +75,9 @@ const ZudokoInner = memo(
     return (
       <>
         <Helmet>{heads}</Helmet>
-        <RouterEventsProvider />
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
+            <RouterEventsProvider />
             <MDXProvider components={mdxComponents}>
               <ThemeProvider attribute="class" disableTransitionOnChange>
                 <ComponentsProvider value={components}>
