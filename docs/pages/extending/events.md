@@ -27,6 +27,22 @@ const navigationLoggerPlugin: ZudokuPlugin = {
 };
 ```
 
+### Example in Zudoku Config
+
+```typescript
+export default {
+  plugins: [
+    {
+      events: {
+        location: (location) => {
+          console.log(`User navigated to: ${location.pathname}`);
+        },
+      },
+    },
+  ],
+};
+```
+
 ## Using Events in Components
 
 Zudoku provides a convenient `useEvent` hook to subscribe to events in your React components. The hook can be used in three different ways:
@@ -44,7 +60,7 @@ function MyComponent() {
 }
 ```
 
-### 2. Using a Callback with Return Value
+### 2. Using a Event Data in a Component
 
 If you want to transform the event data, return a value from the callback:
 
@@ -75,32 +91,3 @@ function MyComponent() {
 ```
 
 The `useEvent` hook automatically handles subscription and cleanup in the React lifecycle, making it easy to work with events in your components.
-
-For more advanced use cases, you can also use the lower-level `useZudoku` hook to access the event system directly:
-
-```typescript
-import { useZudoku } from "zudoku";
-
-function MyComponent() {
-  const zudoku = useZudoku();
-
-  useEffect(() => {
-    const unsubscribe = zudoku.addEventListener("location", (location) => {
-      console.log("Location changed:", location);
-    });
-
-    return () => unsubscribe();
-  }, [zudoku]);
-
-  return <div>My Component</div>;
-}
-```
-
-## Emitting Events
-
-The Zudoku context provides an `emitEvent` method to trigger events programmatically:
-
-```typescript
-const zudoku = useZudoku();
-zudoku.emitEvent("location", locationObject);
-```
