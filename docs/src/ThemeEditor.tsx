@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { SyntaxHighlight, useTheme } from "zudoku/components";
+import { useTheme } from "zudoku/components";
 import { Button } from "zudoku/ui/Button.js";
 import { Card, CardContent, CardDescription } from "zudoku/ui/Card.js";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
+import { cn } from "zudoku/ui/util.js";
 import { baseColors } from "./baseColors/baseColors.js";
 
 const availableRadius = [0, 0.3, 0.6, 1];
