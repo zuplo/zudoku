@@ -18,3 +18,5 @@ export type {
 } from "./lib/core/plugins.js";
 export { ZudokuContext, type ApiIdentity } from "./lib/core/ZudokuContext.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";
+
+export { useEvent } from "./lib/hooks/index.js";
