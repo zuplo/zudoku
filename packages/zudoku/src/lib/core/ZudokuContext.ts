@@ -1,4 +1,6 @@
+import { createNanoEvents } from "nanoevents";
 import { ReactNode } from "react";
+import { Location } from "react-router";
 import { TopNavigationItem } from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
@@ -68,6 +70,10 @@ export type ZudokuContextOptions = {
   protectedRoutes?: string[];
 };
 
+export interface ZudokuEvents {
+  location: (location: Location) => void;
+}
+
 export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public sidebars: SidebarConfig;
@@ -76,6 +82,7 @@ export class ZudokuContext {
   public page: ZudokuContextOptions["page"];
   public authentication?: ZudokuContextOptions["authentication"];
   private readonly navigationPlugins: NavigationPlugin[];
+  private emitter = createNanoEvents<ZudokuEvents>();
 
   constructor(public readonly options: ZudokuContextOptions) {
     this.plugins = options.plugins ?? [];
@@ -103,6 +110,20 @@ export class ZudokuContext {
     );
 
     return keys.flat();
+  };
+
+  addEventListener<E extends keyof ZudokuEvents>(
+    event: E,
+    callback: ZudokuEvents[E],
+  ) {
+    return this.emitter.on(event, callback);
+  }
+
+  emitEvent = <E extends keyof ZudokuEvents>(
+    event: E,
+    ...data: Parameters<ZudokuEvents[E]>
+  ) => {
+    return this.emitter.emit(event, ...data);
   };
 
   getPluginSidebar = async (path: string) => {

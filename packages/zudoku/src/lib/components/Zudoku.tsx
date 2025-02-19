@@ -22,6 +22,7 @@ import {
   ComponentsProvider,
   DEFAULT_COMPONENTS,
 } from "./context/ComponentsContext.js";
+import { RouterEventsProvider } from "./context/RouterEventsProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
 import { SlotletProvider } from "./SlotletProvider.js";
@@ -74,6 +75,7 @@ const ZudokoInner = memo(
     return (
       <>
         <Helmet>{heads}</Helmet>
+        <RouterEventsProvider />
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
             <MDXProvider components={mdxComponents}>
