@@ -11,6 +11,9 @@ const availableRadius = [0, 0.3, 0.6, 1];
 const kebabToCamel = (str: string) =>
   str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 
+const camelToKebabCase = (str: string) =>
+  str.replace(/([A-Z])/g, "-$1").toLowerCase();
+
 export const ThemeEditor = () => {
   const { resolvedTheme, setTheme } = useTheme();
   const [color, setColor] = useState<string>();
@@ -26,7 +29,10 @@ export const ThemeEditor = () => {
       for (const [key, value] of Object.entries(
         activeColor.cssVars[resolvedTheme],
       )) {
-        document.documentElement.style.setProperty(`--${key}`, value as string);
+        document.documentElement.style.setProperty(
+          `--${camelToKebabCase(key)}`,
+          value as string,
+        );
       }
     }
 
@@ -43,7 +49,13 @@ export const ThemeEditor = () => {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 pt-6">
+      {/* <div className="text-sm font-semibold text-primary mb-2">Theme</div> */}
+      <div className="text-4xl font-extrabold">Add colors. Make it yours.</div>
+      <div className="">
+        Hand-picked themes that you can copy and paste into your apps. [By the
+        awesome shadcn project](https://ui.shadcn.com/themes)
+      </div>
       {resolvedTheme}
       <Button size="sm" variant="outline" onClick={handleReset}>
         Reset Theme
