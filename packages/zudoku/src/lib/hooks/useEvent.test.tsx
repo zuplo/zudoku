@@ -4,7 +4,7 @@ import { type PropsWithChildren } from "react";
 import { type Location } from "react-router";
 import { assertType, describe, expect, it, vi } from "vitest";
 import { ZudokuProvider } from "../components/context/ZudokuProvider.js";
-import { ZudokuContext } from "../core/ZudokuContext.js";
+import { ZudokuContext, type ZudokuEvents } from "../core/ZudokuContext.js";
 import { useEvent } from "./useEvent.js";
 
 /**
@@ -29,7 +29,7 @@ const locationData = {
   search: "",
   key: "",
   state: {},
-};
+} satisfies Location;
 
 describe("useEvent", () => {
   it("returns latest event data without callback", async () => {
@@ -38,24 +38,23 @@ describe("useEvent", () => {
 
     await act(() => Promise.resolve());
     await act(async () => {
-      context.emitEvent("location", locationData);
+      context.emitEvent("location", { to: locationData });
     });
 
-    expect(result.current[0]).toEqual(locationData);
+    expect(result.current).toEqual([{ to: locationData }]);
   });
 
   it("transforms event data with callback", async () => {
     const { context, wrapper } = createTestContext();
-    const { result, rerender } = renderHook(
-      () => useEvent("location", (location) => location.pathname),
+    const { result } = renderHook(
+      () => useEvent("location", ({ to }) => to.pathname),
       { wrapper },
     );
 
     await act(() => Promise.resolve());
     await act(async () => {
-      context.emitEvent("location", locationData);
+      context.emitEvent("location", { to: locationData });
     });
-    rerender();
 
     await waitFor(() => expect(result.current).toEqual("/test"));
   });
@@ -66,19 +65,19 @@ describe("useEvent", () => {
 
     const { result } = renderHook(
       () =>
-        useEvent("location", (location) => {
-          sideEffect(location);
+        useEvent("location", (event) => {
+          sideEffect(event);
         }),
       { wrapper },
     );
 
     await act(() => Promise.resolve());
     await act(async () => {
-      context.emitEvent("location", locationData);
+      context.emitEvent("location", { to: locationData });
     });
 
     expect(result.current).toBeUndefined();
-    expect(sideEffect).toHaveBeenCalledWith(locationData);
+    expect(sideEffect).toHaveBeenCalledWith({ to: locationData });
     expect(sideEffect).toHaveBeenCalledTimes(1);
   });
 
@@ -88,8 +87,8 @@ describe("useEvent", () => {
 
     const { unmount } = renderHook(
       () =>
-        useEvent("location", (location) => {
-          sideEffect(location);
+        useEvent("location", (event) => {
+          sideEffect(event);
         }),
       { wrapper },
     );
@@ -98,7 +97,7 @@ describe("useEvent", () => {
 
     // First event emission
     await act(async () => {
-      context.emitEvent("location", locationData);
+      context.emitEvent("location", { to: locationData });
     });
     expect(sideEffect).toHaveBeenCalledTimes(1);
 
@@ -107,7 +106,7 @@ describe("useEvent", () => {
 
     // Second event emission after unmount
     await act(async () => {
-      context.emitEvent("location", locationData);
+      context.emitEvent("location", { to: locationData });
     });
 
     // The callback should not have been called again
@@ -117,14 +116,16 @@ describe("useEvent", () => {
   describe("types", () => {
     const { wrapper } = createTestContext();
 
-    it("infers array type when no callback is provided", () => {
+    it("infers event type when no callback is provided", () => {
       const hook = renderHook(() => useEvent("location"), { wrapper });
-      assertType<[Location]>(hook.result.current);
+      assertType<Parameters<ZudokuEvents["location"]> | undefined>(
+        hook.result.current,
+      );
     });
 
     it("infers string type from pathname callback", () => {
       const hook = renderHook(
-        () => useEvent("location", ({ pathname }) => pathname),
+        () => useEvent("location", ({ to }) => to.pathname),
         { wrapper },
       );
       assertType<string>(hook.result.current);
@@ -132,7 +133,7 @@ describe("useEvent", () => {
 
     it("infers object type from object callback", () => {
       const hook = renderHook(
-        () => useEvent("location", (loc) => ({ query: loc.search })),
+        () => useEvent("location", ({ to }) => ({ query: to.search })),
         { wrapper },
       );
       assertType<{ query: string }>(hook.result.current);
