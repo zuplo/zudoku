@@ -1,16 +1,19 @@
-import { useEffect } from "react";
-import { useLocation } from "react-router";
-import { useLatest } from "../../util/useLatest.js";
+import { useEffect, useRef } from "react";
+import { useLocation, type Location } from "react-router";
 import { useZudoku } from "./ZudokuContext.js";
 
 const RouterEventsProvider = () => {
   const location = useLocation();
   const zudoku = useZudoku();
-  const emit = useLatest(zudoku.emitEvent);
+  const previousLocation = useRef<Location | undefined>(undefined);
 
   useEffect(() => {
-    emit.current("location", location);
-  }, [emit, location]);
+    zudoku.emitEvent("location", {
+      from: previousLocation.current,
+      to: location,
+    });
+    previousLocation.current = location;
+  }, [zudoku, location]);
 
   return null;
 };

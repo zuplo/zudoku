@@ -9,7 +9,15 @@ Zudoku provides an events system that allows plugins to react to various applica
 
 Currently, Zudoku supports the following events:
 
-- `location` - Emitted when the user navigates to a different route. Provides the current location object from React Router.
+### location
+
+```typescript
+type LocationEvent = (e: { from?: Location; to: Location }) => void;
+```
+
+Emitted when the user navigates to a different route. Provides both the previous (`from`) and current (`to`) [Location objects](https://api.reactrouter.com/v7/interfaces/react_router.Location.html) from react-router.
+
+Note that the `from` location will be undefined on the initial page load.
 
 ## Using Events in Plugins
 
@@ -20,8 +28,12 @@ import { ZudokuPlugin, ZudokuEvents } from "zudoku";
 
 const navigationLoggerPlugin: ZudokuPlugin = {
   events: {
-    location: (location) => {
-      console.log(`User navigated to: ${location.pathname}`);
+    location: ({ from, to }) => {
+      if (!from) {
+        console.log(`Initial navigation to: ${to.pathname}`);
+      } else {
+        console.log(`User navigated from: ${from.pathname} to: ${to.pathname}`);
+      }
     },
   },
 };
@@ -29,13 +41,21 @@ const navigationLoggerPlugin: ZudokuPlugin = {
 
 ### Example in Zudoku Config
 
+In your `zudoku.config.ts`, you can define the events like this:
+
 ```typescript
 export default {
   plugins: [
     {
       events: {
-        location: (location) => {
-          console.log(`User navigated to: ${location.pathname}`);
+        location: ({ from, to }) => {
+          if (!from) return;
+
+          // E.g. send an analytics event
+          sendAnalyticsEvent({
+            from: from.pathname,
+            to: to.pathname,
+          });
         },
       },
     },
@@ -55,12 +75,12 @@ If you just want to access the latest event data without a callback:
 import { useEvent } from "zudoku/hooks";
 
 function MyComponent() {
-  const location = useEvent("location");
-  return <div>Current path: {location?.pathname}</div>;
+  const locationEvent = useEvent("location");
+  return <div>Current path: {locationEvent?.to.pathname}</div>;
 }
 ```
 
-### 2. Using a Event Data in a Component
+### 2. Using Event Data in a Component
 
 If you want to transform the event data, return a value from the callback:
 
@@ -68,7 +88,7 @@ If you want to transform the event data, return a value from the callback:
 import { useEvent } from "zudoku/hooks";
 
 function MyComponent() {
-  const pathname = useEvent("location", (location) => location.pathname);
+  const pathname = useEvent("location", ({ to }) => to.pathname);
   return <div>Current path: {pathname}</div>;
 }
 ```
@@ -81,8 +101,10 @@ If you just want to perform side effects when the event occurs:
 import { useEvent } from "zudoku/hooks";
 
 function MyComponent() {
-  useEvent("location", (location) => {
-    console.log("Location changed:", location);
+  useEvent("location", ({ from, to }) => {
+    if (from) {
+      console.log(`Navigation: ${from.pathname} → ${to.pathname}`);
+    }
     // No return value needed for side effects
   });
 
