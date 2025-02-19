@@ -34,7 +34,7 @@ import { useState } from "react";
 import { cn } from "../util/cn.js";
 import { ClientOnly } from "./ClientOnly.js";
 
-type SyntaxHighlightProps = {
+export type SyntaxHighlightProps = {
   className?: string;
   noBackground?: boolean;
   wrapLines?: boolean;

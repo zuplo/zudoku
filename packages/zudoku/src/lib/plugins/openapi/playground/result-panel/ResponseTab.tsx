@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { SyntaxHighlight } from "../../../../components/SyntaxHighlight.js";
 import { Card } from "../../../../ui/Card.js";
+import { SyntaxHighlight } from "../../../../ui/SyntaxHighlight.js";
 import { convertToTypes } from "./convertToTypes.js";
 
 const statusCodeMap: Record<number, string> = {

@@ -2,8 +2,8 @@ import { MDXComponents } from "mdx/types.js";
 import { Link } from "react-router";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
-import { SyntaxHighlight } from "../components/SyntaxHighlight.js";
 import { Callout } from "../ui/Callout.js";
+import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
 
 export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
