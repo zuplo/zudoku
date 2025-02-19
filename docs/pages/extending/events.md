@@ -31,14 +31,45 @@ const navigationLoggerPlugin: ZudokuPlugin = {
 
 ## Using Events in Components
 
-Zudoku provides a convenient `useEvent` hook to subscribe to events in your React components:
+Zudoku provides a convenient `useEvent` hook to subscribe to events in your React components. The hook can be used in three different ways:
+
+### 1. Getting the Latest Event Data
+
+If you just want to access the latest event data without a callback:
 
 ```typescript
-import { useEvent } from "zudoku/hooks/useEvent";
+import { useEvent } from "zudoku/hooks";
+
+function MyComponent() {
+  const location = useEvent("location");
+  return <div>Current path: {location?.pathname}</div>;
+}
+```
+
+### 2. Using a Callback with Return Value
+
+If you want to transform the event data, return a value from the callback:
+
+```typescript
+import { useEvent } from "zudoku/hooks";
+
+function MyComponent() {
+  const pathname = useEvent("location", (location) => location.pathname);
+  return <div>Current path: {pathname}</div>;
+}
+```
+
+### 3. Using a Callback for Side Effects
+
+If you just want to perform side effects when the event occurs:
+
+```typescript
+import { useEvent } from "zudoku/hooks";
 
 function MyComponent() {
   useEvent("location", (location) => {
     console.log("Location changed:", location);
+    // No return value needed for side effects
   });
 
   return <div>My Component</div>;
