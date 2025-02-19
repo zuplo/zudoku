@@ -28,7 +28,6 @@ export const ThemeEditor = () => {
       )) {
         document.documentElement.style.setProperty(`--${key}`, value as string);
       }
-    } else {
     }
 
     if (radius) {
