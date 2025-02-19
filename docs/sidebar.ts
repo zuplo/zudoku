@@ -69,7 +69,7 @@ export const docs: SidebarEntry = [
     type: "category",
     label: "Extending",
     icon: "blocks",
-    items: ["custom-plugins", "api-keys"],
+    items: ["custom-plugins", "extending/events"],
   },
 ];
 export const components: SidebarEntry = [

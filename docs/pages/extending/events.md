@@ -3,8 +3,6 @@ title: Events
 sidebar_icon: shuffle
 ---
 
-# Events
-
 Zudoku provides an events system that allows plugins to react to various application events. This system enables you to build dynamic features that respond to user interactions and application state changes.
 
 ## Available Events
