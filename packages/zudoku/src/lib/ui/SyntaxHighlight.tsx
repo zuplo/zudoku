@@ -31,8 +31,8 @@ void import("prismjs/components/prism-typescript.min.js");
 
 import { useTheme } from "next-themes";
 import { useState } from "react";
+import { ClientOnly } from "../components/ClientOnly.js";
 import { cn } from "../util/cn.js";
-import { ClientOnly } from "./ClientOnly.js";
 
 export type SyntaxHighlightProps = {
   className?: string;
