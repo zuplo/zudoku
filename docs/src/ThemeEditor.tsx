@@ -18,13 +18,10 @@ const kebabToCamel = (str: string) =>
 const camelToKebabCase = (str: string) =>
   str.replace(/([A-Z])/g, "-$1").toLowerCase();
 
-const popularColors = baseColors.filter((c) => c.installs);
-
 export const ThemeEditor = () => {
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme = "dark", setTheme } = useTheme();
   const [color, setColor] = useState<string>();
   const [radius, setRadius] = useState<number>();
-  const [zudokuTheme, setZudokuTheme] = useState();
 
   const activeColor = useMemo(() => {
     return baseColors.find((c) => c.name === color);
@@ -55,13 +52,10 @@ export const ThemeEditor = () => {
   };
 
   return (
-    <div className="space-y-2 pt-6">
-      {/* <div className="text-sm font-semibold text-primary mb-2">Theme</div> */}
+    <div className="space-y-3 pt-6">
       <div className="text-4xl font-extrabold">Color in Your App.</div>
-      <div className="">
-        Hand-picked themes that you can copy and paste into your apps.
-      </div>
-      {resolvedTheme}
+      <div>Hand-picked themes that you can copy and paste into your apps.</div>
+      <div className="border border-b" />
       <Button size="sm" variant="outline" onClick={handleReset}>
         Reset Theme
       </Button>
