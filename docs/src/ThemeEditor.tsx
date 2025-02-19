@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTheme } from "zudoku/components";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
+import { Callout } from "zudoku/ui/Callout.js";
 import { Card, CardContent, CardDescription } from "zudoku/ui/Card.js";
+import { Progress } from "zudoku/ui/Progress.js";
+import { Switch } from "zudoku/ui/Switch.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { cn } from "zudoku/ui/util.js";
 import { baseColors } from "./baseColors/baseColors.js";
@@ -13,6 +17,8 @@ const kebabToCamel = (str: string) =>
 
 const camelToKebabCase = (str: string) =>
   str.replace(/([A-Z])/g, "-$1").toLowerCase();
+
+const popularColors = baseColors.filter((c) => c.installs);
 
 export const ThemeEditor = () => {
   const { resolvedTheme, setTheme } = useTheme();
@@ -51,10 +57,9 @@ export const ThemeEditor = () => {
   return (
     <div className="space-y-2 pt-6">
       {/* <div className="text-sm font-semibold text-primary mb-2">Theme</div> */}
-      <div className="text-4xl font-extrabold">Add colors. Make it yours.</div>
+      <div className="text-4xl font-extrabold">Color in Your App.</div>
       <div className="">
-        Hand-picked themes that you can copy and paste into your apps. [By the
-        awesome shadcn project](https://ui.shadcn.com/themes)
+        Hand-picked themes that you can copy and paste into your apps.
       </div>
       {resolvedTheme}
       <Button size="sm" variant="outline" onClick={handleReset}>
@@ -76,7 +81,16 @@ export const ThemeEditor = () => {
               </Button>
             ))}
           </div>
-          <div className="font-medium text-sm mt-4 mb-1">Color</div>
+          <div className="font-medium text-sm mt-4 mb-1 flex justify-between items-center max-w-md">
+            <div>Color</div>
+            <a
+              href="https://ui.shadcn.com/themes"
+              target="_blank"
+              className="text-xs"
+            >
+              by shadcn
+            </a>
+          </div>
           <div className="grid grid-cols-4 gap-2 max-w-md">
             {baseColors.map((color) => (
               <Button
@@ -140,6 +154,49 @@ export const ThemeEditor = () => {
                 <Button variant="destructive">Destructive</Button>
               </CardContent>
             </Card>
+            <Card>
+              <CardDescription />
+              <CardContent>
+                <Alert>
+                  <AlertTitle>Alert</AlertTitle>
+                  <AlertDescription>
+                    This is an alert. It is used to display important
+                    information.
+                  </AlertDescription>
+                </Alert>
+                <Callout type="info">
+                  This is a callout. It is used to display important
+                  information.
+                </Callout>
+                <Callout type="caution">
+                  This is a callout. It is used to display important
+                  information.
+                </Callout>
+                <Callout type="danger">
+                  This is a callout. It is used to display important
+                  information.
+                </Callout>
+                <Callout type="tip">
+                  This is a callout. It is used to display important
+                  information.
+                </Callout>
+                <Callout type="note">
+                  This is a callout. It is used to display important
+                  information.
+                </Callout>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardDescription />
+              <CardContent className="grid grid-cols-2 gap-2 text-sm font-medium">
+                <div>On</div>
+                <Switch defaultChecked={true} />
+                <div>Off</div>
+                <Switch />
+                <div>50%</div>
+                <Progress value={50} />
+              </CardContent>
+            </Card>
           </div>
         </div>
         <div className="rounded-lg overflow-hidden">
@@ -151,7 +208,11 @@ export const ThemeEditor = () => {
                 theme: {
                   light: Object.fromEntries(
                     Object.entries(activeColor?.cssVars[resolvedTheme] ?? {})
-                      .concat([["radius", `${radius}rem`]])
+                      .concat(
+                        typeof radius === "number"
+                          ? [["radius", `${radius}rem`]]
+                          : [],
+                      )
                       .map(([key, value]) => [
                         kebabToCamel(key),
                         value.toString(),
@@ -160,7 +221,11 @@ export const ThemeEditor = () => {
 
                   dark: Object.fromEntries(
                     Object.entries(activeColor?.cssVars.dark ?? {})
-                      .concat([["radius", `${radius}rem`]])
+                      .concat(
+                        typeof radius === "number"
+                          ? [["radius", `${radius}rem`]]
+                          : [],
+                      )
                       .map(([key, value]) => [
                         kebabToCamel(key),
                         value.toString(),
