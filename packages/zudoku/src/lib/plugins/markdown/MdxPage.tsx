@@ -99,7 +99,7 @@ export const MdxPage = ({
       <div
         className={cn(
           ProseClasses,
-          "max-w-full xl:w-full xl:max-w-prose flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
+          "max-w-full xl:w-full xl:max-w-3xl flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
         )}
       >
         {(category || title) && (
