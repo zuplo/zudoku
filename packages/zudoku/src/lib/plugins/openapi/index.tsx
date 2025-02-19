@@ -84,11 +84,6 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         return <link rel="preconnect" href={config.server} />;
       }
     },
-    events: {
-      location: (location) => {
-        console.log("location", location);
-      },
-    },
     getMdxComponents: () => ({
       OpenPlaygroundButton: ({
         requireAuth,
