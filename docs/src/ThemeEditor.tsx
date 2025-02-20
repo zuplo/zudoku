@@ -176,7 +176,10 @@ export const ThemeEditor = () => {
             <div className="flex gap-2">
               {availableRadius.map((r) => (
                 <Button
-                  className={cn(r === radius && "border-primary border-2")}
+                  className={cn(
+                    r === radius && "border-primary border-2",
+                    "w-10",
+                  )}
                   key={r}
                   size="sm"
                   variant="outline"
