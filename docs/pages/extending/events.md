@@ -19,9 +19,9 @@ Emitted when the user navigates to a different route. Provides both the previous
 
 Note that the `from` location will be undefined on the initial page load.
 
-## Using Events in Plugins
+## Consuming Events in Plugins
 
-To consume events in your plugin, you can implement the events property in your plugin:
+To consume events in your plugin, you can implement the events property in your plugin. This is useful for performing actions like sending analytics events or anything else that's not directly related to the UI.
 
 ```typescript
 import { ZudokuPlugin, ZudokuEvents } from "zudoku";
