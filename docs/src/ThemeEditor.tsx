@@ -107,7 +107,7 @@ export const ThemeEditor = () => {
                 {
                   theme: {
                     light: Object.fromEntries(
-                      Object.entries(activeColor?.cssVars[resolvedTheme] ?? {})
+                      Object.entries(activeColor?.cssVars.light ?? {})
                         .concat(
                           typeof radius === "number"
                             ? [["radius", `${radius}rem`]]
