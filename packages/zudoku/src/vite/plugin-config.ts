@@ -22,9 +22,15 @@ const viteConfigPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
       const replacedCode = code.replaceAll(
         /process\.env\.([a-z_][a-z0-9_]*)/gi,
         (_, envVar) => {
-          if (!envVar.startsWith(viteConfig.envPrefix)) {
+          const allowedPrefixes = Array.isArray(viteConfig.envPrefix)
+            ? viteConfig.envPrefix
+            : [viteConfig.envPrefix];
+
+          if (!allowedPrefixes.some((prefix) => envVar.startsWith(prefix))) {
             viteConfig.logger.warn(
-              `Warning: process.env.${envVar} is not prefixed with ${viteConfig.envPrefix}.`,
+              `Warning: process.env.${envVar} is not prefixed with ${allowedPrefixes.join(
+                " or ",
+              )}.`,
             );
             return "undefined";
           }
