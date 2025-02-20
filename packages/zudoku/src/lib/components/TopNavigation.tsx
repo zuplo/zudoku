@@ -7,6 +7,7 @@ import { ZudokuError } from "../util/invariant.js";
 import { joinPath } from "../util/joinPath.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
+import { Slotlet } from "./SlotletProvider.js";
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>
@@ -30,15 +31,18 @@ export const TopNavigation = () => {
 
   return (
     <Suspense>
-      <nav className="hidden lg:block text-sm px-8 h-[--top-nav-height]">
-        <ul className="flex flex-row items-center gap-8">
-          {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
-            <li key={item.id}>
-              <TopNavItem {...item} />
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div className=" items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm">
+        <nav className="text-sm">
+          <ul className="flex flex-row items-center gap-8">
+            {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+              <li key={item.id}>
+                <TopNavItem {...item} />
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <Slotlet name="top-navigation-side" />
+      </div>
     </Suspense>
   );
 };
