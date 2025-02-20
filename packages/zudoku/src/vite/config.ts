@@ -40,24 +40,6 @@ const getDocsConfigFiles = (
   return docsArray.map((doc) => path.posix.join(baseDir, doc.files));
 };
 
-// We extend the dependencies with the files from configured APIs
-// so that the server restarts when these files change.
-const registerApiFileImportDependencies = (
-  config: LoadedConfig,
-  rootDir: string,
-) => {
-  if (!config.apis) return;
-
-  const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-
-  const files = apis
-    .filter((c) => c.type === "file")
-    .flatMap((c) => (Array.isArray(c.input) ? c.input : [c.input]))
-    .map((c) => path.posix.join(rootDir, c));
-
-  config.__meta.registerDependency(...files);
-};
-
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
   const envPrefix = [
     ...(ZuploEnv.isZuplo ? ["ZUPLO_PUBLIC_"] : []),
@@ -106,8 +88,6 @@ export async function loadZudokuConfig(
       }
     }
     const loadedConfig = await tryLoadZudokuConfig(rootDir, envVars);
-
-    registerApiFileImportDependencies(loadedConfig, rootDir);
 
     logger.info(
       colors.yellow(`loaded config file `) +
