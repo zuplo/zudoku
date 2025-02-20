@@ -39,7 +39,7 @@ export const ThemeEditor = () => {
       }
     }
 
-    if (radius) {
+    if (typeof radius === "number") {
       document.documentElement.style.setProperty("--radius", `${radius}rem`);
     } else {
       document.documentElement.style.removeProperty("--radius");
