@@ -79,7 +79,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
               <Sidebar onRequestClose={() => setDrawerOpen(false)} />
               <div
                 className={cn(
-                  "lg:hidden -mx-10 px-10 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b",
+                  "lg:hidden -mx-4 px-4 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b",
                   "peer-data-[navigation=false]:hidden",
                 )}
               >
