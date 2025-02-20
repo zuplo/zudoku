@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { ClientOnly, useTheme } from "zudoku/components";
+import { MoonIcon, SunIcon } from "zudoku/icons";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
-import { Card, CardContent, CardDescription } from "zudoku/ui/Card.js";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "zudoku/ui/Card.js";
 import { Progress } from "zudoku/ui/Progress.js";
 import { Switch } from "zudoku/ui/Switch.js";
-import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { cn } from "zudoku/ui/util.js";
 import { baseColors } from "./baseColors/baseColors.js";
 
@@ -39,7 +44,7 @@ export const ThemeEditor = () => {
       }
     }
 
-    if (radius) {
+    if (typeof radius === "number") {
       document.documentElement.style.setProperty("--radius", `${radius}rem`);
     } else {
       document.documentElement.style.removeProperty("--radius");
@@ -70,24 +75,51 @@ export const ThemeEditor = () => {
       <Button size="sm" variant="outline" onClick={handleReset}>
         Reset Theme
       </Button>
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <div className="font-medium text-sm mt-4 mb-1">Radius</div>
-          <div className="flex gap-2">
-            {availableRadius.map((r) => (
+      <div className="grid grid-cols-[minmax(0,515px)_1fr] gap-2">
+        <Card>
+          <CardHeader className="py-4" />
+          <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+            <CardDescription>Mode</CardDescription>
+            <CardDescription>Radius</CardDescription>
+            <div className="flex gap-2">
               <Button
-                className={cn(r === radius && "border-primary border-2")}
-                key={r}
-                size="sm"
                 variant="outline"
-                onClick={() => setRadius(r)}
+                className={cn(
+                  resolvedTheme === "light" && "border-primary border-2",
+                )}
+                onClick={() => setTheme("light")}
               >
-                {r}
+                <SunIcon size={16} className="mr-2" />
+                Light
               </Button>
-            ))}
-          </div>
-          <div className="font-medium text-sm mt-4 mb-1 flex justify-between items-center max-w-md">
-            <div>Color</div>
+              <Button
+                variant="outline"
+                className={cn(
+                  resolvedTheme === "dark" && "border-primary border-2",
+                )}
+                onClick={() => setTheme("dark")}
+              >
+                <MoonIcon size={16} className="mr-2" />
+                Dark
+              </Button>
+            </div>
+            <div className="flex gap-2">
+              {availableRadius.map((r) => (
+                <Button
+                  className={cn(r === radius && "border-primary border-2")}
+                  key={r}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setRadius(r)}
+                >
+                  {r}
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+
+          <CardHeader className="py-4 flex flex-row justify-between items-center">
+            <CardDescription>Color</CardDescription>
             <a
               href="https://ui.shadcn.com/themes"
               target="_blank"
@@ -96,61 +128,46 @@ export const ThemeEditor = () => {
             >
               by shadcn
             </a>
-          </div>
-          <div className="grid grid-cols-4 gap-2 max-w-md">
-            {baseColors.map((color) => (
-              <Button
-                key={color.name}
-                size="sm"
-                variant="outline"
-                onClick={() => setColor(color.name)}
-                className={cn(
-                  color.name === activeColor?.name && "border-primary border-2",
-                )}
-                style={
-                  {
-                    "--theme-primary": `hsl(${
-                      activeColor?.activeColor[resolvedTheme]
-                    })`,
-                  } as React.CSSProperties
-                }
-              >
-                <div
-                  className="w-4 h-4 rounded-full mr-2"
-                  style={{
-                    backgroundColor: `hsl(${color.activeColor[resolvedTheme]})`,
-                  }}
-                />
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 ">
+              {baseColors.map((color) => (
+                <Button
+                  key={color.name}
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setColor(color.name)}
+                  className={cn(
+                    color.name === activeColor?.name &&
+                      "border-primary border-2",
+                  )}
+                  style={
+                    {
+                      "--theme-primary": `hsl(${
+                        activeColor?.activeColor[resolvedTheme]
+                      })`,
+                    } as React.CSSProperties
+                  }
+                >
+                  <div
+                    className="w-4 h-4 rounded-full mr-2"
+                    style={{
+                      backgroundColor: `hsl(${color.activeColor[resolvedTheme]})`,
+                    }}
+                  />
 
-                <div className="flex-1">{color.name}</div>
-              </Button>
-            ))}
-          </div>
-          <div className="font-medium text-sm mt-4 mb-1">Mode</div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              className={cn(
-                resolvedTheme === "light" && "border-primary border-2",
-              )}
-              onClick={() => setTheme("light")}
-            >
-              Light
-            </Button>
-            <Button
-              variant="outline"
-              className={cn(
-                resolvedTheme === "dark" && "border-primary border-2",
-              )}
-              onClick={() => setTheme("dark")}
-            >
-              Dark
-            </Button>
-          </div>
-          <div className="font-medium text-sm mt-4 mb-1">Button Preview</div>
+                  <div className="flex-1">{color.name}</div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <div className="rounded-lg overflow-hidden">
           <div className="grid grid-cols-1 gap-2">
             <Card>
-              <CardDescription />
+              <CardHeader>
+                <CardDescription>Button Preview</CardDescription>
+              </CardHeader>
               <CardContent className="grid grid-cols-3 gap-2">
                 <Button>Button</Button>
                 <Button variant="outline">Outline</Button>
@@ -161,7 +178,9 @@ export const ThemeEditor = () => {
               </CardContent>
             </Card>
             <Card>
-              <CardDescription />
+              <CardHeader>
+                <CardDescription>Controls </CardDescription>
+              </CardHeader>
               <CardContent className="grid grid-cols-2 gap-2 text-sm font-medium">
                 <div>On</div>
                 <Switch defaultChecked={true} />
@@ -172,7 +191,9 @@ export const ThemeEditor = () => {
               </CardContent>
             </Card>
             <Card>
-              <CardDescription />
+              <CardHeader>
+                <CardDescription>Alerts</CardDescription>
+              </CardHeader>
               <CardContent>
                 <Alert>
                   <AlertTitle>Alert</AlertTitle>
@@ -204,9 +225,7 @@ export const ThemeEditor = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-        <div className="rounded-lg overflow-hidden">
-          <SyntaxHighlight
+          {/* <SyntaxHighlight
             language="css"
             className="p-2 max-h-[500px] overflow-y-auto"
             code={JSON.stringify(
@@ -242,7 +261,7 @@ export const ThemeEditor = () => {
               null,
               2,
             )}
-          />
+          /> */}
         </div>
       </div>
     </>

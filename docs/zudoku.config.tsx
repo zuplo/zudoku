@@ -63,6 +63,7 @@ const config: ZudokuConfig = {
     {
       path: "theme-playground",
       render: ThemeEditorPage,
+      prose: false,
     },
   ],
   apis: [
