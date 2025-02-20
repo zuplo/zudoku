@@ -1,12 +1,12 @@
 export const PreviewBanner = () => {
   return (
     <div className="text-center">
-      Welcome to the beta! Please{" "}
+      Welcome to Zudoku preview!
       <a
         href="https://github.com/zuplo/zudoku/issues"
         className="underline hover:white"
       >
-        open a GitHub issue
+        Open a GitHub issue
       </a>{" "}
       if you have feature requests or find any issues.
     </div>

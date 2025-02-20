@@ -1,0 +1,30 @@
+---
+title: Syntax Highlight
+---
+
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight";
+
+It is used to highlight code blocks in your content.
+
+<Callout type="tip">
+  There is an easy way to use SyntaxHighlight in Markdown files, see
+  [Codeblocks](/markdown/code-blocks)
+</Callout>
+
+## Usage
+
+```tsx
+<SyntaxHighlight language="typescript">
+  for (let i = 0; i < Infinity; i++) {
+    console.log(i);
+  }
+</SyntaxHighlight>
+```
+
+## Result
+
+<SyntaxHighlight language="typescript">
+  {`for (let i = 0; i < Infinity; i++) {
+  console.log(i);
+}`}
+</SyntaxHighlight>

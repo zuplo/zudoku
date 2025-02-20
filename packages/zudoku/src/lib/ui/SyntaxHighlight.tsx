@@ -31,17 +31,20 @@ void import("prismjs/components/prism-typescript.min.js");
 
 import { useTheme } from "next-themes";
 import { useState } from "react";
+import { ClientOnly } from "../components/ClientOnly.js";
 import { cn } from "../util/cn.js";
-import { ClientOnly } from "./ClientOnly.js";
 
-type SyntaxHighlightProps = {
+export type SyntaxHighlightProps = {
   className?: string;
   noBackground?: boolean;
   wrapLines?: boolean;
-  copyable?: boolean;
   showLanguageIndicator?: boolean;
   language?: string;
   title?: string;
+  children?: string;
+  code?: string;
+  showCopy?: "hover" | "always" | "never";
+  showCopyText?: boolean;
 } & Omit<HighlightProps, "children" | "language">;
 
 const remapLang = {
@@ -49,15 +52,19 @@ const remapLang = {
 } as Record<string, string>;
 
 export const SyntaxHighlight = ({
-  copyable = true,
   language = "plain",
+  showCopy = "hover",
+  showCopyText,
   title,
+  children,
   ...props
 }: SyntaxHighlightProps) => {
   const { resolvedTheme } = useTheme();
   const [isCopied, setIsCopied] = useState(false);
 
-  if (!props.code) {
+  const code = children ?? props.code;
+
+  if (!code) {
     return null;
   }
 
@@ -86,7 +93,7 @@ export const SyntaxHighlight = ({
               title && "pt-10",
             )}
           >
-            {props.code}
+            {code}
           </pre>
           {props.showLanguageIndicator && (
             <span className="absolute top-1.5 right-3 text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0">
@@ -100,6 +107,7 @@ export const SyntaxHighlight = ({
         theme={highlightTheme}
         language={remapLang[language] ?? language}
         {...props}
+        code={code}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <div className="relative group">
@@ -134,12 +142,18 @@ export const SyntaxHighlight = ({
                 {language}
               </span>
             )}
-            {copyable && (
+            {showCopy !== "never" && (
               <button
                 type="button"
                 aria-label="Copy code"
                 title="Copy code"
-                className="absolute top-2 right-2 p-2 opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition"
+                className={cn(
+                  "absolute top-2 right-2 p-2  hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-muted-foreground transition",
+                  showCopy === "hover"
+                    ? "opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700"
+                    : "bg-zinc-100 dark:bg-zinc-700",
+                  showCopyText && "flex gap-2 items-center font-medium",
+                )}
                 disabled={isCopied}
                 onClick={() => {
                   setIsCopied(true);
@@ -161,6 +175,7 @@ export const SyntaxHighlight = ({
                 ) : (
                   <CopyIcon size={16} />
                 )}
+                {showCopyText && "Copy"}
               </button>
             )}
           </div>

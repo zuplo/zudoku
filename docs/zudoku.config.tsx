@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import type { ZudokuConfig } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
@@ -53,11 +54,19 @@ const config: ZudokuConfig = {
   topNavigation: [
     { id: "docs", label: "Documentation" },
     { id: "components", label: "Components" },
+    { id: "theme-playground", label: "Themes" },
   ],
   sidebar: {
     docs,
     components,
   },
+  customPages: [
+    {
+      path: "theme-playground",
+      render: lazy(() => import("./src/ThemeEditor.js")),
+      prose: false,
+    },
+  ],
   apis: [
     {
       type: "file",

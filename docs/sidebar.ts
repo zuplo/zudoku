@@ -30,6 +30,12 @@ export const docs: SidebarEntry = [
   },
   {
     type: "category",
+    label: "Customization",
+    icon: "palette",
+    items: ["customization/available-variables"],
+  },
+  {
+    type: "category",
     label: "Markdown",
     icon: "book-open-text",
     link: "markdown/overview",
@@ -76,6 +82,7 @@ export const components: SidebarEntry = [
       "components/icons",
       "components/shadcn",
       "components/playground",
+      "components/syntax-highlight",
     ],
   },
 ];
