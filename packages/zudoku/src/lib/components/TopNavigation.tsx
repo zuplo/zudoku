@@ -30,7 +30,7 @@ export const TopNavigation = () => {
 
   return (
     <Suspense>
-      <nav className="hidden lg:block text-sm px-12 h-[--top-nav-height]">
+      <nav className="hidden lg:block text-sm px-8 h-[--top-nav-height]">
         <ul className="flex flex-row items-center gap-8">
           {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
             <li key={item.id}>

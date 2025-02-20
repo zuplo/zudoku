@@ -66,7 +66,7 @@ export const Header = memo(function HeaderInner() {
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <Banner />
       <div className="border-b">
-        <div className="max-w-screen-2xl border-l border-r mx-auto grid grid-cols-[1fr_auto] lg:grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center px-4 lg:px-12 h-[--top-header-height]">
+        <div className="max-w-screen-2xl border-l border-r mx-auto grid grid-cols-[1fr_auto] lg:grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center px-4 lg:px-8 h-[--top-header-height]">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
