@@ -44,7 +44,7 @@ export const Catalog = ({
                 className="no-underline hover:!text-foreground"
                 key={api.path}
               >
-                <div className="border h-full rounded p-4 flex flex-col gap-2 cursor-pointer hover:bg-border/20 font-normal">
+                <div className="border h-full rounded-lg p-4 flex flex-col gap-2 cursor-pointer hover:bg-border/20 font-normal">
                   <span className="font-semibold">{api.label}</span>
                   <Markdown
                     className="text-sm whitespace-pre-wrap mb-6 line-clamp-2"

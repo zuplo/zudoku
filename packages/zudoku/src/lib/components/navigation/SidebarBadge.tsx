@@ -8,7 +8,7 @@ export const ColorMap = {
   purple: "bg-purple-400 dark:bg-purple-600",
   indigo: "bg-indigo-400 dark:bg-indigo-600",
   gray: "bg-gray-400 dark:bg-gray-600",
-  outline: "border border-border rounded-md",
+  outline: "border border-border rounded-md text-foreground",
 };
 
 export const ColorMapInvert = {
