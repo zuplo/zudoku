@@ -42,7 +42,6 @@ export type SyntaxHighlightProps = {
   showLanguageIndicator?: boolean;
   language?: string;
   title?: string;
-  trim?: boolean;
   children?: string;
   code?: string;
 } & Omit<HighlightProps, "children" | "language">;
@@ -55,15 +54,13 @@ export const SyntaxHighlight = ({
   copyable = true,
   language = "plain",
   title,
-  trim = true,
   children,
   ...props
 }: SyntaxHighlightProps) => {
   const { resolvedTheme } = useTheme();
   const [isCopied, setIsCopied] = useState(false);
 
-  const rawCode = children ?? props.code;
-  const code = trim ? rawCode.replace(/^\n|\n$/g, "") : rawCode;
+  const code = children ?? props.code;
 
   if (!code) {
     return null;
