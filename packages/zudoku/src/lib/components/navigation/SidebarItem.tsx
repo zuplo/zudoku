@@ -51,6 +51,7 @@ export const SidebarItem = ({
           className={({ isActive }) => navigationListItem({ isActive })}
           to={joinPath(item.id)}
           onClick={onRequestClose}
+          end
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (

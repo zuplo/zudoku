@@ -8,6 +8,7 @@ export const ColorMap = {
   purple: "bg-purple-400 dark:bg-purple-600",
   indigo: "bg-indigo-400 dark:bg-indigo-600",
   gray: "bg-gray-400 dark:bg-gray-600",
+  outline: "border border-border rounded-md text-foreground",
 };
 
 export const ColorMapInvert = {
@@ -18,6 +19,7 @@ export const ColorMapInvert = {
   purple: "text-purple-400 dark:text-purple-600",
   indigo: "text-indigo-400 dark:text-indigo-600",
   gray: "text-gray-400 dark:text-gray-600",
+  outline: "",
 };
 
 export const SidebarBadge = ({
@@ -34,7 +36,8 @@ export const SidebarBadge = ({
   return (
     <span
       className={cn(
-        "mt-0.5 flex items-center duration-200 transition-opacity text-center uppercase font-mono text-[0.65rem] font-bold rounded text-background dark:text-zinc-50 h-4 px-1",
+        "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] font-bold rounded text-background dark:text-zinc-50 h-full",
+        color === "outline" ? "px-3" : "mt-0.5 px-1",
         invert ? ColorMapInvert[color] : ColorMap[color],
         className,
       )}
