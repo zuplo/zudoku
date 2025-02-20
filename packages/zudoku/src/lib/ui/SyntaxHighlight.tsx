@@ -38,12 +38,13 @@ export type SyntaxHighlightProps = {
   className?: string;
   noBackground?: boolean;
   wrapLines?: boolean;
-  copyable?: boolean;
   showLanguageIndicator?: boolean;
   language?: string;
   title?: string;
   children?: string;
   code?: string;
+  showCopy?: "hover" | "always" | "never";
+  showCopyText?: boolean;
 } & Omit<HighlightProps, "children" | "language">;
 
 const remapLang = {
@@ -51,8 +52,9 @@ const remapLang = {
 } as Record<string, string>;
 
 export const SyntaxHighlight = ({
-  copyable = true,
   language = "plain",
+  showCopy = "hover",
+  showCopyText,
   title,
   children,
   ...props
@@ -140,12 +142,18 @@ export const SyntaxHighlight = ({
                 {language}
               </span>
             )}
-            {copyable && (
+            {showCopy !== "never" && (
               <button
                 type="button"
                 aria-label="Copy code"
                 title="Copy code"
-                className="absolute top-2 right-2 p-2 opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition"
+                className={cn(
+                  "absolute top-2 right-2 p-2  hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-muted-foreground transition",
+                  showCopy === "hover"
+                    ? "opacity-0 group-hover:opacity-100 group-hover:bg-zinc-100 group-hover:dark:bg-zinc-700"
+                    : "bg-zinc-100 dark:bg-zinc-700",
+                  showCopyText && "flex gap-2 items-center font-medium",
+                )}
                 disabled={isCopied}
                 onClick={() => {
                   setIsCopied(true);
@@ -167,6 +175,7 @@ export const SyntaxHighlight = ({
                 ) : (
                   <CopyIcon size={16} />
                 )}
+                {showCopyText && "Copy"}
               </button>
             )}
           </div>

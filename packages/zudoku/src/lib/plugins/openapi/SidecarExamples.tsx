@@ -97,7 +97,6 @@ export const SidecarExamples = ({
             <SyntaxHighlight
               language={language}
               noBackground
-              copyable
               className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
               code={formattedExample}
             />

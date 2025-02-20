@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ClientOnly, useTheme } from "zudoku/components";
-import { MoonIcon, SunIcon } from "zudoku/icons";
+import { DownloadIcon, MoonIcon, RotateCcwIcon, SunIcon } from "zudoku/icons";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
@@ -10,8 +10,17 @@ import {
   CardDescription,
   CardHeader,
 } from "zudoku/ui/Card.js";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "zudoku/ui/Dialog.js";
 import { Progress } from "zudoku/ui/Progress.js";
 import { Switch } from "zudoku/ui/Switch.js";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { cn } from "zudoku/ui/util.js";
 import { baseColors } from "./baseColors/baseColors.js";
 
@@ -72,15 +81,76 @@ export const ThemeEditor = () => {
 
   return (
     <>
-      <Button size="sm" variant="outline" onClick={handleReset}>
-        Reset Theme
-      </Button>
+      <div className="flex gap-2 mt-4">
+        <Button size="sm" variant="outline" onClick={handleReset}>
+          <RotateCcwIcon size={16} className="mr-2" /> Reset Theme
+        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="outline">
+              <DownloadIcon size={16} className="mr-2" /> Get Theme Config
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[666px]">
+            <DialogHeader>
+              <DialogTitle>Theme </DialogTitle>
+              <DialogDescription>
+                Copy and paste the following code into your Zudoku config.
+              </DialogDescription>
+            </DialogHeader>
+            <SyntaxHighlight
+              language="css"
+              showCopy="always"
+              showCopyText
+              className="p-2 border rounded-lg max-h-[400px] overflow-y-auto"
+              code={JSON.stringify(
+                {
+                  theme: {
+                    light: Object.fromEntries(
+                      Object.entries(activeColor?.cssVars[resolvedTheme] ?? {})
+                        .concat(
+                          typeof radius === "number"
+                            ? [["radius", `${radius}rem`]]
+                            : [],
+                        )
+                        .map(([key, value]) => [
+                          kebabToCamel(key),
+                          value.toString(),
+                        ]),
+                    ),
+
+                    dark: Object.fromEntries(
+                      Object.entries(activeColor?.cssVars.dark ?? {})
+                        .concat(
+                          typeof radius === "number"
+                            ? [["radius", `${radius}rem`]]
+                            : [],
+                        )
+                        .map(([key, value]) => [
+                          kebabToCamel(key),
+                          value.toString(),
+                        ]),
+                    ),
+                  },
+                },
+                null,
+                2,
+              )}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div className="border-border border-b border-dashed border-px my-2" />
       <div className="grid grid-cols-[minmax(0,515px)_1fr] gap-2">
         <Card>
-          <CardHeader className="py-4" />
-          <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-2">
-            <CardDescription>Mode</CardDescription>
-            <CardDescription>Radius</CardDescription>
+          {/* <CardHeader className="py-4" /> */}
+          <CardContent className="grid grid-cols-1 lg:grid-cols-2 ">
+            <CardHeader className="px-0 py-6">
+              <CardDescription>Mode</CardDescription>
+            </CardHeader>
+            <CardHeader className="px-0 py-6">
+              <CardDescription>Radius</CardDescription>
+            </CardHeader>
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -118,8 +188,8 @@ export const ThemeEditor = () => {
             </div>
           </CardContent>
 
-          <CardHeader className="py-4 flex flex-row justify-between items-center">
-            <CardDescription>Color</CardDescription>
+          <CardHeader className="space-y-0 py-4 flex flex-row items-center gap-2">
+            <CardDescription>Colors</CardDescription>
             <a
               href="https://ui.shadcn.com/themes"
               target="_blank"
@@ -225,43 +295,6 @@ export const ThemeEditor = () => {
               </CardContent>
             </Card>
           </div>
-          {/* <SyntaxHighlight
-            language="css"
-            className="p-2 max-h-[500px] overflow-y-auto"
-            code={JSON.stringify(
-              {
-                theme: {
-                  light: Object.fromEntries(
-                    Object.entries(activeColor?.cssVars[resolvedTheme] ?? {})
-                      .concat(
-                        typeof radius === "number"
-                          ? [["radius", `${radius}rem`]]
-                          : [],
-                      )
-                      .map(([key, value]) => [
-                        kebabToCamel(key),
-                        value.toString(),
-                      ]),
-                  ),
-
-                  dark: Object.fromEntries(
-                    Object.entries(activeColor?.cssVars.dark ?? {})
-                      .concat(
-                        typeof radius === "number"
-                          ? [["radius", `${radius}rem`]]
-                          : [],
-                      )
-                      .map(([key, value]) => [
-                        kebabToCamel(key),
-                        value.toString(),
-                      ]),
-                  ),
-                },
-              },
-              null,
-              2,
-            )}
-          /> */}
         </div>
       </div>
     </>
@@ -270,10 +303,10 @@ export const ThemeEditor = () => {
 
 export const ThemeEditorPage = () => {
   return (
-    <div className="space-y-3 pt-6">
+    <div className="flex flex-col gap-3 pt-6">
       <div className="text-4xl font-extrabold">Color in Your App.</div>
       <div>Hand-picked themes that you can copy and paste into your apps.</div>
-      <div className="border border-b" />
+
       <ClientOnly>
         <ThemeEditor />
       </ClientOnly>
