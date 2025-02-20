@@ -42,6 +42,9 @@ export type SyntaxHighlightProps = {
   showLanguageIndicator?: boolean;
   language?: string;
   title?: string;
+  trim?: boolean;
+  children?: string;
+  code?: string;
 } & Omit<HighlightProps, "children" | "language">;
 
 const remapLang = {
@@ -52,12 +55,17 @@ export const SyntaxHighlight = ({
   copyable = true,
   language = "plain",
   title,
+  trim = true,
+  children,
   ...props
 }: SyntaxHighlightProps) => {
   const { resolvedTheme } = useTheme();
   const [isCopied, setIsCopied] = useState(false);
 
-  if (!props.code) {
+  const rawCode = children ?? props.code;
+  const code = trim ? rawCode.replace(/^\n|\n$/g, "") : rawCode;
+
+  if (!code) {
     return null;
   }
 
@@ -86,7 +94,7 @@ export const SyntaxHighlight = ({
               title && "pt-10",
             )}
           >
-            {props.code}
+            {code}
           </pre>
           {props.showLanguageIndicator && (
             <span className="absolute top-1.5 right-3 text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0">
@@ -100,6 +108,7 @@ export const SyntaxHighlight = ({
         theme={highlightTheme}
         language={remapLang[language] ?? language}
         {...props}
+        code={code}
       >
         {({ className, style, tokens, getLineProps, getTokenProps }) => (
           <div className="relative group">
