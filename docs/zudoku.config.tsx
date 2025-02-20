@@ -5,8 +5,7 @@ import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
-import { ThemeEditor } from "./src/ThemeEditor";
-
+import { ThemeEditorPage } from "./src/ThemeEditor";
 const config: ZudokuConfig = {
   basePath: "/docs",
   page: {
@@ -63,7 +62,7 @@ const config: ZudokuConfig = {
   customPages: [
     {
       path: "theme-playground",
-      render: ThemeEditor,
+      render: ThemeEditorPage,
     },
   ],
   apis: [

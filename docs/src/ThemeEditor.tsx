@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useTheme } from "zudoku/components";
+import { ClientOnly, useTheme } from "zudoku/components";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
@@ -19,13 +19,13 @@ const camelToKebabCase = (str: string) =>
   str.replace(/([A-Z])/g, "-$1").toLowerCase();
 
 export const ThemeEditor = () => {
-  const { resolvedTheme = "dark", setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [color, setColor] = useState<string>();
   const [radius, setRadius] = useState<number>();
 
   const activeColor = useMemo(() => {
     return baseColors.find((c) => c.name === color);
-  }, [color, resolvedTheme]);
+  }, [color]);
 
   useEffect(() => {
     if (activeColor) {
@@ -39,11 +39,25 @@ export const ThemeEditor = () => {
       }
     }
 
-    if (typeof radius === "number") {
+    if (radius) {
       document.documentElement.style.setProperty("--radius", `${radius}rem`);
     } else {
       document.documentElement.style.removeProperty("--radius");
     }
+
+    return () => {
+      document.documentElement.style.removeProperty("--radius");
+
+      if (activeColor) {
+        for (const [key, value] of Object.entries(
+          activeColor?.cssVars[resolvedTheme],
+        )) {
+          document.documentElement.style.removeProperty(
+            `--${camelToKebabCase(key)}`,
+          );
+        }
+      }
+    };
   }, [activeColor, resolvedTheme, radius]);
 
   const handleReset = () => {
@@ -52,10 +66,7 @@ export const ThemeEditor = () => {
   };
 
   return (
-    <div className="space-y-3 pt-6">
-      <div className="text-4xl font-extrabold">Color in Your App.</div>
-      <div>Hand-picked themes that you can copy and paste into your apps.</div>
-      <div className="border border-b" />
+    <>
       <Button size="sm" variant="outline" onClick={handleReset}>
         Reset Theme
       </Button>
@@ -234,6 +245,19 @@ export const ThemeEditor = () => {
           />
         </div>
       </div>
+    </>
+  );
+};
+
+export const ThemeEditorPage = () => {
+  return (
+    <div className="space-y-3 pt-6">
+      <div className="text-4xl font-extrabold">Color in Your App.</div>
+      <div>Hand-picked themes that you can copy and paste into your apps.</div>
+      <div className="border border-b" />
+      <ClientOnly>
+        <ThemeEditor />
+      </ClientOnly>
     </div>
   );
 };
