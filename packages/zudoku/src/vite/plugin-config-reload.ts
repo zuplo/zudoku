@@ -12,7 +12,7 @@ export const createConfigReloadPlugin = (
 
   const plugin: Plugin = {
     name: "zudoku-config-reload",
-    configureServer: ({ watcher, restart }) => {
+    configureServer: ({ watcher, restart, ws }) => {
       if (!onConfigChange) return;
 
       watcher.on("change", async (file) => {
@@ -26,6 +26,7 @@ export const createConfigReloadPlugin = (
         // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
         if (file !== newConfig.__meta.path && file.endsWith(".tsx")) return;
 
+        await ws.close();
         await restart();
         printDiagnosticsToConsole(
           `[${new Date().toLocaleTimeString()}]: Config ${path.basename(currentConfig.__meta.path)} changed. Restarted server.`,
