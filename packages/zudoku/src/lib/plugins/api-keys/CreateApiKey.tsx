@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import {
@@ -18,6 +18,7 @@ type CreateApiKey = { description: string; expiresOn?: string };
 
 export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const form = useForm<CreateApiKey>({
     defaultValues: {
@@ -27,7 +28,7 @@ export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
   const createKeyMutation = useMutation({
     mutationFn: ({ description, expiresOn }: CreateApiKey) => {
       if (!service.createKey) {
-        throw new Error("deleteKey not implemented");
+        throw new Error("createKey not implemented");
       }
 
       const expiresOnDate =
@@ -38,7 +39,10 @@ export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
         context,
       );
     },
-    onSuccess: () => navigate("/settings/api-keys/"),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+      await navigate("/settings/api-keys/");
+    },
   });
 
   if (!service.createKey) {
