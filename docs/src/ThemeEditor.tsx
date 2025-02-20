@@ -142,99 +142,101 @@ export const ThemeEditor = () => {
       </div>
       <div className="border-border border-b border-dashed border-px my-2" />
       <div className="grid grid-cols-[minmax(0,515px)_1fr] gap-2">
-        <Card>
-          {/* <CardHeader className="py-4" /> */}
-          <CardContent className="grid grid-cols-1 lg:grid-cols-2 ">
-            <CardHeader className="px-0 py-6">
-              <CardDescription>Mode</CardDescription>
-            </CardHeader>
-            <CardHeader className="px-0 py-6">
-              <CardDescription>Radius</CardDescription>
-            </CardHeader>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className={cn(
-                  resolvedTheme === "light" && "border-primary border-2",
-                )}
-                onClick={() => setTheme("light")}
-              >
-                <SunIcon size={16} className="mr-2" />
-                Light
-              </Button>
-              <Button
-                variant="outline"
-                className={cn(
-                  resolvedTheme === "dark" && "border-primary border-2",
-                )}
-                onClick={() => setTheme("dark")}
-              >
-                <MoonIcon size={16} className="mr-2" />
-                Dark
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              {availableRadius.map((r) => (
+        <div>
+          <Card>
+            {/* <CardHeader className="py-4" /> */}
+            <CardContent className="grid grid-cols-1 lg:grid-cols-2 ">
+              <CardHeader className="px-0 py-6">
+                <CardDescription>Mode</CardDescription>
+              </CardHeader>
+              <CardHeader className="px-0 py-6">
+                <CardDescription>Radius</CardDescription>
+              </CardHeader>
+              <div className="flex gap-2">
                 <Button
-                  className={cn(
-                    r === radius && "border-primary border-2",
-                    "w-10",
-                  )}
-                  key={r}
-                  size="sm"
                   variant="outline"
-                  onClick={() => setRadius(r)}
+                  className={cn(
+                    resolvedTheme === "light" && "border-primary border-2",
+                  )}
+                  onClick={() => setTheme("light")}
                 >
-                  {r}
+                  <SunIcon size={16} className="mr-2" />
+                  Light
                 </Button>
-              ))}
-            </div>
-          </CardContent>
-
-          <CardHeader className="space-y-0 py-4 flex flex-row items-center gap-2">
-            <CardDescription>Colors</CardDescription>
-            <a
-              href="https://ui.shadcn.com/themes"
-              target="_blank"
-              className="text-xs"
-              rel="noreferrer"
-            >
-              by shadcn
-            </a>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 ">
-              {baseColors.map((color) => (
                 <Button
-                  key={color.name}
-                  size="sm"
                   variant="outline"
-                  onClick={() => setColor(color.name)}
                   className={cn(
-                    color.name === activeColor?.name &&
-                      "border-primary border-2",
+                    resolvedTheme === "dark" && "border-primary border-2",
                   )}
-                  style={
-                    {
-                      "--theme-primary": `hsl(${
-                        activeColor?.activeColor[resolvedTheme]
-                      })`,
-                    } as React.CSSProperties
-                  }
+                  onClick={() => setTheme("dark")}
                 >
-                  <div
-                    className="w-4 h-4 rounded-full mr-2"
-                    style={{
-                      backgroundColor: `hsl(${color.activeColor[resolvedTheme]})`,
-                    }}
-                  />
-
-                  <div className="flex-1">{color.name}</div>
+                  <MoonIcon size={16} className="mr-2" />
+                  Dark
                 </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+              <div className="flex gap-2">
+                {availableRadius.map((r) => (
+                  <Button
+                    className={cn(
+                      r === radius && "border-primary border-2",
+                      "w-10",
+                    )}
+                    key={r}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRadius(r)}
+                  >
+                    {r}
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+
+            <CardHeader className="space-y-0 py-4 flex flex-row items-center gap-2">
+              <CardDescription>Colors</CardDescription>
+              <a
+                href="https://ui.shadcn.com/themes"
+                target="_blank"
+                className="text-xs"
+                rel="noreferrer"
+              >
+                by shadcn
+              </a>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 ">
+                {baseColors.map((color) => (
+                  <Button
+                    key={color.name}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setColor(color.name)}
+                    className={cn(
+                      color.name === activeColor?.name &&
+                        "border-primary border-2",
+                    )}
+                    style={
+                      {
+                        "--theme-primary": `hsl(${
+                          activeColor?.activeColor[resolvedTheme]
+                        })`,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div
+                      className="w-4 h-4 rounded-full mr-2"
+                      style={{
+                        backgroundColor: `hsl(${color.activeColor[resolvedTheme]})`,
+                      }}
+                    />
+
+                    <div className="flex-1">{color.name}</div>
+                  </Button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         <div className="rounded-lg overflow-hidden">
           <div className="grid grid-cols-1 gap-2">
             <Card>
@@ -316,3 +318,5 @@ export const ThemeEditorPage = () => {
     </div>
   );
 };
+
+export default ThemeEditorPage;

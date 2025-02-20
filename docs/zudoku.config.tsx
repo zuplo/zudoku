@@ -1,3 +1,4 @@
+import { lazy } from "react";
 import type { ZudokuConfig } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
@@ -5,7 +6,7 @@ import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
-import { ThemeEditorPage } from "./src/ThemeEditor";
+
 const config: ZudokuConfig = {
   basePath: "/docs",
   page: {
@@ -62,7 +63,7 @@ const config: ZudokuConfig = {
   customPages: [
     {
       path: "theme-playground",
-      render: ThemeEditorPage,
+      render: lazy(() => import("./src/ThemeEditor.js")),
       prose: false,
     },
   ],
