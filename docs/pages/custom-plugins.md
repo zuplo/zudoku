@@ -104,11 +104,12 @@ import { ZudokuPlugin } from "zudoku";
 
 const eventConsumerPlugin: ZudokuPlugin = {
   events: {
-    onRouteChange: (path) => {
-      console.log(`Route changed to: ${path}`);
-    },
-    onThemeChange: (theme) => {
-      console.log(`Theme changed to: ${theme}`);
+    location: ({ from, to }) => {
+      if (!from) {
+        console.log(`Initial navigation to: ${to.pathname}`);
+      } else {
+        console.log(`Navigation from ${from.pathname} to ${to.pathname}`);
+      }
     },
   },
 };
