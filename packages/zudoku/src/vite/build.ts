@@ -9,8 +9,6 @@ import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
 
-const DIST_DIR = "dist";
-
 export async function runBuild(options: { dir: string }) {
   // Shouldn't run in parallel because it's potentially racy
   const viteClientConfig = await getViteConfig(options.dir, {
@@ -80,7 +78,7 @@ export async function runBuild(options: { dir: string }) {
           recursive: true,
         });
         await rename(
-          path.join(options.dir, DIST_DIR),
+          viteClientConfig.build.outDir,
           path.join(options.dir, ".vercel/output/static"),
         );
       }
