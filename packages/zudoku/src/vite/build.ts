@@ -94,6 +94,7 @@ export async function runBuild(options: { dir: string }) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
       console.error(e);
+      throw e;
     }
 
     return;
