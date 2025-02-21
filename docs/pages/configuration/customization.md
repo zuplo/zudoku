@@ -100,10 +100,12 @@ Then you can create a `font` object in your config as above and set the `url` to
 ```typescript
 const config = {
   theme: {
-    sans: {
-      fontFamily: "Roboto, sans-serif",
-      url: "/fonts.css",
-    },
+    fonts {
+      sans: {
+        fontFamily: "Roboto, sans-serif",
+        url: "/fonts.css",
+      },
+    }
   },
 };
 ```
