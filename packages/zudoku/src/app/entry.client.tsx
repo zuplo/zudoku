@@ -14,6 +14,14 @@ import { getRoutesByConfig } from "./main.js";
 const routes = getRoutesByConfig(config);
 const root = document.getElementById("root")!;
 
+declare global {
+  interface Window {
+    ZUDOKU_VERSION: string;
+  }
+}
+
+window.ZUDOKU_VERSION = process.env.ZUDOKU_VERSION ?? "unknown";
+
 if (process.env.SENTRY_DSN) {
   void import("./sentry.js").then((mod) => {
     mod.initSentry({ dsn: process.env.SENTRY_DSN as string });

@@ -11,6 +11,7 @@ import {
   mergeConfig,
   loadEnv as viteLoadEnv,
 } from "vite";
+import packageJson from "../../package.json" with { type: "json" };
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import { findAvailablePort } from "../cli/common/utils/ports.js";
@@ -210,6 +211,7 @@ export async function getViteConfig(
       },
     },
     define: {
+      "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
       ...publicEnv,
     },
