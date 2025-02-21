@@ -3,7 +3,7 @@ sidebar_icon: paintbrush
 title: Colors & Theme
 ---
 
-## Colors & Radius
+## Colors
 
 You can customize the theme colors for both light and dark modes. Colors can be specified using hex values (which will be automatically converted to HSL) or direct HSL values.
 
@@ -30,7 +30,6 @@ const config = {
       border: "#e2e8f0",
       input: "#e2e8f0",
       ring: "#0284c7",
-      radius: "0.5rem",
     },
     dark: {
       // Dark mode colors...
@@ -39,18 +38,35 @@ const config = {
 };
 ```
 
-### Radius
+## Radius
 
 The `radius` property is used to set the border radius for the theme. It can be a single and all radii will be inherited from that value.
 
 ```typescript
-const config = {
+export default {
   theme: {
     dark: {
+      // other theme variables...
       radius: "0.5rem",
     },
     light: {
       radius: "0.5rem",
+    },
+  },
+};
+```
+
+or to make sure the radius is the same for both light and dark modes you can use a variable:
+
+```typescript
+const radius = "0.5rem";
+export default {
+  theme: {
+    dark: {
+      radius,
+    },
+    light: {
+      radius,
     },
   },
 };
