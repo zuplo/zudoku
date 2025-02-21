@@ -23,7 +23,6 @@ export const docs: SidebarEntry = [
       "configuration/navigation",
       "configuration/search",
       "configuration/authentication",
-      "configuration/customization",
       "configuration/sentry",
       "configuration/vite-config",
     ],
@@ -32,7 +31,7 @@ export const docs: SidebarEntry = [
     type: "category",
     label: "Customization",
     icon: "palette",
-    items: ["customization/available-variables"],
+    items: ["customization/colors-theme", "customization/fonts"],
   },
   {
     type: "category",
