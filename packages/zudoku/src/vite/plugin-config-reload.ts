@@ -12,7 +12,7 @@ export const createConfigReloadPlugin = (
 
   const plugin: Plugin = {
     name: "zudoku-config-reload",
-    configureServer: ({ watcher, restart, ws }) => {
+    configureServer: ({ watcher, ws, environments }) => {
       if (!onConfigChange) return;
 
       watcher.on("change", async (file) => {
@@ -26,10 +26,14 @@ export const createConfigReloadPlugin = (
         // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
         if (file !== newConfig.__meta.path && file.endsWith(".tsx")) return;
 
-        await ws.close();
-        await restart();
+        Object.values(environments).forEach((environment) => {
+          environment.moduleGraph.invalidateAll();
+        });
+
+        ws.send({ type: "full-reload" });
+
         printDiagnosticsToConsole(
-          `[${new Date().toLocaleTimeString()}]: Config ${path.basename(currentConfig.__meta.path)} changed. Restarted server.`,
+          `[${new Date().toLocaleTimeString()}]: Config ${path.basename(currentConfig.__meta.path)} changed. Reloading...`,
         );
       });
     },

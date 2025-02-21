@@ -14,7 +14,6 @@ import {
 import packageJson from "../../package.json" with { type: "json" };
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
-import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type {
   LoadedConfig,
   ZudokuConfig,
@@ -174,7 +173,6 @@ export async function getViteConfig(
     return config;
   };
 
-  const websocketPort = await findAvailablePort(9800);
   const pluginOptions = getPluginOptions({
     dir,
     mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
@@ -222,9 +220,6 @@ export async function getViteConfig(
     server: {
       middlewareMode: true,
       open: true,
-      hmr: {
-        port: websocketPort,
-      },
       watch: {
         ignored: [
           `${dir}/dist`,
