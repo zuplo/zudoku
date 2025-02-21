@@ -1,10 +1,9 @@
 ---
-sidebar_icon: user-cog
+sidebar_icon: paintbrush
+title: Colors & Theme
 ---
 
-# Customization
-
-## Theme Colors
+## Colors & Radius
 
 You can customize the theme colors for both light and dark modes. Colors can be specified using hex values (which will be automatically converted to HSL) or direct HSL values.
 
@@ -40,9 +39,24 @@ const config = {
 };
 ```
 
-### Available Theme Variables
+### Radius
 
-The following theme variables are available for customization:
+The `radius` property is used to set the border radius for the theme. It can be a single and all radii will be inherited from that value.
+
+```typescript
+const config = {
+  theme: {
+    dark: {
+      radius: "0.5rem",
+    },
+    light: {
+      radius: "0.5rem",
+    },
+  },
+};
+```
+
+## Available Theme Variables
 
 - `background` - Main background color
 - `foreground` - Main text color
@@ -64,48 +78,3 @@ The following theme variables are available for customization:
 - `input` - Input field border color
 - `ring` - Focus ring color
 - `radius` - Border radius value
-
-## Font
-
-### External source
-
-```typescript
-const config = {
-  theme: {
-    sans: {
-      fontFamily: "Roboto, sans-serif",
-      url: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
-    },
-    // same for `mono`
-  },
-};
-```
-
-### Local source
-
-To use local fonts you can add them to the `public` folder and create a `fonts.css` in there:
-
-```css
-@font-face {
-  font-family: "Roboto";
-  font-style: normal;
-  font-weight: 400;
-  src: url("/roboto-400.woff2") format("woff2");
-}
-/* ... */
-```
-
-Then you can create a `font` object in your config as above and set the `url` to `/fonts.css`.
-
-```typescript
-const config = {
-  theme: {
-    fonts {
-      sans: {
-        fontFamily: "Roboto, sans-serif",
-        url: "/fonts.css",
-      },
-    }
-  },
-};
-```
