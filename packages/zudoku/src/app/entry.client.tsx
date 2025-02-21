@@ -34,6 +34,30 @@ if (root.childElementCount > 0) {
   void render(routes);
 }
 
+// eslint-disable-next-line no-console
+console.log(
+  "%cZUDOKU%cv" + window.ZUDOKU_VERSION,
+  [
+    "color: #FF00BD",
+    "line-height: 50px",
+    "font-weight: bolder",
+    "font-size: 40px",
+    "-webkit-text-stroke-width: 2px",
+    "-webkit-text-stroke-color: #df0097",
+    "text-transform: uppercase",
+    "text-align: center",
+    "letter-spacing: 5px",
+  ].join(" ;"),
+  [
+    "color: #Df0097",
+    "line-height: 50px",
+    "font-weight: bolder",
+    "font-size: 15px",
+    "text-align: center",
+    "letter-spacing: 5px",
+  ].join(" ;"),
+);
+
 async function hydrateLazyRoutes(routes: RouteObject[]) {
   const path = window.location.pathname;
   const lazyMatches = matchRoutes(routes, path, config.basePath)?.filter(
