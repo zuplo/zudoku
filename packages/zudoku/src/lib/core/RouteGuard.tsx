@@ -16,12 +16,20 @@ export const RouteGuard = () => {
   );
 
   useEffect(() => {
-    if (isProtected && !auth.isAuthenticated) {
-      void zudoku.authentication?.signIn({
-        redirectTo: latestPath.current,
-      });
+    if (!isProtected || auth.isPending || auth.isAuthenticated) {
+      return;
     }
-  }, [isProtected, auth.isAuthenticated, zudoku.authentication, latestPath]);
+
+    void zudoku.authentication?.signIn({
+      redirectTo: latestPath.current,
+    });
+  }, [
+    isProtected,
+    auth.isPending,
+    auth.isAuthenticated,
+    zudoku.authentication,
+    latestPath,
+  ]);
 
   if (isProtected && !auth.isAuthenticated) {
     return null;
