@@ -64,9 +64,7 @@ export const prerender = async ({
 
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
-  const INACTIVITY_TIMEOUT_MS = 10_000; // Timeout after 10 seconds of inactivity
   let lastLogTime = start;
-  let lastActivityTime = start;
 
   const writeProgress = throttle(
     (count: number, total: number, urlPath: string) => {
@@ -80,24 +78,6 @@ export const prerender = async ({
   }
 
   let completedCount = 0;
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-  const inactivityTimeout = new Promise<never>((_, reject) => {
-    const checkInactivity = () => {
-      const inactiveTime = performance.now() - lastActivityTime;
-      if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
-        clearTimeout(timeoutId);
-        reject(
-          new Error(
-            `Prerender timed out after ${INACTIVITY_TIMEOUT_MS}ms of inactivity`,
-          ),
-        );
-        return;
-      }
-      timeoutId = setTimeout(checkInactivity, 1000);
-    };
-    timeoutId = setTimeout(checkInactivity, 1000);
-  });
 
   const serverOutDir = path.join(distDir, "server");
   const pool = new Piscina<WorkerData, WorkerResult>({
@@ -112,12 +92,11 @@ export const prerender = async ({
     } satisfies StaticWorkerData,
   });
 
-  const prerenderTasks = Promise.all(
+  const workerResults = await Promise.all(
     paths.map(async (urlPath) => {
       const result = await pool.run({ urlPath } satisfies WorkerData);
 
       completedCount++;
-      lastActivityTime = performance.now();
 
       if (isTTY()) {
         writeProgress(completedCount, paths.length, urlPath);
@@ -136,9 +115,6 @@ export const prerender = async ({
     }),
   );
 
-  const writtenFiles = await Promise.race([prerenderTasks, inactivityTimeout]);
-  clearTimeout(timeoutId);
-
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
   writeLine(`prerendered ${paths.length} routes in ${seconds} seconds\n`);
 
@@ -149,5 +125,5 @@ export const prerender = async ({
     baseOutputDir: distDir,
   });
 
-  return writtenFiles;
+  return workerResults;
 };
