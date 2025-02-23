@@ -1,11 +1,14 @@
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { RollupOutput, RollupWatcher } from "rollup";
+import type { RollupOutput, RollupWatcher } from "rollup";
 import { tsImport } from "tsx/esm/api";
 import withZuplo from "../zuplo/with-zuplo.js";
-import { ConfigWithMeta } from "./common.js";
-import { CommonConfig, validateCommonConfig } from "./validators/common.js";
+import { type ConfigWithMeta } from "./common.js";
+import {
+  type CommonConfig,
+  validateCommonConfig,
+} from "./validators/common.js";
 import { validateConfig } from "./validators/validate.js";
 
 const zudokuConfigFiles = [
@@ -72,7 +75,7 @@ async function getConfigFilePath(
 async function loadZudokuCodeConfig<TConfig>(
   rootDir: string,
   configPath: string,
-  envVars: Record<string, string | undefined>,
+  _envVars: Record<string, string | undefined>,
 ): Promise<{ dependencies: string[]; config: TConfig }> {
   const configFilePath = pathToFileURL(configPath).href;
 
@@ -173,6 +176,7 @@ export type ConfigLoaderOverrides = {
 // corresponding type in packages/config/src/index.d.ts
 export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   rootDir: string,
+  moduleDir: string,
   envVars: Record<string, string | undefined>,
   overrides?: ConfigLoaderOverrides,
 ): Promise<ConfigWithMeta<TConfig>> {
@@ -198,8 +202,11 @@ export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
   const configWithMetadata: ConfigWithMeta<TConfig> = {
     ...config,
     __meta: {
+      rootDir,
+      moduleDir,
+      mode: process.env.ZUDOKU_ENV,
       dependencies,
-      path: configPath,
+      configPath,
       registerDependency: (...files: string[]) => {
         const newFiles = files.filter((f) => !dependencies.includes(f));
         dependencies.push(...newFiles);

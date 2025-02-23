@@ -2,19 +2,20 @@ import { glob } from "glob";
 import matter from "gray-matter";
 import { readFile } from "node:fs/promises";
 import type { Plugin } from "vite";
-import type { ZudokuPluginOptions } from "../config/config.js";
+import type { LoadedConfig } from "../config/config.js";
+import { reload } from "./plugin-config-reload.js";
 
 // This plugin is responsible to restart the dev server when the frontmatter changed inside a markdown file.
 export const viteFrontmatterPlugin = (
-  getConfig: () => ZudokuPluginOptions,
+  getConfig: () => LoadedConfig,
 ): Plugin => ({
   // set enforce: "pre" so it's run before the MDX plugin
   enforce: "pre",
   name: "zudoku-frontmatter-plugin",
-  configureServer: async ({ watcher, restart }) => {
+  configureServer: async (server) => {
     const config = getConfig();
     const files = await glob("**/*.{md,mdx}", {
-      cwd: config.rootDir,
+      cwd: config.__meta.rootDir,
       ignore: ["node_modules", "dist"],
       absolute: true,
     });
@@ -29,14 +30,14 @@ export const viteFrontmatterPlugin = (
       ),
     );
 
-    watcher.on("change", async (filePath) => {
+    server.watcher.on("change", async (filePath) => {
       if (/\.mdx?$/.test(filePath)) {
         const fm = matter(await readFile(filePath, "utf-8"));
         const prevFm = frontmatterMap.get(filePath);
 
         if (prevFm && JSON.stringify(prevFm) !== JSON.stringify(fm.data)) {
           frontmatterMap.set(filePath, fm.data);
-          await restart();
+          reload(server);
         }
       }
     });

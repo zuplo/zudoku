@@ -12,6 +12,10 @@ import { logger } from "./common/logger.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
 import { printCriticalFailureToConsoleAndExit } from "./common/output.js";
 
+process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
+  ? "internal"
+  : "module";
+
 const MIN_NODE_VERSION = "20.0.0";
 
 if (gte(process.versions.node, MIN_NODE_VERSION)) {

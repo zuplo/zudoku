@@ -12,7 +12,7 @@ it("Should correctly load zudoku.config.ts file", async () => {
     rootPath,
   );
   // Normalize the path to Unix-style format
-  const normalizedPath = config.__meta.path
+  const normalizedPath = config.__meta.configPath
     .split(path.sep)
     .join(path.posix.sep);
 

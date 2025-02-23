@@ -1,9 +1,7 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 
-export const viteSearchPlugin = (
-  getConfig: () => ZudokuPluginOptions,
-): Plugin => {
+export const viteSearchPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-search-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -19,7 +17,7 @@ export const viteSearchPlugin = (
 
       const config = getConfig();
 
-      if (!config.search || config.mode === "standalone") {
+      if (!config.search || config.__meta.mode === "standalone") {
         return `export const configuredSearchPlugin = undefined;`;
       }
 

@@ -1,19 +1,9 @@
-import { ConfigWithMeta } from "./common.js";
+import type { ConfigWithMeta } from "./common.js";
 import type { ZudokuConfig } from "./validators/validate.js";
-
-export type URLString = `https://${string}` | `http://${string}`;
 
 export { type ZudokuConfig };
 
 export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
-
-export interface ZudokuPluginOptions extends ConfigWithMeta<ZudokuConfig> {
-  rootDir: string;
-  moduleDir: string;
-
-  // Internal use only
-  mode: "internal" | "module" | "standalone";
-}
 
 export type ClerkAuthenticationConfig = {
   type: "clerk";

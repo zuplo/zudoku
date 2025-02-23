@@ -1,10 +1,13 @@
-import { $RefParser, JSONSchema } from "@apidevtools/json-schema-ref-parser";
+import {
+  $RefParser,
+  type JSONSchema,
+} from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 import {
   getAllOperations,
   getAllTags,
@@ -42,12 +45,12 @@ const validateSchema = async (schema: JSONSchema, filePath: string) => {
 };
 
 async function processSchemas(
-  config: ZudokuPluginOptions,
+  config: LoadedConfig,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   zuploProcessors: Array<(schema: any) => Promise<any>> = [],
 ): Promise<Record<string, ProcessedSchema[]>> {
   const tmpDir = path.posix.join(
-    config.rootDir,
+    config.__meta.rootDir,
     "node_modules/.zudoku/processed",
   );
   await fs.rm(tmpDir, { recursive: true, force: true });
@@ -76,7 +79,7 @@ async function processSchemas(
 
     const inputFiles = await Promise.all(
       inputs.map(async (input) => {
-        const fullPath = path.resolve(config.rootDir, input);
+        const fullPath = path.resolve(config.__meta.rootDir, input);
         const parser = new $RefParser();
         const schema = await parser.bundle(fullPath);
 
@@ -122,7 +125,7 @@ async function processSchemas(
 }
 
 const viteApiPlugin = async (
-  getConfig: () => ZudokuPluginOptions,
+  getConfig: () => LoadedConfig,
 ): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
@@ -132,7 +135,7 @@ const viteApiPlugin = async (
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = initialConfig.isZuplo
     ? await tsImport("../zuplo/with-zuplo-processors.js", import.meta.url)
-        .then((m) => m.default(initialConfig.rootDir))
+        .then((m) => m.default(initialConfig.__meta.rootDir))
         .catch((e) => {
           // eslint-disable-next-line no-console
           console.warn("Failed to load Zuplo processors", e);
@@ -157,7 +160,7 @@ const viteApiPlugin = async (
 
       const config = getConfig();
 
-      if (config.mode === "standalone") {
+      if (config.__meta.mode === "standalone") {
         return [
           "export const configuredApiPlugins = [];",
           "export const configuredApiCatalogPlugins = [];",
