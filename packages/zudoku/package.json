@@ -291,6 +291,7 @@
     "@vitest/coverage-v8": "3.0.5",
     "happy-dom": "17.1.1",
     "mdast-util-mdx": "3.0.0",
+    "pagefind": "1.4.0-alpha.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "5.14.0",

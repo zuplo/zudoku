@@ -232,7 +232,9 @@ export async function getViteConfig(
               ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
               : "zudoku/app/entry.client.tsx"
             : undefined,
+        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
       },
+      chunkSizeWarningLimit: 1500,
     },
     experimental: {
       renderBuiltUrl(filename) {
@@ -258,8 +260,11 @@ export async function getViteConfig(
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
       ],
     },
-    // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
-    assetsInclude: ["/__z/entry.client.tsx"],
+    assetsInclude: [
+      // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
+      "/__z/entry.client.tsx",
+      "**/pagefind.js",
+    ],
     plugins: [vitePlugin(config, handleConfigChange)],
     future: {
       removeServerModuleGraph: "warn",

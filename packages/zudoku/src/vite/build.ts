@@ -1,6 +1,8 @@
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import colors from "picocolors";
 import { build as viteBuild } from "vite";
+import { logger } from "../cli/common/logger.js";
 import { findOutputPathOfServerConfig } from "../config/loader.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -74,6 +76,25 @@ export async function runBuild(options: { dir: string }) {
       }
 
       await rm(viteServerConfig.build.outDir, { recursive: true, force: true });
+
+      if (config.search?.type === "pagefind") {
+        const pagefind = await import("pagefind");
+
+        const { index, errors } = await pagefind.createIndex();
+
+        invariant(
+          index,
+          `Failed to create pagefind index: ${errors.join(", ")}`,
+        );
+
+        await index.addDirectory({ path: viteClientConfig.build.outDir });
+
+        await index.writeFiles({
+          outputPath: path.join(viteClientConfig.build.outDir, "pagefind"),
+        });
+
+        logger.info(colors.blue(`✓ pagefind search index written`));
+      }
 
       if (process.env.VERCEL) {
         await mkdir(path.join(options.dir, ".vercel/output/static"), {
