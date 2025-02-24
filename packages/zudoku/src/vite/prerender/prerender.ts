@@ -116,7 +116,9 @@ export const prerender = async ({
   );
 
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
-  writeLine(`prerendered ${paths.length} routes in ${seconds} seconds\n`);
+  writeLine(
+    colors.blue(`✓ prerendered ${paths.length} routes in ${seconds} seconds\n`),
+  );
 
   await generateSitemap({
     basePath: config.basePath,

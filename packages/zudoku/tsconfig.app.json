@@ -28,6 +28,9 @@
       "zudoku/plugins/search-inkeep": [
         "./src/lib/plugins/search-inkeep/index.tsx"
       ],
+      "zudoku/plugins/search-pagefind": [
+        "./src/lib/plugins/search-pagefind/index.tsx"
+      ],
       "zudoku/plugins": ["./src/lib/core/plugins.ts"],
       "zudoku/plugins/api-keys": ["./src/lib/plugins/api-keys/index.tsx"]
     }
