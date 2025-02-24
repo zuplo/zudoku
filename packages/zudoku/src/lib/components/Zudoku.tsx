@@ -2,7 +2,6 @@ import { MDXProvider } from "@mdx-js/react";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
-  Fragment,
   memo,
   type PropsWithChildren,
   useContext,
@@ -13,7 +12,10 @@ import {
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useNavigation } from "react-router";
 import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
-import { ZudokuContext, ZudokuContextOptions } from "../core/ZudokuContext.js";
+import {
+  ZudokuContext,
+  type ZudokuContextOptions,
+} from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { MdxComponents } from "../util/MdxComponents.js";
@@ -67,13 +69,13 @@ const ZudokoInner = memo(
     const [zudokuContext] = useState(() => new ZudokuContext(props));
 
     const heads = props.plugins
-      ?.filter(hasHead)
+      ?.flatMap((plugin) => (hasHead(plugin) ? (plugin.getHead?.() ?? []) : []))
       // eslint-disable-next-line react/no-array-index-key
-      .map((plugin, i) => <Fragment key={i}>{plugin.getHead?.()}</Fragment>);
+      .map((entry, i) => <Helmet key={i}>{entry}</Helmet>);
 
     return (
       <>
-        <Helmet>{heads}</Helmet>
+        {heads}
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
             <MDXProvider components={mdxComponents}>
