@@ -127,11 +127,25 @@ export class DevServer {
         .set({ "Content-Type": "text/javascript" })
         .end(transformed.code);
     });
+
     app.use(vite.middlewares);
 
     printDiagnosticsToConsole(
       `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
     );
+
+    if (config.search?.type === "pagefind") {
+      const pagefindPath = path.join(
+        vite.config.publicDir,
+        "pagefind/pagefind.js",
+      );
+      const exists = await fs.stat(pagefindPath).catch(() => false);
+
+      if (!exists) {
+        await fs.mkdir(path.dirname(pagefindPath), { recursive: true });
+        await fs.writeFile(pagefindPath, 'throw new Error("NOT_BUILT_YET");');
+      }
+    }
 
     app.use("*", async (request, response, next) => {
       const url = request.originalUrl;
