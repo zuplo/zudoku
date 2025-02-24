@@ -14,11 +14,7 @@ import {
 import packageJson from "../../package.json" with { type: "json" };
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
-import type {
-  LoadedConfig,
-  ZudokuConfig,
-  ZudokuPluginOptions,
-} from "../config/config.js";
+import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -65,6 +61,17 @@ let config: LoadedConfig | undefined;
 let envPrefix: string[] | undefined;
 let publicEnv: Record<string, string> | undefined;
 
+export const getStandaloneConfig = (rootDir: string): LoadedConfig => ({
+  __meta: {
+    rootDir,
+    moduleDir: getModuleDir(),
+    mode: "standalone",
+    dependencies: [],
+    configPath: "",
+    registerDependency: () => {},
+  },
+});
+
 export async function loadZudokuConfig(
   configEnv: ConfigEnv,
   rootDir: string,
@@ -87,17 +94,14 @@ export async function loadZudokuConfig(
         envVars[key] = process.env[key];
       }
     }
-    const loadedConfig = await tryLoadZudokuConfig(rootDir, envVars);
+
+    config = await tryLoadZudokuConfig(rootDir, getModuleDir(), envVars);
 
     logger.info(
       colors.yellow(`loaded config file `) +
-        colors.dim(loadedConfig.__meta.path),
-      {
-        timestamp: true,
-      },
+        colors.dim(config.__meta.configPath),
+      { timestamp: true },
     );
-
-    config = loadedConfig;
 
     return { config, envPrefix, publicEnv };
   } catch (error) {
@@ -107,7 +111,6 @@ export async function loadZudokuConfig(
     });
   }
 
-  // Default config
   logger.error(colors.red(`no zudoku config file found in project root.`), {
     timestamp: true,
   });
@@ -136,21 +139,6 @@ export function getAppServerEntryPath() {
   return path.posix.join(modDir, "src", "app", "entry.server.tsx");
 }
 
-export function getPluginOptions({
-  dir,
-  mode,
-}: {
-  dir: string;
-  mode: ZudokuPluginOptions["mode"];
-}): ZudokuPluginOptions {
-  const moduleDir = getModuleDir();
-  return {
-    ...config!,
-    rootDir: dir,
-    moduleDir,
-    mode,
-  };
-}
 // the vite config gets loaded multiple times, so we only log the CDN info once
 let hasLoggedCdnInfo = false;
 const MEDIA_REGEX =
@@ -173,11 +161,6 @@ export async function getViteConfig(
     return config;
   };
 
-  const pluginOptions = getPluginOptions({
-    dir,
-    mode: process.env.ZUDOKU_INTERNAL_DEV ? "internal" : "module",
-  });
-
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
   const base = cdnUrl?.base
@@ -186,7 +169,7 @@ export async function getViteConfig(
 
   if (cdnUrl && !hasLoggedCdnInfo) {
     logger.info(colors.blue(`Using CDN URL:`));
-    logger.info(colors.blue(`  base: `) + colors.dim(cdnUrl.base));
+    logger.info(colors.blue(`  base:  `) + colors.dim(cdnUrl.base));
     logger.info(colors.blue(`  media: `) + colors.dim(cdnUrl.media));
     hasLoggedCdnInfo = true;
   }
@@ -203,7 +186,7 @@ export async function getViteConfig(
     resolve: {
       alias: {
         "@mdx-js/react": path.resolve(
-          pluginOptions.moduleDir,
+          config.__meta.moduleDir,
           "node_modules/@mdx-js/react",
         ),
       },
@@ -225,8 +208,8 @@ export async function getViteConfig(
           `${dir}/dist`,
           `${dir}/lib`,
           `${dir}/.git`,
-          `${pluginOptions.moduleDir}/src/vite`,
-          `${pluginOptions.moduleDir}/src/cli`,
+          `${config.__meta.moduleDir}/src/vite`,
+          `${config.__meta.moduleDir}/src/cli`,
         ],
       },
     },
@@ -246,7 +229,7 @@ export async function getViteConfig(
         input:
           configEnv.command === "build"
             ? configEnv.isSsrBuild
-              ? ["zudoku/app/entry.server.tsx", config.__meta.path]
+              ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
               : "zudoku/app/entry.client.tsx"
             : undefined,
       },
@@ -277,7 +260,7 @@ export async function getViteConfig(
     },
     // Workaround for Pre-transform error for "virtual" file: https://github.com/vitejs/vite/issues/15374
     assetsInclude: ["/__z/entry.client.tsx"],
-    plugins: [vitePlugin(pluginOptions, handleConfigChange)],
+    plugins: [vitePlugin(config, handleConfigChange)],
     future: {
       removeServerModuleGraph: "warn",
       removeSsrLoadModule: "warn",
@@ -296,11 +279,11 @@ export async function getViteConfig(
               // Tailwind seems to crash if it tries to parse compiled .js files
               // as a workaround, we will just ship the source file and use those
               // `${moduleDir}/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              `${pluginOptions.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
+              `${config.__meta.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
               // Include the config file and every file it depends on
-              config.__meta.path,
+              config.__meta.configPath,
               ...config.__meta.dependencies.map(
-                (dep) => `${path.dirname(config.__meta.path)}/${dep}`,
+                (dep) => `${path.dirname(config.__meta.configPath)}/${dep}`,
               ),
               `${dir}/src/**/*.{js,ts,jsx,tsx,md,mdx}`,
               // All doc files

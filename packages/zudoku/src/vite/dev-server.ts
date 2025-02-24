@@ -1,5 +1,5 @@
 import express, { type Express } from "express";
-import { createHttpTerminator, HttpTerminator } from "http-terminator";
+import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import fs from "node:fs/promises";
 import http, { type Server } from "node:http";
 import https from "node:https";
@@ -20,7 +20,7 @@ import {
   getAppServerEntryPath,
   getViteConfig,
   loadZudokuConfig,
-  ZudokuConfigEnv,
+  type ZudokuConfigEnv,
 } from "./config.js";
 import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";

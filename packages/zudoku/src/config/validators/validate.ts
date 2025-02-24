@@ -4,7 +4,7 @@ import z from "zod";
 import { fromError } from "zod-validation-error";
 import type { ExposedComponentProps } from "../../lib/components/SlotletProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
-import { MdxComponentsType } from "../../lib/util/MdxComponents.js";
+import { type MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import { CommonConfigSchema, refine } from "./common.js";
 
 /**

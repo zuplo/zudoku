@@ -1,5 +1,5 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 
 const THEME_VARIABLES = [
@@ -101,7 +101,7 @@ const generateCss = (theme: Theme) =>
     })
     .join("\n");
 
-export const viteThemeCss = (getConfig: () => ZudokuPluginOptions): Plugin => {
+export const viteThemeCss = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-theme.css";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 

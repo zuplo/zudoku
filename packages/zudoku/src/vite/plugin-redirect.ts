@@ -1,7 +1,7 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 
-const viteRedirectPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteRedirectPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-redirect-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -15,14 +15,14 @@ const viteRedirectPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
     async load(id) {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
-        if (!config.redirects || config.mode === "standalone") {
+        if (!config.redirects || config.__meta.mode === "standalone") {
           return `export const configuredRedirectPlugin = undefined;`;
         }
 
         const code: string[] = [
           `const redirects = ${JSON.stringify(config.redirects ?? [], null, 2)};`,
-          config.mode === "internal"
-            ? `import { redirectPlugin } from "${config.moduleDir}/src/lib/plugins/redirect/index.tsx";`
+          config.__meta.mode === "internal"
+            ? `import { redirectPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/redirect/index.tsx";`
             : `import { redirectPlugin } from "zudoku/plugins/redirect";`,
         ];
 
