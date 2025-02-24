@@ -17,28 +17,22 @@ import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
   topNavigation: [
-    { id: "documentation", label: "Documentation" },
+    { id: "docs", label: "Documentation" },
     { id: "api", label: "API Reference" },
   ],
   sidebar: {
-    documentation: [
+    docs: [
       {
         type: "category",
         label: "Overview",
-        items: ["example", "other-example"],
+        items: ["introduction", "example"],
       },
     ],
   },
-  // Protect specific routes that require authentication
-  protectedRoutes: [
-    "/admin/*", // Protect all routes under /admin
-    "/api/private", // Protect private API documentation
-  ],
-  redirects: [{ from: "/", to: "/documentation" }],
+  redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: {
-    type: "url",
-    input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
-    // input: "https://rickandmorty.zuplo.io/openapi.json", // ...or, uncomment this line to see an example
+    type: "file",
+    input: "./apis/openapi.yaml",
     navigationId: "api",
   },
   docs: {
