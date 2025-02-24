@@ -1,4 +1,6 @@
+import { createNanoEvents } from "nanoevents";
 import { ReactNode } from "react";
+import { Location } from "react-router";
 import { TopNavigationItem } from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
@@ -6,13 +8,19 @@ import type { ComponentsContextType } from "../components/context/ComponentsCont
 import { Slotlets } from "../components/SlotletProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
+import { objectEntries } from "../util/objectEntries.js";
 import {
   isApiIdentityPlugin,
+  isEventConsumerPlugin,
   isNavigationPlugin,
   type NavigationPlugin,
   needsInitialization,
   type ZudokuPlugin,
 } from "./plugins.js";
+
+export interface ZudokuEvents {
+  location: (event: { from?: Location; to: Location }) => void;
+}
 
 export interface ApiIdentity {
   authorizeRequest: (request: Request) => Promise<Request> | Request;
@@ -76,6 +84,7 @@ export class ZudokuContext {
   public page: ZudokuContextOptions["page"];
   public authentication?: ZudokuContextOptions["authentication"];
   private readonly navigationPlugins: NavigationPlugin[];
+  private emitter = createNanoEvents<ZudokuEvents>();
 
   constructor(public readonly options: ZudokuContextOptions) {
     this.plugins = options.plugins ?? [];
@@ -85,6 +94,14 @@ export class ZudokuContext {
     this.authentication = options.authentication;
     this.meta = options.metadata;
     this.page = options.page;
+
+    this.plugins.forEach((plugin) => {
+      if (!isEventConsumerPlugin(plugin)) return;
+
+      objectEntries(plugin.events).forEach(([event, handler]) => {
+        this.emitter.on(event, handler);
+      });
+    });
   }
 
   initialize = async (): Promise<void> => {
@@ -103,6 +120,20 @@ export class ZudokuContext {
     );
 
     return keys.flat();
+  };
+
+  addEventListener<E extends keyof ZudokuEvents>(
+    event: E,
+    callback: ZudokuEvents[E],
+  ) {
+    return this.emitter.on(event, callback);
+  }
+
+  emitEvent = <E extends keyof ZudokuEvents>(
+    event: E,
+    ...data: Parameters<ZudokuEvents[E]>
+  ) => {
+    return this.emitter.emit(event, ...data);
   };
 
   getPluginSidebar = async (path: string) => {

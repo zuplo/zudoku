@@ -81,7 +81,7 @@ export const getRoutesByOptions = (
   enableStatusPages = false,
 ) => {
   const allPlugins = [
-    ...(options.plugins ? options.plugins : []),
+    ...(options.plugins ?? []),
     ...(options.authentication?.getAuthenticationPlugin
       ? [options.authentication.getAuthenticationPlugin()]
       : []),
