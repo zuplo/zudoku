@@ -50,6 +50,13 @@ module.exports = {
     // Typescript
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/consistent-type-imports": [
+      "warn",
+      {
+        prefer: "type-imports",
+        fixStyle: "inline-type-imports",
+      },
+    ],
     "@typescript-eslint/naming-convention": [
       "error",
       {
