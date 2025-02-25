@@ -4,7 +4,7 @@ import { preview } from "../preview/handler.js";
 
 export type Arguments = {
   dir: string;
-  port: number;
+  port?: number;
 };
 
 const previewCommand = {
@@ -21,7 +21,6 @@ const previewCommand = {
       })
       .option("port", {
         type: "number",
-        default: 4000,
         describe: "The port to run the local server on",
       }),
   handler: async (argv: Arguments) => {

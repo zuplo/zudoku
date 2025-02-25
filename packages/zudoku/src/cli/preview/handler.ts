@@ -6,6 +6,8 @@ import type { Arguments } from "../cmds/preview.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
 import { findAvailablePort } from "../common/utils/ports.js";
 
+export const DEFAULT_PREVIEW_PORT = 4000;
+
 export async function preview(argv: Arguments) {
   const dir = path.resolve(process.cwd(), argv.dir);
   const distDir = path.join(dir, "dist");
@@ -18,7 +20,7 @@ export async function preview(argv: Arguments) {
   printDiagnosticsToConsole("Starting build preview server");
   printDiagnosticsToConsole("");
 
-  const port = await findAvailablePort(argv.port);
+  const port = await findAvailablePort(argv.port ?? DEFAULT_PREVIEW_PORT);
   const app = express();
 
   app.use(express.static(distDir, { extensions: ["html"] }));

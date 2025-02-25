@@ -1,10 +1,11 @@
 import { type Argv } from "yargs";
 import { build } from "../build/handler.js";
 import { captureEvent } from "../common/analytics/lib.js";
+import { DEFAULT_PREVIEW_PORT } from "../preview/handler.js";
 
 export type Arguments = {
   dir: string;
-  preview: number;
+  preview?: boolean | number;
 };
 
 export default {
@@ -20,10 +21,13 @@ export default {
         hidden: true,
       })
       .option("preview", {
-        type: "number",
         describe:
           "Preview the build after completion (optionally with a custom port)",
-        default: 4000,
+        coerce: (value: unknown) => {
+          if (typeof value === "number") return value;
+          if (value === true) return DEFAULT_PREVIEW_PORT;
+          return undefined;
+        },
       }),
   handler: async (argv: Arguments) => {
     process.env.NODE_ENV = "production";

@@ -13,6 +13,9 @@ export async function build(argv: Arguments) {
   await runBuild({ dir });
 
   if (argv.preview) {
-    await runPreview({ dir: argv.dir, port: argv.preview });
+    await runPreview({
+      dir: argv.dir,
+      port: typeof argv.preview === "number" ? argv.preview : undefined,
+    });
   }
 }
