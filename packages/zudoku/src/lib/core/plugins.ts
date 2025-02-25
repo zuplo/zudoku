@@ -3,14 +3,19 @@ import { type ReactElement } from "react";
 import { type RouteObject } from "react-router";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
 import { MdxComponentsType } from "../util/MdxComponents.js";
-import { ZudokuContext, type ApiIdentity } from "./ZudokuContext.js";
+import {
+  ZudokuContext,
+  ZudokuEvents,
+  type ApiIdentity,
+} from "./ZudokuContext.js";
 
 export type ZudokuPlugin =
   | CommonPlugin
   | ProfileMenuPlugin
   | NavigationPlugin
   | ApiIdentityPlugin
-  | SearchProviderPlugin;
+  | SearchProviderPlugin
+  | EventConsumerPlugin;
 
 export type { RouteObject };
 
@@ -58,6 +63,15 @@ export interface CommonPlugin {
   getHead?: () => ReactElement | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
+
+export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
+  events: { [K in keyof Event]: Event[K] };
+};
+
+export const isEventConsumerPlugin = (
+  obj: ZudokuPlugin,
+): obj is EventConsumerPlugin =>
+  "events" in obj && typeof obj.events === "object";
 
 export const isProfileMenuPlugin = (
   obj: ZudokuPlugin,
