@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "zudoku dev",
-    "build": "zudoku build"
+    "build": "zudoku build",
+    "preview": "zudoku preview"
   },
   "nx": {
     "tags": [

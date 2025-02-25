@@ -11,6 +11,10 @@
       "outputs": ["{projectRoot}/dist"],
       "cache": false
     },
+    "preview": {
+      "dependsOn": ["^build"],
+      "cache": false
+    },
     "clean": {
       "dependsOn": ["^clean"],
       "cache": false

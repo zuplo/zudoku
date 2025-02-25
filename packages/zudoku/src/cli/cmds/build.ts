@@ -1,25 +1,37 @@
-import { Argv } from "yargs";
-import { Arguments, build } from "../build/handler.js";
+import { type Argv } from "yargs";
+import { build } from "../build/handler.js";
 import { captureEvent } from "../common/analytics/lib.js";
+import { DEFAULT_PREVIEW_PORT } from "../preview/handler.js";
+
+export type Arguments = {
+  dir: string;
+  preview?: boolean | number;
+};
 
 export default {
   desc: "Build",
   command: "build",
-  builder: (yargs: Argv): Argv<unknown> => {
-    return yargs.option("dir", {
-      type: "string",
-      describe: "The directory containing your project",
-      default: ".",
-      normalize: true,
-      hidden: true,
-    });
-  },
-  handler: async (argv: unknown) => {
-    await captureEvent({
-      argv,
-      event: "zudoku build",
-    });
+  builder: (yargs: Argv) =>
+    yargs
+      .option("dir", {
+        type: "string",
+        describe: "The directory containing your project",
+        default: ".",
+        normalize: true,
+        hidden: true,
+      })
+      .option("preview", {
+        describe:
+          "Preview the build after completion (optionally with a custom port)",
+        coerce: (value: unknown) => {
+          if (typeof value === "number") return value;
+          if (value === true) return DEFAULT_PREVIEW_PORT;
+          return undefined;
+        },
+      }),
+  handler: async (argv: Arguments) => {
     process.env.NODE_ENV = "production";
-    await build(argv as Arguments);
+    await captureEvent({ argv, event: "zudoku build" });
+    await build(argv);
   },
 };
