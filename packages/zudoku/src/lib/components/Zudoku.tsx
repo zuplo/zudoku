@@ -24,7 +24,7 @@ import {
   ComponentsProvider,
   DEFAULT_COMPONENTS,
 } from "./context/ComponentsContext.js";
-import { RouterEventsProvider } from "./context/RouterEventsProvider.js";
+import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
 import { SlotletProvider } from "./SlotletProvider.js";
@@ -77,10 +77,9 @@ const ZudokoInner = memo(
     return (
       <>
         {heads}
-        <RouterEventsProvider />
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
-            <RouterEventsProvider />
+            <RouterEventsEmitter />
             <MDXProvider components={mdxComponents}>
               <ThemeProvider attribute="class" disableTransitionOnChange>
                 <ComponentsProvider value={components}>

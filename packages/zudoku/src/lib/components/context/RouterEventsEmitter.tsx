@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useLocation, type Location } from "react-router";
 import { useZudoku } from "./ZudokuContext.js";
 
-const RouterEventsProvider = () => {
+export const RouterEventsEmitter = () => {
   const location = useLocation();
   const zudoku = useZudoku();
   const previousLocation = useRef<Location | undefined>(undefined);
@@ -17,5 +17,3 @@ const RouterEventsProvider = () => {
 
   return null;
 };
-
-export { RouterEventsProvider };
