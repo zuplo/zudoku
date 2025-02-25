@@ -153,7 +153,11 @@ export const OperationList = ({
       : undefined;
 
   return (
-    <div className="pt-[--padding-content-top]">
+    <div
+      className="pt-[--padding-content-top]"
+      data-pagefind-filter="section:openapi"
+      data-pagefind-meta="section:openapi"
+    >
       <Helmet>
         <title>{title}</title>
         {metaDescription && (
