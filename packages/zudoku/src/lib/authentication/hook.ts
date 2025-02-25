@@ -1,8 +1,10 @@
+import { useLocation } from "react-router";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { useAuthState } from "./state.js";
 
 export const useAuth = () => {
   const { authentication } = useZudoku();
+  const currentPath = useLocation();
   const authState = useAuthState();
   const isAuthEnabled = typeof authentication !== "undefined";
 
@@ -15,7 +17,9 @@ export const useAuth = () => {
         throw new Error("Authentication is not enabled.");
       }
       // TODO: Should handle errors/state
-      await authentication.signIn();
+      await authentication.signIn({
+        redirectTo: window.location.href,
+      });
     },
 
     logout: async () => {
@@ -27,6 +31,13 @@ export const useAuth = () => {
 
       // Redirect to home
       window.location.href = "/";
+    },
+
+    signup: async () => {
+      if (!isAuthEnabled) {
+        throw new Error("Authentication is not enabled.");
+      }
+      await authentication.signUp();
     },
   };
 };

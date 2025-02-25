@@ -5,6 +5,7 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { PathRenderer } from "../../../components/PathRenderer.js";
 
+import { Button } from "zudoku/ui/Button.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
@@ -97,6 +98,9 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: Content;
+  requiresLogin?: boolean;
+  onLogin?: () => void;
+  onSignUp?: () => void;
 };
 
 export const Playground = ({
@@ -109,6 +113,9 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
   examples,
+  requiresLogin = false,
+  onLogin,
+  onSignUp,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -297,8 +304,45 @@ export const Playground = ({
       <form
         onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
         ref={formRef}
+        className="relative"
       >
-        <div className="grid grid-cols-2 text-sm h-full">
+        {requiresLogin && (
+          <div className="absolute top-1/2 right-1/2  -translate-y-1/2 translate-x-1/2 z-50">
+            <Alert>
+              <AlertTitle className="mb-2">
+                Welcome to the Playground
+              </AlertTitle>
+              <AlertDescription className="flex flex-col gap-2">
+                <div className="mb-2">
+                  To use the Playground, you need to login. Please login or
+                  signup to continue.
+                </div>
+                <div className="flex gap-2">
+                  {onSignUp && (
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      onClick={onSignUp}
+                    >
+                      Sign Up
+                    </Button>
+                  )}
+                  {onLogin && (
+                    <Button type="button" variant="default" onClick={onLogin}>
+                      Login
+                    </Button>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+        <div
+          className={cn(
+            "grid grid-cols-2 text-sm h-full",
+            requiresLogin && "opacity-30 pointer-events-none",
+          )}
+        >
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
