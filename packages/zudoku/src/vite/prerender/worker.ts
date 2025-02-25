@@ -5,7 +5,7 @@ import type { render as renderServer } from "../../app/entry.server.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
-import { WorkerResult } from "./prerender.js";
+import { type WorkerResult } from "./prerender.js";
 
 export type StaticWorkerData = {
   template: string;
@@ -39,6 +39,12 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   await render({ template, request, response, config });
   await response.isSent();
+
+  if (response.statusCode >= 500) {
+    throw new Error(
+      `SSR failed with status ${response.statusCode} for path: ${urlPath}`,
+    );
+  }
 
   const redirect = response.redirectedTo
     ? { from: pathname, to: response.redirectedTo }
