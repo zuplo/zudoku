@@ -94,6 +94,7 @@ export const PagefindSearch = ({
   return (
     <CommandDialog
       command={{ shouldFilter: false }}
+      content={{ className: "max-w-[750px]" }}
       open={isOpen}
       onOpenChange={onClose}
     >

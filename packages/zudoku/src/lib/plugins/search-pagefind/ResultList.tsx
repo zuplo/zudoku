@@ -24,7 +24,7 @@ export const ResultList = ({
   const navigate = useNavigate();
 
   return (
-    <CommandList>
+    <CommandList className="max-h-[450px]">
       {searchResults.map((result) => (
         <CommandGroup
           heading={result.meta.title ?? ""}
