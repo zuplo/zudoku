@@ -7,9 +7,11 @@ export class FileWritingResponse {
   private resolve = () => {};
   private resolved = new Promise<void>((res) => (this.resolve = res));
   public redirectedTo?: string;
+  public statusCode = 200;
 
   set() {}
   status(status: number) {
+    this.statusCode = status;
     if (status >= 300) {
       this.dontSave = true;
     }
@@ -23,7 +25,8 @@ export class FileWritingResponse {
     },
   ) {}
 
-  redirect(_status: number, url: string) {
+  redirect(status: number, url: string) {
+    this.statusCode = status;
     if (this.options.writeRedirects) {
       this.write(
         `<!doctype html><meta http-equiv="refresh" content="0; url=${url}">`,
