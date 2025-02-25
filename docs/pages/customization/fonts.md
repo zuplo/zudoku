@@ -11,11 +11,16 @@ When it comes to fonts Zudoku allows you to define a font for text `sans` and fo
 ```typescript
 const config = {
   theme: {
-    sans: {
-      fontFamily: "Roboto, sans-serif",
-      url: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
+    fonts: {
+      sans: {
+        fontFamily: "Roboto, sans-serif",
+        url: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap",
+      },
+      mono: {
+        fontFamily: "Roboto Mono, monospace",
+        url: "https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap",
+      },
     },
-    // same for `mono`
   },
 };
 ```
@@ -42,6 +47,10 @@ const config = {
     fonts {
       sans: {
         fontFamily: "Roboto, sans-serif",
+        url: "/fonts.css",
+      },
+      mono: {
+        fontFamily: "Roboto Mono, monospace",
         url: "/fonts.css",
       },
     }
