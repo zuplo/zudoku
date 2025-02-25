@@ -9,21 +9,21 @@ export const useScrollToHash = () => {
 
   const scrollToHash = useCallback(
     (hash: string) => {
-      const cleanHash = hash
-        .replace(/^#/, "")
-        // Operation list items might have subdivisions that the sidebar doesn't show.
-        // The subdivisions are separated by a slash so we need to remove everything before the slash to get the sidebar correct item.
-        .split("/")
-        .at(0)!;
+      const cleanHash = hash.replace(/^#/, "");
+
+      // Operation list items might have subdivisions that the sidebar doesn't show.
+      // The subdivisions are separated by a slash so we need to remove everything before the slash to get the sidebar correct item.
+      const linkHash = cleanHash.split("/").at(0)!;
       const element = document.getElementById(decodeURIComponent(cleanHash));
+
       const link = document.querySelector(
-        `[${DATA_ANCHOR_ATTR}="${cleanHash}"]`,
+        `[${DATA_ANCHOR_ATTR}="${linkHash}"]`,
       );
 
       if (element) {
         element.scrollIntoView();
         scrollIntoViewIfNeeded(link);
-        requestIdleCallback(() => setActiveAnchor(cleanHash));
+        requestIdleCallback(() => setActiveAnchor(linkHash));
         return true;
       }
 
