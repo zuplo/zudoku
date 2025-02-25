@@ -6,6 +6,7 @@ import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
 import build from "./cmds/build.js";
 import dev from "./cmds/dev.js";
+import preview from "./cmds/preview.js";
 import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
 import { logger } from "./common/logger.js";
@@ -44,6 +45,7 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
   const cli = yargs(hideBin(process.argv))
     .command(build)
     .command(dev)
+    .command(preview)
     .demandCommand()
     .strictCommands()
     .version(packageJson?.version)

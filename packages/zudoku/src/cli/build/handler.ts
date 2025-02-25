@@ -1,10 +1,8 @@
 import path from "node:path";
 import { runBuild } from "../../vite/build.js";
+import type { Arguments } from "../cmds/build.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
-
-export interface Arguments {
-  dir: string;
-}
+import { preview as runPreview } from "../preview/handler.js";
 
 export async function build(argv: Arguments) {
   printDiagnosticsToConsole("Starting build");
@@ -13,4 +11,8 @@ export async function build(argv: Arguments) {
 
   const dir = path.resolve(process.cwd(), argv.dir);
   await runBuild({ dir });
+
+  if (argv.preview) {
+    await runPreview({ dir: argv.dir, port: argv.preview });
+  }
 }

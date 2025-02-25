@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "zudoku dev",
     "build": "zudoku build",
+    "preview": "zudoku preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "devDependencies": {
