@@ -2,22 +2,39 @@
 title: Syntax Highlight
 ---
 
-import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight";
-
 It is used to highlight code blocks in your content.
 
 <Callout type="tip">
-  There is an easy way to use SyntaxHighlight in Markdown files, see
-  [Codeblocks](/markdown/code-blocks)
+  You can also use backticks to highlight code blocks in Markdown files, see
+  [Code Blocks](/markdown/code-blocks) for more information.
 </Callout>
+
+## Types
+
+```ts
+type SyntaxHighlightProps = {
+  language?: string;
+  code?: string;
+  wrapLines?: boolean;
+  title?: string;
+  showCopy?: "hover" | "always" | "never";
+  showCopyText?: boolean;
+  children?: string;
+  showLanguageIndicator?: boolean;
+  noBackground?: boolean;
+  className?: string;
+};
+```
 
 ## Usage
 
+You can either use `children` or `code` prop to pass the code to the component.
+
 ```tsx
 <SyntaxHighlight language="typescript">
-  for (let i = 0; i < Infinity; i++) {
-    console.log(i);
-  }
+for (let i = 0; i < Infinity; i++) {
+  console.log(i);
+}
 </SyntaxHighlight>
 ```
 
