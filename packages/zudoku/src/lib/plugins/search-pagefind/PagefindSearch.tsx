@@ -83,9 +83,15 @@ export const PagefindSearch = ({
     queryKey: ["pagefind-search", searchTerm],
     queryFn: async () => {
       const search = await pagefind?.search(searchTerm);
-      return Promise.all(
-        search?.results.slice(0, 3).map((subResult) => subResult.data()) ?? [],
+      const results = await Promise.all(
+        search?.results.map((result) => result.data()) ?? [],
       );
+
+      const filteredResults = options.shouldKeepResult
+        ? results.filter((result) => options.shouldKeepResult!(result))
+        : results;
+
+      return filteredResults.slice(0, 3);
     },
     placeholderData: keepPreviousData,
     enabled: !!pagefind && !!searchTerm,

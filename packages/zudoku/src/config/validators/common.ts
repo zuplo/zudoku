@@ -10,6 +10,7 @@ import z, {
 import { fromError } from "zod-validation-error";
 import { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
+import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
 
 const AnyObject = z.object({}).passthrough();
@@ -214,6 +215,7 @@ const SearchSchema = z
     }),
     z.object({
       type: z.literal("pagefind"),
+
       ranking: z
         .object({
           termFrequency: z.number(),
@@ -221,6 +223,11 @@ const SearchSchema = z
           termSimilarity: z.number(),
           termSaturation: z.number(),
         })
+        .optional(),
+      shouldKeepResult: z
+        .custom<
+          (result: PagefindSearchFragment) => boolean
+        >((val) => typeof val === "function")
         .optional(),
     }),
   ])
