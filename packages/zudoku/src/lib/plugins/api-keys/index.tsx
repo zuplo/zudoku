@@ -118,9 +118,12 @@ export const apiKeyPlugin = (
         const keys = await service.getKeys(context);
 
         return keys.map((key) => ({
-          authorizeRequest: (request) => {
-            request.headers.set("Authorization", `Bearer ${key.key}`);
-            return request;
+          getRequestAuthorization: (request, context) => {
+            return {
+              headers: {
+                Authorization: `Bearer ${key.key}`,
+              },
+            };
           },
           id: key.id,
           label: key.description ?? key.id,

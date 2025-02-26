@@ -22,8 +22,25 @@ export interface ZudokuEvents {
   location: (event: { from?: Location; to: Location }) => void;
 }
 
-export interface ApiIdentity {
+export interface ZudokuEvents {
+  location: (event: { from?: Location; to: Location }) => void;
+}
+
+export type RequestAuthorizationDetails = {
+  headers?: Record<string, string>;
+  body?: BodyInit;
+  query?: Record<string, string>;
+};
+
+export type ActiveApiIdentity = ApiIdentity & {
   authorizeRequest: (request: Request) => Promise<Request> | Request;
+};
+
+export interface ApiIdentity {
+  getRequestAuthorization: (
+    request: Request,
+    context: ZudokuContext,
+  ) => Promise<RequestAuthorizationDetails> | RequestAuthorizationDetails;
   label: string;
   id: string;
 }
@@ -119,7 +136,7 @@ export class ZudokuContext {
         .map((plugin) => plugin.getIdentities(this)),
     );
 
-    return keys.flat();
+    return keys.flat().map(this.createActiveApiIdentity);
   };
 
   addEventListener<E extends keyof ZudokuEvents>(
@@ -144,6 +161,33 @@ export class ZudokuContext {
     );
 
     return navigations.flatMap((nav) => nav ?? []);
+  };
+
+  private createActiveApiIdentity = (identity: ApiIdentity) => {
+    return {
+      ...identity,
+      authorizeRequest: async (request) => {
+        const newRequest = request.clone();
+        const authorizationDetails = await identity.getRequestAuthorization(
+          request,
+          this,
+        );
+
+        const url = new URL(request.url);
+        for (const [key, value] of Object.entries(authorizationDetails.headers ?? {})) {
+          url.searchParams.set(key, value);
+        }
+
+        return new Request(url, {
+          method: request.method.toUpperCase(),
+          headers: {
+            ...Object.fromEntries(newRequest.headers.entries()),
+            ...authorizationDetails.headers,
+          },
+          body: authorizationDetails.body ?? newRequest.body ?? undefined,
+        });
+      },
+    } satisfies ActiveApiIdentity;
   };
 
   signRequest = async (request: Request) => {
