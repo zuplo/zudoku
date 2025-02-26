@@ -174,7 +174,9 @@ export class ZudokuContext {
         );
 
         const url = new URL(request.url);
-        for (const [key, value] of Object.entries(authorizationDetails.headers ?? {})) {
+        for (const [key, value] of Object.entries(
+          authorizationDetails.headers ?? {},
+        )) {
           url.searchParams.set(key, value);
         }
 
