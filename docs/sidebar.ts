@@ -79,9 +79,10 @@ export const components: SidebarEntry = [
     items: [
       "components/callout",
       "components/icons",
-      "components/shadcn",
-      "components/playground",
+      "components/stepper",
       "components/syntax-highlight",
+      "components/playground",
+      "components/shadcn",
     ],
   },
 ];

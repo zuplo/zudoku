@@ -263,7 +263,8 @@
     "yargs": "17.7.2",
     "zod": "3.24.2",
     "zod-validation-error": "3.4.0",
-    "zustand": "5.0.3"
+    "zustand": "5.0.3",
+    "esm-loader-css": "^1.0.3"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",

@@ -1,0 +1,43 @@
+@tailwind components;
+
+@layer components {
+  .stepper {
+    /* @apply mb-6; */
+  }
+
+  .stepper > ol {
+    --bullet-size: 1.75rem;
+    --line-spacing: 0.25rem;
+    @apply flex flex-col list-none p-0 m-0;
+    counter-reset: step-counter;
+  }
+
+  .stepper > ol > li {
+    @apply relative ps-12 pb-6 my-0;
+    counter-increment: step-counter;
+  }
+
+  .stepper > ol > li:last-child {
+    @apply pb-0;
+  }
+
+  /* Bullet with number */
+  .stepper > ol > li::before {
+    @apply absolute left-0 flex items-center justify-center size-[--bullet-size];
+    @apply bg-muted/80 border border-border text-muted-foreground text-[calc(var(--bullet-size)/2)] font-semibold rounded-full;
+    content: counter(step-counter);
+  }
+
+  /* Vertical line */
+  .stepper > ol > li::after {
+    @apply absolute content-[''] w-[2px] bg-border -translate-x-1/2;
+    left: calc(var(--bullet-size) / 2);
+    top: calc(var(--bullet-size) + var(--line-spacing));
+    height: calc(100% - var(--bullet-size) - (2 * var(--line-spacing)));
+  }
+
+  .stepper > ol > li > :first-child {
+    @apply mt-0 pt-0;
+    transform: translateY(calc((var(--bullet-size) - 1lh) / 2));
+  }
+}
