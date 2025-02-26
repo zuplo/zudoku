@@ -25,6 +25,7 @@ export type Auth0AuthenticationConfig = {
   clientId: string;
   domain: string;
   audience?: string;
+  scopes?: string[];
 
   redirectToAfterSignUp?: string;
   redirectToAfterSignIn?: string;

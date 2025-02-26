@@ -52,13 +52,14 @@ For Auth0, you will need the `clientId` associated with the domain you are using
 
 You can find this in the Auth0 dashboard under [Application Settings](https://auth0.com/docs/get-started/applications/application-settings).
 
-```typescript
+```json5
 {
   // ...
   authentication: {
     type: "auth0",
     domain: "yourdomain.us.auth0.com",
     clientId: "<your-auth0-clientId>",
+    scopes: ["openid", "profile", "email", "custom_scope"],
   },
   // ...
 }
@@ -96,7 +97,8 @@ For authentication services that support OpenID, you will need to supply an `cli
   authentication: {
     type: "openid",
     clientId: "<your-client-id>",
-    issuer: "<the-issuer-url>"
+    issuer: "<the-issuer-url>",
+    scopes: ["openid", "profile", "email", "custom_scope"] // Optional custom scopes
   },
   // ...
 }
@@ -108,6 +110,8 @@ When configuring your OpenID provider, you will need to set the following:
 - If your provider supports wildcard callback urls, we recommend configuring your development identity provider to allow the a wildcard callback like `https://*.zuplo.app/oauth/callback` to allow for testing each environment.
 - For local development set the callback url to `http://localhost:3000/oauth/callback`.
 - Add your site hostname (your-site.com) to the list of allowed CORS origins.
+
+By default, the scopes "openid", "profile", and "email" are requested. You can customize these by providing your own array of scopes.
 
 ## User Data
 

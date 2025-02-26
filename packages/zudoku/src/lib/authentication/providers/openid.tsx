@@ -1,16 +1,16 @@
 import logger from "loglevel";
 import * as oauth from "oauth4webapi";
-import { OpenIDAuthenticationConfig } from "../../../config/config.js";
+import { type OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import {
-  AuthenticationProvider,
-  AuthenticationProviderInitializer,
+  type AuthenticationProvider,
+  type AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
-import { useAuthState, UserProfile } from "../state.js";
+import { useAuthState, type UserProfile } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 
@@ -60,6 +60,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   private readonly redirectToAfterSignIn: string;
   private readonly redirectToAfterSignOut: string;
   private readonly audience?: string;
+  private readonly scopes: string[];
 
   constructor({
     issuer,
@@ -69,6 +70,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     redirectToAfterSignIn,
     redirectToAfterSignOut,
     basePath,
+    scopes,
   }: OpenIDAuthenticationConfig) {
     this.client = {
       client_id: clientId,
@@ -77,6 +79,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     this.audience = audience;
     this.issuer = issuer;
     this.callbackUrlPath = joinUrl(basePath, "/oauth/callback");
+    this.scopes = scopes ?? ["openid", "profile", "email"];
 
     const root = joinUrl(basePath, "/");
 
@@ -178,7 +181,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     authorizationUrl.searchParams.set("client_id", this.client.client_id);
     authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
     authorizationUrl.searchParams.set("response_type", "code");
-    authorizationUrl.searchParams.set("scope", "openid profile email");
+    authorizationUrl.searchParams.set("scope", this.scopes.join(" "));
     authorizationUrl.searchParams.set("code_challenge", codeChallenge);
     authorizationUrl.searchParams.set(
       "code_challenge_method",
