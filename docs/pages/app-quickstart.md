@@ -6,12 +6,37 @@ sidebar_icon: app-window-mac
 
 The recommended way to get started with Zudoku is to use the `create-zudoku-app` CLI tool. This tool will scaffold a new Zudoku site for you to customize and build upon.
 
-You will need [Node.js](https://nodejs.org/) installed to use the CLI.
+# Prerequisites
 
-1. In your terminal run the following command
+You will need [Node.js](https://nodejs.org/) installed to use the CLI. Zudoku requires Node.js version 22 or higher.
+
+## Install Zudoku
+
+### Windows
+
+1. Open your terminal (Command Prompt or PowerShell).
+2. Run the following command to create a new Zudoku app:
 
 ```bash
-npm create zudoku-app@latest
+npx create-zudoku-app
+```
+
+#### MacOS
+
+1. Open your terminal (you can use the built-in Terminal app).
+2. Run the following command to create a new Zudoku app:
+
+```bash
+npx create-zudoku-app
+```
+
+#### Linux
+
+1. Open your terminal (you can use the built-in Terminal app).
+2. Run the following command to create a new Zudoku app:
+
+```bash
+npx create-zudoku-app
 ```
 
 The generator will take you through the setup steps and scaffold a minimal but fully functional documentation site for you to get started with.
