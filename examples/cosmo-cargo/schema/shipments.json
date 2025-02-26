@@ -642,51 +642,52 @@
                 }
               }
             }
-          },
-          "delete": {
-            "tags": ["Shipment Management"],
-            "summary": "Cancel shipment",
-            "description": "Cancel a shipment that hasn't been picked up yet",
-            "operationId": "cancelShipment",
-            "parameters": [
-              {
-                "name": "trackingNumber",
-                "in": "path",
-                "required": true,
-                "schema": {
-                  "type": "string"
-                }
+          }
+        }
+      },
+      "delete": {
+          "tags": ["Shipment Management"],
+          "summary": "Cancel shipment",
+          "description": "Cancel a shipment that hasn't been picked up yet",
+          "operationId": "cancelShipment",
+          "parameters": [
+            {
+              "name": "trackingNumber",
+              "in": "path",
+              "required": true,
+              "schema": {
+                "type": "string"
               }
-            ],
-            "responses": {
-              "200": {
-                "description": "Shipment cancelled successfully",
-                "content": {
-                  "application/json": {
-                    "schema": {
-                      "type": "object",
-                      "properties": {
-                        "status": {
-                          "type": "string",
-                          "enum": ["CANCELLED"]
-                        },
-                        "refundAmount": {
-                          "type": "number",
-                          "format": "float"
-                        },
-                        "currency": {
-                          "type": "string"
-                        }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Shipment cancelled successfully",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "status": {
+                        "type": "string",
+                        "enum": ["CANCELLED"]
+                      },
+                      "refundAmount": {
+                        "type": "number",
+                        "format": "float"
+                      },
+                      "currency": {
+                        "type": "string"
                       }
-                    },
-                    "examples": {
-                      "full_refund": {
-                        "summary": "Full refund issued",
-                        "value": {
-                          "status": "CANCELLED",
-                          "refundAmount": 116.74,
-                          "currency": "USD"
-                        }
+                    }
+                  },
+                  "examples": {
+                    "full_refund": {
+                      "summary": "Full refund issued",
+                      "value": {
+                        "status": "CANCELLED",
+                        "refundAmount": 116.74,
+                        "currency": "USD"
                       }
                     }
                   }
