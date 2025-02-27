@@ -27,6 +27,7 @@ const config: ZudokuConfig = {
       dismissible: true,
     },
   },
+  protectedRoutes: ["/only-members"],
   topNavigation: [
     { id: "general", label: "General" },
     { id: "api-shipments", label: "Shipments API" },
@@ -50,6 +51,12 @@ const config: ZudokuConfig = {
   search: {
     type: "pagefind",
   },
+  customPages: [
+    {
+      path: "/only-members",
+      element: <div>Only members</div>,
+    },
+  ],
   apis: [
     {
       type: "file",

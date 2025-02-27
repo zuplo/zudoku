@@ -38,14 +38,20 @@ export const useAuthState = create<AuthState>()(
   persist(
     (state) => ({
       isAuthenticated: false,
-      isPending: false,
+      isPending: true,
       profile: null,
       providerData: null,
     }),
     {
+      merge: (persistedState, currentState) => {
+        return {
+          ...currentState,
+          isPending: false,
+          ...(typeof persistedState === "object" ? persistedState : {}),
+        };
+      },
       name: "auth-state",
       storage: createJSONStorage(() => localStorage),
-      // partialize: (s) => ({ state: s }),
     },
   ),
 );
