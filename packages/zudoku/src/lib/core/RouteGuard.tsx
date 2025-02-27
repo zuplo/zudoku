@@ -27,9 +27,10 @@ export const RouteGuard = () => {
     queryKey: ["login-redirect"],
     queryFn: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      return zudoku.authentication?.signIn({
+      await zudoku.authentication?.signIn({
         redirectTo: latestPath.current,
       });
+      return true;
     },
     enabled:
       typeof window !== "undefined" &&
