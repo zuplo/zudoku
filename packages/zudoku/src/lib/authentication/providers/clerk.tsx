@@ -106,18 +106,22 @@ const clerkAuth: AuthenticationProviderInitializer<
         providerData: null,
       });
     },
-    signIn: async () => {
+    signIn: async ({ redirectTo }: { redirectTo?: string }) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignIn({
-        signInForceRedirectUrl: window.location.origin + redirectToAfterSignIn,
-        signUpForceRedirectUrl: window.location.origin + redirectToAfterSignUp,
+        signInForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignIn,
+        signUpForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignUp,
       });
     },
-    signUp: async () => {
+    signUp: async ({ redirectTo }: { redirectTo?: string }) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignUp({
-        signInForceRedirectUrl: window.location.origin + redirectToAfterSignIn,
-        signUpForceRedirectUrl: window.location.origin + redirectToAfterSignUp,
+        signInForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignIn,
+        signUpForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignUp,
       });
     },
     getAuthenticationPlugin() {
