@@ -98,6 +98,7 @@ export const apiCatalogPlugin = ({
           element: (
             <Catalog
               label={label}
+              categoryLabel={tag}
               items={items}
               filterCatalogItems={filterCatalogItems}
               categories={categories}

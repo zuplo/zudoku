@@ -1,4 +1,4 @@
-import { ResultOf } from "@graphql-typed-document-node/core";
+import { type ResultOf } from "@graphql-typed-document-node/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { useNavigate } from "react-router";
@@ -152,6 +152,8 @@ export const OperationList = ({
       ? sanitizeMarkdownForMetatag(description)
       : undefined;
 
+  const showVersions = Object.entries(versions).length > 1;
+
   return (
     <div
       className="pt-[--padding-content-top]"
@@ -172,10 +174,15 @@ export const OperationList = ({
             <CategoryHeading>Overview</CategoryHeading>
             <Heading level={1} id="description" registerSidebarAnchor>
               {title}
+              {showVersions && (
+                <span className="ms-2 text-xl text-muted-foreground">
+                  ({version})
+                </span>
+              )}
             </Heading>
           </div>
           <div>
-            {Object.entries(versions).length > 1 && (
+            {showVersions && (
               <Select
                 onValueChange={(version) => navigate(versions[version]!)}
                 defaultValue={version}
