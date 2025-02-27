@@ -1,7 +1,7 @@
 import { FileTextIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
-import { PagefindSearchFragment, PagefindSubResult } from "./types.js";
+import { type PagefindSearchFragment, type PagefindSubResult } from "./types.js";
 
 const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
   const aScore = a.weighted_locations.reduce(
@@ -62,10 +62,10 @@ export const ResultList = ({
                   }}
                 >
                   <Link to={navigateTo} onClick={onClose}>
-                    <div className="flex flex-col items-start gap-2 border-l border-muted-foreground/50 ms-2.5 ps-5">
+                    <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
                       <span className="font-bold">{subResult.title}</span>
                       <span
-                        className="text-xs [&_mark]:bg-primary/75 [&_mark]:p-0.5 [&_mark]:border-primary [&_mark]:text-primary-foreground"
+                        className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
                         dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
                       />
                     </div>
