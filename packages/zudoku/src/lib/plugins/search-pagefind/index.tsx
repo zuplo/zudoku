@@ -6,7 +6,7 @@ import { PagefindSearch } from "./PagefindSearch.js";
 export type PagefindOptions = Extract<
   ZudokuConfig["search"],
   { type: "pagefind" }
->;
+> & { basePath?: string };
 
 export const pagefindSearchPlugin = (
   options: PagefindOptions,

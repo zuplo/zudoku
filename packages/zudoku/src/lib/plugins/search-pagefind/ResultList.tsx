@@ -1,4 +1,5 @@
 import { FileTextIcon } from "lucide-react";
+import { useCallback } from "react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
 import {
@@ -20,25 +21,30 @@ const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
 
 const hoverClassname = `cursor-pointer border border-transparent data-[selected=true]:border-border`;
 
-const cleanResultUrl = (url: string) => {
-  const clean = url.replace(".html", "");
-  return clean.startsWith(import.meta.env.BASE_URL)
-    ? clean.slice(import.meta.env.BASE_URL.length)
-    : clean;
-};
-
 export const ResultList = ({
+  basePath,
   searchResults,
   searchTerm,
   onClose,
   maxSubResults = 4,
 }: {
+  basePath?: string;
   searchResults: PagefindSearchFragment[];
   searchTerm: string;
   onClose: () => void;
   maxSubResults?: number;
 }) => {
   const navigate = useNavigate();
+
+  const cleanResultUrl = useCallback(
+    (url: string) => {
+      const clean = url.replace(".html", "");
+      return basePath && clean.startsWith(basePath)
+        ? clean.slice(basePath.length)
+        : clean;
+    },
+    [basePath],
+  );
 
   return (
     <CommandList className="max-h-[450px]">

@@ -25,23 +25,18 @@ const DEFAULT_RANKING = {
   termSaturation: 1.2,
 };
 
-const importPagefind = (): Promise<Pagefind> =>
+const importPagefind = (basePath?: string): Promise<Pagefind> =>
   import.meta.env.DEV
     ? // @ts-expect-error TypeScript can't resolve the import
       import(/* @vite-ignore */ "/pagefind/pagefind.js")
-    : import(
-        /* @vite-ignore */ joinUrl(
-          import.meta.env.BASE_URL,
-          "/pagefind/pagefind.js",
-        )
-      );
+    : import(/* @vite-ignore */ joinUrl(basePath, "/pagefind/pagefind.js"));
 
 const usePagefind = (options: PagefindOptions) => {
   const { data: pagefind, ...result } = useQuery<Pagefind>({
     queryKey: ["pagefind", options.ranking],
     retry: false,
     queryFn: async () => {
-      const pagefind = await importPagefind();
+      const pagefind = await importPagefind(options.basePath);
       await pagefind.init();
       await pagefind.options({
         ranking: {
@@ -128,6 +123,7 @@ export const PagefindSearch = ({
         </div>
       ) : (
         <ResultList
+          basePath={options.basePath}
           searchResults={searchResults ?? []}
           searchTerm={searchTerm}
           onClose={onClose}
