@@ -262,7 +262,7 @@ export const Playground = ({
     ));
 
   const serverSelect = (
-    <div className="inline-block opacity-50 hover:opacity-100 transition">
+    <div className="inline-block opacity-50 hover:opacity-100 transition translate-y-[4px]">
       {server ? (
         <span>{server.replace(/^https?:\/\//, "")}</span>
       ) : (
@@ -305,7 +305,7 @@ export const Playground = ({
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center p-2 font-mono text-xs break-words">
+                <div className="items-center px-2 py-0.5 font-mono text-xs break-all leading-6">
                   {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
@@ -351,7 +351,7 @@ export const Playground = ({
                 {pathParams.length > 0 && (
                   <div className="flex flex-col gap-4 my-4">
                     <span className="font-semibold">Path Parameters</span>
-                    <PathParams control={control} />
+                    <PathParams url={url} control={control} />
                   </div>
                 )}
                 <div className="flex flex-col gap-4 my-4">
