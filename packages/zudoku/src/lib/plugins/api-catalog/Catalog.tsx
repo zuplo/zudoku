@@ -21,8 +21,14 @@ export const Catalog = ({
     queryKey: ["catalogItems", auth],
   });
 
+  // Only index the overview page, ignore the rest
+  const dataSet = activeCategory ? { "data-pagefind-ignore": "all" } : {};
+
   return (
-    <section className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
+    <section
+      className="pt-[--padding-content-top] pb-[--padding-content-bottom]"
+      {...dataSet}
+    >
       <Head>
         <title>{label}</title>
       </Head>
