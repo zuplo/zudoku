@@ -11,7 +11,7 @@ import { DialogTitle } from "zudoku/ui/Dialog.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type { PagefindOptions } from "./index.js";
 import { ResultList } from "./ResultList.js";
-import { Pagefind } from "./types.js";
+import type { Pagefind } from "./types.js";
 
 const DEFAULT_RANKING = {
   // Slightly lower than default because API docs tend to have repetitive terms (parameter names, HTTP methods, etc.)
@@ -83,15 +83,26 @@ export const PagefindSearch = ({
     queryKey: ["pagefind-search", searchTerm],
     queryFn: async () => {
       const search = await pagefind?.search(searchTerm);
+      if (!search) return [];
+
       const results = await Promise.all(
-        search?.results.map((result) => result.data()) ?? [],
+        search.results.slice(0, 10).map((result) => result.data()),
       );
 
-      const filteredResults = options.shouldKeepResult
-        ? results.filter((result) => options.shouldKeepResult!(result))
-        : results;
+      if (!options.transformResults) {
+        return results.slice(0, 3);
+      }
 
-      return filteredResults.slice(0, 3);
+      const transformedResults = results.flatMap((result) => {
+        const transformed = options.transformResults!(result);
+
+        if (transformed === false) return []; // Discard if false
+        if (transformed === true || transformed == null) return result; // Keep original
+
+        return transformed;
+      });
+
+      return transformedResults.slice(0, 3);
     },
     placeholderData: keepPreviousData,
     enabled: !!pagefind && !!searchTerm,

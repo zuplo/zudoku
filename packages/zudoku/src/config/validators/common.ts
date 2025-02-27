@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 import z, {
-  RefinementCtx,
+  type RefinementCtx,
   type ZodEnumDef,
-  ZodOptional,
-  ZodString,
-  ZodType,
-  ZodUnion,
+  type ZodOptional,
+  type ZodString,
+  type ZodType,
+  type ZodUnion,
 } from "zod";
 import { fromError } from "zod-validation-error";
-import { ZudokuContext } from "../../lib/core/ZudokuContext.js";
+import { type ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
@@ -224,9 +224,11 @@ const SearchSchema = z
           termSaturation: z.number(),
         })
         .optional(),
-      shouldKeepResult: z
+      transformResults: z
         .custom<
-          (result: PagefindSearchFragment) => boolean
+          (
+            result: PagefindSearchFragment,
+          ) => PagefindSearchFragment | boolean | undefined | void
         >((val) => typeof val === "function")
         .optional(),
     }),
