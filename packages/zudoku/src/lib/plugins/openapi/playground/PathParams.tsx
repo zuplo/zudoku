@@ -18,7 +18,7 @@ export const PathParams = ({
   });
 
   const sortedFields = [...fields].sort(
-    (a, b) => url.indexOf(a.name) - url.indexOf(b.name),
+    (a, b) => url.indexOf(`{${a.name}}`) - url.indexOf(`{${b.name}}`),
   );
 
   return (
