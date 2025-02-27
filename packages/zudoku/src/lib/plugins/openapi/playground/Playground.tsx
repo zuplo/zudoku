@@ -1,10 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { PathRenderer } from "../../../components/PathRenderer.js";
 
+import { Button } from "zudoku/ui/Button.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
@@ -97,6 +98,9 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: Content;
+  requiresLogin?: boolean;
+  onLogin?: () => void;
+  onSignUp?: () => void;
 };
 
 export const Playground = ({
@@ -109,11 +113,15 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
   examples,
+  requiresLogin = false,
+  onLogin,
+  onSignUp,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
   );
   const [, startTransition] = useTransition();
+  const [skipLogin, setSkipLogin] = useState(false);
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
@@ -290,6 +298,8 @@ export const Playground = ({
     </div>
   );
 
+  const showLogin = requiresLogin && !skipLogin;
+
   return (
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
@@ -297,8 +307,54 @@ export const Playground = ({
       <form
         onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
         ref={formRef}
+        className="relative"
       >
-        <div className="grid grid-cols-2 text-sm h-full">
+        {showLogin && (
+          <div className="absolute top-1/2 right-1/2  -translate-y-1/2 translate-x-1/2 z-50 max-w-md">
+            <Alert>
+              <AlertTitle className="mb-2">
+                Welcome to the Playground!
+              </AlertTitle>
+              <AlertDescription className="flex flex-col gap-2">
+                <div className="mb-2">
+                  The Playground is a tool for developers to test and explore
+                  our APIs. To use the Playground, you need to login.
+                </div>
+                <div className="flex gap-2 justify-between">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setSkipLogin(true)}
+                  >
+                    Skip
+                  </Button>
+                  <div className="flex gap-2">
+                    {onSignUp && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={onSignUp}
+                      >
+                        Sign Up
+                      </Button>
+                    )}
+                    {onLogin && (
+                      <Button type="button" variant="default" onClick={onLogin}>
+                        Login
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+        <div
+          className={cn(
+            "grid grid-cols-2 text-sm h-full",
+            showLogin && "opacity-30 pointer-events-none",
+          )}
+        >
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
