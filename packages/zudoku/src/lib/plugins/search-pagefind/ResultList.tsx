@@ -20,6 +20,13 @@ const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
 
 const hoverClassname = `cursor-pointer border border-transparent data-[selected=true]:border-border`;
 
+const cleanResultUrl = (url: string) => {
+  const clean = url.replace(".html", "");
+  return clean.startsWith(import.meta.env.BASE_URL)
+    ? clean.slice(import.meta.env.BASE_URL.length)
+    : clean;
+};
+
 export const ResultList = ({
   searchResults,
   searchTerm,
@@ -35,7 +42,7 @@ export const ResultList = ({
 
   return (
     <CommandList className="max-h-[450px]">
-      {searchTerm && (
+      {searchTerm && searchResults.length > 0 && (
         <CommandGroup
           className="text-sm text-muted-foreground"
           heading={`${searchResults.length} results for "${searchTerm}"`}
@@ -49,8 +56,12 @@ export const ResultList = ({
             asChild
             value={`${result.meta.title}-${result.url}`}
             className={hoverClassname}
+            onSelect={() => {
+              void navigate(cleanResultUrl(result.url));
+              onClose();
+            }}
           >
-            <Link to={result.url}>
+            <Link to={cleanResultUrl(result.url)}>
               <FileTextIcon size={20} className="text-muted-foreground" />
               {result.meta.title}
             </Link>
@@ -58,35 +69,28 @@ export const ResultList = ({
           {result.sub_results
             .sort(sortSubResults)
             .slice(0, maxSubResults)
-            .map((subResult) => {
-              const url = subResult.url.replace(".html", "");
-              const navigateTo = url.startsWith(import.meta.env.BASE_URL)
-                ? url.slice(import.meta.env.BASE_URL.length)
-                : url;
-
-              return (
-                <CommandItem
-                  asChild
-                  key={`${result.meta.title}-${navigateTo}`}
-                  value={`${result.meta.title}-${navigateTo}`}
-                  className={hoverClassname}
-                  onSelect={() => {
-                    void navigate(navigateTo);
-                    onClose();
-                  }}
-                >
-                  <Link to={navigateTo} onClick={onClose}>
-                    <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
-                      <span className="font-bold">{subResult.title}</span>
-                      <span
-                        className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
-                        dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
-                      />
-                    </div>
-                  </Link>
-                </CommandItem>
-              );
-            })}
+            .map((subResult) => (
+              <CommandItem
+                asChild
+                key={`${result.meta.title}-${subResult.url}`}
+                value={`${result.meta.title}-${subResult.url}`}
+                className={hoverClassname}
+                onSelect={() => {
+                  void navigate(cleanResultUrl(subResult.url));
+                  onClose();
+                }}
+              >
+                <Link to={cleanResultUrl(subResult.url)} onClick={onClose}>
+                  <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
+                    <span className="font-bold">{subResult.title}</span>
+                    <span
+                      className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
+                      dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
+                    />
+                  </div>
+                </Link>
+              </CommandItem>
+            ))}
         </CommandGroup>
       ))}
     </CommandList>
