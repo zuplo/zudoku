@@ -1,10 +1,8 @@
-import { useLocation } from "react-router";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { useAuthState } from "./state.js";
 
 export const useAuth = () => {
   const { authentication } = useZudoku();
-  const currentPath = useLocation();
   const authState = useAuthState();
   const isAuthEnabled = typeof authentication !== "undefined";
 
@@ -37,7 +35,9 @@ export const useAuth = () => {
       if (!isAuthEnabled) {
         throw new Error("Authentication is not enabled.");
       }
-      await authentication.signUp();
+      await authentication.signUp({
+        redirectTo: window.location.href,
+      });
     },
   };
 };
