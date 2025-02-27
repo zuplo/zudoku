@@ -9,6 +9,7 @@ import {
 } from "zudoku/ui/Command.js";
 import { DialogTitle } from "zudoku/ui/Dialog.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { getResults } from "./get-results.js";
 import type { PagefindOptions } from "./index.js";
 import { ResultList } from "./ResultList.js";
 import type { Pagefind } from "./types.js";
@@ -84,25 +85,7 @@ export const PagefindSearch = ({
     queryFn: async () => {
       const search = await pagefind?.search(searchTerm);
       if (!search) return [];
-
-      const results = await Promise.all(
-        search.results.slice(0, 10).map((result) => result.data()),
-      );
-
-      if (!options.transformResults) {
-        return results.slice(0, 3);
-      }
-
-      const transformedResults = results.flatMap((result) => {
-        const transformed = options.transformResults!(result);
-
-        if (transformed === false) return []; // Discard if false
-        if (transformed === true || transformed == null) return result; // Keep original
-
-        return transformed;
-      });
-
-      return transformedResults.slice(0, 3);
+      return getResults(search, options);
     },
     placeholderData: keepPreviousData,
     enabled: !!pagefind && !!searchTerm,
@@ -144,7 +127,12 @@ export const PagefindSearch = ({
           )}
         </div>
       ) : (
-        <ResultList searchResults={searchResults ?? []} onClose={onClose} />
+        <ResultList
+          searchResults={searchResults ?? []}
+          searchTerm={searchTerm}
+          onClose={onClose}
+          maxSubResults={options.maxSubResults}
+        />
       )}
     </CommandDialog>
   );

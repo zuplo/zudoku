@@ -224,6 +224,8 @@ const SearchSchema = z
           termSaturation: z.number(),
         })
         .optional(),
+      maxResults: z.number().optional(),
+      maxSubResults: z.number().optional(),
       transformResults: z
         .custom<
           (

@@ -1,7 +1,10 @@
 import { FileTextIcon } from "lucide-react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
-import { type PagefindSearchFragment, type PagefindSubResult } from "./types.js";
+import {
+  type PagefindSearchFragment,
+  type PagefindSubResult,
+} from "./types.js";
 
 const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
   const aScore = a.weighted_locations.reduce(
@@ -19,15 +22,25 @@ const hoverClassname = `cursor-pointer border border-transparent data-[selected=
 
 export const ResultList = ({
   searchResults,
+  searchTerm,
   onClose,
+  maxSubResults = 4,
 }: {
   searchResults: PagefindSearchFragment[];
+  searchTerm: string;
   onClose: () => void;
+  maxSubResults?: number;
 }) => {
   const navigate = useNavigate();
 
   return (
     <CommandList className="max-h-[450px]">
+      {searchTerm && (
+        <CommandGroup
+          className="text-sm text-muted-foreground"
+          heading={`${searchResults.length} results for "${searchTerm}"`}
+        />
+      )}
       {searchResults.map((result) => (
         <CommandGroup
           key={[result.meta.title ?? result.excerpt, result.url].join("-")}
@@ -44,7 +57,7 @@ export const ResultList = ({
           </CommandItem>
           {result.sub_results
             .sort(sortSubResults)
-            .slice(0, 4)
+            .slice(0, maxSubResults)
             .map((subResult) => {
               const url = subResult.url.replace(".html", "");
               const navigateTo = url.startsWith(import.meta.env.BASE_URL)
@@ -54,7 +67,8 @@ export const ResultList = ({
               return (
                 <CommandItem
                   asChild
-                  key={`${result.meta.title}-${subResult.url}-${subResult.excerpt}`}
+                  key={`${result.meta.title}-${navigateTo}`}
+                  value={`${result.meta.title}-${navigateTo}`}
                   className={hoverClassname}
                   onSelect={() => {
                     void navigate(navigateTo);

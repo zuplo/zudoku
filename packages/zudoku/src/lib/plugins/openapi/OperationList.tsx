@@ -175,7 +175,8 @@ export const OperationList = ({
             <Heading level={1} id="description" registerSidebarAnchor>
               {title}
               {showVersions && (
-                <span className="ms-2 text-xl text-muted-foreground">
+                <span className="text-xl text-muted-foreground">
+                  {" "}
                   ({version})
                 </span>
               )}
