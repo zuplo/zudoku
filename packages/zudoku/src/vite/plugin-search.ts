@@ -37,7 +37,7 @@ export const viteSearchPlugin = (getConfig: () => LoadedConfig): Plugin => {
         code.push(
           `import config from 'virtual:zudoku-config';`,
           `import { pagefindSearchPlugin } from "zudoku/plugins/search-pagefind";`,
-          `export const configuredSearchPlugin = pagefindSearchPlugin(config.search);`,
+          `export const configuredSearchPlugin = pagefindSearchPlugin({ ...config.search, basePath: config.basePath });`,
         );
 
         return code.join("\n");
