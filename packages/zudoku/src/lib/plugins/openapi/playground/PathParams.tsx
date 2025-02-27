@@ -1,4 +1,4 @@
-import { Control, Controller, useFieldArray } from "react-hook-form";
+import { type Control, Controller, useFieldArray } from "react-hook-form";
 import { Card } from "zudoku/ui/Card.js";
 import { Input } from "../../../ui/Input.js";
 import { ColorizedParam } from "../ColorizedParam.js";
@@ -7,18 +7,24 @@ import type { PlaygroundForm } from "./Playground.js";
 
 export const PathParams = ({
   control,
+  url,
 }: {
   control: Control<PlaygroundForm>;
+  url: string;
 }) => {
   const { fields } = useFieldArray<PlaygroundForm, "pathParams">({
     control,
     name: "pathParams",
   });
 
+  const sortedFields = [...fields].sort(
+    (a, b) => url.indexOf(a.name) - url.indexOf(b.name),
+  );
+
   return (
     <Card className="rounded-lg">
       <ParamsGrid>
-        {fields.map((field, i) => (
+        {sortedFields.map((field, i) => (
           <ParamsGridItem key={field.id}>
             <Controller
               control={control}

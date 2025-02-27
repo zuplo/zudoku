@@ -305,7 +305,7 @@ export const Playground = ({
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center p-2 font-mono text-xs break-words">
+                <div className="flex items-center p-2 font-mono text-xs break-words">
                   {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
@@ -351,7 +351,7 @@ export const Playground = ({
                 {pathParams.length > 0 && (
                   <div className="flex flex-col gap-4 my-4">
                     <span className="font-semibold">Path Parameters</span>
-                    <PathParams control={control} />
+                    <PathParams url={url} control={control} />
                   </div>
                 )}
                 <div className="flex flex-col gap-4 my-4">
