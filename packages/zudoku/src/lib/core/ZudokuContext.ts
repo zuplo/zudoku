@@ -1,11 +1,11 @@
 import { createNanoEvents } from "nanoevents";
-import { ReactNode } from "react";
-import { Location } from "react-router";
-import { TopNavigationItem } from "../../config/validators/common.js";
+import { type ReactNode } from "react";
+import { type Location } from "react-router";
+import { type TopNavigationItem } from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import { type AuthenticationProvider } from "../authentication/authentication.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
-import { Slotlets } from "../components/SlotletProvider.js";
+import { type Slotlets } from "../components/SlotletProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
@@ -18,13 +18,9 @@ import {
   type ZudokuPlugin,
 } from "./plugins.js";
 
-export interface ZudokuEvents {
+export type ZudokuEvents = {
   location: (event: { from?: Location; to: Location }) => void;
-}
-
-export interface ZudokuEvents {
-  location: (event: { from?: Location; to: Location }) => void;
-}
+};
 
 export type RequestAuthorizationDetails = {
   headers?: Record<string, string>;
@@ -36,14 +32,14 @@ export type ActiveApiIdentity = ApiIdentity & {
   authorizeRequest: (request: Request) => Promise<Request> | Request;
 };
 
-export interface ApiIdentity {
+export type ApiIdentity = {
   getRequestAuthorization: (
     request: Request,
     context: ZudokuContext,
   ) => Promise<RequestAuthorizationDetails> | RequestAuthorizationDetails;
   label: string;
   id: string;
-}
+};
 
 export type ApiKeyCache = "api-keys";
 
