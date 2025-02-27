@@ -175,6 +175,7 @@ export const Sidecar = ({
     <aside
       ref={ref}
       className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
+      data-pagefind-ignore="all"
     >
       <SidecarBox.Root>
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">

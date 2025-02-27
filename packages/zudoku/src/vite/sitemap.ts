@@ -1,6 +1,7 @@
 import { createWriteStream, existsSync } from "fs";
 import { mkdir } from "fs/promises";
 import path from "path";
+import colors from "picocolors";
 import { SitemapStream } from "sitemap";
 import { ZudokuSiteMapConfig } from "../config/validators/common.js";
 import { joinPath } from "../lib/util/joinPath.js";
@@ -70,5 +71,7 @@ export async function generateSitemap({
   sitemap.end();
 
   // eslint-disable-next-line no-console
-  console.debug(`Wrote sitemap to ${sitemapOutputPath}`);
+  console.debug(
+    colors.blue(`✓ wrote sitemap to ${colors.bold(sitemapOutputPath)}`),
+  );
 }

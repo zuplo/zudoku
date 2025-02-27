@@ -90,7 +90,11 @@ export const MdxPage = ({
   }, [file]);
 
   return (
-    <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
+    <div
+      className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      data-pagefind-filter="section:markdown"
+      data-pagefind-meta="section:markdown"
+    >
       <Helmet>
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}

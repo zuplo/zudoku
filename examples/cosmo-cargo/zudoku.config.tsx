@@ -48,6 +48,9 @@ const config: ZudokuConfig = {
   defaults: {
     examplesLanguage: "js",
   },
+  search: {
+    type: "pagefind",
+  },
   customPages: [
     {
       path: "/only-members",

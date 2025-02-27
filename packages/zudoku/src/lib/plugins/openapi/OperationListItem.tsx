@@ -1,3 +1,4 @@
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useRef, useState } from "react";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
@@ -84,6 +85,7 @@ export const OperationListItem = ({
               groupedParameters[group]?.length ? (
                 <ParameterList
                   key={group}
+                  summary={operation.summary ?? undefined}
                   id={operation.slug}
                   parameters={groupedParameters[group]}
                   group={group}
@@ -101,6 +103,9 @@ export const OperationListItem = ({
               className="capitalize"
               id={`${operation.slug}/request-body`}
             >
+              {operation.summary && (
+                <VisuallyHidden>{operation.summary} &rsaquo; </VisuallyHidden>
+              )}
               Request Body
             </Heading>
             <SchemaView schema={schema} />
@@ -113,6 +118,9 @@ export const OperationListItem = ({
               className="capitalize mt-8 pt-8 border-t"
               id={`${operation.slug}/responses`}
             >
+              {operation.summary && (
+                <VisuallyHidden>{operation.summary} &rsaquo; </VisuallyHidden>
+              )}
               Responses
             </Heading>
             <Tabs

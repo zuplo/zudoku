@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Helmet } from "@zudoku/react-helmet-async";
 import { useMatch } from "react-router";
-import { Head, Link } from "zudoku/components";
+import { Link } from "zudoku/components";
 import { useAuthState } from "../../authentication/state.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
@@ -11,7 +12,10 @@ export const Catalog = ({
   items,
   filterCatalogItems = (items) => items,
   label = "API Library",
-}: Omit<ApiCatalogPluginOptions, "navigationId">) => {
+  categoryLabel,
+}: Omit<ApiCatalogPluginOptions, "navigationId"> & {
+  categoryLabel?: string;
+}) => {
   const auth = useAuthState();
   const match = useMatch({ path: "/catalog/:category" });
   const activeCategory = match?.params.category;
@@ -21,13 +25,25 @@ export const Catalog = ({
     queryKey: ["catalogItems", auth],
   });
 
+  // Only index the overview page, ignore the rest
+  const dataSet = activeCategory ? { "data-pagefind-ignore": "all" } : {};
+
   return (
-    <section className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
-      <Head>
-        <title>{label}</title>
-      </Head>
+    <section
+      className="pt-[--padding-content-top] pb-[--padding-content-bottom]"
+      {...dataSet}
+    >
+      <Helmet>
+        <title>
+          {categoryLabel ? `${categoryLabel} - ` : ""}
+          {label}
+        </title>
+      </Helmet>
       <div className="grid gap-4">
-        <Heading level={2}>{label}</Heading>
+        <Heading level={2}>
+          {label}
+          {categoryLabel && ` - ${categoryLabel}`}
+        </Heading>
 
         <div className="grid grid-cols-2 gap-4">
           {catalogItems.data

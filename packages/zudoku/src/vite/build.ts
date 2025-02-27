@@ -7,6 +7,7 @@ import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
+import { runPagefind } from "./pagefind.js";
 import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
@@ -74,6 +75,10 @@ export async function runBuild(options: { dir: string }) {
       }
 
       await rm(viteServerConfig.build.outDir, { recursive: true, force: true });
+
+      if (config.search?.type === "pagefind") {
+        await runPagefind({ dir: viteClientConfig.build.outDir });
+      }
 
       if (process.env.VERCEL) {
         await mkdir(path.join(options.dir, ".vercel/output/static"), {

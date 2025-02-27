@@ -736,6 +736,9 @@ importers:
       mdast-util-mdx:
         specifier: 3.0.0
         version: 3.0.0
+      pagefind:
+        specifier: 1.4.0-alpha.1
+        version: 1.4.0-alpha.1
       react:
         specifier: 'catalog:'
         version: 19.0.0
@@ -2979,6 +2982,31 @@ packages:
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
+
+  '@pagefind/darwin-arm64@1.4.0-alpha.1':
+    resolution: {integrity: sha512-b9Pw+J8wX8o0OxeIQeQU3lmcE8n8/nKT8TKpUjKHYdsbVdgNbITHkVr/g5JFUl3zo/qet4ZY3ZZQkFL7l8kNzw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@pagefind/darwin-x64@1.4.0-alpha.1':
+    resolution: {integrity: sha512-bmsBhxuFwqZVzca579Z6mdgZe9bUHZ178nr1B2if1tkeuoxbWNnwjjfYj4t2FryO3RmVZyc3FJxkRKwAezNGHg==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@pagefind/linux-arm64@1.4.0-alpha.1':
+    resolution: {integrity: sha512-01pLGPSJ91JyL2WZHusQE/Ae39zZhIBDnU4lSlHfbNVlCxxezvFC/MifLGtRKxnUzlKJfDOZ7Oxj+LNnarngzQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@pagefind/linux-x64@1.4.0-alpha.1':
+    resolution: {integrity: sha512-4kpSAExjWP0K9R4rDYUXy3EBBlNnvp5VIhG6BNmY1/TlbFq9t8MEtkz3Xqir67BGSFPGL+2jVR2LA1Qu7UmFwQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@pagefind/windows-x64@1.4.0-alpha.1':
+    resolution: {integrity: sha512-MVsMrE2UG4jdemBRknClybDlAMqEgy3yGNqvqIdMPXYgvlehNja7uHkKksuIe2tU/eyreYS4W6WBWLADE2BcrQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@phenomnomnominal/tsquery@5.0.1':
     resolution: {integrity: sha512-3nVv+e2FQwsW8Aw6qTU6f+1rfcJ3hrcnvH/mu9i8YhxO+9sqbOfpL8m6PbET5+xKOlz/VSbp0RoYWYCtIsnmuA==}
@@ -7385,6 +7413,10 @@ packages:
   package-json-from-dist@1.0.1:
     resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
 
+  pagefind@1.4.0-alpha.1:
+    resolution: {integrity: sha512-QFMnfpSNLR4e9Aw1zbVkLdbz07J5A8b6X/FyGC0nJEDZNs/DqTA2yF0S6mOmeUDKrNWjI3+xI1ae2S+kvNnInw==}
+    hasBin: true
+
   param-case@3.0.4:
     resolution: {integrity: sha512-RXlj7zCYokReqWpOPH9oYivUzLYZ5vAPIfEmCTNViosC78F8F0H9y7T7gG2M39ymgutxF5gcFEsyZQSph9Bp3A==}
 
@@ -11692,6 +11724,21 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
 
+  '@pagefind/darwin-arm64@1.4.0-alpha.1':
+    optional: true
+
+  '@pagefind/darwin-x64@1.4.0-alpha.1':
+    optional: true
+
+  '@pagefind/linux-arm64@1.4.0-alpha.1':
+    optional: true
+
+  '@pagefind/linux-x64@1.4.0-alpha.1':
+    optional: true
+
+  '@pagefind/windows-x64@1.4.0-alpha.1':
+    optional: true
+
   '@phenomnomnominal/tsquery@5.0.1(typescript@5.7.3)':
     dependencies:
       esquery: 1.6.0
@@ -14443,7 +14490,7 @@ snapshots:
       '@typescript-eslint/parser': 8.24.0(eslint@8.57.0)(typescript@5.7.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.8.0(eslint-plugin-import@2.31.0)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-typescript@3.8.0)(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.0)
       eslint-plugin-react: 7.37.4(eslint@8.57.0)
@@ -14467,7 +14514,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0)(eslint@8.57.0):
+  eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0
@@ -14482,14 +14529,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.0)(eslint@8.57.0):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.24.0(eslint@8.57.0)(typescript@5.7.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.8.0(eslint-plugin-import@2.31.0)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -14514,7 +14561,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.0)(eslint@8.57.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.8.0(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.24.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -17158,6 +17205,14 @@ snapshots:
       p-timeout: 3.2.0
 
   package-json-from-dist@1.0.1: {}
+
+  pagefind@1.4.0-alpha.1:
+    optionalDependencies:
+      '@pagefind/darwin-arm64': 1.4.0-alpha.1
+      '@pagefind/darwin-x64': 1.4.0-alpha.1
+      '@pagefind/linux-arm64': 1.4.0-alpha.1
+      '@pagefind/linux-x64': 1.4.0-alpha.1
+      '@pagefind/windows-x64': 1.4.0-alpha.1
 
   param-case@3.0.4:
     dependencies:
