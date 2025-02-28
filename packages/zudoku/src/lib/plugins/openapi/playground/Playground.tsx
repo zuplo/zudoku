@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -17,12 +17,15 @@ import {
 } from "zudoku/ui/Select.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { useSelectedServer } from "../../../authentication/state.js";
-import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
+import {
+  useApiIdentities,
+  useZudoku,
+} from "../../../components/context/ZudokuContext.js";
 import { Card } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
 import { ColorizedParam } from "../ColorizedParam.js";
-import { Content } from "../SidecarExamples.js";
+import { type Content } from "../SidecarExamples.js";
 import { createUrl } from "./createUrl.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
@@ -120,6 +123,7 @@ export const Playground = ({
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
   );
+  const zudoku = useZudoku();
   const [, startTransition] = useTransition();
   const [skipLogin, setSkipLogin] = useState(false);
   const { register, control, handleSubmit, watch, setValue, ...form } =
@@ -150,12 +154,14 @@ export const Playground = ({
             name: header.name,
             value: header.defaultValue ?? "",
             active: header.defaultActive ?? false,
+            locked: false,
           }))
           .concat([
             {
               name: "",
               value: "",
               active: false,
+              locked: false,
             },
           ]),
         identity: NO_IDENTITY,
@@ -165,6 +171,19 @@ export const Playground = ({
   const identities = useApiIdentities();
 
   const setOnce = useRef(false);
+
+  const { data: authorization } = useQuery({
+    queryKey: ["identity", formState.identity],
+    queryFn: async () => {
+      const authorization = await identities.data
+        ?.find((i) => i.id === formState.identity)
+        ?.getRequestAuthorization(new Request(url), zudoku);
+
+      return authorization;
+    },
+    enabled: formState.identity !== NO_IDENTITY,
+  });
+
   useEffect(() => {
     if (setOnce.current) return;
     const firstIdentity = identities.data?.at(0);
@@ -401,7 +420,16 @@ export const Playground = ({
                 </TabsList>
               </div>
               <TabsContent value="headers">
-                <Headers control={control} headers={headers} />
+                <Headers
+                  control={control}
+                  headers={headers}
+                  authorizationHeaders={[
+                    {
+                      name: "Authorization",
+                      defaultValue: "Bearer adasd",
+                    },
+                  ]}
+                />
               </TabsContent>
               <TabsContent value="parameters">
                 {pathParams.length > 0 && (
