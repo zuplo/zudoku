@@ -1,7 +1,13 @@
 import { type ResultOf } from "@graphql-typed-document-node/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
+import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useNavigate } from "react-router";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "zudoku/ui/Collapsible.js";
 import {
   Select,
   SelectContent,
@@ -167,42 +173,72 @@ export const OperationList = ({
         )}
       </Helmet>
       <div
-        className={cn(ProseClasses, "mb-16 max-w-full prose-img:max-w-prose")}
+        className={cn(ProseClasses, "mb-8 max-w-full prose-img:max-w-prose")}
       >
-        <div className="flex">
-          <div className="flex-1">
-            <CategoryHeading>Overview</CategoryHeading>
-            <Heading level={1} id="description" registerSidebarAnchor>
-              {title}
-              {showVersions && (
-                <span className="text-xl text-muted-foreground">
-                  {" "}
-                  ({version})
-                </span>
-              )}
-            </Heading>
-          </div>
-          <div>
-            {showVersions && (
-              <Select
-                onValueChange={(version) => navigate(versions[version]!)}
-                defaultValue={version}
+        <Collapsible className="w-full">
+          <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
+            <div className="flex-1">
+              <CategoryHeading>{title}</CategoryHeading>
+              <Heading
+                level={1}
+                id="description"
+                registerSidebarAnchor
+                className="mb-0"
               >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select version" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(versions).map(([version]) => (
-                    <SelectItem key={version} value={version}>
-                      {version}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+                {tag}
+                {showVersions && (
+                  <span className="text-xl text-muted-foreground ml-1.5">
+                    {" "}
+                    ({version})
+                  </span>
+                )}
+              </Heading>
+            </div>
+            <div className="flex flex-col gap-4 sm:items-end">
+              {showVersions && (
+                <Select
+                  onValueChange={(version) => navigate(versions[version]!)}
+                  defaultValue={version}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Select version" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(versions).map(([version]) => (
+                      <SelectItem key={version} value={version}>
+                        {version}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {schema.description && (
+                <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
+                  <span>Schema description</span>
+
+                  <ChevronsUpDownIcon
+                    className="group-data-[state=open]:hidden translate-y-px"
+                    size={14}
+                  />
+                  <ChevronsDownUpIcon
+                    className="group-data-[state=closed]:hidden translate-y-px"
+                    size={13}
+                  />
+                </CollapsibleTrigger>
+              )}
+            </div>
           </div>
-        </div>
-        <Markdown content={schema.description ?? ""} />
+          {schema.description && (
+            <CollapsibleContent className="CollapsibleContent">
+              <div className="pt-4">
+                <Markdown
+                  className="border rounded bg-muted/25 border-border px-2.5 md:px-4"
+                  content={schema.description}
+                />
+              </div>
+            </CollapsibleContent>
+          )}
+        </Collapsible>
       </div>
       <hr />
       <div className="my-4 flex items-center justify-end gap-4">
