@@ -176,7 +176,7 @@ export const OperationList = ({
         className={cn(ProseClasses, "mb-8 max-w-full prose-img:max-w-prose")}
       >
         <Collapsible className="w-full">
-          <div className="flex">
+          <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex-1">
               <CategoryHeading>{title}</CategoryHeading>
               <Heading
@@ -194,7 +194,7 @@ export const OperationList = ({
                 )}
               </Heading>
             </div>
-            <div className="flex flex-col justify-end gap-2">
+            <div className="flex flex-col gap-4 sm:items-end">
               {showVersions && (
                 <Select
                   onValueChange={(version) => navigate(versions[version]!)}
@@ -213,7 +213,7 @@ export const OperationList = ({
                 </Select>
               )}
               {schema.description && (
-                <CollapsibleTrigger className="flex items-center justify-end gap-1 text-sm font-medium text-muted-foreground group">
+                <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
                   <span>Schema description</span>
 
                   <ChevronsUpDownIcon
