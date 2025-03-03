@@ -4,7 +4,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 interface IdentityState {
   rememberedIdentity: string | null;
   setRememberedIdentity: (identity: string | null) => void;
-  getRememberedIdentity: (availableIdentities: string[]) => string | null;
+  getRememberedIdentity: (availableIdentities: string[]) => string | undefined;
 }
 
 export const useIdentityStore = create<IdentityState>()(
