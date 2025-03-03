@@ -172,9 +172,7 @@ export const OperationList = ({
           <meta name="description" content={metaDescription} />
         )}
       </Helmet>
-      <div
-        className={cn(ProseClasses, "mb-8 max-w-full prose-img:max-w-prose")}
-      >
+      <div className="mb-8">
         <Collapsible className="w-full">
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex-1">
@@ -230,7 +228,12 @@ export const OperationList = ({
           </div>
           {schema.description && (
             <CollapsibleContent className="CollapsibleContent">
-              <div className="pt-4">
+              <div
+                className={cn(
+                  ProseClasses,
+                  "pt-4 max-w-full prose-img:max-w-prose",
+                )}
+              >
                 <Markdown
                   className="border rounded bg-muted/25 border-border px-2.5 md:px-4"
                   content={schema.description}
