@@ -1,7 +1,6 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
+import { PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
@@ -85,7 +84,7 @@ export const SchemaPropertyItem = ({
       <div className="flex flex-col gap-1 justify-between text-sm">
         <div className="flex gap-2 items-center">
           <code>{name}</code>
-          <Badge variant="muted">
+          <span className="text-xs text-muted-foreground">
             {schema.type === "array" && schema.items.type ? (
               <span>{schema.items.type}[]</span>
             ) : Array.isArray(schema.type) ? (
@@ -93,8 +92,10 @@ export const SchemaPropertyItem = ({
             ) : (
               <span>{schema.type}</span>
             )}
-          </Badge>
-          {group === "optional" && <Badge variant="outline">optional</Badge>}
+          </span>
+          {group === "optional" && (
+            <span className="text-xs text-muted-foreground">optional</span>
+          )}
           {schema.type === "array" &&
             "items" in schema &&
             isCircularRef(schema.items) && <RecursiveIndicator />}
@@ -115,15 +116,9 @@ export const SchemaPropertyItem = ({
           >
             {showCollapseButton && (
               <Collapsible.Trigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 flex gap-1.5"
-                >
-                  <ListPlusIcon size={18} />
-                  {!isOpen
-                    ? "Show nested properties"
-                    : "Hide nested properties"}
+                <Button variant="expand" size="sm">
+                  <PlusIcon size={16} />
+                  {!isOpen ? "Show properties" : "Hide properties"}
                 </Button>
               </Collapsible.Trigger>
             )}
