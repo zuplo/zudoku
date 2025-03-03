@@ -561,8 +561,8 @@ importers:
         specifier: 8.5.2
         version: 8.5.2
       posthog-node:
-        specifier: 4.6.0
-        version: 4.6.0
+        specifier: 4.8.1
+        version: 4.8.1
       prism-react-renderer:
         specifier: 2.4.1
         version: 2.4.1(react@19.0.0)
@@ -4535,6 +4535,9 @@ packages:
   axios@1.7.9:
     resolution: {integrity: sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==}
 
+  axios@1.8.1:
+    resolution: {integrity: sha512-NN+fvwH/kV01dYUQ3PTOZns4LWtWhOFCAhQ/pHb88WQ1hNe5V/dvFwc4VJcDL11LT9xSX0QtsR8sWUuyOuOq7g==}
+
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
@@ -7650,8 +7653,8 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  posthog-node@4.6.0:
-    resolution: {integrity: sha512-Dq6sBTeBXfK0Ez9OWAl+lhUcSInGUshxtoe0b26gFZtnV4byWTEZtwitKB6Xel9wYx3pNHixKOTSIHC/6a6CIA==}
+  posthog-node@4.8.1:
+    resolution: {integrity: sha512-ApMEC1+DbctP/88+VhaCl8SRKpIoReibMf7Mb3rxw3yMthr1rKaM4opbHdZJ0buLhwS5zX8B2ckqLjpwpSjRPg==}
     engines: {node: '>=15.0.0'}
 
   preact@10.25.4:
@@ -13452,6 +13455,14 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
+  axios@1.8.1:
+    dependencies:
+      follow-redirects: 1.15.9
+      form-data: 4.0.2
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   axobject-query@4.1.0: {}
 
   babel-plugin-const-enum@1.2.0(@babel/core@7.26.9):
@@ -17429,9 +17440,9 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  posthog-node@4.6.0:
+  posthog-node@4.8.1:
     dependencies:
-      axios: 1.7.9
+      axios: 1.8.1
     transitivePeerDependencies:
       - debug
 
