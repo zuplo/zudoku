@@ -5,7 +5,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { PathRenderer } from "../../../components/PathRenderer.js";
 
-import { Button } from "zudoku/ui/Button.js";
 import {
   Select,
   SelectContent,
@@ -29,6 +28,7 @@ import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
 import { useIdentityStore } from "./rememberedIdentity.js";
+import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import SubmitButton from "./SubmitButton.js";
 
@@ -164,16 +164,16 @@ export const Playground = ({
               active: false,
             },
           ]),
-        identity:
-          getRememberedIdentity(identities.data?.map((i) => i.id) ?? []) ??
-          NO_IDENTITY,
+        identity: getRememberedIdentity(
+          identities.data?.map((i) => i.id) ?? [],
+        ),
       },
     });
   const formState = watch();
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (formState.identity && formState.identity !== NO_IDENTITY) {
+    if (formState.identity) {
       latestSetRememberedIdentity.current(formState.identity);
     }
   }, [latestSetRememberedIdentity, formState.identity]);
@@ -181,10 +181,6 @@ export const Playground = ({
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
-
-      if (identities.isLoading) {
-        await identities.promise;
-      }
 
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
@@ -313,7 +309,7 @@ export const Playground = ({
     >
       <form
         onSubmit={handleSubmit((data) => {
-          if (identities.data?.length === 0 || data.identity !== NO_IDENTITY) {
+          if (identities.data?.length === 0 || data.identity) {
             queryMutation.mutate(data);
           } else {
             setShowSelectIdentity(true);
@@ -328,59 +324,20 @@ export const Playground = ({
           onOpenChange={setShowSelectIdentity}
           onSubmit={({ rememberedIdentity, identity }) => {
             if (rememberedIdentity) {
-              setValue("identity", identity);
+              setValue("identity", identity ?? NO_IDENTITY);
             }
             setShowSelectIdentity(false);
             queryMutation.mutate({ ...formState, identity });
           }}
         />
+        <RequestLoginDialog
+          open={showLogin}
+          setOpen={(open) => setSkipLogin(open)}
+          onSignUp={onSignUp}
+          onLogin={onLogin}
+        />
 
-        {showLogin && (
-          <div className="absolute top-1/2 right-1/2  -translate-y-1/2 translate-x-1/2 z-50 max-w-md">
-            <Alert>
-              <AlertTitle className="mb-2">
-                Welcome to the Playground!
-              </AlertTitle>
-              <AlertDescription className="flex flex-col gap-2">
-                <div className="mb-2">
-                  The Playground is a tool for developers to test and explore
-                  our APIs. To use the Playground, you need to login.
-                </div>
-                <div className="flex gap-2 justify-between">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setSkipLogin(true)}
-                  >
-                    Skip
-                  </Button>
-                  <div className="flex gap-2">
-                    {onSignUp && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={onSignUp}
-                      >
-                        Sign Up
-                      </Button>
-                    )}
-                    {onLogin && (
-                      <Button type="button" variant="default" onClick={onLogin}>
-                        Login
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-        <div
-          className={cn(
-            "grid grid-cols-2 text-sm h-full",
-            showLogin && "opacity-30 pointer-events-none",
-          )}
-        >
+        <div className="grid grid-cols-2 text-sm h-full">
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">

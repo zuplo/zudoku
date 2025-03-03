@@ -1,7 +1,7 @@
 import { Card } from "zudoku/ui/Card.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
-import { ApiIdentity } from "../../../core/ZudokuContext.js";
+import { type ApiIdentity } from "../../../core/ZudokuContext.js";
 import { NO_IDENTITY } from "./Playground.js";
 
 const IdentitySelector = ({
@@ -18,7 +18,7 @@ const IdentitySelector = ({
       <RadioGroup
         onValueChange={(value) => setValue(value)}
         value={value}
-        defaultValue={value}
+        defaultValue={NO_IDENTITY}
         className="gap-0"
         disabled={identities?.length === 0}
       >

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { Label } from "zudoku/ui/Label.js";
-import { ApiIdentity } from "../../../core/ZudokuContext.js";
+import { type ApiIdentity } from "../../../core/ZudokuContext.js";
 import IdentitySelector from "./IdentitySelector.js";
 
 const IdentityDialog = ({
