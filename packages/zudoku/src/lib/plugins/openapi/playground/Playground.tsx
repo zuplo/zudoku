@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
 import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
-import { Content } from "../SidecarExamples.js";
+import { type Content } from "../SidecarExamples.js";
 import { createUrl } from "./createUrl.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
@@ -126,6 +126,8 @@ export const Playground = ({
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
   const [skipLogin, setSkipLogin] = useState(false);
+  const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
 
   const { register, control, handleSubmit, watch, setValue, ...form } =
@@ -200,15 +202,23 @@ export const Playground = ({
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
       }
+
+      const warningTimeout = setTimeout(
+        () => setShowLongRunningWarning(true),
+        3210,
+      );
+      abortControllerRef.current = new AbortController();
+
       try {
         const response = await fetch(request, {
-          signal: AbortSignal.timeout(5000),
+          signal: abortControllerRef.current.signal,
         });
 
+        clearTimeout(warningTimeout);
+        setShowLongRunningWarning(false);
+
         const time = performance.now() - start;
-
         const body = await response.text();
-
         const url = new URL(request.url);
 
         return {
@@ -229,6 +239,8 @@ export const Playground = ({
           },
         } satisfies PlaygroundResult;
       } catch (error) {
+        clearTimeout(warningTimeout);
+        setShowLongRunningWarning(false);
         if (error instanceof TypeError) {
           throw new Error(
             "The request failed, possibly due to network issues or CORS policy.",
@@ -239,6 +251,12 @@ export const Playground = ({
       }
     },
   });
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const path = (
     <PathRenderer
@@ -273,9 +291,9 @@ export const Playground = ({
     ));
 
   const serverSelect = (
-    <div className="inline-block opacity-50 hover:opacity-100 transition translate-y-[4px]">
+    <div className="inline-block opacity-50 hover:opacity-100 transition">
       {server ? (
-        <span>{server.replace(/^https?:\/\//, "")}</span>
+        <span>{server.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
       ) : (
         servers.length > 1 && (
           <Select
@@ -285,13 +303,13 @@ export const Playground = ({
             value={selectedServer}
             defaultValue={selectedServer}
           >
-            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
+            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto translate-y-[4px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {servers.map((s) => (
                 <SelectItem key={s} value={s}>
-                  {s.replace(/^https?:\/\//, "")}
+                  {s.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -468,6 +486,13 @@ export const Playground = ({
             showPathParamsWarning={formState.pathParams.some(
               (p) => p.value === "",
             )}
+            showLongRunningWarning={showLongRunningWarning}
+            onCancel={() => {
+              abortControllerRef.current?.abort(
+                "Request cancelled by the user",
+              );
+              setShowLongRunningWarning(false);
+            }}
           />
         </div>
       </form>
