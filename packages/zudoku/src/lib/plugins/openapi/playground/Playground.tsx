@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { Fragment, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { PathRenderer } from "../../../components/PathRenderer.js";
@@ -18,18 +18,20 @@ import { useSelectedServer } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
+import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import { Content } from "../SidecarExamples.js";
 import { createUrl } from "./createUrl.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
+import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
+import { useIdentityStore } from "./rememberedIdentity.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import SubmitButton from "./SubmitButton.js";
 
-import { IdentityDialog } from "./IdentityDialog.js";
 export const NO_IDENTITY = "__none";
 
 export type Header = {
@@ -120,9 +122,11 @@ export const Playground = ({
     servers.map((url) => ({ url })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
-  const [rememberedIdentity, setRememberedIdentity] = useState<string>();
+  const identities = useApiIdentities();
+  const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
   const [skipLogin, setSkipLogin] = useState(false);
+  const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
 
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
@@ -160,12 +164,19 @@ export const Playground = ({
               active: false,
             },
           ]),
-        identity: NO_IDENTITY,
+        identity:
+          getRememberedIdentity(identities.data?.map((i) => i.id) ?? []) ??
+          NO_IDENTITY,
       },
     });
   const formState = watch();
-  const identities = useApiIdentities();
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (formState.identity && formState.identity !== NO_IDENTITY) {
+      latestSetRememberedIdentity.current(formState.identity);
+    }
+  }, [latestSetRememberedIdentity, formState.identity]);
 
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
