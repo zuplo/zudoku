@@ -39,16 +39,17 @@ const IdentityDialog = ({
         <DialogDescription>
           Please select an identity for this request.
         </DialogDescription>
-        <IdentitySelector
-          identities={identities}
-          setValue={setIdentity}
-          value={identity}
-        />
+        <div className="max-h-80 overflow-auto">
+          <IdentitySelector
+            identities={identities}
+            setValue={setIdentity}
+            value={identity}
+          />
+        </div>
         <DialogFooter className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Checkbox
               id="remember"
-              variant="outline"
               checked={rememberedIdentity}
               onCheckedChange={(checked) =>
                 setRememberedIdentity(
