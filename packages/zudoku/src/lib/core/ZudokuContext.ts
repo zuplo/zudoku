@@ -24,6 +24,10 @@ export interface ZudokuEvents {
 
 export interface ApiIdentity {
   authorizeRequest: (request: Request) => Promise<Request> | Request;
+  authorizationFields?: {
+    headers?: string[];
+    queryParams?: string[];
+  };
   label: string;
   id: string;
 }

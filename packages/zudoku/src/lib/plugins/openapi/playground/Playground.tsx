@@ -5,9 +5,6 @@ import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { PathRenderer } from "../../../components/PathRenderer.js";
 
-import { Button } from "zudoku/ui/Button.js";
-import { Label } from "zudoku/ui/Label.js";
-import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
   Select,
   SelectContent,
@@ -18,16 +15,20 @@ import {
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { useSelectedServer } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { Card } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
+import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import { Content } from "../SidecarExamples.js";
 import { createUrl } from "./createUrl.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
+import { IdentityDialog } from "./IdentityDialog.js";
+import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
+import { useIdentityStore } from "./rememberedIdentity.js";
+import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import SubmitButton from "./SubmitButton.js";
 
@@ -120,8 +121,13 @@ export const Playground = ({
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
   );
+  const [showSelectIdentity, setShowSelectIdentity] = useState(false);
+  const identities = useApiIdentities();
+  const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
   const [skipLogin, setSkipLogin] = useState(false);
+  const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
+
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
@@ -158,27 +164,24 @@ export const Playground = ({
               active: false,
             },
           ]),
-        identity: NO_IDENTITY,
+        identity: getRememberedIdentity(
+          identities.data?.map((i) => i.id) ?? [],
+        ),
       },
     });
   const formState = watch();
-  const identities = useApiIdentities();
-
-  const setOnce = useRef(false);
-  useEffect(() => {
-    if (setOnce.current) return;
-    const firstIdentity = identities.data?.at(0);
-    if (firstIdentity) {
-      setValue("identity", firstIdentity.id);
-      setOnce.current = true;
-    }
-  }, [setValue, identities.data]);
-
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (formState.identity) {
+      latestSetRememberedIdentity.current(formState.identity);
+    }
+  }, [latestSetRememberedIdentity, formState.identity]);
 
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
+
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
@@ -305,56 +308,36 @@ export const Playground = ({
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
     >
       <form
-        onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
+        onSubmit={handleSubmit((data) => {
+          if (identities.data?.length === 0 || data.identity) {
+            queryMutation.mutate(data);
+          } else {
+            setShowSelectIdentity(true);
+          }
+        })}
         ref={formRef}
         className="relative"
       >
-        {showLogin && (
-          <div className="absolute top-1/2 right-1/2  -translate-y-1/2 translate-x-1/2 z-50 max-w-md">
-            <Alert>
-              <AlertTitle className="mb-2">
-                Welcome to the Playground!
-              </AlertTitle>
-              <AlertDescription className="flex flex-col gap-2">
-                <div className="mb-2">
-                  The Playground is a tool for developers to test and explore
-                  our APIs. To use the Playground, you need to login.
-                </div>
-                <div className="flex gap-2 justify-between">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setSkipLogin(true)}
-                  >
-                    Skip
-                  </Button>
-                  <div className="flex gap-2">
-                    {onSignUp && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={onSignUp}
-                      >
-                        Sign Up
-                      </Button>
-                    )}
-                    {onLogin && (
-                      <Button type="button" variant="default" onClick={onLogin}>
-                        Login
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
-        <div
-          className={cn(
-            "grid grid-cols-2 text-sm h-full",
-            showLogin && "opacity-30 pointer-events-none",
-          )}
-        >
+        <IdentityDialog
+          identities={identities.data ?? []}
+          open={showSelectIdentity}
+          onOpenChange={setShowSelectIdentity}
+          onSubmit={({ rememberedIdentity, identity }) => {
+            if (rememberedIdentity) {
+              setValue("identity", identity ?? NO_IDENTITY);
+            }
+            setShowSelectIdentity(false);
+            queryMutation.mutate({ ...formState, identity });
+          }}
+        />
+        <RequestLoginDialog
+          open={showLogin}
+          setOpen={(open) => setSkipLogin(open)}
+          onSignUp={onSignUp}
+          onLogin={onLogin}
+        />
+
+        <div className="grid grid-cols-2 text-sm h-full">
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
@@ -372,7 +355,7 @@ export const Playground = ({
               <SubmitButton
                 identities={identities.data ?? []}
                 formRef={formRef}
-                disabled={form.formState.isSubmitting}
+                disabled={identities.isLoading || form.formState.isSubmitting}
               />
             </div>
             <Tabs defaultValue="parameters">
@@ -470,43 +453,11 @@ export const Playground = ({
                     </Alert>
                   )}
                   <div className="flex flex-col items-center gap-2">
-                    <Card className="w-full overflow-hidden">
-                      <RadioGroup
-                        onValueChange={(value) => setValue("identity", value)}
-                        value={formState.identity}
-                        defaultValue={formState.identity}
-                        className="gap-0"
-                        disabled={identities.data?.length === 0}
-                      >
-                        <Label
-                          className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
-                          htmlFor="none"
-                        >
-                          <RadioGroupItem value={NO_IDENTITY} id="none">
-                            None
-                          </RadioGroupItem>
-                          <Label htmlFor="none" className="ml-2">
-                            None
-                          </Label>
-                        </Label>
-                        {identities.data?.map((identity) => (
-                          <Label
-                            key={identity.id}
-                            className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
-                          >
-                            <RadioGroupItem
-                              value={identity.id}
-                              id={identity.id}
-                            >
-                              {identity.label}
-                            </RadioGroupItem>
-                            <Label htmlFor={identity.id} className="ml-2">
-                              {identity.label}
-                            </Label>
-                          </Label>
-                        ))}
-                      </RadioGroup>
-                    </Card>
+                    <IdentitySelector
+                      value={formState.identity}
+                      identities={identities.data ?? []}
+                      setValue={(value) => setValue("identity", value)}
+                    />
                   </div>
                 </div>
               </TabsContent>
