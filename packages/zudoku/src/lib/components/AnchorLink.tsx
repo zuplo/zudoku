@@ -1,22 +1,22 @@
-import React from "react";
-import { Link, type LinkProps, useLocation } from "react-router";
+import { type MouseEvent } from "react";
+import { NavLink, type NavLinkProps, useHref, useLocation } from "react-router";
 import { useScrollToHash } from "../util/useScrollToAnchor.js";
 
 /**
  * Link that scrolls to anchor even if the hash is already set in the URL.
  */
-export const AnchorLink = (props: LinkProps) => {
+export const AnchorLink = (props: NavLinkProps) => {
   const location = useLocation();
   const scrollToHash = useScrollToHash();
-  const hash = typeof props.to === "string" ? props.to : props.to.hash;
+  const hash = useHref(props.to).split("#")[1];
 
-  const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     props.onClick?.(event);
-    if (!hash?.startsWith("#") || hash !== location.hash) return;
+    if (hash !== location.hash.slice(1)) return;
 
     event.preventDefault();
     scrollToHash(hash);
   };
 
-  return <Link {...props} onClick={handleClick} />;
+  return <NavLink {...props} onClick={handleClick} />;
 };
