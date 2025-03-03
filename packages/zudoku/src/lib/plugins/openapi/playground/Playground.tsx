@@ -332,7 +332,7 @@ export const Playground = ({
         />
         <RequestLoginDialog
           open={showLogin}
-          setOpen={(open) => setSkipLogin(open)}
+          setOpen={(open) => setSkipLogin(!open)}
           onSignUp={onSignUp}
           onLogin={onLogin}
         />
