@@ -43,7 +43,6 @@ export const QueryParams = ({
                     name={`queryParams.${i}.active`}
                     render={({ field }) => (
                       <Checkbox
-                        variant="outline"
                         id={`queryParams.${i}.active`}
                         className="mr-2"
                         checked={field.value}

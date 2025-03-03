@@ -98,7 +98,6 @@ export const Headers = ({
                     name={`headers.${i}.active`}
                     render={({ field }) => (
                       <Checkbox
-                        variant="outline"
                         id={`headers.${i}.active`}
                         checked={field.value}
                         onCheckedChange={(checked) => {
