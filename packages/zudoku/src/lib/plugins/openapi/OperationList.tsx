@@ -37,6 +37,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     operationId
     contentTypes
     path
+    deprecated
     parameters {
       name
       in
