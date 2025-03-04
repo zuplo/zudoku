@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRightIcon } from "lucide-react";
 import { Fragment, useState } from "react";
+import { Callout } from "zudoku/ui/Callout.js";
 import {
   Collapsible,
   CollapsibleContent,
@@ -28,6 +29,14 @@ const statusCodeMap: Record<number, string> = {
   404: "Not Found",
   405: "Method Not Allowed",
   500: "Internal Server Error",
+};
+
+const humanFileSize = (bytes: number) => {
+  const exponent = Math.floor(Math.log(bytes) / Math.log(1000.0));
+  const decimal = (bytes / Math.pow(1000.0, exponent)).toFixed(
+    exponent ? 2 : 0,
+  );
+  return `${decimal} ${exponent ? `${"kMGTPEZY"[exponent - 1]}B` : "B"}`;
 };
 
 const mimeTypeToLanguage = (mimeType: string) => {
@@ -83,6 +92,8 @@ const sortHeadersByRelevance = (
   });
 };
 
+const SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD = 64_000;
+
 export const ResponseTab = ({
   body = "",
   headers,
@@ -114,9 +125,10 @@ export const ResponseTab = ({
   });
 
   const sortedHeaders = sortHeadersByRelevance([...headers]);
+  const shouldDisableHighlighting = size > SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD;
 
   return (
-    <div className="flex flex-col gap-2 h-full overflow-y-scroll max-h-[calc(100vh-220px)] py-4">
+    <div className="flex flex-col gap-2 h-full overflow-auto max-h-[calc(100vh-220px)] ">
       <Collapsible defaultOpen>
         <CollapsibleTrigger className="flex items-center gap-2 hover:text-primary group">
           <ChevronRightIcon className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
@@ -151,6 +163,12 @@ export const ResponseTab = ({
       </Collapsible>
 
       <Card className="shadow-none">
+        {shouldDisableHighlighting && (
+          <Callout type="info" className="my-0 p-2">
+            Code highlight is disabled for responses larger than{" "}
+            {humanFileSize(SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD)}
+          </Callout>
+        )}
         <SyntaxHighlight
           language={
             view === "types"
@@ -161,8 +179,9 @@ export const ResponseTab = ({
                   : detectedLanguage
                 : "json"
           }
+          showCopy="always"
+          disabled={shouldDisableHighlighting}
           noBackground
-          // playground dialog has h-5/6 ≈ 83.333vh
           className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]"
           code={
             (view === "raw"
@@ -173,7 +192,7 @@ export const ResponseTab = ({
           }
         />
       </Card>
-      <div className="flex gap-2 justify-between">
+      <div className="flex gap-2 justify-between items-center">
         <div className="flex text-xs gap-2 border bg-muted rounded-md p-2 items-center h-8 font-mono divide-x">
           <div>
             <span className="text-muted-foreground">Status</span> {status}{" "}
@@ -184,7 +203,8 @@ export const ResponseTab = ({
             {time.toFixed(0)}ms
           </div>
           <div>
-            <span className="text-muted-foreground">Size</span> {size}B
+            <span className="text-muted-foreground">Size</span>{" "}
+            {humanFileSize(size)}
           </div>
         </div>
         {jsonContent && (
