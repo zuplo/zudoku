@@ -1570,11 +1570,158 @@
         }
       }
     },
-    "/shipments/{shipmentId}/documents/commercial-invoice": {
+    "/shipments/{shipmentId}/documents/v2/commercial-invoice": {
       "get": {
         "tags": ["Documentation"],
         "summary": "Get commercial invoice",
-        "description": "Generate a commercial invoice for an international shipment",
+        "description": "Generate an enhanced commercial invoice with digital signatures, multiple format support, and customs pre-clearance capabilities. Supports both standard formats and country-specific templates.",
+        "operationId": "getCommercialInvoiceV2",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["PDF", "DOCX", "XML", "JSON", "EDI"]
+            },
+            "description": "Document format. XML/EDI formats follow international customs standards."
+          },
+          {
+            "name": "template",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["STANDARD", "EU", "US", "CN", "UK"]
+            },
+            "description": "Country-specific template to use"
+          },
+          {
+            "name": "include",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "digital_signature",
+                  "customs_preclearance",
+                  "packing_list",
+                  "certificate_origin"
+                ]
+              }
+            },
+            "description": "Additional documents to include"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Commercial invoice generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "documents": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "COMMERCIAL_INVOICE",
+                              "PACKING_LIST",
+                              "CERTIFICATE_ORIGIN",
+                              "CUSTOMS_PRECLEARANCE"
+                            ]
+                          },
+                          "url": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "format": {
+                            "type": "string"
+                          },
+                          "template": {
+                            "type": "string"
+                          },
+                          "expiresAt": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "digitalSignature": {
+                            "type": "object",
+                            "properties": {
+                              "signedBy": {
+                                "type": "string"
+                              },
+                              "signedAt": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "validUntil": {
+                                "type": "string",
+                                "format": "date-time"
+                              },
+                              "certificateId": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "customsStatus": {
+                      "type": "string",
+                      "enum": ["PENDING", "PRE_CLEARED", "CLEARED"]
+                    }
+                  }
+                },
+                "example": {
+                  "documents": [
+                    {
+                      "type": "COMMERCIAL_INVOICE",
+                      "url": "https://api.sh.example.com/v2/documents/invoice_123456.pdf",
+                      "format": "PDF",
+                      "template": "EU",
+                      "expiresAt": "2025-01-16T12:00:00Z",
+                      "digitalSignature": {
+                        "signedBy": "John Doe",
+                        "signedAt": "2025-01-09T12:00:00Z",
+                        "validUntil": "2026-01-09T12:00:00Z",
+                        "certificateId": "CERT-123456"
+                      }
+                    },
+                    {
+                      "type": "CUSTOMS_PRECLEARANCE",
+                      "url": "https://api.sh.example.com/v2/documents/preclearance_123456.pdf",
+                      "format": "PDF",
+                      "expiresAt": "2025-01-16T12:00:00Z"
+                    }
+                  ],
+                  "customsStatus": "PRE_CLEARED"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/documents/commercial-invoice": {
+      "get": {
+        "tags": ["Documentation"],
+        "summary": "Get commercial invoice (legacy)12",
+        "description": "Generate a basic commercial invoice for an international shipment. This endpoint is deprecated, please use [`/shipments/{shipmentId}/documents/v2/commercial-invoice`](#get-commercial-invoice-legacy) for enhanced features including digital signatures, multiple formats, and customs pre-clearance.",
+        "deprecated": true,
         "operationId": "getCommercialInvoice",
         "parameters": [
           {
