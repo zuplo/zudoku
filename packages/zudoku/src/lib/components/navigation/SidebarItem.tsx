@@ -67,12 +67,16 @@ export const SidebarItem = ({
         </NavLink>
       );
     case "link":
-      return item.href.startsWith("#") ? (
+      return !item.href.startsWith("http") ? (
         <AnchorLink
-          to={{ hash: item.href, search: searchParams.toString() }}
-          {...{ [DATA_ANCHOR_ATTR]: item.href.slice(1) }}
+          to={{
+            pathname: item.href.split("#")[0],
+            hash: item.href.split("#")[1],
+            search: searchParams.toString(),
+          }}
+          {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
           className={navigationListItem({
-            isActive: item.href.slice(1) === activeAnchor,
+            isActive: item.href.split("#")[1] === activeAnchor,
             className: item.badge?.placement !== "start" && "justify-between",
           })}
           onClick={onRequestClose}
@@ -88,25 +92,6 @@ export const SidebarItem = ({
             <span className="break-all">{item.label}</span>
           )}
         </AnchorLink>
-      ) : !item.href.startsWith("http") ? (
-        <NavLink
-          className={navigationListItem({
-            isActive: item.href.split("#")[1] === activeAnchor,
-            className: item.badge?.placement !== "start" && "justify-between",
-          })}
-          to={item.href}
-        >
-          {item.badge ? (
-            <>
-              <span className="truncate" title={item.label}>
-                {item.label}
-              </span>
-              <SidebarBadge {...item.badge} />
-            </>
-          ) : (
-            <span className="break-all">{item.label}</span>
-          )}
-        </NavLink>
       ) : (
         <a
           className={navigationListItem()}
