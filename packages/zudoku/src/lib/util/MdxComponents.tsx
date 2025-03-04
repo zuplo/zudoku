@@ -1,5 +1,5 @@
 import { type MDXComponents } from "mdx/types.js";
-import { Link } from "react-router";
+import { AnchorLink } from "../components/AnchorLink.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { Callout } from "../ui/Callout.js";
@@ -47,7 +47,7 @@ export const MdxComponents = {
   ),
   a: ({ href, node, ...props }) =>
     href && !href.startsWith("http") ? (
-      <Link to={href} relative="path" {...props} />
+      <AnchorLink to={href} relative="path" {...props} />
     ) : (
       <a href={href} target="_blank" {...props} rel="noreferrer" />
     ),
