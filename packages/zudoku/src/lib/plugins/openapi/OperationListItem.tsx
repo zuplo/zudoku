@@ -1,14 +1,16 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useRef, useState } from "react";
+import { Badge } from "zudoku/ui/Badge.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
+import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
-import { FragmentType, useFragment } from "./graphql/index.js";
+import { type FragmentType, useFragment } from "./graphql/index.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { methodForColor } from "./util/methodToColor.js";
 
@@ -44,7 +46,18 @@ export const OperationListItem = ({
           registerSidebarAnchor
           className="break-all"
         >
-          {operation.summary}
+          <span
+            className={cn(
+              operation.deprecated && "line-through text-muted-foreground",
+            )}
+          >
+            {operation.summary}
+          </span>
+          {operation.deprecated && (
+            <Badge variant="outline" className="ms-2 text-xs align-middle">
+              deprecated
+            </Badge>
+          )}
         </Heading>
         <div className="text-sm flex gap-2 font-mono">
           <span className={methodForColor(operation.method)}>

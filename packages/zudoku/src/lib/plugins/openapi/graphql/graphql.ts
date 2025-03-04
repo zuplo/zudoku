@@ -197,6 +197,7 @@ export type OperationsFragmentFragment = {
   operationId?: string | null;
   contentTypes: Array<string>;
   path: string;
+  deprecated?: boolean | null;
   parameters?: Array<{
     __typename?: "ParameterItem";
     name: string;
@@ -374,6 +375,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   operationId
   contentTypes
   path
+  deprecated
   parameters {
     name
     in
@@ -472,6 +474,7 @@ export const AllOperationsDocument = new TypedDocumentString(`
   operationId
   contentTypes
   path
+  deprecated
   parameters {
     name
     in
