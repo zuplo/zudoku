@@ -1719,8 +1719,8 @@
     "/shipments/{shipmentId}/documents/commercial-invoice": {
       "get": {
         "tags": ["Documentation"],
-        "summary": "Get commercial invoice (legacy)12",
-        "description": "Generate a basic commercial invoice for an international shipment. This endpoint is deprecated, please use [`/shipments/{shipmentId}/documents/v2/commercial-invoice`](#get-commercial-invoice-legacy) for enhanced features including digital signatures, multiple formats, and customs pre-clearance.",
+        "summary": "Get commercial invoice (legacy)",
+        "description": "Generate a basic commercial invoice for an international shipment. This endpoint is deprecated, please use [`/shipments/{shipmentId}/documents/v2/commercial-invoice`](#get-commercial-invoice) for enhanced features including digital signatures, multiple formats, and customs pre-clearance.",
         "deprecated": true,
         "operationId": "getCommercialInvoice",
         "parameters": [
