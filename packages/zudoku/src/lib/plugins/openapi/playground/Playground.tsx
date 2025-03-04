@@ -17,6 +17,7 @@ import { useSelectedServer } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
+import { objectEntries } from "../../../util/objectEntries.js";
 import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import { type Content } from "../SidecarExamples.js";
@@ -57,8 +58,17 @@ export type PathParam = {
   isRequired?: boolean;
 };
 
+const bodyContentTypeMap = {
+  Plain: "text/plain",
+  JSON: "application/json",
+  XML: "application/xml",
+  YAML: "application/yaml",
+  CSV: "text/csv",
+} as const;
+
 export type PlaygroundForm = {
   body: string;
+  bodyContentType: keyof typeof bodyContentTypeMap;
   queryParams: Array<{
     name: string;
     value: string;
@@ -134,6 +144,7 @@ export const Playground = ({
     useForm<PlaygroundForm>({
       defaultValues: {
         body: defaultBody,
+        bodyContentType: "JSON",
         queryParams: queryParams
           .map((param) => ({
             name: param.name,
@@ -184,15 +195,24 @@ export const Playground = ({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
+      const shouldSetContentType = !data.headers.some(
+        (h) => h.active && h.name.toLowerCase() === "content-type",
+      );
+
+      const headers = Object.fromEntries([
+        ...data.headers
+          .filter((h) => h.name && h.active)
+          .map((header) => [header.name, header.value]),
+        ...(shouldSetContentType
+          ? [["content-type", bodyContentTypeMap[data.bodyContentType]]]
+          : []),
+      ]);
+
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
           method: method.toUpperCase(),
-          headers: Object.fromEntries(
-            data.headers
-              .filter((h) => h.name && h.active)
-              .map((header) => [header.name, header.value]),
-          ),
+          headers,
           body: data.body ? data.body : undefined,
         },
       );
@@ -320,6 +340,9 @@ export const Playground = ({
   );
 
   const showLogin = requiresLogin && !skipLogin;
+  const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
+    method.toUpperCase(),
+  );
 
   return (
     <FormProvider
@@ -398,7 +421,12 @@ export const Playground = ({
                       <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="body">Body</TabsTrigger>
+                  <TabsTrigger value="body">
+                    Body
+                    {formState.body && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="headers">
@@ -432,31 +460,58 @@ export const Playground = ({
                 <Textarea
                   {...register("body")}
                   className={cn(
-                    "border w-full rounded-lg p-2 bg-muted h-40 font-mono",
-                    !["POST", "PUT", "PATCH", "DELETE"].includes(
-                      method.toUpperCase(),
-                    ) && "h-20",
+                    "border w-full rounded-lg bg-muted/40 p-2 h-64 font-mono text-[13px]",
+                    !isBodySupported && "h-20 bg-muted",
                   )}
                   placeholder={
-                    !["POST", "PUT", "PATCH", "DELETE"].includes(
-                      method.toUpperCase(),
-                    )
+                    !isBodySupported
                       ? "This request does not support a body"
                       : undefined
                   }
-                  disabled={
-                    !["POST", "PUT", "PATCH", "DELETE"].includes(
-                      method.toUpperCase(),
-                    )
-                  }
+                  disabled={!isBodySupported}
                 />
-                {examples && (
-                  <ExamplesDropdown
-                    examples={examples}
-                    onSelect={(example) =>
-                      setValue("body", JSON.stringify(example.value, null, 2))
-                    }
-                  />
+                {isBodySupported && (
+                  <div className="flex items-center gap-2 mt-2 justify-between">
+                    <Select
+                      value={formState.bodyContentType}
+                      onValueChange={(value) =>
+                        setValue(
+                          "bodyContentType",
+                          value as keyof typeof bodyContentTypeMap,
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-[100px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(bodyContentTypeMap).map((format) => (
+                          <SelectItem key={format} value={format}>
+                            {format}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {examples && examples.length > 0 && (
+                      <ExamplesDropdown
+                        examples={examples}
+                        onSelect={(example, mediaType) => {
+                          setValue(
+                            "body",
+                            JSON.stringify(example.value, null, 2),
+                          );
+
+                          const format = objectEntries(bodyContentTypeMap).find(
+                            ([_, contentType]) => contentType === mediaType,
+                          )?.[0];
+
+                          if (format) {
+                            setValue("bodyContentType", format);
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
                 )}
               </TabsContent>
               <TabsContent value="auth">
