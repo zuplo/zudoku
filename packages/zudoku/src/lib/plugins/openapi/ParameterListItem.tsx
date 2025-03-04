@@ -46,14 +46,18 @@ export const ParameterListItem = ({
           )}
         </code>
         {paramSchema.type && (
-          <>
+          <span className="text-xs text-muted-foreground">
             {paramSchema.type === "array"
               ? `${paramSchema.items.type}[]`
               : paramSchema.type}
-          </>
+          </span>
         )}
-        {parameter.required && "required"}
-        {parameter.style === "form" && "form"}
+        {parameter.required && (
+          <span className="text-xs text-muted-foreground">required</span>
+        )}
+        {parameter.style === "form" && (
+          <span className="text-xs text-muted-foreground">form</span>
+        )}
       </div>
       {parameter.description && (
         <Markdown

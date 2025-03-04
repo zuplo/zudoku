@@ -1,5 +1,5 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { PlusIcon, RefreshCcwDotIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
@@ -70,8 +70,10 @@ export const SchemaPropertyItem = ({
         <div className="flex flex-col gap-1 justify-between text-sm">
           <div className="flex gap-2 items-center">
             <code>{name}</code>
-            <Badge variant="muted">object</Badge>
-            {group === "optional" && <Badge variant="outline">optional</Badge>}
+            <span className="text-xs text-muted-foreground">object</span>
+            {group === "optional" && (
+              <span className="text-xs text-muted-foreground">optional</span>
+            )}
             <RecursiveIndicator />
           </div>
         </div>
@@ -117,7 +119,7 @@ export const SchemaPropertyItem = ({
             {showCollapseButton && (
               <Collapsible.Trigger asChild>
                 <Button variant="expand" size="sm">
-                  <PlusIcon size={16} />
+                  {isOpen ? <MinusIcon size={16} /> : <PlusIcon size={16} />}
                   {!isOpen ? "Show properties" : "Hide properties"}
                 </Button>
               </Collapsible.Trigger>
