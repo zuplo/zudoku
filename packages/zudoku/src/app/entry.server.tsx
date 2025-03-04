@@ -129,6 +129,9 @@ export const render = async ({
     },
     onError(error) {
       status = 500;
+      if (import.meta.env.PROD) {
+        throw error;
+      }
       logger.error(error);
     },
   });
