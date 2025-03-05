@@ -204,6 +204,10 @@ export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
       mode: process.env.ZUDOKU_ENV,
       dependencies,
       configPath,
+      registerDependency: (...files: string[]) => {
+        const newFiles = files.filter((f) => !dependencies.includes(f));
+        dependencies.push(...newFiles);
+      },
     },
   };
 

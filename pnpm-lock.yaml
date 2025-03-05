@@ -736,9 +736,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 3.0.5
         version: 3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.13.5)(happy-dom@17.1.1)(jiti@2.4.2)(lightningcss@1.29.1)(tsx@4.19.2)(yaml@2.7.0))
-      esm-loader-typescript:
-        specifier: 1.0.6
-        version: 1.0.6
       happy-dom:
         specifier: 17.1.1
         version: 17.1.1
@@ -5330,9 +5327,6 @@ packages:
 
   esm-loader-css@1.0.6:
     resolution: {integrity: sha512-AAnoj627sbCmI3FKvIpkPsKovhvdgMi2Za6rs6kM5vTfJ4ZlzzVT7YzQvriPpAPJbHVAcmzv5R2/WYxrMJ/KlA==}
-
-  esm-loader-typescript@1.0.6:
-    resolution: {integrity: sha512-t+NqYYMAiZa+Ys/QDGzCv0vnKFPYZ8N6JIdqJNeWpNItEYFwZB6itVYzf3SzDMgqPxX5ZmPoOU9vv2CZg2JccA==}
 
   espree@9.6.1:
     resolution: {integrity: sha512-oruZaFkjorTpF32kDSI5/75ViwGeZginGGy2NoOSg3Q9bnwlnmDm4HLnkl0RE3n+njDXR037aY1+x58Z/zFdwQ==}
@@ -14477,13 +14471,6 @@ snapshots:
       create-esm-loader: 0.2.5
       npm-run-all: 4.1.5
       semver: 7.7.1
-
-  esm-loader-typescript@1.0.6:
-    dependencies:
-      create-esm-loader: 0.2.5
-      npm-run-all: 4.1.5
-      semver: 7.7.1
-      typescript: 5.7.3
 
   espree@9.6.1:
     dependencies:
