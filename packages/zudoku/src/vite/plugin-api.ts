@@ -18,6 +18,7 @@ import type {
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
 import { generateCode } from "./api/schema-codegen.js";
+import { reload } from "./plugin-config-reload.js";
 
 type ProcessedSchema = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,18 +45,15 @@ const validateSchema = async (schema: JSONSchema, filePath: string) => {
   return schema as OpenAPIDocument;
 };
 
+// We track all schema files to invalidate when changed (this includes external references as well)
+const allSchemaFiles = new Set<string>();
+
 async function processSchemas(
+  dir: string,
   config: LoadedConfig,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   zuploProcessors: Array<(schema: any) => Promise<any>> = [],
 ): Promise<Record<string, ProcessedSchema[]>> {
-  const tmpDir = path.posix.join(
-    config.__meta.rootDir,
-    "node_modules/.zudoku/processed",
-  );
-  await fs.rm(tmpDir, { recursive: true, force: true });
-  await fs.mkdir(tmpDir, { recursive: true });
-
   if (!config.apis) return {};
 
   const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
@@ -77,13 +75,15 @@ async function processSchemas(
       ? apiConfig.input
       : [apiConfig.input];
 
+    allSchemaFiles.clear();
+
     const inputFiles = await Promise.all(
       inputs.map(async (input) => {
         const fullPath = path.resolve(config.__meta.rootDir, input);
         const parser = new $RefParser();
         const schema = await parser.bundle(fullPath);
 
-        config.__meta.registerDependency(...parser.$refs.paths());
+        parser.$refs.paths().forEach((file) => allSchemaFiles.add(file));
 
         return validateSchema(schema, input);
       }),
@@ -100,7 +100,7 @@ async function processSchemas(
         const code = await generateCode(processedSchema);
 
         const processedFilePath = path.posix.join(
-          tmpDir,
+          dir,
           `${path.basename(inputPath)}.js`,
         );
         await fs.writeFile(processedFilePath, code);
@@ -144,11 +144,34 @@ const viteApiPlugin = async (
     : [];
 
   let processedSchemas: Record<string, ProcessedSchema[]>;
+  const tmpDir = path.posix.join(
+    initialConfig.__meta.rootDir,
+    "node_modules/.zudoku/processed",
+  );
 
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      processedSchemas = await processSchemas(getConfig(), zuploProcessors);
+      await fs.rm(tmpDir, { recursive: true, force: true });
+      await fs.mkdir(tmpDir, { recursive: true });
+
+      processedSchemas = await processSchemas(
+        tmpDir,
+        getConfig(),
+        zuploProcessors,
+      );
+    },
+    configureServer(server) {
+      server.watcher.on("change", async (id) => {
+        if (!allSchemaFiles.has(id)) return;
+
+        processedSchemas = await processSchemas(
+          tmpDir,
+          getConfig(),
+          zuploProcessors,
+        );
+        reload(server);
+      });
     },
     resolveId(id) {
       if (id === virtualModuleId) {
