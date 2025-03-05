@@ -1,13 +1,15 @@
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
+import colors from "picocolors";
 import { build as viteBuild } from "vite";
+import { logger } from "../cli/common/logger.js";
 import { findOutputPathOfServerConfig } from "../config/loader.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig, loadZudokuConfig } from "./config.js";
+import { createPagefindIndex } from "./create-pagefind-index.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
-import { runPagefind } from "./pagefind.js";
 import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
@@ -77,7 +79,10 @@ export async function runBuild(options: { dir: string }) {
       await rm(viteServerConfig.build.outDir, { recursive: true, force: true });
 
       if (config.search?.type === "pagefind") {
-        await runPagefind({ dir: viteClientConfig.build.outDir });
+        const outputPath = await createPagefindIndex({
+          dir: viteClientConfig.build.outDir,
+        });
+        logger.info(colors.blue(`✓ pagefind index built: ${outputPath}`));
       }
 
       if (process.env.VERCEL) {
