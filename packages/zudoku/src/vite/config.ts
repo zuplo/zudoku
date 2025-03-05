@@ -18,7 +18,6 @@ import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
-import { ZuploEnv } from "../zuplo/env.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
@@ -37,11 +36,9 @@ const getDocsConfigFiles = (
 };
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
-  const envPrefix = [
-    ...(ZuploEnv.isZuplo ? ["ZUPLO_PUBLIC_"] : []),
-    "ZUDOKU_PUBLIC_",
-  ];
+  const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
+
   process.env = { ...localEnv, ...process.env };
 
   const publicEnv = Object.entries(process.env).reduce(
@@ -95,7 +92,12 @@ export async function loadZudokuConfig(
       }
     }
 
-    config = await tryLoadZudokuConfig(rootDir, getModuleDir(), envVars);
+    config = await tryLoadZudokuConfig(
+      rootDir,
+      getModuleDir(),
+      envVars,
+      configEnv,
+    );
 
     logger.info(
       colors.yellow(`loaded config file `) +
@@ -302,7 +304,14 @@ export async function getViteConfig(
   };
 
   // If the user has supplied a vite.config file, merge it with ours
-  const userConfig = await loadConfigFromFile(configEnv, undefined, dir);
+  const userConfig = await loadConfigFromFile(
+    configEnv,
+    undefined,
+    dir,
+    undefined,
+    undefined,
+    "runner",
+  );
   if (userConfig) {
     const merged: InlineConfig = mergeConfig(
       userConfig.config,
