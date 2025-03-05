@@ -65,7 +65,6 @@ export const getStandaloneConfig = (rootDir: string): LoadedConfig => ({
     mode: "standalone",
     dependencies: [],
     configPath: "",
-    registerDependency: () => {},
   },
 });
 
