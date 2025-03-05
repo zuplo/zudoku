@@ -75,6 +75,8 @@ async function processSchemas(
       ? apiConfig.input
       : [apiConfig.input];
 
+    allSchemaFiles.clear();
+
     const inputFiles = await Promise.all(
       inputs.map(async (input) => {
         const fullPath = path.resolve(config.__meta.rootDir, input);
