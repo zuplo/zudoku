@@ -164,7 +164,7 @@ export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
     dependencies = [];
   } else {
     const loadConfig = overrides?.loadZudokuCodeConfig ?? loadZudokuCodeConfig;
-    ({ config, dependencies } = await loadConfig<TConfig>(rootDir));
+    ({ config, dependencies } = await loadConfig<TConfig>(configPath));
     // This is here instead of in the load function so that
     // it works even if we are overriding the load function
     validateConfig(config);
