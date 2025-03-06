@@ -9,7 +9,6 @@ import {
   isRunnableDevEnvironment,
   type ViteDevServer,
 } from "vite";
-import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
 import { findAvailablePort } from "../cli/common/utils/ports.js";
@@ -26,6 +25,9 @@ import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
 
 const DEFAULT_DEV_PORT = 3000;
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type EntryServerImport = typeof import("../app/entry.server.js");
 
 export class DevServer {
   private currentConfig: LoadedConfig | undefined;
@@ -165,16 +167,16 @@ export class DevServer {
             throw new Error("Error loading configuration.");
           }
 
-          const module = await ssrEnvironment.runner.import(
+          const server = await ssrEnvironment.runner.import<EntryServerImport>(
             getAppServerEntryPath(),
           );
-          const render = module.render as typeof serverRender;
 
-          void render({
+          void server.render({
             template,
             request,
             response,
-            config: this.currentConfig,
+            routes: server.getRoutesByConfig(this.currentConfig),
+            basePath: this.currentConfig.basePath,
           });
         } else {
           response

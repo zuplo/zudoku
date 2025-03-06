@@ -1,13 +1,14 @@
+import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
+import { logger } from "../../cli/common/logger.js";
 import { type ZudokuConfig } from "../../config/validators/validate.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import { type StaticWorkerData, type WorkerData } from "./worker.js";
-
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 
 const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
@@ -73,8 +74,7 @@ export const prerender = async ({
   );
 
   if (!isTTY()) {
-    // eslint-disable-next-line no-console
-    console.log(`prerendering ${paths.length} routes...`);
+    logger.info(colors.dim(`prerendering ${paths.length} routes...`));
   }
 
   let completedCount = 0;
@@ -82,7 +82,8 @@ export const prerender = async ({
   const serverOutDir = path.join(distDir, "server");
   const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
-    idleTimeout: 1000,
+    idleTimeout: 5_000,
+    maxThreads: Math.floor(os.cpus().length * 0.8),
     workerData: {
       template: html,
       distDir,
@@ -102,12 +103,10 @@ export const prerender = async ({
         writeProgress(completedCount, paths.length, urlPath);
       } else {
         const now = performance.now();
-        if (
-          now - lastLogTime >= LOG_INTERVAL_MS ||
-          completedCount === paths.length
-        ) {
-          // eslint-disable-next-line no-console
-          console.log(`prerendered ${completedCount}/${paths.length} routes`);
+        if (now - lastLogTime >= LOG_INTERVAL_MS) {
+          logger.info(
+            colors.blue(`prerendered ${completedCount}/${paths.length} routes`),
+          );
           lastLogTime = now;
         }
       }
@@ -116,9 +115,13 @@ export const prerender = async ({
   );
 
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
-  writeLine(
-    colors.blue(`✓ prerendered ${paths.length} routes in ${seconds} seconds\n`),
-  );
+
+  const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds`;
+  if (isTTY()) {
+    writeLine(colors.blue(message + "\n"));
+  } else {
+    logger.info(colors.blue(message));
+  }
 
   await generateSitemap({
     basePath: config.basePath,
