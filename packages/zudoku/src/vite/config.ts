@@ -311,12 +311,17 @@ export async function getViteConfig(
     undefined,
     "runner",
   );
+
   if (userConfig) {
     const merged: InlineConfig = mergeConfig(
-      userConfig.config,
       viteConfig,
+      userConfig.config,
       true,
     );
+
+    logger.info(colors.blue(`merged with custom user Vite config`), {
+      timestamp: true,
+    });
 
     return merged;
   }
