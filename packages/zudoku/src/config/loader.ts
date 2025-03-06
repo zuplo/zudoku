@@ -76,7 +76,13 @@ async function loadZudokuCodeConfig<TConfig>(
 ): Promise<{ dependencies: string[]; config: TConfig }> {
   const { module, dependencies } = await runnerImport<{ default: TConfig }>(
     configPath,
-    { server: { perEnvironmentStartEndDuringDev: true } },
+    {
+      server: {
+        // this allows us to 'load' CSS files in the config
+        // see https://github.com/vitejs/vite/pull/19577
+        perEnvironmentStartEndDuringDev: true,
+      },
+    },
   );
 
   return {
