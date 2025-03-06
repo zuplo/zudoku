@@ -74,15 +74,14 @@ async function getConfigFilePath(
 async function loadZudokuCodeConfig<TConfig>(
   configPath: string,
 ): Promise<{ dependencies: string[]; config: TConfig }> {
-  const { module, dependencies } = await runnerImport<TConfig>(configPath, {
-    server: {
-      perEnvironmentStartEndDuringDev: true,
-    },
-  });
+  const { module, dependencies } = await runnerImport<{ default: TConfig }>(
+    configPath,
+    { server: { perEnvironmentStartEndDuringDev: true } },
+  );
 
   return {
     dependencies: [configPath, ...dependencies],
-    config: module,
+    config: module.default,
   };
 }
 
