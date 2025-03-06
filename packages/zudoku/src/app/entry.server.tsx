@@ -47,7 +47,7 @@ export const render = async ({
   if (context instanceof Response) {
     if ([301, 302, 303, 307, 308].includes(context.status)) {
       return response.redirect(
-        context.status,
+        import.meta.env.PROD ? context.status : 307,
         context.headers.get("Location")!,
       );
     }
