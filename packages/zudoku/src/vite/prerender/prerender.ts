@@ -103,10 +103,7 @@ export const prerender = async ({
         writeProgress(completedCount, paths.length, urlPath);
       } else {
         const now = performance.now();
-        if (
-          now - lastLogTime >= LOG_INTERVAL_MS ||
-          completedCount === paths.length
-        ) {
+        if (now - lastLogTime >= LOG_INTERVAL_MS) {
           logger.info(
             colors.blue(`prerendered ${completedCount}/${paths.length} routes`),
           );
@@ -118,9 +115,13 @@ export const prerender = async ({
   );
 
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
-  writeLine(
-    colors.blue(`✓ prerendered ${paths.length} routes in ${seconds} seconds\n`),
-  );
+
+  const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds`;
+  if (isTTY()) {
+    writeLine(colors.blue(message + "\n"));
+  } else {
+    logger.info(colors.blue(message));
+  }
 
   await generateSitemap({
     basePath: config.basePath,
