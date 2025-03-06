@@ -7,6 +7,5 @@ export type ConfigWithMeta<TConfig extends CommonConfig> = TConfig & {
     configPath: string;
     mode: typeof process.env.ZUDOKU_ENV;
     dependencies: string[];
-    registerDependency: (...file: string[]) => void;
   };
 };
