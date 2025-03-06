@@ -8,31 +8,31 @@ import {
   createStaticHandler,
   createStaticRouter,
   isRouteErrorResponse,
+  type RouteObject,
 } from "react-router";
 import "virtual:zudoku-theme.css";
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
-import type { ZudokuConfig } from "../config/config.js";
 import type { FileWritingResponse } from "../vite/prerender/FileWritingResponse.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
-
 export { getRoutesByConfig };
 
 export const render = async ({
   template,
   request: baseRequest,
   response,
-  config,
+  routes,
+  basePath,
 }: {
   template: string;
   request: express.Request | Request;
   response: express.Response | FileWritingResponse;
-  config: ZudokuConfig;
+  routes: RouteObject[];
+  basePath?: string;
 }) => {
-  const routes = getRoutesByConfig(config);
   const { query, dataRoutes } = createStaticHandler(routes, {
-    basename: config.basePath,
+    basename: basePath,
   });
   const queryClient = new QueryClient();
 
@@ -84,8 +84,6 @@ export const render = async ({
 
       response.send(html);
     },
-    // for SSG we could use onAllReady instead of onShellReady
-    // https://react.dev/reference/react-dom/server/renderToPipeableStream#waiting-for-all-content-to-load-for-crawlers-and-static-generation
     onAllReady() {
       response.set({ "Content-Type": "text/html" });
       response.status(status);
