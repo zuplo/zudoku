@@ -1,6 +1,6 @@
 import type { PropsWithChildren } from "react";
-import "./Stepper.css";
 
+// "stepper" class is defined in main.css
 const Stepper = ({ children }: PropsWithChildren) => {
   return <div className="stepper">{children}</div>;
 };
