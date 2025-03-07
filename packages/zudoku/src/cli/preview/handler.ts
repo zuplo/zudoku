@@ -1,39 +1,37 @@
-import express from "express";
 import path from "node:path";
-import { joinUrl } from "../../lib/util/joinUrl.js";
+import { preview as vitePreview } from "vite";
 import { getViteConfig } from "../../vite/config.js";
 import type { Arguments } from "../cmds/preview.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
-import { findAvailablePort } from "../common/utils/ports.js";
 
 export const DEFAULT_PREVIEW_PORT = 4000;
 
 export async function preview(argv: Arguments) {
   const dir = path.resolve(process.cwd(), argv.dir);
-  const distDir = path.join(dir, "dist");
 
   const viteConfig = await getViteConfig(dir, {
     command: "serve",
     mode: "production",
+    isPreview: true,
   });
 
-  printDiagnosticsToConsole("Starting build preview server");
+  const server = await vitePreview({
+    ...viteConfig,
+    appType: "mpa", // to serve the static generated files
+    preview: {
+      port: argv.port ?? DEFAULT_PREVIEW_PORT,
+    },
+  });
+
   printDiagnosticsToConsole("");
-
-  const port = await findAvailablePort(argv.port ?? DEFAULT_PREVIEW_PORT);
-  const app = express();
-
-  app.use(express.static(distDir, { extensions: ["html"] }));
-
-  const server = app.listen(port, () => {
-    const url = joinUrl(`http://localhost:${port}`, viteConfig.base);
-    printDiagnosticsToConsole(`Build preview server running at: ${url}`);
-    printDiagnosticsToConsole("Press Ctrl+C to stop");
-  });
+  printDiagnosticsToConsole(
+    `Build preview server running at: ${server.resolvedUrls?.local[0]}`,
+  );
+  printDiagnosticsToConsole("Press Ctrl+C to stop");
 
   await new Promise<void>((resolve) => {
-    const exit = () => {
-      server.close();
+    const exit = async () => {
+      await server.close();
       resolve();
     };
 
