@@ -235,7 +235,7 @@
     "postcss": "8.5.3",
     "posthog-node": "4.8.1",
     "prism-react-renderer": "2.4.1",
-    "prismjs": "1.29.0",
+    "prismjs": "1.30.0",
     "react-error-boundary": "5.0.0",
     "react-hook-form": "7.54.2",
     "react-is": "catalog:",
