@@ -151,7 +151,7 @@ export const Sidecar = ({
             mimeType: "application/json",
           }
         : ({} as any),
-      headers: [],
+      headers: [{ name: "Content-Type", value: "application/json" }],
       queryString: [],
       httpVersion: "",
       cookies: [],
@@ -166,7 +166,6 @@ export const Sidecar = ({
     operation.method,
     operation.path,
     selectedServer,
-    result.data.schema.url,
     selectedLang,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
