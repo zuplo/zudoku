@@ -10,6 +10,32 @@
       "url": "https://developers.sh.example.com"
     }
   },
+  "tags": [
+    {
+      "name": "Shipment Management",
+      "description": "Endpoints for creating, tracking, updating, and managing shipments."
+    },
+    {
+      "name": "Rates & Billing",
+      "description": "Endpoints related to calculating shipping rates, billing, and insurance."
+    },
+    {
+      "name": "International Shipping",
+      "description": "Operations for managing customs documentation, duties, and international shipment processes."
+    },
+    {
+      "name": "Documentation",
+      "description": "Endpoints for generating and retrieving shipment-related documents."
+    },
+    {
+      "name": "Tracking & Notifications",
+      "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates."
+    },
+    {
+      "name": "System",
+      "description": "Endpoints for system health checks and retrieving API version information."
+    }
+  ],
   "servers": [
     {
       "url": "https://api.sh.example.com/v1",

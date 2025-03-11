@@ -59,6 +59,8 @@ async function processSchemas(
   const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
   const processedSchemas: Record<string, ProcessedSchema[]> = {};
 
+  allSchemaFiles.clear();
+
   for (const apiConfig of apis) {
     if (apiConfig.type !== "file" || !apiConfig.navigationId) {
       continue;
@@ -74,8 +76,6 @@ async function processSchemas(
     const inputs = Array.isArray(apiConfig.input)
       ? apiConfig.input
       : [apiConfig.input];
-
-    allSchemaFiles.clear();
 
     const inputFiles = await Promise.all(
       inputs.map(async (input) => {

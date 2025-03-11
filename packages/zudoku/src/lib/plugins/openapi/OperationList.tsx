@@ -147,17 +147,21 @@ export const OperationList = ({
   const description = schema.description;
   const navigate = useNavigate();
   const operations = schema.operations;
+  const tagDescription = schema.tags.find((t) => t.name === tag)?.description;
+
   // Prefetch for Playground
   useApiIdentities();
 
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
   // commonmark formatting, making it ill-suited for use in the meta description
-  const metaDescription = summary
-    ? summary
-    : description
-      ? sanitizeMarkdownForMetatag(description)
-      : undefined;
+  const metaDescription = tagDescription
+    ? sanitizeMarkdownForMetatag(tagDescription)
+    : summary
+      ? summary
+      : description
+        ? sanitizeMarkdownForMetatag(description)
+        : undefined;
 
   const showVersions = Object.entries(versions).length > 1;
 
@@ -168,7 +172,7 @@ export const OperationList = ({
       data-pagefind-meta="section:openapi"
     >
       <Helmet>
-        <title>{title}</title>
+        <title>{[tag, title].filter(Boolean).join(" - ")}</title>
         {metaDescription && (
           <meta name="description" content={metaDescription} />
         )}
@@ -243,6 +247,16 @@ export const OperationList = ({
             </CollapsibleContent>
           )}
         </Collapsible>
+        {tagDescription && (
+          <p
+            className={cn(
+              ProseClasses,
+              "my-4 max-w-full prose-img:max-w-prose",
+            )}
+          >
+            <Markdown content={tagDescription} />
+          </p>
+        )}
       </div>
       <hr />
       <div className="my-4 flex items-center justify-end gap-4">
