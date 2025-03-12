@@ -56,31 +56,49 @@ type CalloutProps = {
   title?: string;
   children: ReactNode;
   className?: string;
+  icon?: boolean;
 };
 
-export const Callout = ({ type, children, title, className }: CalloutProps) => {
+export const Callout = ({
+  type,
+  children,
+  title,
+  className,
+  icon = true,
+}: CalloutProps) => {
   const { border, bg, iconColor, titleColor, textColor, Icon } =
     stylesMap[type];
 
   return (
     <div
       className={cn(
-        "not-prose grid grid-cols-[min-content_1fr] grid-rows-[fit-content_1fr] gap-x-4 gap-y-2 text-md rounded-md border p-4",
+        "not-prose rounded-md border p-4 text-md my-2",
+        icon &&
+          "grid grid-cols-[min-content_1fr] items-baseline grid-rows-[fit-content_1fr] gap-x-4 gap-y-2",
+        !icon && title && "flex flex-col gap-2",
         "[&_a]:underline [&_a]:decoration-current [&_a]:decoration-from-font [&_a]:underline-offset-4 hover:[&_a]:decoration-1",
-        "[&_code]:!bg-gray-50 [&_code]:dark:!bg-gray-800 [&_code]:!border-none my-2",
-        title && "items-center",
+        "[&_code]:!bg-gray-50 [&_code]:dark:!bg-gray-800 [&_code]:!border-none",
+        icon && title && "items-center",
         border,
         bg,
         className,
       )}
     >
-      <Icon
-        className={cn(!title && "translate-y-px", iconColor)}
-        size={20}
-        aria-hidden="true"
-      />
+      {icon && (
+        <Icon
+          className={cn(!title ? "translate-y-1" : "align-middle", iconColor)}
+          size={20}
+          aria-hidden="true"
+        />
+      )}
       {title && <h3 className={cn("font-medium", titleColor)}>{title}</h3>}
-      <div className={cn("col-start-2", !title && "row-start-1", textColor)}>
+      <div
+        className={cn(
+          icon && "col-start-2",
+          !title && icon && "row-start-1",
+          textColor,
+        )}
+      >
         {children}
       </div>
     </div>
