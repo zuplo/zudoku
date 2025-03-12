@@ -18,6 +18,7 @@ type CalloutProps = {
   children: ReactNode;
   title?: string;
   className?: string;
+  icon?: boolean;
 };
 ```
 
@@ -78,5 +79,33 @@ type CalloutProps = {
 ```tsx
 <Callout type="caution" title="So, better show a warning">
   This raises a warning to watch out for.
+</Callout>
+```
+
+## Variations
+
+Callouts can be customized by omitting the title or icon:
+
+<Callout type="note">Without a title</Callout>
+
+<Callout type="note" icon={false} title="Without an icon">
+  You can hide the icon while keeping the title
+</Callout>
+
+<Callout type="note" icon={false}>
+  Or have neither title nor icon
+</Callout>
+
+```tsx
+<Callout type="note">
+  Without a title
+</Callout>
+
+<Callout type="note" icon={false} title="Without an icon">
+  You can hide the icon while keeping the title
+</Callout>
+
+<Callout type="note" icon={false}>
+  Or have neither title nor icon
 </Callout>
 ```
