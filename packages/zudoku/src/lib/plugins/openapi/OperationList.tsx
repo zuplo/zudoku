@@ -248,14 +248,14 @@ export const OperationList = ({
           )}
         </Collapsible>
         {tagDescription && (
-          <p
+          <div
             className={cn(
               ProseClasses,
               "my-4 max-w-full prose-img:max-w-prose",
             )}
           >
             <Markdown content={tagDescription} />
-          </p>
+          </div>
         )}
       </div>
       <hr />
