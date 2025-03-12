@@ -3,15 +3,47 @@ title: Search
 sidebar_icon: search-code
 ---
 
-It is possible to add search to a Zudoku powered site. It will appear in the top navigation and persist across all pages.
+Zudoku offers search functionality that enhances user experience by enabling content discovery across your site. When configured, a search bar will appear in the header, allowing users to quickly find relevant information on any page.
 
-## Configuration
+We currently support two search providers:
 
-At this time, only [Inkeep](https://inkeep.com/) is supported.
+- [Pagefind](https://pagefind.app/)
+- [Inkeep](https://inkeep.com/)
 
-### Inkeep
+## Pagefind
 
-To add search to your site you will need to copy some variables from your [Inkeep account setting](https://portal.inkeep.com/):
+[Pagefind](https://pagefind.app/) is a lightweight, static search library that can be used to add search to your Zudoku site without any external services.
+
+:::caution
+
+While functional for production use, the Pagefind integration is still work in progress and will be improved in future releases and become the default search provider.
+
+:::
+
+To enable pagefind search, configure the `search` option in your configuration:
+
+```typescript
+{
+  search: {
+    type: "pagefind",
+    // Optional: Maximum number of sub results per page
+    maxSubResults: 3
+    // Optional: Configure search result ranking (defaults shown below)
+    ranking: {
+      termFrequency: 0.8,
+      pageLength: 0.6,
+      termSimilarity: 1.2,
+      termSaturation: 1.2,
+    },
+  }
+}
+```
+
+For more information about how Pagefind's ranking system works and how to customize it for your content, see the [Pagefind ranking documentation](https://pagefind.app/docs/ranking/).
+
+## Inkeep
+
+To add Inkeep search to your site you will need to copy some variables from your [Inkeep account setting](https://portal.inkeep.com/):
 
 - API Key
 - Integration ID
