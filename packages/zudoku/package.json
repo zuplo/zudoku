@@ -28,6 +28,7 @@
     "./auth/clerk": "./src/lib/authentication/providers/clerk.ts",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",
+    "./auth/supabase": "./src/lib/authentication/providers/supabase.ts",
     "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.ts",
@@ -80,6 +81,10 @@
       "./auth/openid": {
         "import": "./lib/zudoku.auth-openid.js",
         "types": "./dist/lib/authentication/providers/openid.d.ts"
+      },
+      "./auth/supabase": {
+        "import": "./lib/zudoku.auth-supabase.js",
+        "types": "./dist/lib/authentication/providers/supabase.d.ts"
       },
       "./plugins": {
         "import": "./lib/zudoku.plugins.js",
@@ -304,6 +309,7 @@
   },
   "optionalDependencies": {
     "@clerk/clerk-js": "^5.52.3",
-    "@sentry/react": "^9.1.0"
+    "@sentry/react": "^9.1.0",
+    "@supabase/supabase-js": "^2.49.1"
   }
 }
