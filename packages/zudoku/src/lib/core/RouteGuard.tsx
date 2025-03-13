@@ -18,8 +18,9 @@ export const RouteGuard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const latestPath = useLatest(location.pathname);
+  const { protectedRoutes = [] } = zudoku.options;
 
-  const isProtected = zudoku.options.protectedRoutes?.some((path) =>
+  const isProtected = protectedRoutes.some((path) =>
     matchPath({ path, end: true }, location.pathname),
   );
 
