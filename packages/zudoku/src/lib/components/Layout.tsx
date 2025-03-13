@@ -15,7 +15,7 @@ import { Slotlet } from "./SlotletProvider.js";
 import { Spinner } from "./Spinner.js";
 
 const LoadingFallback = () => (
-  <main className="grid h-[calc(100vh-var(--header-height))] place-items-center">
+  <main className="grid flex-1 w-full place-items-center">
     <Spinner />
   </main>
 );
@@ -66,7 +66,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div className="w-full min-h-[calc(100vh-var(--header-height))] max-w-screen-2xl mx-auto px-4 lg:px-8 2xl:border-x">
+      <div className="flex flex-col flex-1 items-stretch w-full max-w-screen-2xl mx-auto px-4 lg:px-8 2xl:border-x">
         {showSpinner ? (
           <LoadingFallback />
         ) : (
@@ -91,7 +91,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
               <main
                 data-pagefind-body
                 className={cn(
-                  "h-full dark:border-white/10 translate-x-0",
+                  "h-auto dark:border-white/10 translate-x-0",
                   "lg:overflow-visible",
                   // This works in tandem with the `SidebarWrapper` component
                   "lg:peer-data-[navigation=true]:w-[calc(100%-var(--side-nav-width))]",

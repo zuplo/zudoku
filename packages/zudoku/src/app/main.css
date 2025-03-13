@@ -108,7 +108,7 @@
   }
 
   #root {
-    @apply min-h-screen w-full;
+    @apply min-h-screen w-full flex flex-col;
   }
   * {
     @apply border-border;
