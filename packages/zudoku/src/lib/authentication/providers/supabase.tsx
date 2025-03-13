@@ -1,6 +1,7 @@
 import {
   createClient,
   type Provider,
+  type Session,
   type SupabaseClient,
 } from "@supabase/supabase-js";
 import { type SupabaseAuthenticationConfig } from "../../../config/config.js";
@@ -44,9 +45,9 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
     this.redirectToAfterSignIn = redirectToAfterSignIn ?? root;
     this.redirectToAfterSignOut = redirectToAfterSignOut ?? root;
 
-    this.client.auth.onAuthStateChange(async (event, _session) => {
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        await this.updateUserState();
+    this.client.auth.onAuthStateChange(async (event, session) => {
+      if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        await this.updateUserState(session);
       } else if (event === "SIGNED_OUT") {
         useAuthState.setState({
           isAuthenticated: false,
@@ -58,37 +59,22 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
     });
   }
 
-  private async updateUserState() {
-    const { data, error } = await this.client.auth.getUser();
-
-    if (error || !data.user) {
-      useAuthState.setState({
-        isAuthenticated: false,
-        isPending: false,
-        profile: undefined,
-        providerData: undefined,
-      });
-
-      throw new AuthorizationError("User is not authenticated");
-    }
-
-    const { data: sessionData } = await this.client.auth.getSession();
+  private async updateUserState(session: Session) {
+    const { user } = session;
 
     const profile: UserProfile = {
-      sub: data.user.id,
-      email: data.user.email,
-      name: data.user.user_metadata.full_name || data.user.user_metadata.name,
-      emailVerified: data.user.email_confirmed_at !== null,
-      pictureUrl: data.user.user_metadata.avatar_url,
+      sub: user.id,
+      email: user.email,
+      name: user.user_metadata.full_name || user.user_metadata.name,
+      emailVerified: user.email_confirmed_at != null,
+      pictureUrl: user.user_metadata.avatar_url,
     };
 
     useAuthState.setState({
       isAuthenticated: true,
       isPending: false,
       profile,
-      providerData: {
-        session: sessionData.session || null,
-      },
+      providerData: { session },
     });
   }
 
@@ -130,7 +116,14 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
   };
 
   signOut = async () => {
-    await this.client.auth.signOut();
+    await new Promise<void>((resolve) => {
+      const { data } = this.client.auth.onAuthStateChange(async (event) => {
+        if (event !== "SIGNED_OUT") return;
+        data.subscription.unsubscribe();
+        resolve();
+      });
+      void this.client.auth.signOut();
+    });
 
     useAuthState.setState({
       isAuthenticated: false,
@@ -138,14 +131,16 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
       profile: undefined,
       providerData: undefined,
     });
-
-    window.location.href = window.location.origin + this.redirectToAfterSignOut;
   };
 
   getAuthenticationPlugin = () => new SupabaseAuthPlugin();
 
   onPageLoad = async () => {
-    await this.updateUserState();
+    const { data, error } = await this.client.auth.getSession();
+
+    if (!error && data.session) {
+      await this.updateUserState(data.session);
+    }
   };
 }
 
