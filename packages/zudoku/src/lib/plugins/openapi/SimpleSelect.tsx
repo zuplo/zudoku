@@ -21,7 +21,7 @@ export const SimpleSelect = ({
   <div className="grid">
     <select
       className={cn(
-        "row-start-1 col-start-1 border border-input text-foreground px-2 py-1 pe-6",
+        "w-full row-start-1 col-start-1 border border-input text-foreground px-2 py-1 pe-6",
         "rounded-md appearance-none bg-zinc-50 hover:bg-white dark:bg-zinc-800 hover:dark:bg-zinc-800/75",
         className,
       )}

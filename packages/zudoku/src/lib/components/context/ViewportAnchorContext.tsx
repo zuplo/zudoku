@@ -1,5 +1,4 @@
 import {
-  type ReactNode,
   createContext,
   useCallback,
   useContext,
@@ -7,6 +6,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type PropsWithChildren,
 } from "react";
 
 type AnchorContextType = {
@@ -55,11 +55,7 @@ export const useRegisterAnchorElement = () => {
   return { ref: setRef };
 };
 
-export const ViewportAnchorProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const ViewportAnchorProvider = ({ children }: PropsWithChildren) => {
   const [activeAnchor, setActiveAnchor] = useState("");
   const observerRef = useRef<IntersectionObserver | null>(null);
   const registeredElements = useRef(new Set<HTMLElement>());
@@ -75,9 +71,7 @@ export const ViewportAnchorProvider = ({
         }
       },
       {
-        // 115px is the height of the sticky header
-        // see --header-height in `main.css`
-        rootMargin: "115px 0px -80% 0px",
+        rootMargin: "0px 0px -80% 0px",
         threshold: 0.75,
       },
     );

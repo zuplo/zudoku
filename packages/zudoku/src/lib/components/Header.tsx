@@ -3,7 +3,10 @@ import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
-import { isProfileMenuPlugin, ProfileNavigationItem } from "../core/plugins.js";
+import {
+  isProfileMenuPlugin,
+  type ProfileNavigationItem,
+} from "../core/plugins.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -66,7 +69,7 @@ export const Header = memo(function HeaderInner() {
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <Banner />
       <div className="border-b">
-        <div className="max-w-screen-2xl 2xl:border-x mx-auto grid grid-cols-[1fr_auto] lg:grid-cols-[calc(var(--side-nav-width))_1fr] lg:gap-12 items-center px-4 lg:px-8 h-[--top-header-height]">
+        <div className="max-w-screen-2xl 2xl:border-x mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height]">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
@@ -108,11 +111,12 @@ export const Header = memo(function HeaderInner() {
               </div>
             </Link>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-[--sidecar-grid-cols] items-center gap-8">
-            <div className="w-full justify-center hidden lg:flex">
-              <Search />
-            </div>
 
+          <div className="absolute inset-x-0 justify-center items-center hidden lg:flex w-full pointer-events-none">
+            <Search className="pointer-events-auto" />
+          </div>
+
+          <div className="flex items-center gap-8">
             <MobileTopNavigation />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slotlet name="head-navigation-start" />
