@@ -266,6 +266,22 @@ const AuthenticationSchema = z.union([
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
   }),
+  z.object({
+    type: z.literal("supabase"),
+    supabaseUrl: z.string(),
+    supabaseKey: z.string(),
+    provider: z.enum([
+      "google",
+      "github",
+      "gitlab",
+      "bitbucket",
+      "facebook",
+      "twitter",
+    ]),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
 ]);
 
 const MetadataSchema = z

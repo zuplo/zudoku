@@ -1,6 +1,6 @@
 import type { Clerk } from "@clerk/clerk-js";
-import { ClerkAuthenticationConfig } from "../../../config/config.js";
-import { AuthenticationProviderInitializer } from "../authentication.js";
+import { type ClerkAuthenticationConfig } from "../../../config/config.js";
+import { type AuthenticationProviderInitializer } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { useAuthState } from "../state.js";
 
