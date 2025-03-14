@@ -1,20 +1,21 @@
 import { useEffect, useRef } from "react";
 
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
 import { DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
-import { useCurrentNavigation } from "../context/ZudokuContext.js";
 import { Slotlet } from "../SlotletProvider.js";
 import { SidebarItem } from "./SidebarItem.js";
 import { SidebarWrapper } from "./SidebarWrapper.js";
 
 export const Sidebar = ({
   onRequestClose,
+  sidebar,
 }: {
   onRequestClose?: () => void;
+  sidebar: SidebarItemType[];
 }) => {
-  const navRef = useRef<HTMLDivElement | null>(null);
-  const navigation = useCurrentNavigation();
+  const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const active = navRef.current?.querySelector('[aria-current="page"]');
@@ -23,12 +24,9 @@ export const Sidebar = ({
 
   return (
     <>
-      <SidebarWrapper
-        ref={navRef}
-        pushMainContent={navigation.sidebar.length > 0}
-      >
+      <SidebarWrapper ref={navRef}>
         <Slotlet name="zudoku-before-navigation" />
-        {navigation.sidebar.map((item) => (
+        {sidebar.map((item) => (
           <SidebarItem key={item.label} item={item} />
         ))}
         <Slotlet name="zudoku-after-navigation" />
@@ -41,7 +39,7 @@ export const Sidebar = ({
           <VisuallyHidden>
             <DrawerTitle>Sidebar</DrawerTitle>
           </VisuallyHidden>
-          {navigation.sidebar.map((item) => (
+          {sidebar.map((item) => (
             <SidebarItem
               key={item.label}
               item={item}

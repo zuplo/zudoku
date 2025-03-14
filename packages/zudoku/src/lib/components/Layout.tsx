@@ -1,21 +1,18 @@
 import { Helmet } from "@zudoku/react-helmet-async";
-import { PanelLeftIcon } from "lucide-react";
-import { Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router";
 import { useSpinDelay } from "spin-delay";
-import { Drawer, DrawerTrigger } from "../ui/Drawer.js";
-import { cn } from "../util/cn.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
 import { useViewportAnchor } from "./context/ViewportAnchorContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Header } from "./Header.js";
-import { Sidebar } from "./navigation/Sidebar.js";
+import { Main } from "./Main.js";
 import { Slotlet } from "./SlotletProvider.js";
 import { Spinner } from "./Spinner.js";
 
 const LoadingFallback = () => (
-  <main className="grid flex-1 w-full place-items-center">
+  <main className="col-span-full grid place-items-center">
     <Spinner />
   </main>
 );
@@ -49,7 +46,6 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
     delay: 300,
     minDuration: 500,
   });
-  const [isDrawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>
@@ -66,43 +62,12 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div className="flex flex-col flex-1 items-stretch w-full max-w-screen-2xl mx-auto px-4 lg:px-8 2xl:border-x">
+      <div className="grid lg:grid-cols-[var(--side-nav-width)_1fr] max-w-screen-2xl w-full lg:mx-auto px-4 lg:px-8 2xl:border-x">
         {showSpinner ? (
           <LoadingFallback />
         ) : (
           <Suspense fallback={<LoadingFallback />}>
-            <Drawer
-              direction="left"
-              open={isDrawerOpen}
-              onOpenChange={(open) => setDrawerOpen(open)}
-            >
-              <Sidebar onRequestClose={() => setDrawerOpen(false)} />
-              <div
-                className={cn(
-                  "lg:hidden -mx-4 px-4 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b",
-                  "peer-data-[navigation=false]:hidden",
-                )}
-              >
-                <DrawerTrigger className="flex items-center gap-2">
-                  <PanelLeftIcon size={16} strokeWidth={1.5} />
-                  <span className="text-sm">Menu</span>
-                </DrawerTrigger>
-              </div>
-              <main
-                data-pagefind-body
-                className={cn(
-                  "h-auto dark:border-white/10 translate-x-0",
-                  "lg:overflow-visible",
-                  // This works in tandem with the `SidebarWrapper` component
-                  "lg:peer-data-[navigation=true]:w-[calc(100%-var(--side-nav-width))]",
-                  "lg:peer-data-[navigation=true]:translate-x-[--side-nav-width] lg:peer-data-[navigation=true]:pl-12",
-                )}
-              >
-                <Slotlet name="zudoku-before-content" />
-                {children ?? <Outlet />}
-                <Slotlet name="zudoku-after-content" />
-              </main>
-            </Drawer>
+            <Main>{children ?? <Outlet />}</Main>
           </Suspense>
         )}
       </div>

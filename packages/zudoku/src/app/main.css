@@ -82,10 +82,11 @@
     --top-nav-height: 50px;
     --banner-height: 40px;
     --header-height: calc(
-      var(--top-header-height) + var(--top-nav-height) + var(--banner-height)
+      var(--top-header-height) + var(--top-nav-height) + var(--banner-height) -
+        /* borders */ 2px
     );
     --scroll-padding: calc(var(--header-height) + 10px);
-    --side-nav-width: theme("spacing.80");
+    --side-nav-width: theme("spacing.72");
     --padding-content-top: theme("spacing.6");
     --padding-content-bottom: theme("spacing.12");
     --padding-nav-item: theme("spacing[2.5]");
@@ -108,8 +109,9 @@
   }
 
   #root {
-    @apply min-h-screen w-full flex flex-col;
+    @apply min-h-screen w-full grid grid-rows-[auto_1fr];
   }
+
   * {
     @apply border-border;
   }
