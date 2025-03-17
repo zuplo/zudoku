@@ -2,6 +2,7 @@ import { Helmet } from "@zudoku/react-helmet-async";
 import { Suspense, useEffect, useRef, type ReactNode } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router";
 import { useSpinDelay } from "spin-delay";
+import { cn } from "../util/cn.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
 import { useViewportAnchor } from "./context/ViewportAnchorContext.js";
@@ -12,7 +13,7 @@ import { Slotlet } from "./SlotletProvider.js";
 import { Spinner } from "./Spinner.js";
 
 const LoadingFallback = () => (
-  <main className="col-span-full grid place-items-center">
+  <main className="col-span-full row-span-full grid place-items-center">
     <Spinner />
   </main>
 );
@@ -64,9 +65,10 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
       <div
         className={cn(
-          "grid lg:grid-cols-[var(--side-nav-width)_1fr] w-full lg:mx-auto px-4 lg:px-8 2xl:border-x",
+          "grid lg:grid-cols-[var(--side-nav-width)_1fr] grid-rows-[min-content_1fr] w-full lg:mx-auto px-4 lg:px-8 2xl:border-x",
           page?.layout === "default" && "max-w-screen-2xl",
-      )}>
+        )}
+      >
         {showSpinner ? (
           <LoadingFallback />
         ) : (
