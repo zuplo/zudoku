@@ -13,7 +13,7 @@ export const Main = ({ children }: PropsWithChildren) => {
 
   return (
     <Drawer
-      direction="left"
+      direction="right"
       open={isDrawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
@@ -24,7 +24,7 @@ export const Main = ({ children }: PropsWithChildren) => {
         />
       )}
       {hasSidebar && (
-        <div className="lg:hidden -mx-4 px-4 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b">
+        <div className="flex justify-end lg:hidden -mx-4 px-4 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b">
           <DrawerTrigger className="flex items-center gap-2">
             <PanelLeftIcon size={16} strokeWidth={1.5} />
             <span className="text-sm">Menu</span>

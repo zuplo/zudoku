@@ -24,7 +24,6 @@ import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
-import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { Search } from "./Search.js";
 import { Slotlet } from "./SlotletProvider.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
@@ -123,7 +122,7 @@ export const Header = memo(function HeaderInner() {
           </div>
 
           <div className="flex items-center gap-8">
-            <MobileTopNavigation />
+            <ThemeSwitch />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && (
