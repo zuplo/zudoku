@@ -38,6 +38,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     contentTypes
     path
     deprecated
+    extensions
     parameters {
       name
       in

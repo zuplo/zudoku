@@ -1,5 +1,5 @@
 import type { ZudokuConfig } from "zudoku";
-import { ApiIdentity, ApiIdentityPlugin } from "zudoku";
+import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities() {
@@ -46,7 +46,9 @@ const config: ZudokuConfig = {
     clerkPubKey: "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ",
   },
   defaults: {
-    examplesLanguage: "js",
+    apis: {
+      examplesLanguage: "js",
+    },
   },
   search: {
     type: "pagefind",
@@ -87,6 +89,7 @@ const config: ZudokuConfig = {
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
   ],
+
   docs: {
     files: "/pages/**/*.mdx",
   },

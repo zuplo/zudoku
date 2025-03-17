@@ -88,6 +88,16 @@ const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
+const resolveExtensions = (obj: Record<string, any>) => {
+  const extensions: Record<string, any> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (key.startsWith("x-")) {
+      extensions[key] = value;
+    }
+  }
+  return extensions;
+};
+
 export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
   const rootTags = schema.tags ?? [];
   const operationTags = new Set(
@@ -191,6 +201,11 @@ const TagItem = builder.objectRef<TagObject>("TagItem").implement({
   fields: (t) => ({
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (parent) => resolveExtensions(parent),
+      nullable: true,
+    }),
   }),
 });
 
@@ -249,6 +264,11 @@ const ParameterItem = builder
         nullable: true,
       }),
       schema: t.expose("schema", { type: JSONSchemaScalar, nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
   });
 
@@ -306,6 +326,11 @@ const ResponseItem = builder
       content: t.expose("content", { type: [MediaTypeItem], nullable: true }),
       headers: t.expose("headers", { type: JSONScalar, nullable: true }),
       links: t.expose("links", { type: JSONScalar, nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
   });
 
@@ -399,6 +424,11 @@ const OperationItem = builder
         nullable: true,
       }),
       deprecated: t.exposeBoolean("deprecated", { nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
   });
 
@@ -461,6 +491,11 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
             (!args.untagged || (op.tags ?? []).length === 0)
           );
         }),
+    }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (root) => resolveExtensions(root),
+      nullable: true,
     }),
   }),
 });
