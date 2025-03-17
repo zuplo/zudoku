@@ -122,7 +122,9 @@ export const Header = memo(function HeaderInner() {
           </div>
 
           <div className="flex items-center gap-8">
-            <ThemeSwitch />
+            <div className="lg:hidden">
+              <ThemeSwitch />
+            </div>
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && (
