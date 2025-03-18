@@ -13,7 +13,7 @@ import {
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { cn } from "../../util/cn.js";
 import { Toc } from "./Toc.js";
-import { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
+import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
 
 declare global {
   interface Window {
@@ -91,7 +91,7 @@ export const MdxPage = ({
 
   return (
     <div
-      className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      className="grid grid-cols-1 xl:grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
       data-pagefind-filter="section:markdown"
       data-pagefind-meta="section:markdown"
     >
