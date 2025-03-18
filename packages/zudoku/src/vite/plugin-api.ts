@@ -259,7 +259,9 @@ const viteApiPlugin = async (
 
             // If the API has less than 50 operations, we preload all tags to be shown
             const loadTags =
-              apiConfig.loadTags ?? maxOperationCount < API_COUNT_THRESHOLD;
+              apiConfig.options?.loadTags ??
+              config.defaults?.apis?.loadTags ??
+              maxOperationCount < API_COUNT_THRESHOLD;
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
@@ -267,10 +269,10 @@ const viteApiPlugin = async (
               `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
               `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
-              `  loadTags: ${JSON.stringify(loadTags)},`,
               `  options: {`,
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    loadTags: ${JSON.stringify(loadTags)},`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               `  },`,
               `  schemaImports: {`,

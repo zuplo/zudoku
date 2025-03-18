@@ -48,6 +48,7 @@ const ApiCatalogCategorySchema = z.object({
 const ApiOptionsSchema = z.object({
   examplesLanguage: z.string().optional(),
   disablePlayground: z.boolean().optional(),
+  loadTags: z.boolean().optional(),
 });
 
 const ApiConfigSchema = z
@@ -55,7 +56,6 @@ const ApiConfigSchema = z
     id: z.string(),
     server: z.string(),
     navigationId: z.string(),
-    loadTags: z.boolean(),
     categories: z.array(ApiCatalogCategorySchema),
     options: ApiOptionsSchema,
   })

@@ -1,7 +1,7 @@
 import type { ResultOf } from "@graphql-typed-document-node/core";
 import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { matchPath } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
 import { type ZudokuPlugin } from "../../core/plugins.js";
@@ -10,7 +10,7 @@ import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { graphql } from "./graphql/index.js";
-import { OasPluginConfig } from "./interfaces.js";
+import { type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createSidebarCategory } from "./util/createSidebarCategory.js";
@@ -147,12 +147,11 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       try {
         const versionParam = match?.params.version;
         const version = versionParam ?? getVersions(config).at(0);
-        const type = config.type;
-        const input =
-          config.type === "file" ? config.input[version!] : config.input;
+        const { type, options } = config;
+        const input = type === "file" ? config.input[version!] : config.input;
 
-        const collapsible = config.loadTags === true || config.type === "url";
-        const collapsed = !config.loadTags && config.type !== "url";
+        const collapsible = options?.loadTags === true || config.type === "url";
+        const collapsed = !options?.loadTags && config.type !== "url";
 
         // find  tag name by slug in config.tagPages
         const tagName = config.tagPages?.find(
@@ -164,7 +163,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           client.fetch(GetOperationsQuery, {
             type,
             input,
-            tag: !config.loadTags ? tagName : undefined,
+            tag: !options?.loadTags ? tagName : undefined,
           }),
         ]);
 
@@ -182,7 +181,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
           );
 
           // skip empty categories
-          if (config.loadTags && operations.length === 0) {
+          if (options?.loadTags && operations.length === 0) {
             return [];
           }
 
@@ -190,7 +189,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
             label: tag.name,
             path: categoryPath,
             operations:
-              match?.params.tag !== UNTAGGED_PATH || config.loadTags
+              match?.params.tag !== UNTAGGED_PATH || options?.loadTags
                 ? operations
                 : [],
             collapsible,
@@ -204,7 +203,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
               label: "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
               operations:
-                match?.params.tag === UNTAGGED_PATH || config.loadTags
+                match?.params.tag === UNTAGGED_PATH || options?.loadTags
                   ? operationsData.schema.untagged
                   : [],
               collapsible,

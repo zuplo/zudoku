@@ -15,10 +15,10 @@ type BaseOasConfig = {
   navigationId?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
-  loadTags?: boolean;
   options?: {
     examplesLanguage?: string;
     disablePlayground?: boolean;
+    loadTags?: boolean;
   };
 };
 
