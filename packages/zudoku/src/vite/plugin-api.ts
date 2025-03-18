@@ -273,6 +273,7 @@ const viteApiPlugin = async (
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    loadTags: ${JSON.stringify(loadTags)},`,
+              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               `  },`,
               `  schemaImports: {`,
