@@ -20,7 +20,7 @@ export const InlineCode = ({
       selection?.addRange(range);
     }}
     className={cn(
-      "font-mono border p-1 py-0.5 rounded bg-border/50 dark:bg-border/70 whitespace-nowrap",
+      "font-mono border p-1 py-0.5 rounded bg-border/50 dark:bg-border/70 [overflow-wrap:anywhere]",
       className,
     )}
   >
