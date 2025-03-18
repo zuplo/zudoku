@@ -6,6 +6,7 @@ import { Link, useHref } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import {
   useCurrentItem,
   usePrevNext,
@@ -51,6 +52,7 @@ export const MdxPage = ({
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
+  const { page } = useZudoku();
   let canonicalUrl = null;
   const path = useHref("");
   if (typeof window !== "undefined") {
@@ -91,7 +93,7 @@ export const MdxPage = ({
 
   return (
     <div
-      className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      className="max-w-screen-lg mx-auto xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
       data-pagefind-filter="section:markdown"
       data-pagefind-meta="section:markdown"
     >
