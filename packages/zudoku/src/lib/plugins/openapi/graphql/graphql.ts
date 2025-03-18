@@ -67,6 +67,7 @@ export type OperationItem = {
   contentTypes: Array<Scalars["String"]["output"]>;
   deprecated?: Maybe<Scalars["Boolean"]["output"]>;
   description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   method: Scalars["String"]["output"];
   operationId?: Maybe<Scalars["String"]["output"]>;
   parameters?: Maybe<Array<ParameterItem>>;
@@ -88,6 +89,7 @@ export type ParameterItem = {
   description?: Maybe<Scalars["String"]["output"]>;
   examples?: Maybe<Array<ExampleItem>>;
   explode?: Maybe<Scalars["Boolean"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   in: ParameterIn;
   name: Scalars["String"]["output"];
   required?: Maybe<Scalars["Boolean"]["output"]>;
@@ -122,6 +124,7 @@ export type ResponseItem = {
   __typename?: "ResponseItem";
   content?: Maybe<Array<MediaTypeObject>>;
   description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   headers?: Maybe<Scalars["JSON"]["output"]>;
   links?: Maybe<Scalars["JSON"]["output"]>;
   statusCode: Scalars["String"]["output"];
@@ -130,6 +133,7 @@ export type ResponseItem = {
 export type Schema = {
   __typename?: "Schema";
   description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
@@ -171,6 +175,7 @@ export type Server = {
 export type TagItem = {
   __typename?: "TagItem";
   description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   name: Scalars["String"]["output"];
 };
 
@@ -198,6 +203,7 @@ export type OperationsFragmentFragment = {
   contentTypes: Array<string>;
   path: string;
   deprecated?: boolean | null;
+  extensions?: any | null;
   parameters?: Array<{
     __typename?: "ParameterItem";
     name: string;
@@ -376,6 +382,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   contentTypes
   path
   deprecated
+  extensions
   parameters {
     name
     in
@@ -475,6 +482,7 @@ export const AllOperationsDocument = new TypedDocumentString(`
   contentTypes
   path
   deprecated
+  extensions
   parameters {
     name
     in

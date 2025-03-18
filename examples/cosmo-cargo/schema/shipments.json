@@ -993,6 +993,7 @@
       "post": {
         "tags": ["Rates & Billing"],
         "summary": "Add insurance",
+        "x-explorer-enabled": false,
         "description": "Add or modify insurance coverage for a shipment",
         "operationId": "addInsurance",
         "parameters": [

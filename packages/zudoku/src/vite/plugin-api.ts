@@ -190,17 +190,10 @@ const viteApiPlugin = async (
         ].join("\n");
       }
 
-      const apiPluginOptions = {
-        options: {
-          examplesDefaultLanguage: config.defaults?.examplesLanguage,
-        },
-      };
-
       const code = [
         `import config from "virtual:zudoku-config";`,
         `const configuredApiPlugins = [];`,
         `const configuredApiCatalogPlugins = [];`,
-        `const apiPluginOptions = ${JSON.stringify(apiPluginOptions)};`,
       ];
 
       if (config.apis) {
@@ -266,16 +259,22 @@ const viteApiPlugin = async (
 
             // If the API has less than 50 operations, we preload all tags to be shown
             const loadTags =
-              apiConfig.loadTags ?? maxOperationCount < API_COUNT_THRESHOLD;
+              apiConfig.options?.loadTags ??
+              config.defaults?.apis?.loadTags ??
+              maxOperationCount < API_COUNT_THRESHOLD;
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
-              `  ...apiPluginOptions,`,
               `  type: "file",`,
               `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
               `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
-              `  loadTags: ${JSON.stringify(loadTags)},`,
+              `  options: {`,
+              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    loadTags: ${JSON.stringify(loadTags)},`,
+              `    ...${JSON.stringify(apiConfig.options ?? {})},`,
+              `  },`,
               `  schemaImports: {`,
               ...Array.from(schemaMap.entries()).map(
                 ([key, schemaPath]) =>
@@ -286,7 +285,14 @@ const viteApiPlugin = async (
             );
           } else {
             code.push(
-              `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, ...apiPluginOptions })}));`,
+              "configuredApiPlugins.push(openApiPlugin({",
+              `  ...${JSON.stringify(apiConfig)},`,
+              "  options: {",
+              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    ...${JSON.stringify(apiConfig.options ?? {})},`,
+              "  },",
+              "}));",
             );
           }
         }

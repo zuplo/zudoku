@@ -10,26 +10,22 @@ export type ContextOasSource =
   | { type: "file"; input: DynamicInput }
   | { type: "raw"; input: string };
 
-export type OasPluginConfig = {
+type BaseOasConfig = {
   server?: string;
   navigationId?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
-  loadTags?: boolean;
-} & OasPluginConfigOptions &
-  OasSource;
-
-export type OasPluginConfigOptions = {
   options?: {
-    examplesDefaultLanguage?: string;
+    examplesLanguage?: string;
+    disablePlayground?: boolean;
+    loadTags?: boolean;
   };
 };
 
-export type OasPluginContext = {
-  server?: string;
-  navigationId?: string;
-  skipPreload?: boolean;
-  version?: string;
-  versions: Record<string, string>;
-} & ContextOasSource &
-  OasPluginConfigOptions;
+export type OasPluginConfig = BaseOasConfig & OasSource;
+
+export type OasPluginContext = BaseOasConfig &
+  ContextOasSource & {
+    version?: string;
+    versions: Record<string, string>;
+  };

@@ -45,13 +45,19 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
+const ApiOptionsSchema = z.object({
+  examplesLanguage: z.string().optional(),
+  disablePlayground: z.boolean().optional(),
+  loadTags: z.boolean().optional(),
+});
+
 const ApiConfigSchema = z
   .object({
     id: z.string(),
     server: z.string(),
     navigationId: z.string(),
-    loadTags: z.boolean(),
     categories: z.array(ApiCatalogCategorySchema),
+    options: ApiOptionsSchema,
   })
   .partial();
 
@@ -387,6 +393,10 @@ export const CommonConfigSchema = z.object({
   isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
+    apis: ApiOptionsSchema,
+    /**
+     * @deprecated Use `apis.examplesLanguage` or `defaults.apis.examplesLanguage` instead
+     */
     examplesLanguage: z.string().optional(),
   }),
 });
