@@ -243,7 +243,7 @@ const SearchSchema = z
   ])
   .optional();
 
-const AuthenticationSchema = z.union([
+const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
     clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
