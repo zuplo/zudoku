@@ -172,7 +172,11 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       authorizationServer.authorization_endpoint,
     );
 
-    sessionStorage.setItem("redirect-to", redirectTo);
+    const finalRedirect = redirectTo.startsWith(window.location.origin)
+      ? redirectTo.slice(window.location.origin.length)
+      : redirectTo;
+
+    sessionStorage.setItem("redirect-to", finalRedirect);
 
     const redirectUrl = new URL(window.location.origin);
     redirectUrl.pathname = this.callbackUrlPath;
