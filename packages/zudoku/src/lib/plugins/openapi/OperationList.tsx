@@ -131,7 +131,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { input, type, versions, version } = useOasConfig();
+  const { input, type, versions, version, options } = useOasConfig();
   const query = useCreateQuery(AllOperationsQuery, {
     input,
     type,
@@ -164,7 +164,11 @@ export const OperationList = ({
         ? sanitizeMarkdownForMetatag(description)
         : undefined;
 
-  const showVersions = Object.entries(versions).length > 1;
+  const hasMultipleVersions = Object.entries(versions).length > 1;
+
+  const showVersions =
+    options?.showVersionSelect === "always" ||
+    (hasMultipleVersions && options?.showVersionSelect !== "hide");
 
   return (
     <div
@@ -203,6 +207,7 @@ export const OperationList = ({
                 <Select
                   onValueChange={(version) => navigate(versions[version]!)}
                   defaultValue={version}
+                  disabled={!hasMultipleVersions}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select version" />

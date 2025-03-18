@@ -76,6 +76,7 @@ const config = {
     options: {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
+      showVersionSelect: "if-available", // Control version selector visibility
     },
   },
 };
@@ -85,6 +86,10 @@ Available options:
 
 - `examplesLanguage`: Set default language for code examples
 - `disablePlayground`: Disable the interactive API playground globally
+- `showVersionSelect`: Control version selector visibility
+  - `"if-available"`: Show version selector only when multiple versions exist (default)
+  - `"always"`: Always show version selector (disabled if only one version)
+  - `"hide"`: Never show version selector
 
 ## Default Options
 
@@ -96,6 +101,7 @@ const config = {
     apis: {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
+      showVersionSelect: "if-available", // Control version selector visibility
     },
   },
   apis: {
