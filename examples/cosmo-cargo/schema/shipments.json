@@ -102,8 +102,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
-            "readOnly": true
+            "format": "uuid"
           },
           "recipientAddress": {
             "$ref": "#/components/schemas/Address"
@@ -115,48 +114,61 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Package"
-            }
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "uniqueItems": true
           },
           "status": {
             "type": "string",
-            "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
-            "readOnly": true
+            "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"]
           },
           "trackingNumber": {
             "type": "string",
-            "readOnly": true
+            "pattern": "^[A-Z0-9]{10,20}$"
           },
           "createdAt": {
             "type": "string",
-            "format": "date-time",
-            "readOnly": true
+            "format": "date-time"
           },
           "comments": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Comment"
-            }
+            },
+            "maxItems": 100
           }
-        }
+        },
+        "additionalProperties": false
       },
       "Address": {
         "type": "object",
         "required": ["street", "city", "country", "postalCode"],
         "properties": {
           "street": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
           "city": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
           "state": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
           "country": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2 country code"
           },
           "postalCode": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
           }
         }
       },
@@ -167,7 +179,9 @@
           "weight": {
             "type": "number",
             "format": "float",
-            "description": "Weight in kilograms"
+            "description": "Weight in kilograms",
+            "minimum": 0.1,
+            "maximum": 1000
           },
           "dimensions": {
             "$ref": "#/components/schemas/Dimensions"
@@ -181,17 +195,23 @@
           "length": {
             "type": "number",
             "format": "float",
-            "description": "Length in centimeters"
+            "description": "Length in centimeters",
+            "minimum": 1,
+            "maximum": 300
           },
           "width": {
             "type": "number",
             "format": "float",
-            "description": "Width in centimeters"
+            "description": "Width in centimeters",
+            "minimum": 1,
+            "maximum": 300
           },
           "height": {
             "type": "number",
             "format": "float",
-            "description": "Height in centimeters"
+            "description": "Height in centimeters",
+            "minimum": 1,
+            "maximum": 300
           }
         }
       },
@@ -200,10 +220,15 @@
         "required": ["code", "message"],
         "properties": {
           "code": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[A-Z_]+$",
+            "minLength": 1,
+            "maxLength": 50
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
           }
         }
       },
@@ -218,9 +243,12 @@
           },
           "transferredAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the shipment was transferred"
           }
-        }
+        },
+        "minProperties": 1,
+        "maxProperties": 3
       },
       "Comment": {
         "type": "object",
@@ -229,7 +257,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the comment"
+            "description": "Unique identifier for the comment",
+            "pattern": "^[a-zA-Z0-9-]+$"
           },
           "author": {
             "type": "string",
@@ -260,11 +289,14 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the organization"
+            "description": "Unique identifier for the organization",
+            "pattern": "^[a-zA-Z0-9-]+$"
           },
           "name": {
             "type": "string",
-            "description": "Name of the organization"
+            "description": "Name of the organization",
+            "minLength": 1,
+            "maxLength": 200
           },
           "parent": {
             "$ref": "#/components/schemas/Organization",
@@ -273,6 +305,7 @@
           "sub": {
             "type": "array",
             "description": "Child organizations (array circular reference)",
+            "maxItems": 100,
             "items": {
               "$ref": "#/components/schemas/Organization"
             }
@@ -294,12 +327,15 @@
             "enum": ["PENDING", "IN_TRANSIT", "DELIVERED"]
           },
           "next": {
-            "$ref": "#/components/schemas/LinkedShipment"
+            "$ref": "#/components/schemas/LinkedShipment",
+            "nullable": true
           },
           "previous": {
-            "$ref": "#/components/schemas/LinkedShipment"
+            "$ref": "#/components/schemas/LinkedShipment",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       }
     }
   },
@@ -745,7 +781,7 @@
             "description": "Duration to hold the shipment",
             "schema": {
               "type": "string",
-              "enum": ["1_DAY", "3_DAYS", "1_WEEK", "2_WEEKS"]
+              "format": "date-time"
             }
           },
           {
@@ -753,8 +789,7 @@
             "in": "cookie",
             "description": "User's preferred facility location",
             "schema": {
-              "type": "string",
-              "enum": ["NEAREST", "HOME", "OFFICE", "LOCKER"]
+              "type": "string"
             }
           },
           {
@@ -777,12 +812,7 @@
                 "properties": {
                   "holdUntil": {
                     "type": "string",
-                    "format": "date-time",
-                    "enum": [
-                      "2025-01-15T17:00:00Z",
-                      "2025-01-16T09:00:00Z",
-                      "2025-01-17T14:00:00Z"
-                    ]
+                    "format": "date-time"
                   },
                   "reason": {
                     "type": "string",
@@ -2285,7 +2315,6 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[A-Z]{3}[0-9]{1}$",
               "example": "LAX1"
             },
             "description": "ID of the origin facility"
@@ -2296,7 +2325,6 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[A-Z]{3}[0-9]{1}$",
               "example": "JFK1"
             },
             "description": "ID of the destination facility"

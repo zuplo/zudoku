@@ -1,9 +1,9 @@
-import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown } from "../../components/Markdown.js";
 import { type SchemaObject } from "../../oas/graphql/index.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import type { ParameterGroup } from "./OperationListItem.js";
+import { ParamInfos } from "./ParamInfos.js";
 import { EnumValues } from "./components/EnumValues.js";
 
 const getParameterSchema = (
@@ -40,22 +40,20 @@ export const ParameterListItem = ({
             <ColorizedParam
               name={parameter.name}
               backgroundOpacity="15%"
-              className="px-1"
+              className="px-2"
               slug={`${id}-${parameter.name}`}
             />
           ) : (
             parameter.name
           )}
         </code>
-        {paramSchema.type && (
-          <Badge variant="muted">
-            {paramSchema.type === "array"
-              ? `${paramSchema.items.type}[]`
-              : paramSchema.type}
-          </Badge>
-        )}
-        {parameter.required && <Badge variant="outline">required</Badge>}
-        {parameter.style === "form" && <Badge variant="secondary">form</Badge>}
+        <ParamInfos
+          schema={paramSchema}
+          extraItems={[
+            parameter.required && "required",
+            parameter.style === "form" && "form",
+          ]}
+        />
       </div>
       {parameter.description && (
         <Markdown
