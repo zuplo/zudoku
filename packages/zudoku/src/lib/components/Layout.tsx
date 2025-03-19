@@ -12,7 +12,7 @@ import { Slotlet } from "./SlotletProvider.js";
 import { Spinner } from "./Spinner.js";
 
 const LoadingFallback = () => (
-  <main className="col-span-full grid place-items-center">
+  <main className="col-span-full row-span-full grid place-items-center">
     <Spinner />
   </main>
 );
