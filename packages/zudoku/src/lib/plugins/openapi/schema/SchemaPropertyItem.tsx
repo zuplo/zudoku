@@ -7,6 +7,7 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
+import { EnumValues } from "../components/EnumValues.js";
 import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaView } from "./SchemaView.js";
 import {
@@ -82,7 +83,7 @@ export const SchemaPropertyItem = ({
 
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
-      <div className="flex flex-col gap-1 justify-between text-sm">
+      <div className="flex flex-col gap-1.5 justify-between text-sm">
         <div className="flex gap-2 items-center">
           <code>{name}</code>
           <Badge variant="muted">
@@ -99,13 +100,19 @@ export const SchemaPropertyItem = ({
             "items" in schema &&
             isCircularRef(schema.items) && <RecursiveIndicator />}
         </div>
-
         {schema.description && (
           <Markdown
             className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
             content={schema.description}
           />
         )}
+        {schema.format && (
+          <div>
+            <span className="text-sm text-muted-foreground">Format: </span>
+            <code>{schema.format}</code>
+          </div>
+        )}
+        {schema.enum && <EnumValues values={schema.enum} />}
 
         {(hasLogicalGroupings(schema) || isComplexType(schema)) && (
           <Collapsible.Root

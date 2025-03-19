@@ -731,6 +731,33 @@
         "operationId": "holdShipment",
         "parameters": [
           {
+            "name": "X-Hold-Operator",
+            "in": "header",
+            "description": "Operator requesting the hold",
+            "schema": {
+              "type": "string",
+              "enum": ["SYSTEM", "ADMIN", "CUSTOMER", "AGENT"]
+            }
+          },
+          {
+            "name": "holdDuration",
+            "in": "query",
+            "description": "Duration to hold the shipment",
+            "schema": {
+              "type": "string",
+              "enum": ["1_DAY", "3_DAYS", "1_WEEK", "2_WEEKS"]
+            }
+          },
+          {
+            "name": "preferredLocation",
+            "in": "cookie",
+            "description": "User's preferred facility location",
+            "schema": {
+              "type": "string",
+              "enum": ["NEAREST", "HOME", "OFFICE", "LOCKER"]
+            }
+          },
+          {
             "name": "shipmentId",
             "in": "path",
             "required": true,
@@ -750,18 +777,26 @@
                 "properties": {
                   "holdUntil": {
                     "type": "string",
-                    "format": "date-time"
+                    "format": "date-time",
+                    "enum": [
+                      "2025-01-15T17:00:00Z",
+                      "2025-01-16T09:00:00Z",
+                      "2025-01-17T14:00:00Z"
+                    ]
                   },
                   "reason": {
                     "type": "string",
                     "enum": [
                       "RECIPIENT_REQUEST",
                       "CUSTOMS_HOLD",
-                      "WEATHER_DELAY"
+                      "WEATHER_DELAY",
+                      "ADDRESS_VERIFICATION",
+                      "PAYMENT_PENDING"
                     ]
                   },
                   "facilityId": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
                   }
                 }
               },
@@ -788,14 +823,26 @@
                   "properties": {
                     "status": {
                       "type": "string",
-                      "enum": ["ON_HOLD"]
+                      "enum": ["ON_HOLD", "HOLD_PENDING", "HOLD_REJECTED"]
                     },
                     "holdLocation": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "LAX1 - Los Angeles Hub",
+                        "JFK2 - New York Hub",
+                        "ORD3 - Chicago Hub",
+                        "DFW4 - Dallas Hub",
+                        "SEA5 - Seattle Hub"
+                      ]
                     },
                     "holdUntil": {
                       "type": "string",
-                      "format": "date-time"
+                      "format": "date-time",
+                      "enum": [
+                        "2025-01-15T17:00:00Z",
+                        "2025-01-16T09:00:00Z",
+                        "2025-01-17T14:00:00Z"
+                      ]
                     }
                   }
                 },
@@ -2067,49 +2114,109 @@
                     }
                   }
                 }
-              },
-              "examples": {
-                "all_channels": {
-                  "summary": "Notifications on all channels",
-                  "value": {
-                    "email": ["recipient@example.com", "sender@example.com"],
-                    "sms": ["+14155552671"],
-                    "webhooks": ["https://example.com/webhook"],
-                    "events": [
-                      "PICKUP_SCHEDULED",
-                      "OUT_FOR_DELIVERY",
-                      "DELIVERED",
-                      "EXCEPTION"
-                    ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/priority": {
+      "put": {
+        "tags": ["Shipment Management"],
+        "summary": "Update shipment priority",
+        "description": "Update the priority level of a shipment",
+        "operationId": "updatePriority",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["priority"],
+                "properties": {
+                  "priority": {
+                    "type": "string",
+                    "enum": ["URGENT", "HIGH", "NORMAL", "LOW"],
+                    "description": "New priority level for the shipment"
                   }
                 }
               }
             }
           }
-        },
+        }
+      }
+    },
+    "/shipments/{shipmentId}/service-levels": {
+      "get": {
+        "tags": ["Shipment Management"],
+        "summary": "Get available service levels",
+        "description": "Get all available service levels for a shipment with their details",
+        "operationId": "getServiceLevels",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Notification preferences updated successfully",
+            "description": "Available service levels",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": ["ACTIVE"]
-                    },
-                    "channels": {
+                    "serviceLevels": {
                       "type": "array",
                       "items": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "SAME_DAY",
+                              "NEXT_DAY",
+                              "EXPRESS",
+                              "STANDARD",
+                              "ECONOMY",
+                              "GROUND",
+                              "INTERNATIONAL_EXPRESS",
+                              "INTERNATIONAL_STANDARD",
+                              "INTERNATIONAL_ECONOMY",
+                              "INTERNATIONAL_GROUND",
+                              "INTERNATIONAL_AIR",
+                              "INTERNATIONAL_SEA",
+                              "INTERNATIONAL_RAIL",
+                              "INTERNATIONAL_COMBINED",
+                              "INTERNATIONAL_SPECIALIZED"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }
-                },
-                "example": {
-                  "status": "ACTIVE",
-                  "channels": ["email", "sms", "webhook"]
                 }
               }
             }

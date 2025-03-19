@@ -1,5 +1,5 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
@@ -10,6 +10,7 @@ import { renderIf } from "../../util/renderIf.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
+import { SelectOnClick } from "./components/SelectOnClick.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { methodForColor } from "./util/methodToColor.js";
@@ -29,7 +30,6 @@ export const OperationListItem = ({
     operation.parameters ?? [],
     (param) => param.in,
   );
-  const parentRef = useRef<HTMLDivElement>(null);
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
@@ -60,19 +60,7 @@ export const OperationListItem = ({
           <span className={methodForColor(operation.method)}>
             {operation.method.toUpperCase()}
           </span>
-          <div
-            ref={parentRef}
-            className="max-w-full truncate flex cursor-pointer"
-            onClick={() => {
-              if (parentRef.current) {
-                const range = document.createRange();
-                range.selectNodeContents(parentRef.current);
-                const selection = window.getSelection();
-                selection?.removeAllRanges();
-                selection?.addRange(range);
-              }
-            }}
-          >
+          <SelectOnClick className="max-w-full truncate flex cursor-pointer">
             {serverUrl && (
               <div className="text-neutral-400 dark:text-neutral-500 truncate">
                 {serverUrl}
@@ -81,7 +69,7 @@ export const OperationListItem = ({
             <div className="text-neutral-900 dark:text-neutral-200">
               {operation.path}
             </div>
-          </div>
+          </SelectOnClick>
         </div>
 
         <div className="flex flex-col gap-4">
