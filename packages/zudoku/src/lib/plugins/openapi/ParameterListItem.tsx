@@ -4,6 +4,7 @@ import { type SchemaObject } from "../../oas/graphql/index.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import type { ParameterGroup } from "./OperationListItem.js";
+import { EnumValues } from "./components/EnumValues.js";
 
 const getParameterSchema = (
   parameter: ParameterListItemResult,
@@ -32,7 +33,7 @@ export const ParameterListItem = ({
   const paramSchema = getParameterSchema(parameter);
 
   return (
-    <li className="p-4 bg-border/20 text-sm flex flex-col gap-1">
+    <li className="p-4 bg-border/20 text-sm flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
         <code>
           {group === "path" ? (
@@ -62,6 +63,7 @@ export const ParameterListItem = ({
           className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
         />
       )}
+      {paramSchema.enum && <EnumValues values={paramSchema.enum} />}
     </li>
   );
 };
