@@ -123,6 +123,10 @@
       "calt" 1;
   }
 
+  ::selection {
+    @apply bg-primary/100 text-primary-foreground;
+  }
+
   .dark {
     color-scheme: dark;
   }
