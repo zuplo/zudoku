@@ -212,6 +212,7 @@ export type OperationsFragmentFragment = {
     required?: boolean | null;
     schema?: any | null;
     style?: string | null;
+    explode?: boolean | null;
     examples?: Array<{
       __typename?: "ExampleItem";
       name: string;
@@ -390,6 +391,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
     required
     schema
     style
+    explode
     examples {
       name
       description
@@ -490,6 +492,7 @@ export const AllOperationsDocument = new TypedDocumentString(`
     required
     schema
     style
+    explode
     examples {
       name
       description

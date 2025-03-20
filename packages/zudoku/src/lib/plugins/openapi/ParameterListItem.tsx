@@ -5,6 +5,7 @@ import type { OperationListItemResult } from "./OperationList.js";
 import type { ParameterGroup } from "./OperationListItem.js";
 import { ParamInfos } from "./ParamInfos.js";
 import { EnumValues } from "./components/EnumValues.js";
+import { SelectOnClick } from "./components/SelectOnClick.js";
 
 const getParameterSchema = (
   parameter: ParameterListItemResult,
@@ -35,23 +36,28 @@ export const ParameterListItem = ({
   return (
     <li className="p-4 bg-border/20 text-sm flex flex-col gap-1.5">
       <div className="flex items-center gap-2">
-        <code>
-          {group === "path" ? (
-            <ColorizedParam
-              name={parameter.name}
-              backgroundOpacity="15%"
-              className="px-2"
-              slug={`${id}-${parameter.name}`}
-            />
-          ) : (
-            parameter.name
-          )}
-        </code>
+        <SelectOnClick asChild>
+          <code>
+            {group === "path" ? (
+              <ColorizedParam
+                name={parameter.name}
+                backgroundOpacity="15%"
+                className="px-2"
+                slug={`${id}-${parameter.name}`}
+              />
+            ) : (
+              parameter.name
+            )}
+          </code>
+        </SelectOnClick>
         <ParamInfos
           schema={paramSchema}
           extraItems={[
-            parameter.required && "required",
-            parameter.style === "form" && "form",
+            parameter.required && (
+              <span className="text-primary">required</span>
+            ),
+            parameter.style && `style: ${parameter.style}`,
+            parameter.explode && `explode: ${parameter.explode}`,
           ]}
         />
       </div>

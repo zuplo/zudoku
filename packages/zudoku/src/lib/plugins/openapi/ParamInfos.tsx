@@ -43,7 +43,7 @@ export const ParamInfos = ({
   extraItems?: unknown[];
   className?: string;
 }) => {
-  const filteredItems = [...extraItems, ...getSchemaInfos(schema)].flatMap(
+  const filteredItems = [...getSchemaInfos(schema), ...extraItems].flatMap(
     (item) => (typeof item === "string" || isValidElement(item) ? item : []),
   );
 

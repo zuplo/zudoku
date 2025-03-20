@@ -7,6 +7,7 @@ import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
 import { EnumValues } from "../components/EnumValues.js";
+import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaView } from "./SchemaView.js";
@@ -72,10 +73,7 @@ export const SchemaPropertyItem = ({
         <div className="flex flex-col gap-2.5 justify-between text-sm">
           <div className="flex gap-2 items-center">
             <code>{name}</code>
-            <ParamInfos
-              schema={schema}
-              extraItems={[group === "optional" && "optional"]}
-            />
+            <ParamInfos schema={schema} />
             <RecursiveIndicator />
           </div>
         </div>
@@ -87,10 +85,16 @@ export const SchemaPropertyItem = ({
     <li className="p-4 bg-border/20 hover:bg-border/30">
       <div className="flex flex-col gap-2.5 justify-between text-sm">
         <div className="flex gap-2 items-center">
-          <code>{name}</code>
+          <SelectOnClick asChild>
+            <code>{name}</code>
+          </SelectOnClick>
           <ParamInfos
             schema={schema}
-            extraItems={[group === "optional" && "optional"]}
+            extraItems={[
+              group !== "optional" && (
+                <span className="text-primary">required</span>
+              ),
+            ]}
           />
           {schema.type === "array" &&
             "items" in schema &&
