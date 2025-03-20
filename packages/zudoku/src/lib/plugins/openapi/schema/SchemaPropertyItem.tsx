@@ -1,5 +1,5 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
@@ -69,7 +69,7 @@ export const SchemaPropertyItem = ({
   if (isCircularRef(schema)) {
     return (
       <li className="p-4 bg-border/20 hover:bg-border/30">
-        <div className="flex flex-col gap-1.5 justify-between text-sm">
+        <div className="flex flex-col gap-2.5 justify-between text-sm">
           <div className="flex gap-2 items-center">
             <code>{name}</code>
             <ParamInfos
@@ -85,7 +85,7 @@ export const SchemaPropertyItem = ({
 
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
-      <div className="flex flex-col gap-1.5 justify-between text-sm">
+      <div className="flex flex-col gap-2.5 justify-between text-sm">
         <div className="flex gap-2 items-center">
           <code>{name}</code>
           <ParamInfos
@@ -112,15 +112,9 @@ export const SchemaPropertyItem = ({
           >
             {showCollapseButton && (
               <Collapsible.Trigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 flex gap-1.5"
-                >
-                  <ListPlusIcon size={18} />
-                  {!isOpen
-                    ? "Show nested properties"
-                    : "Hide nested properties"}
+                <Button variant="expand" size="sm" className="h-7">
+                  {isOpen ? <MinusIcon size={12} /> : <PlusIcon size={12} />}
+                  {!isOpen ? "Show properties" : "Hide properties"}
                 </Button>
               </Collapsible.Trigger>
             )}
