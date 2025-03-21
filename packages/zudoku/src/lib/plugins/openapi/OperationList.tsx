@@ -194,7 +194,7 @@ export const OperationList = ({
                 registerSidebarAnchor
                 className="mb-0"
               >
-                {tag}
+                {tag ?? "Other endpoints"}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ml-1.5">
                     {" "}

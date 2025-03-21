@@ -42,21 +42,27 @@ type OperationLike = {
 export const createOperationSlug = (
   slugify: CountableSlugify,
   operation: OperationLike,
-  tag?: string,
 ) => {
   const summary =
     operation.summary ||
     operation.operationId ||
     `${operation.method}-${operation.path}`;
-  const prefix = tag ? `${tag}-` : "";
 
-  return slugify(prefix + summary);
+  return slugify(summary);
 };
 
-export type SchemaImports = Record<
-  string,
-  () => Promise<{ schema: OpenAPIDocument }>
->;
+type SchemaImport = () => Promise<{ schema: OpenAPIDocument }>;
+
+export type SchemaImports = Record<string, SchemaImport>;
+
+type Context = {
+  schema: OpenAPIDocument;
+  operations: GraphQLOperationObject[];
+  tags: TagObject[];
+  schemaImports?: SchemaImports;
+  slugify: CountableSlugify;
+  slugs: Record<string, string>;
+};
 
 const builder = new SchemaBuilder<{
   DefaultFieldNullability: false;
@@ -65,14 +71,7 @@ const builder = new SchemaBuilder<{
     JSONObject: any;
     JSONSchema: any;
   };
-  Context: {
-    schema: OpenAPIDocument;
-    operations: GraphQLOperationObject[];
-    tags: TagObject[];
-    schemaImports?: SchemaImports;
-    currentTag?: string;
-    slugify: CountableSlugify;
-  };
+  Context: Context;
 }>({
   defaultFieldNullability: false,
 });
@@ -115,6 +114,17 @@ export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
       .map((tag) => ({ name: tag })),
   ];
 };
+
+const getAllSlugs = (operations: GraphQLOperationObject[]) =>
+  Object.fromEntries(
+    operations.map((op) => [
+      getSlugName(op),
+      createOperationSlug(slugifyWithCounter(), op),
+    ]),
+  );
+
+const getSlugName = (op: GraphQLOperationObject) =>
+  `${op.path}-${op.method}-${op.operationId}-${op.summary}`;
 
 export const getAllOperations = (
   paths?: PathsObject,
@@ -340,19 +350,8 @@ const OperationItem = builder
     fields: (t) => ({
       slug: t.field({
         type: "String",
-        resolve: (parent, _, ctx) => {
-          const slugData = {
-            summary: parent.summary,
-            operationId: parent.operationId,
-            path: parent.path,
-            method: parent.method,
-          };
-
-          //TODO: fix parent tag parent.tags
-          return createOperationSlug(ctx.slugify, slugData, parent.parentTag);
-        },
+        resolve: (parent, _, ctx) => ctx.slugs[getSlugName(parent)]!,
       }),
-
       path: t.exposeString("path"),
       method: t.exposeString("method"),
       operationId: t.exposeString("operationId", { nullable: true }),
@@ -531,6 +530,7 @@ builder.queryType({
         ctx.operations = getAllOperations(schema.paths);
         ctx.slugify = slugifyWithCounter();
         ctx.tags = getAllTags(schema);
+        ctx.slugs = getAllSlugs(ctx.operations);
 
         return schema;
       },
