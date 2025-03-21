@@ -98,7 +98,6 @@ export class ZudokuContext {
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
   public authentication?: ZudokuContextOptions["authentication"];
-  public readonly options: ZudokuContextOptions;
   public readonly queryClient: QueryClient;
   private readonly navigationPlugins: NavigationPlugin[];
   private emitter = createNanoEvents<ZudokuEvents>();
