@@ -21,6 +21,7 @@ export type { RouteObject };
 
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
+  getProtectedRoutes?: () => string[];
   getSidebar?: (path: string) => Promise<Sidebar>;
 }
 

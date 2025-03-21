@@ -87,10 +87,18 @@ export class ZudokuContext {
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
   public authentication?: ZudokuContextOptions["authentication"];
+  public readonly options: ZudokuContextOptions;
   private readonly navigationPlugins: NavigationPlugin[];
   private emitter = createNanoEvents<ZudokuEvents>();
 
-  constructor(public readonly options: ZudokuContextOptions) {
+  constructor(options: ZudokuContextOptions) {
+    const protectedRoutes = (options.protectedRoutes ?? []).concat(
+      options.plugins?.flatMap((plugin) =>
+        isNavigationPlugin(plugin) ? (plugin.getProtectedRoutes?.() ?? []) : [],
+      ) ?? [],
+    );
+
+    this.options = { ...options, protectedRoutes };
     this.plugins = options.plugins ?? [];
     this.topNavigation = options.topNavigation ?? [];
     this.sidebars = options.sidebars ?? {};
