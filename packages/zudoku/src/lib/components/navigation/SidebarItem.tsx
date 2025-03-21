@@ -1,6 +1,6 @@
 import { cva } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
-import { NavLink, useSearchParams } from "react-router";
+import { NavLink, useLocation, useSearchParams } from "react-router";
 
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
 import { joinPath } from "../../util/joinPath.js";
@@ -37,6 +37,7 @@ export const SidebarItem = ({
   item: SidebarItemType;
   onRequestClose?: () => void;
 }) => {
+  const location = useLocation();
   const { activeAnchor } = useViewportAnchor();
   const [searchParams] = useSearchParams();
 
@@ -76,7 +77,7 @@ export const SidebarItem = ({
           }}
           {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
           className={navigationListItem({
-            isActive: item.href.split("#")[1] === activeAnchor,
+            isActive: item.href === [location.pathname, activeAnchor].join("#"),
             className: item.badge?.placement !== "start" && "justify-between",
           })}
           onClick={onRequestClose}
