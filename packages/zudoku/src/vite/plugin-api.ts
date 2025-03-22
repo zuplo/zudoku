@@ -8,11 +8,7 @@ import path from "node:path";
 import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
-import {
-  getAllOperations,
-  getAllTags,
-  type OpenAPIDocument,
-} from "../lib/oas/graphql/index.js";
+import { getAllTags, type OpenAPIDocument } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -26,8 +22,6 @@ type ProcessedSchema = {
   version: string;
   inputPath: string;
 };
-
-const API_COUNT_THRESHOLD = 50;
 
 const schemaMap = new Map<string, string>();
 
@@ -246,22 +240,10 @@ const viteApiPlugin = async (
             const tags = [
               ...new Set(
                 schemas
-                  .flatMap((schema) => getAllTags(schema.schema))
+                  .flatMap((schema) => getAllTags(schema.schema, {}))
                   .map(({ name }) => name),
               ),
             ];
-
-            const maxOperationCount = Math.max(
-              ...schemas.flatMap((schema) => [
-                getAllOperations(schema.schema.paths).length,
-              ]),
-            );
-
-            // If the API has less than 50 operations, we preload all tags to be shown
-            const loadTags =
-              apiConfig.options?.loadTags ??
-              config.defaults?.apis?.loadTags ??
-              maxOperationCount < API_COUNT_THRESHOLD;
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
@@ -272,7 +254,6 @@ const viteApiPlugin = async (
               `  options: {`,
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
-              `    loadTags: ${JSON.stringify(loadTags)},`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               `  },`,

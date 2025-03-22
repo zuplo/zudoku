@@ -1,14 +1,12 @@
-import type { ResultOf } from "@graphql-typed-document-node/core";
-import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
 import { type ReactNode } from "react";
 import { matchPath } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
 import { type ZudokuPlugin } from "../../core/plugins.js";
-import type { SchemaImports } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
+import type { GetSidebarOperationsQuery } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
@@ -16,54 +14,35 @@ import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createSidebarCategory } from "./util/createSidebarCategory.js";
 import { getRoutes, getVersions } from "./util/getRoutes.js";
 
-const GetCategoriesQuery = graphql(`
-  query GetCategories($input: JSON!, $type: SchemaType!) {
+const GetSidebarOperationsQuery = graphql(`
+  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
       url
       tags {
-        name
-      }
-    }
-  }
-`);
-
-const GetOperationsQuery = graphql(`
-  query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
-    schema(input: $input, type: $type) {
-      operations(tag: $tag) {
         slug
-        deprecated
-        method
-        summary
-        operationId
-        path
-        tags {
-          name
+        name
+        operations {
+          slug
+          deprecated
+          method
+          summary
+          operationId
+          path
+          extensions
         }
       }
-      untagged: operations(untagged: true) {
-        slug
-        deprecated
-        method
-        summary
-        operationId
-        path
-      }
     }
   }
 `);
 
-export type OperationResult = ResultOf<
-  typeof GetOperationsQuery
->["schema"]["operations"][number];
+export type OperationResult =
+  GetSidebarOperationsQuery["schema"]["tags"][number]["operations"][number];
 
-type InternalOasPluginConfig = { schemaImports?: SchemaImports };
-
-export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
+export type OpenApiPluginOptions = OasPluginConfig;
 
 export const UNTAGGED_PATH = "~endpoints";
 
-export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
+export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
   const basePath = joinUrl(config.navigationId ?? "/reference");
   const client = new GraphQLClient(config);
 
@@ -134,7 +113,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         );
       },
     }),
-    getSidebar: async (path: string) => {
+    getSidebar: async (path, context) => {
       if (!matchPath({ path: basePath, end: false }, path)) {
         return [];
       }
@@ -147,65 +126,42 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       try {
         const versionParam = match?.params.version;
         const version = versionParam ?? getVersions(config).at(0);
-        const { type, options } = config;
+        const { type } = config;
         const input = type === "file" ? config.input[version!] : config.input;
 
-        const collapsible = options?.loadTags === true || config.type === "url";
-        const collapsed = !options?.loadTags && config.type !== "url";
+        const collapsible = true;
+        const collapsed = true;
 
-        // find  tag name by slug in config.tagPages
-        const tagName = config.tagPages?.find(
-          (tag) => slugify(tag) === match?.params.tag,
-        );
+        const data = await context.queryClient.ensureQueryData({
+          queryKey: ["sidebar-operations-query", input],
+          queryFn: () =>
+            client.fetch(GetSidebarOperationsQuery, { type, input }),
+        });
 
-        const [tagData, operationsData] = await Promise.all([
-          client.fetch(GetCategoriesQuery, { type, input }),
-          client.fetch(GetOperationsQuery, {
-            type,
-            input,
-            tag: !options?.loadTags ? tagName : undefined,
-          }),
-        ]);
+        const categories = data.schema.tags.flatMap((tag) => {
+          if (!tag.name || tag.operations.length === 0) return [];
 
-        const categories = tagData.schema.tags.flatMap((tag) => {
-          const categoryPath = joinUrl(
-            basePath,
-            versionParam,
-            slugify(tag.name),
-          );
-
-          const operations = operationsData.schema.operations.filter(
-            (operation) =>
-              operation.tags?.length !== 0 &&
-              operation.tags?.map((t) => t.name).includes(tag.name),
-          );
-
-          // skip empty categories
-          if (options?.loadTags && operations.length === 0) {
-            return [];
-          }
+          const categoryPath = joinUrl(basePath, versionParam, tag.slug);
 
           return createSidebarCategory({
             label: tag.name,
             path: categoryPath,
-            operations:
-              match?.params.tag !== UNTAGGED_PATH || options?.loadTags
-                ? operations
-                : [],
+            operations: tag.operations,
             collapsible,
             collapsed,
           });
         });
 
-        if (operationsData.schema.untagged.length > 0) {
+        const untaggedOperations = data.schema.tags.find(
+          (tag) => !tag.name,
+        )?.operations;
+
+        if (untaggedOperations) {
           categories.push(
             createSidebarCategory({
               label: "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
-              operations:
-                match?.params.tag === UNTAGGED_PATH || options?.loadTags
-                  ? operationsData.schema.untagged
-                  : [],
+              operations: untaggedOperations,
               collapsible,
               collapsed,
             }),

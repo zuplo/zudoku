@@ -160,8 +160,10 @@ export type SchemaTagsArgs = {
 export type SchemaTag = {
   __typename?: "SchemaTag";
   description?: Maybe<Scalars["String"]["output"]>;
-  name: Scalars["String"]["output"];
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
   operations: Array<OperationItem>;
+  slug?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type SchemaType = "file" | "raw" | "url";
@@ -263,14 +265,24 @@ export type OperationsFragmentFragment = {
   }>;
 } & { " $fragmentName"?: "OperationsFragmentFragment" };
 
-export type AllOperationsQueryVariables = Exact<{
+export type SchemaWarmupQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type SchemaWarmupQuery = {
+  __typename?: "Query";
+  schema: { __typename?: "Schema"; openapi: string };
+};
+
+export type OperationsForTagQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
   tag?: InputMaybe<Scalars["String"]["input"]>;
   untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 }>;
 
-export type AllOperationsQuery = {
+export type OperationsForTagQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
@@ -282,7 +294,7 @@ export type AllOperationsQuery = {
     servers: Array<{ __typename?: "Server"; url: string }>;
     tags: Array<{
       __typename?: "SchemaTag";
-      name: string;
+      name?: string | null;
       description?: string | null;
     }>;
     operations: Array<
@@ -309,48 +321,30 @@ export type GetServerQueryQuery = {
   };
 };
 
-export type GetCategoriesQueryVariables = Exact<{
+export type GetSidebarOperationsQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
 }>;
 
-export type GetCategoriesQuery = {
+export type GetSidebarOperationsQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
     url?: string | null;
-    tags: Array<{ __typename?: "SchemaTag"; name: string }>;
-  };
-};
-
-export type GetOperationsQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
-  type: SchemaType;
-  tag?: InputMaybe<Scalars["String"]["input"]>;
-}>;
-
-export type GetOperationsQuery = {
-  __typename?: "Query";
-  schema: {
-    __typename?: "Schema";
-    operations: Array<{
-      __typename?: "OperationItem";
-      slug: string;
-      deprecated?: boolean | null;
-      method: string;
-      summary?: string | null;
-      operationId?: string | null;
-      path: string;
-      tags?: Array<{ __typename?: "TagItem"; name: string }> | null;
-    }>;
-    untagged: Array<{
-      __typename?: "OperationItem";
-      slug: string;
-      deprecated?: boolean | null;
-      method: string;
-      summary?: string | null;
-      operationId?: string | null;
-      path: string;
+    tags: Array<{
+      __typename?: "SchemaTag";
+      slug?: string | null;
+      name?: string | null;
+      operations: Array<{
+        __typename?: "OperationItem";
+        slug: string;
+        deprecated?: boolean | null;
+        method: string;
+        summary?: string | null;
+        operationId?: string | null;
+        path: string;
+        extensions?: any | null;
+      }>;
     }>;
   };
 };
@@ -455,8 +449,18 @@ export const ServersQueryDocument = new TypedDocumentString(`
   ServersQueryQuery,
   ServersQueryQueryVariables
 >;
-export const AllOperationsDocument = new TypedDocumentString(`
-    query AllOperations($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
+export const SchemaWarmupDocument = new TypedDocumentString(`
+    query SchemaWarmup($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    openapi
+  }
+}
+    `) as unknown as TypedDocumentString<
+  SchemaWarmupQuery,
+  SchemaWarmupQueryVariables
+>;
+export const OperationsForTagDocument = new TypedDocumentString(`
+    query OperationsForTag($input: JSON!, $type: SchemaType!, $tag: String, $untagged: Boolean) {
   schema(input: $input, type: $type) {
     servers {
       url
@@ -540,8 +544,8 @@ export const AllOperationsDocument = new TypedDocumentString(`
     }
   }
 }`) as unknown as TypedDocumentString<
-  AllOperationsQuery,
-  AllOperationsQueryVariables
+  OperationsForTagQuery,
+  OperationsForTagQueryVariables
 >;
 export const GetServerQueryDocument = new TypedDocumentString(`
     query getServerQuery($input: JSON!, $type: SchemaType!) {
@@ -556,44 +560,26 @@ export const GetServerQueryDocument = new TypedDocumentString(`
   GetServerQueryQuery,
   GetServerQueryQueryVariables
 >;
-export const GetCategoriesDocument = new TypedDocumentString(`
-    query GetCategories($input: JSON!, $type: SchemaType!) {
+export const GetSidebarOperationsDocument = new TypedDocumentString(`
+    query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
     url
     tags {
-      name
-    }
-  }
-}
-    `) as unknown as TypedDocumentString<
-  GetCategoriesQuery,
-  GetCategoriesQueryVariables
->;
-export const GetOperationsDocument = new TypedDocumentString(`
-    query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
-  schema(input: $input, type: $type) {
-    operations(tag: $tag) {
       slug
-      deprecated
-      method
-      summary
-      operationId
-      path
-      tags {
-        name
+      name
+      operations {
+        slug
+        deprecated
+        method
+        summary
+        operationId
+        path
+        extensions
       }
     }
-    untagged: operations(untagged: true) {
-      slug
-      deprecated
-      method
-      summary
-      operationId
-      path
-    }
   }
 }
     `) as unknown as TypedDocumentString<
-  GetOperationsQuery,
-  GetOperationsQueryVariables
+  GetSidebarOperationsQuery,
+  GetSidebarOperationsQueryVariables
 >;

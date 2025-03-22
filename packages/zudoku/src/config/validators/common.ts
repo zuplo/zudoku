@@ -48,7 +48,6 @@ const ApiCatalogCategorySchema = z.object({
 const ApiOptionsSchema = z.object({
   examplesLanguage: z.string().optional(),
   disablePlayground: z.boolean().optional(),
-  loadTags: z.boolean().optional(),
   showVersionSelect: z.enum(["always", "if-available", "hide"]).optional(),
 });
 

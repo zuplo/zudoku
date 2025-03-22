@@ -2,9 +2,9 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
-import { ZudokuContext } from "../../core/ZudokuContext.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinPath } from "../../util/joinPath.js";
-import { CACHE_KEYS } from "../cache.js";
+import { CACHE_KEYS, NO_DEHYDRATE } from "../cache.js";
 import { traverseSidebar } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
@@ -26,7 +26,7 @@ export const useApiIdentities = () => {
 
   return useQuery({
     queryFn: getApiIdentities,
-    queryKey: [CACHE_KEYS.API_IDENTITIES],
+    queryKey: CACHE_KEYS.API_IDENTITIES,
   });
 };
 
@@ -59,7 +59,8 @@ export const useCurrentNavigation = () => {
 
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginSidebar(location.pathname),
-    queryKey: ["plugin-sidebar", location.pathname],
+    // We just want to suspend here and don't store in SSR dehydrated state
+    queryKey: ["plugin-sidebar", NO_DEHYDRATE, location.pathname],
   });
 
   const hideSidebar =

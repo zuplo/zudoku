@@ -1,3 +1,5 @@
+import type { SchemaImports } from "../../oas/graphql/index.js";
+
 type DynamicInput = () => Promise<unknown>;
 
 type OasSource =
@@ -15,10 +17,10 @@ type BaseOasConfig = {
   navigationId?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
+  schemaImports?: SchemaImports;
   options?: {
     examplesLanguage?: string;
     disablePlayground?: boolean;
-    loadTags?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
   };
 };
