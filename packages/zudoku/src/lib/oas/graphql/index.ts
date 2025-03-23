@@ -376,8 +376,16 @@ const OperationItem = builder
     fields: (t) => ({
       slug: t.field({
         type: "String",
-        resolve: (parent, _, ctx) =>
-          ctx.slugs.operations[getOperationSlugKey(parent)]!,
+        resolve: (parent, _, ctx) => {
+          const slug = ctx.slugs.operations[getOperationSlugKey(parent)];
+
+          if (!slug) {
+            throw new Error(
+              `No slug found for operation: ${getOperationSlugKey(parent)}`,
+            );
+          }
+          return slug;
+        },
       }),
       path: t.exposeString("path"),
       method: t.exposeString("method"),

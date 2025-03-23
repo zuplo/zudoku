@@ -172,10 +172,8 @@ export const Sidecar = ({
 
   const showPlayground =
     isOnScreen &&
-    (operation.extensions["x-explorer-enabled"] === true ||
-      operation.extensions["x-playground-enabled"] === true ||
-      (operation.extensions["x-explorer-enabled"] === undefined &&
-        operation.extensions["x-playground-enabled"] === undefined &&
+    (operation.extensions["x-zudoku-playground-enabled"] === true ||
+      (operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
 
   return (

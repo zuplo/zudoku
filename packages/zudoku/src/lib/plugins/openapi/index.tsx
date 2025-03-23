@@ -17,18 +17,16 @@ import { getRoutes, getVersions } from "./util/getRoutes.js";
 const GetSidebarOperationsQuery = graphql(`
   query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
-      url
       tags {
         slug
         name
+        extensions
         operations {
-          slug
-          deprecated
-          method
           summary
+          slug
+          method
           operationId
           path
-          extensions
         }
       }
     }
@@ -129,9 +127,6 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         const { type } = config;
         const input = type === "file" ? config.input[version!] : config.input;
 
-        const collapsible = true;
-        const collapsed = true;
-
         const data = await context.queryClient.ensureQueryData({
           queryKey: ["sidebar-operations-query", input],
           queryFn: () =>
@@ -143,12 +138,16 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
           const categoryPath = joinUrl(basePath, versionParam, tag.slug);
 
+          const isCollapsed = tag.extensions?.["x-zudoku-collapsed"] ?? true;
+          const isCollapsible =
+            tag.extensions?.["x-zudoku-collapsible"] ?? true;
+
           return createSidebarCategory({
             label: tag.name,
             path: categoryPath,
             operations: tag.operations,
-            collapsible,
-            collapsed,
+            collapsed: isCollapsed,
+            collapsible: isCollapsible,
           });
         });
 
@@ -162,8 +161,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
               label: "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
               operations: untaggedOperations,
-              collapsible,
-              collapsed,
+              collapsed: true,
             }),
           );
         }

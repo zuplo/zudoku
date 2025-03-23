@@ -330,20 +330,18 @@ export type GetSidebarOperationsQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
-    url?: string | null;
     tags: Array<{
       __typename?: "SchemaTag";
       slug?: string | null;
       name?: string | null;
+      extensions?: any | null;
       operations: Array<{
         __typename?: "OperationItem";
-        slug: string;
-        deprecated?: boolean | null;
-        method: string;
         summary?: string | null;
+        slug: string;
+        method: string;
         operationId?: string | null;
         path: string;
-        extensions?: any | null;
       }>;
     }>;
   };
@@ -563,18 +561,16 @@ export const GetServerQueryDocument = new TypedDocumentString(`
 export const GetSidebarOperationsDocument = new TypedDocumentString(`
     query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
-    url
     tags {
       slug
       name
+      extensions
       operations {
-        slug
-        deprecated
-        method
         summary
+        slug
+        method
         operationId
         path
-        extensions
       }
     }
   }

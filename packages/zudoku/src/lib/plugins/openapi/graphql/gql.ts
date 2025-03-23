@@ -18,7 +18,7 @@ type Documents = {
   "\n  query SchemaWarmup($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      openapi\n    }\n  }\n": typeof types.SchemaWarmupDocument;
   "\n  query OperationsForTag(\n    $input: JSON!\n    $type: SchemaType!\n    $tag: String\n    $untagged: Boolean\n  ) {\n    schema(input: $input, type: $type) {\n      servers {\n        url\n      }\n      description\n      summary\n      title\n      url\n      version\n      tags(name: $tag) {\n        name\n        description\n      }\n      operations(tag: $tag, untagged: $untagged) {\n        slug\n        ...OperationsFragment\n      }\n    }\n  }\n": typeof types.OperationsForTagDocument;
   "\n  query getServerQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n": typeof types.GetServerQueryDocument;
-  "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      tags {\n        slug\n        name\n        operations {\n          slug\n          deprecated\n          method\n          summary\n          operationId\n          path\n          extensions\n        }\n      }\n    }\n  }\n": typeof types.GetSidebarOperationsDocument;
+  "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n    }\n  }\n": typeof types.GetSidebarOperationsDocument;
 };
 const documents: Documents = {
   "\n  query ServersQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n":
@@ -31,7 +31,7 @@ const documents: Documents = {
     types.OperationsForTagDocument,
   "\n  query getServerQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n":
     types.GetServerQueryDocument,
-  "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      tags {\n        slug\n        name\n        operations {\n          slug\n          deprecated\n          method\n          summary\n          operationId\n          path\n          extensions\n        }\n      }\n    }\n  }\n":
+  "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n    }\n  }\n":
     types.GetSidebarOperationsDocument,
 };
 
@@ -69,7 +69,7 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      tags {\n        slug\n        name\n        operations {\n          slug\n          deprecated\n          method\n          summary\n          operationId\n          path\n          extensions\n        }\n      }\n    }\n  }\n",
+  source: "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n    }\n  }\n",
 ): typeof import("./graphql.js").GetSidebarOperationsDocument;
 
 export function graphql(source: string) {
