@@ -123,6 +123,19 @@ Zudoku supports OpenAPI extensions (properties starting with `x-`) to customize 
 - `x-zudoku-playground-enabled`: Control playground visibility for an operation (default: `true`)
 - `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility Example:
 
+```json
+{
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Get users",
+        "x-zudoku-playground-enabled": false // Disable playground for this operation
+      }
+    }
+  }
+}
+```
+
 ### Tags
 
 Extensions that can be applied to tag categories:
