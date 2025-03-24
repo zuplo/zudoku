@@ -71,7 +71,7 @@ export const SchemaPropertyItem = ({
     return (
       <li className="p-4 bg-border/20 hover:bg-border/30">
         <div className="flex flex-col gap-2.5 justify-between text-sm">
-          <div className="flex gap-2 items-center">
+          <div className="space-x-2">
             <code>{name}</code>
             <ParamInfos schema={schema} />
             <RecursiveIndicator />
@@ -84,7 +84,7 @@ export const SchemaPropertyItem = ({
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
       <div className="flex flex-col gap-2.5 justify-between text-sm">
-        <div className="flex gap-2 items-center">
+        <div className="space-x-2">
           <SelectOnClick asChild>
             <code>{name}</code>
           </SelectOnClick>

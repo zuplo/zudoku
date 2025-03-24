@@ -75,7 +75,7 @@ export const SchemaView = ({
       (!schema.properties || Object.keys(schema.properties).length === 0)
     ) {
       return (
-        <Card className="p-4 flex gap-2 items-center">
+        <Card className="p-4 flex gap-2 items-baseline">
           {"name" in schema && <>{schema.name as string}</>}
           <span className="text-sm text-muted-foreground">object</span>
           {schema.description && (

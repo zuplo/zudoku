@@ -11,9 +11,9 @@ export const SidebarWrapper = ({
 }>) => (
   <nav
     className={cn(
-      "hidden lg:flex h-full scrollbar peer flex-col overflow-y-auto shrink-0 text-sm border-r pr-6",
+      "hidden lg:flex h-full scrollbar flex-col overflow-y-auto shrink-0 text-sm border-r pr-6",
       "sticky top-[--header-height] h-[calc(100vh-var(--header-height))]",
-      "-mx-[--padding-nav-item] max-w-[--side-nav-width] pb-20 pt-[--padding-content-top] scroll-pt-2 gap-2",
+      "-mx-[--padding-nav-item] max-w-[--side-nav-width] pb-6 pt-[--padding-content-top] scroll-pt-2 gap-2",
       className,
     )}
     ref={ref}
