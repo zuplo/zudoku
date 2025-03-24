@@ -1,10 +1,9 @@
 import { Helmet } from "@zudoku/react-helmet-async";
-import { Suspense, useEffect, useRef, type ReactNode } from "react";
-import { Outlet, useLocation, useNavigation } from "react-router";
+import { Suspense, useEffect, type ReactNode } from "react";
+import { Outlet, useNavigation } from "react-router";
 import { useSpinDelay } from "spin-delay";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
-import { useViewportAnchor } from "./context/ViewportAnchorContext.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Header } from "./Header.js";
 import { Main } from "./Main.js";
@@ -18,29 +17,17 @@ const LoadingFallback = () => (
 );
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
-  const location = useLocation();
-  const { setActiveAnchor } = useViewportAnchor();
   const { meta, authentication } = useZudoku();
 
   useScrollToAnchor();
   useScrollToTop();
-
-  const previousLocationPath = useRef(location.pathname);
 
   useEffect(() => {
     // Initialize the authentication plugin
     authentication?.onPageLoad?.();
   }, [authentication]);
 
-  useEffect(() => {
-    // always reset on location change
-    if (location.pathname !== previousLocationPath.current) {
-      setActiveAnchor("");
-    }
-    previousLocationPath.current = location.pathname;
-  }, [location.pathname, setActiveAnchor]);
-
-  // Page transition is happening: https://reactrouter.com/start/framework/pending-ui#global-pending-navigation
+  // Page transition is happening: https://reactrouter.com/start/framework/pending-navigation
   const isNavigating = Boolean(useNavigation().location);
   const showSpinner = useSpinDelay(isNavigating, {
     delay: 300,

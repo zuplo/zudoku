@@ -94,14 +94,11 @@ export const ViewportAnchorProvider = ({ children }: PropsWithChildren) => {
         window.innerHeight + window.scrollY >= document.body.scrollHeight;
 
       if (hasReachedTop) {
-        // reset the active anchor when we reach the top
         setActiveAnchor("");
       } else if (hasReachedBottom) {
-        requestIdleCallback(() => {
-          // set the last anchor when we reach the bottom
-          const lastItem = Array.from(elements).pop();
-          setActiveAnchor(lastItem?.id ?? "");
-        });
+        const lastItem = Array.from(elements).pop();
+        const lastId = lastItem?.id ?? "";
+        setActiveAnchor(lastId);
       }
     };
 
