@@ -1,4 +1,4 @@
-import { FileKey2Icon } from "lucide-react";
+import { KeyRoundIcon } from "lucide-react";
 import { type RouteObject } from "react-router";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import {
@@ -6,10 +6,7 @@ import {
   type ZudokuPlugin,
   ProfileMenuPlugin,
 } from "../../core/plugins.js";
-import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
-import { CreateApiKey } from "./CreateApiKey.js";
-import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_API_KEY_ENDPOINT =
@@ -34,6 +31,15 @@ export type GetApiKeysOptions = ApiKeyService | { endpoint: string } | object;
 
 export type ApiKeyPluginOptions = object & GetApiKeysOptions;
 
+export type ApiConsumer = {
+  id: string;
+  name: string;
+  description: string;
+  createdOn: string;
+  updatedOn: string;
+  keys: ApiKey[];
+};
+
 export interface ApiKey {
   id: string;
   description?: string;
@@ -47,6 +53,9 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
   return {
     deleteKey: async (id, context) => {
       const request = new Request(endpoint + `/v1/developer/api-keys/${id}`, {
+        headers: {
+          "x-zudoku-url": window.location.origin,
+        },
         method: "DELETE",
       });
 
@@ -70,6 +79,7 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-zudoku-url": window.location.origin,
         },
         body: JSON.stringify(apiKey),
       });
@@ -80,14 +90,39 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
       invariant(response.ok, "Failed to create API key");
     },
     getKeys: async (context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys`);
+      const request = new Request(endpoint + `/v1/developer/api-keys`, {
+        headers: {
+          "x-zudoku-url": window.location.origin,
+        },
+      });
 
       await context.signRequest(request);
 
       const keys = await fetch(request);
       invariant(keys.ok, "Failed to fetch API keys");
 
-      return await keys.json();
+      return (await keys.json()).data
+        .flatMap(
+          (consumer: {
+            id: string;
+            name: string;
+            apiKeys: ApiKey[];
+            description: string;
+          }) => {
+            return consumer.apiKeys.at(0)
+              ? {
+                  ...consumer.apiKeys.at(0),
+                  description: consumer.description,
+                  id: consumer.name,
+                }
+              : [];
+          },
+        )
+        .toSorted(
+          (a: ApiKey, b: ApiKey) =>
+            new Date(b.createdOn ?? "").getTime() -
+            new Date(a.createdOn ?? "").getTime(),
+        );
     },
   };
 };
@@ -110,7 +145,7 @@ export const apiKeyPlugin = (
         label: "API Keys",
         path: "/settings/api-keys",
         category: "middle",
-        icon: FileKey2Icon,
+        icon: KeyRoundIcon,
       },
     ],
     getIdentities: async (context) => {
@@ -129,22 +164,14 @@ export const apiKeyPlugin = (
         return [];
       }
     },
+    getProtectedRoutes: () => {
+      return ["/settings/api-keys"];
+    },
     getRoutes: (): RouteObject[] => {
-      // TODO: Make lazy
       return [
         {
-          element: <ProtectedRoute />,
-          errorElement: <RouterError />,
-          children: [
-            {
-              path: "/settings/api-keys",
-              element: <SettingsApiKeys service={service} />,
-            },
-            {
-              path: "/settings/api-keys/new",
-              element: <CreateApiKey service={service} />,
-            },
-          ],
+          path: "/settings/api-keys",
+          element: <SettingsApiKeys service={service} />,
         },
       ];
     },
