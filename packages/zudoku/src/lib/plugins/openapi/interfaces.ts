@@ -22,6 +22,7 @@ type BaseOasConfig = {
     examplesLanguage?: string;
     disablePlayground?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
+    expandAllTags?: boolean;
   };
 };
 

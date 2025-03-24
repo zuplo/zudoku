@@ -45,11 +45,14 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
-const ApiOptionsSchema = z.object({
-  examplesLanguage: z.string().optional(),
-  disablePlayground: z.boolean().optional(),
-  showVersionSelect: z.enum(["always", "if-available", "hide"]).optional(),
-});
+const ApiOptionsSchema = z
+  .object({
+    examplesLanguage: z.string(),
+    disablePlayground: z.boolean(),
+    showVersionSelect: z.enum(["always", "if-available", "hide"]),
+    expandAllTags: z.boolean(),
+  })
+  .partial();
 
 const ApiConfigSchema = z
   .object({
