@@ -138,7 +138,9 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
           const categoryPath = joinUrl(basePath, versionParam, tag.slug);
 
-          const isCollapsed = tag.extensions?.["x-zudoku-collapsed"] ?? true;
+          const isCollapsed =
+            tag.extensions?.["x-zudoku-collapsed"] ??
+            !config.options?.expandAllTags;
           const isCollapsible =
             tag.extensions?.["x-zudoku-collapsible"] ?? true;
 
@@ -161,7 +163,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
               label: "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
               operations: untaggedOperations,
-              collapsed: true,
+              collapsed: !config.options?.expandAllTags,
             }),
           );
         }
