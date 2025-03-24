@@ -116,28 +116,43 @@ Individual API options will override these defaults when specified.
 
 ## Extensions
 
-Zudoku supports OpenAPI extensions (properties starting with `x-`) to customize behavior at the operation level. Currently supported extensions:
+Zudoku supports OpenAPI extensions (properties starting with `x-`) to customize behavior at different levels of your API documentation.
 
-- `x-playground-enabled`: Control playground visibility for an operation
-- `x-explorer-enabled`: Alias for `x-playground-enabled` for compatibility
+### Operations
+
+- `x-zudoku-playground-enabled`: Control playground visibility for an operation (default: `true`)
+- `x-explorer-enabled`: Alias for `x-zudoku-playground-enabled` for compatibility Example:
+
+```json
+{
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Get users",
+        "x-zudoku-playground-enabled": false // Disable playground for this operation
+      }
+    }
+  }
+}
+```
+
+### Tags
+
+Extensions that can be applied to tag categories:
+
+- `x-zudoku-collapsed`: Control initial collapsed state of a tag category (default: `true`)
+- `x-zudoku-collapsible`: Control if a tag category can be collapsed (default: `true`)
 
 Example:
 
 ```json
 {
-  "paths": {
-    "/api/v1/users": {
-      "get": {
-        "summary": "List users",
-        "x-explorer-enabled": false, // Disable playground for this operation
-        "responses": {
-          "200": {
-            "description": "List of users"
-          }
-        }
-      }
+  "tags": [
+    {
+      "name": "Users",
+      "x-zudoku-collapsed": false
     }
-  }
+  ]
 }
 ```
 

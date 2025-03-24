@@ -1,4 +1,5 @@
 import { MDXProvider } from "@mdx-js/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
@@ -59,6 +60,7 @@ const ZudokoInner = memo(
       [stagger, didNavigate],
     );
     const navigation = useNavigation();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
       if (didNavigate) {
@@ -67,7 +69,9 @@ const ZudokoInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    const [zudokuContext] = useState(() => new ZudokuContext(props));
+    const [zudokuContext] = useState(
+      () => new ZudokuContext(props, queryClient),
+    );
 
     const heads = props.plugins
       ?.flatMap((plugin) => (hasHead(plugin) ? (plugin.getHead?.() ?? []) : []))

@@ -51,17 +51,19 @@ export const createOperationSlug = (
   return slugify(summary);
 };
 
-type SchemaImport = () => Promise<{ schema: OpenAPIDocument }>;
+export type SchemaImport = () => Promise<{
+  schema: OpenAPIDocument;
+  slugs: ReturnType<typeof getAllSlugs>;
+}>;
 
 export type SchemaImports = Record<string, SchemaImport>;
 
 type Context = {
   schema: OpenAPIDocument;
   operations: GraphQLOperationObject[];
-  tags: TagObject[];
   schemaImports?: SchemaImports;
-  slugify: CountableSlugify;
-  slugs: Record<string, string>;
+  tags: ReturnType<typeof getAllTags>;
+  slugs: ReturnType<typeof getAllSlugs>;
 };
 
 const builder = new SchemaBuilder<{
@@ -87,17 +89,15 @@ const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
-const resolveExtensions = (obj: Record<string, any>) => {
-  const extensions: Record<string, any> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith("x-")) {
-      extensions[key] = value;
-    }
-  }
-  return extensions;
-};
+const resolveExtensions = (obj: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([key]) => key.startsWith("x-")),
+  );
 
-export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
+export const getAllTags = (
+  schema: OpenAPIDocument,
+  slugs: ReturnType<typeof getAllSlugs>["tags"],
+): Array<TagObject & { slug?: string }> => {
   const rootTags = schema.tags ?? [];
   const operationTags = new Set(
     Object.values(schema.paths ?? {})
@@ -107,24 +107,42 @@ export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
 
   return [
     // Keep root tags that are actually used in operations
-    ...rootTags.filter((tag) => operationTags.has(tag.name)),
+    ...rootTags
+      .filter((tag) => operationTags.has(tag.name))
+      .map((tag) => ({ ...tag, slug: slugs[tag.name] })),
     // Add tags found in operations but not defined in root tags
     ...[...operationTags]
       .filter((tag) => !rootTags.some((rt) => rt.name === tag))
-      .map((tag) => ({ name: tag })),
+      .map((tag) => ({ name: tag, slug: slugs[tag] })),
   ];
 };
 
-const getAllSlugs = (operations: GraphQLOperationObject[]) =>
-  Object.fromEntries(
-    operations.map((op) => [
-      getSlugName(op),
-      createOperationSlug(slugifyWithCounter(), op),
+export const getAllSlugs = (
+  ops: GraphQLOperationObject[],
+  schemaTags: TagObject[] = [],
+) => {
+  const slugify = slugifyWithCounter();
+
+  const tags = Array.from(
+    new Set([
+      ...ops.flatMap((op) => op.tags ?? []),
+      ...schemaTags.map((tag) => tag.name),
     ]),
   );
 
-const getSlugName = (op: GraphQLOperationObject) =>
-  `${op.path}-${op.method}-${op.operationId}-${op.summary}`;
+  return {
+    operations: Object.fromEntries(
+      ops.map((op) => [
+        getOperationSlugKey(op),
+        createOperationSlug(slugify, op),
+      ]),
+    ),
+    tags: Object.fromEntries(tags.map((tag) => [tag, slugify(tag)])),
+  };
+};
+
+const getOperationSlugKey = (op: GraphQLOperationObject) =>
+  [op.path, op.method, op.operationId, op.summary].filter(Boolean).join("-");
 
 export const getAllOperations = (
   paths?: PathsObject,
@@ -163,30 +181,38 @@ export const getAllOperations = (
   return operations;
 };
 
-const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
-  fields: (t) => ({
-    name: t.exposeString("name"),
-    description: t.exposeString("description", { nullable: true }),
-    operations: t.field({
-      type: [OperationItem],
-      resolve: (parent, _args, ctx) => {
-        const rootTags = ctx.tags.map((tag) => tag.name);
-        return ctx.operations
-          .filter((item) =>
-            parent.name
-              ? item.tags?.includes(parent.name)
-              : item.tags?.length === 0 ||
-                // If none of the tags are present in the root tags, then show them here
-                item.tags?.every((tag) => !rootTags.includes(tag)),
-          )
-          .map((item) => ({
-            ...item,
-            parentTag: parent.name,
-          }));
-      },
+const SchemaTag = builder
+  .objectRef<
+    Omit<TagObject, "name"> & { name?: string; slug?: string }
+  >("SchemaTag")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name", { nullable: true }),
+      slug: t.exposeString("slug", { nullable: true }),
+      description: t.exposeString("description", { nullable: true }),
+      operations: t.field({
+        type: [OperationItem],
+        resolve: (parent, _args, ctx) => {
+          const rootTags = ctx.tags.map((tag) => tag.name);
+
+          return ctx.operations
+            .filter((item) =>
+              parent.name
+                ? item.tags?.includes(parent.name)
+                : item.tags?.length === 0 ||
+                  // If none of the tags are present in the root tags, then show them here
+                  item.tags?.every((tag) => !rootTags.includes(tag)),
+            )
+            .map((item) => ({ ...item, parentTag: parent.name }));
+        },
+      }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
-  }),
-});
+  });
 
 const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
@@ -350,7 +376,16 @@ const OperationItem = builder
     fields: (t) => ({
       slug: t.field({
         type: "String",
-        resolve: (parent, _, ctx) => ctx.slugs[getSlugName(parent)]!,
+        resolve: (parent, _, ctx) => {
+          const slug = ctx.slugs.operations[getOperationSlugKey(parent)];
+
+          if (!slug) {
+            throw new Error(
+              `No slug found for operation: ${getOperationSlugKey(parent)}`,
+            );
+          }
+          return slug;
+        },
       }),
       path: t.exposeString("path"),
       method: t.exposeString("method"),
@@ -465,10 +500,17 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         name: t.arg.string(),
       },
       type: [SchemaTag],
-      resolve: (root, args, ctx) => {
-        return args.name
-          ? ctx.tags.filter((tag) => tag.name === args.name)
-          : ctx.tags;
+      resolve: (_root, args, ctx) => {
+        if (args.name) {
+          return ctx.tags.filter((tag) => tag.name === args.name);
+        }
+
+        // Append empty tag which will be used to display untagged operations
+        if (ctx.operations.some((op) => !op.tags?.length)) {
+          return [...ctx.tags, { name: undefined, slug: undefined }];
+        }
+
+        return ctx.tags;
       },
     }),
     operations: t.field({
@@ -512,27 +554,25 @@ builder.queryType({
         input: t.arg({ type: JSONScalar, required: true }),
       },
       resolve: async (_, args, ctx) => {
-        let schema: OpenAPIDocument;
-
         if (args.type === "file" && typeof args.input === "string") {
           const loadSchema = ctx.schemaImports?.[args.input];
 
           if (!loadSchema) {
             throw new Error(`No schema loader found for path: ${args.input}`);
           }
-          const module = await loadSchema();
-          schema = module.schema;
+          const { schema, slugs } = await loadSchema();
+          ctx.schema = schema;
+          ctx.operations = getAllOperations(schema.paths);
+          ctx.slugs = slugs;
+          ctx.tags = getAllTags(schema, ctx.slugs.tags);
         } else {
-          schema = await validate(args.input as string);
+          ctx.schema = await validate(args.input as string);
+          ctx.operations = getAllOperations(ctx.schema.paths);
+          ctx.slugs = getAllSlugs(ctx.operations);
+          ctx.tags = getAllTags(ctx.schema, ctx.slugs.tags);
         }
 
-        ctx.schema = schema;
-        ctx.operations = getAllOperations(schema.paths);
-        ctx.slugify = slugifyWithCounter();
-        ctx.tags = getAllTags(schema);
-        ctx.slugs = getAllSlugs(ctx.operations);
-
-        return schema;
+        return ctx.schema;
       },
     }),
   }),
@@ -542,4 +582,4 @@ export const schema = builder.toSchema();
 
 export const createGraphQLServer = (
   options?: Omit<YogaServerOptions<any, any>, "schema">,
-) => createYoga({ schema, ...options });
+) => createYoga({ schema, batching: true, ...options });

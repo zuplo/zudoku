@@ -125,8 +125,10 @@ type Schema {
 
 type SchemaTag {
   description: String
-  name: String!
+  extensions: JSONObject
+  name: String
   operations: [OperationItem!]!
+  slug: String
 }
 
 enum SchemaType {

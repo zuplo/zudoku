@@ -13,6 +13,7 @@ import {
 import "virtual:zudoku-theme.css";
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
+import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { FileWritingResponse } from "../vite/prerender/FileWritingResponse.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
@@ -115,10 +116,15 @@ export const render = async ({
       );
 
       transformStream.on("finish", () => {
+        const dehydrated = dehydrate(queryClient, {
+          shouldDehydrateQuery: (query) =>
+            !query.queryKey.includes(NO_DEHYDRATE),
+        });
+
         response.end(
           htmlEnd?.replace(
             "</body>",
-            `<script>window.DATA = ${JSON.stringify(dehydrate(queryClient))}</script></body>`,
+            `<script>window.DATA=${JSON.stringify(dehydrated)}</script></body>`,
           ),
         );
       });

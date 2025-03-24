@@ -63,7 +63,7 @@ export const OperationListItem = ({
           <SelectOnClick className="max-w-full truncate flex cursor-pointer">
             {serverUrl && (
               <div className="text-neutral-400 dark:text-neutral-500 truncate">
-                {serverUrl}
+                {serverUrl.replace(/\/$/, "")}
               </div>
             )}
             <div className="text-neutral-900 dark:text-neutral-200">
