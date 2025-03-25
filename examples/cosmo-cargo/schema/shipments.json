@@ -121,7 +121,8 @@
           },
           "status": {
             "type": "string",
-            "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"]
+            "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
+            "nullable": true
           },
           "trackingNumber": {
             "type": "string",
@@ -136,10 +137,29 @@
             "items": {
               "$ref": "#/components/schemas/Comment"
             },
-            "maxItems": 100
+            "maxItems": 100,
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "FRAGILE",
+                "EXPRESS",
+                "INTERNATIONAL",
+                "CUSTOMS_REQUIRED"
+              ]
+            }
+          },
+          "facilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+            }
           }
-        },
-        "additionalProperties": false
+        }
       },
       "Address": {
         "type": "object",

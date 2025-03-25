@@ -3,11 +3,21 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
+import { EnumValues } from "../components/EnumValues.js";
+import { ParamInfos } from "../ParamInfos.js";
 import {
   SchemaLogicalGroup,
   SchemaPropertyItem,
 } from "./SchemaPropertyItem.js";
 import { hasLogicalGroupings } from "./utils.js";
+
+const renderMarkdown = (content?: string) =>
+  content && (
+    <Markdown
+      className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
+      content={content}
+    />
+  );
 
 export const SchemaView = ({
   schema,
@@ -33,10 +43,32 @@ export const SchemaView = ({
       return <SchemaLogicalGroup schema={schema} level={level} />;
     }
 
-    // Sometimes items is not defined
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (schema.type === "array" && schema.items) {
+    if (Array.isArray(schema.type)) {
+      return (
+        <Card className="p-4 space-y-2">
+          <span className="text-sm text-muted-foreground">
+            <ParamInfos schema={schema} />
+          </span>
+          {schema.enum && <EnumValues values={schema.enum} />}
+          {renderMarkdown(schema.description)}
+        </Card>
+      );
+    }
+
+    if (schema.type === "array" && typeof schema.items === "object") {
       const itemsSchema = schema.items as SchemaObject;
+
+      if (itemsSchema.enum) {
+        return (
+          <Card className="p-4">
+            <span className="text-sm text-muted-foreground">
+              <ParamInfos schema={schema} />
+            </span>
+            <EnumValues values={itemsSchema.enum} />
+            {renderMarkdown(schema.description)}
+          </Card>
+        );
+      }
 
       if (
         typeof itemsSchema.type === "string" &&
@@ -45,17 +77,9 @@ export const SchemaView = ({
         return (
           <Card className="p-4">
             <span className="text-sm text-muted-foreground">
-              {itemsSchema.type}[]
+              <ParamInfos schema={schema} />
             </span>
-            {schema.description && (
-              <Markdown
-                className={cn(
-                  ProseClasses,
-                  "text-sm leading-normal line-clamp-4",
-                )}
-                content={schema.description}
-              />
-            )}
+            {renderMarkdown(schema.description)}
           </Card>
         );
       } else if (itemsSchema.type === "object") {
@@ -77,16 +101,10 @@ export const SchemaView = ({
       return (
         <Card className="p-4 flex gap-2 items-baseline">
           {"name" in schema && <>{schema.name as string}</>}
-          <span className="text-sm text-muted-foreground">object</span>
-          {schema.description && (
-            <Markdown
-              className={cn(
-                ProseClasses,
-                "text-sm leading-normal line-clamp-4",
-              )}
-              content={schema.description}
-            />
-          )}
+          <span className="text-sm text-muted-foreground">
+            <ParamInfos schema={schema} />
+          </span>
+          {renderMarkdown(schema.description)}
         </Card>
       );
     }
@@ -133,17 +151,12 @@ export const SchemaView = ({
       ["string", "number", "boolean", "integer", "null"].includes(schema.type)
     ) {
       return (
-        <Card className="p-4">
-          <span className="text-sm text-muted-foreground">{schema.type}</span>
-          {schema.description && (
-            <Markdown
-              className={cn(
-                ProseClasses,
-                "text-sm leading-normal line-clamp-4",
-              )}
-              content={schema.description}
-            />
-          )}
+        <Card className="p-4 space-y-2">
+          <span className="text-sm text-muted-foreground">
+            <ParamInfos schema={schema} />
+          </span>
+          {schema.enum && <EnumValues values={schema.enum} />}
+          {renderMarkdown(schema.description)}
         </Card>
       );
     }
