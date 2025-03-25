@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
-import { useSelectedServer } from "../../authentication/state.js";
+import { useAuthState, useSelectedServer } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
@@ -101,6 +101,7 @@ export const Sidecar = ({
   onSelectResponse: (response: string) => void;
 }) => {
   const { input, type, options } = useOasConfig();
+  const auth = useAuthState();
   const query = useCreateQuery(GetServerQuery, { input, type });
   const result = useSuspenseQuery(query);
 
@@ -114,6 +115,16 @@ export const Sidecar = ({
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
   const requestBodyContent = operation.requestBody?.content;
+
+  const transformedRequestBodyContent =
+    requestBodyContent && options?.transformOperationExamples
+      ? options.transformOperationExamples({
+          auth,
+          type: "request",
+          operation,
+          content: requestBodyContent,
+        })
+      : requestBodyContent;
 
   const path = (
     <PathRenderer
@@ -136,8 +147,10 @@ export const Sidecar = ({
   const code = useMemo(() => {
     const example =
       selectedExample ??
-      (requestBodyContent?.[0]?.schema
-        ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
+      (transformedRequestBodyContent?.[0]?.schema
+        ? generateSchemaExample(
+            transformedRequestBodyContent[0].schema as SchemaObject,
+          )
         : undefined);
 
     const snippet = new HTTPSnippet({
@@ -162,7 +175,7 @@ export const Sidecar = ({
     return getConverted(snippet, selectedLang);
   }, [
     selectedExample,
-    requestBodyContent,
+    transformedRequestBodyContent,
     operation.method,
     operation.path,
     selectedServer,
@@ -232,9 +245,9 @@ export const Sidecar = ({
           </>
         )}
       </SidecarBox.Root>
-      {isOnScreen && requestBodyContent && (
+      {isOnScreen && transformedRequestBodyContent && (
         <RequestBodySidecarBox
-          content={requestBodyContent}
+          content={transformedRequestBodyContent}
           onExampleChange={setSelectedExample}
         />
       )}
@@ -242,7 +255,18 @@ export const Sidecar = ({
         <ResponsesSidecarBox
           selectedResponse={selectedResponse}
           onSelectResponse={onSelectResponse}
-          responses={operation.responses}
+          responses={operation.responses.map((response) => ({
+            ...response,
+            content:
+              response.content && options?.transformOperationExamples
+                ? options.transformOperationExamples({
+                    auth,
+                    type: "response",
+                    operation,
+                    content: response.content,
+                  })
+                : response.content,
+          }))}
         />
       )}
     </aside>

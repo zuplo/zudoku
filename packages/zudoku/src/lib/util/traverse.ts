@@ -1,10 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type RecordAny = Record<string, any>;
+import type { JsonValue, RecordAny } from "./types.js";
 
-type JsonPrimitive = string | number | boolean | null;
-type JsonArray = JsonValue[];
-type JsonObject = { [key: string]: JsonValue };
-type JsonValue = JsonPrimitive | JsonArray | JsonObject;
+export type { RecordAny };
 
 export const traverse = <T extends JsonValue = RecordAny>(
   specification: RecordAny,

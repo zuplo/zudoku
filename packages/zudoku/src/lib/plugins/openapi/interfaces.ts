@@ -1,4 +1,6 @@
+import { AuthState } from "../../authentication/state.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
+import { OperationListItemResult } from "./OperationList.js";
 
 type DynamicInput = () => Promise<unknown>;
 
@@ -12,6 +14,30 @@ export type ContextOasSource =
   | { type: "file"; input: DynamicInput }
   | { type: "raw"; input: string };
 
+type Example = {
+  name: string;
+  description?: string | null;
+  externalValue?: string | null;
+  value?: any | null;
+  summary?: string | null;
+};
+
+type Content = {
+  mediaType: string;
+  schema?: any | null;
+  encoding?: Array<{
+    name: string;
+  }> | null;
+  examples?: Array<Example> | null;
+};
+
+export type TransformOperationExamples = (options: {
+  content: Content[];
+  auth: AuthState;
+  operation: OperationListItemResult;
+  type: "request" | "response";
+}) => Content[];
+
 type BaseOasConfig = {
   server?: string;
   navigationId?: string;
@@ -23,6 +49,7 @@ type BaseOasConfig = {
     disablePlayground?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
+    transformOperationExamples?: TransformOperationExamples;
   };
 };
 
