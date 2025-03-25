@@ -45,7 +45,7 @@ const SidebarCategoryInner = ({
       }}
       variant="ghost"
       size="icon"
-      className="size-6 hover:bg-border"
+      className="size-6 hover:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l-5))] hover:dark:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l+5))]"
     >
       <ChevronRightIcon
         size={16}
