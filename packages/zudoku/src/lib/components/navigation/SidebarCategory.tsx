@@ -1,14 +1,16 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
+import { deepEqual } from "fast-equals";
 import { ChevronRightIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { NavLink, useMatch } from "react-router";
+import { Button } from "zudoku/ui/Button.js";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinPath } from "../../util/joinPath.js";
 import { navigationListItem, SidebarItem } from "./SidebarItem.js";
 import { useIsCategoryOpen } from "./utils.js";
 
-export const SidebarCategory = ({
+const SidebarCategoryInner = ({
   category,
   onRequestClose,
 }: {
@@ -35,13 +37,15 @@ export const SidebarCategory = ({
   }, [isCategoryOpen]);
 
   const ToggleButton = isCollapsible && (
-    <button
-      type="button"
+    <Button
       onClick={(e) => {
         e.preventDefault();
         setOpen((prev) => !prev);
         setHasInteracted(true);
       }}
+      variant="ghost"
+      size="icon"
+      className="size-6 hover:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l-5))] hover:dark:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l+5))]"
     >
       <ChevronRightIcon
         size={16}
@@ -50,7 +54,7 @@ export const SidebarCategory = ({
           "shrink-0 group-data-[state=open]:rotate-90",
         )}
       />
-    </button>
+    </Button>
   );
 
   const icon = category.icon && (
@@ -62,7 +66,7 @@ export const SidebarCategory = ({
 
   const styles = navigationListItem({
     className: [
-      "text-start font-medium",
+      "group text-start font-medium",
       isCollapsible || typeof category.link !== "undefined"
         ? "cursor-pointer"
         : "cursor-default hover:bg-transparent",
@@ -90,12 +94,7 @@ export const SidebarCategory = ({
             }}
           >
             {icon}
-            <div
-              className={cn(
-                "flex items-center gap-2 justify-between w-full",
-                isActive ? "text-primary" : "text-foreground/80",
-              )}
-            >
+            <div className="flex items-center gap-2 justify-between w-full text-foreground/80 group-aria-[current='page']:text-primary">
               <div className="truncate">{category.label}</div>
               {ToggleButton}
             </div>
@@ -135,3 +134,7 @@ export const SidebarCategory = ({
     </Collapsible.Root>
   );
 };
+
+export const SidebarCategory = memo(SidebarCategoryInner, deepEqual);
+
+SidebarCategory.displayName = "SidebarCategory";

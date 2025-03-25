@@ -1,6 +1,26 @@
-import { isValidElement } from "react";
+import { ChevronsLeftRightIcon } from "lucide-react";
+import { isValidElement, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import { type SchemaObject } from "../../oas/parser/index.js";
+
+const Pattern = ({ pattern }: { pattern: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const shortPattern =
+    pattern.length > 20 ? `${pattern.slice(0, 20)}…` : pattern;
+
+  return (
+    <InlineCode
+      className="text-xs cursor-pointer"
+      onClick={() => setIsExpanded(!isExpanded)}
+      selectOnClick={false}
+    >
+      {isExpanded ? pattern : shortPattern}
+      <button type="button" className="p-1 translate-y-[2px]">
+        {!isExpanded && <ChevronsLeftRightIcon size={12} />}
+      </button>
+    </InlineCode>
+  );
+};
 
 const getSchemaInfos = (schema?: SchemaObject) => {
   if (!schema) return [];
@@ -28,7 +48,7 @@ const getSchemaInfos = (schema?: SchemaObject) => {
     schema.deprecated && "deprecated",
     schema.pattern && (
       <>
-        pattern: <InlineCode className="text-xs">{schema.pattern}</InlineCode>
+        pattern: <Pattern pattern={schema.pattern} />
       </>
     ),
   ];
@@ -48,7 +68,7 @@ export const ParamInfos = ({
   );
 
   return (
-    <div className={className}>
+    <span className={className}>
       {filteredItems.map((item, index) => (
         <span className="text-muted-foreground" key={index}>
           {item}
@@ -59,6 +79,6 @@ export const ParamInfos = ({
           )}
         </span>
       ))}
-    </div>
+    </span>
   );
 };
