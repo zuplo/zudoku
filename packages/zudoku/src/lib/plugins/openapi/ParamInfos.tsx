@@ -6,7 +6,7 @@ import { type SchemaObject } from "../../oas/parser/index.js";
 const Pattern = ({ pattern }: { pattern: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const shortPattern =
-    pattern.length > 10 ? `${pattern.slice(0, 10)}…` : pattern;
+    pattern.length > 20 ? `${pattern.slice(0, 20)}…` : pattern;
 
   return (
     <InlineCode
