@@ -77,7 +77,7 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       showVersionSelect: "if-available", // Control version selector visibility
-      expandAllTags: false, // Control initial expanded state of tag categories
+      expandAllTags: true, // Control initial expanded state of tag categories
     },
   },
 };
@@ -91,7 +91,7 @@ Available options:
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
-- `expandAllTags`: Control initial expanded state of tag categories (default: `false`)
+- `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
 
 ## Default Options
 
