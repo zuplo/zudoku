@@ -10,10 +10,7 @@ export const Footer = () => (
               <strong className="text-white">Examples</strong>
               <ul className="">
                 <li className="pt-4">
-                  <a
-                    className="hover:text-white"
-                    href="https://docs-zudoku.pages.dev"
-                  >
+                  <a className="hover:text-white" href="https://zuplo.com/docs">
                     Zuplo Docs
                   </a>
                 </li>
