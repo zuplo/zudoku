@@ -9,7 +9,7 @@ const config = {
       {
         type: "category",
         label: "Overview",
-        items: ["introduction", "example"],
+        items: ["docs/introduction", "docs/example"],
       },
     ],
   },
