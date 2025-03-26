@@ -44,7 +44,7 @@ export const MobileTopNavigation = () => {
             </li>
             {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
               <li key={item.label}>
-                <button onClick={() => setDrawerOpen(false)}>
+                <button type="button" onClick={() => setDrawerOpen(false)}>
                   <TopNavItem {...item} />
                 </button>
               </li>

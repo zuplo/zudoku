@@ -192,7 +192,10 @@ const TopNavigationItemSchema = z.object({
   label: z.string(),
   id: z.string(),
   default: z.string().optional(),
-  display: z.enum(["auth", "anon", "always"]).default("always").optional(),
+  display: z
+    .enum(["auth", "anon", "always", "hide"])
+    .default("always")
+    .optional(),
 });
 
 type BannerColorType = ZodOptional<

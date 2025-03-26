@@ -1,16 +1,20 @@
 import { glob } from "glob";
+import { minimatch } from "minimatch";
 import path from "node:path";
-import { type Plugin } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 import type { LoadedConfig } from "../config/config.js";
 import { DocResolver } from "../lib/plugins/markdown/resolver.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { writePluginDebugCode } from "./debug.js";
+import { reload } from "./plugin-config-reload.js";
 
-const ensureLeadingSlash = (str: string) =>
-  str.startsWith("/") ? str : `/${str}`;
+const ensureLeadingSlash = joinUrl;
 
 const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
+
+  let server: ViteDevServer;
 
   return {
     name: "zudoku-docs-plugin",
@@ -18,6 +22,25 @@ const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId;
       }
+    },
+    configureServer(srv) {
+      server = srv;
+    },
+    watchChange(id, change) {
+      if (change.event !== "delete" && change.event !== "create") return;
+
+      const config = getConfig();
+      const resolver = new DocResolver(config);
+      const docsConfigs = resolver.getDocsConfigs();
+
+      const matches = docsConfigs.some((docConfig) =>
+        minimatch(
+          ensureLeadingSlash(path.relative(config.__meta.rootDir, id)),
+          docConfig.files,
+        ),
+      );
+
+      if (matches) reload(server);
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {

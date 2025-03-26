@@ -3,7 +3,7 @@ import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
-import { joinPath } from "../../util/joinPath.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, NO_DEHYDRATE } from "../cache.js";
 import { traverseSidebar } from "../navigation/utils.js";
 
@@ -39,13 +39,13 @@ export const useCurrentNavigation = () => {
     matchPath(route, location.pathname),
   );
 
-  const currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
+  let currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
     return traverseSidebar(sidebar, (item) => {
       const itemId =
         item.type === "doc"
-          ? joinPath(item.id)
+          ? joinUrl(item.id)
           : item.type === "category" && item.link
-            ? joinPath(item.link.id)
+            ? joinUrl(item.link.id)
             : undefined;
 
       if (itemId === location.pathname) {
@@ -56,6 +56,14 @@ export const useCurrentNavigation = () => {
   const currentTopNavItem =
     topNavigation.find((t) => t.id === currentSidebarItem?.[0]) ??
     topNavigation.find((item) => matchPath(item.id, location.pathname));
+
+  if (
+    currentTopNavItem &&
+    !currentSidebarItem &&
+    currentTopNavItem.id in sidebars
+  ) {
+    currentSidebarItem = ["", sidebars[currentTopNavItem.id]!];
+  }
 
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginSidebar(location.pathname),
