@@ -1,17 +1,17 @@
 import { cx } from "class-variance-authority";
 import { Suspense } from "react";
 import { NavLink, useNavigation } from "react-router";
-import { TopNavigationItem } from "../../config/validators/common.js";
+import type { TopNavigationItem } from "../../config/validators/common.js";
 import { useAuth } from "../authentication/hook.js";
-import { ZudokuError } from "../util/invariant.js";
-import { joinPath } from "../util/joinPath.js";
+import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
 import { Slotlet } from "./SlotletProvider.js";
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>
-  (item: { display?: "auth" | "anon" | "always" }) => {
+  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
+    if (item.display === "hide") return false;
     return (
       (item.display === "auth" && isAuthenticated) ||
       (item.display === "anon" && !isAuthenticated) ||
@@ -24,17 +24,18 @@ export const TopNavigation = () => {
   const { topNavigation } = useZudoku();
   const { isAuthenticated } = useAuth();
 
-  // Hide top nav if there is only one item
-  if (topNavigation.length <= 1) {
+  const filteredItems = topNavigation.filter(isHiddenItem(isAuthenticated));
+
+  if (filteredItems.length === 0) {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
   }
 
   return (
     <Suspense>
-      <div className=" items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm">
+      <div className="items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm">
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
-            {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+            {filteredItems.map((item) => (
               <li key={item.id}>
                 <TopNavItem {...item} />
               </li>
@@ -66,15 +67,10 @@ export const TopNavItem = ({
     defaultLink ??
     (currentSidebar
       ? traverseSidebar(currentSidebar, (item) => {
-          if (item.type === "doc") return joinPath(item.id);
+          if (item.type === "doc") return joinUrl(item.id);
         })
-      : joinPath(id));
-
-  if (!first) {
-    throw new ZudokuError("Page not found.", {
-      developerHint: `No links found in top navigation for '${id}'. Check that the sidebar isn't empty or that a default link is set.`,
-    });
-  }
+      : joinUrl(id)) ??
+    joinUrl(id);
 
   return (
     // We don't use isActive here because it has to be inside the sidebar,
