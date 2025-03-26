@@ -106,6 +106,9 @@ export const SchemaPropertyItem = ({
             content={schema.description}
           />
         )}
+        {schema.type === "array" && "items" in schema && schema.items.enum && (
+          <EnumValues values={schema.items.enum} />
+        )}
         {schema.enum && <EnumValues values={schema.enum} />}
 
         {(hasLogicalGroupings(schema) || isComplexType(schema)) && (

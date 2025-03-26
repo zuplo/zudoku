@@ -2,22 +2,25 @@ import { ChevronsLeftRightIcon } from "lucide-react";
 import { isValidElement, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import { type SchemaObject } from "../../oas/parser/index.js";
+import { cn } from "../../util/cn.js";
 
 const Pattern = ({ pattern }: { pattern: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const shortPattern =
-    pattern.length > 20 ? `${pattern.slice(0, 20)}…` : pattern;
+  const isExpandable = pattern.length > 20;
+  const shortPattern = isExpandable ? `${pattern.slice(0, 20)}…` : pattern;
 
   return (
     <InlineCode
-      className="text-xs cursor-pointer"
+      className={cn("text-xs", isExpandable && "cursor-pointer")}
       onClick={() => setIsExpanded(!isExpanded)}
       selectOnClick={false}
     >
       {isExpanded ? pattern : shortPattern}
-      <button type="button" className="p-1 translate-y-[2px]">
-        {!isExpanded && <ChevronsLeftRightIcon size={12} />}
-      </button>
+      {isExpandable && (
+        <button type="button" className="p-1 translate-y-[2px]">
+          {!isExpanded && <ChevronsLeftRightIcon size={12} />}
+        </button>
+      )}
     </InlineCode>
   );
 };
