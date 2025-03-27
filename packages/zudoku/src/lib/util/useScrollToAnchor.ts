@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { useViewportAnchor } from "../components/context/ViewportAnchorContext.js";
 import { DATA_ANCHOR_ATTR } from "../components/navigation/SidebarItem.js";
@@ -42,19 +42,28 @@ export const useScrollToAnchor = () => {
   const location = useLocation();
   const { setActiveAnchor } = useViewportAnchor();
   const scrollToHash = useScrollToHash();
+  const initialScrolled = useRef(false);
 
   useEffect(() => {
-    if (!location.hash) return;
+    if (!location.hash || !initialScrolled.current) return;
 
-    if (!scrollToHash(location.hash)) {
-      const observer = new MutationObserver((_, obs) => {
-        if (!scrollToHash(location.hash)) return;
-        obs.disconnect();
-      });
+    scrollToHash(location.hash);
+  }, [location.hash, scrollToHash]);
 
-      observer.observe(document.body, { childList: true, subtree: true });
-
-      return () => observer.disconnect();
+  useEffect(() => {
+    if (!location.hash) {
+      initialScrolled.current = true;
+      return;
     }
+
+    const observer = new MutationObserver((_, obs) => {
+      if (!scrollToHash(location.hash)) return;
+      initialScrolled.current = true;
+      obs.disconnect();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
   }, [location.hash, scrollToHash, setActiveAnchor]);
 };
