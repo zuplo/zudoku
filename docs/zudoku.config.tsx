@@ -69,6 +69,14 @@ const config: ZudokuConfig = {
   ],
   plugins: [
     {
+      getHead: ({ location }) => (
+        <link
+          rel="canonical"
+          href={`https://zudoku.dev/docs${location.pathname}`}
+        />
+      ),
+    },
+    {
       getHead: () => {
         return (
           <script>
