@@ -52,8 +52,8 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
       <div
         className={cn(
-          "grid grid-cols-1 grid-rows-[min-content_1fr] lg:grid-cols-[var(--side-nav-width)_1fr] grid-rows-[min-content_1fr] w-full lg:mx-auto px-4 lg:px-8 2xl:border-x",
-          page?.layout === "default" && "max-w-screen-2xl",
+          "grid grid-cols-1 lg:grid-cols-[var(--side-nav-width)_1fr] grid-rows-[min-content_1fr] w-full lg:mx-auto px-4 lg:px-8 2xl:border-x",
+          page?.layout !== "wide" && "max-w-screen-2xl",
         )}
       >
         {showSpinner ? (

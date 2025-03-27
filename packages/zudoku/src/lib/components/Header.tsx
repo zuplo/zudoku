@@ -72,7 +72,7 @@ export const Header = memo(function HeaderInner() {
         <div
           className={cn(
             "2xl:border-x mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height]",
-            page?.layout === "default" && "max-w-screen-2xl",
+            page?.layout !== "wide" && "max-w-screen-2xl",
           )}
         >
           <div className="flex">
@@ -188,7 +188,7 @@ export const Header = memo(function HeaderInner() {
           </div>
         </div>
       </div>
-      {page?.layout === "default" ? (
+      {page?.layout !== "wide" ? (
         <div className="border-b hidden lg:block">
           <div className={cn("mx-auto 2xl:border-x", "max-w-screen-2xl")}>
             <Slotlet name="top-navigation-before" />
