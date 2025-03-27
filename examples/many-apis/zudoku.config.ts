@@ -1,27 +1,24 @@
-import { type ZudokuConfig } from "zudoku";
-
-import navigation from "./apis/navigation.json";
+import type { SidebarEntry, ZudokuConfig } from "zudoku";
+import apis from "./apis/_apis.json";
+import navigation from "./apis/_navigation.json";
 
 const config: ZudokuConfig = {
+  topNavigation: [
+    {
+      id: "overview",
+      label: "Overview",
+    },
+  ],
   sidebar: {
-    home: [
-      "overview",
-      ...navigation.map((item) => ({
-        type: "link",
-        label: item.label,
-        href: `/${item.id}`,
-      })),
-    ],
+    overview: navigation as SidebarEntry,
   },
   redirects: [{ from: "/", to: "/overview" }],
-  apis: [
-    ...navigation.map((item) => ({
-      type: "url",
-      input: `http://localhost:5942/${item.id}.json`,
-      navigationId: item.label,
-      skipPreload: true,
-    })),
-  ],
+  apis: apis as ZudokuConfig["apis"],
+  defaults: {
+    apis: {
+      expandAllTags: false,
+    },
+  },
   docs: {
     files: "/pages/**/*.{md,mdx}",
   },

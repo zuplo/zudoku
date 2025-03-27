@@ -1,4 +1,5 @@
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
+import { getSegmentsFromPath } from "@scalar/openapi-parser";
 import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
 import { type OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
@@ -33,11 +34,20 @@ const setRefMarkers = (obj: RecordAny, refMap: Map<string, number>) =>
 const replaceRefMarkers = (code?: string) =>
   code?.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
 
-const lookup = (schema: RecordAny, path: string): RecordAny => {
-  const parts = path.split("/").slice(1).map(decodeURIComponent);
+const lookup = (
+  schema: RecordAny,
+  path: string,
+  filePath?: string,
+): RecordAny => {
+  const parts = getSegmentsFromPath(path);
   let value = schema;
 
   for (const part of parts) {
+    if (value === undefined) {
+      throw new Error(
+        `Error in ${filePath ?? "code generation"}: Could not find value for path: ${path}`,
+      );
+    }
     value = value[part];
   }
 
@@ -54,7 +64,7 @@ const lookup = (schema: RecordAny, path: string): RecordAny => {
  *
  * This ensures object identity throughout the circular references.
  */
-export const generateCode = async (schema: RecordAny) => {
+export const generateCode = async (schema: RecordAny, filePath?: string) => {
   const refMap = createLocalRefMap(schema);
   const lines: string[] = [];
 
@@ -73,7 +83,7 @@ export const generateCode = async (schema: RecordAny) => {
   );
 
   for (const [refPath, index] of refMap) {
-    const value = lookup(schema, refPath);
+    const value = lookup(schema, refPath, filePath);
 
     // This shouldn't happen but to be safe we log a warning
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
