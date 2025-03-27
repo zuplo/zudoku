@@ -91,7 +91,7 @@ async function processSchemas(
         );
 
         const inputPath = inputs[index]!;
-        const code = await generateCode(processedSchema);
+        const code = await generateCode(processedSchema, inputPath);
 
         const processedFilePath = path.posix.join(
           dir,
