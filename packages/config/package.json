@@ -33,7 +33,7 @@
     "zod-to-ts": "^1.2.0"
   },
   "dependencies": {
-    "tsx": "^4.19.2",
+    "tsx": "^4.19.3",
     "zod": "3.23.8",
     "zod-validation-error": "3.4.0"
   }
