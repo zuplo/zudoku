@@ -181,10 +181,7 @@ export async function getViteConfig(
     envPrefix,
     resolve: {
       alias: {
-        "@mdx-js/react": path.resolve(
-          config.__meta.moduleDir,
-          "node_modules/@mdx-js/react",
-        ),
+        "@mdx-js/react": import.meta.resolve("@mdx-js/react"),
       },
     },
     define: {

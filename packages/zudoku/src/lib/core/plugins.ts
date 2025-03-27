@@ -1,12 +1,12 @@
 import type { LucideIcon } from "lucide-react";
-import { type ReactElement } from "react";
-import { type RouteObject } from "react-router";
+import type { ReactElement } from "react";
+import type { Location, RouteObject } from "react-router";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
-import { MdxComponentsType } from "../util/MdxComponents.js";
-import {
+import type { MdxComponentsType } from "../util/MdxComponents.js";
+import type {
+  ApiIdentity,
   ZudokuContext,
   ZudokuEvents,
-  type ApiIdentity,
 } from "./ZudokuContext.js";
 
 export type ZudokuPlugin =
@@ -21,7 +21,7 @@ export type { RouteObject };
 
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
-  getSidebar?: (path: string) => Promise<Sidebar>;
+  getSidebar?: (path: string, context: ZudokuContext) => Promise<Sidebar>;
 }
 
 export const createApiIdentityPlugin = (
@@ -60,7 +60,7 @@ export interface CommonPlugin {
   initialize?: (
     context: ZudokuContext,
   ) => Promise<void | boolean> | void | boolean;
-  getHead?: () => ReactElement | undefined;
+  getHead?: ({ location }: { location: Location }) => ReactElement | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
 

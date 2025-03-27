@@ -1,9 +1,16 @@
+import type { Provider } from "@supabase/supabase-js";
 import type { ConfigWithMeta } from "./common.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 
 export { type ZudokuConfig };
 
 export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
+
+type RedirectOptions = {
+  redirectToAfterSignUp?: string;
+  redirectToAfterSignIn?: string;
+  redirectToAfterSignOut?: string;
+};
 
 export type ClerkAuthenticationConfig = {
   type: "clerk";
@@ -26,14 +33,12 @@ export type Auth0AuthenticationConfig = {
   domain: string;
   audience?: string;
   scopes?: string[];
-
-  redirectToAfterSignUp?: string;
-  redirectToAfterSignIn?: string;
-  redirectToAfterSignOut?: string;
 } & RedirectOptions;
 
-type RedirectOptions = {
-  redirectToAfterSignUp?: string;
-  redirectToAfterSignIn?: string;
-  redirectToAfterSignOut?: string;
-};
+export type SupabaseAuthenticationConfig = {
+  type: "supabase";
+  provider: Provider;
+  supabaseUrl: string;
+  supabaseKey: string;
+  basePath?: string;
+} & RedirectOptions;

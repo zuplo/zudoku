@@ -1,11 +1,12 @@
+import type { QueryClient } from "@tanstack/react-query";
 import { createNanoEvents } from "nanoevents";
-import { ReactNode } from "react";
-import { Location } from "react-router";
-import { TopNavigationItem } from "../../config/validators/common.js";
+import type { ReactNode } from "react";
+import type { Location } from "react-router";
+import type { TopNavigationItem } from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
-import { type AuthenticationProvider } from "../authentication/authentication.js";
+import type { AuthenticationProvider } from "../authentication/authentication.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
-import { Slotlets } from "../components/SlotletProvider.js";
+import type { Slotlets } from "../components/SlotletProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
@@ -91,7 +92,10 @@ export class ZudokuContext {
   private readonly navigationPlugins: NavigationPlugin[];
   private emitter = createNanoEvents<ZudokuEvents>();
 
-  constructor(public readonly options: ZudokuContextOptions) {
+  constructor(
+    public readonly options: ZudokuContextOptions,
+    public readonly queryClient: QueryClient,
+  ) {
     this.plugins = options.plugins ?? [];
     this.topNavigation = options.topNavigation ?? [];
     this.sidebars = options.sidebars ?? {};
@@ -99,7 +103,6 @@ export class ZudokuContext {
     this.authentication = options.authentication;
     this.meta = options.metadata;
     this.page = options.page;
-
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 
@@ -144,7 +147,7 @@ export class ZudokuContext {
   getPluginSidebar = async (path: string) => {
     const navigations = await Promise.all(
       this.navigationPlugins.map((plugin) =>
-        plugin.getSidebar?.(joinPath(path)),
+        plugin.getSidebar?.(joinPath(path), this),
       ),
     );
 

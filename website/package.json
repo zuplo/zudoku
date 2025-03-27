@@ -13,7 +13,7 @@
     "clsx": "2.1.1",
     "lucide-react": "0.452.0",
     "motion": "12.0.0-alpha.2",
-    "next": "15.2.0",
+    "next": "15.2.3",
     "next-sitemap": "4.2.3",
     "react": "catalog:",
     "react-dom": "catalog:",
@@ -22,14 +22,14 @@
     "tailwind-merge": "2.6.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.14",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "8.57.0",
     "eslint-config-next": "15.2.2",
     "postcss": "8.4.49",
-    "shiki": "1.14.1",
+    "shiki": "3.2.1",
     "tailwindcss": "4.0.0",
     "typescript": "5.7.2"
   }

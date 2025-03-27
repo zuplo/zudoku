@@ -28,6 +28,8 @@ void import("prismjs/components/prism-markdown.min.js");
 void import("prismjs/components/prism-javascript.min.js");
 // @ts-expect-error This is untyped
 void import("prismjs/components/prism-typescript.min.js");
+// @ts-expect-error This is untyped
+void import("prismjs/components/prism-jsstacktrace.min.js");
 
 import { useTheme } from "next-themes";
 import { memo, useState } from "react";

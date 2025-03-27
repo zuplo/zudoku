@@ -12,7 +12,7 @@ import { type ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
-import { IconNames } from "./icon-types.js";
+import { type IconNames } from "./icon-types.js";
 
 const AnyObject = z.object({}).passthrough();
 
@@ -46,13 +46,22 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
+const ApiOptionsSchema = z
+  .object({
+    examplesLanguage: z.string(),
+    disablePlayground: z.boolean(),
+    showVersionSelect: z.enum(["always", "if-available", "hide"]),
+    expandAllTags: z.boolean(),
+  })
+  .partial();
+
 const ApiConfigSchema = z
   .object({
     id: z.string(),
     server: z.string(),
     navigationId: z.string(),
-    loadTags: z.boolean(),
     categories: z.array(ApiCatalogCategorySchema),
+    options: ApiOptionsSchema,
   })
   .partial();
 
@@ -184,7 +193,10 @@ const TopNavigationItemSchema = z.object({
   label: z.string(),
   id: z.string(),
   default: z.string().optional(),
-  display: z.enum(["auth", "anon", "always"]).default("always").optional(),
+  display: z
+    .enum(["auth", "anon", "always", "hide"])
+    .default("always")
+    .optional(),
   icon: z.custom<IconNames>().optional(),
 });
 
@@ -239,7 +251,7 @@ const SearchSchema = z
   ])
   .optional();
 
-const AuthenticationSchema = z.union([
+const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
     clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
@@ -264,6 +276,22 @@ const AuthenticationSchema = z.union([
     clientId: z.string(),
     domain: z.string(),
     audience: z.string().optional(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("supabase"),
+    supabaseUrl: z.string(),
+    supabaseKey: z.string(),
+    provider: z.enum([
+      "google",
+      "github",
+      "gitlab",
+      "bitbucket",
+      "facebook",
+      "twitter",
+    ]),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -374,6 +402,10 @@ export const CommonConfigSchema = z.object({
   isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
+    apis: ApiOptionsSchema,
+    /**
+     * @deprecated Use `apis.examplesLanguage` or `defaults.apis.examplesLanguage` instead
+     */
     examplesLanguage: z.string().optional(),
   }),
 });

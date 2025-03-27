@@ -8,11 +8,7 @@ import path from "node:path";
 import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
-import {
-  getAllOperations,
-  getAllTags,
-  type OpenAPIDocument,
-} from "../lib/oas/graphql/index.js";
+import { getAllTags, type OpenAPIDocument } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -26,8 +22,6 @@ type ProcessedSchema = {
   version: string;
   inputPath: string;
 };
-
-const API_COUNT_THRESHOLD = 50;
 
 const schemaMap = new Map<string, string>();
 
@@ -97,7 +91,7 @@ async function processSchemas(
         );
 
         const inputPath = inputs[index]!;
-        const code = await generateCode(processedSchema);
+        const code = await generateCode(processedSchema, inputPath);
 
         const processedFilePath = path.posix.join(
           dir,
@@ -190,17 +184,10 @@ const viteApiPlugin = async (
         ].join("\n");
       }
 
-      const apiPluginOptions = {
-        options: {
-          examplesDefaultLanguage: config.defaults?.examplesLanguage,
-        },
-      };
-
       const code = [
         `import config from "virtual:zudoku-config";`,
         `const configuredApiPlugins = [];`,
         `const configuredApiCatalogPlugins = [];`,
-        `const apiPluginOptions = ${JSON.stringify(apiPluginOptions)};`,
       ];
 
       if (config.apis) {
@@ -253,29 +240,24 @@ const viteApiPlugin = async (
             const tags = [
               ...new Set(
                 schemas
-                  .flatMap((schema) => getAllTags(schema.schema))
+                  .flatMap((schema) => getAllTags(schema.schema, {}))
                   .map(({ name }) => name),
               ),
             ];
 
-            const maxOperationCount = Math.max(
-              ...schemas.flatMap((schema) => [
-                getAllOperations(schema.schema.paths).length,
-              ]),
-            );
-
-            // If the API has less than 50 operations, we preload all tags to be shown
-            const loadTags =
-              apiConfig.loadTags ?? maxOperationCount < API_COUNT_THRESHOLD;
-
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
-              `  ...apiPluginOptions,`,
               `  type: "file",`,
               `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
               `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
-              `  loadTags: ${JSON.stringify(loadTags)},`,
+              `  options: {`,
+              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+              `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
+              `    ...${JSON.stringify(apiConfig.options ?? {})},`,
+              `  },`,
               `  schemaImports: {`,
               ...Array.from(schemaMap.entries()).map(
                 ([key, schemaPath]) =>
@@ -286,7 +268,16 @@ const viteApiPlugin = async (
             );
           } else {
             code.push(
-              `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, ...apiPluginOptions })}));`,
+              "configuredApiPlugins.push(openApiPlugin({",
+              `  ...${JSON.stringify(apiConfig)},`,
+              "  options: {",
+              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+              `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
+              `    ...${JSON.stringify(apiConfig.options ?? {})},`,
+              "  },",
+              "}));",
             );
           }
         }

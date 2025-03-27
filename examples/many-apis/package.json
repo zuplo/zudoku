@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "dev": "zudoku dev",
     "build": "echo 'Not implemented yet'",
     "disabled_build": "zudoku build",
     "download": "node download.js",

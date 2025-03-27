@@ -111,7 +111,7 @@ export const Sidecar = ({
   const [selectedExample, setSelectedExample] = useState<unknown>();
 
   const selectedLang =
-    searchParams.get("lang") ?? options?.examplesDefaultLanguage ?? "shell";
+    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
   const requestBodyContent = operation.requestBody?.content;
 
@@ -170,6 +170,14 @@ export const Sidecar = ({
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
+  const showPlayground =
+    isOnScreen &&
+    (operation.extensions["x-explorer-enabled"] === true ||
+      operation.extensions["x-zudoku-playground-enabled"] === true ||
+      (operation.extensions["x-explorer-enabled"] === undefined &&
+        operation.extensions["x-zudoku-playground-enabled"] === undefined &&
+        !options?.disablePlayground));
+
   return (
     <aside
       ref={ref}
@@ -185,7 +193,7 @@ export const Sidecar = ({
             &nbsp;
             {path}
           </span>
-          {isOnScreen && (
+          {showPlayground && (
             <PlaygroundDialogWrapper
               servers={result.data.schema.servers.map((server) => server.url)}
               operation={operation}

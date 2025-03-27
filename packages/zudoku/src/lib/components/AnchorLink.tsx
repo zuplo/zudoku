@@ -8,11 +8,13 @@ import { useScrollToHash } from "../util/useScrollToAnchor.js";
 export const AnchorLink = (props: NavLinkProps) => {
   const location = useLocation();
   const scrollToHash = useScrollToHash();
-  const hash = useHref(props.to).split("#")[1];
+  const href = useHref(props.to);
+  const [pathname, hash] = href.split("#");
 
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     props.onClick?.(event);
-    if (hash !== location.hash.slice(1)) return;
+    if (hash !== location.hash.slice(1) || pathname !== location.pathname)
+      return;
 
     event.preventDefault();
     scrollToHash(hash);

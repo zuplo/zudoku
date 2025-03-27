@@ -1,4 +1,5 @@
 import { MDXProvider } from "@mdx-js/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
@@ -10,7 +11,7 @@ import {
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { Outlet, useNavigation } from "react-router";
+import { Outlet, useLocation, useNavigation } from "react-router";
 import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
 import {
   ZudokuContext,
@@ -36,6 +37,7 @@ const ZudokoInner = memo(
       [props.overrides],
     );
 
+    const location = useLocation();
     const mdxComponents = useMemo(() => {
       const componentsFromPlugins = (props.plugins ?? [])
         .filter(isMdxProviderPlugin)
@@ -59,6 +61,7 @@ const ZudokoInner = memo(
       [stagger, didNavigate],
     );
     const navigation = useNavigation();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
       if (didNavigate) {
@@ -67,10 +70,14 @@ const ZudokoInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    const [zudokuContext] = useState(() => new ZudokuContext(props));
+    const [zudokuContext] = useState(
+      () => new ZudokuContext(props, queryClient),
+    );
 
     const heads = props.plugins
-      ?.flatMap((plugin) => (hasHead(plugin) ? (plugin.getHead?.() ?? []) : []))
+      ?.flatMap((plugin) =>
+        hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
+      )
       // eslint-disable-next-line react/no-array-index-key
       .map((entry, i) => <Helmet key={i}>{entry}</Helmet>);
 

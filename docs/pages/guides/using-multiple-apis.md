@@ -11,67 +11,75 @@ In order to do this you will need to modify the [Zudoku Configuration](./configu
 
 Using multiple APIs is a configuration setting that you can add in the [Zudoku Configuration](./configuration/overview.md) file.
 
-### Step 1: Add all your APIs
+### Step 1: Add your APIs
 
-First, create a new array in [Zudoku Configuration](./configuration/overview.md) that lists each API you want to include as its own object:
+First, create a new array in your configuration file that lists each API you want to include:
 
 ```typescript
-const navigation = [
+const apis = [
   {
-    label: "The first API",
-    id: "the-first-api-openapi",
+    type: "file",
+    input: "apis/my-first-api.json",
+    navigationId: "my-first-api",
   },
   {
-    label: "The second API",
-    id: "the-second-api",
+    type: "file",
+    input: "apis/my-second-api.json",
+    navigationId: "my-second-api",
   },
-];
+] as const;
 ```
 
-### Step 2: Modify the config
+### Step 2: Add navigation
 
-Modify the [Zudoku Configuration](./configuration/overview.md) file so that the `sidebar` and `apis` settings look the same as below:
+Create a navigation array for your sidebar:
 
 ```typescript
-import { type ZudokuConfig } from "zudoku";
-
 const navigation = [
   {
-    label: "The first API",
-    id: "the-first-api-openapi",
+    type: "link",
+    label: "My First API",
+    href: "my-first-api",
   },
   {
-    label: "The second API",
-    id: "the-second-api",
+    type: "link",
+    label: "My Second API",
+    href: "my-second-api",
   },
-];
+] as const;
+```
+
+### Step 3: Update your config
+
+Modify your [Zudoku Configuration](./configuration/overview.md) file to include these arrays:
+
+```typescript
+import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
   topNavigation: [
-    { id: "home", label: "Home" },
-    { id: "home2", label: "Home 2" },
+    {
+      id: "overview",
+      label: "Overview",
+    },
   ],
-  redirects: [{ from: "/", to: "/home" }],
   sidebar: {
-    home: [
-      ...navigation.map((item) => ({
-        type: "link",
-        label: item.label,
-        href: `/${item.id}`,
-      })),
-    ],
+    overview: navigation,
   },
-  apis: [
-    ...navigation.map((item) => ({
-      type: "url",
-      input: `http://example.com/api/${item.id}.json`,
-      navigationId: item.label,
-      skipPreload: true,
-    })),
-  ],
+  redirects: [{ from: "/", to: "/overview" }],
+  apis,
+  docs: {
+    files: "/pages/**/*.{md,mdx}",
+  },
 };
 
 export default config;
 ```
 
-As you can see in the example above, we have added additional code that maps through the items in the `navigation` array and creates new sidebar items, as well as the correct URLs for the APIs.
+Make sure that:
+
+1. The `navigationId` in each API config matches the `href` in the navigation
+2. Your OpenAPI files are placed in the correct location as specified in the `input` field
+3. The `label` in navigation matches what you want to display in the sidebar
+
+You don't necessarily need to add the APIs to your sidebar, you can also put them into the top navigation or link to them from your docs.

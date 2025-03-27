@@ -1,19 +1,19 @@
 import { cx } from "class-variance-authority";
 import { FileIcon } from "lucide-react";
 import { Suspense } from "react";
-import { NavLink, NavLinkProps, useNavigation } from "react-router";
-import { TopNavigationItem } from "../../config/validators/common.js";
+import { NavLink, type NavLinkProps, useNavigation } from "react-router";
+import type { TopNavigationItem } from "../../config/validators/common.js";
 import { useAuth } from "../authentication/hook.js";
 import { cn } from "../util/cn.js";
-import { ZudokuError } from "../util/invariant.js";
-import { joinPath } from "../util/joinPath.js";
+import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
 import { Slotlet } from "./SlotletProvider.js";
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>
-  (item: { display?: "auth" | "anon" | "always" }) => {
+  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
+    if (item.display === "hide") return false;
     return (
       (item.display === "auth" && isAuthenticated) ||
       (item.display === "anon" && !isAuthenticated) ||
@@ -26,9 +26,15 @@ export const SideNavigation = () => {
   const { topNavigation } = useZudoku();
   const { isAuthenticated } = useAuth();
 
+  const filteredItems = topNavigation.filter(isHiddenItem(isAuthenticated));
+
+  if (filteredItems.length === 0) {
+    return <style>{`:root { --top-nav-height: 0px; }`}</style>;
+  }
+
   return (
     <ul className="flex flex-col border rounded-lg gap-1 p-0.5 mb-4">
-      {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+      {filteredItems.map((item) => (
         <SideNavItem {...item} key={item.id}>
           <li key={item.id} className="flex flex-row px-1 items-center group">
             <div
@@ -97,15 +103,10 @@ const useNavLink = ({
     defaultLink ??
     (currentSidebar
       ? traverseSidebar(currentSidebar, (item) => {
-          if (item.type === "doc") return joinPath(item.id);
+          if (item.type === "doc") return joinUrl(item.id);
         })
-      : joinPath(id));
-
-  if (!first) {
-    throw new ZudokuError("Page not found.", {
-      developerHint: `No links found in top navigation for '${id}'. Check that the sidebar isn't empty or that a default link is set.`,
-    });
-  }
+      : joinUrl(id)) ??
+    joinUrl(id);
 
   return { first, isActive };
 };

@@ -1,12 +1,14 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Badge } from "zudoku/ui/Badge.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
+import { EnumValues } from "../components/EnumValues.js";
+import { SelectOnClick } from "../components/SelectOnClick.js";
+import { ParamInfos } from "../ParamInfos.js";
 import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaView } from "./SchemaView.js";
 import {
@@ -42,8 +44,8 @@ export const SchemaLogicalGroup = ({
 };
 
 const RecursiveIndicator = () => (
-  <div className="flex items-center gap-2 italic text-sm text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">
-    <RefreshCcwDotIcon size={16} />
+  <div className="flex items-center gap-1.5 italic text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">
+    <RefreshCcwDotIcon size={13} />
     <span>circular</span>
   </div>
 );
@@ -68,11 +70,10 @@ export const SchemaPropertyItem = ({
   if (isCircularRef(schema)) {
     return (
       <li className="p-4 bg-border/20 hover:bg-border/30">
-        <div className="flex flex-col gap-1 justify-between text-sm">
-          <div className="flex gap-2 items-center">
+        <div className="flex flex-col gap-2.5 justify-between text-sm">
+          <div className="space-x-2">
             <code>{name}</code>
-            <Badge variant="muted">object</Badge>
-            {group === "optional" && <Badge variant="outline">optional</Badge>}
+            <ParamInfos schema={schema} />
             <RecursiveIndicator />
           </div>
         </div>
@@ -82,30 +83,33 @@ export const SchemaPropertyItem = ({
 
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
-      <div className="flex flex-col gap-1 justify-between text-sm">
-        <div className="flex gap-2 items-center">
-          <code>{name}</code>
-          <Badge variant="muted">
-            {schema.type === "array" && schema.items.type ? (
-              <span>{schema.items.type}[]</span>
-            ) : Array.isArray(schema.type) ? (
-              <span>{schema.type.join(" | ")}</span>
-            ) : (
-              <span>{schema.type}</span>
-            )}
-          </Badge>
-          {group === "optional" && <Badge variant="outline">optional</Badge>}
+      <div className="flex flex-col gap-2.5 justify-between text-sm">
+        <div className="space-x-2">
+          <SelectOnClick asChild>
+            <code>{name}</code>
+          </SelectOnClick>
+          <ParamInfos
+            schema={schema}
+            extraItems={[
+              group !== "optional" && (
+                <span className="text-primary">required</span>
+              ),
+            ]}
+          />
           {schema.type === "array" &&
             "items" in schema &&
             isCircularRef(schema.items) && <RecursiveIndicator />}
         </div>
-
         {schema.description && (
           <Markdown
             className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
             content={schema.description}
           />
         )}
+        {schema.type === "array" && "items" in schema && schema.items.enum && (
+          <EnumValues values={schema.items.enum} />
+        )}
+        {schema.enum && <EnumValues values={schema.enum} />}
 
         {(hasLogicalGroupings(schema) || isComplexType(schema)) && (
           <Collapsible.Root
@@ -115,15 +119,9 @@ export const SchemaPropertyItem = ({
           >
             {showCollapseButton && (
               <Collapsible.Trigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 flex gap-1.5"
-                >
-                  <ListPlusIcon size={18} />
-                  {!isOpen
-                    ? "Show nested properties"
-                    : "Hide nested properties"}
+                <Button variant="expand" size="sm" className="h-7">
+                  {isOpen ? <MinusIcon size={12} /> : <PlusIcon size={12} />}
+                  {!isOpen ? "Show properties" : "Hide properties"}
                 </Button>
               </Collapsible.Trigger>
             )}

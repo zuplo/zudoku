@@ -13,6 +13,7 @@ import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { useAuthState, type UserProfile } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
+const STATE_KEY = "oauth-state";
 
 export interface OpenIdProviderData {
   accessToken: string;
@@ -172,7 +173,11 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       authorizationServer.authorization_endpoint,
     );
 
-    sessionStorage.setItem("redirect-to", redirectTo);
+    const finalRedirect = redirectTo.startsWith(window.location.origin)
+      ? redirectTo.slice(window.location.origin.length)
+      : redirectTo;
+
+    sessionStorage.setItem("redirect-to", finalRedirect);
 
     const redirectUrl = new URL(window.location.origin);
     redirectUrl.pathname = this.callbackUrlPath;
@@ -197,16 +202,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     });
 
     /**
-     * We cannot be sure the AS supports PKCE so we're going to use state too. Use of PKCE is
-     * backwards compatible even if the AS doesn't support it which is why we're using it regardless.
+     * The state parameter is used to prevent CSRF attacks and should be used in all authorization requests.
+     * It is independent of PKCE and should be used regardless of PKCE support.
      */
-    if (
-      authorizationServer.code_challenge_methods_supported?.includes("S256") !==
-      true
-    ) {
-      const state = oauth.generateRandomState();
-      authorizationUrl.searchParams.set("state", state);
-    }
+    const state = oauth.generateRandomState();
+    sessionStorage.setItem(STATE_KEY, state);
+    authorizationUrl.searchParams.set("state", state);
 
     // now redirect the user to authorizationUrl.href
     location.href = authorizationUrl.href;
@@ -291,6 +292,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   handleCallback = async () => {
     const url = new URL(window.location.href);
     const state = url.searchParams.get("state");
+    const storedState = sessionStorage.getItem(STATE_KEY);
+    sessionStorage.removeItem(STATE_KEY);
+
+    if (state !== storedState) {
+      throw new AuthorizationError("Invalid state parameter");
+    }
 
     // one eternity later, the user lands back on the redirect_uri
     // Authorization Code Grant Request & Response

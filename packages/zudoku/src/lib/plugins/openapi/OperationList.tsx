@@ -1,5 +1,5 @@
 import { type ResultOf } from "@graphql-typed-document-node/core";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useNavigate } from "react-router";
@@ -38,6 +38,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     contentTypes
     path
     deprecated
+    extensions
     parameters {
       name
       in
@@ -45,6 +46,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
       required
       schema
       style
+      explode
       examples {
         name
         description
@@ -95,8 +97,16 @@ export const OperationsFragment = graphql(/* GraphQL */ `
 
 export type OperationListItemResult = ResultOf<typeof OperationsFragment>;
 
-const AllOperationsQuery = graphql(/* GraphQL */ `
-  query AllOperations(
+const SchemaWarmupQuery = graphql(/* GraphQL */ `
+  query SchemaWarmup($input: JSON!, $type: SchemaType!) {
+    schema(input: $input, type: $type) {
+      openapi
+    }
+  }
+`);
+
+const OperationsForTagQuery = graphql(/* GraphQL */ `
+  query OperationsForTag(
     $input: JSON!
     $type: SchemaType!
     $tag: String
@@ -130,8 +140,8 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { input, type, versions, version } = useOasConfig();
-  const query = useCreateQuery(AllOperationsQuery, {
+  const { input, type, versions, version, options } = useOasConfig();
+  const query = useCreateQuery(OperationsForTagQuery, {
     input,
     type,
     tag,
@@ -149,6 +159,14 @@ export const OperationList = ({
   const operations = schema.operations;
   const tagDescription = schema.tags.find((t) => t.name === tag)?.description;
 
+  // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
+  const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
+  useQuery({
+    ...warmupQuery,
+    enabled: typeof window !== "undefined",
+    notifyOnChangeProps: [],
+  });
+
   // Prefetch for Playground
   useApiIdentities();
 
@@ -163,7 +181,11 @@ export const OperationList = ({
         ? sanitizeMarkdownForMetatag(description)
         : undefined;
 
-  const showVersions = Object.entries(versions).length > 1;
+  const hasMultipleVersions = Object.entries(versions).length > 1;
+
+  const showVersions =
+    options?.showVersionSelect === "always" ||
+    (hasMultipleVersions && options?.showVersionSelect !== "hide");
 
   return (
     <div
@@ -188,7 +210,7 @@ export const OperationList = ({
                 registerSidebarAnchor
                 className="mb-0"
               >
-                {tag}
+                {tag ?? "Other endpoints"}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ml-1.5">
                     {" "}
@@ -202,6 +224,7 @@ export const OperationList = ({
                 <Select
                   onValueChange={(version) => navigate(versions[version]!)}
                   defaultValue={version}
+                  disabled={!hasMultipleVersions}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Select version" />
@@ -262,38 +285,16 @@ export const OperationList = ({
       <div className="my-4 flex items-center justify-end gap-4">
         <Endpoint />
       </div>
-      {operations.map((fragment) => (
-        <OperationListItem
-          serverUrl={selectedServer}
-          key={fragment.slug}
-          operationFragment={fragment}
-        />
-      ))}
-      {/* {schema.tags
-        .filter((tag) => tag.operations.length > 0)
-        .map((tag) => (
-          // px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#'
-          <div key={tag.name} className="px-6 -mx-6 [content-visibility:auto]">
-            {tag.name && <CategoryHeading>{tag.name}</CategoryHeading>}
-            {tag.description && (
-              <Markdown
-                className={`${ProseClasses} max-w-full prose-img:max-w-prose w-full mt-2 mb-12`}
-                content={tag.description}
-              />
-            )}
-            <div className="operation mb-12">
-              <StaggeredRender>
-                {tag.operations.map((fragment) => (
-                  <OperationListItem
-                    serverUrl={selectedServer ?? schema.url}
-                    key={fragment.slug}
-                    operationFragment={fragment}
-                  />
-                ))}
-              </StaggeredRender>
-            </div>
-          </div>
-        ))} */}
+      {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
+      <div className="px-6 -mx-6 [content-visibility:auto]">
+        {operations.map((fragment) => (
+          <OperationListItem
+            serverUrl={selectedServer}
+            key={fragment.slug}
+            operationFragment={fragment}
+          />
+        ))}
+      </div>
     </div>
   );
 };

@@ -23,6 +23,8 @@ export const useScrollToHash = () => {
       if (element) {
         element.scrollIntoView();
         scrollIntoViewIfNeeded(link);
+        // Set the active anchor after the scroll has happened
+        // so the intersection observer doesn't trigger wrong items
         requestIdleCallback(() => setActiveAnchor(linkHash));
         return true;
       }

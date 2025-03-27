@@ -168,6 +168,70 @@ describe("Generate OpenAPI schema module", () => {
     expect(pet.oneOf[1]).toStrictEqual(input.components.schemas.Dog);
   });
 
+  it("should handle URL-encoded characters in references", async () => {
+    const input = {
+      components: { schemas: { "Type With Space": { type: "string" } } },
+      info: { schema: { $ref: "#/components/schemas/Type With Space" } },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    expect(schema.info.schema).toStrictEqual(
+      input.components.schemas["Type With Space"],
+    );
+  });
+
+  it("should generate proper slugs for tags and operations", async () => {
+    const input = {
+      openapi: "3.0.0",
+      info: {
+        title: "Test API",
+        version: "1.0.0",
+      },
+      tags: [{ name: "Pets & Animals" }, { name: "Admins & Users" }],
+      paths: {
+        "/pets": {
+          tags: ["Pets & Animals"],
+          get: {
+            tags: ["Pets & Animals"],
+            responses: { "200": { description: "OK" } },
+          },
+          post: {
+            tags: ["Pets & Animals", "Some other tag"],
+            responses: { "201": { description: "Created" } },
+          },
+          head: {
+            tags: ["Pets & Animals"],
+            responses: { "200": { description: "OK" } },
+          },
+        },
+        "/users": {
+          get: {
+            tags: ["Admins & Users"],
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    };
+
+    const { slugs } = await executeCode(await generateCode(input));
+
+    expect(slugs.operations).toMatchInlineSnapshot(`
+      {
+        "/pets-get": "get-pets",
+        "/pets-head": "head-pets",
+        "/pets-post": "post-pets",
+        "/users-get": "get-users",
+      }
+    `);
+    expect(slugs.tags).toMatchInlineSnapshot(`
+      {
+        "Admins & Users": "admins-and-users",
+        "Pets & Animals": "pets-and-animals",
+        "Some other tag": "some-other-tag",
+      }
+    `);
+  });
+
   it("should generate correct code for circular refs", async () => {
     const input = {
       definitions: {
@@ -257,6 +321,10 @@ describe("Generate OpenAPI schema module", () => {
             }
           }
         }
+      };
+      export const slugs = {
+        operations: {},
+        tags: {},
       };"
     `);
   });

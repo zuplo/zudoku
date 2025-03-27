@@ -1,3 +1,6 @@
+/**
+ * @deprecated Use `joinUrl` instead.
+ */
 export const joinPath = (
   ...parts: Array<string | null | undefined | boolean>
 ) => {

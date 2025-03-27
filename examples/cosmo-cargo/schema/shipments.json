@@ -102,8 +102,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid",
-            "readOnly": true
+            "format": "uuid"
           },
           "recipientAddress": {
             "$ref": "#/components/schemas/Address"
@@ -115,26 +114,49 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Package"
-            }
+            },
+            "minItems": 1,
+            "maxItems": 50,
+            "uniqueItems": true
           },
           "status": {
             "type": "string",
             "enum": ["CREATED", "IN_TRANSIT", "DELIVERED", "EXCEPTION"],
-            "readOnly": true
+            "nullable": true
           },
           "trackingNumber": {
             "type": "string",
-            "readOnly": true
+            "pattern": "^[A-Z0-9]{10,20}$"
           },
           "createdAt": {
             "type": "string",
-            "format": "date-time",
-            "readOnly": true
+            "format": "date-time"
           },
           "comments": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/Comment"
+            },
+            "maxItems": 100,
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "FRAGILE",
+                "EXPRESS",
+                "INTERNATIONAL",
+                "CUSTOMS_REQUIRED"
+              ]
+            }
+          },
+          "facilities": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
             }
           }
         }
@@ -144,19 +166,29 @@
         "required": ["street", "city", "country", "postalCode"],
         "properties": {
           "street": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
           },
           "city": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
           "state": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
           },
           "country": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[A-Z]{2}$",
+            "description": "ISO 3166-1 alpha-2 country code"
           },
           "postalCode": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20
           }
         }
       },
@@ -167,7 +199,9 @@
           "weight": {
             "type": "number",
             "format": "float",
-            "description": "Weight in kilograms"
+            "description": "Weight in kilograms",
+            "minimum": 0.1,
+            "maximum": 1000
           },
           "dimensions": {
             "$ref": "#/components/schemas/Dimensions"
@@ -181,17 +215,23 @@
           "length": {
             "type": "number",
             "format": "float",
-            "description": "Length in centimeters"
+            "description": "Length in centimeters",
+            "minimum": 1,
+            "maximum": 300
           },
           "width": {
             "type": "number",
             "format": "float",
-            "description": "Width in centimeters"
+            "description": "Width in centimeters",
+            "minimum": 1,
+            "maximum": 300
           },
           "height": {
             "type": "number",
             "format": "float",
-            "description": "Height in centimeters"
+            "description": "Height in centimeters",
+            "minimum": 1,
+            "maximum": 300
           }
         }
       },
@@ -200,10 +240,15 @@
         "required": ["code", "message"],
         "properties": {
           "code": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[A-Z_]+$",
+            "minLength": 1,
+            "maxLength": 50
           },
           "message": {
-            "type": "string"
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
           }
         }
       },
@@ -218,9 +263,12 @@
           },
           "transferredAt": {
             "type": "string",
-            "format": "date-time"
+            "format": "date-time",
+            "description": "When the shipment was transferred"
           }
-        }
+        },
+        "minProperties": 1,
+        "maxProperties": 3
       },
       "Comment": {
         "type": "object",
@@ -229,7 +277,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the comment"
+            "description": "Unique identifier for the comment",
+            "pattern": "^[a-zA-Z0-9-]+$"
           },
           "author": {
             "type": "string",
@@ -260,11 +309,14 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique identifier for the organization"
+            "description": "Unique identifier for the organization",
+            "pattern": "^[a-zA-Z0-9-]+$"
           },
           "name": {
             "type": "string",
-            "description": "Name of the organization"
+            "description": "Name of the organization",
+            "minLength": 1,
+            "maxLength": 200
           },
           "parent": {
             "$ref": "#/components/schemas/Organization",
@@ -273,6 +325,7 @@
           "sub": {
             "type": "array",
             "description": "Child organizations (array circular reference)",
+            "maxItems": 100,
             "items": {
               "$ref": "#/components/schemas/Organization"
             }
@@ -294,12 +347,15 @@
             "enum": ["PENDING", "IN_TRANSIT", "DELIVERED"]
           },
           "next": {
-            "$ref": "#/components/schemas/LinkedShipment"
+            "$ref": "#/components/schemas/LinkedShipment",
+            "nullable": true
           },
           "previous": {
-            "$ref": "#/components/schemas/LinkedShipment"
+            "$ref": "#/components/schemas/LinkedShipment",
+            "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       }
     }
   },
@@ -731,6 +787,32 @@
         "operationId": "holdShipment",
         "parameters": [
           {
+            "name": "X-Hold-Operator",
+            "in": "header",
+            "description": "Operator requesting the hold",
+            "schema": {
+              "type": "string",
+              "enum": ["SYSTEM", "ADMIN", "CUSTOMER", "AGENT"]
+            }
+          },
+          {
+            "name": "holdDuration",
+            "in": "query",
+            "description": "Duration to hold the shipment",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "preferredLocation",
+            "in": "cookie",
+            "description": "User's preferred facility location",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "shipmentId",
             "in": "path",
             "required": true,
@@ -757,11 +839,14 @@
                     "enum": [
                       "RECIPIENT_REQUEST",
                       "CUSTOMS_HOLD",
-                      "WEATHER_DELAY"
+                      "WEATHER_DELAY",
+                      "ADDRESS_VERIFICATION",
+                      "PAYMENT_PENDING"
                     ]
                   },
                   "facilityId": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
                   }
                 }
               },
@@ -788,14 +873,26 @@
                   "properties": {
                     "status": {
                       "type": "string",
-                      "enum": ["ON_HOLD"]
+                      "enum": ["ON_HOLD", "HOLD_PENDING", "HOLD_REJECTED"]
                     },
                     "holdLocation": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "LAX1 - Los Angeles Hub",
+                        "JFK2 - New York Hub",
+                        "ORD3 - Chicago Hub",
+                        "DFW4 - Dallas Hub",
+                        "SEA5 - Seattle Hub"
+                      ]
                     },
                     "holdUntil": {
                       "type": "string",
-                      "format": "date-time"
+                      "format": "date-time",
+                      "enum": [
+                        "2025-01-15T17:00:00Z",
+                        "2025-01-16T09:00:00Z",
+                        "2025-01-17T14:00:00Z"
+                      ]
                     }
                   }
                 },
@@ -993,6 +1090,7 @@
       "post": {
         "tags": ["Rates & Billing"],
         "summary": "Add insurance",
+        "x-explorer-enabled": false,
         "description": "Add or modify insurance coverage for a shipment",
         "operationId": "addInsurance",
         "parameters": [
@@ -2066,49 +2164,109 @@
                     }
                   }
                 }
-              },
-              "examples": {
-                "all_channels": {
-                  "summary": "Notifications on all channels",
-                  "value": {
-                    "email": ["recipient@example.com", "sender@example.com"],
-                    "sms": ["+14155552671"],
-                    "webhooks": ["https://example.com/webhook"],
-                    "events": [
-                      "PICKUP_SCHEDULED",
-                      "OUT_FOR_DELIVERY",
-                      "DELIVERED",
-                      "EXCEPTION"
-                    ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/shipments/{shipmentId}/priority": {
+      "put": {
+        "tags": ["Shipment Management"],
+        "summary": "Update shipment priority",
+        "description": "Update the priority level of a shipment",
+        "operationId": "updatePriority",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["priority"],
+                "properties": {
+                  "priority": {
+                    "type": "string",
+                    "enum": ["URGENT", "HIGH", "NORMAL", "LOW"],
+                    "description": "New priority level for the shipment"
                   }
                 }
               }
             }
           }
-        },
+        }
+      }
+    },
+    "/shipments/{shipmentId}/service-levels": {
+      "get": {
+        "tags": ["Shipment Management"],
+        "summary": "Get available service levels",
+        "description": "Get all available service levels for a shipment with their details",
+        "operationId": "getServiceLevels",
+        "parameters": [
+          {
+            "name": "shipmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Notification preferences updated successfully",
+            "description": "Available service levels",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": ["ACTIVE"]
-                    },
-                    "channels": {
+                    "serviceLevels": {
                       "type": "array",
                       "items": {
-                        "type": "string"
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "SAME_DAY",
+                              "NEXT_DAY",
+                              "EXPRESS",
+                              "STANDARD",
+                              "ECONOMY",
+                              "GROUND",
+                              "INTERNATIONAL_EXPRESS",
+                              "INTERNATIONAL_STANDARD",
+                              "INTERNATIONAL_ECONOMY",
+                              "INTERNATIONAL_GROUND",
+                              "INTERNATIONAL_AIR",
+                              "INTERNATIONAL_SEA",
+                              "INTERNATIONAL_RAIL",
+                              "INTERNATIONAL_COMBINED",
+                              "INTERNATIONAL_SPECIALIZED"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
                       }
                     }
                   }
-                },
-                "example": {
-                  "status": "ACTIVE",
-                  "channels": ["email", "sms", "webhook"]
                 }
               }
             }
@@ -2177,7 +2335,6 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[A-Z]{3}[0-9]{1}$",
               "example": "LAX1"
             },
             "description": "ID of the origin facility"
@@ -2188,7 +2345,6 @@
             "required": true,
             "schema": {
               "type": "string",
-              "pattern": "^[A-Z]{3}[0-9]{1}$",
               "example": "JFK1"
             },
             "description": "ID of the destination facility"
