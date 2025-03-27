@@ -40,7 +40,6 @@ export const useScrollToHash = () => {
 
 export const useScrollToAnchor = () => {
   const location = useLocation();
-  const { setActiveAnchor } = useViewportAnchor();
   const scrollToHash = useScrollToHash();
   const initialScrolled = useRef(false);
 
@@ -65,5 +64,5 @@ export const useScrollToAnchor = () => {
     observer.observe(document.body, { childList: true, subtree: true });
 
     return () => observer.disconnect();
-  }, [location.hash, scrollToHash, setActiveAnchor]);
+  }, [location.hash, scrollToHash]);
 };
