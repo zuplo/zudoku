@@ -108,7 +108,7 @@ export class ZudokuContext {
       if (!isEventConsumerPlugin(plugin)) return;
 
       objectEntries(plugin.events).forEach(([event, handler]) => {
-        if (handler) this.emitter.on(event, handler);
+        this.emitter.on(event, handler!);
       });
     });
 

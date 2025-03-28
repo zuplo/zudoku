@@ -65,7 +65,7 @@ export interface CommonPlugin {
 }
 
 export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
-  events: { [K in keyof Event]: Event[K] };
+  events: { [K in keyof Event]?: Event[K] };
 };
 
 export const isEventConsumerPlugin = (
