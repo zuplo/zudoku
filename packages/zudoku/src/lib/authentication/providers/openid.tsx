@@ -255,6 +255,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     }
   }
 
+  signRequest = async (request: Request): Promise<Request> => {
+    const accessToken = await this.getAccessToken();
+    request.headers.set("Authorization", `Bearer ${accessToken}`);
+    return request;
+  };
+
   signOut = async () => {
     useAuthState.setState({
       isAuthenticated: false,
