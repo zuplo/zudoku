@@ -1,7 +1,8 @@
 import { Helmet } from "@zudoku/react-helmet-async";
 import { Suspense, useEffect, type ReactNode } from "react";
-import { Outlet, useNavigation } from "react-router";
+import { Outlet, useLocation, useNavigation } from "react-router";
 import { useSpinDelay } from "spin-delay";
+import { joinUrl } from "../util/joinUrl.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
 import { useZudoku } from "./context/ZudokuContext.js";
@@ -18,6 +19,7 @@ const LoadingFallback = () => (
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
   const { meta, authentication, options } = useZudoku();
+  const location = useLocation();
 
   useScrollToAnchor();
   useScrollToTop();
@@ -41,7 +43,14 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       )}
       <Helmet titleTemplate={meta?.title}>
         {options.canonicalUrl && (
-          <link rel="canonical" href={options.canonicalUrl} />
+          <link
+            rel="canonical"
+            href={joinUrl(
+              options.canonicalUrl,
+              options.basePath,
+              location.pathname,
+            )}
+          />
         )}
         {meta?.description && (
           <meta name="description" content={meta.description} />
