@@ -149,19 +149,3 @@ transformExamples: async ({ content, auth, context }) => {
 3. Handle errors gracefully to prevent breaking the documentation
 4. Consider performance implications when transforming large examples
 5. Use the provided options object to access relevant information for your transformations
-
-## Type Definitions
-
-The transformation feature uses the following type definitions:
-
-```typescript
-interface Content {
-  mediaType: string;
-  example: any;
-  schema?: any;
-}
-
-type transformExamples = (options: { content: Content[]; auth: AuthState; operation: OperationListItemResult; type: "request" | "response" }) => Content[];
-```
-
-These types are available in the `zudoku` package and can be imported as needed.
