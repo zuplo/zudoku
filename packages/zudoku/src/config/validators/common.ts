@@ -8,7 +8,8 @@ import z, {
   type ZodUnion,
 } from "zod";
 import { fromError } from "zod-validation-error";
-import { type ZudokuContext } from "../../lib/core/ZudokuContext.js";
+import type { AuthState } from "../../lib/authentication/state.js";
+import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
@@ -244,9 +245,11 @@ const SearchSchema = z
       maxSubResults: z.number().optional(),
       transformResults: z
         .custom<
-          (
-            result: PagefindSearchFragment,
-          ) => PagefindSearchFragment | boolean | undefined | void
+          (data: {
+            result: PagefindSearchFragment;
+            auth: AuthState;
+            context: ZudokuContext;
+          }) => PagefindSearchFragment | boolean | undefined | void
         >((val) => typeof val === "function")
         .optional(),
     }),
