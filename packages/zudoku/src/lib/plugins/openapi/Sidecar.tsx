@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
+import { useZudoku } from "zudoku/components";
 import { useAuthState, useSelectedServer } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
@@ -104,6 +105,7 @@ export const Sidecar = ({
   const auth = useAuthState();
   const query = useCreateQuery(GetServerQuery, { input, type });
   const result = useSuspenseQuery(query);
+  const context = useZudoku();
 
   const methodTextColor = methodForColor(operation.method);
 
@@ -123,6 +125,7 @@ export const Sidecar = ({
           type: "request",
           operation,
           content: requestBodyContent,
+          context,
         })
       : requestBodyContent;
 
@@ -262,6 +265,7 @@ export const Sidecar = ({
                 ? options.transformOperationExamples({
                     auth,
                     type: "response",
+                    context,
                     operation,
                     content: response.content,
                   })
