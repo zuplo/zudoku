@@ -104,6 +104,10 @@
             "type": "string",
             "format": "uuid"
           },
+          "recipientEmail": {
+            "type": "string",
+            "format": "email"
+          },
           "recipientAddress": {
             "$ref": "#/components/schemas/Address"
           },

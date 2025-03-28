@@ -32,9 +32,10 @@ const config: ZudokuConfig = {
 The `transformOperationExamples` function receives an options object with the following properties:
 
 1. `content`: An array of Content objects containing the example data
-2. `auth`: The current authentication state
-3. `operation`: The operation being displayed
-4. `type`: Either "request" or "response" indicating which type of example is being transformed
+1. `operation`: The operation being displayed
+1. `type`: Either "request" or "response" indicating which type of example is being transformed
+1. `auth`: The current authentication state
+1. `context`: ZudokContext
 
 The function should return an array of Content objects with the transformed examples.
 
@@ -113,6 +114,30 @@ transformOperationExamples: ({ content, auth, type }) => {
     example: isAuthenticated
       ? contentItem.example // Show full example for authenticated users
       : { ...contentItem.example, sensitiveData: undefined }, // Hide sensitive data for unauthenticated users
+  }));
+};
+```
+
+### Using JWT Claims
+
+```tsx
+transformOperationExamples: async ({ content, auth, context }) => {
+  const token = await context.authentication.getAccessToken();
+
+  // Decode the JWT (this is a simple example - in production you might want to use a proper JWT library)
+  const [, payload] = token.split(".");
+  const decodedPayload = JSON.parse(atob(payload));
+
+  return content.map((contentItem) => ({
+    ...contentItem,
+    example: {
+      ...contentItem.example,
+      // Add user-specific data from the JWT
+      userId: decodedPayload.sub,
+      organizationId: decodedPayload.org_id,
+      // You can add any other claims from the JWT
+      role: decodedPayload.role,
+    },
   }));
 };
 ```

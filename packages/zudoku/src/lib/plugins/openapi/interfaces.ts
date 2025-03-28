@@ -1,4 +1,5 @@
 import { AuthState } from "../../authentication/state.js";
+import { ZudokuContext } from "../../core/ZudokuContext.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
 import { OperationListItemResult } from "./OperationList.js";
 
@@ -33,6 +34,7 @@ type Content = {
 
 export type TransformOperationExamples = (options: {
   content: Content[];
+  context: ZudokuContext;
   auth: AuthState;
   operation: OperationListItemResult;
   type: "request" | "response";
