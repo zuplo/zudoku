@@ -9,6 +9,7 @@ import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
   basePath: "/docs",
+  canonicalUrl: "https://zudoku.dev",
   page: {
     banner: {
       message: <PreviewBanner />,
@@ -68,14 +69,6 @@ const config: ZudokuConfig = {
     },
   ],
   plugins: [
-    {
-      getHead: ({ location }) => (
-        <link
-          rel="canonical"
-          href={`https://zudoku.dev/docs${location.pathname}`}
-        />
-      ),
-    },
     {
       getHead: () => {
         return (
