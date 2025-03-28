@@ -13,7 +13,6 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
-import { useSelectedServer } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
@@ -21,6 +20,7 @@ import { objectEntries } from "../../../util/objectEntries.js";
 import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import { type Content } from "../SidecarExamples.js";
+import { useSelectedServer } from "../state.js";
 import { createUrl } from "./createUrl.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
