@@ -5,6 +5,7 @@ import type { Location } from "react-router";
 import type { TopNavigationItem } from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import type { AuthenticationProvider } from "../authentication/authentication.js";
+import { AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { Slotlets } from "../components/SlotletProvider.js";
 import { joinPath } from "../util/joinPath.js";
@@ -21,6 +22,7 @@ import {
 
 export interface ZudokuEvents {
   location: (event: { from?: Location; to: Location }) => void;
+  auth: (auth: AuthState) => void;
 }
 
 export interface ApiIdentity {
@@ -108,6 +110,10 @@ export class ZudokuContext {
       objectEntries(plugin.events).forEach(([event, handler]) => {
         this.emitter.on(event, handler);
       });
+    });
+
+    useAuthState.subscribe((state) => {
+      this.emitEvent("auth", state);
     });
   }
 
