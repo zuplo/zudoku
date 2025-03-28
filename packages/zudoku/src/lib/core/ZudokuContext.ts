@@ -22,7 +22,7 @@ import {
 
 export interface ZudokuEvents {
   location: (event: { from?: Location; to: Location }) => void;
-  auth: (auth: AuthState) => void;
+  auth: (auth: { prev: AuthState; next: AuthState }) => void;
 }
 
 export interface ApiIdentity {
@@ -108,12 +108,15 @@ export class ZudokuContext {
       if (!isEventConsumerPlugin(plugin)) return;
 
       objectEntries(plugin.events).forEach(([event, handler]) => {
-        this.emitter.on(event, handler);
+        if (handler) this.emitter.on(event, handler);
       });
     });
 
-    useAuthState.subscribe((state) => {
-      this.emitEvent("auth", state);
+    useAuthState.subscribe((state, prevState) => {
+      this.emitEvent("auth", {
+        prev: prevState,
+        next: state,
+      });
     });
   }
 
