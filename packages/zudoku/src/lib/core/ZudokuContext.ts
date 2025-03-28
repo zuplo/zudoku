@@ -52,6 +52,7 @@ type Metadata = Partial<{
 }>;
 
 type Page = Partial<{
+  layout: "wide" | "default";
   pageTitle?: string;
   logo?: {
     src: {

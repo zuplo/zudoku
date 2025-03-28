@@ -14,6 +14,7 @@ import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
+import { type IconNames } from "./icon-types.js";
 
 const AnyObject = z.object({}).passthrough();
 
@@ -201,6 +202,7 @@ const TopNavigationItemSchema = z.object({
     .enum(["auth", "anon", "always", "hide"])
     .default("always")
     .optional(),
+  icon: z.custom<IconNames>().optional(),
 });
 
 type BannerColorType = ZodOptional<
@@ -334,6 +336,7 @@ const PageSchema = z
     pageTitle: z.string(),
     logoUrl: z.string(),
     logo: LogoSchema,
+    layout: z.enum(["wide", "default"]).optional().default("default"),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
