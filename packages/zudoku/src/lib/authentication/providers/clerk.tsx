@@ -104,9 +104,16 @@ const clerkAuth: AuthenticationProviderInitializer<
     return response;
   }
 
+  async function signRequest(request: Request): Promise<Request> {
+    const response = await getAccessToken();
+    request.headers.set("Authorization", `Bearer ${response}`);
+    return request;
+  }
+
   return {
     clerk: clerkApi,
     getAccessToken,
+    signRequest,
     signOut: async () => {
       await ensureLoaded;
       await clerkApi?.signOut({
