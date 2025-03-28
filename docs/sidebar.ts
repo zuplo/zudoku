@@ -50,6 +50,7 @@ export const docs: SidebarEntry = [
       "guides/custom-pages",
       "guides/using-multiple-apis",
       "guides/managing-api-keys-and-identities",
+      "guides/transforming-examples",
     ],
   },
   {
