@@ -17,7 +17,7 @@ const LoadingFallback = () => (
 );
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
-  const { meta, authentication } = useZudoku();
+  const { meta, authentication, options } = useZudoku();
 
   useScrollToAnchor();
   useScrollToTop();
@@ -40,6 +40,9 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
         <style>{`:root { --top-nav-height: 0px; }`}</style>
       )}
       <Helmet titleTemplate={meta?.title}>
+        {options.canonicalUrl && (
+          <link rel="canonical" href={options.canonicalUrl} />
+        )}
         {meta?.description && (
           <meta name="description" content={meta.description} />
         )}
