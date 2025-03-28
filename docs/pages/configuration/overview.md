@@ -262,14 +262,23 @@ The port on which the development server will run. Defaults to `3000`. This opti
 
 If the port is already in use, the next available port will be used.
 
-### `canonicalUrl`
+### `canonicalUrlOrigin`
 
-Sets the canonical URL for your documentation site. This is used for SEO purposes and helps search engines understand the preferred version of a page.
+Sets the canonical [origin URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) for your documentation site. This is used for SEO purposes and helps search engines understand the preferred version of a page.
 
-```json
+```ts
 {
-  "canonicalUrl": "https://docs.example.com"
+  basePath: '/docs',
+  canonicalUrlOrigin: "https://example.com",
+  // visiting the page `/intro` would result in:
+  // https://example.com/docs/intro
 }
+```
+
+This is the resulting HTML that will be added to the `<head>` of your pages:
+
+```html
+<link rel="canonical" href="https://example.com/docs/intro" />
 ```
 
 ### `https`

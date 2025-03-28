@@ -70,7 +70,7 @@ type Page = Partial<{
 
 export type ZudokuContextOptions = {
   basePath?: string;
-  canonicalUrl?: string;
+  canonicalUrlOrigin?: string;
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationProvider;

@@ -42,11 +42,11 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
         <style>{`:root { --top-nav-height: 0px; }`}</style>
       )}
       <Helmet titleTemplate={meta?.title}>
-        {options.canonicalUrl && (
+        {options.canonicalUrlOrigin && (
           <link
             rel="canonical"
             href={joinUrl(
-              options.canonicalUrl,
+              options.canonicalUrlOrigin,
               options.basePath,
               location.pathname,
             )}

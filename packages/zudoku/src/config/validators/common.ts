@@ -375,7 +375,7 @@ export const CdnUrlSchema = z
 export const CommonConfigSchema = z.object({
   protectedRoutes: z.array(z.string()).optional(),
   basePath: z.string().optional(),
-  canonicalUrl: z.string().optional(),
+  canonicalUrlOrigin: z.string().optional(),
   cdnUrl: CdnUrlSchema.optional(),
   port: z.number().optional(),
   https: z
