@@ -1,6 +1,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
 import {
   CommandDialog,
@@ -8,6 +9,8 @@ import {
   CommandInput,
 } from "zudoku/ui/Command.js";
 import { DialogTitle } from "zudoku/ui/Dialog.js";
+import { useAuthState } from "../../authentication/state.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { getResults } from "./get-results.js";
 import type { PagefindOptions } from "./index.js";
@@ -55,7 +58,7 @@ const usePagefind = (options: PagefindOptions) => {
     enabled: typeof window !== "undefined",
   });
 
-  if (result.isError) {
+  if (result.isError && result.error.message !== "NOT_BUILT_YET") {
     // eslint-disable-next-line no-console
     console.error(result.error);
   }
@@ -74,13 +77,16 @@ export const PagefindSearch = ({
 }) => {
   const { pagefind, error, isError } = usePagefind(options);
   const [searchTerm, setSearchTerm] = useState("");
+  const auth = useAuthState();
+  const context = useZudoku();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: searchResults } = useQuery({
     queryKey: ["pagefind-search", searchTerm],
     queryFn: async () => {
       const search = await pagefind?.search(searchTerm);
       if (!search) return [];
-      return getResults(search, options);
+      return getResults({ search, options, auth, context });
     },
     placeholderData: keepPreviousData,
     enabled: !!pagefind && !!searchTerm,
@@ -97,13 +103,29 @@ export const PagefindSearch = ({
         <DialogTitle>Search</DialogTitle>
       </VisuallyHidden>
       <CommandInput
+        ref={inputRef}
         placeholder="Search..."
         value={searchTerm}
         onValueChange={setSearchTerm}
         disabled={isError}
       />
       <CommandEmpty>
-        {searchTerm ? "No results found." : "Start typing to search"}
+        {searchTerm ? (
+          <div className="flex flex-col items-center">
+            No results found.
+            <Button
+              variant="link"
+              onClick={() => {
+                setSearchTerm("");
+                inputRef.current?.focus();
+              }}
+            >
+              Clear search
+            </Button>
+          </div>
+        ) : (
+          "Start typing to search"
+        )}
       </CommandEmpty>
       {isError ? (
         <div className="p-4 text-sm">

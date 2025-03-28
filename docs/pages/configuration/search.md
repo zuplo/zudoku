@@ -27,7 +27,7 @@ To enable pagefind search, configure the `search` option in your configuration:
   search: {
     type: "pagefind",
     // Optional: Maximum number of sub results per page
-    maxSubResults: 3
+    maxSubResults: 3,
     // Optional: Configure search result ranking (defaults shown below)
     ranking: {
       termFrequency: 0.8,
@@ -35,6 +35,37 @@ To enable pagefind search, configure the `search` option in your configuration:
       termSimilarity: 1.2,
       termSaturation: 1.2,
     },
+  }
+}
+```
+
+### Transforming/Filtering Search Results
+
+You can transform or filter search results using the `transformResults` option. This function receives the search result along with the current auth state and context, allowing you to:
+
+- Filter results based on user permissions
+- Modify result content
+- Add custom results
+
+The type of `result` is the same as [the type returned by Pagefind's search API](https://github.com/CloudCannon/pagefind/blob/03552d041d9533b09563f6c50466b25d394ece64/pagefind_web_js/types/index.d.ts#L123-L160).
+
+```typescript
+{
+  search: {
+    type: "pagefind",
+    transformResults: ({ result, auth, context }) => {
+      // Return false to filter out the result
+      if (!auth.isAuthenticated) return false;
+
+      // Return true or undefined to keep the original result
+      if (result.url.includes("/private/")) return true;
+
+      // Return a modified result
+      return {
+        ...result,
+        title: `${result.title} (${context.meta.title})`
+      };
+    }
   }
 }
 ```

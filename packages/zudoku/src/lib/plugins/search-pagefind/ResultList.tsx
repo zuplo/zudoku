@@ -1,5 +1,5 @@
-import { FileTextIcon } from "lucide-react";
-import { useCallback } from "react";
+import { BracketsIcon, FileTextIcon } from "lucide-react";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
 import {
@@ -35,6 +35,7 @@ export const ResultList = ({
   maxSubResults?: number;
 }) => {
   const navigate = useNavigate();
+  const commandListRef = useRef<HTMLDivElement | null>(null);
 
   const cleanResultUrl = useCallback(
     (url: string) => {
@@ -46,59 +47,70 @@ export const ResultList = ({
     [basePath],
   );
 
+  useLayoutEffect(() => {
+    requestIdleCallback(() => {
+      commandListRef.current?.scrollTo({ top: 0 });
+    });
+  }, [searchTerm]);
+
   return (
-    <CommandList className="max-h-[450px]">
+    <CommandList className="max-h-[450px]" ref={commandListRef}>
       {searchTerm && searchResults.length > 0 && (
         <CommandGroup
           className="text-sm text-muted-foreground"
           heading={`${searchResults.length} results for "${searchTerm}"`}
         />
       )}
-      {searchResults.map((result) => (
-        <CommandGroup
-          key={[result.meta.title ?? result.excerpt, result.url].join("-")}
-        >
-          <CommandItem
-            asChild
-            value={`${result.meta.title}-${result.url}`}
-            className={hoverClassname}
-            onSelect={() => {
-              void navigate(cleanResultUrl(result.url));
-              onClose();
-            }}
+      {searchTerm &&
+        searchResults.map((result) => (
+          <CommandGroup
+            key={[result.meta.title ?? result.excerpt, result.url].join("-")}
           >
-            <Link to={cleanResultUrl(result.url)}>
-              <FileTextIcon size={20} className="text-muted-foreground" />
-              {result.meta.title}
-            </Link>
-          </CommandItem>
-          {result.sub_results
-            .sort(sortSubResults)
-            .slice(0, maxSubResults)
-            .map((subResult) => (
-              <CommandItem
-                asChild
-                key={`${result.meta.title}-${subResult.url}`}
-                value={`${result.meta.title}-${subResult.url}`}
-                className={hoverClassname}
-                onSelect={() => {
-                  void navigate(cleanResultUrl(subResult.url));
-                  onClose();
-                }}
-              >
-                <Link to={cleanResultUrl(subResult.url)} onClick={onClose}>
-                  <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
-                    <span className="font-bold">{subResult.title}</span>
-                    <span
-                      className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
-                      dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
-                    />
-                  </div>
-                </Link>
-              </CommandItem>
-            ))}
-        </CommandGroup>
-      ))}
+            <CommandItem
+              asChild
+              value={`${result.meta.title}-${result.url}`}
+              className={hoverClassname}
+              onSelect={() => {
+                void navigate(cleanResultUrl(result.url));
+                onClose();
+              }}
+            >
+              <Link to={cleanResultUrl(result.url)}>
+                {result.meta.section === "openapi" ? (
+                  <BracketsIcon />
+                ) : (
+                  <FileTextIcon />
+                )}
+                {result.meta.title}
+              </Link>
+            </CommandItem>
+            {result.sub_results
+              .sort(sortSubResults)
+              .slice(0, maxSubResults)
+              .map((subResult) => (
+                <CommandItem
+                  asChild
+                  key={`sub-${result.meta.title}-${subResult.url}`}
+                  value={`sub-${result.meta.title}-${subResult.url}`}
+                  className={hoverClassname}
+                  onSelect={() => {
+                    void navigate(cleanResultUrl(subResult.url));
+                    onClose();
+                  }}
+                >
+                  <Link to={cleanResultUrl(subResult.url)} onClick={onClose}>
+                    <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
+                      <span className="font-bold">{subResult.title}</span>
+                      <span
+                        className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
+                        dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
+                      />
+                    </div>
+                  </Link>
+                </CommandItem>
+              ))}
+          </CommandGroup>
+        ))}
     </CommandList>
   );
 };
