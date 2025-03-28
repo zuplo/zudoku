@@ -9,6 +9,7 @@ import PreviewBanner from "./src/PreviewBanner";
 
 const config: ZudokuConfig = {
   basePath: "/docs",
+  canonicalUrlOrigin: "https://zudoku.dev",
   page: {
     banner: {
       message: <PreviewBanner />,
