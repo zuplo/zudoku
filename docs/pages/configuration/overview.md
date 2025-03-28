@@ -262,6 +262,16 @@ The port on which the development server will run. Defaults to `3000`. This opti
 
 If the port is already in use, the next available port will be used.
 
+### `canonicalUrl`
+
+Sets the canonical URL for your documentation site. This is used for SEO purposes and helps search engines understand the preferred version of a page.
+
+```json
+{
+  "canonicalUrl": "https://docs.example.com"
+}
+```
+
 ### `https`
 
 Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is optional.
