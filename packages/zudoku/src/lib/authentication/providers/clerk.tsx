@@ -31,6 +31,9 @@ class ClerkAuthPlugin extends AuthenticationPlugin {
           emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerk.session.user.imageUrl,
         },
+        providerData: {
+          user: clerk.session.user,
+        },
       });
     } else {
       useAuthState.setState({
@@ -74,6 +77,15 @@ const clerkAuth: AuthenticationProviderInitializer<
           emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerkApi.user.imageUrl,
         },
+        providerData: {
+          user: {
+            publicMetadata: clerkApi.user.publicMetadata,
+            id: clerkApi.user.id,
+            emailAddresses: clerkApi.user.emailAddresses,
+            imageUrl: clerkApi.user.imageUrl,
+            fullName: clerkApi.user.fullName,
+          },
+        },
       });
     }
 
@@ -93,6 +105,7 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   return {
+    clerk: clerkApi,
     getAccessToken,
     signOut: async () => {
       await ensureLoaded;

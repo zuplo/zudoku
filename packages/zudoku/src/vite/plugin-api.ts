@@ -192,7 +192,9 @@ const viteApiPlugin = async (
 
       if (config.apis) {
         code.push('import { openApiPlugin } from "zudoku/plugins/openapi";');
-
+        code.push(
+          `const apis = Array.isArray(config.apis) ? config.apis : [config.apis]`,
+        );
         const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
         const apiMetadata: ApiCatalogItem[] = [];
         const versionMaps: Record<string, Record<string, string>> = {};
@@ -225,7 +227,9 @@ const viteApiPlugin = async (
         }
 
         // Generate API plugin code
+        let apiIndex = -1;
         for (const apiConfig of apis) {
+          apiIndex++;
           if (apiConfig.type === "file") {
             if (
               !apiConfig.navigationId ||
@@ -256,7 +260,8 @@ const viteApiPlugin = async (
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
-              `    ...${JSON.stringify(apiConfig.options ?? {})},`,
+              `    transformExamples: config.defaults?.apis?.transformExamples,`,
+              `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
               `  schemaImports: {`,
               ...Array.from(schemaMap.entries()).map(

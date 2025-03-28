@@ -10,6 +10,7 @@ import z, {
 import { fromError } from "zod-validation-error";
 import { type ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
+import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
 
@@ -51,6 +52,9 @@ const ApiOptionsSchema = z
     disablePlayground: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
+    transformExamples: z.custom<transformExamples>(
+      (val) => typeof val === "function",
+    ),
   })
   .partial();
 

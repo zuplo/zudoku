@@ -65,6 +65,28 @@ const config: ZudokuConfig = {
       input: "./schema/shipments.json",
       navigationId: "api-shipments",
       categories: [{ label: "General", tags: ["Shipments"] }],
+      options: {
+        transformExamples: ({ content, auth }) => {
+          if (!auth) {
+            return content;
+          }
+          return content.map((c) => ({
+            ...c,
+            examples: c.examples?.map((e) => {
+              if (e.name === "domestic") {
+                return {
+                  ...e,
+                  value: {
+                    recipientEmail: auth?.profile?.email,
+                    ...e.value,
+                  },
+                };
+              }
+              return e;
+            }),
+          }));
+        },
+      },
     },
     {
       type: "file",
