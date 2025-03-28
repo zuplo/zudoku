@@ -3,7 +3,7 @@ import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/components";
-import { useAuthState, useSelectedServer } from "../../authentication/state.js";
+import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
@@ -20,6 +20,7 @@ import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
+import { useSelectedServer } from "./state.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
 

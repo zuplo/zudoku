@@ -15,7 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { useSelectedServer } from "../../authentication/state.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
@@ -26,6 +25,7 @@ import { OperationListItem } from "./OperationListItem.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
+import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
