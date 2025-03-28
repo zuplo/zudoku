@@ -31,6 +31,9 @@ class ClerkAuthPlugin extends AuthenticationPlugin {
           emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerk.session.user.imageUrl,
         },
+        providerData: {
+          user: clerk.session.user,
+        },
       });
     } else {
       useAuthState.setState({
