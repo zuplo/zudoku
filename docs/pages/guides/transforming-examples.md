@@ -9,7 +9,7 @@ Zudoku allows you to transform operation examples in both request and response s
 
 ## Configuration
 
-To use this feature, you need to configure the `transformOperationExamples` function in your `zudoku.config.tsx` file. Here's how to do it:
+To use this feature, you need to configure the `transformExamples` function in your `zudoku.config.tsx` file. Here's how to do it:
 
 ```tsx
 import type { ZudokuConfig } from "zudoku";
@@ -18,7 +18,7 @@ const config: ZudokuConfig = {
   // ... other config options ...
   defaults: {
     apis: {
-      transformOperationExamples: (options) => {
+      transformExamples: (options) => {
         // Transform the content here
         return options.content;
       },
@@ -29,7 +29,7 @@ const config: ZudokuConfig = {
 
 ## The Transform Function
 
-The `transformOperationExamples` function receives an options object with the following properties:
+The `transformExamples` function receives an options object with the following properties:
 
 1. `content`: An array of Content objects containing the example data
 1. `operation`: The operation being displayed
@@ -47,7 +47,7 @@ Here's a practical example showing how to transform examples:
 const config: ZudokuConfig = {
   defaults: {
     apis: {
-      transformOperationExamples: ({ content, type }) => {
+      transformExamples: ({ content, type }) => {
         // Example: Add a timestamp to all examples
         const timestamp = new Date().toISOString();
 
@@ -70,7 +70,7 @@ const config: ZudokuConfig = {
 ### Adding Dynamic Values
 
 ```tsx
-transformOperationExamples: ({ content, auth }) => {
+transformExamples: ({ content, auth }) => {
   const apiKey = auth.accessToken;
 
   return content.map((contentItem) => ({
@@ -89,7 +89,7 @@ transformOperationExamples: ({ content, auth }) => {
 ### Formatting Examples
 
 ```tsx
-transformOperationExamples: ({ content }) => {
+transformExamples: ({ content }) => {
   return content.map((contentItem) => ({
     ...contentItem,
     example: {
@@ -106,7 +106,7 @@ transformOperationExamples: ({ content }) => {
 ### Conditional Transformation
 
 ```tsx
-transformOperationExamples: ({ content, auth, type }) => {
+transformExamples: ({ content, auth, type }) => {
   const isAuthenticated = auth.isAuthenticated;
 
   return content.map((contentItem) => ({
@@ -121,7 +121,7 @@ transformOperationExamples: ({ content, auth, type }) => {
 ### Using JWT Claims
 
 ```tsx
-transformOperationExamples: async ({ content, auth, context }) => {
+transformExamples: async ({ content, auth, context }) => {
   const token = await context.authentication.getAccessToken();
 
   // Decode the JWT (this is a simple example - in production you might want to use a proper JWT library)
@@ -161,7 +161,7 @@ interface Content {
   schema?: any;
 }
 
-type TransformOperationExamples = (options: { content: Content[]; auth: AuthState; operation: OperationListItemResult; type: "request" | "response" }) => Content[];
+type transformExamples = (options: { content: Content[]; auth: AuthState; operation: OperationListItemResult; type: "request" | "response" }) => Content[];
 ```
 
 These types are available in the `zudoku` package and can be imported as needed.

@@ -66,7 +66,7 @@ const config: ZudokuConfig = {
       navigationId: "api-shipments",
       categories: [{ label: "General", tags: ["Shipments"] }],
       options: {
-        transformOperationExamples: ({ content, auth }) => {
+        transformExamples: ({ content, auth }) => {
           if (!auth) {
             return content;
           }

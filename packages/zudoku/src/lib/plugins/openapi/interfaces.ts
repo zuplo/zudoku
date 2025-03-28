@@ -32,7 +32,7 @@ type Content = {
   examples?: Array<Example> | null;
 };
 
-export type TransformOperationExamples = (options: {
+export type transformExamples = (options: {
   content: Content[];
   context: ZudokuContext;
   auth: AuthState;
@@ -51,7 +51,7 @@ type BaseOasConfig = {
     disablePlayground?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
-    transformOperationExamples?: TransformOperationExamples;
+    transformExamples?: transformExamples;
   };
 };
 

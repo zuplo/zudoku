@@ -119,8 +119,8 @@ export const Sidecar = ({
   const requestBodyContent = operation.requestBody?.content;
 
   const transformedRequestBodyContent =
-    requestBodyContent && options?.transformOperationExamples
-      ? options.transformOperationExamples({
+    requestBodyContent && options?.transformExamples
+      ? options.transformExamples({
           auth,
           type: "request",
           operation,
@@ -261,8 +261,8 @@ export const Sidecar = ({
           responses={operation.responses.map((response) => ({
             ...response,
             content:
-              response.content && options?.transformOperationExamples
-                ? options.transformOperationExamples({
+              response.content && options?.transformExamples
+                ? options.transformExamples({
                     auth,
                     type: "response",
                     context,

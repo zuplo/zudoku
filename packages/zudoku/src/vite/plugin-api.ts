@@ -260,7 +260,7 @@ const viteApiPlugin = async (
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
-              `    transformOperationExamples: config.defaults?.apis?.transformOperationExamples,`,
+              `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
               `  schemaImports: {`,
