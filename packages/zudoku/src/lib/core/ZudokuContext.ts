@@ -167,10 +167,6 @@ export class ZudokuContext {
       throw new Error("No authentication provider configured");
     }
 
-    const accessToken = await this.authentication.getAccessToken();
-
-    request.headers.set("Authorization", `Bearer ${accessToken}`);
-
-    return request;
+    return await this.authentication.signRequest(request);
   };
 }

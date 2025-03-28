@@ -88,6 +88,12 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
     return data.session.access_token;
   }
 
+  async signRequest(request: Request): Promise<Request> {
+    const accessToken = await this.getAccessToken();
+    request.headers.set("Authorization", `Bearer ${accessToken}`);
+    return request;
+  }
+
   signUp = async ({ redirectTo }: { redirectTo?: string }) => {
     const finalRedirectTo = redirectTo ?? this.redirectToAfterSignUp;
 
