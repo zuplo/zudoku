@@ -38,6 +38,8 @@ export const convertZudokuConfigToOptions = (
     !config.page?.logo?.src?.dark;
 
   return {
+    basePath: config.basePath,
+    canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
     page: {
       ...config.page,
