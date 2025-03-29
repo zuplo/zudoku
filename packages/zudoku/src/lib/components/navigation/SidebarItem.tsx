@@ -3,7 +3,7 @@ import { ExternalLinkIcon } from "lucide-react";
 import { NavLink, useLocation, useSearchParams } from "react-router";
 
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
-import { joinPath } from "../../util/joinPath.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { SidebarBadge } from "./SidebarBadge.js";
@@ -19,6 +19,10 @@ export const navigationListItem = cva(
       },
       isMuted: {
         true: "text-foreground/30",
+        false: "",
+      },
+      isPending: {
+        true: "bg-accent animate-pulse",
         false: "",
       },
     },
@@ -49,8 +53,10 @@ export const SidebarItem = ({
     case "doc":
       return (
         <NavLink
-          className={({ isActive }) => navigationListItem({ isActive })}
-          to={joinPath(item.id)}
+          className={({ isActive, isPending }) =>
+            navigationListItem({ isActive, isPending })
+          }
+          to={joinUrl(item.id)}
           onClick={onRequestClose}
           end
         >

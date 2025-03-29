@@ -97,12 +97,18 @@ const resolveExtensions = (obj: Record<string, any>) =>
 export const getAllTags = (
   schema: OpenAPIDocument,
   slugs: ReturnType<typeof getAllSlugs>["tags"],
-): Array<TagObject & { slug?: string }> => {
+): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.tags ?? [];
   const operationTags = new Set(
     Object.values(schema.paths ?? {})
       .flatMap((path) => Object.values(path ?? {}))
       .flatMap((op) => (op as OperationObject).tags ?? []),
+  );
+
+  const hasUntaggedOperations = Object.values(schema.paths ?? {}).some((path) =>
+    Object.values(path ?? {}).some(
+      (op) => !(op as OperationObject).tags?.length,
+    ),
   );
 
   return [
@@ -114,6 +120,8 @@ export const getAllTags = (
     ...[...operationTags]
       .filter((tag) => !rootTags.some((rt) => rt.name === tag))
       .map((tag) => ({ name: tag, slug: slugs[tag] })),
+    // Add untagged operations if there are any
+    ...(hasUntaggedOperations ? [{ name: undefined, slug: undefined }] : []),
   ];
 };
 
@@ -181,38 +189,55 @@ export const getAllOperations = (
   return operations;
 };
 
-const SchemaTag = builder
-  .objectRef<
-    Omit<TagObject, "name"> & { name?: string; slug?: string }
-  >("SchemaTag")
-  .implement({
-    fields: (t) => ({
-      name: t.exposeString("name", { nullable: true }),
-      slug: t.exposeString("slug", { nullable: true }),
-      description: t.exposeString("description", { nullable: true }),
-      operations: t.field({
-        type: [OperationItem],
-        resolve: (parent, _args, ctx) => {
-          const rootTags = ctx.tags.map((tag) => tag.name);
+const SchemaTag = builder.objectRef<
+  Omit<TagObject, "name"> & { name?: string; slug?: string }
+>("SchemaTag");
 
-          return ctx.operations
-            .filter((item) =>
-              parent.name
-                ? item.tags?.includes(parent.name)
-                : item.tags?.length === 0 ||
-                  // If none of the tags are present in the root tags, then show them here
-                  item.tags?.every((tag) => !rootTags.includes(tag)),
-            )
-            .map((item) => ({ ...item, parentTag: parent.name }));
-        },
-      }),
-      extensions: t.field({
-        type: JSONObjectScalar,
-        resolve: (parent) => resolveExtensions(parent),
-        nullable: true,
-      }),
+SchemaTag.implement({
+  fields: (t) => ({
+    name: t.exposeString("name", { nullable: true }),
+    slug: t.exposeString("slug", { nullable: true }),
+    isUntagged: t.field({ type: "Boolean", resolve: (parent) => !parent.name }),
+    description: t.exposeString("description", { nullable: true }),
+    operations: t.field({
+      type: [OperationItem],
+      resolve: (parent, _args, ctx) => {
+        const rootTags = ctx.tags.map((tag) => tag.name);
+
+        return ctx.operations
+          .filter((item) =>
+            parent.name
+              ? item.tags?.includes(parent.name)
+              : item.tags?.length === 0 ||
+                // If none of the tags are present in the root tags, then show them here
+                item.tags?.every((tag) => !rootTags.includes(tag)),
+          )
+          .map((item) => ({ ...item, parentTag: parent.name }));
+      },
     }),
-  });
+    prev: t.field({
+      type: SchemaTag,
+      nullable: true,
+      resolve: (parent, _args, ctx) => {
+        const index = ctx.tags.findIndex((tag) => tag.slug === parent.slug);
+        return ctx.tags[index - 1];
+      },
+    }),
+    next: t.field({
+      type: SchemaTag,
+      nullable: true,
+      resolve: (parent, _args, ctx) => {
+        const index = ctx.tags.findIndex((tag) => tag.slug === parent.slug);
+        return ctx.tags[index + 1];
+      },
+    }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (parent) => resolveExtensions(parent),
+      nullable: true,
+    }),
+  }),
+});
 
 const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
@@ -495,23 +520,29 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
           methods: Object.keys(value!) as typeof HttpMethods,
         })),
     }),
-    tags: t.field({
+    tag: t.field({
+      type: SchemaTag,
       args: {
+        slug: t.arg.string(),
         name: t.arg.string(),
+        untagged: t.arg.boolean(),
       },
-      type: [SchemaTag],
-      resolve: (_root, args, ctx) => {
+      nullable: true,
+      resolve: (_, args, ctx) => {
+        if (args.untagged) {
+          return ctx.tags.find((tag) => tag.name === undefined);
+        }
+        if (args.slug) {
+          return ctx.tags.find((tag) => tag.slug === args.slug);
+        }
         if (args.name) {
-          return ctx.tags.filter((tag) => tag.name === args.name);
+          return ctx.tags.find((tag) => tag.name === args.name);
         }
-
-        // Append empty tag which will be used to display untagged operations
-        if (ctx.operations.some((op) => !op.tags?.length)) {
-          return [...ctx.tags, { name: undefined, slug: undefined }];
-        }
-
-        return ctx.tags;
       },
+    }),
+    tags: t.field({
+      type: [SchemaTag],
+      resolve: (_root, _args, ctx) => ctx.tags,
     }),
     operations: t.field({
       type: [OperationItem],
@@ -522,7 +553,7 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         tag: t.arg.string(),
         untagged: t.arg.boolean(),
       },
-      resolve: (parent, args, ctx) =>
+      resolve: (_parent, args, ctx) =>
         ctx.operations.filter((op) => {
           return (
             (!args.operationId || op.operationId === args.operationId) &&
@@ -553,7 +584,7 @@ builder.queryType({
         type: t.arg({ type: SchemaSource, required: true }),
         input: t.arg({ type: JSONScalar, required: true }),
       },
-      resolve: async (_, args, ctx) => {
+      resolve: async (_parent, args, ctx) => {
         if (args.type === "file" && typeof args.input === "string") {
           const loadSchema = ctx.schemaImports?.[args.input];
 

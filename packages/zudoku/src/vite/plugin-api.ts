@@ -8,7 +8,12 @@ import path from "node:path";
 import { tsImport } from "tsx/esm/api";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
-import { getAllTags, type OpenAPIDocument } from "../lib/oas/graphql/index.js";
+import {
+  getAllOperations,
+  getAllSlugs,
+  getAllTags,
+  type OpenAPIDocument,
+} from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -241,13 +246,17 @@ const viteApiPlugin = async (
             const schemas = processedSchemas[apiConfig.navigationId];
             if (!schemas?.length) continue;
 
-            const tags = [
-              ...new Set(
+            const tags = Array.from(
+              new Set(
                 schemas
-                  .flatMap((schema) => getAllTags(schema.schema, {}))
-                  .map(({ name }) => name),
+                  .flatMap(({ schema }) => {
+                    const operations = getAllOperations(schema.paths);
+                    const slugs = getAllSlugs(operations);
+                    return getAllTags(schema, slugs.tags);
+                  })
+                  .map(({ slug }) => slug),
               ),
-            ];
+            );
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",

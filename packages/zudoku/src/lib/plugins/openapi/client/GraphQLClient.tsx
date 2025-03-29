@@ -43,7 +43,7 @@ export class GraphQLClient {
 
   fetch = async <TResult, TVariables>(
     query: TypedDocumentString<TResult, TVariables>,
-    ...[variables]: TVariables extends Record<string, never> ? [] : [TVariables]
+    variables?: TVariables,
   ): Promise<TResult> => {
     const operationName = query.match(/query (\w+)/)?.[1];
 
