@@ -2,10 +2,11 @@ import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { type PropsWithChildren, useEffect } from "react";
-import { Link } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
+import { Pagination } from "../../components/Pagination.js";
+
 import {
   useCurrentItem,
   usePrevNext,
@@ -115,40 +116,10 @@ export const MdxPage = ({
         {!hidePager && (
           <>
             <hr />
-            <div className="not-prose flex flex-wrap items-center justify-between gap-2 lg:gap-8">
-              {prev ? (
-                <Link
-                  to={prev.id}
-                  className="flex flex-col items-stretch gap-2 flex-1 min-w-max border rounded px-6 py-4 text-start hover:border-primary/85 transition shadow-sm hover:shadow-md"
-                  title={prev.label}
-                >
-                  <div className="text-sm text-muted-foreground">
-                    ← Previous page
-                  </div>
-                  <div className="text-lg text-primary truncate">
-                    {prev.label}
-                  </div>
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-              {next ? (
-                <Link
-                  to={next.id}
-                  className="flex flex-col items-stretch gap-2 flex-1 min-w-max border rounded px-6 py-4 text-end hover:border-primary/85 transition shadow-sm hover:shadow-md"
-                  title={next.label}
-                >
-                  <div className="text-sm text-muted-foreground">
-                    Next page →
-                  </div>
-                  <div className="text-lg text-primary truncate">
-                    {next.label}
-                  </div>
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-            </div>
+            <Pagination
+              prev={prev ? { to: prev.id, label: prev.label } : undefined}
+              next={next ? { to: next.id, label: next.label } : undefined}
+            />
           </>
         )}
       </div>

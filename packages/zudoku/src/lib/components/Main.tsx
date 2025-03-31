@@ -1,5 +1,6 @@
 import { PanelLeftIcon } from "lucide-react";
 import { type PropsWithChildren, useState } from "react";
+import { useNavigation } from "react-router";
 import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
 import { useCurrentNavigation } from "./context/ZudokuContext.js";
@@ -10,6 +11,7 @@ export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const { sidebar } = useCurrentNavigation();
   const hasSidebar = sidebar.length > 0;
+  const isNavigating = useNavigation().state === "loading";
 
   return (
     <Drawer
@@ -36,6 +38,7 @@ export const Main = ({ children }: PropsWithChildren) => {
         className={cn(
           "h-auto dark:border-white/10 translate-x-0",
           hasSidebar ? "lg:pl-12" : "col-span-full",
+          isNavigating && "animate-pulse",
         )}
       >
         <Slotlet name="zudoku-before-content" />

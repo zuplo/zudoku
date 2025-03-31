@@ -1,4 +1,3 @@
-import slugify from "@sindresorhus/slugify";
 import { redirect, type RouteObject } from "react-router";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { GraphQLClient } from "../client/GraphQLClient.js";
@@ -53,10 +52,7 @@ const createVersionRoutes = (
   versionPath: string,
   tagPages: string[],
 ): RouteObject[] => {
-  const firstTagRoute = joinUrl(
-    versionPath,
-    tagPages[0] ? slugify(tagPages[0]) : UNTAGGED_PATH,
-  );
+  const firstTagRoute = joinUrl(versionPath, tagPages.at(0) ?? UNTAGGED_PATH);
 
   return [
     // Redirect to first tag on the index route
@@ -64,7 +60,7 @@ const createVersionRoutes = (
     // Create routes for each tag
     ...tagPages.map((tag) =>
       createRoute({
-        path: joinUrl(versionPath, slugify(tag)),
+        path: joinUrl(versionPath, tag),
         tag,
       }),
     ),

@@ -18,6 +18,7 @@ import {
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
+import { Pagination } from "../../components/Pagination.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { cn } from "../../util/cn.js";
 import { Endpoint } from "./Endpoint.js";
@@ -25,6 +26,7 @@ import { OperationListItem } from "./OperationListItem.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
+import { UNTAGGED_PATH } from "./index.js";
 import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 
@@ -121,13 +123,21 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
       title
       url
       version
-      tags(name: $tag) {
+      tag(slug: $tag, untagged: $untagged) {
         name
         description
-      }
-      operations(tag: $tag, untagged: $untagged) {
-        slug
-        ...OperationsFragment
+        operations {
+          slug
+          ...OperationsFragment
+        }
+        next {
+          name
+          slug
+        }
+        prev {
+          name
+          slug
+        }
       }
     }
   }
@@ -156,8 +166,6 @@ export const OperationList = ({
   const summary = schema.summary;
   const description = schema.description;
   const navigate = useNavigate();
-  const operations = schema.operations;
-  const tagDescription = schema.tags.find((t) => t.name === tag)?.description;
 
   // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
   const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
@@ -169,6 +177,10 @@ export const OperationList = ({
 
   // Prefetch for Playground
   useApiIdentities();
+
+  if (!schema.tag) return null;
+
+  const { operations, next, prev, description: tagDescription } = schema.tag;
 
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
@@ -187,6 +199,16 @@ export const OperationList = ({
     options?.showVersionSelect === "always" ||
     (hasMultipleVersions && options?.showVersionSelect !== "hide");
 
+  const paginationProps = {
+    prev: prev?.name ? { to: `../${prev.slug}`, label: prev.name } : undefined,
+    next: next
+      ? {
+          to: `../${next.slug ?? UNTAGGED_PATH}`,
+          label: next.name ?? "Other endpoints",
+        }
+      : undefined,
+  };
+
   return (
     <div
       className="pt-[--padding-content-top]"
@@ -194,7 +216,7 @@ export const OperationList = ({
       data-pagefind-meta="section:openapi"
     >
       <Helmet>
-        <title>{[tag, title].filter(Boolean).join(" - ")}</title>
+        <title>{[schema.tag.name, title].filter(Boolean).join(" - ")}</title>
         {metaDescription && (
           <meta name="description" content={metaDescription} />
         )}
@@ -210,7 +232,7 @@ export const OperationList = ({
                 registerSidebarAnchor
                 className="mb-0"
               >
-                {tag ?? "Other endpoints"}
+                {schema.tag.name ?? "Other endpoints"}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ml-1.5">
                     {" "}
@@ -282,6 +304,7 @@ export const OperationList = ({
         )}
       </div>
       <hr />
+      <Pagination {...paginationProps} />
       <div className="my-4 flex items-center justify-end gap-4">
         <Endpoint />
       </div>
@@ -294,6 +317,7 @@ export const OperationList = ({
             operationFragment={fragment}
           />
         ))}
+        <Pagination {...paginationProps} />
       </div>
     </div>
   );

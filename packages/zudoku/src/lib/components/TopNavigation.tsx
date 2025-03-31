@@ -1,5 +1,6 @@
+import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { NavLink, useNavigation } from "react-router";
 import type { TopNavigationItem } from "../../config/validators/common.js";
 import { useAuth } from "../authentication/hook.js";
@@ -20,6 +21,31 @@ export const isHiddenItem =
     );
   };
 
+const Progress = () => {
+  const navigation = useNavigation();
+  const isNavigating = navigation.state === "loading";
+  // delay the animation to avoid flickering
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsAnimating(isNavigating), 100);
+
+    return () => clearTimeout(timer);
+  }, [isNavigating]);
+
+  const { isFinished, progress } = useNProgress({ isAnimating });
+
+  return (
+    <div
+      className="absolute w-0 left-0 right-0 bottom-[-1px] h-[2px] bg-primary transition-all duration-300 ease-in-out"
+      style={{
+        opacity: isFinished ? 0 : 1,
+        width: isFinished ? 0 : `${progress * 100}%`,
+      }}
+    />
+  );
+};
+
 export const TopNavigation = () => {
   const { topNavigation } = useZudoku();
   const { isAuthenticated } = useAuth();
@@ -32,7 +58,7 @@ export const TopNavigation = () => {
 
   return (
     <Suspense>
-      <div className="items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm">
+      <div className="items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm relative">
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
             {filteredItems.map((item) => (
@@ -43,6 +69,7 @@ export const TopNavigation = () => {
           </ul>
         </nav>
         <Slotlet name="top-navigation-side" />
+        <Progress />
       </div>
     </Suspense>
   );

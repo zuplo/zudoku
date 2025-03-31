@@ -139,6 +139,7 @@ export type Schema = {
   paths: Array<PathItem>;
   servers: Array<Server>;
   summary?: Maybe<Scalars["String"]["output"]>;
+  tag?: Maybe<SchemaTag>;
   tags: Array<SchemaTag>;
   title: Scalars["String"]["output"];
   url?: Maybe<Scalars["String"]["output"]>;
@@ -153,16 +154,21 @@ export type SchemaOperationsArgs = {
   untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
-export type SchemaTagsArgs = {
+export type SchemaTagArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
+  slug?: InputMaybe<Scalars["String"]["input"]>;
+  untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
 export type SchemaTag = {
   __typename?: "SchemaTag";
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  isUntagged: Scalars["Boolean"]["output"];
   name?: Maybe<Scalars["String"]["output"]>;
+  next?: Maybe<SchemaTag>;
   operations: Array<OperationItem>;
+  prev?: Maybe<SchemaTag>;
   slug?: Maybe<Scalars["String"]["output"]>;
 };
 
@@ -292,18 +298,28 @@ export type OperationsForTagQuery = {
     url?: string | null;
     version: string;
     servers: Array<{ __typename?: "Server"; url: string }>;
-    tags: Array<{
+    tag?: {
       __typename?: "SchemaTag";
       name?: string | null;
       description?: string | null;
-    }>;
-    operations: Array<
-      { __typename?: "OperationItem"; slug: string } & {
-        " $fragmentRefs"?: {
-          OperationsFragmentFragment: OperationsFragmentFragment;
-        };
-      }
-    >;
+      operations: Array<
+        { __typename?: "OperationItem"; slug: string } & {
+          " $fragmentRefs"?: {
+            OperationsFragmentFragment: OperationsFragmentFragment;
+          };
+        }
+      >;
+      next?: {
+        __typename?: "SchemaTag";
+        name?: string | null;
+        slug?: string | null;
+      } | null;
+      prev?: {
+        __typename?: "SchemaTag";
+        name?: string | null;
+        slug?: string | null;
+      } | null;
+    } | null;
   };
 };
 
@@ -468,13 +484,21 @@ export const OperationsForTagDocument = new TypedDocumentString(`
     title
     url
     version
-    tags(name: $tag) {
+    tag(slug: $tag, untagged: $untagged) {
       name
       description
-    }
-    operations(tag: $tag, untagged: $untagged) {
-      slug
-      ...OperationsFragment
+      operations {
+        slug
+        ...OperationsFragment
+      }
+      next {
+        name
+        slug
+      }
+      prev {
+        name
+        slug
+      }
     }
   }
 }

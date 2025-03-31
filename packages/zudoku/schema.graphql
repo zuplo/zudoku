@@ -117,7 +117,8 @@ type Schema {
   paths: [PathItem!]!
   servers: [Server!]!
   summary: String
-  tags(name: String): [SchemaTag!]!
+  tag(name: String, slug: String, untagged: Boolean): SchemaTag
+  tags: [SchemaTag!]!
   title: String!
   url: String
   version: String!
@@ -126,8 +127,11 @@ type Schema {
 type SchemaTag {
   description: String
   extensions: JSONObject
+  isUntagged: Boolean!
   name: String
+  next: SchemaTag
   operations: [OperationItem!]!
+  prev: SchemaTag
   slug: String
 }
 
