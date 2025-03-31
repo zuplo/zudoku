@@ -22,7 +22,8 @@ export const isHiddenItem =
   };
 
 const Progress = () => {
-  const isNavigating = Boolean(useNavigation().location);
+  const navigation = useNavigation();
+  const isNavigating = navigation.state === "loading";
   // delay the animation to avoid flickering
   const [isAnimating, setIsAnimating] = useState(false);
 
