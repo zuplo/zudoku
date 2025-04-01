@@ -29,9 +29,9 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@nx/eslint": "20.6.0",
-    "@nx/vite": "20.6.0",
-    "@nx/web": "20.6.0",
+    "@nx/eslint": "20.6.4",
+    "@nx/vite": "20.6.4",
+    "@nx/web": "20.6.4",
     "@typescript-eslint/eslint-plugin": "8.26.1",
     "@typescript-eslint/parser": "8.26.1",
     "eslint": "8.57.0",
