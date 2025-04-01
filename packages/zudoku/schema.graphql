@@ -2,6 +2,10 @@ schema {
   query: Query
 }
 
+type Components {
+  schemas: [SchemaItem!]
+}
+
 type EncodingItem {
   allowReserved: Boolean
   contentType: String
@@ -104,6 +108,7 @@ type ResponseItem {
 }
 
 type Schema {
+  components: Components
   description: String
   extensions: JSONObject
   openapi: String!
@@ -122,6 +127,12 @@ type Schema {
   title: String!
   url: String
   version: String!
+}
+
+type SchemaItem {
+  extensions: JSONObject
+  name: String!
+  schema: JSONSchema!
 }
 
 type SchemaTag {

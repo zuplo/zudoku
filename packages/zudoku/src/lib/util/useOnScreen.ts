@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
-export const useOnScreen = ({
+export const useOnScreen = <E extends Element = HTMLElement>({
   rootMargin = "0px",
   threshold,
+  root,
 }: {
   rootMargin?: string;
   threshold?: number;
+  root?: Element | null;
 } = {}) => {
   const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLElement | null>(null);
+  const ref = useRef<E | null>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -16,7 +18,7 @@ export const useOnScreen = ({
         if (!entry) return;
         setIsVisible(entry.isIntersecting);
       },
-      { rootMargin, threshold },
+      { rootMargin, threshold, root },
     );
 
     const currentElement = ref.current;
@@ -26,7 +28,7 @@ export const useOnScreen = ({
     observer.observe(currentElement);
 
     return () => observer.unobserve(currentElement);
-  }, [rootMargin, threshold]);
+  }, [root, rootMargin, threshold]);
 
   return [ref, isVisible] as const;
 };

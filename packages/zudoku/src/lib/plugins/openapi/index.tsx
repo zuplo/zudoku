@@ -29,6 +29,11 @@ const GetSidebarOperationsQuery = graphql(`
           path
         }
       }
+      components {
+        schemas {
+          __typename
+        }
+      }
     }
   }
 `);
@@ -166,6 +171,14 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
               collapsed: !config.options?.expandAllTags,
             }),
           );
+        }
+
+        if (data.schema.components?.schemas?.length) {
+          categories.push({
+            type: "link" as const,
+            label: "Schemas",
+            href: joinUrl(basePath, versionParam, "~schemas"),
+          });
         }
 
         return categories;

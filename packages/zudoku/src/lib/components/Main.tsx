@@ -36,7 +36,6 @@ export const Main = ({ children }: PropsWithChildren) => {
       <main
         data-pagefind-body
         className={cn(
-          "h-auto dark:border-white/10 translate-x-0",
           hasSidebar ? "lg:pl-12" : "col-span-full",
           isNavigating && "animate-pulse",
         )}

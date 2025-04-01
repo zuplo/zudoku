@@ -7,9 +7,9 @@ import {
   type CSSProperties,
   type PropsWithChildren,
 } from "react";
-import { AnchorLink } from "../../components/AnchorLink.js";
-import { useViewportAnchor } from "../../components/context/ViewportAnchorContext.js";
 import { cn } from "../../util/cn.js";
+import { AnchorLink } from "../AnchorLink.js";
+import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 
 const DATA_ANCHOR_ATTR = "data-active";
 
@@ -24,23 +24,14 @@ const TocItem = ({
   className?: string;
 }>) => {
   return (
-    <li
-      className={cn(
-        "truncate",
-        isActive
-          ? "text-primary"
-          : "text-foreground/65 dark:text-foreground/75",
-        className,
-      )}
-      title={item.value}
-    >
+    <li className={cn("truncate", className)} title={item.value}>
       <AnchorLink
         to={`#${item.id}`}
         {...{ [DATA_ANCHOR_ATTR]: item.id }}
         className={cn(
           isActive
             ? "text-primary"
-            : "text-foreground/65 dark:text-foreground/75 hover:text-foreground",
+            : "hover:text-accent-foreground text-muted-foreground",
         )}
       >
         {item.value}
@@ -89,7 +80,7 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
   }, [activeAnchor]);
 
   return (
-    <aside className="sticky scrollbar top-[--header-height] h-[calc(100vh-var(--header-height))] pt-[--padding-content-top] pb-[--padding-content-bottom] overflow-y-auto ps-1 text-sm">
+    <aside className="sticky scrollbar top-8 lg:top-[--header-height] h-[calc(100vh-var(--header-height))] pt-[--padding-content-top] pb-[--padding-content-bottom] overflow-y-auto ps-1 text-sm">
       <div className="flex items-center gap-2 font-medium mb-2">
         <ListTreeIcon size={16} />
         On this page

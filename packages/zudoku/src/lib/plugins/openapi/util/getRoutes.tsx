@@ -69,6 +69,13 @@ const createVersionRoutes = (
       path: joinUrl(versionPath, UNTAGGED_PATH),
       untagged: true,
     }),
+    {
+      path: joinUrl(versionPath, "~schemas"),
+      lazy: async () => {
+        const { SchemaList } = await import("../SchemaList.js");
+        return { element: <SchemaList /> };
+      },
+    },
   ];
 };
 

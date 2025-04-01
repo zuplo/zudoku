@@ -80,6 +80,7 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
       .map(([refPath, index]) => `  "${refPath}": __refs[${index}]`)
       .join(",\n"),
     "};",
+    "const __refMapPaths = Object.keys(__refMap);",
   );
 
   for (const [refPath, index] of refMap) {
@@ -98,6 +99,7 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
     lines.push(
       // Use assign so that the object identity is maintained and correctly resolves circular references
       `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue))});`,
+      `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
     );
   }
 

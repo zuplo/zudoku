@@ -6,14 +6,13 @@ import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
-
+import { Toc } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { cn } from "../../util/cn.js";
-import { Toc } from "./Toc.js";
 import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
 
 declare global {

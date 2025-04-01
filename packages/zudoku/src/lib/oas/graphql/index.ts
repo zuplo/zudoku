@@ -491,6 +491,43 @@ const OperationItem = builder
     }),
   });
 
+const SchemaItem = builder
+  .objectRef<{
+    name: string;
+    schema: SchemaObject;
+    extensions?: Record<string, any>;
+  }>("SchemaItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      schema: t.expose("schema", { type: JSONSchemaScalar }),
+      extensions: t.expose("extensions", {
+        type: JSONObjectScalar,
+        nullable: true,
+      }),
+    }),
+  });
+
+const Components = builder.objectRef<{
+  schemas?: Record<string, SchemaObject>;
+}>("Components");
+
+Components.implement({
+  fields: (t) => ({
+    schemas: t.field({
+      type: [SchemaItem],
+      resolve: (parent) => {
+        return Object.entries(parent.schemas ?? {}).map(([name, schema]) => ({
+          name,
+          schema,
+          extensions: resolveExtensions(schema),
+        }));
+      },
+      nullable: true,
+    }),
+  }),
+});
+
 const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
   fields: (t) => ({
     openapi: t.string({ resolve: (root) => root.openapi }),
@@ -563,6 +600,11 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
             (!args.untagged || (op.tags ?? []).length === 0)
           );
         }),
+    }),
+    components: t.field({
+      type: Components,
+      resolve: (root) => root.components,
+      nullable: true,
     }),
     extensions: t.field({
       type: JSONObjectScalar,

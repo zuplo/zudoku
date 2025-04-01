@@ -59,7 +59,9 @@ describe("Generate OpenAPI schema module", () => {
         .schema;
 
     expect(successSchema).toStrictEqual(input.components.schemas.Pet);
+    expect(successSchema.__$ref).toStrictEqual("#/components/schemas/Pet");
     expect(errorSchema).toStrictEqual(input.components.schemas.Error);
+    expect(errorSchema.__$ref).toStrictEqual("#/components/schemas/Error");
   });
 
   it("should handle circular refs", async () => {
@@ -264,6 +266,7 @@ describe("Generate OpenAPI schema module", () => {
         "#/definitions/pet": __refs[0],
         "#/definitions/thing": __refs[1]
       };
+      const __refMapPaths = Object.keys(__refMap);
       Object.assign(__refs[0], {
         "title": "pet",
         "type": "object",
@@ -285,7 +288,9 @@ describe("Generate OpenAPI schema module", () => {
           }
         }
       });
+      Object.defineProperty(__refs[0], "__$ref", { value: __refMapPaths[0], enumerable: false });
       Object.assign(__refs[1], __refMap["#/definitions/thing"]);
+      Object.defineProperty(__refs[1], "__$ref", { value: __refMapPaths[1], enumerable: false });
       export const schema = {
         "definitions": {
           "child": {

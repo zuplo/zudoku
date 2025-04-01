@@ -3,11 +3,15 @@ import { OpenAPIV3, type OpenAPIV3_1 } from "openapi-types";
 import { dereference, type JSONSchema } from "./dereference/index.js";
 import { upgradeSchema } from "./upgrade/index.js";
 
-type ReferenceObject = OpenAPIV3_1.ReferenceObject;
-type DeepOmitReference<T> = T extends ReferenceObject
+// Must be an interface (not a type) to allow merging with OpenAPI types with index signatures
+interface WithRef {
+  __$ref?: string;
+}
+
+type DeepOmitReference<T> = T extends OpenAPIV3_1.ReferenceObject
   ? never
   : T extends object
-    ? { [K in keyof T]: DeepOmitReference<T[K]> }
+    ? { [K in keyof T]: DeepOmitReference<T[K]> } & WithRef
     : T;
 
 export type OpenAPIDocument = DeepOmitReference<OpenAPIV3_1.Document>;
@@ -23,25 +27,6 @@ export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
 export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject>;
 
 export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
-
-// class ValidationError extends Error {
-//   constructor(public errors: OutputUnit[]) {
-//     super("Validation error");
-//   }
-// }
-
-// const getValidator = async (openApiVersion: string) => {
-//   if (openApiVersion.startsWith("3.0")) {
-//     const schema = (await import("./schemas/v3.0.json")) as any;
-//     return new Validator(schema, "4");
-//   }
-//   if (openApiVersion.startsWith("3.1")) {
-//     const schema = (await import("./schemas/v3.1.json")) as any;
-//     return new Validator(schema as any, "2020-12");
-//   }
-
-//   throw new Error(`Unsupported OpenAPI version: ${openApiVersion}`);
-// };
 
 const parseSchemaInput = async (
   schemaInput: unknown,
@@ -109,13 +94,6 @@ export const validate = async (schemaInput: unknown) => {
   if (!schema.openapi) {
     throw new GraphQLError("OpenAPI version is not defined");
   }
-
-  // const validator = await getValidator(schema.openapi);
-  // const result = validator.validate(schema);
-  //
-  // if (!result.valid) {
-  //   throw new ValidationError(result.errors);
-  // }
 
   const dereferenced = await dereference(schema);
 

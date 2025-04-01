@@ -66,11 +66,10 @@ async function processSchemas(
     }
 
     const postProcessors = [
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (schema: any) => upgrade(schema).specification,
+      (schema) => upgrade(schema).specification,
       ...(apiConfig.postProcessors ?? []),
       ...zuploProcessors,
-    ];
+    ] as Array<(schema: OpenAPIDocument) => Promise<OpenAPIDocument>>;
 
     const inputs = Array.isArray(apiConfig.input)
       ? apiConfig.input

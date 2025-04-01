@@ -35,6 +35,11 @@ export type Scalars = {
   JSONSchema: { input: any; output: any };
 };
 
+export type Components = {
+  __typename?: "Components";
+  schemas?: Maybe<Array<SchemaItem>>;
+};
+
 export type EncodingItem = {
   __typename?: "EncodingItem";
   allowReserved?: Maybe<Scalars["Boolean"]["output"]>;
@@ -132,6 +137,7 @@ export type ResponseItem = {
 
 export type Schema = {
   __typename?: "Schema";
+  components?: Maybe<Components>;
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   openapi: Scalars["String"]["output"];
@@ -158,6 +164,13 @@ export type SchemaTagArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
   slug?: InputMaybe<Scalars["String"]["input"]>;
   untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
+};
+
+export type SchemaItem = {
+  __typename?: "SchemaItem";
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  name: Scalars["String"]["output"];
+  schema: Scalars["JSONSchema"]["output"];
 };
 
 export type SchemaTag = {
@@ -323,6 +336,30 @@ export type OperationsForTagQuery = {
   };
 };
 
+export type GetSchemasQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type GetSchemasQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    title: string;
+    description?: string | null;
+    summary?: string | null;
+    components?: {
+      __typename?: "Components";
+      schemas?: Array<{
+        __typename?: "SchemaItem";
+        name: string;
+        schema: any;
+        extensions?: any | null;
+      }> | null;
+    } | null;
+  };
+};
+
 export type GetServerQueryQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
@@ -360,6 +397,10 @@ export type GetSidebarOperationsQuery = {
         path: string;
       }>;
     }>;
+    components?: {
+      __typename?: "Components";
+      schemas?: Array<{ __typename: "SchemaItem" }> | null;
+    } | null;
   };
 };
 
@@ -569,6 +610,25 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   OperationsForTagQuery,
   OperationsForTagQueryVariables
 >;
+export const GetSchemasDocument = new TypedDocumentString(`
+    query GetSchemas($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    title
+    description
+    summary
+    components {
+      schemas {
+        name
+        schema
+        extensions
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  GetSchemasQuery,
+  GetSchemasQueryVariables
+>;
 export const GetServerQueryDocument = new TypedDocumentString(`
     query getServerQuery($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
@@ -595,6 +655,11 @@ export const GetSidebarOperationsDocument = new TypedDocumentString(`
         method
         operationId
         path
+      }
+    }
+    components {
+      schemas {
+        __typename
       }
     }
   }
