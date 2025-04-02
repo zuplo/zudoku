@@ -84,7 +84,7 @@ export function SchemaList() {
             </div>
             {data.schema.description && (
               <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
-                <span>Schema description</span>
+                <span>API information</span>
                 <ChevronsUpDownIcon
                   className="group-data-[state=open]:hidden translate-y-px"
                   size={14}

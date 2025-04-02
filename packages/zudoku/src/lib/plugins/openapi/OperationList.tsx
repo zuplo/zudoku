@@ -224,7 +224,7 @@ export const OperationList = ({
       <div className="mb-8">
         <Collapsible className="w-full">
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
-            <div className="flex-1">
+            <div className="flex flex-col flex-1 gap-2">
               <CategoryHeading>{title}</CategoryHeading>
               <Heading
                 level={1}
@@ -240,6 +240,7 @@ export const OperationList = ({
                   </span>
                 )}
               </Heading>
+              <Endpoint />
             </div>
             <div className="flex flex-col gap-4 sm:items-end">
               {showVersions && (
@@ -262,7 +263,7 @@ export const OperationList = ({
               )}
               {schema.description && (
                 <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
-                  <span>Schema description</span>
+                  <span>API information</span>
 
                   <ChevronsUpDownIcon
                     className="group-data-[state=open]:hidden translate-y-px"
@@ -304,12 +305,8 @@ export const OperationList = ({
         )}
       </div>
       <hr />
-      <Pagination {...paginationProps} />
-      <div className="my-4 flex items-center justify-end gap-4">
-        <Endpoint />
-      </div>
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
-      <div className="px-6 -mx-6 [content-visibility:auto]">
+      <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
         {operations.map((fragment) => (
           <OperationListItem
             serverUrl={selectedServer}
