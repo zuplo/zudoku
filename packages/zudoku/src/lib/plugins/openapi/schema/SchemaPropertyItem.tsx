@@ -1,6 +1,7 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
+import { InlineCode } from "../../../components/InlineCode.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
@@ -10,6 +11,7 @@ import { EnumValues } from "../components/EnumValues.js";
 import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
+import { SchemaExample } from "./SchemaExample.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   hasLogicalGroupings,
@@ -44,10 +46,10 @@ export const SchemaLogicalGroup = ({
 };
 
 const RecursiveIndicator = () => (
-  <div className="flex items-center gap-1.5 italic text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">
+  <InlineCode className="inline-flex items-center gap-1.5 italic text-xs translate-y-0.5">
     <RefreshCcwDotIcon size={13} />
     <span>circular</span>
-  </div>
+  </InlineCode>
 );
 
 export const SchemaPropertyItem = ({
@@ -73,9 +75,12 @@ export const SchemaPropertyItem = ({
         <div className="flex flex-col gap-2.5 justify-between text-sm">
           <div className="space-x-2">
             <code>{name}</code>
-            <ParamInfos schema={schema} />
-            <RecursiveIndicator />
+            <ParamInfos
+              schema={schema}
+              extraItems={[<RecursiveIndicator key="circular-ref" />]}
+            />
           </div>
+          <SchemaExample schema={schema} />
         </div>
       </li>
     );
@@ -94,12 +99,13 @@ export const SchemaPropertyItem = ({
               group !== "optional" && (
                 <span className="text-primary">required</span>
               ),
+              schema.type === "array" &&
+                "items" in schema &&
+                isCircularRef(schema.items) && <RecursiveIndicator />,
             ]}
           />
-          {schema.type === "array" &&
-            "items" in schema &&
-            isCircularRef(schema.items) && <RecursiveIndicator />}
         </div>
+        <SchemaExample schema={schema} />
         {schema.description && (
           <Markdown
             className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}

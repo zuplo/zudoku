@@ -5,6 +5,7 @@ import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
+import { SchemaExample } from "./SchemaExample.js";
 import {
   SchemaLogicalGroup,
   SchemaPropertyItem,
@@ -49,6 +50,7 @@ export const SchemaView = ({
           <span className="text-sm text-muted-foreground">
             <ParamInfos schema={schema} />
           </span>
+          <SchemaExample schema={schema} />
           {schema.enum && <EnumValues values={schema.enum} />}
           {renderMarkdown(schema.description)}
         </Card>
@@ -64,6 +66,7 @@ export const SchemaView = ({
             <span className="text-sm text-muted-foreground">
               <ParamInfos schema={schema} />
             </span>
+            <SchemaExample schema={schema} />
             <EnumValues values={itemsSchema.enum} />
             {renderMarkdown(schema.description)}
           </Card>
@@ -79,6 +82,7 @@ export const SchemaView = ({
             <span className="text-sm text-muted-foreground">
               <ParamInfos schema={schema} />
             </span>
+            <SchemaExample schema={schema} />
             {renderMarkdown(schema.description)}
           </Card>
         );
@@ -104,6 +108,7 @@ export const SchemaView = ({
           <span className="text-sm text-muted-foreground">
             <ParamInfos schema={schema} />
           </span>
+          <SchemaExample schema={schema} />
           {renderMarkdown(schema.description)}
         </Card>
       );
