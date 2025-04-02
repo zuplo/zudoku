@@ -15,14 +15,12 @@ export const LogicalGroup = ({
   schemas,
   type,
   isOpen,
-  level,
   toggleOpen,
 }: {
   schemas: SchemaObject[];
   type: LogicalGroupType;
   isOpen: boolean;
   toggleOpen: () => void;
-  level: number;
 }) => (
   <Collapsible.Root open={isOpen} onOpenChange={toggleOpen} asChild>
     <Card className="px-6">
@@ -34,12 +32,7 @@ export const LogicalGroup = ({
       <Collapsible.Content className="pb-4">
         {schemas.map((subSchema, index) => (
           // eslint-disable-next-line react/no-array-index-key
-          <LogicalGroupItem
-            key={index}
-            type={type}
-            schema={subSchema}
-            level={level}
-          />
+          <LogicalGroupItem key={index} type={type} schema={subSchema} />
         ))}
       </Collapsible.Content>
     </Card>

@@ -11,7 +11,7 @@ import { EnumValues } from "../components/EnumValues.js";
 import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
-import { SchemaExample } from "./SchemaExample.js";
+import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   hasLogicalGroupings,
@@ -20,13 +20,7 @@ import {
   LogicalSchemaTypeMap,
 } from "./utils.js";
 
-export const SchemaLogicalGroup = ({
-  schema,
-  level,
-}: {
-  schema: SchemaObject;
-  level: number;
-}) => {
+export const SchemaLogicalGroup = ({ schema }: { schema: SchemaObject }) => {
   const [isOpen, setIsOpen] = useState(true);
   const toggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
 
@@ -39,14 +33,16 @@ export const SchemaLogicalGroup = ({
         type={type}
         isOpen={isOpen}
         toggleOpen={toggleOpen}
-        level={level}
       />
     );
   }
 };
 
 const RecursiveIndicator = () => (
-  <InlineCode className="inline-flex items-center gap-1.5 italic text-xs translate-y-0.5">
+  <InlineCode
+    className="inline-flex items-center gap-1.5 italic text-xs translate-y-0.5"
+    selectOnClick={false}
+  >
     <RefreshCcwDotIcon size={13} />
     <span>circular</span>
   </InlineCode>
@@ -56,14 +52,12 @@ export const SchemaPropertyItem = ({
   name,
   schema,
   group,
-  level,
   defaultOpen = false,
   showCollapseButton = true,
 }: {
   name: string;
   schema: SchemaObject;
   group: "required" | "optional" | "deprecated";
-  level: number;
   defaultOpen?: boolean;
   showCollapseButton?: boolean;
 }) => {
@@ -80,7 +74,7 @@ export const SchemaPropertyItem = ({
               extraItems={[<RecursiveIndicator key="circular-ref" />]}
             />
           </div>
-          <SchemaExample schema={schema} />
+          <SchemaExampleAndDefault schema={schema} />
         </div>
       </li>
     );
@@ -105,7 +99,6 @@ export const SchemaPropertyItem = ({
             ]}
           />
         </div>
-        <SchemaExample schema={schema} />
         {schema.description && (
           <Markdown
             className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
@@ -116,7 +109,7 @@ export const SchemaPropertyItem = ({
           <EnumValues values={schema.items.enum} />
         )}
         {schema.enum && <EnumValues values={schema.enum} />}
-
+        <SchemaExampleAndDefault schema={schema} />
         {(hasLogicalGroupings(schema) || isComplexType(schema)) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
@@ -134,15 +127,15 @@ export const SchemaPropertyItem = ({
             <Collapsible.Content>
               <div className="mt-2">
                 {hasLogicalGroupings(schema) ? (
-                  <SchemaLogicalGroup schema={schema} level={level + 1} />
+                  <SchemaLogicalGroup schema={schema} />
                 ) : schema.type === "object" ? (
-                  <SchemaView schema={schema} level={level + 1} />
+                  <SchemaView schema={schema} />
                 ) : (
                   schema.type === "array" &&
                   "items" in schema &&
                   typeof schema.items === "object" &&
                   !isCircularRef(schema.items) && (
-                    <SchemaView schema={schema.items} level={level + 1} />
+                    <SchemaView schema={schema.items} />
                   )
                 )}
               </div>

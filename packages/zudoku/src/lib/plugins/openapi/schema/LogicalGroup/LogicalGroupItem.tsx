@@ -8,7 +8,6 @@ import { LogicalGroupConnector } from "./LogicalGroupConnector.js";
 export const LogicalGroupItem = (props: {
   type: LogicalGroupType;
   schema: SchemaObject;
-  level: number;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
@@ -23,7 +22,7 @@ export const LogicalGroupItem = (props: {
       </Collapsible.Trigger>
       {!isOpen && <div className="wavy-line bg-border translate-y-1" />}
       <Collapsible.Content>
-        <SchemaView schema={props.schema} level={props.level + 1} />
+        <SchemaView schema={props.schema} />
       </Collapsible.Content>
     </Collapsible.Root>
   );
