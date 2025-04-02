@@ -100,13 +100,18 @@ export const OperationListItem = ({
             <div className="mt-4 flex flex-col gap-4">
               <Heading
                 level={3}
-                className="capitalize"
+                className="capitalize flex items-center gap-2"
                 id={`${operation.slug}/request-body`}
               >
                 {operation.summary && (
                   <VisuallyHidden>{operation.summary} &rsaquo; </VisuallyHidden>
                 )}
-                Request Body
+                Request Body{" "}
+                {operation.requestBody?.required === false ? (
+                  <Badge variant="muted">optional</Badge>
+                ) : (
+                  ""
+                )}
               </Heading>
               <SchemaView schema={schema} />
             </div>
