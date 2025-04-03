@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "@zudoku/react-helmet-async";
 import { use } from "react";
 import { matchPath, Outlet, useLocation, useNavigate } from "react-router";
 import {
@@ -13,6 +14,8 @@ import { BypassProtectedRoutesContext } from "../components/context/BypassProtec
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { ZudokuError } from "../util/invariant.js";
 import { useLatest } from "../util/useLatest.js";
+
+export const SEARCH_PROTECTED_SECTION = "protected";
 
 export const RouteGuard = () => {
   const auth = useAuth();
@@ -76,5 +79,18 @@ export const RouteGuard = () => {
     });
   }
 
-  return <Outlet />;
+  return (
+    <>
+      {shouldBypass && (
+        <Helmet>
+          <meta
+            name="pagefind"
+            data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
+            content="true"
+          />
+        </Helmet>
+      )}
+      <Outlet />
+    </>
+  );
 };
