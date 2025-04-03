@@ -83,6 +83,7 @@
         "description": "API version requested by the client",
         "schema": {
           "type": "string",
+          "nullable": true,
           "enum": ["2024-01", "2023-12"],
           "default": "2024-01"
         }
@@ -102,11 +103,13 @@
         "properties": {
           "id": {
             "type": "string",
-            "format": "uuid"
+            "format": "uuid",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
           },
           "recipientEmail": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "example": "recipient@example.com"
           },
           "recipientAddress": {
             "$ref": "#/components/schemas/Address"
@@ -162,6 +165,23 @@
               "type": "string",
               "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
             }
+          },
+          "customData": {
+            "type": "array",
+            "description": "Array of custom data items that can be of any type",
+            "items": {
+              "oneOf": [
+                { "type": "string" },
+                { "type": "number" },
+                { "type": "boolean" },
+                { "type": "null" }
+              ]
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Empty object for future extensibility",
+            "properties": {}
           }
         }
       },

@@ -6,6 +6,7 @@ import type { ParameterGroup } from "./OperationListItem.js";
 import { ParamInfos } from "./ParamInfos.js";
 import { EnumValues } from "./components/EnumValues.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
+import { SchemaExampleAndDefault } from "./schema/SchemaExampleAndDefault.js";
 
 const getParameterSchema = (
   parameter: ParameterListItemResult,
@@ -72,6 +73,7 @@ export const ParameterListItem = ({
       ) : (
         paramSchema.enum && <EnumValues values={paramSchema.enum} />
       )}
+      <SchemaExampleAndDefault schema={paramSchema} />
     </li>
   );
 };
