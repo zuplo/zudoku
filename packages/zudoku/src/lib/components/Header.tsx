@@ -69,7 +69,7 @@ export const Header = memo(function HeaderInner() {
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <Banner />
       <div className="border-b">
-        <div className="max-w-screen-2xl 2xl:border-x mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height]">
+        <div className="max-w-screen-2xl 2xl:border-x mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height] border-transparent">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
@@ -182,7 +182,7 @@ export const Header = memo(function HeaderInner() {
         </div>
       </div>
       <div className="border-b hidden lg:block">
-        <div className="max-w-screen-2xl mx-auto 2xl:border-x">
+        <div className="max-w-screen-2xl mx-auto 2xl:border-x border-transparent">
           <Slotlet name="top-navigation-before" />
           <TopNavigation />
           <Slotlet name="top-navigation-after" />
