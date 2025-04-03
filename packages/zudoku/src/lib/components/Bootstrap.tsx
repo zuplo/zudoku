@@ -13,6 +13,7 @@ import {
 } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
+import { BypassProtectedRoutesContext } from "./context/BypassProtectedRoutesContext.js";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,11 +33,13 @@ const Bootstrap = ({
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
-        <HelmetProvider>
-          <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
-            <RouterProvider router={router} />
-          </StaggeredRenderContext.Provider>
-        </HelmetProvider>
+        <BypassProtectedRoutesContext value={false}>
+          <HelmetProvider>
+            <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
+              <RouterProvider router={router} />
+            </StaggeredRenderContext.Provider>
+          </HelmetProvider>
+        </BypassProtectedRoutesContext>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
@@ -47,16 +50,20 @@ const BootstrapStatic = ({
   context,
   queryClient,
   helmetContext,
+  bypassProtection = false,
 }: {
   helmetContext: HelmetData["context"];
   context: StaticHandlerContext;
   queryClient: QueryClient;
   router: ReturnType<typeof createStaticRouter>;
+  bypassProtection?: boolean;
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <HelmetProvider context={helmetContext}>
-        <StaticRouterProvider router={router} context={context} />
+        <BypassProtectedRoutesContext value={bypassProtection}>
+          <StaticRouterProvider router={router} context={context} />
+        </BypassProtectedRoutesContext>
       </HelmetProvider>
     </QueryClientProvider>
   </StrictMode>

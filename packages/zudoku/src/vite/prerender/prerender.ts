@@ -1,14 +1,17 @@
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { createIndex, type PagefindIndex } from "pagefind";
 import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
 import { logger } from "../../cli/common/logger.js";
 import { type ZudokuConfig } from "../../config/validators/validate.js";
+import invariant from "../../lib/util/invariant.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import { type StaticWorkerData, type WorkerData } from "./worker.js";
+
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 
 const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
@@ -34,6 +37,7 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
 
 export type WorkerResult = {
   outputPath: string;
+  html: string;
   redirect?: { from: string; to: string };
 };
 
@@ -79,6 +83,17 @@ export const prerender = async ({
 
   let completedCount = 0;
 
+  let pagefindIndex: PagefindIndex | undefined;
+
+  if (config.search?.type === "pagefind") {
+    const { index, errors } = await createIndex();
+    invariant(
+      index,
+      `Failed to create pagefind index: ${JSON.stringify(errors)}`,
+    );
+    pagefindIndex = index;
+  }
+
   const serverOutDir = path.join(distDir, "server");
   const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
@@ -97,6 +112,11 @@ export const prerender = async ({
     paths.map(async (urlPath) => {
       const result = await pool.run({ urlPath } satisfies WorkerData);
 
+      await pagefindIndex?.addHTMLFile({
+        url: urlPath,
+        content: result.html,
+      });
+
       completedCount++;
 
       if (isTTY()) {
@@ -114,13 +134,23 @@ export const prerender = async ({
     }),
   );
 
+  const pagefindWriteResult = await pagefindIndex?.writeFiles({
+    outputPath: path.join(distDir, "pagefind"),
+  });
+
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
 
   const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds`;
+
   if (isTTY()) {
     writeLine(colors.blue(message + "\n"));
   } else {
     logger.info(colors.blue(message));
+  }
+  if (pagefindWriteResult?.outputPath) {
+    logger.info(
+      colors.blue(`✓ pagefind index built: ${pagefindWriteResult.outputPath}`),
+    );
   }
 
   await generateSitemap({

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { use } from "react";
 import { matchPath, Outlet, useLocation, useNavigate } from "react-router";
 import {
   Dialog,
@@ -8,6 +9,7 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { useAuth } from "../authentication/hook.js";
+import { BypassProtectedRoutesContext } from "../components/context/BypassProtectedRoutesContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { ZudokuError } from "../util/invariant.js";
 import { useLatest } from "../util/useLatest.js";
@@ -18,11 +20,15 @@ export const RouteGuard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const latestPath = useLatest(location.pathname);
+  const shouldBypass = use(BypassProtectedRoutesContext);
+
   const { protectedRoutes = [] } = zudoku.options;
 
-  const isProtected = protectedRoutes.some((path) =>
-    matchPath({ path, end: true }, location.pathname),
-  );
+  const isProtected =
+    !shouldBypass &&
+    protectedRoutes.some((path) =>
+      matchPath({ path, end: true }, location.pathname),
+    );
 
   useQuery({
     queryKey: ["login-redirect"],

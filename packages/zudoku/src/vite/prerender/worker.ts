@@ -1,8 +1,10 @@
 import path from "node:path";
 import Piscina from "piscina";
+import { matchPath } from "react-router";
 import { type ZudokuConfig } from "../../config/validators/validate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
+import { InMemoryResponse } from "./InMemoryResponse.js";
 import { type WorkerResult } from "./prerender.js";
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
@@ -36,25 +38,56 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   const outputPath = path.join(distDir, filename);
 
   const request = new Request(url);
-  const response = new FileWritingResponse({
+  const fileResponse = new FileWritingResponse({
     fileName: outputPath,
     writeRedirects,
   });
 
-  await server.render({ template, request, response, routes, basePath });
-  await response.isSent();
+  const sharedOpts = { template, request, routes, basePath };
+  const isProtectedRoute = config.protectedRoutes?.some((route) =>
+    matchPath(route, urlPath),
+  );
 
-  if (response.statusCode >= 500) {
+  let html: string;
+
+  // For protected routes, we need a second render pass with protection bypassed
+  // so we can build a full search index
+  if (isProtectedRoute) {
+    const bypassResponse = new InMemoryResponse();
+    await Promise.all([
+      server.render({ ...sharedOpts, response: fileResponse }),
+      server.render({
+        ...sharedOpts,
+        response: bypassResponse,
+        bypassProtection: true,
+      }),
+      fileResponse.isSent(),
+      bypassResponse.isSent(),
+    ]);
+
+    html = bypassResponse.buffer;
+  } else {
+    await server.render({ ...sharedOpts, response: fileResponse });
+    await fileResponse.isSent();
+
+    html = fileResponse.buffer;
+  }
+
+  if (fileResponse.statusCode >= 500) {
     throw new Error(
-      `SSR failed with status ${response.statusCode} for path: ${urlPath}`,
+      `SSR failed with status ${fileResponse.statusCode} for path: ${urlPath}`,
     );
   }
 
-  const redirect = response.redirectedTo
-    ? { from: pathname, to: response.redirectedTo }
+  const redirect = fileResponse.redirectedTo
+    ? { from: pathname, to: fileResponse.redirectedTo }
     : undefined;
 
-  return { outputPath, redirect };
+  return {
+    outputPath,
+    redirect,
+    html,
+  };
 };
 
 export default renderPage;

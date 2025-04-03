@@ -14,7 +14,7 @@ import "virtual:zudoku-theme.css";
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
-import type { FileWritingResponse } from "../vite/prerender/FileWritingResponse.js";
+import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import "./main.css";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
@@ -25,12 +25,14 @@ export const render = async ({
   response,
   routes,
   basePath,
+  bypassProtection,
 }: {
   template: string;
   request: express.Request | Request;
-  response: express.Response | FileWritingResponse;
+  response: express.Response | PrerenderResponse;
   routes: RouteObject[];
   basePath?: string;
+  bypassProtection?: boolean;
 }) => {
   const { query, dataRoutes } = createStaticHandler(routes, {
     basename: basePath,
@@ -73,6 +75,7 @@ export const render = async ({
       context={context}
       queryClient={queryClient}
       helmetContext={helmetContext}
+      bypassProtection={bypassProtection}
     />
   );
 
@@ -143,7 +146,7 @@ export const render = async ({
 
 export function createFetchRequest(
   req: express.Request,
-  res: express.Response | FileWritingResponse,
+  res: express.Response | PrerenderResponse,
 ): Request {
   const origin = `${req.protocol}://${req.get("host")}`;
   // Note: This had to take originalUrl into account for presumably vite's proxying
