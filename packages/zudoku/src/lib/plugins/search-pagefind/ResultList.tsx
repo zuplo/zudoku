@@ -1,5 +1,5 @@
 import { BracketsIcon, FileTextIcon } from "lucide-react";
-import { useCallback, useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
 import {
@@ -22,7 +22,6 @@ const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
 const hoverClassname = `cursor-pointer border border-transparent data-[selected=true]:border-border`;
 
 export const ResultList = ({
-  basePath,
   searchResults,
   searchTerm,
   onClose,
@@ -36,16 +35,6 @@ export const ResultList = ({
 }) => {
   const navigate = useNavigate();
   const commandListRef = useRef<HTMLDivElement | null>(null);
-
-  const cleanResultUrl = useCallback(
-    (url: string) => {
-      const clean = url.replace(".html", "");
-      return basePath && clean.startsWith(basePath)
-        ? clean.slice(basePath.length)
-        : clean;
-    },
-    [basePath],
-  );
 
   useLayoutEffect(() => {
     requestIdleCallback(() => {
@@ -71,11 +60,11 @@ export const ResultList = ({
               value={`${result.meta.title}-${result.url}`}
               className={hoverClassname}
               onSelect={() => {
-                void navigate(cleanResultUrl(result.url));
+                void navigate(result.url);
                 onClose();
               }}
             >
-              <Link to={cleanResultUrl(result.url)}>
+              <Link to={result.url}>
                 {result.meta.section === "openapi" ? (
                   <BracketsIcon />
                 ) : (
@@ -94,11 +83,11 @@ export const ResultList = ({
                   value={`sub-${result.meta.title}-${subResult.url}`}
                   className={hoverClassname}
                   onSelect={() => {
-                    void navigate(cleanResultUrl(subResult.url));
+                    void navigate(subResult.url);
                     onClose();
                   }}
                 >
-                  <Link to={cleanResultUrl(subResult.url)} onClick={onClose}>
+                  <Link to={subResult.url} onClick={onClose}>
                     <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
                       <span className="font-bold">{subResult.title}</span>
                       <span

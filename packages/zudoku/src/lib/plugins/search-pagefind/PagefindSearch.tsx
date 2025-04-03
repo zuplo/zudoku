@@ -36,11 +36,14 @@ const importPagefind = (basePath?: string): Promise<Pagefind> =>
     : import(/* @vite-ignore */ joinUrl(basePath, "/pagefind/pagefind.js"));
 
 const usePagefind = (options: PagefindOptions) => {
+  const {
+    options: { basePath },
+  } = useZudoku();
   const { data: pagefind, ...result } = useQuery<Pagefind>({
     queryKey: ["pagefind", options.ranking],
     retry: false,
     queryFn: async () => {
-      const pagefind = await importPagefind(options.basePath);
+      const pagefind = await importPagefind(basePath);
       await pagefind.init();
       await pagefind.options({
         ranking: {
@@ -150,7 +153,6 @@ export const PagefindSearch = ({
         </div>
       ) : (
         <ResultList
-          basePath={options.basePath}
           searchResults={searchResults ?? []}
           searchTerm={searchTerm}
           onClose={onClose}
