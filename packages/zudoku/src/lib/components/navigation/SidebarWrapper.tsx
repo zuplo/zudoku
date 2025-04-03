@@ -18,18 +18,20 @@ export const SidebarWrapper = ({
         className,
       )}
       style={{
-        maskImage: `linear-gradient(180deg, transparent 1%, rgba(0, 0, 0, 1) 15px, rgba(0, 0, 0, 1) 90%, transparent 99%)`,
+        maskImage: `linear-gradient(180deg, transparent 1%, rgba(0, 0, 0, 1) 20px, rgba(0, 0, 0, 1) 90%, transparent 99%)`,
       }}
       ref={ref}
     >
       {children}
     </nav>
 
-    <div className="bg-background border-t p-2 mx-4 flex gap-2 items-center">
-      <div className="gap-2 text-xs font-medium border rounded-full shadow-sm h-7 flex items-center px-3 text-nowrap">
-        <ZudokuLogo className="w-5 h-5" />
-        Powered by Zudoku
+    <div className="bg-background border-t p-2 mx-5 flex gap-2 items-center mt-2 drop-shadow-[0_-3px_1px_rgba(0,0,0,0.015)] justify-between">
+      {/* <div className="gap-1.5 text-xs font-medium border rounded-full shadow-sm h-7 flex items-center px-3 text-nowrap"> */}
+      <div className="opacity-70 hover:opacity-100 transition-opacity gap-1.5 text-[11px] font-medium rounded-full h-7 flex items-center px-3 text-nowrap">
+        <ZudokuLogo className="w-3.5 h-3.5" />
+        powered by Zudoku
       </div>
+      <div className="text-xs font-medium"> </div>
       {/* <PoweredByZudoku /> */}
     </div>
   </div>
