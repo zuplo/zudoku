@@ -5,6 +5,10 @@ const withZuplo = <TConfig extends CommonConfig>(config: TConfig): TConfig => {
     ...config,
     isZuplo: true,
     enableStatusPages: true,
+    page: {
+      showPoweredBy: false,
+      ...config.page,
+    },
   };
 };
 
