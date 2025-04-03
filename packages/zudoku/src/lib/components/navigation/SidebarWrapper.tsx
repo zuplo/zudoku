@@ -1,6 +1,6 @@
 import { type PropsWithChildren, type Ref } from "react";
 import { cn } from "../../util/cn.js";
-
+import PoweredByZudoku from "./PoweredByZudoku.js";
 export const SidebarWrapper = ({
   children,
   className,
@@ -9,17 +9,22 @@ export const SidebarWrapper = ({
   className?: string;
   ref?: Ref<HTMLDivElement>;
 }>) => (
-  <nav
-    className={cn(
-      "hidden lg:flex h-full scrollbar flex-col overflow-y-auto shrink-0 text-sm border-r pr-6",
-      "sticky top-[--header-height] h-[calc(100vh-var(--header-height))]",
-      "-mx-[--padding-nav-item] max-w-[--side-nav-width] pb-6 pt-[--padding-content-top] scroll-pt-2 gap-2",
-      className,
-    )}
-    ref={ref}
-  >
-    {children}
-  </nav>
+  <div className="grid sticky top-[--header-height] h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
+    <nav
+      className={cn(
+        "hidden max-w-[calc(var(--side-nav-width)+var(--padding-nav-item))] lg:flex scrollbar flex-col overflow-y-auto shrink-0 text-sm pe-3 ps-4 lg:ps-8",
+        "-mx-[--padding-nav-item] pb-6 pt-[--padding-content-top] scroll-pt-2 gap-2",
+        className,
+      )}
+      ref={ref}
+    >
+      {children}
+    </nav>
+
+    <div className="bg-background border-t p-2">
+      <PoweredByZudoku />
+    </div>
+  </div>
 );
 
 SidebarWrapper.displayName = "SidebarWrapper";
