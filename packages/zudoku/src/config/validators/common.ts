@@ -334,6 +334,7 @@ const PageSchema = z
     pageTitle: z.string(),
     logoUrl: z.string(),
     logo: LogoSchema,
+    showPoweredBy: z.boolean().optional(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z

@@ -52,6 +52,7 @@ type Metadata = Partial<{
 }>;
 
 type Page = Partial<{
+  showPoweredBy: boolean;
   pageTitle?: string;
   logo?: {
     src: {
