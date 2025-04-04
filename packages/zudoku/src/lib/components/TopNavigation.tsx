@@ -69,8 +69,8 @@ export const TopNavigation = () => {
           </ul>
         </nav>
         <Slotlet name="top-navigation-side" />
-        <Progress />
       </div>
+      <Progress />
     </Suspense>
   );
 };
