@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { Helmet } from "@zudoku/react-helmet-async";
+import { use } from "react";
 import { matchPath, Outlet, useLocation, useNavigate } from "react-router";
 import {
   Dialog,
@@ -8,9 +10,12 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { useAuth } from "../authentication/hook.js";
+import { BypassProtectedRoutesContext } from "../components/context/BypassProtectedRoutesContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { ZudokuError } from "../util/invariant.js";
 import { useLatest } from "../util/useLatest.js";
+
+export const SEARCH_PROTECTED_SECTION = "protected";
 
 export const RouteGuard = () => {
   const auth = useAuth();
@@ -18,11 +23,15 @@ export const RouteGuard = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const latestPath = useLatest(location.pathname);
+  const shouldBypass = use(BypassProtectedRoutesContext);
+
   const { protectedRoutes = [] } = zudoku.options;
 
-  const isProtected = protectedRoutes.some((path) =>
-    matchPath({ path, end: true }, location.pathname),
-  );
+  const isProtected =
+    !shouldBypass &&
+    protectedRoutes.some((path) =>
+      matchPath({ path, end: true }, location.pathname),
+    );
 
   useQuery({
     queryKey: ["login-redirect"],
@@ -70,5 +79,18 @@ export const RouteGuard = () => {
     });
   }
 
-  return <Outlet />;
+  return (
+    <>
+      {shouldBypass && (
+        <Helmet>
+          <meta
+            name="pagefind"
+            data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
+            content="true"
+          />
+        </Helmet>
+      )}
+      <Outlet />
+    </>
+  );
 };

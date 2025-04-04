@@ -1,13 +1,16 @@
 import fs from "node:fs/promises";
 import path from "path";
+import type { PrerenderResponse } from "./PrerenderResponse.js";
 
-export class FileWritingResponse {
-  private buffer = "";
-  private dontSave = false;
+export class FileWritingResponse implements PrerenderResponse {
   private resolve = () => {};
   private resolved = new Promise<void>((res) => (this.resolve = res));
+  private dontSave = false;
+
+  public buffer = "";
   public redirectedTo?: string;
   public statusCode = 200;
+  public options: { fileName: string; writeRedirects: boolean };
 
   set() {}
   status(status: number) {
@@ -18,12 +21,9 @@ export class FileWritingResponse {
   }
   on() {}
 
-  constructor(
-    private options: {
-      fileName: string;
-      writeRedirects: boolean;
-    },
-  ) {}
+  constructor(options: { fileName: string; writeRedirects: boolean }) {
+    this.options = options;
+  }
 
   redirect(status: number, url: string) {
     this.statusCode = status;
@@ -38,10 +38,10 @@ export class FileWritingResponse {
     void this.end();
   }
 
-  send = async (chunk: string) => {
+  async send(chunk: string) {
     this.write(chunk);
     await this.end();
-  };
+  }
 
   write(chunk: string, _encoding?: string) {
     this.buffer += chunk;

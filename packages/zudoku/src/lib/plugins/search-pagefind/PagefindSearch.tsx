@@ -11,6 +11,7 @@ import {
 import { DialogTitle } from "zudoku/ui/Dialog.js";
 import { useAuthState } from "../../authentication/state.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { SEARCH_PROTECTED_SECTION } from "../../core/RouteGuard.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { getResults } from "./get-results.js";
 import type { PagefindOptions } from "./index.js";
@@ -35,11 +36,14 @@ const importPagefind = (basePath?: string): Promise<Pagefind> =>
     : import(/* @vite-ignore */ joinUrl(basePath, "/pagefind/pagefind.js"));
 
 const usePagefind = (options: PagefindOptions) => {
+  const {
+    options: { basePath },
+  } = useZudoku();
   const { data: pagefind, ...result } = useQuery<Pagefind>({
     queryKey: ["pagefind", options.ranking],
     retry: false,
     queryFn: async () => {
-      const pagefind = await importPagefind(options.basePath);
+      const pagefind = await importPagefind(basePath);
       await pagefind.init();
       await pagefind.options({
         ranking: {
@@ -82,9 +86,13 @@ export const PagefindSearch = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: searchResults } = useQuery({
-    queryKey: ["pagefind-search", searchTerm],
+    queryKey: ["pagefind-search", searchTerm, auth.isAuthenticated],
     queryFn: async () => {
-      const search = await pagefind?.search(searchTerm);
+      const filters = auth.isAuthenticated
+        ? undefined
+        : { not: { section: SEARCH_PROTECTED_SECTION } };
+
+      const search = await pagefind?.search(searchTerm, { filters });
       if (!search) return [];
       return getResults({ search, options, auth, context });
     },
@@ -145,7 +153,6 @@ export const PagefindSearch = ({
         </div>
       ) : (
         <ResultList
-          basePath={options.basePath}
           searchResults={searchResults ?? []}
           searchTerm={searchTerm}
           onClose={onClose}
