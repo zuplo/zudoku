@@ -29,11 +29,11 @@
     "node": ">=22"
   },
   "devDependencies": {
-    "@nx/eslint": "20.6.4",
+    "@nx/eslint": "20.7.0",
     "@nx/vite": "20.6.4",
     "@nx/web": "20.6.4",
-    "@typescript-eslint/eslint-plugin": "8.26.1",
-    "@typescript-eslint/parser": "8.26.1",
+    "@typescript-eslint/eslint-plugin": "8.29.0",
+    "@typescript-eslint/parser": "8.29.0",
     "eslint": "8.57.0",
     "eslint-config-prettier": "10.1.1",
     "eslint-plugin-import": "2.31.0",
