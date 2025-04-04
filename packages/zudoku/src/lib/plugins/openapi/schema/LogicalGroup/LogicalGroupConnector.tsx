@@ -24,10 +24,12 @@ export const LogicalGroupConnector = ({
   type,
   isOpen,
   className,
+  schemeName,
 }: {
   type: LogicalGroupType;
   isOpen: boolean;
   className?: string;
+  schemeName?: string;
 }) => {
   return (
     <div
@@ -48,6 +50,7 @@ export const LogicalGroupConnector = ({
         >
           <ChevronDownIcon size={16} />
         </div>
+        <span className="text-sm text-foreground">{schemeName}</span>
       </div>
     </div>
   );
