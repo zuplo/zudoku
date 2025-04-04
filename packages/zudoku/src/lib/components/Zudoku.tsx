@@ -30,6 +30,8 @@ import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
 import { SlotletProvider } from "./SlotletProvider.js";
 
+let zudokuContext: ZudokuContext | undefined;
+
 const ZudokoInner = memo(
   ({ children, ...props }: PropsWithChildren<ZudokuContextOptions>) => {
     const components = useMemo(
@@ -70,9 +72,9 @@ const ZudokoInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    const [zudokuContext] = useState(
-      () => new ZudokuContext(props, queryClient),
-    );
+    if (!zudokuContext) {
+      zudokuContext = new ZudokuContext(props, queryClient);
+    }
 
     const heads = props.plugins
       ?.flatMap((plugin) =>
