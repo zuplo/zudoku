@@ -18,7 +18,11 @@ export const LogicalGroupItem = (props: {
       className="group"
     >
       <Collapsible.Trigger>
-        <LogicalGroupConnector type={props.type} isOpen={isOpen} />
+        <LogicalGroupConnector
+          type={props.type}
+          isOpen={isOpen}
+          schemeName={props.schema.title}
+        />
       </Collapsible.Trigger>
       {!isOpen && <div className="wavy-line bg-border translate-y-1" />}
       <Collapsible.Content>

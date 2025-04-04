@@ -24,10 +24,12 @@ export const LogicalGroupConnector = ({
   type,
   isOpen,
   className,
+  schemeName,
 }: {
   type: LogicalGroupType;
   isOpen: boolean;
   className?: string;
+  schemeName?: string;
 }) => {
   return (
     <div
@@ -38,7 +40,7 @@ export const LogicalGroupConnector = ({
         className,
       )}
     >
-      <div className="-translate-x-[7px] flex gap-1 items-center">
+      <div className="-translate-x-[7px] flex gap-1 items-center text-sm text-foreground">
         {iconMap[type]}
         <div
           className={cn(
@@ -48,6 +50,7 @@ export const LogicalGroupConnector = ({
         >
           <ChevronDownIcon size={16} />
         </div>
+        <span>{schemeName}</span>
       </div>
     </div>
   );
