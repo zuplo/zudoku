@@ -40,7 +40,7 @@ export const LogicalGroupConnector = ({
         className,
       )}
     >
-      <div className="-translate-x-[7px] flex gap-1 items-center text-sm text-foreground">
+      <div className="-translate-x-[7px] flex gap-1 items-center">
         {iconMap[type]}
         <div
           className={cn(
@@ -50,7 +50,7 @@ export const LogicalGroupConnector = ({
         >
           <ChevronDownIcon size={16} />
         </div>
-        <span>{schemeName}</span>
+        <span className="text-sm text-foreground">{schemeName}</span>
       </div>
     </div>
   );
