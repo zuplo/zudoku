@@ -583,8 +583,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1
       piscina:
-        specifier: 5.0.0-alpha.1
-        version: 5.0.0-alpha.1
+        specifier: 5.0.0-alpha.2
+        version: 5.0.0-alpha.2
       postcss:
         specifier: 8.5.3
         version: 8.5.3
@@ -7495,8 +7495,8 @@ packages:
     resolution: {integrity: sha512-saLsH7WeYYPiD25LDuLRRY/i+6HaPYr6G1OUlN39otzkSTxKnubR9RTxS3/Kk50s1g2JTgFwWQDQyplC5/SHZg==}
     engines: {node: '>= 6'}
 
-  piscina@5.0.0-alpha.1:
-    resolution: {integrity: sha512-fPx/ZNkxA35CgLsuGJzrQa4FXgOUamwgag2bft2oV4wI2inOcAwXupa7BxYNdCfNFkMtW6EjwiWdRqqZmaAoNA==}
+  piscina@5.0.0-alpha.2:
+    resolution: {integrity: sha512-wqGfIlO4nvr+/f54LN2Wazi4AytKnzUNusABV4A8rIn09ssAbS+W5ICwEg61R0vNH2URSZzTtsIs9+TUQ28GBg==}
     engines: {node: '>=18.x'}
 
   portfinder@1.0.35:
@@ -17445,7 +17445,7 @@ snapshots:
 
   pirates@4.0.6: {}
 
-  piscina@5.0.0-alpha.1:
+  piscina@5.0.0-alpha.2:
     optionalDependencies:
       '@napi-rs/nice': 1.0.1
 
