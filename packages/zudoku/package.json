@@ -159,6 +159,7 @@
     "build": "tsc --project tsconfig.app.json",
     "build:vite": "vite build",
     "generate:icon-types": "tsx ./scripts/generate-icon-types.ts",
+    "generate:dev-portal-schema": "tsx ./scripts/dev-portal-json-schema.ts",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
     "clean": "tsc --build --clean",
@@ -304,7 +305,8 @@
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "5.14.0",
     "typescript": "5.7.3",
-    "vitest": "3.0.5"
+    "vitest": "3.0.5",
+    "zod-to-json-schema": "^3.24.5"
   },
   "peerDependencies": {
     "react": ">=19",

@@ -1,0 +1,967 @@
+{
+  "$ref": "#/definitions/dev-portal-json",
+  "definitions": {
+    "dev-portal-json": {
+      "type": "object",
+      "properties": {
+        "protectedRoutes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "basePath": {
+          "type": "string"
+        },
+        "canonicalUrlOrigin": {
+          "type": "string"
+        },
+        "cdnUrl": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "base": {
+                  "type": "string"
+                },
+                "media": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "port": {
+          "type": "number"
+        },
+        "https": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string"
+            },
+            "cert": {
+              "type": "string"
+            },
+            "ca": {
+              "type": "string"
+            }
+          },
+          "required": ["key", "cert"],
+          "additionalProperties": false
+        },
+        "page": {
+          "type": "object",
+          "properties": {
+            "pageTitle": {
+              "type": "string"
+            },
+            "logoUrl": {
+              "type": "string"
+            },
+            "logo": {
+              "type": "object",
+              "properties": {
+                "src": {
+                  "type": "object",
+                  "properties": {
+                    "light": {
+                      "type": "string"
+                    },
+                    "dark": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["light", "dark"],
+                  "additionalProperties": false
+                },
+                "alt": {
+                  "type": "string"
+                },
+                "width": {
+                  "type": "string"
+                }
+              },
+              "required": ["src"],
+              "additionalProperties": false
+            },
+            "showPoweredBy": {
+              "type": "boolean"
+            },
+            "banner": {
+              "type": "object",
+              "properties": {
+                "message": {},
+                "color": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": ["note", "tip", "info", "caution", "danger"]
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "dismissible": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "topNavigation": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "default": {
+                "type": "string"
+              },
+              "display": {
+                "type": "string",
+                "enum": ["auth", "anon", "always", "hide"],
+                "default": "always"
+              }
+            },
+            "required": ["label", "id"],
+            "additionalProperties": false
+          }
+        },
+        "sidebar": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "const": "doc"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "icon": {},
+                        "label": {
+                          "type": "string"
+                        },
+                        "badge": {
+                          "type": "object",
+                          "properties": {
+                            "label": {
+                              "type": "string"
+                            },
+                            "color": {
+                              "type": "string",
+                              "enum": [
+                                "green",
+                                "blue",
+                                "yellow",
+                                "red",
+                                "purple",
+                                "indigo",
+                                "gray",
+                                "outline"
+                              ]
+                            },
+                            "placement": {
+                              "type": "string",
+                              "enum": ["start", "end"]
+                            },
+                            "invert": {
+                              "type": "boolean"
+                            }
+                          },
+                          "required": ["label", "color"],
+                          "additionalProperties": false
+                        }
+                      },
+                      "required": ["type", "id"],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "link"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "href": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "badge": {
+                      "$ref": "#/definitions/dev-portal-json/properties/sidebar/additionalProperties/items/anyOf/0/anyOf/0/properties/badge"
+                    }
+                  },
+                  "required": ["type", "label", "href"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "category"
+                    },
+                    "icon": {},
+                    "label": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "collapsible": {
+                      "type": "boolean"
+                    },
+                    "collapsed": {
+                      "type": "boolean"
+                    },
+                    "link": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "doc"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            }
+                          },
+                          "required": ["type", "id"],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/definitions/dev-portal-json/properties/sidebar/additionalProperties/items"
+                      }
+                    }
+                  },
+                  "required": ["type", "label", "items"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          }
+        },
+        "theme": {
+          "type": "object",
+          "properties": {
+            "light": {
+              "type": "object",
+              "properties": {
+                "background": {
+                  "type": "string"
+                },
+                "foreground": {
+                  "type": "string"
+                },
+                "card": {
+                  "type": "string"
+                },
+                "cardForeground": {
+                  "type": "string"
+                },
+                "popover": {
+                  "type": "string"
+                },
+                "popoverForeground": {
+                  "type": "string"
+                },
+                "primary": {
+                  "type": "string"
+                },
+                "primaryForeground": {
+                  "type": "string"
+                },
+                "secondary": {
+                  "type": "string"
+                },
+                "secondaryForeground": {
+                  "type": "string"
+                },
+                "muted": {
+                  "type": "string"
+                },
+                "mutedForeground": {
+                  "type": "string"
+                },
+                "accent": {
+                  "type": "string"
+                },
+                "accentForeground": {
+                  "type": "string"
+                },
+                "destructive": {
+                  "type": "string"
+                },
+                "destructiveForeground": {
+                  "type": "string"
+                },
+                "border": {
+                  "type": "string"
+                },
+                "input": {
+                  "type": "string"
+                },
+                "ring": {
+                  "type": "string"
+                },
+                "radius": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            "dark": {
+              "$ref": "#/definitions/dev-portal-json/properties/theme/properties/light"
+            },
+            "fonts": {
+              "type": "object",
+              "properties": {
+                "sans": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    },
+                    "fontFamily": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["url", "fontFamily"],
+                  "additionalProperties": false
+                },
+                "mono": {
+                  "$ref": "#/definitions/dev-portal-json/properties/theme/properties/fonts/properties/sans"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "logo": {
+              "type": "string"
+            },
+            "favicon": {
+              "type": "string"
+            },
+            "generator": {
+              "type": "string"
+            },
+            "applicationName": {
+              "type": "string"
+            },
+            "referrer": {
+              "type": "string"
+            },
+            "keywords": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "authors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "creator": {
+              "type": "string"
+            },
+            "publisher": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "authentication": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "clerk"
+                },
+                "clerkPubKey": {},
+                "redirectToAfterSignUp": {
+                  "type": "string"
+                },
+                "redirectToAfterSignIn": {
+                  "type": "string"
+                },
+                "redirectToAfterSignOut": {
+                  "type": "string"
+                }
+              },
+              "required": ["type", "clerkPubKey"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "openid"
+                },
+                "clientId": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "audience": {
+                  "type": "string"
+                },
+                "scopes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "redirectToAfterSignUp": {
+                  "type": "string"
+                },
+                "redirectToAfterSignIn": {
+                  "type": "string"
+                },
+                "redirectToAfterSignOut": {
+                  "type": "string"
+                }
+              },
+              "required": ["type", "clientId", "issuer"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "auth0"
+                },
+                "clientId": {
+                  "type": "string"
+                },
+                "domain": {
+                  "type": "string"
+                },
+                "audience": {
+                  "type": "string"
+                },
+                "redirectToAfterSignUp": {
+                  "type": "string"
+                },
+                "redirectToAfterSignIn": {
+                  "type": "string"
+                },
+                "redirectToAfterSignOut": {
+                  "type": "string"
+                }
+              },
+              "required": ["type", "clientId", "domain"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "supabase"
+                },
+                "supabaseUrl": {
+                  "type": "string"
+                },
+                "supabaseKey": {
+                  "type": "string"
+                },
+                "provider": {
+                  "type": "string",
+                  "enum": [
+                    "google",
+                    "github",
+                    "gitlab",
+                    "bitbucket",
+                    "facebook",
+                    "twitter"
+                  ]
+                },
+                "redirectToAfterSignUp": {
+                  "type": "string"
+                },
+                "redirectToAfterSignIn": {
+                  "type": "string"
+                },
+                "redirectToAfterSignOut": {
+                  "type": "string"
+                }
+              },
+              "required": ["type", "supabaseUrl", "supabaseKey", "provider"],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "search": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "inkeep"
+                },
+                "apiKey": {
+                  "type": "string"
+                },
+                "integrationId": {
+                  "type": "string"
+                },
+                "organizationId": {
+                  "type": "string"
+                },
+                "primaryBrandColor": {
+                  "type": "string"
+                },
+                "organizationDisplayName": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "type",
+                "apiKey",
+                "integrationId",
+                "organizationId",
+                "primaryBrandColor",
+                "organizationDisplayName"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "const": "pagefind"
+                },
+                "ranking": {
+                  "type": "object",
+                  "properties": {
+                    "termFrequency": {
+                      "type": "number"
+                    },
+                    "pageLength": {
+                      "type": "number"
+                    },
+                    "termSimilarity": {
+                      "type": "number"
+                    },
+                    "termSaturation": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "termFrequency",
+                    "pageLength",
+                    "termSimilarity",
+                    "termSaturation"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxResults": {
+                  "type": "number"
+                },
+                "maxSubResults": {
+                  "type": "number"
+                },
+                "transformResults": {}
+              },
+              "required": ["type"],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "docs": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "files": {
+                  "type": "string"
+                },
+                "defaultOptions": {
+                  "type": "object",
+                  "properties": {
+                    "toc": {
+                      "type": "boolean"
+                    },
+                    "disablePager": {
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "required": ["files"],
+              "additionalProperties": false
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dev-portal-json/properties/docs/anyOf/0"
+              }
+            }
+          ]
+        },
+        "apis": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "url"
+                    },
+                    "input": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "server": {
+                      "type": "string"
+                    },
+                    "navigationId": {
+                      "type": "string"
+                    },
+                    "categories": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "label": {
+                            "type": "string"
+                          },
+                          "tags": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": ["label", "tags"],
+                        "additionalProperties": false
+                      }
+                    },
+                    "options": {
+                      "type": "object",
+                      "properties": {
+                        "examplesLanguage": {
+                          "type": "string"
+                        },
+                        "disablePlayground": {
+                          "type": "boolean"
+                        },
+                        "showVersionSelect": {
+                          "type": "string",
+                          "enum": ["always", "if-available", "hide"]
+                        },
+                        "expandAllTags": {
+                          "type": "boolean"
+                        },
+                        "transformExamples": {}
+                      },
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": ["type", "input"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "file"
+                    },
+                    "input": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "id": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/id"
+                    },
+                    "server": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/server"
+                    },
+                    "navigationId": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/navigationId"
+                    },
+                    "categories": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/categories"
+                    },
+                    "options": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/options"
+                    },
+                    "postProcessors": {
+                      "type": "array"
+                    }
+                  },
+                  "required": ["type", "input"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "raw"
+                    },
+                    "input": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/id"
+                    },
+                    "server": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/server"
+                    },
+                    "navigationId": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/navigationId"
+                    },
+                    "categories": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/categories"
+                    },
+                    "options": {
+                      "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/options"
+                    }
+                  },
+                  "required": ["type", "input"],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0"
+              }
+            }
+          ]
+        },
+        "catalogs": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "navigationId": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": ["navigationId", "label"],
+              "additionalProperties": false
+            },
+            {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/dev-portal-json/properties/catalogs/anyOf/0"
+              }
+            }
+          ]
+        },
+        "apiKeys": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "endpoint": {
+                  "type": "string"
+                }
+              },
+              "required": ["enabled", "endpoint"],
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "getKeys": {},
+                "rollKey": {},
+                "deleteKey": {},
+                "updateKeyDescription": {},
+                "createKey": {}
+              },
+              "required": ["enabled", "getKeys"],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "redirects": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string"
+              },
+              "to": {
+                "type": "string"
+              }
+            },
+            "required": ["from", "to"],
+            "additionalProperties": false
+          }
+        },
+        "sitemap": {
+          "type": "object",
+          "properties": {
+            "siteUrl": {
+              "type": "string"
+            },
+            "changefreq": {
+              "type": "string",
+              "enum": [
+                "always",
+                "hourly",
+                "daily",
+                "weekly",
+                "monthly",
+                "yearly",
+                "never"
+              ]
+            },
+            "priority": {
+              "type": "number"
+            },
+            "outDir": {
+              "type": "string"
+            },
+            "autoLastmod": {
+              "type": "boolean"
+            },
+            "exclude": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            }
+          },
+          "required": ["siteUrl"],
+          "additionalProperties": false
+        },
+        "isZuplo": {
+          "type": "boolean"
+        },
+        "enableStatusPages": {
+          "type": "boolean"
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "apis": {
+              "$ref": "#/definitions/dev-portal-json/properties/apis/anyOf/0/anyOf/0/properties/options"
+            },
+            "examplesLanguage": {
+              "type": "string"
+            }
+          },
+          "required": ["apis"],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "page",
+        "topNavigation",
+        "sidebar",
+        "theme",
+        "metadata",
+        "authentication",
+        "docs",
+        "apis",
+        "catalogs",
+        "apiKeys",
+        "redirects",
+        "defaults"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#"
+}
