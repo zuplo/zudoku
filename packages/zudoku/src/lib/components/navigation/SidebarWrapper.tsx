@@ -14,7 +14,7 @@ export const SidebarWrapper = ({
   const { options } = useZudoku();
 
   return (
-    <div className="grid sticky top-[--header-height] h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
+    <div className="grid sticky top-[--header-height] lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
       <nav
         className={cn(
           "hidden max-w-[calc(var(--side-nav-width)+var(--padding-nav-item))] lg:flex scrollbar flex-col overflow-y-auto shrink-0 text-sm pe-3 ps-4 lg:ps-8",
@@ -29,7 +29,7 @@ export const SidebarWrapper = ({
         {children}
       </nav>
 
-      <div className="bg-background border-t p-2 mx-5  gap-2 items-center mt-2 drop-shadow-[0_-3px_1px_rgba(0,0,0,0.015)] hidden [&:has(>_:nth-child(1):last-child)]:flex">
+      <div className="bg-background border-t p-2 mx-5  gap-2 items-center mt-2 drop-shadow-[0_-3px_1px_rgba(0,0,0,0.015)] hidden lg:[&:has(>_:nth-child(1):last-child)]:flex">
         {options.page?.showPoweredBy !== false && <PoweredByZudoku />}
       </div>
     </div>
