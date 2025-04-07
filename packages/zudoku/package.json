@@ -282,7 +282,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",
-    "@graphql-codegen/client-preset": "4.7.0",
+    "@graphql-codegen/client-preset": "4.8.0",
     "@testing-library/react": "16.2.0",
     "@types/estree": "1.0.7",
     "@types/express": "5.0.0",
