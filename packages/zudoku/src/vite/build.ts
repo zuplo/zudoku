@@ -34,9 +34,7 @@ const getIssuer = async (config: ZudokuConfig) => {
       return undefined;
     }
     default: {
-      throw new Error(
-        `Unsupported authentication type: ${config.authentication?.type}`,
-      );
+      throw new Error(`Unsupported authentication type`);
     }
   }
 };

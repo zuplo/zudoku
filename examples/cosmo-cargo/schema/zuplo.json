@@ -1,0 +1,56 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "My Zuplo API"
+  },
+  "paths": {
+    "/gimme": {
+      "get": {
+        "summary": "Gimme Quote!",
+        "description": "",
+        "operationId": "e8355c4b-aaf7-4b0d-bfd7-200782f5def1",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "required": true,
+            "example": "Bearer YOUR_KEY_HERE",
+            "schema": {
+              "type": "string"
+            },
+            "description": "The `Authorization` header is used to authenticate with the API using your API key. Value is of the format `Bearer YOUR_KEY_HERE`."
+          }
+        ],
+        "security": [
+          {
+            "api_key": []
+          }
+        ]
+      }
+    },
+    "/openapi": {
+      "get": {
+        "summary": "OpenAPI ",
+        "description": "",
+        "operationId": "7936eb78-f5fa-4c3c-9eb1-0d682270ba82"
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "api_key": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://cosmo-cargo-main-9d87421.zuplo.app"
+    },
+    {
+      "url": "https://cosmo-cargo-main-026b713.d2.zuplo.dev"
+    }
+  ]
+}
