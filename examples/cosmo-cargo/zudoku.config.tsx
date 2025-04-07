@@ -1,14 +1,19 @@
-import type { ZudokuConfig } from "zudoku";
+import type { ZudokuConfig, ZudokuContext } from "zudoku";
 import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
+import { apiKeyPlugin } from "zudoku/plugins/api-keys";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
-  async getIdentities() {
+  async getIdentities(context: ZudokuContext) {
     return [
       {
         label: `Unlimited Subscription`,
         id: "UNLNTD",
-        authorizeRequest: (request: Request) => {
-          request.headers.set("X-Authorization", `Bearer 1234567890`);
+        authorizeRequest: async (request: Request) => {
+          request.headers.set(
+            "Authorization",
+            `Bearer ` + (await context.authentication.getAccessToken()),
+          );
+
           return request;
         },
       },
@@ -18,6 +23,7 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
 const config: ZudokuConfig = {
   page: {
+    layout: "wide",
     banner: {
       message: (
         <div className="text-center">
@@ -93,6 +99,7 @@ const config: ZudokuConfig = {
     { id: "general", label: "General" },
     { id: "api-shipments", label: "Shipments API" },
     { id: "catalog", label: "API Catalog" },
+    { id: "zuplo", label: "Zuplo" },
   ],
   redirects: [{ from: "/", to: "/general" }],
   sidebar: {
@@ -111,14 +118,20 @@ const config: ZudokuConfig = {
       examplesLanguage: "js",
     },
   },
-  search: {
-    type: "pagefind",
-  },
+  // search: {
+  //   type: "pagefind",
+  // },
   customPages: [
     {
       path: "/only-members",
       element: <div>Only members</div>,
     },
+  ],
+  plugins: [
+    new CosmoCargoApiIdentityPlugin(),
+    apiKeyPlugin({
+      endpoint: "http://localhost:9000",
+    }),
   ],
   apis: [
     {
@@ -171,6 +184,11 @@ const config: ZudokuConfig = {
       navigationId: "api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
+    {
+      type: "file",
+      input: "./schema/zuplo.json",
+      navigationId: "zuplo",
+    },
   ],
 
   docs: {
@@ -220,7 +238,6 @@ const config: ZudokuConfig = {
       ring: "35.5 91.7% 32.9%",
     },
   },
-  plugins: [new CosmoCargoApiIdentityPlugin()],
 };
 
 export default config;

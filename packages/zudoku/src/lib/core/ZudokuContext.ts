@@ -97,8 +97,9 @@ export class ZudokuContext {
   public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
-  public authentication?: ZudokuContextOptions["authentication"];
+  public readonly authentication?: ZudokuContextOptions["authentication"];
   public readonly queryClient: QueryClient;
+  public readonly options: ZudokuContextOptions;
   private readonly navigationPlugins: NavigationPlugin[];
   private emitter = createNanoEvents<ZudokuEvents>();
 
