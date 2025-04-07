@@ -12,7 +12,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, Outlet } from "react-router";
 import { Alert, AlertDescription } from "zudoku/ui/Alert.js";
 import {
   AlertDialog,
@@ -77,6 +77,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   return (
     <div className="w-full h-full pt-[--padding-content-top] pb-[--padding-content-bottom]">
       <Slotlet name="api-keys-list-page" />
+      <Outlet />
 
       <div className="flex justify-between mb-2 pb-3 items-end gap-4">
         <div className="flex flex-col gap-2">

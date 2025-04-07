@@ -7,13 +7,14 @@ import {
   ProfileMenuPlugin,
 } from "../../core/plugins.js";
 import invariant from "../../util/invariant.js";
+import { ApiKeyDialog } from "./ApiKeyDialog.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
-
 const DEFAULT_API_KEY_ENDPOINT =
   "https://zudoku-rewiringamerica-main-ef9c9c0.d2.zuplo.dev";
 
 export type ApiKeyService = {
   getKeys: (context: ZudokuContext) => Promise<ApiKey[]>;
+  checkIn?: (context: ZudokuContext) => Promise<void>;
   rollKey?: (id: string, context: ZudokuContext) => Promise<void>;
   deleteKey?: (id: string, context: ZudokuContext) => Promise<void>;
   updateKeyDescription?: (
@@ -31,15 +32,6 @@ export type GetApiKeysOptions = ApiKeyService | { endpoint: string } | object;
 
 export type ApiKeyPluginOptions = object & GetApiKeysOptions;
 
-export type ApiConsumer = {
-  id: string;
-  name: string;
-  description: string;
-  createdOn: string;
-  updatedOn: string;
-  keys: ApiKey[];
-};
-
 export interface ApiKey {
   id: string;
   description?: string;
@@ -47,10 +39,29 @@ export interface ApiKey {
   updatedOn?: string;
   expiresOn?: string;
   key: string;
+  previousKeys?: Pick<
+    ApiKey,
+    "key" | "createdOn" | "updatedOn" | "expiresOn"
+  >[];
 }
 
 const createDefaultHandler = (endpoint: string): ApiKeyService => {
   return {
+    checkIn: async (context) => {
+      const response = await fetch(
+        await context.signRequest(
+          new Request(endpoint + `/v1/developer/check-in`, {
+            method: "POST",
+            headers: {
+              "x-zudoku-url": window.location.origin,
+            },
+          }),
+        ),
+      );
+      console.log(response);
+
+      invariant(response.ok, "Failed to check in");
+    },
     deleteKey: async (id, context) => {
       const request = new Request(endpoint + `/v1/developer/api-keys/${id}`, {
         headers: {
@@ -73,21 +84,6 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
         ),
       );
       invariant(response.ok, "Failed to delete API key");
-    },
-    createKey: async (apiKey, context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-zudoku-url": window.location.origin,
-        },
-        body: JSON.stringify(apiKey),
-      });
-
-      await context.signRequest(request);
-
-      const response = await fetch(request);
-      invariant(response.ok, "Failed to create API key");
     },
     getKeys: async (context) => {
       const request = new Request(endpoint + `/v1/developer/api-keys`, {
@@ -114,6 +110,7 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
                   ...consumer.apiKeys.at(0),
                   description: consumer.description,
                   id: consumer.name,
+                  previousKeys: consumer.apiKeys.slice(1),
                 }
               : [];
           },
@@ -139,7 +136,19 @@ export const apiKeyPlugin = (
   const service =
     "getKeys" in options ? options : createDefaultHandler(endpoint);
 
+  let context: ZudokuContext | undefined;
+
   return {
+    initialize: async (c) => {
+      context = c;
+    },
+    events: {
+      auth: ({ prev, next }) => {
+        if (!prev.isAuthenticated && next.isAuthenticated) {
+          void service.checkIn?.(context!);
+        }
+      },
+    },
     getProfileMenuItems: () => [
       {
         label: "API Keys",
@@ -172,6 +181,14 @@ export const apiKeyPlugin = (
         {
           path: "/settings/api-keys",
           element: <SettingsApiKeys service={service} />,
+          children: [
+            {
+              path: ":id",
+              element: (
+                <ApiKeyDialog service={service} onOpenChange={() => {}} />
+              ),
+            },
+          ],
         },
       ];
     },
