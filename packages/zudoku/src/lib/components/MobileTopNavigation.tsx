@@ -11,7 +11,7 @@ import {
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Search } from "./Search.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { isHiddenItem, TopNavItem } from "./TopNavigation.js";
+import { isHiddenItem, PageProgress, TopNavItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
   const { topNavigation } = useZudoku();
@@ -28,6 +28,7 @@ export const MobileTopNavigation = () => {
         <DrawerTrigger className="lg:hidden">
           <MenuIcon size={22} />
         </DrawerTrigger>
+        <PageProgress />
       </div>
       <DrawerContent
         className="lg:hidden h-[100dvh] right-0 left-auto w-[320px] rounded-none"
