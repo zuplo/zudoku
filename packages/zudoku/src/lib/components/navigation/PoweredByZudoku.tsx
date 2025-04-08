@@ -1,12 +1,16 @@
 import { ChevronRightIcon } from "lucide-react";
+import { cn } from "../../util/cn.js";
 import ZudokuLogo from "./ZudokuLogo.js";
 
-export const PoweredByZudoku = () => (
+export const PoweredByZudoku = ({ className }: { className?: string }) => (
   <a
     href="https://zudoku.dev"
     target="_blank"
     rel="noopener noreferrer"
-    className="flex justify-between items-center w-full border border-transparent hover:border-border rounded-full hover:shadow-sm h-7 px-3 text-nowrap hover:bg-muted/80 transition-all"
+    className={cn(
+      "flex justify-between items-center w-full border border-transparent hover:border-border rounded-full hover:shadow-sm h-7 px-3 text-nowrap hover:bg-muted/80 transition-all",
+      className,
+    )}
   >
     <div className="opacity-70 hover:opacity-100 transition-opacity gap-1.5 text-[11px] font-medium rounded-full h-7 flex items-center text-nowrap">
       <ZudokuLogo className="w-3.5 h-3.5 dark:fill-white" />
