@@ -3,7 +3,7 @@ import { type PropsWithChildren, useState } from "react";
 import { useNavigation } from "react-router";
 import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
-import { useCurrentNavigation } from "./context/ZudokuContext.js";
+import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Sidebar } from "./navigation/Sidebar.js";
 import { Slotlet } from "./SlotletProvider.js";
 
@@ -12,10 +12,11 @@ export const Main = ({ children }: PropsWithChildren) => {
   const { sidebar } = useCurrentNavigation();
   const hasSidebar = sidebar.length > 0;
   const isNavigating = useNavigation().state === "loading";
+  const { options } = useZudoku();
 
   return (
     <Drawer
-      direction="left"
+      direction={options.page?.dir === "rtl" ? "right" : "left"}
       open={isDrawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >

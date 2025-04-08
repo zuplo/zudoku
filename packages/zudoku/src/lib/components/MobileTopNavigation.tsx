@@ -21,7 +21,7 @@ export const MobileTopNavigation = () => {
 
   return (
     <Drawer
-      direction="right"
+      direction={options.page?.dir === "rtl" ? "left" : "right"}
       open={drawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
