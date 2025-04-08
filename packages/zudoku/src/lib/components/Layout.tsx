@@ -53,7 +53,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div className="grid grid-cols-1 grid-rows-[min-content_1fr] lg:grid-cols-[var(--side-nav-width)_1fr] max-w-screen-2xl w-full lg:mx-auto px-4 lg:ps-0 lg:pe-8">
+      <div className="grid grid-cols-1 grid-rows-[0_min-content_1fr] lg:grid-rows-[min-content_1fr] lg:grid-cols-[var(--side-nav-width)_1fr] max-w-screen-2xl w-full lg:mx-auto">
         <Suspense fallback={<LoadingFallback />}>
           <Main>{children ?? <Outlet />}</Main>
         </Suspense>

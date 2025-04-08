@@ -21,7 +21,7 @@ export const isHiddenItem =
     );
   };
 
-const Progress = () => {
+export const PageProgress = () => {
   const navigation = useNavigation();
   const isNavigating = navigation.state === "loading";
   // delay the animation to avoid flickering
@@ -70,7 +70,7 @@ export const TopNavigation = () => {
         </nav>
         <Slotlet name="top-navigation-side" />
       </div>
-      <Progress />
+      <PageProgress />
     </Suspense>
   );
 };
