@@ -1,5 +1,5 @@
 import {
-  Control,
+  type Control,
   Controller,
   useFieldArray,
   useFormContext,
@@ -44,7 +44,7 @@ export const QueryParams = ({
                     render={({ field }) => (
                       <Checkbox
                         id={`queryParams.${i}.active`}
-                        className="mr-2"
+                        className="me-2"
                         checked={field.value}
                         onCheckedChange={field.onChange}
                       />

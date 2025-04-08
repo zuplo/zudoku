@@ -379,7 +379,7 @@ export const Playground = ({
         />
 
         <div className="grid grid-cols-2 text-sm h-full">
-          <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
+          <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:start-auto">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
@@ -406,25 +406,25 @@ export const Playground = ({
                     Parameters
                     {(formState.pathParams.some((p) => p.value !== "") ||
                       formState.queryParams.some((p) => p.active)) && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="headers">
                     Headers
                     {formState.headers.filter((h) => h.active).length > 0 && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="auth">
                     Auth
                     {formState.identity !== NO_IDENTITY && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
                     )}
                   </TabsTrigger>
                   <TabsTrigger value="body">
                     Body
                     {formState.body && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
                     )}
                   </TabsTrigger>
                 </TabsList>

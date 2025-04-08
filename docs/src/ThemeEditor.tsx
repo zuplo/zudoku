@@ -83,12 +83,12 @@ export const ThemeEditor = () => {
     <>
       <div className="flex gap-2 mt-4">
         <Button size="sm" variant="outline" onClick={handleReset}>
-          <RotateCcwIcon size={16} className="mr-2" /> Reset Theme
+          <RotateCcwIcon size={16} className="me-2" /> Reset Theme
         </Button>
         <Dialog>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
-              <DownloadIcon size={16} className="mr-2" /> Get Theme Config
+              <DownloadIcon size={16} className="me-2" /> Get Theme Config
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-[666px]">
@@ -160,7 +160,7 @@ export const ThemeEditor = () => {
                   )}
                   onClick={() => setTheme("light")}
                 >
-                  <SunIcon size={16} className="mr-2" />
+                  <SunIcon size={16} className="me-2" />
                   Light
                 </Button>
                 <Button
@@ -170,7 +170,7 @@ export const ThemeEditor = () => {
                   )}
                   onClick={() => setTheme("dark")}
                 >
-                  <MoonIcon size={16} className="mr-2" />
+                  <MoonIcon size={16} className="me-2" />
                   Dark
                 </Button>
               </div>
@@ -224,7 +224,7 @@ export const ThemeEditor = () => {
                     }
                   >
                     <div
-                      className="w-4 h-4 rounded-full mr-2"
+                      className="w-4 h-4 rounded-full me-2"
                       style={{
                         backgroundColor: `hsl(${color.activeColor[resolvedTheme]})`,
                       }}

@@ -135,7 +135,7 @@ export const ResponseTab = ({
           <span className="font-semibold">Headers</span>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="grid grid-cols-[auto,1fr] gap-x-8 gap-y-1 pl-1.5 pt-2 font-mono text-xs">
+          <div className="grid grid-cols-[auto,1fr] gap-x-8 gap-y-1 ps-1.5 pt-2 font-mono text-xs">
             {sortedHeaders.slice(0, 5).map(([key, value]) => (
               <Fragment key={key}>
                 <div className="text-primary whitespace-pre">{key}</div>

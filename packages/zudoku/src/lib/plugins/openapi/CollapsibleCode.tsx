@@ -59,7 +59,7 @@ export const CollapsibleCode = ({
           >
             <div>
               <Button variant="outline" className="hidden group-hover:flex">
-                <UnfoldVerticalIcon size={14} className="mr-1.5" />
+                <UnfoldVerticalIcon size={14} className="me-1.5" />
                 Click to expand
               </Button>
             </div>
@@ -73,7 +73,7 @@ export const CollapsibleCode = ({
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
               Collapse
-              <FoldVerticalIcon size={14} className="ml-1.5" />
+              <FoldVerticalIcon size={14} className="ms-1.5" />
             </Button>
           </CollapsibleTrigger>
         </div>

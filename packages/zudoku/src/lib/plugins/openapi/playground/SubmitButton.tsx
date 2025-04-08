@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
-import { ApiIdentity } from "../../../core/ZudokuContext.js";
+import { type ApiIdentity } from "../../../core/ZudokuContext.js";
 import { NO_IDENTITY } from "./Playground.js";
 
 const SubmitButton = ({
@@ -59,7 +59,7 @@ const SubmitButton = ({
                   onMouseEnter={() => setDropdownValue(identity.id)}
                   onMouseLeave={() => setDropdownValue(undefined)}
                 >
-                  <RadioGroupItem value={identity.id} className="mr-2" />
+                  <RadioGroupItem value={identity.id} className="me-2" />
 
                   {identity.label}
                 </DropdownMenuItem>
