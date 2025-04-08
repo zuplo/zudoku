@@ -86,10 +86,10 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
         On this page
       </div>
       <div className="relative ms-2 ps-4">
-        <div className="absolute inset-0 right-auto bg-border w-[2px]" />
+        <div className="absolute inset-0 end-auto bg-border w-[2px]" />
         <div
           className={cn(
-            "absolute -left-px -translate-y-1 h-6 w-[4px] rounded bg-primary",
+            "absolute -start-px -translate-y-1 h-6 w-[4px] rounded bg-primary",
             paintedOnce.current &&
               "ease-out [transition:top_150ms,opacity_325ms]",
           )}
@@ -104,10 +104,10 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
               isActive={item.id === activeAnchor}
               key={item.id}
               item={item}
-              className="pl-0"
+              className="ps-0"
             >
               {item.children && (
-                <ul className="list-none pl-4 pt-2 space-y-2">
+                <ul className="list-none ps-4 pt-2 space-y-2">
                   {item.children.map((child) => (
                     <TocItem
                       item={child}

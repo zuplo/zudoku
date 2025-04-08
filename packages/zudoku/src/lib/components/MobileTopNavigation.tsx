@@ -32,7 +32,7 @@ export const MobileTopNavigation = () => {
         <PageProgress />
       </div>
       <DrawerContent
-        className="lg:hidden h-[100dvh] right-0 left-auto w-[320px] rounded-none"
+        className="lg:hidden h-[100dvh] end-0 start-auto w-[320px] rounded-none"
         aria-describedby={undefined}
       >
         <div className="p-4 overflow-y-auto overscroll-none h-full flex flex-col justify-between">

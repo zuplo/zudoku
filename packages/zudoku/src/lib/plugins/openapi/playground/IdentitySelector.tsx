@@ -29,7 +29,7 @@ const IdentitySelector = ({
           <RadioGroupItem value={NO_IDENTITY} id="none">
             None
           </RadioGroupItem>
-          <Label htmlFor="none" className="ml-2">
+          <Label htmlFor="none" className="ms-2">
             None
           </Label>
         </Label>
@@ -41,7 +41,7 @@ const IdentitySelector = ({
             <RadioGroupItem value={identity.id} id={identity.id}>
               {identity.label}
             </RadioGroupItem>
-            <Label htmlFor={identity.id} className="ml-2">
+            <Label htmlFor={identity.id} className="ms-2">
               {identity.label}
             </Label>
           </Label>

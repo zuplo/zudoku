@@ -89,7 +89,7 @@ const config: ZudokuConfig = {
   ],
   UNSAFE_slotlets: {
     "head-navigation-end": () => (
-      <div className="flex items-center border-r pr-2">
+      <div className="flex items-center border-r pe-2">
         <Button variant="ghost" size="icon" asChild>
           <a href="https://github.com/zuplo/zudoku">
             <GithubIcon className="w-4 h-4 dark:invert" />
