@@ -26,8 +26,7 @@ npm install -g pnpm
 
 2. Run `pnpm install` to install dependencies.
 
-3. The project using [nx](https://nx.dev/) for running tasks. To install nx globally run:
-
+3. Install [nx](https://nx.dev/) globally by running:
 ```
 pnpm add --global nx@latest
 ```
