@@ -1,6 +1,7 @@
 import path from "node:path";
+import colors from "picocolors";
 import { type Plugin, type ViteDevServer } from "vite";
-import { printDiagnosticsToConsole } from "../cli/common/output.js";
+import { logger } from "../cli/common/logger.js";
 import { type LoadedConfig } from "../config/config.js";
 
 export const reload = ({ ws, environments }: ViteDevServer) => {
@@ -37,8 +38,11 @@ export const createConfigReloadPlugin = (
 
         reload(server);
 
-        printDiagnosticsToConsole(
-          `[${new Date().toLocaleTimeString()}]: Config ${path.basename(currentConfig.__meta.configPath)} changed. Reloading...`,
+        logger.info(
+          colors.blue(
+            `Config ${path.basename(currentConfig.__meta.configPath)} changed. Reloading...`,
+          ),
+          { timestamp: true },
         );
       });
     },
