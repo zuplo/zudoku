@@ -2,7 +2,7 @@
 
 ## 1. Clone Project
 
-- [Fork the repository](https://github.com/Hyperfoil/Horreum/fork)
+- [Fork the repository](https://github.com/zuplo/zudoku/fork)
 
 - Clone the project locally
 
@@ -18,11 +18,15 @@ cd zudoku
 
 ## 2. Project Setup
 
-Run `pnpm install` to install dependancies.
+1. Install [`pnpm`](https://pnpm.io/installation)
 
-The project using [nx](https://nx.dev/) for running tasks.
+```
+npm install -g pnpm
+```
 
-To install nx globally run:
+2. Run `pnpm install` to install dependencies.
+
+3. The project using [nx](https://nx.dev/) for running tasks. To install nx globally run:
 
 ```
 pnpm add --global nx@latest
