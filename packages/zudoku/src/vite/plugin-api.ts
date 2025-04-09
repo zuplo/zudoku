@@ -158,6 +158,8 @@ const viteApiPlugin = async (
         getConfig(),
         zuploProcessors,
       );
+      // Potential files outside of the root dir are not watched by default, so we add all schemas just to be sure
+      allSchemaFiles.forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
       server.watcher.on("change", async (id) => {
@@ -168,6 +170,7 @@ const viteApiPlugin = async (
           getConfig(),
           zuploProcessors,
         );
+        allSchemaFiles.forEach((file) => server.watcher.add(file));
         reload(server);
       });
     },

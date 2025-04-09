@@ -1,4 +1,5 @@
 import path from "node:path";
+import packageJson from "../../../package.json" with { type: "json" };
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { DevServer } from "../../vite/dev-server.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
@@ -29,7 +30,9 @@ export async function dev(argv: Arguments) {
 
   printDiagnosticsToConsole("Ctrl+C to exit");
   printDiagnosticsToConsole("");
-  printDiagnosticsToConsole(`🚀 Zudoku Portal: ${url}`);
+  printDiagnosticsToConsole(
+    `🚀 Running Zudoku v${packageJson.version}: ${url}`,
+  );
   printDiagnosticsToConsole("");
 
   let hasExited = false;
