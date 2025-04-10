@@ -73,8 +73,10 @@ const lookup = (
  */
 export const generateCode = async (schema: RecordAny, filePath?: string) => {
   const refMap = createLocalRefMap(schema);
-  const dereferencedSchema =
-    await $RefParser.dereference<OpenAPIDocument>(schema);
+  const dereferencedSchema = await $RefParser.dereference<OpenAPIDocument>(
+    schema,
+    { dereference: { circular: "ignore" } },
+  );
   const lines: string[] = [];
 
   const str = (obj: unknown, indent = 2) => JSON.stringify(obj, null, indent);
