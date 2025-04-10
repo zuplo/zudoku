@@ -173,13 +173,7 @@ export const FooterSchema = z
         z.object({
           position: z.enum(["start", "center", "end"]).optional(),
           title: z.string(),
-          links: z.array(
-            z.object({
-              label: z.string(),
-              href: z.string(),
-              external: z.boolean().optional(),
-            }),
-          ),
+          links: z.array(z.object({ label: z.string(), href: z.string() })),
         }),
       )
       .optional(),

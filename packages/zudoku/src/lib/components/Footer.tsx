@@ -2,6 +2,7 @@ import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import type { FooterSocialIcons } from "../../config/validators/common.js";
 import { cn } from "../util/cn.js";
+import { AnchorLink } from "./AnchorLink.js";
 import { useZudoku } from "./index.js";
 import { Slotlet } from "./SlotletProvider.js";
 
@@ -21,6 +22,8 @@ const SocialIcon = ({
   }
   return icon;
 };
+
+const isExternalUrl = (href: string) => /^https?:/.test(href);
 
 export const Footer = () => {
   const { page } = useZudoku();
@@ -54,23 +57,32 @@ export const Footer = () => {
                   })}
                   key={column.title}
                 >
-                  <h3 className="text-sm font-semibold">{column.title}</h3>
+                  <span className="text-sm font-semibold">{column.title}</span>
                   <ul className="mt-4 space-y-2">
-                    {column.links.map((link) => (
-                      <li key={link.href}>
-                        <a
-                          href={link.href}
-                          className="flex flex-row gap-1 items-center text-sm text-muted-foreground hover:text-accent-foreground"
-                          target={link.external ? "_blank" : undefined}
-                          rel={
-                            link.external ? "noopener noreferrer" : undefined
-                          }
-                        >
-                          <span>{link.label}</span>
-                          {link.external && <ExternalLinkIcon size={12} />}
-                        </a>
-                      </li>
-                    ))}
+                    {column.links.map((link) => {
+                      const className =
+                        "flex flex-row gap-1 items-center text-sm text-muted-foreground hover:text-accent-foreground";
+
+                      return (
+                        <li key={link.href}>
+                          {isExternalUrl(link.href) ? (
+                            <a
+                              href={link.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={className}
+                            >
+                              <span>{link.label}</span>
+                              <ExternalLinkIcon size={12} />
+                            </a>
+                          ) : (
+                            <AnchorLink to={link.href} className={className}>
+                              <span>{link.label}</span>
+                            </AnchorLink>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}

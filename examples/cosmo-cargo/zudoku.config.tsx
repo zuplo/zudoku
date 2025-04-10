@@ -26,6 +26,67 @@ const config: ZudokuConfig = {
       ),
       dismissible: true,
     },
+    footer: {
+      columns: [
+        {
+          title: "Product",
+          links: [
+            { label: "Features", href: "https://zudoku.dev" },
+            {
+              label: "Docs",
+              href: "https://zudoku.dev/docs/?utm_source=cosmo-cargo",
+            },
+          ],
+        },
+        {
+          title: "Company",
+          links: [
+            { label: "About", href: "https://zuplo.com/about" },
+            { label: "Blog", href: "https://zuplo.com/blog" },
+            { label: "Careers", href: "https://zuplo.com/careers" },
+          ],
+        },
+        {
+          title: "Resources",
+          links: [
+            { label: "API Reference", href: "/" },
+            { label: "Status", href: "/" },
+            { label: "Support", href: "/" },
+          ],
+        },
+        {
+          title: "Legal",
+          links: [
+            { label: "Privacy", href: "/" },
+            { label: "Terms", href: "/" },
+            { label: "Security", href: "/" },
+          ],
+        },
+      ],
+      social: [
+        {
+          href: "https://github.com/zuplo/zudoku",
+          icon: "github",
+        },
+        {
+          href: "https://twitter.com/zuplo",
+          icon: "x",
+        },
+        {
+          href: "https://discord.zudoku.dev",
+          icon: "discord",
+        },
+      ],
+      copyright: `© ${new Date().getFullYear()} Zuplo, Inc. All rights reserved.`,
+      logo: {
+        src: {
+          light: "https://cdn.zudoku.dev/logos/zudoku-logo-full-light.svg",
+          dark: "https://cdn.zudoku.dev/logos/zudoku-logo-full-dark.svg",
+        },
+        alt: "Zudoku by Zuplo",
+        width: 120,
+      },
+    },
   },
   protectedRoutes: ["/only-members"],
   topNavigation: [
