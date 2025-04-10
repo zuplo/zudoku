@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PropsWithChildren } from "react";
+import { useEffect, useRef, type PropsWithChildren } from "react";
 import { cn } from "../../util/cn.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useZudoku } from "../context/ZudokuContext.js";
@@ -12,28 +12,10 @@ export const SidebarWrapper = ({
 }>) => {
   const { options } = useZudoku();
   const navRef = useRef<HTMLDivElement>(null);
-  const [isNearBottom, setIsAtBottom] = useState(false);
 
   useEffect(() => {
     const active = navRef.current?.querySelector('[aria-current="page"]');
     scrollIntoViewIfNeeded(active ?? null);
-  }, []);
-
-  useEffect(() => {
-    const handler = () => {
-      const ref = navRef.current;
-      if (!ref) return;
-
-      const scrollBottomDistance =
-        ref.scrollHeight - ref.clientHeight - ref.scrollTop;
-
-      setIsAtBottom(scrollBottomDistance < 30);
-    };
-
-    ref.addEventListener("scroll", handler);
-    handler();
-
-    return () => ref.removeEventListener("scroll", handler);
   }, []);
 
   return (
@@ -48,9 +30,7 @@ export const SidebarWrapper = ({
           className,
         )}
         style={{
-          maskImage: !isNearBottom
-            ? `linear-gradient(180deg, transparent 1%, rgba(0, 0, 0, 1) 20px, rgba(0, 0, 0, 1) 90%, transparent 99%)`
-            : `linear-gradient(180deg, transparent 1%, rgba(0, 0, 0, 1) 20px)`,
+          maskImage: `linear-gradient(180deg, transparent 1%, rgba(0, 0, 0, 1) 20px, rgba(0, 0, 0, 1) 90%, transparent 99%)`,
         }}
       >
         {children}
