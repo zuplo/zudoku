@@ -57,6 +57,7 @@ console.log(
     "letter-spacing: 5px",
   ].join(" ;"),
 );
+console.log('> Check us out on https://zudoku.dev')
 
 async function hydrateLazyRoutes(routes: RouteObject[]) {
   const path = window.location.pathname;
