@@ -73,6 +73,8 @@ const lookup = (
  */
 export const generateCode = async (schema: RecordAny, filePath?: string) => {
   const refMap = createLocalRefMap(schema);
+  const dereferencedSchema =
+    await $RefParser.dereference<OpenAPIDocument>(schema);
   const lines: string[] = [];
 
   const str = (obj: unknown, indent = 2) => JSON.stringify(obj, null, indent);
@@ -91,7 +93,7 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
   );
 
   for (const [refPath, index] of refMap) {
-    const value = lookup(schema, refPath, filePath);
+    const value = lookup(dereferencedSchema, refPath, filePath);
 
     // This shouldn't happen but to be safe we log a warning
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -114,8 +116,6 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
   lines.push(`export const schema = ${replaceRefMarkers(str(transformed))};`);
 
   // slugify is quite expensive for big schemas, so we pre-generate the slugs here to shave off time
-  const dereferencedSchema =
-    await $RefParser.dereference<OpenAPIDocument>(schema);
   const slugs = getAllSlugs(
     getAllOperations(dereferencedSchema.paths),
     dereferencedSchema.tags,
