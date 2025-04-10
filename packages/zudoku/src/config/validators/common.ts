@@ -333,6 +333,7 @@ const PageSchema = z
   .object({
     pageTitle: z.string(),
     logoUrl: z.string(),
+    dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
     banner: z.object({

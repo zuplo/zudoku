@@ -45,7 +45,7 @@ export const Search = ({ className }: { className?: string }) => {
           <SearchIcon size={14} />
           Search
         </div>
-        <kbd className="absolute right-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[11px] font-medium opacity-100 sm:flex">
+        <kbd className="absolute end-[0.3rem] top-[0.3rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[11px] font-medium opacity-100 sm:flex">
           ⌘K
         </kbd>
       </button>

@@ -1,6 +1,13 @@
-export function getDevHtml(jsEntry: string) {
-  return `<!doctype html>
-<html lang="en">
+export function getDevHtml({
+  jsEntry,
+  dir,
+}: {
+  jsEntry: string;
+  dir?: "ltr" | "rtl";
+}) {
+  return `
+<!doctype html>
+<html lang="en" ${dir ? `dir="${dir}"` : ""}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -12,18 +19,21 @@ export function getDevHtml(jsEntry: string) {
     <script type="module" src="${jsEntry}"></script>
   </body>
 </html>
-`;
+`.trim();
 }
 
 export function getBuildHtml({
   jsEntry,
   cssEntry,
+  dir,
 }: {
   jsEntry: string;
   cssEntry: string;
+  dir?: "ltr" | "rtl";
 }) {
-  return `<!doctype html>
-<html lang="en">
+  return `
+<!doctype html>
+<html lang="en" ${dir ? `dir="${dir}"` : ""}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -35,5 +45,6 @@ export function getBuildHtml({
   <body>
     <div id="root"><!--app-html--></div>
   </body>
-</html>`;
+</html>
+`.trim();
 }

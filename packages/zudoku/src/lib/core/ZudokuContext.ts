@@ -52,7 +52,8 @@ type Metadata = Partial<{
 }>;
 
 type Page = Partial<{
-  showPoweredBy: boolean;
+  dir?: "ltr" | "rtl";
+  showPoweredBy?: boolean;
   pageTitle?: string;
   logo?: {
     src: {

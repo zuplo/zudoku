@@ -3,7 +3,7 @@ import { type PropsWithChildren, useState } from "react";
 import { useNavigation } from "react-router";
 import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
-import { useCurrentNavigation } from "./context/ZudokuContext.js";
+import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Sidebar } from "./navigation/Sidebar.js";
 import { Slotlet } from "./SlotletProvider.js";
 
@@ -12,10 +12,11 @@ export const Main = ({ children }: PropsWithChildren) => {
   const { sidebar } = useCurrentNavigation();
   const hasSidebar = sidebar.length > 0;
   const isNavigating = useNavigation().state === "loading";
+  const { options } = useZudoku();
 
   return (
     <Drawer
-      direction="left"
+      direction={options.page?.dir === "rtl" ? "right" : "left"}
       open={isDrawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
@@ -26,7 +27,7 @@ export const Main = ({ children }: PropsWithChildren) => {
         />
       )}
       {hasSidebar && (
-        <div className="lg:hidden -mx-4 px-4 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 left-0 right-0 border-b">
+        <div className="lg:hidden -mx-4 px-4 py-2 sticky bg-background/80 backdrop-blur z-10 top-0 start-0 end-0 border-b">
           <DrawerTrigger className="flex items-center gap-2 px-4">
             <PanelLeftIcon size={16} strokeWidth={1.5} />
             <span className="text-sm">Menu</span>

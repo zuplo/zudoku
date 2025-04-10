@@ -61,7 +61,7 @@ export const ResultPanel = ({
               Response
               <span
                 className={cn(
-                  "text-xs font-mono ml-1",
+                  "text-xs font-mono ms-1",
                   status === "2" && "text-green-500",
                   status === "3" && "text-blue-500",
                   status === "4" && "text-yellow-500",

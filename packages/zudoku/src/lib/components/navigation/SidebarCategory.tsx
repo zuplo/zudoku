@@ -51,7 +51,7 @@ const SidebarCategoryInner = ({
         size={16}
         className={cn(
           hasInteracted && "transition",
-          "shrink-0 group-data-[state=open]:rotate-90",
+          "shrink-0 group-data-[state=open]:rotate-90 rtl:rotate-180",
         )}
       />
     </Button>
@@ -117,7 +117,7 @@ const SidebarCategoryInner = ({
           "ms-6 my-1",
         )}
       >
-        <ul className="relative after:absolute after:-left-[--padding-nav-item] after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
+        <ul className="relative after:absolute after:-start-[--padding-nav-item] after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <SidebarItem
               key={
