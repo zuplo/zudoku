@@ -1,8 +1,13 @@
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
-import { getSegmentsFromPath } from "@scalar/openapi-parser";
 import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
 import { type OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
+
+const unescapeJsonPointer = (uri: string) =>
+  decodeURIComponent(uri.replace(/~1/g, "/").replace(/~0/g, "~"));
+
+const getSegmentsFromPath = (path: string) =>
+  path.split("/").slice(1).map(unescapeJsonPointer);
 
 // Find all $ref occurrences in the schema and assign them unique variable names
 const createLocalRefMap = (obj: RecordAny) => {
@@ -43,6 +48,8 @@ const lookup = (
   let value = schema;
 
   for (const part of parts) {
+    // Despite the type, value may be undefined here
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (value === undefined) {
       throw new Error(
         `Error in ${filePath ?? "code generation"}: Could not find value for path: ${path}`,
