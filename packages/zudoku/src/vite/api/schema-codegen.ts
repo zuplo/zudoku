@@ -55,7 +55,7 @@ const lookup = (
         `Error in ${filePath ?? "code generation"}: Could not find value for path: ${path}`,
       );
     }
-    value = value[decodeURIComponent(part)];
+    value = value[part];
   }
 
   return value;
