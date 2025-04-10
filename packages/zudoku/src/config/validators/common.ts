@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { isValidElement } from "react";
 import z, {
   type RefinementCtx,
   type ZodEnumDef,
@@ -134,8 +135,60 @@ const ApiKeysSchema = z.union([
 const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
   alt: z.string().optional(),
-  width: z.string().optional(),
+  width: z.string().or(z.number()).optional(),
 });
+
+export const FooterSocialIcons = [
+  "reddit",
+  "discord",
+  "github",
+  "x",
+  "linkedin",
+  "facebook",
+  "instagram",
+  "youtube",
+  "tiktok",
+  "twitch",
+  "pinterest",
+  "snapchat",
+  "whatsapp",
+  "telegram",
+] as const;
+
+export const FooterSocialSchema = z.object({
+  label: z.string().optional(),
+  href: z.string(),
+  icon: z
+    .union([
+      z.enum(FooterSocialIcons),
+      z.custom<ReactNode>((val) => isValidElement(val)),
+    ])
+    .optional(),
+});
+
+export const FooterSchema = z
+  .object({
+    columns: z
+      .array(
+        z.object({
+          position: z.enum(["start", "center", "end"]).optional(),
+          title: z.string(),
+          links: z.array(
+            z.object({
+              label: z.string(),
+              href: z.string(),
+              external: z.boolean().optional(),
+            }),
+          ),
+        }),
+      )
+      .optional(),
+    social: z.array(FooterSocialSchema).optional(),
+    copyright: z.string().optional(),
+    logo: LogoSchema.optional(),
+    position: z.enum(["start", "center", "end"]).optional(),
+  })
+  .optional();
 
 const SiteMapSchema = z
   .object({
@@ -343,6 +396,7 @@ const PageSchema = z
         .optional() as BannerColorType,
       dismissible: z.boolean().optional(),
     }),
+    footer: FooterSchema,
   })
   .partial();
 

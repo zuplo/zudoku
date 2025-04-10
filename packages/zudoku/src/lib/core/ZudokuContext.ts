@@ -2,7 +2,11 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
 import type { Location } from "react-router";
-import type { TopNavigationItem } from "../../config/validators/common.js";
+import type { z } from "zod";
+import type {
+  FooterSchema,
+  TopNavigationItem,
+} from "../../config/validators/common.js";
 import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import type { AuthenticationProvider } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
@@ -59,7 +63,7 @@ type Page = Partial<{
       light: string;
       dark: string;
     };
-    width?: string;
+    width?: string | number;
     alt?: string;
   };
   banner?: {
@@ -67,6 +71,7 @@ type Page = Partial<{
     color?: "note" | "tip" | "info" | "caution" | "danger" | (string & {});
     dismissible?: boolean;
   };
+  footer?: z.infer<typeof FooterSchema>;
 }>;
 
 export type ZudokuContextOptions = {

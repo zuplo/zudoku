@@ -5,6 +5,7 @@ import { joinUrl } from "../util/joinUrl.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
 import { useZudoku } from "./context/ZudokuContext.js";
+import { Footer } from "./Footer.js";
 import { Header } from "./Header.js";
 import { Main } from "./Main.js";
 import { Slotlet } from "./SlotletProvider.js";
@@ -58,6 +59,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
           <Main>{children ?? <Outlet />}</Main>
         </Suspense>
       </div>
+      <Footer />
     </>
   );
 };
