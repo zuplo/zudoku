@@ -514,8 +514,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.6
       estree-util-value-to-estree:
-        specifier: 3.3.2
-        version: 3.3.2
+        specifier: 3.3.3
+        version: 3.3.3
       express:
         specifier: 4.21.2
         version: 4.21.2
@@ -5427,8 +5427,8 @@ packages:
     resolution: {integrity: sha512-Y+ughcF9jSUJvncXwqRageavjrNPAI+1M/L3BI3PyLp1nmgYTGUXU6t5z1Y7OWuThoDdhPME07bQU+d5LxdJqw==}
     engines: {node: '>=12.0.0'}
 
-  estree-util-value-to-estree@3.3.2:
-    resolution: {integrity: sha512-hYH1aSvQI63Cvq3T3loaem6LW4u72F187zW4FHpTrReJSm6W66vYTFNO1vH/chmcOulp1HlAj1pxn8Ag0oXI5Q==}
+  estree-util-value-to-estree@3.3.3:
+    resolution: {integrity: sha512-Db+m1WSD4+mUO7UgMeKkAwdbfNWwIxLt48XF2oFU9emPfXkIu+k5/nlOj313v7wqtAPo0f9REhUvznFrPkG8CQ==}
 
   estree-util-visit@2.0.0:
     resolution: {integrity: sha512-m5KgiH85xAhhW8Wta0vShLcUvOsh3LLPI2YVwcbio1l7E09NTLL1EyMZFM1OyWowoH0skScNbhOPl4kcBgzTww==}
@@ -14811,7 +14811,7 @@ snapshots:
     dependencies:
       is-plain-obj: 3.0.0
 
-  estree-util-value-to-estree@3.3.2:
+  estree-util-value-to-estree@3.3.3:
     dependencies:
       '@types/estree': 1.0.7
 
@@ -15357,7 +15357,7 @@ snapshots:
       '@types/estree': 1.0.7
       '@types/hast': 3.0.4
       comma-separated-tokens: 2.0.3
-      estree-util-value-to-estree: 3.3.2
+      estree-util-value-to-estree: 3.3.3
       mdast-util-mdx-jsx: 3.2.0
       property-information: 6.5.0
       space-separated-tokens: 2.0.2
@@ -18004,7 +18004,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
       estree-util-is-identifier-name: 3.0.0
-      estree-util-value-to-estree: 3.3.2
+      estree-util-value-to-estree: 3.3.3
       toml: 3.0.0
       unified: 11.0.5
       yaml: 2.7.0
