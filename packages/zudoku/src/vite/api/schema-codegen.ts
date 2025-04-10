@@ -45,20 +45,23 @@ const lookup = (
   filePath?: string,
 ): RecordAny => {
   const parts = getSegmentsFromPath(path);
-  let value = schema;
+  let val = schema;
 
   for (const part of parts) {
-    // Despite the type, value may be undefined here
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (value === undefined) {
+    while (val.$ref?.startsWith("#/")) {
+      val = val.$ref === path ? val : lookup(schema, val.$ref, filePath);
+    }
+
+    if (val[part] === undefined) {
       throw new Error(
-        `Error in ${filePath ?? "code generation"}: Could not find value for path: ${path}`,
+        `Error in ${filePath ?? "code generation"}: Could not find path segment ${part} in path: ${path}`,
       );
     }
-    value = value[part];
+
+    val = val[part];
   }
 
-  return value;
+  return val;
 };
 
 /**
@@ -73,10 +76,6 @@ const lookup = (
  */
 export const generateCode = async (schema: RecordAny, filePath?: string) => {
   const refMap = createLocalRefMap(schema);
-  const dereferencedSchema = await $RefParser.dereference<OpenAPIDocument>(
-    schema,
-    { dereference: { circular: "ignore" } },
-  );
   const lines: string[] = [];
 
   const str = (obj: unknown, indent = 2) => JSON.stringify(obj, null, indent);
@@ -95,7 +94,7 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
   );
 
   for (const [refPath, index] of refMap) {
-    const value = lookup(dereferencedSchema, refPath, filePath);
+    const value = lookup(schema, refPath, filePath);
 
     // This shouldn't happen but to be safe we log a warning
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -118,6 +117,8 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
   lines.push(`export const schema = ${replaceRefMarkers(str(transformed))};`);
 
   // slugify is quite expensive for big schemas, so we pre-generate the slugs here to shave off time
+  const dereferencedSchema =
+    await $RefParser.dereference<OpenAPIDocument>(schema);
   const slugs = getAllSlugs(
     getAllOperations(dereferencedSchema.paths),
     dereferencedSchema.tags,
