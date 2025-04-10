@@ -308,13 +308,15 @@ export const OperationList = ({
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
       <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
         {operations.map((fragment) => (
-          <OperationListItem
-            serverUrl={selectedServer}
-            key={fragment.slug}
-            operationFragment={fragment}
-          />
+          <div key={fragment.slug}>
+            <OperationListItem
+              serverUrl={selectedServer}
+              operationFragment={fragment}
+            />
+            <hr className="my-10" />
+          </div>
         ))}
-        <Pagination {...paginationProps} />
+        <Pagination className="mb-4" {...paginationProps} />
       </div>
     </div>
   );

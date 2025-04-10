@@ -6,9 +6,11 @@ import { Button } from "./index.js";
 export const Pagination = ({
   prev,
   next,
+  className,
 }: {
   prev: { to: string; label: string } | undefined;
   next: { to: string; label: string } | undefined;
+  className?: string;
 }) => {
   const linkClass =
     "group transition-all p-5 space-x-1 transition-all hover:text-foreground";
@@ -16,8 +18,9 @@ export const Pagination = ({
   return (
     <div
       className={cn(
-        "flex my-8 -mx-4 text-muted-foreground font-semibold",
+        "flex -mx-4 text-muted-foreground font-semibold",
         prev ? "justify-between" : "justify-end",
+        className,
       )}
     >
       {prev && (
