@@ -36,7 +36,7 @@ if (root.childElementCount > 0) {
 
 // eslint-disable-next-line no-console
 console.log(
-  "%cZUDOKU%cv" + window.ZUDOKU_VERSION,
+  "%cZUDOKU%c by Zuplo v" + window.ZUDOKU_VERSION,
   [
     "color: #FF00BD",
     "line-height: 50px",
