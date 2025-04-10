@@ -1,0 +1,206 @@
+---
+sidebar_label: Footer
+sidebar_icon: panel-bottom-dashed
+---
+
+# Footer Configuration
+
+The footer is a customizable component that appears at the bottom of every page in your Zudoku site. You can configure various aspects of the footer including its position, columns, social links, copyright notice, and logo.
+
+## Basic Configuration
+
+The footer is configured in your `zudoku.config.tsx` file under the `page.footer` property:
+
+```tsx
+const config: ZudokuConfig = {
+  page: {
+    footer: {
+      // Footer configuration goes here
+      position: "center",
+      copyright: `© ${new Date().getFullYear()} YourCompany LLC. All rights reserved.`,
+      // Other options...
+    },
+  },
+  // Other configuration...
+};
+```
+
+## Position
+
+You can control the horizontal alignment of the footer content using the `position` property:
+
+```tsx
+footer: {
+  position: "center"; // default
+  // or
+  position: "start";
+  // or
+  position: "end";
+}
+```
+
+This affects how the content in the footer's main row is positioned horizontally.
+
+## Columns
+
+The footer can include multiple columns of links, each with its own title:
+
+```tsx
+footer: {
+  columns: [
+    {
+      title: "Product",
+      position: "center", // position in grid, optional: start, center, end
+      links: [
+        { label: "Features", href: "/features" },
+        { label: "Pricing", href: "/pricing" },
+        { label: "Documentation", href: "/docs", external: false },
+      ],
+    },
+    {
+      title: "Company",
+      links: [
+        { label: "About", href: "/about" },
+        { label: "Blog", href: "/blog" },
+        { label: "Contact", href: "/contact" },
+      ],
+    },
+  ];
+}
+```
+
+Each column can have its own positioning with the `position` property, which can be `"start"`, `"center"`, or `"end"`. This controls how the column is positioned within the footer grid.
+
+## Social Media Links
+
+You can add social media links to your footer:
+
+```tsx
+footer: {
+  social: [
+    {
+      icon: "github",
+      href: "https://github.com/yourusername",
+    },
+    {
+      icon: "twitter",
+      href: "https://twitter.com/yourhandle",
+      label: "Follow us", // optional label text
+    },
+  ];
+}
+```
+
+The `icon` property currently can be one of the following values:
+
+<div className="[&_ul]:grid [&_ul]:grid-cols-[repeat(3,auto)]">
+
+- `"reddit"`
+- `"discord"`
+- `"github"`
+- `"x"` (Twitter)
+- `"linkedin"`
+- `"facebook"`
+- `"instagram"`
+- `"youtube"`
+- `"tiktok"`
+- `"twitch"`
+- `"pinterest"`
+- `"snapchat"`
+- `"whatsapp"`
+- `"telegram"`
+
+</div>
+
+Or you can provide a custom React component.
+
+## Copyright Notice
+
+Add a copyright notice with the `copyright` property:
+
+```tsx
+footer: {
+  copyright: `© ${new Date().getFullYear()} YourCompany LLC. All rights reserved.`;
+}
+```
+
+## Logo
+
+You can add a logo to your footer:
+
+```tsx
+footer: {
+  logo: {
+    src: {
+      light: "/path/to/light-logo.png",
+      dark: "/path/to/dark-logo.png"
+    },
+    alt: "Company Logo",
+    width: "120px" // optional width
+  }
+}
+```
+
+## Customizing with Slotlets
+
+Zudoku provides `footer-before` and `footer-after` slotlets that allow you to insert custom content before or after the main footer columns:
+
+```tsx
+// In your zudoku.config.tsx
+UNSAFE_slotlets: {
+  "footer-before": () => (
+    <div>
+      <h3>Custom pre-footer content</h3>
+      <p>This appears before the columns</p>
+    </div>
+  ),
+  "footer-after": () => (
+    <div>
+      <p>Additional footer content</p>
+    </div>
+  )
+}
+```
+
+## Complete Example
+
+Here's a complete example showing all footer options:
+
+```tsx
+footer: {
+  position: "center",
+  columns: [
+    {
+      title: "Product",
+      position: "start",
+      links: [
+        { label: "Features", href: "/features" },
+        { label: "Pricing", href: "/pricing" },
+        { label: "Documentation", href: "/docs" }
+      ]
+    },
+    {
+      title: "Resources",
+      position: "center",
+      links: [
+        { label: "Blog", href: "/blog" },
+        { label: "Support", href: "/support" },
+        { label: "Status", href: "/status" }
+      ]
+    }
+  ],
+  social: [
+    { icon: "github", href: "https://github.com/yourusername" },
+    { icon: "linkedin", href: "https://linkedin.com/company/yourcompany", label: "LinkedIn" }
+  ],
+  copyright: `© ${new Date().getFullYear()} YourCompany LLC. All rights reserved.`,
+  logo: {
+    src: {
+      light: "/images/logo-light.svg",
+      dark: "/images/logo-dark.svg"
+    },
+    alt: "Company Logo",
+    width: "100px"
+  }
+}
+```
