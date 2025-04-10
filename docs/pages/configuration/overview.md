@@ -268,7 +268,7 @@ Sets the base path for your documentation site. This is useful when you want to 
 
 ```ts
 {
-  basePath: "/docs";
+  basePath: "/docs",
   // A page defined as `/intro` would result in: https://example.com/docs/intro
 }
 ```
