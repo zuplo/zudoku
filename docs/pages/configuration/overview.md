@@ -262,6 +262,17 @@ The port on which the development server will run. Defaults to `3000`. This opti
 
 If the port is already in use, the next available port will be used.
 
+### `basePath`
+
+Sets the base path for your documentation site. This is useful when you want to host your documentation under a specific path.
+
+```ts
+{
+  basePath: "/docs",
+  // A page defined as `/intro` would result in: https://example.com/docs/intro
+}
+```
+
 ### `canonicalUrlOrigin`
 
 Sets the canonical [origin URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) for your documentation site. This is used for SEO purposes and helps search engines understand the preferred version of a page.
@@ -279,6 +290,25 @@ This is the resulting HTML that will be added to the `<head>` of your pages:
 
 ```html
 <link rel="canonical" href="https://example.com/docs/intro" />
+```
+
+### `cdnUrl`
+
+Configures the CDN URL for your documentation site's assets. You can provide either a string for a single CDN URL or an object to specify different URLs for base and media assets.
+
+```ts
+// Single CDN URL
+{
+  cdnUrl: "https://cdn.example.com"
+}
+
+// Separate URLs for base and media assets
+{
+  cdnUrl: {
+    base: "https://cdn.example.com",
+    media: "https://media.example.com"
+  }
+}
 ```
 
 ### `https`
