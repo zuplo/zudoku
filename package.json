@@ -26,7 +26,8 @@
     ]
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": ">=10"
   },
   "devDependencies": {
     "@nx/eslint": "20.6.4",
