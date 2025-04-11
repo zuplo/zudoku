@@ -3,7 +3,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { isSearchPlugin } from "../core/plugins.js";
 import { detectOS } from "../util/detectOS.js";
 import { ClientOnly } from "./ClientOnly.js";
-import CommandPalette from "./CommandPalette.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 export const Search = ({ className }: { className?: string }) => {
@@ -53,7 +52,10 @@ export const Search = ({ className }: { className?: string }) => {
         </ClientOnly>
       </button>
       <Suspense fallback={null}>
-        <CommandPalette isOpen={isOpen} onClose={onClose} />
+        {searchPlugin.renderSearch({
+          isOpen,
+          onClose,
+        })}
       </Suspense>
     </div>
   );
