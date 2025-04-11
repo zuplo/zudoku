@@ -65,7 +65,7 @@ const KbdShortcut = () => {
   const os = detectOS();
   return (
     <kbd className="absolute right-[0.3rem] top-[0.35rem] hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[11px] font-medium opacity-100 sm:flex">
-      {os === "macOS" ? "⌘" : "Ctrl"} + K
+      {os === "macOS" ? "⌘" : "Ctrl"}+K
     </kbd>
   );
 };
