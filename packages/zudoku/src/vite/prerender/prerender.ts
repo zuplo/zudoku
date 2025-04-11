@@ -55,13 +55,17 @@ export const prerender = async ({
   writeRedirects: boolean;
 }) => {
   const distDir = path.join(dir, "dist", basePath);
-  const config: ZudokuConfig = await import(
-    pathToFileURL(path.join(distDir, "server", serverConfigFilename)).href
-  ).then((m) => m.default);
+  const serverConfigPath = pathToFileURL(
+    path.join(distDir, "server", serverConfigFilename),
+  ).href;
+  const entryServerPath = pathToFileURL(
+    path.join(distDir, "server/entry.server.js"),
+  ).href;
 
-  const module = await import(
-    pathToFileURL(path.join(distDir, "server/entry.server.js")).href
+  const config: ZudokuConfig = await import(serverConfigPath).then(
+    (m) => m.default,
   );
+  const module = await import(entryServerPath);
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
   const routes = getRoutes(config);
@@ -82,7 +86,6 @@ export const prerender = async ({
   }
 
   let completedCount = 0;
-
   let pagefindIndex: PagefindIndex | undefined;
 
   if (config.search?.type === "pagefind") {
@@ -94,7 +97,6 @@ export const prerender = async ({
     pagefindIndex = index;
   }
 
-  const serverOutDir = path.join(distDir, "server");
   const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
     idleTimeout: 5_000,
@@ -102,8 +104,8 @@ export const prerender = async ({
     workerData: {
       template: html,
       distDir,
-      serverConfigPath: path.join(serverOutDir, serverConfigFilename),
-      entryServerPath: path.join(serverOutDir, "entry.server.js"),
+      serverConfigPath,
+      entryServerPath,
       writeRedirects,
     } satisfies StaticWorkerData,
   });
