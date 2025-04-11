@@ -20,7 +20,7 @@ const zudokuConfigFiles = [
 
 const devPortalConfigFile = "dev-portal.json";
 
-const fileExists = (path: string) =>
+export const fileExists = (path: string) =>
   stat(path)
     .then(() => true)
     .catch(() => false);

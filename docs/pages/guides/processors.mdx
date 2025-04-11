@@ -1,0 +1,121 @@
+# Schema Processors
+
+Schema processors are functions that transform your OpenAPI schemas before they are used in the documentation. They are defined in your `zudoku.build.ts` file and can be used to modify schemas in various ways.
+
+:::tip
+For information on how to configure processors in your project, see the [Build Configuration](/configuration/build-configuration) guide.
+:::
+
+## Built-in Processors
+
+Zudoku provides several built-in processors that you can use to transform your schemas:
+
+### `removeExtensions`
+
+Removes OpenAPI extensions (`x-` prefixed properties) from your schema:
+
+```ts
+import { removeExtensions } from "zudoku/processors/removeExtensions";
+
+// Remove all x- prefixed properties
+const processor = removeExtensions();
+
+// Remove specific extensions
+const processor = removeExtensions({
+  keys: ["x-internal", "x-deprecated"],
+});
+
+// Remove extensions based on a custom filter
+const processor = removeExtensions({
+  shouldRemove: (key) => key.startsWith("x-zuplo"),
+});
+```
+
+### `removeParameters`
+
+Removes parameters from your schema:
+
+```ts
+import { removeParameters } from "zudoku/processors/removeParameters";
+
+// Remove parameters by name
+const processor = removeParameters({
+  names: ["apiKey", "secret"],
+});
+
+// Remove parameters by location
+const processor = removeParameters({
+  in: ["header", "query"],
+});
+
+// Remove parameters based on a custom filter
+const processor = removeParameters({
+  shouldRemove: ({ parameter }) => parameter["x-internal"],
+});
+```
+
+### `removePaths`
+
+Removes paths or operations from your schema:
+
+```ts
+import { removePaths } from "zudoku/processors/removePaths";
+
+// Remove entire paths
+const processor = removePaths({
+  paths: {
+    "/internal": true,
+    "/admin": ["get", "post"],
+  },
+});
+
+// Remove paths based on a custom filter
+const processor = removePaths({
+  shouldRemove: ({ path, method, operation }) => operation["x-internal"],
+});
+```
+
+:::info
+
+If you are missing a processor that you think should be built-in, please don't hesitate to [open an issue on GitHub](https://github.com/zuplo/zudoku/issues/new).
+
+:::
+
+## Custom Processors
+
+You can also create your own processors. Here's a simple example that adds a description to all operations:
+
+```ts
+async function addDescriptionProcessor({ schema }) {
+  if (!schema.paths) return schema;
+
+  // Add a description to all operations
+  Object.values(schema.paths).forEach((path) => {
+    Object.values(path).forEach((operation) => {
+      if (typeof operation === "object") {
+        operation.description = "This is a public API endpoint";
+      }
+    });
+  });
+
+  return schema;
+}
+```
+
+### Adding Server URLs
+
+```ts
+async function addServerUrl({ schema }) {
+  return {
+    ...schema,
+    servers: [{ url: "https://api.example.com" }],
+  };
+}
+```
+
+## Best Practices
+
+- **Handle missing properties**: Check for the existence of properties before accessing them
+- **Return the schema**: Always return the transformed schema, even if no changes were made
+- **Use async/await**: Processors can be async functions, which is useful for more complex transformations
+- **Chain processors**: Processors are executed in order, so you can chain multiple transformations
