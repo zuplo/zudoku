@@ -44,7 +44,7 @@
     "./tailwind": "./src/app/tailwind.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
-    "./post-processors/*": "./src/lib/plugins/openapi/post-processors/*.ts",
+    "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
     "./with-zuplo": "./src/zuplo/with-zuplo.ts"
   },
   "publishConfig": {
@@ -126,9 +126,9 @@
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
       },
-      "./post-processors/*": {
-        "import": "./lib/post-processors/*.js",
-        "types": "./dist/lib/plugins/openapi/post-processors/*.d.ts"
+      "./processors/*": {
+        "import": "./lib/processors/*.js",
+        "types": "./dist/lib/plugins/openapi/processors/*.d.ts"
       },
       "./icons": {
         "import": "./lib/zudoku.icons.js",
@@ -158,7 +158,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.app.json",
     "build:vite": "vite build",
-    "generate:icon-types": "tsx ./scripts/generate-icon-types.ts",
+    "generate:icon-types": "node scripts/generate-icon-types.js",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
     "clean": "tsc --build --clean",
@@ -266,7 +266,6 @@
     "strip-ansi": "7.1.0",
     "tailwind-merge": "2.6.0",
     "tailwindcss": "3.4.17",
-    "tsx": "^4.19.3",
     "ulidx": "2.4.1",
     "unified": "^11.0.5",
     "unist-util-visit": "5.0.0",

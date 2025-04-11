@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { removeExtensions } from "../lib/plugins/openapi/post-processors/removeExtensions.js";
-import { removeParameters } from "../lib/plugins/openapi/post-processors/removeParameters.js";
-import { removePaths } from "../lib/plugins/openapi/post-processors/removePaths.js";
+import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtensions.js";
+import { removeParameters } from "../lib/plugins/openapi/processors/removeParameters.js";
+import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
 import { type RecordAny } from "../lib/util/traverse.js";
 import { enrichWithZuploData } from "./enrich-with-zuplo.js";
 import { ZuploEnv } from "./env.js";
