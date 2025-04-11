@@ -1,3 +1,7 @@
+---
+sidebar_icon: cpu
+---
+
 # Schema Processors
 
 Schema processors are functions that transform your OpenAPI schemas before they are used in the documentation. They are defined in your `zudoku.build.ts` file and can be used to modify schemas in various ways.
@@ -16,19 +20,26 @@ Removes OpenAPI extensions (`x-` prefixed properties) from your schema:
 
 ```ts
 import { removeExtensions } from "zudoku/processors/removeExtensions";
+import type { ZudokuBuildConfig } from "zudoku";
 
-// Remove all x- prefixed properties
-const processor = removeExtensions();
+const buildConfig: ZudokuBuildConfig = {
+  processors: [
+    // Remove all x- prefixed properties
+    removeExtensions(),
 
-// Remove specific extensions
-const processor = removeExtensions({
-  keys: ["x-internal", "x-deprecated"],
-});
+    // Remove specific extensions
+    removeExtensions({
+      keys: ["x-internal", "x-deprecated"],
+    }),
 
-// Remove extensions based on a custom filter
-const processor = removeExtensions({
-  shouldRemove: (key) => key.startsWith("x-zuplo"),
-});
+    // Remove extensions based on a custom filter
+    removeExtensions({
+      shouldRemove: (key) => key.startsWith("x-zuplo"),
+    }),
+  ],
+};
+
+export default buildConfig;
 ```
 
 ### `removeParameters`
@@ -37,21 +48,28 @@ Removes parameters from your schema:
 
 ```ts
 import { removeParameters } from "zudoku/processors/removeParameters";
+import type { ZudokuBuildConfig } from "zudoku";
 
-// Remove parameters by name
-const processor = removeParameters({
-  names: ["apiKey", "secret"],
-});
+const buildConfig: ZudokuBuildConfig = {
+  processors: [
+    // Remove parameters by name
+    removeParameters({
+      names: ["apiKey", "secret"],
+    }),
 
-// Remove parameters by location
-const processor = removeParameters({
-  in: ["header", "query"],
-});
+    // Remove parameters by location
+    removeParameters({
+      in: ["header", "query"],
+    }),
 
-// Remove parameters based on a custom filter
-const processor = removeParameters({
-  shouldRemove: ({ parameter }) => parameter["x-internal"],
-});
+    // Remove parameters based on a custom filter
+    removeParameters({
+      shouldRemove: ({ parameter }) => parameter["x-internal"],
+    }),
+  ],
+};
+
+export default buildConfig;
 ```
 
 ### `removePaths`
@@ -60,19 +78,26 @@ Removes paths or operations from your schema:
 
 ```ts
 import { removePaths } from "zudoku/processors/removePaths";
+import type { ZudokuBuildConfig } from "zudoku";
 
-// Remove entire paths
-const processor = removePaths({
-  paths: {
-    "/internal": true,
-    "/admin": ["get", "post"],
-  },
-});
+const buildConfig: ZudokuBuildConfig = {
+  processors: [
+    // Remove entire paths
+    removePaths({
+      paths: {
+        "/internal": true,
+        "/admin": ["get", "post"],
+      },
+    }),
 
-// Remove paths based on a custom filter
-const processor = removePaths({
-  shouldRemove: ({ path, method, operation }) => operation["x-internal"],
-});
+    // Remove paths based on a custom filter
+    removePaths({
+      shouldRemove: ({ path, method, operation }) => operation["x-internal"],
+    }),
+  ],
+};
+
+export default buildConfig;
 ```
 
 :::info
@@ -86,6 +111,8 @@ If you are missing a processor that you think should be built-in, please don't h
 You can also create your own processors. Here's a simple example that adds a description to all operations:
 
 ```ts
+import type { ZudokuBuildConfig } from "zudoku";
+
 async function addDescriptionProcessor({ schema }) {
   if (!schema.paths) return schema;
 
@@ -100,17 +127,31 @@ async function addDescriptionProcessor({ schema }) {
 
   return schema;
 }
+
+const buildConfig: ZudokuBuildConfig = {
+  processors: [addDescriptionProcessor],
+};
+
+export default buildConfig;
 ```
 
 ### Adding Server URLs
 
 ```ts
+import type { ZudokuBuildConfig } from "zudoku";
+
 async function addServerUrl({ schema }) {
   return {
     ...schema,
     servers: [{ url: "https://api.example.com" }],
   };
 }
+
+const buildConfig: ZudokuBuildConfig = {
+  processors: [addServerUrl],
+};
+
+export default buildConfig;
 ```
 
 ## Best Practices
