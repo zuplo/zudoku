@@ -3,6 +3,20 @@ sidebar_label: General Information
 sidebar_icon: heart-handshake
 ---
 
+<OpenPlaygroundButton
+  server="http://localhost:9000/"
+  url="/v1/developer/check-in"
+  headers={[
+    {
+      name: "x-zudoku-url",
+      defaultActive: true,
+      defaultValue:
+        "https://gist.githubusercontent.com/mosch/adafec14b6d7bb42505444451c815c40/raw/4a5e15d94085a64f93bc0cbe3278c88a63e7e32c/",
+    },
+  ]}
+  method="POST"
+/>
+
 <img
   src="./header.jpg"
   alt="Cosmo Cargo Inc."
