@@ -45,20 +45,23 @@ const lookup = (
   filePath?: string,
 ): RecordAny => {
   const parts = getSegmentsFromPath(path);
-  let value = schema;
+  let val = schema;
 
   for (const part of parts) {
-    // Despite the type, value may be undefined here
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (value === undefined) {
+    while (val.$ref?.startsWith("#/")) {
+      val = val.$ref === path ? val : lookup(schema, val.$ref, filePath);
+    }
+
+    if (val[part] === undefined) {
       throw new Error(
-        `Error in ${filePath ?? "code generation"}: Could not find value for path: ${path}`,
+        `Error in ${filePath ?? "code generation"}: Could not find path segment ${part} in path: ${path}`,
       );
     }
-    value = value[part];
+
+    val = val[part];
   }
 
-  return value;
+  return val;
 };
 
 /**
