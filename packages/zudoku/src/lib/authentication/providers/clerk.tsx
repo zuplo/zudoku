@@ -126,7 +126,7 @@ const clerkAuth: AuthenticationProviderInitializer<
         providerData: null,
       });
     },
-    signIn: async ({ redirectTo }: { redirectTo?: string }) => {
+    signIn: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignIn({
         signInForceRedirectUrl:
@@ -135,7 +135,7 @@ const clerkAuth: AuthenticationProviderInitializer<
           redirectTo ?? window.location.origin + redirectToAfterSignUp,
       });
     },
-    signUp: async ({ redirectTo }: { redirectTo?: string }) => {
+    signUp: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignUp({
         signInForceRedirectUrl:

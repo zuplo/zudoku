@@ -1,6 +1,7 @@
 import { Helmet } from "@zudoku/react-helmet-async";
 import { Suspense, useEffect, type ReactNode } from "react";
 import { Outlet, useLocation } from "react-router";
+import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
@@ -54,7 +55,13 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <Header />
       <Slotlet name="layout-after-head" />
 
-      <div className="grid grid-cols-1 grid-rows-[0_min-content_1fr] lg:grid-rows-[min-content_1fr] lg:grid-cols-[var(--side-nav-width)_1fr] max-w-screen-2xl w-full lg:mx-auto">
+      <div
+        className={cn(
+          "grid max-w-screen-2xl w-full lg:mx-auto",
+          "has-[:only-child]:grid-rows-1 grid-rows-[0_min-content_1fr] lg:grid-rows-[min-content_1fr]",
+          "grid-cols-1 lg:grid-cols-[var(--side-nav-width)_1fr]",
+        )}
+      >
         <Suspense fallback={<LoadingFallback />}>
           <Main>{children ?? <Outlet />}</Main>
         </Suspense>

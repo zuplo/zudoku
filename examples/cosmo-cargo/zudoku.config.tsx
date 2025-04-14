@@ -1,5 +1,6 @@
 import type { ZudokuConfig } from "zudoku";
 import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
+import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities() {
@@ -17,6 +18,9 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 }
 
 const config: ZudokuConfig = {
+  metadata: {
+    title: "Cosmo Cargo Inc.",
+  },
   page: {
     banner: {
       message: (
@@ -90,13 +94,28 @@ const config: ZudokuConfig = {
   },
   protectedRoutes: ["/only-members"],
   topNavigation: [
-    { id: "general", label: "General" },
+    { id: "documentation", label: "Documentation" },
     { id: "api-shipments", label: "Shipments API" },
     { id: "catalog", label: "API Catalog" },
   ],
-  redirects: [{ from: "/", to: "/general" }],
   sidebar: {
-    general: ["general", "global", "interstellar", "intergalactic"],
+    documentation: [
+      "documentation",
+      {
+        type: "category",
+        icon: "telescope",
+        collapsed: false,
+        label: "Space Operations",
+        items: ["shipping-process", "tracking"],
+      },
+      "global",
+      {
+        type: "category",
+        icon: "library-big",
+        label: "Shipping Guides",
+        items: ["interstellar", "intergalactic"],
+      },
+    ],
   },
   catalogs: {
     navigationId: "catalog",
@@ -115,10 +134,8 @@ const config: ZudokuConfig = {
     type: "pagefind",
   },
   customPages: [
-    {
-      path: "/only-members",
-      element: <div>Only members</div>,
-    },
+    { path: "/", element: <Landingpage /> },
+    { path: "/only-members", element: <div>Only members</div> },
   ],
   apis: [
     {
@@ -184,8 +201,8 @@ const config: ZudokuConfig = {
       cardForeground: "20 14.3% 4.1%",
       popover: "0 0% 100%",
       popoverForeground: "20 14.3% 4.1%",
-      primary: "47.9 95.8% 53.1%",
-      primaryForeground: "26 83.3% 14.1%",
+      primary: "#f4bf32",
+      primaryForeground: "#0f1719",
       secondary: "60 4.8% 95.9%",
       secondaryForeground: "24 9.8% 10%",
       muted: "60 4.8% 95.9%",
@@ -205,8 +222,8 @@ const config: ZudokuConfig = {
       cardForeground: "60 9.1% 97.8%",
       popover: "20 14.3% 4.1%",
       popoverForeground: "60 9.1% 97.8%",
-      primary: "47.9 95.8% 53.1%",
-      primaryForeground: "26 83.3% 14.1%",
+      primary: "#f4bf32",
+      primaryForeground: "#0f1719",
       secondary: "12 6.5% 15.1%",
       secondaryForeground: "60 9.1% 97.8%",
       muted: "12 6.5% 15.1%",
