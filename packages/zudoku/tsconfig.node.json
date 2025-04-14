@@ -9,6 +9,6 @@
     "noEmit": true,
     "resolveJsonModule": true
   },
-  "include": ["scripts"],
+  "include": ["scripts", "lucide-react.d.ts"],
   "exclude": ["node_modules"]
 }
