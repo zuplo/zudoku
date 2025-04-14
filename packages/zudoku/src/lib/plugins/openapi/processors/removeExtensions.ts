@@ -1,3 +1,5 @@
+import type { ProcessorArg } from "../../../../config/validators/BuildSchema.js";
+import type { OpenAPIDocument } from "../../../oas/parser/index.js";
 import { type RecordAny, traverse } from "./traverse.js";
 
 interface RemoveExtensionsOptions {
@@ -8,8 +10,8 @@ interface RemoveExtensionsOptions {
 // Remove all `x-` prefixed key/value pairs, or filter by names if provided
 export const removeExtensions =
   ({ keys, shouldRemove }: RemoveExtensionsOptions = {}) =>
-  (doc: RecordAny): RecordAny =>
-    traverse(doc, (spec) => {
+  ({ schema }: ProcessorArg) =>
+    traverse(schema, (spec) => {
       const result: RecordAny = {};
 
       for (const [key, value] of Object.entries(spec)) {
@@ -24,4 +26,4 @@ export const removeExtensions =
         result[key] = value;
       }
       return result;
-    });
+    }) as OpenAPIDocument;

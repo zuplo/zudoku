@@ -1,3 +1,5 @@
+import type { ProcessorArg } from "../../../../config/validators/BuildSchema.js";
+import type { OpenAPIDocument } from "../../../oas/parser/index.js";
 import { type RecordAny, traverse } from "./traverse.js";
 
 interface RemoveParametersOptions {
@@ -11,8 +13,8 @@ interface RemoveParametersOptions {
 
 export const removeParameters =
   ({ names, in: locations, shouldRemove }: RemoveParametersOptions = {}) =>
-  (doc: RecordAny): RecordAny =>
-    traverse(doc, (spec) => {
+  ({ schema }: ProcessorArg) =>
+    traverse(schema, (spec) => {
       // Helper function to filter parameters
       const filterParameters = (parameters: RecordAny[]) =>
         parameters.filter((p) => {
@@ -98,4 +100,4 @@ export const removeParameters =
       }
 
       return spec;
-    });
+    }) as OpenAPIDocument;
