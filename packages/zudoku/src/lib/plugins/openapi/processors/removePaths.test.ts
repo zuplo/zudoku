@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { OpenAPIDocument } from "../../../oas/parser/index.js";
 import { removePaths } from "./removePaths.js";
 
 const baseDoc = {
@@ -15,7 +16,7 @@ const baseDoc = {
       get: { summary: "Another example" },
     },
   },
-};
+} as unknown as OpenAPIDocument;
 
 describe("removePaths", () => {
   it("removes paths specified in the paths option", () => {
@@ -23,11 +24,15 @@ describe("removePaths", () => {
       paths: {
         "/remove-me": true,
       },
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/remove-me"]).toBeUndefined();
-    expect(processed.paths["/example"]).toBeDefined();
-    expect(processed.paths["/another"]).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeUndefined();
+    expect(processed.paths?.["/example"]).toBeDefined();
+    expect(processed.paths?.["/another"]).toBeDefined();
   });
 
   it("removes specific methods in the paths option", () => {
@@ -35,11 +40,15 @@ describe("removePaths", () => {
       paths: {
         "/example": ["get"],
       },
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/example"].get).toBeUndefined();
-    expect(processed.paths["/example"].post).toBeDefined();
-    expect(processed.paths["/remove-me"]).toBeDefined();
+    expect(processed.paths?.["/example"]?.get).toBeUndefined();
+    expect(processed.paths?.["/example"]?.post).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeDefined();
   });
 
   it("removes paths and methods using paths and shouldRemove together", () => {
@@ -48,50 +57,70 @@ describe("removePaths", () => {
         "/example": ["post"],
       },
       shouldRemove: ({ path }) => path.startsWith("/remove"),
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/remove-me"]).toBeUndefined();
-    expect(processed.paths["/example"].get).toBeDefined();
-    expect(processed.paths["/example"].post).toBeUndefined();
-    expect(processed.paths["/another"]).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeUndefined();
+    expect(processed.paths?.["/example"]?.get).toBeDefined();
+    expect(processed.paths?.["/example"]?.post).toBeUndefined();
+    expect(processed.paths?.["/another"]).toBeDefined();
   });
 
   it("removes paths based on shouldRemove callback", () => {
     const processed = removePaths({
       shouldRemove: ({ path }) => path.startsWith("/remove"),
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/remove-me"]).toBeUndefined();
-    expect(processed.paths["/example"]).toBeDefined();
-    expect(processed.paths["/another"]).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeUndefined();
+    expect(processed.paths?.["/example"]).toBeDefined();
+    expect(processed.paths?.["/another"]).toBeDefined();
   });
 
   it("removes methods based on shouldRemove callback", () => {
     const processed = removePaths({
       shouldRemove: ({ method }) => method === "post",
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/example"].post).toBeUndefined();
-    expect(processed.paths["/example"].get).toBeDefined();
-    expect(processed.paths["/remove-me"]).toBeDefined();
+    expect(processed.paths?.["/example"]?.post).toBeUndefined();
+    expect(processed.paths?.["/example"]?.get).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeDefined();
   });
 
   it("removes both paths and methods based on shouldRemove callback", () => {
     const processed = removePaths({
       shouldRemove: ({ path, method }) =>
         path.startsWith("/remove") || method === "post",
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/remove-me"]).toBeUndefined();
-    expect(processed.paths["/example"].post).toBeUndefined();
-    expect(processed.paths["/example"].get).toBeDefined();
-    expect(processed.paths["/another"]).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeUndefined();
+    expect(processed.paths?.["/example"]?.post).toBeUndefined();
+    expect(processed.paths?.["/example"]?.get).toBeDefined();
+    expect(processed.paths?.["/another"]).toBeDefined();
   });
 
   it("does nothing if shouldRemove always returns false", () => {
     const processed = removePaths({
       shouldRemove: () => false,
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
     expect(processed).toEqual(baseDoc);
   });
@@ -99,7 +128,11 @@ describe("removePaths", () => {
   it("removes everything if shouldRemove always returns true", () => {
     const processed = removePaths({
       shouldRemove: () => true,
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
     expect(processed.paths).toEqual({});
   });
@@ -108,19 +141,27 @@ describe("removePaths", () => {
     const processed = removePaths({
       shouldRemove: ({ path, method }) =>
         method === true && path === "/remove-me",
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/remove-me"]).toBeUndefined();
-    expect(processed.paths["/example"]).toBeDefined();
-    expect(processed.paths["/another"]).toBeDefined();
+    expect(processed.paths?.["/remove-me"]).toBeUndefined();
+    expect(processed.paths?.["/example"]).toBeDefined();
+    expect(processed.paths?.["/another"]).toBeDefined();
   });
 
   it("removes specific methods while keeping paths", () => {
     const processed = removePaths({
       shouldRemove: ({ method }) => method === "delete",
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
-    expect(processed.paths["/remove-me"]).toBeDefined();
-    expect(processed.paths["/remove-me"].delete).toBeUndefined();
+    expect(processed.paths?.["/remove-me"]).toBeDefined();
+    expect(processed.paths?.["/remove-me"]?.delete).toBeUndefined();
   });
 });

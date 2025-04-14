@@ -142,14 +142,8 @@ const viteApiPlugin = async (
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = initialConfig.isZuplo
     ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        "../zuplo/with-zuplo-processors.js",
-      )
-        .then((m) => m.module.default(initialConfig.__meta.rootDir))
-        .catch((e) => {
-          // eslint-disable-next-line no-console
-          console.warn("Failed to load Zuplo processors", e);
-          return [];
-        })
+        path.resolve(import.meta.dirname, "../zuplo/with-zuplo-processors.js"),
+      ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 
   const buildFilePath = path.join(
@@ -183,8 +177,8 @@ const viteApiPlugin = async (
       await fs.mkdir(tmpDir, { recursive: true });
 
       processedSchemas = await processSchemas(tmpDir, getConfig(), [
-        ...zuploProcessors,
         ...buildProcessors,
+        ...zuploProcessors,
       ]);
       // Potential files outside of the root dir are not watched by default, so we add all schemas just to be sure
       allSchemaFiles.forEach((file) => this.addWatchFile(file));
@@ -194,8 +188,8 @@ const viteApiPlugin = async (
         if (!allSchemaFiles.has(id)) return;
 
         processedSchemas = await processSchemas(tmpDir, getConfig(), [
-          ...zuploProcessors,
           ...buildProcessors,
+          ...zuploProcessors,
         ]);
         allSchemaFiles.forEach((file) => server.watcher.add(file));
         reload(server);

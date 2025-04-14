@@ -1,6 +1,8 @@
-import { OpenAPIV3_1 } from "openapi-types";
-import { RecordAny } from "../lib/util/traverse.js";
-import {
+import type { OpenAPIV3_1 } from "openapi-types";
+import type { ProcessorArg } from "../config/validators/BuildSchema.js";
+import { objectEntries } from "../lib/util/objectEntries.js";
+import type { RecordAny } from "../lib/util/traverse.js";
+import type {
   PoliciesConfigFile,
   PolicyConfigurationFragment,
 } from "./policy-types.js";
@@ -154,12 +156,12 @@ export const enrichWithZuploData = ({
 }: {
   policiesConfig: PoliciesConfigFile;
 }) => {
-  return (spec: RecordAny) => {
-    if (!spec.paths) return spec;
+  return ({ schema }: ProcessorArg) => {
+    if (!schema.paths) return schema;
 
     let hasRateLimitPolicies = false;
 
-    for (const [, pathItem] of Object.entries<RecordAny>(spec.paths)) {
+    for (const [, pathItem] of objectEntries<RecordAny>(schema.paths)) {
       for (const method of operations) {
         const operation = pathItem[method];
         if (!operation?.["x-zuplo-route"]) continue;
@@ -226,12 +228,12 @@ export const enrichWithZuploData = ({
           policy.handler.export === "ApiKeyInboundPolicy",
       )
     ) {
-      if (!spec.components) spec.components = {};
-      if (!spec.components.securitySchemes)
-        spec.components.securitySchemes = {};
+      if (!schema.components) schema.components = {};
+      if (!schema.components.securitySchemes)
+        schema.components.securitySchemes = {};
 
-      if (!spec.components.securitySchemes.api_key) {
-        spec.components.securitySchemes.api_key = {
+      if (!schema.components.securitySchemes.api_key) {
+        schema.components.securitySchemes.api_key = {
           type: "http",
           scheme: "bearer",
         };
@@ -240,13 +242,13 @@ export const enrichWithZuploData = ({
 
     // Add rate limiting responses only if we found rate limiting policies
     if (hasRateLimitPolicies) {
-      if (!spec.components) spec.components = {};
-      if (!spec.components.responses) spec.components.responses = {};
-      spec.components.responses.RateLimitNoRetryAfter = rateLimitingResponse;
-      spec.components.responses.RateLimitWithRetryAfter =
+      if (!schema.components) schema.components = {};
+      if (!schema.components.responses) schema.components.responses = {};
+      schema.components.responses.RateLimitNoRetryAfter = rateLimitingResponse;
+      schema.components.responses.RateLimitWithRetryAfter =
         rateLimitingResponseWithHeader;
     }
 
-    return spec;
+    return schema;
   };
 };

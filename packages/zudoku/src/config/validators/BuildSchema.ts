@@ -21,6 +21,7 @@ export const BuildProcessorSchema = z
   );
 
 export type Processor = z.infer<typeof BuildProcessorSchema>;
+export type ProcessorArg = Parameters<Processor>[0];
 
 export const BuildConfigSchema = z.object({
   processors: z.array(BuildProcessorSchema).optional(),

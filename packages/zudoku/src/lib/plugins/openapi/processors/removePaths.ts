@@ -1,3 +1,5 @@
+import type { ProcessorArg } from "../../../../config/validators/BuildSchema.js";
+import type { OpenAPIDocument } from "../../../oas/parser/index.js";
 import { type RecordAny, traverse } from "./traverse.js";
 
 interface RemovePathsOptions {
@@ -12,8 +14,8 @@ interface RemovePathsOptions {
 
 export const removePaths =
   ({ paths = {}, shouldRemove }: RemovePathsOptions) =>
-  (doc: RecordAny): RecordAny =>
-    traverse(doc, (spec) => {
+  ({ schema }: ProcessorArg) =>
+    traverse(schema, (spec) => {
       if (!spec.paths) return spec;
 
       const updatedPaths: RecordAny = {};
@@ -52,4 +54,4 @@ export const removePaths =
       }
 
       return { ...spec, paths: updatedPaths };
-    });
+    }) as OpenAPIDocument;
