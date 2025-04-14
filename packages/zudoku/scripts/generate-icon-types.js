@@ -1,9 +1,10 @@
+import icons from "lucide-react/dist/esm/dynamicIconImports.js";
+
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
-import * as Icons from "zudoku/icons";
 
-const iconNames = Object.keys(Icons)
+const iconNames = Object.keys(icons)
   .sort()
   .map((icon) => `"${icon}"`)
   .join(" | ");

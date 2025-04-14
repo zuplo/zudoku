@@ -1,12 +1,12 @@
+import icons from "lucide-react/dynamicIconImports.js";
 import { type Plugin } from "vite";
-import * as Icons from "zudoku/icons";
 import { type LoadedConfig } from "../config/config.js";
 import { SidebarManager } from "../config/validators/SidebarSchema.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
 
-const iconNames = Object.keys(Icons);
+const iconNames = Object.keys(icons);
 
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
