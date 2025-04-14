@@ -43,6 +43,8 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
   if (lazyMatches?.length) {
     await Promise.all(
       lazyMatches.map(async (m) => {
+        if (typeof m.route.lazy !== "function") return;
+
         const routeModule = await m.route.lazy!();
         Object.assign(m.route, { ...routeModule, lazy: undefined });
       }),
