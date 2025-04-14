@@ -1,4 +1,4 @@
-import icons from "lucide-react/dynamicIconImports.js";
+import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
 import { SidebarManager } from "../config/validators/SidebarSchema.js";
