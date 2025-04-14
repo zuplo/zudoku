@@ -16,7 +16,14 @@ export const Sidebar = ({
     <SidebarWrapper>
       <Slotlet name="zudoku-before-navigation" />
       {sidebar.map((item) => (
-        <SidebarItem key={item.label} item={item} />
+        <SidebarItem
+          key={
+            ("id" in item ? item.id : "") +
+            ("href" in item ? item.href : "") +
+            item.label
+          }
+          item={item}
+        />
       ))}
       <Slotlet name="zudoku-after-navigation" />
     </SidebarWrapper>
