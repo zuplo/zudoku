@@ -34,6 +34,11 @@
     {
       "name": "System",
       "description": "Endpoints for system health checks and retrieving API version information."
+    },
+    {
+      "name": "Schemas",
+      "description": "Endpoints for retrieving and validating data schemas used across the Cosmo Cargo platform.",
+      "x-zudoku-collapsed": false
     }
   ],
   "servers": [
@@ -380,6 +385,128 @@
           }
         },
         "additionalProperties": false
+      },
+      "SchemaValidationRequest": {
+        "type": "object",
+        "description": "Request to validate data against a specific schema",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "The data to validate against the schema"
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "strictMode": {
+                "type": "boolean",
+                "description": "Whether to validate in strict mode",
+                "default": false
+              },
+              "allowAdditionalProperties": {
+                "type": "boolean",
+                "description": "Whether to allow properties not defined in the schema",
+                "default": true
+              }
+            }
+          }
+        }
+      },
+      "SchemaValidationResponse": {
+        "type": "object",
+        "description": "Response from schema validation",
+        "required": ["valid"],
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "description": "Whether the data is valid according to the schema"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Validation errors if any",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON path to the invalid property"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Error message"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "Error code",
+                  "enum": [
+                    "REQUIRED",
+                    "TYPE_MISMATCH",
+                    "ENUM_VIOLATION",
+                    "FORMAT_VIOLATION",
+                    "CONSTRAINT_VIOLATION"
+                  ]
+                }
+              }
+            }
+          },
+          "schemaId": {
+            "type": "string",
+            "description": "Identifier of the schema used for validation"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the validation was performed"
+          }
+        }
+      },
+      "SchemaMetadata": {
+        "type": "object",
+        "description": "Metadata about a schema",
+        "required": ["id", "name", "version"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the schema"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the schema"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the schema",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the schema"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the schema was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the schema was last updated"
+          },
+          "spaceEntityType": {
+            "type": "string",
+            "description": "The type of space entity this schema represents",
+            "enum": [
+              "CARGO",
+              "VESSEL",
+              "CREW",
+              "ROUTE",
+              "STATION",
+              "PLANET",
+              "ASTEROID",
+              "SATELLITE"
+            ]
+          }
+        }
       }
     }
   },
@@ -1527,6 +1654,218 @@
                   "amount": 125.5,
                   "currency": "GBP",
                   "receipt": "https://api.sh.example.com/v1/receipts/duty_123456.pdf"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas": {
+      "get": {
+        "tags": ["Schemas"],
+        "summary": "List available schemas",
+        "description": "Retrieve a list of all available data schemas in the Cosmo Cargo platform",
+        "operationId": "listSchemas",
+        "parameters": [
+          {
+            "name": "entityType",
+            "in": "query",
+            "description": "Filter schemas by space entity type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CARGO",
+                "VESSEL",
+                "CREW",
+                "ROUTE",
+                "STATION",
+                "PLANET",
+                "ASTEROID",
+                "SATELLITE"
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Filter schemas by version",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of schemas retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schemas": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SchemaMetadata"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Total number of schemas returned"
+                    }
+                  }
+                },
+                "example": {
+                  "schemas": [
+                    {
+                      "id": "cargo-manifest-v1",
+                      "name": "Cargo Manifest",
+                      "version": "1.0.0",
+                      "description": "Schema for interplanetary cargo manifests",
+                      "createdAt": "2024-06-15T08:00:00Z",
+                      "updatedAt": "2024-06-15T08:00:00Z",
+                      "spaceEntityType": "CARGO"
+                    },
+                    {
+                      "id": "vessel-specs-v2",
+                      "name": "Vessel Specifications",
+                      "version": "2.1.0",
+                      "description": "Technical specifications for space vessels",
+                      "createdAt": "2024-05-10T14:30:00Z",
+                      "updatedAt": "2024-07-22T09:15:00Z",
+                      "spaceEntityType": "VESSEL"
+                    },
+                    {
+                      "id": "route-plan-v3",
+                      "name": "Route Planning",
+                      "version": "3.0.2",
+                      "description": "Interplanetary route planning and navigation",
+                      "createdAt": "2024-04-01T11:45:00Z",
+                      "updatedAt": "2024-07-15T16:20:00Z",
+                      "spaceEntityType": "ROUTE"
+                    }
+                  ],
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas/{schemaId}": {
+      "get": {
+        "tags": ["Schemas"],
+        "summary": "Get schema details",
+        "description": "Retrieve detailed information about a specific schema, including its structure",
+        "operationId": "getSchema",
+        "parameters": [
+          {
+            "name": "schemaId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the schema",
+            "schema": {
+              "type": "string"
+            },
+            "example": "cargo-manifest-v1"
+          },
+          {
+            "name": "includeStructure",
+            "in": "query",
+            "description": "Whether to include the full schema structure",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Schema details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metadata": {
+                      "$ref": "#/components/schemas/SchemaMetadata"
+                    },
+                    "structure": {
+                      "type": "object",
+                      "description": "The JSON Schema structure"
+                    }
+                  }
+                },
+                "example": {
+                  "metadata": {
+                    "id": "cargo-manifest-v1",
+                    "name": "Cargo Manifest",
+                    "version": "1.0.0",
+                    "description": "Schema for interplanetary cargo manifests",
+                    "createdAt": "2024-06-15T08:00:00Z",
+                    "updatedAt": "2024-06-15T08:00:00Z",
+                    "spaceEntityType": "CARGO"
+                  },
+                  "structure": {
+                    "type": "object",
+                    "required": ["manifestId", "vesselId", "items"],
+                    "properties": {
+                      "manifestId": {
+                        "type": "string",
+                        "description": "Unique identifier for the cargo manifest"
+                      },
+                      "vesselId": {
+                        "type": "string",
+                        "description": "ID of the vessel carrying the cargo"
+                      },
+                      "departureDate": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When the vessel departs"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "itemId": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "weight": {
+                              "type": "number"
+                            },
+                            "hazardClass": {
+                              "type": "string",
+                              "enum": ["NONE", "CLASS_1", "CLASS_2", "CLASS_3"]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Schema not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "SCHEMA_NOT_FOUND",
+                  "message": "Schema with ID 'cargo-manifest-v1' not found"
                 }
               }
             }
