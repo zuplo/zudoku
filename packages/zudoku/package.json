@@ -222,7 +222,7 @@
     "glob": "11.0.1",
     "graphql": "16.10.0",
     "graphql-type-json": "0.3.2",
-    "graphql-yoga": "5.13.2",
+    "graphql-yoga": "5.13.3",
     "gray-matter": "4.0.3",
     "hast-util-to-jsx-runtime": "^2.3.6",
     "hast-util-to-string": "3.0.1",
