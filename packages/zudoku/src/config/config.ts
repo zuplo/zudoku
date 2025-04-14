@@ -1,9 +1,11 @@
 import type { Provider } from "@supabase/supabase-js";
 import type { ConfigWithMeta } from "./common.js";
+import type { BuildConfig } from "./validators/BuildSchema.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 
-export { type ZudokuConfig };
+export type { ZudokuConfig };
 
+export type ZudokuBuildConfig = BuildConfig;
 export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
 
 type RedirectOptions = {

@@ -1,4 +1,4 @@
-import { CommonConfig } from "../config/validators/common.js";
+import type { CommonConfig } from "../config/validators/common.js";
 
 const withZuplo = <TConfig extends CommonConfig>(config: TConfig): TConfig => {
   return {

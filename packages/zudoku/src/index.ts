@@ -1,4 +1,4 @@
-export type { ZudokuConfig } from "./config/config.js";
+export type { ZudokuBuildConfig, ZudokuConfig } from "./config/config.js";
 export type {
   SidebarConfig as Sidebar,
   SidebarEntry,

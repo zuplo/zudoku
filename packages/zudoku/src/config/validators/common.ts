@@ -16,8 +16,6 @@ import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js"
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
 
-const AnyObject = z.object({}).passthrough();
-
 const ThemeSchema = z
   .object({
     background: z.string(),
@@ -70,11 +68,6 @@ const ApiConfigSchema = z
   })
   .partial();
 
-const ApiPostProcessorSchema = z
-  .function()
-  .args(AnyObject)
-  .returns(z.union([AnyObject, z.promise(AnyObject)]));
-
 const ApiSchema = z.union([
   z
     .object({ type: z.literal("url"), input: z.string() })
@@ -84,10 +77,7 @@ const ApiSchema = z.union([
       type: z.literal("file"),
       input: z.union([z.string(), z.array(z.string())]),
     })
-    .merge(ApiConfigSchema)
-    .merge(
-      z.object({ postProcessors: ApiPostProcessorSchema.array().optional() }),
-    ),
+    .merge(ApiConfigSchema),
   z
     .object({ type: z.literal("raw"), input: z.string() })
     .merge(ApiConfigSchema),

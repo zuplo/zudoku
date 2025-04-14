@@ -5,9 +5,14 @@ import {
 import { upgrade, validate } from "@scalar/openapi-parser";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { tsImport } from "tsx/esm/api";
-import { type Plugin } from "vite";
+import { runnerImport, type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
+import { fileExists } from "../config/loader.js";
+import {
+  validateBuildConfig,
+  type BuildConfig,
+  type Processor,
+} from "../config/validators/BuildSchema.js";
 import {
   getAllOperations,
   getAllSlugs,
@@ -50,8 +55,7 @@ const allSchemaFiles = new Set<string>();
 async function processSchemas(
   dir: string,
   config: LoadedConfig,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  zuploProcessors: Array<(schema: any) => Promise<any>> = [],
+  processors: Processor[] = [],
 ): Promise<Record<string, ProcessedSchema[]>> {
   if (!config.apis) return {};
 
@@ -65,11 +69,10 @@ async function processSchemas(
       continue;
     }
 
-    const postProcessors = [
-      (schema) => upgrade(schema).specification,
-      ...(apiConfig.postProcessors ?? []),
-      ...zuploProcessors,
-    ] as Array<(schema: OpenAPIDocument) => Promise<OpenAPIDocument>>;
+    const allProcessors = [
+      ({ schema }) => upgrade(schema).specification,
+      ...processors,
+    ] satisfies Processor[];
 
     const inputs = Array.isArray(apiConfig.input)
       ? apiConfig.input
@@ -89,10 +92,16 @@ async function processSchemas(
 
     const processedInputs = await Promise.all(
       inputFiles.map(async (schema, index) => {
-        const processedSchema = await postProcessors.reduce(
-          async (acc, postProcessor) => postProcessor(await acc),
-          Promise.resolve(schema),
-        );
+        let processedSchema = schema;
+
+        for (const processor of allProcessors) {
+          processedSchema = await processor({
+            schema: processedSchema,
+            file: inputs[index]!,
+            dereference: (schema) =>
+              new $RefParser<OpenAPIDocument>().dereference(schema),
+          });
+        }
 
         const inputPath = inputs[index]!;
         const code = await generateCode(processedSchema, inputPath);
@@ -132,14 +141,34 @@ const viteApiPlugin = async (
 
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = initialConfig.isZuplo
-    ? await tsImport("../zuplo/with-zuplo-processors.js", import.meta.url)
-        .then((m) => m.default(initialConfig.__meta.rootDir))
+    ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
+        "../zuplo/with-zuplo-processors.js",
+      )
+        .then((m) => m.module.default(initialConfig.__meta.rootDir))
         .catch((e) => {
           // eslint-disable-next-line no-console
           console.warn("Failed to load Zuplo processors", e);
           return [];
         })
     : [];
+
+  const buildFilePath = path.join(
+    initialConfig.__meta.rootDir,
+    "zudoku.build.ts",
+  );
+  const buildFileExists = await fileExists(buildFilePath);
+
+  let buildProcessors: Processor[] = [];
+  let buildConfig: BuildConfig | undefined = undefined;
+
+  if (buildFileExists) {
+    const buildModule = await runnerImport<{ default: BuildConfig }>(
+      buildFilePath,
+    ).then((m) => m.module.default);
+
+    buildConfig = validateBuildConfig(buildModule);
+    buildProcessors = buildConfig?.processors ?? [];
+  }
 
   let processedSchemas: Record<string, ProcessedSchema[]>;
   const tmpDir = path.posix.join(
@@ -153,11 +182,10 @@ const viteApiPlugin = async (
       await fs.rm(tmpDir, { recursive: true, force: true });
       await fs.mkdir(tmpDir, { recursive: true });
 
-      processedSchemas = await processSchemas(
-        tmpDir,
-        getConfig(),
-        zuploProcessors,
-      );
+      processedSchemas = await processSchemas(tmpDir, getConfig(), [
+        ...zuploProcessors,
+        ...buildProcessors,
+      ]);
       // Potential files outside of the root dir are not watched by default, so we add all schemas just to be sure
       allSchemaFiles.forEach((file) => this.addWatchFile(file));
     },
@@ -165,11 +193,10 @@ const viteApiPlugin = async (
       server.watcher.on("change", async (id) => {
         if (!allSchemaFiles.has(id)) return;
 
-        processedSchemas = await processSchemas(
-          tmpDir,
-          getConfig(),
-          zuploProcessors,
-        );
+        processedSchemas = await processSchemas(tmpDir, getConfig(), [
+          ...zuploProcessors,
+          ...buildProcessors,
+        ]);
         allSchemaFiles.forEach((file) => server.watcher.add(file));
         reload(server);
       });

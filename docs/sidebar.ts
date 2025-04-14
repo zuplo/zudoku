@@ -24,6 +24,7 @@ export const docs: SidebarEntry = [
       "configuration/search",
       "configuration/footer",
       "configuration/authentication",
+      "configuration/build-configuration",
       "configuration/sentry",
       "configuration/vite-config",
     ],
@@ -52,6 +53,7 @@ export const docs: SidebarEntry = [
       "guides/using-multiple-apis",
       "guides/managing-api-keys-and-identities",
       "guides/transforming-examples",
+      "guides/processors",
     ],
   },
   {
