@@ -1,9 +1,9 @@
-import icons from "lucide-react/dynamicIconImports";
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
+import * as Icons from "zudoku/icons";
 
-const iconNames = Object.keys(icons)
+const iconNames = Object.keys(Icons)
   .sort()
   .map((icon) => `"${icon}"`)
   .join(" | ");
