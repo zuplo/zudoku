@@ -24,7 +24,7 @@ export const SidebarWrapper = ({
         ref={navRef}
         className={cn(
           "hidden max-w-[calc(var(--side-nav-width)+var(--padding-nav-item))] lg:flex scrollbar flex-col overflow-y-auto shrink-0 text-sm pe-3 ps-4 lg:ps-8",
-          "-mx-[--padding-nav-item] pb-3 pt-[--padding-content-top] scroll-pt-2 gap-1",
+          "-mx-[--padding-nav-item] pb-[8vh] pt-[--padding-content-top] scroll-pt-2 gap-1",
           // Revert the padding/margin on the first child
           "-mt-2.5",
           className,
