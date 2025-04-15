@@ -37,10 +37,10 @@ const replaceSidebarIcons = (code: string) => {
   return `${importStatement}export const configuredSidebar = ${replacedString};`;
 };
 
-export const viteSidebarPlugin = (getConfig: () => LoadedConfig): Plugin => {
-  const virtualModuleId = "virtual:zudoku-sidebar";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+const virtualModuleId = "virtual:zudoku-sidebar";
+export const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
+export const viteSidebarPlugin = (getConfig: () => LoadedConfig): Plugin => {
   return {
     name: "zudoku-sidebar-plugin",
     resolveId(id) {
