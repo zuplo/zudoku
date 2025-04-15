@@ -2,6 +2,7 @@ import { useEffect, useRef, type PropsWithChildren } from "react";
 import { cn } from "../../util/cn.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useZudoku } from "../context/ZudokuContext.js";
+import { Slotlet } from "../SlotletProvider.js";
 import { PoweredByZudoku } from "./PoweredByZudoku.js";
 
 export const SidebarWrapper = ({
@@ -38,6 +39,7 @@ export const SidebarWrapper = ({
 
       <div className="bg-background border-t p-2 mx-5  gap-2 items-center mt-2 drop-shadow-[0_-3px_1px_rgba(0,0,0,0.015)] hidden lg:[&:has(>_:nth-child(1):last-child)]:flex">
         {options.page?.showPoweredBy !== false && <PoweredByZudoku />}
+        <Slotlet name="sidebar-footer" />
       </div>
     </div>
   );

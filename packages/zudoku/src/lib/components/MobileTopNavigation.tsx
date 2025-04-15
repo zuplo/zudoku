@@ -11,6 +11,7 @@ import {
 import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { Search } from "./Search.js";
+import { Slotlet } from "./SlotletProvider.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { isHiddenItem, PageProgress, TopNavItem } from "./TopNavigation.js";
 
@@ -59,6 +60,7 @@ export const MobileTopNavigation = () => {
           {options.page?.showPoweredBy !== false && (
             <PoweredByZudoku className="flex-grow-0 justify-center gap-1" />
           )}
+          <Slotlet name="sidebar-footer" />
         </div>
       </DrawerContent>
     </Drawer>
