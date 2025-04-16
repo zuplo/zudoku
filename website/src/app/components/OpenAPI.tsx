@@ -60,8 +60,7 @@ export const OpenAPI = () => {
             </p>
             <p>
               Use your existing OpenAPI specification to generate beautiful API
-              documentation with Zudoku. Zudoku supports OpenAPI 3.x and 2.0 is
-              coming soon.
+              documentation with Zudoku.
             </p>
           </div>
           <div className="mt-8 max-w-lg lg:max-w-none">
