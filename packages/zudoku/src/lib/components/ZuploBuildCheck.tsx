@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { Button } from "./index.js";
 
-const ZuploBuildCheck = () => {
+export const ZuploBuildCheck = () => {
   const buildId = import.meta.env.ZUPLO_BUILD_ID;
 
   const buildStatusQuery = useQuery({

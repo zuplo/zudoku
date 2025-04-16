@@ -23,6 +23,7 @@ import { Markdown as MarkdownImport } from "./Markdown.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
 import { StatusPage as StatusPageImport } from "./StatusPage.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
+import { ZuploBuildCheck as ZuploBuildCheckImport } from "./ZuploBuildCheck.js";
 
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
 export const Layout = /*@__PURE__*/ LayoutImport;
@@ -48,3 +49,4 @@ export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;
 export const Button = /*@__PURE__*/ ButtonImport;
 export const Link = /*@__PURE__*/ LinkImport;
 export const useTheme = /*@__PURE__*/ useThemeImport;
+export const ZuploBuildCheck = /*@__PURE__*/ ZuploBuildCheckImport;

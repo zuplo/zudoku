@@ -1,5 +1,5 @@
+import { ZuploBuildCheck } from "zudoku/components";
 import type { CommonConfig } from "../config/validators/common.js";
-import ZuploBuildCheck from "../lib/components/ZuploBuildCheck.js";
 
 const withZuplo = <TConfig extends CommonConfig>(config: TConfig): TConfig => {
   return {
