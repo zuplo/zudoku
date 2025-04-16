@@ -12,6 +12,7 @@ import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import {
+  BuildCheck,
   Layout,
   RouteGuard,
   RouterError,
@@ -21,6 +22,7 @@ import {
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { ZuploEnv } from "../zuplo/env.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -43,6 +45,9 @@ export const convertZudokuConfigToOptions = (
     protectedRoutes: config.protectedRoutes,
     page: {
       ...config.page,
+      showPoweredBy:
+        ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
+        config.page?.showPoweredBy,
       logo: {
         ...(isUsingFallback ? { width: "130px" } : {}),
         ...config.page?.logo,
@@ -115,12 +120,18 @@ export const getRoutesByOptions = (
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   const options = convertZudokuConfigToOptions(config);
-  const routes = getRoutesByOptions(options, config.enableStatusPages);
+  const routes = getRoutesByOptions(
+    options,
+    import.meta.env.IS_ZUPLO || config.enableStatusPages,
+  );
 
   return [
     {
       element: (
         <Zudoku {...options}>
+          {import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID && (
+            <BuildCheck buildId={import.meta.env.ZUPLO_BUILD_ID} />
+          )}
           <Layout />
         </Zudoku>
       ),

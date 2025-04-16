@@ -72,9 +72,7 @@ const ZudokoInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    if (!zudokuContext) {
-      zudokuContext = new ZudokuContext(props, queryClient);
-    }
+    zudokuContext ??= new ZudokuContext(props, queryClient);
 
     const heads = props.plugins
       ?.flatMap((plugin) =>

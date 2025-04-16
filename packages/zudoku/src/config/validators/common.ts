@@ -443,7 +443,6 @@ export const CommonConfigSchema = z.object({
   apiKeys: ApiKeysSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
-  isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,

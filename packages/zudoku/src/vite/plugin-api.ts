@@ -23,6 +23,7 @@ import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import { ZuploEnv } from "../zuplo/env.js";
 import { generateCode } from "./api/schema-codegen.js";
 import { reload } from "./plugin-config-reload.js";
 import { resolvedVirtualModuleId as sidebarModuleId } from "./plugin-sidebar.js";
@@ -141,7 +142,7 @@ const viteApiPlugin = async (
   const initialConfig = getConfig();
 
   // Load Zuplo-specific processors if in Zuplo environment
-  const zuploProcessors = initialConfig.isZuplo
+  const zuploProcessors = ZuploEnv.isZuplo
     ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
         path.resolve(import.meta.dirname, "../zuplo/with-zuplo-processors.js"),
       ).then((m) => m.module.default(initialConfig.__meta.rootDir))

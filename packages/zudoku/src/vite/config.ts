@@ -18,6 +18,7 @@ import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { ZuploEnv } from "../zuplo/env.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
@@ -36,7 +37,7 @@ const getDocsConfigFiles = (
 };
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
-  const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
+  const envPrefix = ["ZUPLO_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
 
   process.env = { ...localEnv, ...process.env };
@@ -187,6 +188,9 @@ export async function getViteConfig(
     define: {
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+      // This env var doesn't start with the public `ZUPLO_` prefix, so we need to manually define it here
+      "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
       ...publicEnv,
     },
     ssr: {
