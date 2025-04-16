@@ -19,9 +19,27 @@ import {
   StatusPage,
   Zudoku,
 } from "zudoku/components";
+import {
+  BuildConfigSchema,
+  type Entitlements,
+} from "../config/ZuploBuildConfig.js";
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+
+const getZuploBuildConfig = () => {
+  try {
+    return BuildConfigSchema.parse(
+      JSON.parse(import.meta.env.ZUPLO_BUILD_CONFIG),
+    );
+  } catch {
+    // eslint-disable-next-line no-console
+    console.error(
+      "ZUPLO_BUILD_CONFIG is a reserved environment variable and cannot be used for custom configuration. Please remove it from your environment variables.",
+    );
+    return undefined;
+  }
+};
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -38,12 +56,21 @@ export const convertZudokuConfigToOptions = (
     !config.page?.logo?.src?.light &&
     !config.page?.logo?.src?.dark;
 
+  let entitlements: Entitlements | undefined;
+
+  if (import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_CONFIG) {
+    const zuploBuildConfig = getZuploBuildConfig();
+    entitlements = zuploBuildConfig?.entitlements;
+  }
+
   return {
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
     page: {
       ...config.page,
+      showPoweredBy:
+        entitlements?.devPortalZuploBranding ?? config.page?.showPoweredBy,
       logo: {
         ...(isUsingFallback ? { width: "130px" } : {}),
         ...config.page?.logo,
