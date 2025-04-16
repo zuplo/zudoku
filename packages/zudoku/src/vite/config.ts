@@ -36,7 +36,7 @@ const getDocsConfigFiles = (
 };
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
-  const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
+  const envPrefix = ["ZUPLO_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
 
   process.env = { ...localEnv, ...process.env };

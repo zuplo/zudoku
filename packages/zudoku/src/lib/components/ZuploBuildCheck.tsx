@@ -3,9 +3,12 @@ import { LoaderCircleIcon } from "lucide-react";
 import { Button } from "./index.js";
 
 const ZuploBuildCheck = () => {
+  const buildId = import.meta.env.ZUPLO_BUILD_ID;
+
   const buildStatusQuery = useQuery({
     queryKey: ["zuplo-build-check"],
     refetchInterval: 2000,
+    enabled: !!buildId,
     queryFn: () =>
       fetch("/__zuplo/docs").then((res) => res.json()) as Promise<{
         buildId: string;
@@ -15,6 +18,10 @@ const ZuploBuildCheck = () => {
   });
 
   if (buildStatusQuery.data?.status === "completed") {
+    return null;
+  }
+
+  if (buildStatusQuery.data?.buildId === buildId) {
     return null;
   }
 
