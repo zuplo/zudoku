@@ -28,15 +28,8 @@ Zudoku is quick to implement, easy to configure and is highly composable with se
 
 ## Flexible Setup
 
-Zudoku comes in two flavors. Which one you choose depends on how quickly you want to get up and running and how much customization you want to do.
+Zudoku comes with a flexible setup that allows you to customize it to your heart's content.
 
-The two options are:
+The recommended way to get started is:
 
 - **[Custom App (Recommended)](./app-quickstart.md)**: Create a new React app using `create-zudoku-app` and customize it to your heart's content. This is the most flexible option and allows you to take full advantage of the Zudoku framework. [Open Quickstart](./app-quickstart.md)
-- **[Standalone HTML](./html-quickstart.md)**: This is the quickest way to get started. Create a single HTML page and drop in the Zudoku script and stylesheet. [Open Quickstart](./html-quickstart.md)
-
-## Try Zudoku
-
-You can test Zudoku with your own API now at [zudoku.dev](https://zudoku.dev).
-
-Just drop in the URL for your OpenAPI document and you'll get a fully functional _Zudoku-ized_ version of it to play around with.
