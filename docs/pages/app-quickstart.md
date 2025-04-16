@@ -20,7 +20,7 @@ npm create zudoku-app@latest
 
 2. Open the project in your code editor and replace the example OpenAPI file at `/apis/openapi.yaml` with your own OpenAPI schema.
 
-:::
+:::tip
 
 You can use `openapi.json` instead of YAML. Just update the file path in `zudoku.config.ts`.
 
