@@ -1,4 +1,6 @@
-# Transforming Operation Examples
+---
+title: Transforming Operation Examples
+---
 
 Zudoku allows you to transform operation examples in both request and response sections of your API documentation. This feature is particularly useful when you need to:
 
