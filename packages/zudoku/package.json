@@ -44,7 +44,8 @@
     "./tailwind": "./src/app/tailwind.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
-    "./processors/*": "./src/lib/plugins/openapi/processors/*.ts"
+    "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
+    "./with-zuplo": "./src/zuplo/with-zuplo.ts"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -147,6 +148,10 @@
       },
       "./app/*": {
         "import": "./src/app/*"
+      },
+      "./with-zuplo": {
+        "require": "./dist/zuplo/with-zuplo.js",
+        "import": "./dist/zuplo/with-zuplo.js"
       }
     }
   },
