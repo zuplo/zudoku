@@ -28,6 +28,7 @@ export const Footer = () => (
                     className="hover:text-white"
                     href="https://outpost.hookdeck.com/docs"
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     Outpost (Hookdeck)
                   </a>
