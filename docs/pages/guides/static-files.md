@@ -1,8 +1,7 @@
 ---
+title: Static Files
 sidebar_icon: folder-open
 ---
-
-# Static Files
 
 Zudoku makes it easy to serve static files like images, PDFs, or any other assets alongside your documentation. Any files placed in the `public` directory will be served at the root path `/` during dev, and copied to the root of the dist directory as-is.
 

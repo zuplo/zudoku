@@ -1,9 +1,8 @@
 ---
+title: Managing API Keys and Identities
 sidebar_label: API Keys and Identities
 sidebar_icon: key-square
 ---
-
-# Managing API Keys and Identities
 
 When building an API documentation portal, you often need to provide a way for users to authenticate their API requests. This typically involves managing API keys and different authentication identities. However, implementing a secure and user-friendly system for API key management can be complex and time-consuming. Zudoku provides a powerful solution to this problem through its API Keys and Identities system.
 
