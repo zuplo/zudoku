@@ -115,16 +115,11 @@ export const getRoutesByOptions = (
 };
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
-  if (import.meta.env.IS_ZUPLO) {
-    config.enableStatusPages = true;
-    config.page = {
-      ...config.page,
-      showPoweredBy: false,
-    };
-  }
-
   const options = convertZudokuConfigToOptions(config);
-  const routes = getRoutesByOptions(options, config.enableStatusPages);
+  const routes = getRoutesByOptions(
+    options,
+    import.meta.env.IS_ZUPLO || config.enableStatusPages,
+  );
 
   return [
     {
