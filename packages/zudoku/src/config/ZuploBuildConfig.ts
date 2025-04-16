@@ -29,4 +29,5 @@ export const BuildConfigSchema = z.object({
   projectName: z.string(),
 });
 
+export type BuildConfig = z.infer<typeof BuildConfigSchema>;
 export type Entitlements = z.infer<typeof EntitlementsSchema>;
