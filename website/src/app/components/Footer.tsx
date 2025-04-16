@@ -20,7 +20,7 @@ export const Footer = () => (
                     href="https://cosmocargo.dev"
                     target="_blank"
                   >
-                    Cosmocargo
+                    Cosmo Cargo
                   </a>
                 </li>
               </ul>
