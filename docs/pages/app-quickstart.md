@@ -15,12 +15,16 @@ The recommended way to get started with Zudoku is to use the `create-zudoku-app`
 1. Create a new Zudoku app by running:
 
 ```bash
-npx create-zudoku-app
+npm create zudoku-app@latest
 ```
 
 2. Open the project in your code editor and replace the example OpenAPI file at `/apis/openapi.yaml` with your own OpenAPI schema.
 
-::: You can use `openapi.json` instead of YAML. Just update the file path in `zudoku.config.ts`. :::
+:::
+
+You can use `openapi.json` instead of YAML. Just update the file path in `zudoku.config.ts`.
+
+:::
 
 3. Start the development server:
 
