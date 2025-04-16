@@ -10,7 +10,7 @@ export const docs: SidebarEntry = [
     type: "category",
     label: "Getting started",
     icon: "sparkles",
-    items: ["introduction", "app-quickstart", "html-quickstart"],
+    items: ["introduction", "app-quickstart"],
   },
   {
     type: "category",
