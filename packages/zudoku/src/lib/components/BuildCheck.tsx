@@ -2,15 +2,19 @@ import { useQuery } from "@tanstack/react-query";
 import { LoaderCircleIcon } from "lucide-react";
 import { Button } from "../ui/Button.js";
 
-export const ZuploBuildCheck = () => {
-  const buildId = import.meta.env.ZUPLO_BUILD_ID;
-
+export const BuildCheck = ({
+  buildId,
+  endpoint = "/__zuplo/docs",
+}: {
+  buildId?: string;
+  endpoint?: string;
+}) => {
   const buildStatusQuery = useQuery({
-    queryKey: ["zuplo-build-check"],
+    queryKey: ["zuplo-build-check", buildId, endpoint],
     refetchInterval: 2000,
     enabled: !!buildId,
     queryFn: () =>
-      fetch("/__zuplo/docs").then((res) => res.json()) as Promise<{
+      fetch(endpoint).then((res) => res.json()) as Promise<{
         buildId: string;
         timestamp: string;
         status: "in-progress" | "completed" | "failed";
@@ -40,5 +44,3 @@ export const ZuploBuildCheck = () => {
     </div>
   );
 };
-
-export default ZuploBuildCheck;

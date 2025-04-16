@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
+
 /**
  * node-machine-id
  * Copyright (c) 2016 Aleksandr Komlev

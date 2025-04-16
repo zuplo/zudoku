@@ -12,6 +12,7 @@ import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import {
+  BuildCheck,
   Layout,
   RouteGuard,
   RouterError,
@@ -114,6 +115,14 @@ export const getRoutesByOptions = (
 };
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
+  if (import.meta.env.IS_ZUPLO) {
+    config.enableStatusPages = true;
+    config.page = {
+      ...config.page,
+      showPoweredBy: false,
+    };
+  }
+
   const options = convertZudokuConfigToOptions(config);
   const routes = getRoutesByOptions(options, config.enableStatusPages);
 
@@ -121,6 +130,9 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
     {
       element: (
         <Zudoku {...options}>
+          {import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID && (
+            <BuildCheck buildId={import.meta.env.ZUPLO_BUILD_ID} />
+          )}
           <Layout />
         </Zudoku>
       ),

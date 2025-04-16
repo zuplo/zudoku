@@ -187,6 +187,9 @@ export async function getViteConfig(
     define: {
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+      // This env var doesn't start with the public `ZUPLO_` prefix, so we need to manually define it here
+      "process.env.IS_ZUPLO": process.env.ZUPLO === "1",
+      "import.meta.env.IS_ZUPLO": process.env.ZUPLO === "1",
       ...publicEnv,
     },
     ssr: {

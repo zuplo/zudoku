@@ -2,7 +2,6 @@ import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { RollupOutput, RollupWatcher } from "rollup";
 import { runnerImport } from "vite";
-import withZuplo from "../zuplo/with-zuplo.js";
 import { type ConfigWithMeta } from "./common.js";
 import {
   type CommonConfig,
@@ -111,9 +110,6 @@ async function loadDevPortalConfig<TConfig extends CommonConfig>(
 
   // 2. Replace $env() placeholders with actual environment
   config = replaceEnvVariables(config, envVars);
-
-  // 3. Add Zuplo to the config
-  config = withZuplo(config);
 
   return config;
 }
