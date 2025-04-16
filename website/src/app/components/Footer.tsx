@@ -23,6 +23,15 @@ export const Footer = () => (
                     Cosmo Cargo
                   </a>
                 </li>
+                <li className="pt-4">
+                  <a
+                    className="hover:text-white"
+                    href="https://outpost.hookdeck.com/docs/"
+                    target="_blank"
+                  >
+                    Outpost (Hookdeck)
+                  </a>
+                </li>
               </ul>
             </li>
             <li className="flex-1 min-w-[180px] flex items-center flex-col md:block">
