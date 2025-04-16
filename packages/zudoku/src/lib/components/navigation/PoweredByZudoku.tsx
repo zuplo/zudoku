@@ -5,7 +5,7 @@ import ZuploLogo from "./ZuploLogo.js";
 
 export const PoweredByZudoku = ({
   className,
-  byZuplo = true,
+  byZuplo,
 }: {
   className?: string;
   byZuplo?: boolean;
