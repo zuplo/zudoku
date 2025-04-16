@@ -115,7 +115,7 @@ const Page = async () => {
             </p>
             <div>
               <a
-                href="https://zuplo.com/docs"
+                href="https://cosmocargo.dev"
                 target="_blank"
                 className="inline-block rounded-lg bg-white text-black px-4 py-2 drop-shadow-xl hover:-translate-y-px transition active:translate-y-0"
               >
