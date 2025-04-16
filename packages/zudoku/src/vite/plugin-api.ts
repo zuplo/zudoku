@@ -25,6 +25,7 @@ import type {
 } from "../lib/plugins/api-catalog/index.js";
 import { generateCode } from "./api/schema-codegen.js";
 import { reload } from "./plugin-config-reload.js";
+import { resolvedVirtualModuleId as sidebarModuleId } from "./plugin-sidebar.js";
 
 type ProcessedSchema = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -192,6 +193,12 @@ const viteApiPlugin = async (
           ...zuploProcessors,
         ]);
         allSchemaFiles.forEach((file) => server.watcher.add(file));
+
+        const sidebarModule =
+          server.environments.ssr.moduleGraph.getModuleById(sidebarModuleId);
+        if (sidebarModule) {
+          server.environments.ssr.moduleGraph.invalidateModule(sidebarModule);
+        }
         reload(server);
       });
     },
