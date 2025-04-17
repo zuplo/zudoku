@@ -178,7 +178,18 @@ export const OperationList = ({
   // Prefetch for Playground
   useApiIdentities();
 
-  if (!schema.tag) return null;
+  if (!schema.tag) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center text-center">
+        <div className="text-muted-foreground font-medium">
+          No operations found
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground">
+          This API doesn't have any operations defined yet.
+        </div>
+      </div>
+    );
+  }
 
   const { operations, next, prev, description: tagDescription } = schema.tag;
 
