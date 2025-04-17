@@ -4,9 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "zudoku dev",
-    "build": "zudoku build",
-    "preview": "zudoku preview"
+    "dev": "zudoku dev --zuplo",
+    "build": "zudoku build --zuplo",
+    "preview": "zudoku preview --zuplo"
   },
   "nx": {
     "tags": [
