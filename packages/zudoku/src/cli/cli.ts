@@ -11,7 +11,10 @@ import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
 import { logger } from "./common/logger.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
-import { printCriticalFailureToConsoleAndExit } from "./common/output.js";
+import {
+  printCriticalFailureToConsoleAndExit,
+  printDiagnosticsToConsole,
+} from "./common/output.js";
 
 process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
   ? "internal"
@@ -43,6 +46,17 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
   }
 
   const cli = yargs(hideBin(process.argv))
+    .option("zuplo", {
+      type: "boolean",
+      description: "Enable Zuplo integration",
+      global: true,
+    })
+    .middleware((argv) => {
+      if (argv.zuplo) {
+        process.env.ZUPLO = "1";
+        printDiagnosticsToConsole("Running in Zuplo mode");
+      }
+    })
     .command(build)
     .command(dev)
     .command(preview)
