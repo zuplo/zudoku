@@ -318,24 +318,15 @@ export const OperationList = ({
       <hr />
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
       <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
-        {operations.length === 0 ? (
-          <div className="text-center py-8">
-            <h2 className="text-xl font-semibold mb-2">No endpoints found</h2>
-            <p className="text-muted-foreground">
-              There are no endpoints available in this section.
-            </p>
+        {operations.map((fragment) => (
+          <div key={fragment.slug}>
+            <OperationListItem
+              serverUrl={selectedServer}
+              operationFragment={fragment}
+            />
+            <hr className="my-10" />
           </div>
-        ) : (
-          operations.map((fragment) => (
-            <div key={fragment.slug}>
-              <OperationListItem
-                serverUrl={selectedServer}
-                operationFragment={fragment}
-              />
-              <hr className="my-10" />
-            </div>
-          ))
-        )}
+        ))}
         <Pagination className="mb-4" {...paginationProps} />
       </div>
     </div>
