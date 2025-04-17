@@ -178,7 +178,18 @@ export const OperationList = ({
   // Prefetch for Playground
   useApiIdentities();
 
-  if (!schema.tag) return null;
+  if (!schema.tag) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center text-center">
+        <div className="text-muted-foreground font-medium">
+          No operations found
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground">
+          This API doesn't have any operations defined yet.
+        </div>
+      </div>
+    );
+  }
 
   const { operations, next, prev, description: tagDescription } = schema.tag;
 
@@ -307,15 +318,24 @@ export const OperationList = ({
       <hr />
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
       <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
-        {operations.map((fragment) => (
-          <div key={fragment.slug}>
-            <OperationListItem
-              serverUrl={selectedServer}
-              operationFragment={fragment}
-            />
-            <hr className="my-10" />
+        {operations.length === 0 ? (
+          <div className="text-center py-8">
+            <h2 className="text-xl font-semibold mb-2">No endpoints found</h2>
+            <p className="text-muted-foreground">
+              There are no endpoints available in this section.
+            </p>
           </div>
-        ))}
+        ) : (
+          operations.map((fragment) => (
+            <div key={fragment.slug}>
+              <OperationListItem
+                serverUrl={selectedServer}
+                operationFragment={fragment}
+              />
+              <hr className="my-10" />
+            </div>
+          ))
+        )}
         <Pagination className="mb-4" {...paginationProps} />
       </div>
     </div>
