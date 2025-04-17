@@ -48,7 +48,7 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
   const cli = yargs(hideBin(process.argv))
     .option("zuplo", {
       type: "boolean",
-      description: "Enable Zuplo integration",
+      description: "Enable Zuplo mode",
       global: true,
     })
     .middleware((argv) => {
