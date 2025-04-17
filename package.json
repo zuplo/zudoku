@@ -1,12 +1,6 @@
 {
   "name": "root",
   "private": true,
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "10"
-    }
-  },
   "version": "0.0.0",
   "type": "module",
   "scripts": {
