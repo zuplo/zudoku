@@ -116,10 +116,13 @@ export class SchemaManager {
     } satisfies ProcessedSchema;
 
     const schemas = this.getSchemasForId(navigationId) ?? [];
-    this.processedSchemas[navigationId] = schemas
-      .filter((s) => s.inputPath !== filePath)
-      .concat(processed);
-
+    const index = schemas.findIndex((s) => s.inputPath === filePath);
+    if (index > -1) {
+      schemas[index] = processed;
+    } else {
+      schemas.unshift(processed);
+    }
+    this.processedSchemas[navigationId] = schemas;
     this.fileToNavigationId.set(filePath, navigationId);
     return processed;
   };
