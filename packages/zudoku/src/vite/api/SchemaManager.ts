@@ -115,14 +115,16 @@ export class SchemaManager {
       inputPath: filePath,
     } satisfies ProcessedSchema;
 
-    const schemas = this.getSchemasForId(navigationId) ?? [];
+    const schemas = this.processedSchemas[navigationId];
+
+    if (!schemas) {
+      throw new Error(`No schemas found for navigation ID ${navigationId}.`);
+    }
+
     const index = schemas.findIndex((s) => s.inputPath === filePath);
     if (index > -1) {
       schemas[index] = processed;
-    } else {
-      schemas.unshift(processed);
     }
-    this.processedSchemas[navigationId] = schemas;
     this.fileToNavigationId.set(filePath, navigationId);
     return processed;
   };
@@ -139,6 +141,12 @@ export class SchemaManager {
 
       const inputs = ensureArray(apiConfig.input);
       if (inputs.length === 0) throw new Error("No schema found");
+
+      this.processedSchemas[apiConfig.navigationId] = inputs.map((input) => ({
+        schema: {} as OpenAPIDocument,
+        version: "",
+        inputPath: path.resolve(this.config.__meta.rootDir, input),
+      }));
 
       const results = await Promise.allSettled(
         inputs.map((input) => this.processSchema(input)),
@@ -161,15 +169,6 @@ export class SchemaManager {
 
   public getSchemasForId = (navigationId: string) =>
     this.processedSchemas[navigationId];
-
-  public getVersionMap = (navigationId: string) => {
-    const schemas = this.processedSchemas[navigationId];
-    if (!schemas?.length) return undefined;
-
-    return Object.fromEntries(
-      schemas.map((processed) => [processed.version, processed.inputPath]),
-    );
-  };
 
   private validateSchema = async (
     schema: JSONSchema,

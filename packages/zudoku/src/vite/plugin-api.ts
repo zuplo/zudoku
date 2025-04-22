@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { deepEquals } from "nx/src/utils/json-diff.js";
 import { type Plugin, runnerImport } from "vite";
 import { type LoadedConfig } from "../config/config.js";
 import { fileExists } from "../config/loader.js";
@@ -21,7 +22,7 @@ import { ensureArray } from "../lib/util/ensureArray.js";
 import { ZuploEnv } from "../zuplo/env.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
-import { resolvedVirtualModuleId as sidebarModuleId } from "./plugin-sidebar.js";
+import { invalidate as invalidateSidebar } from "./plugin-sidebar.js";
 
 const viteApiPlugin = async (
   getConfig: () => LoadedConfig,
@@ -76,7 +77,6 @@ const viteApiPlugin = async (
 
       await schemaManager.processAllSchemas();
 
-      // Add all schema files to watch
       schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
@@ -85,14 +85,10 @@ const viteApiPlugin = async (
 
         // eslint-disable-next-line no-console
         console.log(`Re-processing schema ${id}`);
+
         await schemaManager.processSchema(id);
         schemaManager.trackedFiles.forEach((file) => server.watcher.add(file));
-
-        const sidebarModule =
-          server.environments.ssr.moduleGraph.getModuleById(sidebarModuleId);
-        if (sidebarModule) {
-          server.environments.ssr.moduleGraph.invalidateModule(sidebarModule);
-        }
+        invalidateSidebar(server);
         reload(server);
       });
     },
@@ -105,6 +101,12 @@ const viteApiPlugin = async (
       if (id !== resolvedVirtualModuleId) return;
 
       const config = getConfig();
+
+      if (!deepEquals(schemaManager.config.apis, config.apis)) {
+        schemaManager.config = config;
+        await schemaManager.processAllSchemas();
+        schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
+      }
 
       if (config.__meta.mode === "standalone") {
         return [
