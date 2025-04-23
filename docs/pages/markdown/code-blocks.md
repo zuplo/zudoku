@@ -3,7 +3,7 @@ title: Code Blocks
 sidebar_icon: braces
 ---
 
-Zudoku supports code blocks in Markdown using the [Prism.js](https://prismjs.com/) syntax highlighting library.
+Zudoku supports code blocks in Markdown using the [Shiki](https://shiki.style/) syntax highlighting library.
 
 ## Syntax Highlighting
 
@@ -23,9 +23,31 @@ console.log("Every repo must come with a mascot.");
 
 :::note
 
-You can also use the [`SyntaxHighlight` component](/components/syntax-highlight) to render code blocks.
+You can also use the [`SyntaxHighlight` component](/components/syntax-highlight) to render code blocks in TypeScript directly.
 
 :::
+
+## Inline Code
+
+You can highlight inline code using either:
+
+Regular backticks with language specification:
+
+```md
+`console.log("Hello World")`
+```
+
+Result: `console.log("Hello World")`
+
+or with the tailing curly colon syntax:
+
+```md
+`console.log("Hello World"){:js}`
+```
+
+Result: `console.log("Hello World"){:js}`
+
+For more details, see the [Shiki Rehype documentation](https://shiki.style/packages/rehype#inline-code).
 
 You can add a title to code blocks by adding a title attribute after the backticks:
 
@@ -43,16 +65,24 @@ console.log("Hello, World!");
 
 Currently, Zudoku supports the following languages for syntax highlighting:
 
-- Markup - `markup`, `html`, `xml`, `svg`, `mathml`, `ssml`, `atom`, `rss`
-- Ruby - `ruby`, `rb`
-- Bash - `bash`, `sh`, `shell`
-- JSON - `json`, `webmanifest`
-- Java - `java`
-- C# - `csharp`, `cs`, `dotnet`
-- Objective-C - `objectivec`, `objc`
+- HTML/CSS - `html`, `css`
+- JavaScript/TypeScript - `javascript`, `js`, `jsx`, `typescript`, `ts`, `tsx`
 - Markdown - `markdown`, `md`
-- JavaScript - `javascript`, `js`, `jsx`
-- TypeScript - `typescript`, `ts`, `tsx`
+- JSON/YAML/TOML - `json`, `yaml`, `toml`
+- Shell - `bash`, `sh`, `shell`
+- Python - `python`
+- Rust - `rust`
+- SQL - `sql`
+- PHP - `php`
+- Ruby - `ruby`, `rb`
+- Swift - `swift`
+- Kotlin - `kotlin`
+- Java - `java`
+- C# - `csharp`, `cs`
+- Go - `go`
+- Objective-C - `objectivec`, `objc`
+
+For a complete list of supported languages and their aliases, see the [Shiki Languages documentation](https://shiki.style/languages#bundled-languages).
 
 :::note
 

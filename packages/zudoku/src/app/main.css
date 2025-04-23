@@ -151,6 +151,26 @@
     }
   }
 
+  .shiki {
+    counter-reset: line;
+  }
+
+  .shiki,
+  .shiki span {
+    @apply text-[--shiki-light] leading-normal;
+  }
+
+  html.dark .shiki,
+  html.dark .shiki span {
+    @apply text-[--shiki-dark];
+  }
+
+  .shiki [data-lines] .line::before {
+    counter-increment: line;
+    content: counter(line);
+    @apply tabular-nums inline-block text-end me-4 w-3 text-muted-foreground/35 text-[13px];
+  }
+
   select {
     @apply focus-visible:ring-primary focus-visible:ring-[1.5px] focus:outline-none;
   }

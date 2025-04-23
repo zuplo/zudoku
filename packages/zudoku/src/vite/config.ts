@@ -213,6 +213,7 @@ export async function getViteConfig(
     build: {
       ssr: configEnv.isSsrBuild,
       sourcemap: true,
+      target: "es2022",
       outDir: path.resolve(
         path.join(
           dir,
