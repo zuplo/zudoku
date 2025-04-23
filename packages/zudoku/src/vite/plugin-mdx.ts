@@ -16,16 +16,8 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
+import { configuredShikiRehypePlugins } from "../lib/shiki.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rehypeCodeBlockPlugin = () => (tree: any) => {
-  visit(tree, "element", (node, index, parent) => {
-    if (node.type === "element" && node.tagName === "code") {
-      node.properties.inline = parent?.tagName !== "pre";
-    }
-  });
-};
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
 // so rehype-mdx-import-media can pick them up
@@ -158,7 +150,6 @@ const viteMdxPlugin = (getConfig: () => LoadedConfig): Plugin => {
       ],
       rehypePlugins: [
         rehypeSlug,
-        rehypeCodeBlockPlugin,
         rehypeMetaAsAttributes,
         withToc,
         withTocExport,
@@ -166,6 +157,7 @@ const viteMdxPlugin = (getConfig: () => LoadedConfig): Plugin => {
         ...(config.build?.rehypePlugins ?? []),
         rehypeNormalizeMdxImages,
         rehypeMdxImportMedia,
+        ...configuredShikiRehypePlugins,
       ],
     }),
     name: "zudoku-mdx-plugin",
