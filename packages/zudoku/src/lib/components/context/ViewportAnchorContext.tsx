@@ -1,7 +1,7 @@
 import {
   createContext,
+  use,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -16,21 +16,14 @@ type AnchorContextType = {
   unobserve: (element: HTMLElement | null) => void;
 };
 
-const ViewportAnchorContext = createContext<AnchorContextType | undefined>(
-  undefined,
-);
+const ViewportAnchorContext = createContext<AnchorContextType>({
+  activeAnchor: "",
+  setActiveAnchor: () => {},
+  observe: () => {},
+  unobserve: () => {},
+});
 
-export const useViewportAnchor = () => {
-  const context = useContext(ViewportAnchorContext);
-
-  if (!context) {
-    throw new Error(
-      "useViewportAnchor must be used within a CurrentAnchorProvider",
-    );
-  }
-
-  return context;
-};
+export const useViewportAnchor = () => use(ViewportAnchorContext);
 
 export const useRegisterAnchorElement = () => {
   const elementRef = useRef<HTMLElement | null>(null);

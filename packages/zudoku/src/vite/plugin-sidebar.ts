@@ -1,5 +1,5 @@
 import icons from "lucide-react/dist/esm/dynamicIconImports.js";
-import { type Plugin } from "vite";
+import { type Plugin, type ViteDevServer } from "vite";
 import { type LoadedConfig } from "../config/config.js";
 import { SidebarManager } from "../config/validators/SidebarSchema.js";
 import { writePluginDebugCode } from "./debug.js";
@@ -39,6 +39,14 @@ const replaceSidebarIcons = (code: string) => {
 
 const virtualModuleId = "virtual:zudoku-sidebar";
 export const resolvedVirtualModuleId = "\0" + virtualModuleId;
+
+export const invalidate = (server: ViteDevServer) => {
+  const sidebarModule =
+    server.environments.ssr.moduleGraph.getModuleById(virtualModuleId);
+  if (!sidebarModule) return;
+
+  server.environments.ssr.moduleGraph.invalidateModule(sidebarModule);
+};
 
 export const viteSidebarPlugin = (getConfig: () => LoadedConfig): Plugin => {
   return {
