@@ -47,6 +47,22 @@ const createRoute = ({
   },
 });
 
+const createAdditionalRoutes = (basePath: string) => [
+  // Category without tagged operations
+  createRoute({
+    path: joinUrl(basePath, UNTAGGED_PATH),
+    untagged: true,
+  }),
+  // Schema list route
+  {
+    path: joinUrl(basePath, "~schemas"),
+    lazy: async () => {
+      const { SchemaList } = await import("../SchemaList.js");
+      return { element: <SchemaList /> };
+    },
+  },
+];
+
 // Creates routes for a specific version, including tag-based routes and the untagged operations route.
 const createVersionRoutes = (
   versionPath: string,
@@ -64,18 +80,7 @@ const createVersionRoutes = (
         tag,
       }),
     ),
-    // Category without tagged operations
-    createRoute({
-      path: joinUrl(versionPath, UNTAGGED_PATH),
-      untagged: true,
-    }),
-    {
-      path: joinUrl(versionPath, "~schemas"),
-      lazy: async () => {
-        const { SchemaList } = await import("../SchemaList.js");
-        return { element: <SchemaList /> };
-      },
-    },
+    ...createAdditionalRoutes(versionPath),
   ];
 };
 
@@ -100,7 +105,10 @@ export const getRoutes = ({
       createOasProvider({
         basePath,
         routePath: basePath,
-        routes: [createRoute({ path: basePath + "/:tag?" })],
+        routes: [
+          createRoute({ path: basePath + "/:tag?" }),
+          ...createAdditionalRoutes(basePath),
+        ],
         client,
         config,
       }),

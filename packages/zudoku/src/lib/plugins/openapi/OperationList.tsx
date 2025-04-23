@@ -2,7 +2,7 @@ import { type ResultOf } from "@graphql-typed-document-node/core";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -151,10 +151,11 @@ export const OperationList = ({
   untagged?: boolean;
 }) => {
   const { input, type, versions, version, options } = useOasConfig();
+  const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
     type,
-    tag,
+    tag: tag ?? tagFromParams,
     untagged,
   });
   const result = useSuspenseQuery(query);

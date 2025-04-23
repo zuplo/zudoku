@@ -1,7 +1,6 @@
 import { GraphQLError } from "graphql/error/index.js";
 import { OpenAPIV3, type OpenAPIV3_1 } from "openapi-types";
 import { dereference, type JSONSchema } from "./dereference/index.js";
-import { upgradeSchema } from "./upgrade/index.js";
 
 // Must be an interface (not a type) to allow merging with OpenAPI types with index signatures
 interface WithRef {
@@ -95,7 +94,10 @@ export const validate = async (schemaInput: unknown) => {
     throw new GraphQLError("OpenAPI version is not defined");
   }
 
-  const dereferenced = await dereference(schema);
+  const { upgrade } = await import("@scalar/openapi-parser");
 
-  return upgradeSchema(dereferenced);
+  const dereferenced = await dereference(schema);
+  const upgraded = upgrade(dereferenced);
+
+  return upgraded.specification;
 };
