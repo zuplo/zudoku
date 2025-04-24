@@ -2,6 +2,7 @@ import { deepEqual } from "fast-equals";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { type Plugin, runnerImport } from "vite";
+import { ZuploEnv } from "../app/env.js";
 import { type LoadedConfig } from "../config/config.js";
 import { fileExists } from "../config/loader.js";
 import {
@@ -19,7 +20,6 @@ import type {
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
-import { ZuploEnv } from "../zuplo/env.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateSidebar } from "./plugin-sidebar.js";

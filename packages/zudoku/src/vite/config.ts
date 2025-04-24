@@ -12,13 +12,13 @@ import {
   loadEnv as viteLoadEnv,
 } from "vite";
 import packageJson from "../../package.json" with { type: "json" };
+import { ZuploEnv } from "../app/env.js";
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
-import { ZuploEnv } from "../zuplo/env.js";
 import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {

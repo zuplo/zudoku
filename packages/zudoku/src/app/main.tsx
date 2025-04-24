@@ -22,7 +22,7 @@ import {
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
-import { ZuploEnv } from "../zuplo/env.js";
+import { ZuploEnv } from "./env.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,

@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { ZuploEnv } from "../app/env.js";
 import type {
   Processor,
   ProcessorArg,
@@ -8,7 +9,6 @@ import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtens
 import { removeParameters } from "../lib/plugins/openapi/processors/removeParameters.js";
 import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
 import { enrichWithZuploData } from "./enrich-with-zuplo.js";
-import { ZuploEnv } from "./env.js";
 
 export const getProcessors = async (rootDir: string): Promise<Processor[]> => {
   const policiesConfig = JSON.parse(
