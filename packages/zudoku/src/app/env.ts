@@ -1,4 +1,4 @@
-import { BuildConfigSchema } from "../config/ZuploBuildConfig.js";
+import { BuildConfigSchema } from "./ZuploBuildConfig.js";
 
 const getZuploBuildConfig = () => {
   if (!process.env.ZUPLO_BUILD_CONFIG) return undefined;
