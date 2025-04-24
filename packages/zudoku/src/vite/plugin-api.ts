@@ -1,6 +1,6 @@
+import { deepEqual } from "fast-equals";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { deepEquals } from "nx/src/utils/json-diff.js";
 import { type Plugin, runnerImport } from "vite";
 import { type LoadedConfig } from "../config/config.js";
 import { fileExists } from "../config/loader.js";
@@ -102,7 +102,7 @@ const viteApiPlugin = async (
 
       const config = getConfig();
 
-      if (!deepEquals(schemaManager.config.apis, config.apis)) {
+      if (!deepEqual(schemaManager.config.apis, config.apis)) {
         schemaManager.config = config;
         await schemaManager.processAllSchemas();
         schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
