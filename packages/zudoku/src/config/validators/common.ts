@@ -15,6 +15,7 @@ import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
+import { availableLanguages, availableThemes } from "./shiki.js";
 
 const ThemeSchema = z
   .object({
@@ -437,6 +438,16 @@ export const CommonConfigSchema = z.object({
       fonts: FontsConfigSchema,
     })
     .partial(),
+  syntaxHighlighting: z
+    .object({
+      languages: z.array(z.enum(availableLanguages)),
+      themes: z.object({
+        light: z.enum(availableThemes),
+        dark: z.enum(availableThemes),
+      }),
+    })
+    .partial()
+    .optional(),
   metadata: MetadataSchema,
   authentication: AuthenticationSchema,
   search: SearchSchema,

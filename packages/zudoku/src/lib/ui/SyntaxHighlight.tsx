@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { useZudoku } from "../components/context/ZudokuContext.js";
 import { highlight } from "../shiki.js";
 import { CodeBlock, type CodeBlockProps } from "./CodeBlock.js";
 
@@ -7,7 +8,12 @@ type SyntaxHighlightProps = CodeBlockProps &
 
 export const SyntaxHighlight = memo(
   ({ code, children, ...props }: SyntaxHighlightProps) => {
-    const highlightedCode = highlight(code ?? children, props.language);
+    const { syntaxHighlighting } = useZudoku().options;
+    const highlightedCode = highlight(
+      code ?? children,
+      props.language,
+      syntaxHighlighting?.themes,
+    );
 
     return <CodeBlock {...props}>{highlightedCode}</CodeBlock>;
   },

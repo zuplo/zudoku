@@ -5,9 +5,12 @@ import type { Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, type JSX } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
-import { createHighlighterCore, type HighlighterCore } from "shiki/core";
+import { getSingletonHighlighter } from "shiki";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
+import type { LanguageName } from "../config/validators/shiki.js";
+
+const highlighter = await getSingletonHighlighter();
 
 export const defaultHighlightOptions = {
   themes: {
@@ -17,62 +20,43 @@ export const defaultHighlightOptions = {
   defaultColor: false,
   inline: "tailing-curly-colon",
   addLanguageClass: true,
+  parseMetaString: (str) => {
+    return Object.fromEntries(
+      str
+        .split(" ")
+        .reduce((prev: [string, boolean | string][], curr: string) => {
+          const [key, value] = curr.split("=");
+          const isNormalKey = key && /^[a-z0-9]+$/i.test(key);
+          if (isNormalKey) prev = [...prev, [key, value || true]];
+          return prev;
+        }, []),
+    );
+  },
 } satisfies RehypeShikiCoreOptions;
 
-let highlighter: HighlighterCore | undefined;
-
-if (!highlighter) {
-  const engine =
-    typeof window === "undefined"
-      ? import("shiki/engine/oniguruma").then((m) =>
-          m.createOnigurumaEngine(() => import("shiki/wasm")),
-        )
-      : import("shiki/engine/javascript").then((m) =>
-          m.createJavaScriptRegexEngine({ forgiving: true }),
-        );
-
-  highlighter = await createHighlighterCore({
-    themes: [
-      import("@shikijs/themes/github-light"),
-      import("@shikijs/themes/github-dark"),
-    ],
-    langs: [
-      import("@shikijs/langs/html"),
-      import("@shikijs/langs/css"),
-      import("@shikijs/langs/json"),
-      import("@shikijs/langs/javascript"),
-      import("@shikijs/langs/typescript"),
-      import("@shikijs/langs/tsx"),
-      import("@shikijs/langs/markdown"),
-      import("@shikijs/langs/mdx"),
-      import("@shikijs/langs/objective-c"),
-      import("@shikijs/langs/yaml"),
-      import("@shikijs/langs/toml"),
-      import("@shikijs/langs/bash"),
-      import("@shikijs/langs/python"),
-      import("@shikijs/langs/rust"),
-      import("@shikijs/langs/sql"),
-      import("@shikijs/langs/yaml"),
-      import("@shikijs/langs/php"),
-      import("@shikijs/langs/ruby"),
-      import("@shikijs/langs/swift"),
-      import("@shikijs/langs/kotlin"),
-      import("@shikijs/langs/java"),
-      import("@shikijs/langs/csharp"),
-      import("@shikijs/langs/go"),
-    ],
-    langAlias: {
-      markup: "html",
-      svg: "xml",
-      mathml: "xml",
-      atom: "xml",
-      ssml: "xml",
-      rss: "xml",
-      webmanifest: "json",
-    },
-    engine,
-  });
-}
+export const defaultLanguages: LanguageName[] = [
+  "shellscript",
+  "javascript",
+  "jsx",
+  "typescript",
+  "tsx",
+  "json",
+  "python",
+  "java",
+  "go",
+  "csharp",
+  "kotlin",
+  "objective-c",
+  "php",
+  "ruby",
+  "swift",
+  "css",
+  "html",
+  "xml",
+  "yaml",
+  "markdown",
+  "mdx",
+];
 
 const rehypeCodeBlockPlugin = () => (tree: Root) => {
   visit(tree, "element", (node, _index, parent) => {
@@ -83,19 +67,32 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
   });
 };
 
-export const configuredShikiRehypePlugins = [
-  [
-    rehypeShikiFromHighlighter,
-    highlighter,
-    defaultHighlightOptions,
-  ] satisfies Pluggable,
-  rehypeCodeBlockPlugin,
-];
+export const createConfiguredShikiRehypePlugins = (themes?: {
+  light: string;
+  dark: string;
+}) => {
+  return [
+    [
+      rehypeShikiFromHighlighter,
+      highlighter,
+      {
+        ...defaultHighlightOptions,
+        themes: themes ?? defaultHighlightOptions.themes,
+      },
+    ] satisfies Pluggable,
+    rehypeCodeBlockPlugin,
+  ];
+};
 
-export const highlight = (code: string, lang = "text") => {
+export const highlight = (
+  code: string,
+  lang = "text",
+  themes?: { light: string; dark: string },
+) => {
   const value = highlighter.codeToHast(code, {
     lang,
     ...defaultHighlightOptions,
+    themes: themes ?? defaultHighlightOptions.themes,
   });
 
   return toJsxRuntime(value, { Fragment, jsx, jsxs }) as JSX.Element;
