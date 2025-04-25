@@ -16,7 +16,7 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
-import { configuredShikiRehypePlugins } from "../lib/shiki.js";
+import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
@@ -157,7 +157,9 @@ const viteMdxPlugin = (getConfig: () => LoadedConfig): Plugin => {
         ...(config.build?.rehypePlugins ?? []),
         rehypeNormalizeMdxImages,
         rehypeMdxImportMedia,
-        ...configuredShikiRehypePlugins,
+        ...createConfiguredShikiRehypePlugins(
+          config.syntaxHighlighting?.themes,
+        ),
       ],
     }),
     name: "zudoku-mdx-plugin",
