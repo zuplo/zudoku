@@ -57,11 +57,13 @@ console.log("Hello, World!");
 ```
 ````
 
+Result:
+
 ```tsx title="hello.tsx"
 console.log("Hello, World!");
 ```
 
-## Supported Languages
+## Default Supported Languages
 
 Currently, Zudoku supports the following languages for syntax highlighting:
 
@@ -84,8 +86,29 @@ Currently, Zudoku supports the following languages for syntax highlighting:
 
 For a complete list of supported languages and their aliases, see the [Shiki Languages documentation](https://shiki.style/languages#bundled-languages).
 
-:::note
+## Configuration
 
-Language customization is coming soon! See [#86](https://github.com/zuplo/zudoku/issues/86)
+You can configure syntax highlighting in your `zudoku.config.tsx`:
+
+```tsx
+import { defaultLanguages, type ZudokuConfig } from "zudoku";
+
+const config: ZudokuConfig = {
+  // ...
+  syntaxHighlighting: {
+    languages: [...defaultLanguages, "powershell"], // Extend default languages
+    themes: {
+      light: "vitesse-light",
+      dark: "vitesse-dark",
+    },
+  },
+};
+```
+
+For a complete list of available themes and languages, see the list of [Shiki themes](https://shiki.style/themes) and [Shiki languages](https://shiki.style/languages).
+
+:::info
+
+Changes to the syntax highlighting configuration require a restart of Zudoku to take effect.
 
 :::

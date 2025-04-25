@@ -89,6 +89,12 @@ export type ZudokuContextOptions = {
   };
   overrides?: ComponentsContextType;
   protectedRoutes?: string[];
+  syntaxHighlighting?: {
+    themes?: {
+      light: string;
+      dark: string;
+    };
+  };
 };
 
 export class ZudokuContext {
