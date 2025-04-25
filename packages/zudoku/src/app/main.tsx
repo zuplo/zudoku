@@ -1,4 +1,5 @@
 import { type RouteObject } from "react-router";
+import { getSingletonHighlighter } from "shiki";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -9,6 +10,7 @@ import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin"
 import { configuredDocsPlugins } from "virtual:zudoku-docs-plugins";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
+import { registerShiki } from "virtual:zudoku-shiki-register";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import {
@@ -23,6 +25,19 @@ import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { ZuploEnv } from "./env.js";
+
+const highlighter = await getSingletonHighlighter({
+  langAlias: {
+    markup: "html",
+    svg: "xml",
+    mathml: "xml",
+    atom: "xml",
+    ssml: "xml",
+    rss: "xml",
+    webmanifest: "json",
+  },
+});
+await registerShiki(highlighter);
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -80,6 +95,9 @@ export const convertZudokuConfigToOptions = (
         : []),
       ...(config.plugins ?? []),
     ],
+    syntaxHighlighting: {
+      themes: config.syntaxHighlighting?.themes,
+    },
   };
 };
 
