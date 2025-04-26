@@ -15,6 +15,7 @@ export type CodeBlockProps = {
   showCopy?: "hover" | "always" | "never";
   showCopyText?: boolean;
   disabled?: boolean;
+  showLineNumbers?: boolean;
 };
 
 export const CodeBlock = ({
@@ -23,6 +24,7 @@ export const CodeBlock = ({
   language,
   showCopy = "hover",
   showCopyText,
+  showLineNumbers,
   ...props
 }: CodeBlockProps) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -31,15 +33,20 @@ export const CodeBlock = ({
   if (!children) return null;
 
   return (
-    <div className="relative group">
+    <div
+      className={cn(
+        "relative group bg-muted/50 rounded-md",
+        showLineNumbers && "line-numbers",
+      )}
+    >
       {title && (
-        <div className="text-xs text-muted-foreground absolute top-2 font-mono border-b w-full pb-2 px-4 ">
+        <div className="text-xs text-muted-foreground top-2 font-mono border-b w-full py-2 px-4 ">
           {title}
         </div>
       )}
       <div
         className={cn(
-          "text-sm not-prose scrollbar overflow-x-auto scrollbar bg-muted/50 rounded-md p-4",
+          "text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
           props.className,
         )}
         ref={ref}
@@ -47,7 +54,12 @@ export const CodeBlock = ({
         {children}
       </div>
       {props.showLanguageIndicator && (
-        <span className="absolute top-1.5 right-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0">
+        <span
+          className={cn(
+            "absolute top-1.5 right-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
+            title && "top-12",
+          )}
+        >
           {language}
         </span>
       )}
@@ -58,6 +70,7 @@ export const CodeBlock = ({
           title="Copy code"
           className={cn(
             "absolute top-2 right-2 p-2 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-muted-foreground transition",
+            title && "top-10",
             showCopy === "hover" && "opacity-0 group-hover:opacity-100",
             showCopyText && "flex gap-2 items-center font-medium",
           )}

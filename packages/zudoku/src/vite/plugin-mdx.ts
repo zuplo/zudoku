@@ -150,16 +150,16 @@ const viteMdxPlugin = (getConfig: () => LoadedConfig): Plugin => {
       ],
       rehypePlugins: [
         rehypeSlug,
-        rehypeMetaAsAttributes,
         withToc,
         withTocExport,
         rehypeExcerptWithMdxExport,
-        ...(config.build?.rehypePlugins ?? []),
         rehypeNormalizeMdxImages,
         rehypeMdxImportMedia,
+        rehypeMetaAsAttributes,
         ...createConfiguredShikiRehypePlugins(
           config.syntaxHighlighting?.themes,
         ),
+        ...(config.build?.rehypePlugins ?? []),
       ],
     }),
     name: "zudoku-mdx-plugin",
