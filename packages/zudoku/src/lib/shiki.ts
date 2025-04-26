@@ -1,6 +1,10 @@
 import rehypeShikiFromHighlighter, {
   type RehypeShikiCoreOptions,
 } from "@shikijs/rehype/core";
+import {
+  transformerMetaHighlight,
+  transformerMetaWordHighlight,
+} from "@shikijs/transformers";
 import type { Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, type JSX } from "react";
@@ -9,6 +13,7 @@ import { getSingletonHighlighter } from "shiki";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
 import type { LanguageName } from "../config/validators/shiki.js";
+import { cn } from "./util/cn.js";
 
 const highlighter = await getSingletonHighlighter();
 
@@ -20,16 +25,18 @@ export const defaultHighlightOptions = {
   defaultColor: false,
   inline: "tailing-curly-colon",
   addLanguageClass: true,
+  transformers: [transformerMetaHighlight(), transformerMetaWordHighlight()],
   parseMetaString: (str) => {
+    // Matches key="value", key=value, or key attributes
+    const matches = str.matchAll(
+      /([a-z0-9]+)(?:=(["'])(.*?)\2|=(.*?)(?:\s|$)|(?:\s|$))/gi,
+    );
     return Object.fromEntries(
-      str
-        .split(" ")
-        .reduce((prev: [string, boolean | string][], curr: string) => {
-          const [key, value] = curr.split("=");
-          const isNormalKey = key && /^[a-z0-9]+$/i.test(key);
-          if (isNormalKey) prev = [...prev, [key, value || true]];
-          return prev;
-        }, []),
+      Array.from(matches).map((match) => {
+        const key = match[1];
+        const value = match[3] || match[4] || true;
+        return [key, value];
+      }),
     );
   },
 } satisfies RehypeShikiCoreOptions;
@@ -60,9 +67,19 @@ export const defaultLanguages: LanguageName[] = [
 
 const rehypeCodeBlockPlugin = () => (tree: Root) => {
   visit(tree, "element", (node, _index, parent) => {
-    if (node.tagName === "code") {
-      const isInline = parent?.type === "element" && parent.tagName !== "pre";
-      node.properties["data-inline"] = JSON.stringify(isInline);
+    if (node.tagName !== "code") return;
+
+    const isCodeBlock = parent?.type === "element" && parent.tagName === "pre";
+    node.properties.inline = JSON.stringify(!isCodeBlock);
+
+    // Pass through properties from <pre> to <code> so we can handle it in `code` only
+    if (isCodeBlock) {
+      node.properties = {
+        ...node.properties,
+        ...structuredClone(parent.properties),
+        class: cn(node.properties.class, parent.properties.class),
+      };
+      parent.properties = {};
     }
   });
 };
