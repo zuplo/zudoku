@@ -64,23 +64,36 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
-  pre: ({ children, className, node, ...props }) => (
-    <pre className={cn("not-prose", className)} {...props}>
-      {children}
-    </pre>
+  pre: (props) => (
+    <pre className={cn("not-prose my-4", props.className)} {...props} />
   ),
-  code: ({ className, node, children, ...props }) => {
+  code: ({
+    className,
+    node: _node,
+    children,
+    title,
+    inline,
+    showLineNumbers,
+    ...props
+  }) => {
     const match = className?.match(/language?-(\w+)/);
-    const isInline =
-      props["data-inline"] === true || props["data-inline"] === "true";
 
-    if (isInline) {
-      return <InlineCode className={className}>{children}</InlineCode>;
+    if (inline === "true" || inline === true) {
+      return (
+        <InlineCode className={cn(className, "inline")}>{children}</InlineCode>
+      );
     }
 
     return (
-      <CodeBlock language={match?.[1]} showLanguageIndicator>
-        <code>{children}</code>
+      <CodeBlock
+        language={match?.[1]}
+        showLanguageIndicator
+        showLineNumbers={showLineNumbers}
+        title={title}
+      >
+        <code className={cn(className, "not-inline")} {...props}>
+          {children}
+        </code>
       </CodeBlock>
     );
   },

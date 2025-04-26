@@ -9,7 +9,7 @@ Zudoku supports code blocks in Markdown using the [Shiki](https://shiki.style/) 
 
 Code blocks are text blocks wrapped around by strings of 3 backticks. You may check out this reference for the specifications of MDX.
 
-````markdown
+````md
 ```js
 console.log("Every repo must come with a mascot.");
 ```
@@ -63,9 +63,78 @@ Result:
 console.log("Hello, World!");
 ```
 
+For a complete list of supported languages and their aliases, see the [Shiki Languages documentation](https://shiki.style/languages#bundled-languages).
+
+## Advanced Syntax Highlighting
+
+There are multiple ways to enhance syntax highlighting:
+
+- [Line highlighting](https://shiki.style/packages/transformers#transformermetahighlight)
+- [Word highlighting](https://shiki.style/packages/transformers#transformermetawordhighlight)
+- Line numbers: `showLineNumbers`
+- Title: `title`
+
+Example:
+
+````
+```tsx {4-7} /react/ title="Example.tsx" showLineNumbers
+import { useEffect } from "react";
+
+function Example() {
+  useEffect(() => {
+    console.log("Mounted");
+  }, []);
+
+  return <div>Hello</div>;
+}
+```
+````
+
+Result:
+
+```tsx {4-7} /react/ title="Example.tsx" showLineNumbers
+import { useEffect } from "react";
+
+function Example() {
+  useEffect(() => {
+    console.log("Mounted");
+  }, []);
+
+  return <div>Hello</div>;
+}
+```
+
+## Configuration
+
+You can configure syntax highlighting in your `zudoku.config.tsx`:
+
+:::info
+
+Changes to the syntax `highlighting` configuration require a restart of Zudoku to take effect.
+
+:::
+
+```tsx /powershell/ {5-12} title=zudoku.config.ts
+import { defaultLanguages, type ZudokuConfig } from "zudoku";
+
+const config: ZudokuConfig = {
+  // ...
+  syntaxHighlighting: {
+    themes: {
+      light: "vitesse-light",
+      dark: "vitesse-dark",
+    },
+    // Extend default languages if needed
+    languages: [...defaultLanguages, "powershell"],
+  },
+};
+```
+
+For a complete list of available themes and languages, see the list of [Shiki themes](https://shiki.style/themes) and [Shiki languages](https://shiki.style/languages).
+
 ## Default Supported Languages
 
-Currently, Zudoku supports the following languages for syntax highlighting:
+By default, Zudoku supports the following languages for syntax highlighting:
 
 - HTML/CSS - `html`, `css`
 - JavaScript/TypeScript - `javascript`, `js`, `jsx`, `typescript`, `ts`, `tsx`
@@ -84,31 +153,32 @@ Currently, Zudoku supports the following languages for syntax highlighting:
 - Go - `go`
 - Objective-C - `objectivec`, `objc`
 
-For a complete list of supported languages and their aliases, see the [Shiki Languages documentation](https://shiki.style/languages#bundled-languages).
+## ANSI Code Blocks
 
-## Configuration
+You can use the `ansi` language to highlight terminal outputs with ANSI escape sequences. This is useful for displaying colored terminal output, styled text, and other terminal-specific formatting.
 
-You can configure syntax highlighting in your `zudoku.config.tsx`:
-
-```tsx
-import { defaultLanguages, type ZudokuConfig } from "zudoku";
-
-const config: ZudokuConfig = {
-  // ...
-  syntaxHighlighting: {
-    languages: [...defaultLanguages, "powershell"], // Extend default languages
-    themes: {
-      light: "vitesse-light",
-      dark: "vitesse-dark",
-    },
-  },
-};
+```ansi title="Terminal Output"
+[0;32mcolored foreground[0m
+[0;1mbold text[0m
+[0;2mdimmed text[0m
+[0;4munderlined text[0m
+[0;7mreversed text[0m
+[0;9mstrikethrough text[0m
+[0;4;9munderlined + strikethrough text[0m
 ```
 
-For a complete list of available themes and languages, see the list of [Shiki themes](https://shiki.style/themes) and [Shiki languages](https://shiki.style/languages).
+Usage:
 
-:::info
+````md
+```ansi title="Terminal Output"
+[0;32mcolored foreground[0m
+[0;1mbold text[0m
+[0;2mdimmed text[0m
+[0;4munderlined text[0m
+[0;7mreversed text[0m
+[0;9mstrikethrough text[0m
+[0;4;9munderlined + strikethrough text[0m
+```
+````
 
-Changes to the syntax highlighting configuration require a restart of Zudoku to take effect.
-
-:::
+For more details on ANSI highlighting, see the [Shiki documentation](https://shiki.style/languages#ansi).
