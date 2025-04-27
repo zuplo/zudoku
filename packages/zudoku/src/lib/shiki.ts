@@ -15,7 +15,17 @@ import { visit } from "unist-util-visit";
 import type { LanguageName } from "../config/validators/shiki.js";
 import { cn } from "./util/cn.js";
 
-const highlighter = await getSingletonHighlighter();
+export const highlighter = await getSingletonHighlighter({
+  langAlias: {
+    markup: "html",
+    svg: "xml",
+    mathml: "xml",
+    atom: "xml",
+    ssml: "xml",
+    rss: "xml",
+    webmanifest: "json",
+  },
+});
 
 export const defaultHighlightOptions = {
   themes: {
@@ -95,7 +105,7 @@ export const createConfiguredShikiRehypePlugins = (themes?: {
       {
         ...defaultHighlightOptions,
         themes: themes ?? defaultHighlightOptions.themes,
-      },
+      } satisfies RehypeShikiCoreOptions,
     ] satisfies Pluggable,
     rehypeCodeBlockPlugin,
   ];

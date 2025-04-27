@@ -186,7 +186,7 @@
   .shiki.not-inline .line {
     @apply inline-flex items-baseline -mx-4 px-4 w-[calc(100%+2rem)];
     --highlighted-bg: hsl(
-      from hsl(var(--muted)) h s calc(l + 6 * var(--dark)) / 50%
+      from hsl(var(--muted)) h s calc(l + 4 * var(--dark)) / 50%
     );
   }
   .shiki .line.highlighted {
