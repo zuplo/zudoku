@@ -1,5 +1,4 @@
 import { type RouteObject } from "react-router";
-import { getSingletonHighlighter } from "shiki";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -24,19 +23,9 @@ import {
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
 
-const highlighter = await getSingletonHighlighter({
-  langAlias: {
-    markup: "html",
-    svg: "xml",
-    mathml: "xml",
-    atom: "xml",
-    ssml: "xml",
-    rss: "xml",
-    webmanifest: "json",
-  },
-});
 await registerShiki(highlighter);
 
 export const convertZudokuConfigToOptions = (
