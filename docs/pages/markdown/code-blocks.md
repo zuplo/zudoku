@@ -114,7 +114,7 @@ Changes to the syntax `highlighting` configuration require a restart of Zudoku t
 
 :::
 
-```tsx /powershell/ {5-12} title=zudoku.config.ts
+```tsx {5-12} title=zudoku.config.ts
 import { defaultLanguages, type ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
