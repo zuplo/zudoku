@@ -1,4 +1,3 @@
-import type { BundledLanguage } from "shiki";
 import type { Plugin } from "vite";
 import type { LoadedConfig } from "../config/config.js";
 import {
@@ -6,6 +5,7 @@ import {
   defaultLanguages,
   highlighter,
 } from "../lib/shiki.js";
+
 export const viteShikiRegisterPlugin = (
   getCurrentConfig: () => LoadedConfig,
 ): Plugin => {
@@ -26,18 +26,30 @@ export const viteShikiRegisterPlugin = (
       const languages =
         config.syntaxHighlighting?.languages ?? defaultLanguages;
 
-      const themes = config.syntaxHighlighting?.themes;
-      const lightTheme = themes?.light ?? defaultHighlightOptions.themes.light;
-      const darkTheme = themes?.dark ?? defaultHighlightOptions.themes.dark;
+      const themes = Object.values(
+        config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
+      );
 
-      await highlighter.loadTheme(lightTheme, darkTheme);
-      await highlighter.loadLanguage(...(languages as BundledLanguage[]));
+      await Promise.all(
+        themes.map((theme) =>
+          highlighter.loadTheme(import(`@shikijs/themes/${theme}`)),
+        ),
+      );
+      await Promise.all(
+        languages.map((lang) =>
+          highlighter.loadLanguage(import(`@shikijs/langs/${lang}`)),
+        ),
+      );
 
       const code = [
         "export const registerShiki = async (highlighter) => {",
-        `  await Promise.all([`,
-        `    highlighter.loadTheme("${lightTheme}", "${darkTheme}"),`,
-        `    highlighter.loadLanguage(...${JSON.stringify(languages)}),`,
+        "  await Promise.all([",
+        "    highlighter.loadTheme(",
+        themes.map((t) => `import('zudoku/shiki/themes/${t}')`).join(","),
+        "    ),",
+        "    highlighter.loadLanguage(",
+        languages.map((l) => `import('zudoku/shiki/langs/${l}')`).join(","),
+        "    ),",
         "  ]);",
         "};",
       ];

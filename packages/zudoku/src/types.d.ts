@@ -51,6 +51,6 @@ declare module "virtual:zudoku-auth" {
 }
 
 declare module "virtual:zudoku-shiki-register" {
-  import type { Highlighter } from "shiki";
-  export const registerShiki: (highlighter: Highlighter) => Promise<void>;
+  import type { HighlighterCore } from "shiki/core";
+  export const registerShiki: (highlighter: HighlighterCore) => Promise<void>;
 }
