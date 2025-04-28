@@ -9,13 +9,16 @@ import type { Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, type JSX } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
-import { getSingletonHighlighter } from "shiki";
+import type { BundledLanguage, BundledTheme } from "shiki";
+import { createHighlighterCore } from "shiki/core";
+import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
-import type { LanguageName } from "../config/validators/shiki.js";
 import { cn } from "./util/cn.js";
 
-export const highlighter = await getSingletonHighlighter({
+const engine = createJavaScriptRegexEngine({ forgiving: true });
+export const highlighter = await createHighlighterCore({
+  engine,
   langAlias: {
     markup: "html",
     svg: "xml",
@@ -31,7 +34,7 @@ export const defaultHighlightOptions = {
   themes: {
     light: "github-light",
     dark: "github-dark",
-  },
+  } satisfies { light: BundledTheme; dark: BundledTheme },
   defaultColor: false,
   inline: "tailing-curly-colon",
   addLanguageClass: true,
@@ -51,7 +54,7 @@ export const defaultHighlightOptions = {
   },
 } satisfies RehypeShikiCoreOptions;
 
-export const defaultLanguages: LanguageName[] = [
+export const defaultLanguages: BundledLanguage[] = [
   "shellscript",
   "javascript",
   "jsx",
@@ -95,8 +98,8 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
 };
 
 export const createConfiguredShikiRehypePlugins = (themes?: {
-  light: string;
-  dark: string;
+  light: BundledTheme;
+  dark: BundledTheme;
 }) => {
   return [
     [
@@ -114,7 +117,7 @@ export const createConfiguredShikiRehypePlugins = (themes?: {
 export const highlight = (
   code: string,
   lang = "text",
-  themes?: { light: string; dark: string },
+  themes?: { light: BundledTheme; dark: BundledTheme },
 ) => {
   const value = highlighter.codeToHast(code, {
     lang,
