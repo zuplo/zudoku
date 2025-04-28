@@ -17,6 +17,7 @@
     "cli.js",
     "src/lib",
     "src/app",
+    "src/shiki",
     "client.d.ts"
   ],
   "bin": {
@@ -44,6 +45,7 @@
     "./tailwind": "./src/app/tailwind.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
+    "./shiki/*": "./src/shiki/*.js",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
     "./with-zuplo": "./src/zuplo/with-zuplo.ts"
   },
@@ -146,6 +148,10 @@
         "require": "./src/app/main.css",
         "import": "./src/app/main.css"
       },
+      "./shiki/*": {
+        "require": "./src/shiki/*.js",
+        "import": "./src/shiki/*.js"
+      },
       "./app/*": {
         "import": "./src/app/*"
       },
@@ -201,6 +207,7 @@
     "@shikijs/langs": "3.2.2",
     "@shikijs/rehype": "3.2.2",
     "@shikijs/themes": "3.2.2",
+    "@shikijs/transformers": "3.3.0",
     "@sindresorhus/slugify": "2.2.1",
     "@stefanprobst/rehype-extract-toc": "3.0.0",
     "@tailwindcss/typography": "0.5.16",
@@ -286,7 +293,6 @@
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",
     "@graphql-codegen/client-preset": "4.8.0",
-    "@shikijs/transformers": "3.3.0",
     "@testing-library/react": "16.3.0",
     "@types/estree": "1.0.7",
     "@types/express": "5.0.1",

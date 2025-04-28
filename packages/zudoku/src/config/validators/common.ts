@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { isValidElement } from "react";
+import type { BundledLanguage, BundledTheme } from "shiki";
 import z, {
   type RefinementCtx,
   type ZodEnumDef,
@@ -15,7 +16,6 @@ import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
-import { availableLanguages, availableThemes } from "./shiki.js";
 
 const ThemeSchema = z
   .object({
@@ -440,10 +440,10 @@ export const CommonConfigSchema = z.object({
     .partial(),
   syntaxHighlighting: z
     .object({
-      languages: z.array(z.enum(availableLanguages)),
+      languages: z.array(z.custom<BundledLanguage>()),
       themes: z.object({
-        light: z.enum(availableThemes),
-        dark: z.enum(availableThemes),
+        light: z.custom<BundledTheme>(),
+        dark: z.custom<BundledTheme>(),
       }),
     })
     .partial()

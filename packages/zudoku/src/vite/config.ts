@@ -248,6 +248,9 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
+      esbuildOptions: {
+        target: "esnext",
+      },
       entries: [
         configEnv.isSsrBuild
           ? getAppServerEntryPath()
