@@ -195,7 +195,7 @@ const viteApiPlugin = async (
               `  schemaImports: {`,
               ...schemaMapEntries.map(
                 ([key, processed]) =>
-                  `    "${key}": () => import("${processed.filePath.replace(/\\/g, "/")}?d=${processed.processedTime}"),`,
+                  `    "${key.replace(/\\/g, "\\\\")}": () => import("${processed.filePath.replace(/\\/g, "/")}?d=${processed.processedTime}"),`,
               ),
               `  },`,
               "}));",
