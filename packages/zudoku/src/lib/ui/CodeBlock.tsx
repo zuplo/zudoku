@@ -24,6 +24,7 @@ export const CodeBlock = ({
   language,
   showCopy = "hover",
   showCopyText,
+  showLanguageIndicator = true,
   showLineNumbers,
   ...props
 }: CodeBlockProps) => {
@@ -53,7 +54,7 @@ export const CodeBlock = ({
       >
         {children}
       </div>
-      {props.showLanguageIndicator && (
+      {showLanguageIndicator && (
         <span
           className={cn(
             "absolute top-1.5 right-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",

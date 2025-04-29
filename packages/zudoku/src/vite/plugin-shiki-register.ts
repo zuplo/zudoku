@@ -30,16 +30,14 @@ export const viteShikiRegisterPlugin = (
         config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
       );
 
-      await Promise.all(
-        themes.map((theme) =>
-          highlighter.loadTheme(import(`@shikijs/themes/${theme}`)),
+      await Promise.all([
+        highlighter.loadTheme(
+          ...themes.map((theme) => import(`@shikijs/themes/${theme}`)),
         ),
-      );
-      await Promise.all(
-        languages.map((lang) =>
-          highlighter.loadLanguage(import(`@shikijs/langs/${lang}`)),
+        highlighter.loadLanguage(
+          ...languages.map((lang) => import(`@shikijs/langs/${lang}`)),
         ),
-      );
+      ]);
 
       const code = [
         "export const registerShiki = async (highlighter) => {",
