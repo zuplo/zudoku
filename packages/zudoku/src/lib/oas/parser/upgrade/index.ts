@@ -14,7 +14,7 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
   }
 
   schema = traverse(schema, (sub) => {
-    if (sub.type !== "undefined" && sub.nullable === true) {
+    if (typeof sub.type !== "undefined" && sub.nullable === true) {
       sub.type = ["null", sub.type];
       delete sub.nullable;
     }
