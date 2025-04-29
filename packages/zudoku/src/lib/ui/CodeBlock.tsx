@@ -36,7 +36,7 @@ export const CodeBlock = ({
   return (
     <div
       className={cn(
-        "relative group bg-muted/50 rounded-md",
+        "code-block-wrapper relative group bg-muted/50 rounded-md",
         showLineNumbers && "line-numbers",
       )}
     >
@@ -47,7 +47,7 @@ export const CodeBlock = ({
       )}
       <div
         className={cn(
-          "text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
+          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
           props.className,
         )}
         ref={ref}

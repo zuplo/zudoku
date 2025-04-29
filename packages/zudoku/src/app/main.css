@@ -143,7 +143,7 @@
   }
 
   .prose.prose {
-    @apply prose-a:underline-offset-4 hover:prose-a:text-primary;
+    @apply prose-a:underline-offset-4 prose-a:font-normal hover:prose-a:text-primary;
     @apply prose-blockquote:not-italic prose-blockquote:text-neutral-500/75 prose-blockquote:dark:text-neutral-400;
     @apply prose-code:before:content-none prose-code:after:content-none prose-code:font-normal;
     @apply prose-headings:prose-code:mx-2 prose-li:my-0.5;
@@ -159,6 +159,9 @@
   .shiki {
     counter-reset: line;
     @apply leading-normal;
+  }
+  .code-block .shiki {
+    @apply grid;
   }
 
   .shiki,
