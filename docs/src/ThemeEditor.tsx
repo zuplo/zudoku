@@ -239,6 +239,7 @@ export const ThemeEditor = () => {
           <SyntaxHighlight
             language="tsx"
             showLanguageIndicator
+            showLineNumbers
             code={`
 import { Button } from "zudoku/ui/Button.js";
 
