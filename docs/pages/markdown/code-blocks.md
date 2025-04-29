@@ -31,7 +31,7 @@ You can also use the [`SyntaxHighlight` component](/components/syntax-highlight)
 
 You can highlight inline code using either:
 
-Regular backticks with language specification:
+Regular backticks without language specification:
 
 ```md
 `console.log("Hello World")`
@@ -39,7 +39,7 @@ Regular backticks with language specification:
 
 Result: `console.log("Hello World")`
 
-or with the tailing curly colon syntax:
+or with the [tailing curly colon syntax](https://shiki.matsu.io/packages/rehype#inline-code):
 
 ```md
 `console.log("Hello World"){:js}`
@@ -77,7 +77,7 @@ There are multiple ways to enhance syntax highlighting:
 Example:
 
 ````
-```tsx {4-7} /react/ title="Example.tsx" showLineNumbers
+```tsx {4-6} /react/ title="Example.tsx" showLineNumbers
 import { useEffect } from "react";
 
 function Example() {
@@ -92,7 +92,7 @@ function Example() {
 
 Result:
 
-```tsx {4-7} /react/ title="Example.tsx" showLineNumbers
+```tsx {4-6} /react/ title="Example.tsx" showLineNumbers
 import { useEffect } from "react";
 
 function Example() {
