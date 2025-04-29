@@ -129,9 +129,13 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
     {
       element: (
         <Zudoku {...options}>
-          {import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID && (
-            <BuildCheck buildId={import.meta.env.ZUPLO_BUILD_ID} />
-          )}
+          <BuildCheck
+            buildId={
+              import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID
+                ? import.meta.env.ZUPLO_BUILD_ID
+                : undefined
+            }
+          />
           <Layout />
         </Zudoku>
       ),

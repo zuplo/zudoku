@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { CircleFadingArrowUpIcon, LoaderCircleIcon } from "lucide-react";
+import { z } from "zod";
 import { Button } from "../ui/Button.js";
+
+const BuildStatusSchema = z.object({
+  buildId: z.string(),
+  timestamp: z.string(),
+  status: z.enum(["in-progress", "completed", "failed"]),
+});
 
 export const BuildCheck = ({
   buildId,
@@ -13,19 +20,25 @@ export const BuildCheck = ({
     queryKey: ["zuplo-build-check", buildId, endpoint],
     refetchInterval: 2000,
     enabled: !!buildId,
+    retry: false,
     queryFn: () =>
-      fetch(endpoint).then((res) => res.json()) as Promise<{
-        buildId: string;
-        timestamp: string;
-        status: "in-progress" | "completed" | "failed";
-      }>,
+      fetch(endpoint, { signal: AbortSignal.timeout(2000) })
+        .then((res) => {
+          if (!res.ok) throw new Error("Failed to fetch build status");
+          return res.json();
+        })
+        .then((data) => BuildStatusSchema.parse(data)),
   });
 
-  if (buildStatusQuery.data?.buildId === buildId) {
+  if (
+    buildStatusQuery.isError ||
+    !buildStatusQuery.data ||
+    buildStatusQuery.data.buildId === buildId
+  ) {
     return null;
   }
 
-  const isCompleted = buildStatusQuery.data?.status === "completed";
+  const isCompleted = buildStatusQuery.data.status === "completed";
 
   return (
     <div className="fixed flex flex-col gap-3 p-4 rounded-xl w-96 border z-20 bg-background left-0 right-0 top-4 mx-auto shadow-lg">
