@@ -145,7 +145,7 @@
   .prose.prose {
     @apply prose-a:underline-offset-4 hover:prose-a:text-primary;
     @apply prose-blockquote:not-italic prose-blockquote:text-neutral-500/75 prose-blockquote:dark:text-neutral-400;
-    @apply prose-code:before:content-none prose-code:after:content-none;
+    @apply prose-code:before:content-none prose-code:after:content-none prose-code:font-normal;
     @apply prose-headings:prose-code:mx-2 prose-li:my-0.5;
 
     ul.contains-task-list {
