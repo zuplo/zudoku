@@ -67,7 +67,9 @@ async function getConfigFilePath(
   if (result.configType) {
     return result;
   }
-  throw new Error(`No zudoku config file found in project root.`);
+  throw new Error(
+    `Invalid configuration. Please check earlier logs for details.`,
+  );
 }
 
 async function loadZudokuCodeConfig<TConfig>(
