@@ -259,7 +259,7 @@
     "remark-mdx-frontmatter": "5.1.0",
     "remark-parse": "^11.0.0",
     "remark-rehype": "^11.1.2",
-    "rollup": "4.40.0",
+    "rollup": "4.40.1",
     "semver": "7.7.1",
     "sitemap": "8.0.0",
     "spin-delay": "2.0.1",
