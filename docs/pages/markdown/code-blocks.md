@@ -23,7 +23,7 @@ console.log("Every repo must come with a mascot.");
 
 :::note
 
-You can also use the [`SyntaxHighlight` component](/components/syntax-highlight) to render code blocks in TypeScript directly.
+You can also use the [`SyntaxHighlight` component](../components/syntax-highlight) to render code blocks in TypeScript directly.
 
 :::
 
