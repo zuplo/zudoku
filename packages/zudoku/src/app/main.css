@@ -97,11 +97,6 @@
   html {
     /* This is to prevent layout jumping when the scrollbar appears/disappears */
     @apply -mr-[--scrollbar-width] scroll-pt-[--scroll-padding];
-    --dark: -1;
-  }
-
-  html.dark {
-    --dark: 1;
   }
 
   html,
@@ -143,10 +138,10 @@
   }
 
   .prose.prose {
-    @apply prose-a:underline-offset-4 prose-a:font-normal hover:prose-a:text-primary;
+    @apply prose-a:underline-offset-4 hover:prose-a:text-primary;
     @apply prose-blockquote:not-italic prose-blockquote:text-neutral-500/75 prose-blockquote:dark:text-neutral-400;
-    @apply prose-code:before:content-none prose-code:after:content-none prose-code:font-normal;
-    @apply prose-headings:prose-code:mx-2 prose-li:my-0.5;
+    @apply prose-headings:prose-code:mx-2;
+    @apply prose-code:before:content-none prose-code:after:content-none;
 
     ul.contains-task-list {
       @apply list-none px-0;
@@ -154,51 +149,6 @@
         @apply flex items-center gap-2;
       }
     }
-  }
-
-  .shiki {
-    counter-reset: line;
-    @apply leading-normal;
-  }
-  .code-block .shiki {
-    @apply grid;
-  }
-
-  .shiki,
-  .shiki span {
-    color: var(--shiki-light);
-    font-style: var(--shiki-light-font-style) !important;
-    font-weight: var(--shiki-light-font-weight) !important;
-    text-decoration: var(--shiki-light-text-decoration) !important;
-  }
-
-  html.dark .shiki,
-  html.dark .shiki span {
-    color: var(--shiki-dark);
-    font-style: var(--shiki-dark-font-style) !important;
-    font-weight: var(--shiki-dark-font-weight) !important;
-    text-decoration: var(--shiki-dark-text-decoration) !important;
-  }
-
-  .line-numbers .shiki .line::before {
-    counter-increment: line;
-    content: counter(line);
-    @apply tabular-nums inline-flex items-baseline justify-end me-4 w-3 text-muted-foreground/25;
-  }
-
-  .shiki.not-inline .line {
-    @apply inline-flex items-baseline -mx-4 px-4 w-[calc(100%+2rem)];
-    --highlighted-bg: hsl(
-      from hsl(var(--muted)) h s calc(l + 4 * var(--dark)) / 50%
-    );
-  }
-  .shiki .line.highlighted {
-    @apply bg-[--highlighted-bg];
-  }
-
-  .shiki .highlighted-word {
-    @apply bg-[--highlighted-bg] px-0.5 rounded;
-    box-shadow: 0 0 0 4px var(--highlighted-bg);
   }
 
   select {

@@ -5,7 +5,6 @@ export type {
 } from "./config/validators/InputSidebarSchema.js";
 export type { ExposedComponentProps } from "./lib/components/SlotletProvider.js";
 export type { MDXImport } from "./lib/plugins/markdown/index.js";
-export { defaultLanguages } from "./lib/shiki.js";
 
 export type {
   ApiIdentityPlugin,

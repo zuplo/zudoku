@@ -14,7 +14,6 @@ import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSearchPlugin } from "./plugin-search.js";
-import { viteShikiRegisterPlugin } from "./plugin-shiki-register.js";
 import { viteSidebarPlugin } from "./plugin-sidebar.js";
 import { viteThemeCss } from "./plugin-theme-css.js";
 
@@ -28,7 +27,6 @@ export default function vitePlugin(
   );
 
   return [
-    viteShikiRegisterPlugin(getCurrentConfig),
     viteMdxPlugin(getCurrentConfig),
     vitePluginSsrCss(getCurrentConfig, {
       entries: ["zudoku/app/entry.server.tsx"],

@@ -18,7 +18,6 @@ import { logger } from "../cli/common/logger.js";
 import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { tryLoadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
-import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import vitePlugin from "./plugin.js";
 
@@ -172,39 +171,6 @@ export async function getViteConfig(
     hasLoggedCdnInfo = true;
   }
 
-  // These dependencies are listed explicitly to prevent cascading page reloads that occur during auto-discovery
-  const zudokuIncludeOptimizedDeps = [
-    "@sindresorhus/slugify",
-    "react-hook-form",
-    "cmdk",
-    "@radix-ui/react-tabs",
-    "@radix-ui/react-tooltip",
-    "@radix-ui/react-select",
-    "@radix-ui/react-popover",
-    "@radix-ui/react-checkbox",
-    "@radix-ui/react-label",
-    "@radix-ui/react-radio-group",
-    "@radix-ui/react-slot",
-    "@envelop/core",
-    "@pothos/core",
-    "graphql-yoga",
-    "graphql",
-    "graphql/index.js",
-    "graphql/error/index.js",
-    "openapi-types",
-    "@zudoku/httpsnippet",
-    "graphql-type-json",
-    "yaml",
-    "@clerk/clerk-js",
-    "@scalar/openapi-parser",
-    ...(config.syntaxHighlighting?.languages ?? defaultLanguages).map(
-      (lang) => `@shikijs/langs/${lang}`,
-    ),
-    ...Object.values(
-      config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
-    ).map((theme) => `@shikijs/themes/${theme}`),
-  ].map((dep) => `zudoku > ${dep}`);
-
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -247,7 +213,6 @@ export async function getViteConfig(
     build: {
       ssr: configEnv.isSsrBuild,
       sourcemap: true,
-      target: "es2022",
       outDir: path.resolve(
         path.join(
           dir,
@@ -282,9 +247,6 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "esnext",
-      },
       entries: [
         configEnv.isSsrBuild
           ? getAppServerEntryPath()
@@ -293,7 +255,6 @@ export async function getViteConfig(
       include: [
         "react-dom/client",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
-        ...zudokuIncludeOptimizedDeps,
       ],
     },
     assetsInclude: [

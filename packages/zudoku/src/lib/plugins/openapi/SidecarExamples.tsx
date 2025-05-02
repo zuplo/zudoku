@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { type SchemaObject } from "../../oas/parser/index.js";
+import { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";
@@ -97,7 +97,7 @@ export const SidecarExamples = ({
             <SyntaxHighlight
               language={language}
               noBackground
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px] p-2"
+              className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
               code={formattedExample}
             />
           </CollapsibleCode>

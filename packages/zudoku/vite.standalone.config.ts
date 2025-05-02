@@ -23,7 +23,6 @@ export default defineConfig({
   },
   build: {
     sourcemap: true,
-    target: "es2022",
     outDir: path.resolve(__dirname, "standalone"),
     lib: {
       entry: Object.entries(entries).reduce((acc, [key, value]) => {
