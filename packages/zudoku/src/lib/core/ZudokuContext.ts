@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
 import type { Location } from "react-router";
+import type { BundledTheme } from "shiki";
 import type { z } from "zod";
 import type {
   FooterSchema,
@@ -89,6 +90,9 @@ export type ZudokuContextOptions = {
   };
   overrides?: ComponentsContextType;
   protectedRoutes?: string[];
+  syntaxHighlighting?: {
+    themes?: { light: BundledTheme; dark: BundledTheme };
+  };
 };
 
 export class ZudokuContext {
