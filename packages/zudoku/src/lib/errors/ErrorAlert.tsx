@@ -32,7 +32,7 @@ export function ErrorAlert({ error }: { error: unknown }) {
         <div>
           <SyntaxHighlight
             className="max-h-[400px] border mt-2"
-            language="js"
+            language="jsstacktrace"
             code={stringError}
           />
         </div>

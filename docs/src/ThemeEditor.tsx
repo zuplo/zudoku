@@ -141,8 +141,8 @@ export const ThemeEditor = () => {
         </Dialog>
       </div>
       <div className="border-border border-b border-dashed border-px my-2" />
-      <div className="grid grid-cols-[minmax(0,560px)_1fr] gap-2">
-        <div className="flex flex-col gap-2">
+      <div className="grid grid-cols-[minmax(0,515px)_1fr] gap-2">
+        <div>
           <Card>
             {/* <CardHeader className="py-4" /> */}
             <CardContent className="grid grid-cols-1 lg:grid-cols-2 ">
@@ -236,27 +236,6 @@ export const ThemeEditor = () => {
               </div>
             </CardContent>
           </Card>
-          <SyntaxHighlight
-            language="tsx"
-            showLanguageIndicator
-            showLineNumbers
-            code={`
-import { Button } from "zudoku/ui/Button.js";
-
-export const App = () => {
-  const [count, setCount] = useState(0);
-
-  return (
-    <div>
-      <Button onClick={() => setCount(count + 1)}>
-        Click me
-      </Button>
-      <div>Count: {count}</div>
-    </div>
-  );
-};
-          `.trim()}
-          />
         </div>
         <div className="rounded-lg overflow-hidden">
           <div className="grid grid-cols-1 gap-2">
@@ -326,6 +305,7 @@ export const App = () => {
     </>
   );
 };
+
 export const ThemeEditorPage = () => {
   return (
     <div className="flex flex-col gap-3 pt-6">

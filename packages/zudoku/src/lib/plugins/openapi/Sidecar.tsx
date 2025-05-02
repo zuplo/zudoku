@@ -225,7 +225,7 @@ export const Sidecar = ({
                 <SyntaxHighlight
                   language={selectedLang}
                   noBackground
-                  className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px] p-2"
+                  className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
                   code={code!}
                 />
               </CollapsibleCode>

@@ -9,7 +9,6 @@ import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin"
 import { configuredDocsPlugins } from "virtual:zudoku-docs-plugins";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
-import { registerShiki } from "virtual:zudoku-shiki-register";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import {
@@ -23,10 +22,7 @@ import {
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
-import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
-
-await registerShiki(highlighter);
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -84,9 +80,6 @@ export const convertZudokuConfigToOptions = (
         : []),
       ...(config.plugins ?? []),
     ],
-    syntaxHighlighting: {
-      themes: config.syntaxHighlighting?.themes,
-    },
   };
 };
 
