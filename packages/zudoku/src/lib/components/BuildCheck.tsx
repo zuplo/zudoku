@@ -18,8 +18,10 @@ export const BuildCheck = ({
 }) => {
   const buildStatusQuery = useQuery({
     queryKey: ["zuplo-build-check", buildId, endpoint],
-    refetchInterval: 2000,
-    enabled: !!buildId,
+    refetchInterval: 3000,
+    enabled:
+      typeof buildId !== "undefined" &&
+      import.meta.env.ZUPLO_ENVIRONMENT_TYPE === "WORKING_COPY",
     retry: false,
     queryFn: () =>
       fetch(endpoint, { signal: AbortSignal.timeout(2000) })
