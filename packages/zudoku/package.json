@@ -241,7 +241,7 @@
     "picocolors": "1.1.1",
     "piscina": "5.0.0-alpha.2",
     "postcss": "8.5.3",
-    "posthog-node": "4.11.3",
+    "posthog-node": "4.17.0",
     "prism-react-renderer": "2.4.1",
     "prismjs": "1.30.0",
     "react-error-boundary": "5.0.0",
