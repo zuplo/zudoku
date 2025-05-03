@@ -12,6 +12,7 @@ import { EnumValues } from "./components/EnumValues.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { SchemaExampleAndDefault } from "./schema/SchemaExampleAndDefault.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { isArrayType } from "./schema/utils.js";
 
 const getParameterSchema = (
   parameter: ParameterListItemResult,
@@ -80,7 +81,7 @@ export const ParameterListItem = ({
         paramSchema.enum && <EnumValues values={paramSchema.enum} />
       )}
       <SchemaExampleAndDefault schema={paramSchema} />
-      {(paramSchema.type === "object" || paramSchema.type === "array") && (
+      {(paramSchema.type === "object" || isArrayType(paramSchema)) && (
         <Collapsible.Root
           defaultOpen={false}
           onOpenChange={setIsOpen}
@@ -94,7 +95,11 @@ export const ParameterListItem = ({
           </Collapsible.Trigger>
           <Collapsible.Content>
             <div className="mt-2">
-              <SchemaView schema={paramSchema} />
+              <SchemaView
+                schema={
+                  "items" in paramSchema ? paramSchema.items : paramSchema
+                }
+              />
             </div>
           </Collapsible.Content>
         </Collapsible.Root>

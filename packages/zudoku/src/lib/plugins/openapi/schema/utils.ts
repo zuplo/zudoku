@@ -7,6 +7,11 @@ export const isBasicType = (
   typeof type === "string" &&
   ["string", "number", "boolean", "integer", "null"].includes(type);
 
+export const isArrayType = (value: SchemaObject) =>
+  value.type === "array" ||
+  // schema.type might be an array of types, so we need to check if "array" is one of them
+  (Array.isArray(value.type) && value.type.includes("array"));
+
 export const isComplexType = (value: SchemaObject) =>
   (value.type === "object" && Object.keys(value.properties ?? {}).length > 0) ||
   (value.type === "array" &&

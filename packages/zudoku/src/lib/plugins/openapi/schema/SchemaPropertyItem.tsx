@@ -15,6 +15,7 @@ import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   hasLogicalGroupings,
+  isArrayType,
   isCircularRef,
   isComplexType,
   LogicalSchemaTypeMap,
@@ -62,10 +63,6 @@ export const SchemaPropertyItem = ({
   showCollapseButton?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-  const isArrayType =
-    schema.type === "array" ||
-    // schema.type might be an array of types, so we need to check if "array" is one of them
-    (Array.isArray(schema.type) && schema.type.includes("array"));
 
   if (isCircularRef(schema)) {
     return (
@@ -97,7 +94,7 @@ export const SchemaPropertyItem = ({
               group !== "optional" && (
                 <span className="text-primary">required</span>
               ),
-              isArrayType &&
+              isArrayType(schema) &&
                 "items" in schema &&
                 isCircularRef(schema.items) && <RecursiveIndicator />,
             ]}
@@ -116,7 +113,7 @@ export const SchemaPropertyItem = ({
         <SchemaExampleAndDefault schema={schema} />
         {(hasLogicalGroupings(schema) ||
           isComplexType(schema) ||
-          isArrayType) && (
+          isArrayType(schema)) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}
@@ -137,7 +134,7 @@ export const SchemaPropertyItem = ({
                 ) : schema.type === "object" ? (
                   <SchemaView schema={schema} />
                 ) : (
-                  isArrayType &&
+                  isArrayType(schema) &&
                   "items" in schema &&
                   typeof schema.items === "object" &&
                   !isCircularRef(schema.items) && (
