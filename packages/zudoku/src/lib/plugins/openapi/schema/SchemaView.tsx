@@ -57,12 +57,7 @@ export const SchemaView = ({
   }
 
   if (schema.type === "array" && typeof schema.items === "object") {
-    return (
-      <Card className="p-4 space-y-2 text-sm">
-        <ParamInfos schema={schema} />
-        <SchemaView schema={schema.items as SchemaObject} />
-      </Card>
-    );
+    return <SchemaView schema={schema.items as SchemaObject} />;
   }
 
   if (schema.type === "object") {
