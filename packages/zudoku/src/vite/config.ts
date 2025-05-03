@@ -283,7 +283,7 @@ export async function getViteConfig(
     },
     optimizeDeps: {
       esbuildOptions: {
-        target: "esnext",
+        target: "es2022",
       },
       entries: [
         configEnv.isSsrBuild
