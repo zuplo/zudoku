@@ -85,6 +85,7 @@ export const convertZudokuConfigToOptions = (
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
+      highlighter,
       themes: config.syntaxHighlighting?.themes,
     },
   };
