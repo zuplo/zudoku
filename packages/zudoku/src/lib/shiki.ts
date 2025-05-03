@@ -9,7 +9,7 @@ import type { Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, type JSX } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
-import type { BundledLanguage, BundledTheme } from "shiki";
+import type { BundledLanguage, BundledTheme, HighlighterCore } from "shiki";
 import { createHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Pluggable } from "unified";
@@ -115,14 +115,18 @@ export const createConfiguredShikiRehypePlugins = (themes?: {
 };
 
 export const highlight = (
+  highlighter: HighlighterCore,
   code: string,
   lang = "text",
-  themes?: { light: BundledTheme; dark: BundledTheme },
+  themes: {
+    light: BundledTheme;
+    dark: BundledTheme;
+  } = defaultHighlightOptions.themes,
 ) => {
   const value = highlighter.codeToHast(code, {
     lang,
     ...defaultHighlightOptions,
-    themes: themes ?? defaultHighlightOptions.themes,
+    themes,
   });
 
   return toJsxRuntime(value, { Fragment, jsx, jsxs }) as JSX.Element;
