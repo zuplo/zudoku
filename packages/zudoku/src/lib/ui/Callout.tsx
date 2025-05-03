@@ -77,7 +77,7 @@ export const Callout = ({
           "grid grid-cols-[min-content_1fr] items-baseline grid-rows-[fit-content_1fr] gap-x-4 gap-y-2",
         !icon && title && "flex flex-col gap-2",
         "[&_a]:underline [&_a]:decoration-current [&_a]:decoration-from-font [&_a]:underline-offset-4 hover:[&_a]:decoration-1",
-        "[&_code]:!bg-gray-50 [&_code]:dark:!bg-gray-800 [&_code]:!border-none",
+        "[&_.code-block-wrapper]:border",
         "[&_ul]:list-disc [&_ol]:list-decimal [&_ul]:ps-4 [&_ul>li]:ps-1 [&_ul>li]:my-1",
         icon && title && "items-center",
         border,

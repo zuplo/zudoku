@@ -1,37 +1,42 @@
 import { memo } from "react";
-import rehypeRaw from "rehype-raw";
+import { MarkdownHooks, type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { visit } from "unist-util-visit";
+import { createConfiguredShikiRehypePlugins } from "../shiki.js";
 import { MdxComponents } from "../util/MdxComponents.js";
-import { ReactMarkdown } from "./ReactMarkdown.js";
-
-// same as in packages/dev-portal/framework/vite.ts
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rehypeCodeBlockPlugin = () => (tree: any) => {
-  visit(tree, "element", (node, _index, parent) => {
-    if (node.tagName === "code") {
-      node.properties.inline = String(parent?.tagName !== "pre");
-    }
-  });
-};
+import { useZudoku } from "./context/ZudokuContext.js";
 
 const remarkPlugins = [remarkGfm];
-const rehypePlugins = [rehypeCodeBlockPlugin, rehypeRaw];
 
 // other styles are defined in main.css .prose
 export const ProseClasses = "prose dark:prose-invert prose-neutral";
 
 export const Markdown = memo(
-  ({ content, className }: { content: string; className?: string }) => (
-    <ReactMarkdown
-      remarkPlugins={remarkPlugins}
-      rehypePlugins={rehypePlugins}
-      components={MdxComponents}
-      className={className}
-    >
-      {content}
-    </ReactMarkdown>
-  ),
+  ({
+    content,
+    className,
+    components,
+  }: {
+    content: string;
+    className?: string;
+    components?: Components;
+  }) => {
+    const { syntaxHighlighting } = useZudoku().options;
+    const rehypePlugins = createConfiguredShikiRehypePlugins(
+      syntaxHighlighting?.themes,
+    );
+
+    return (
+      <div className={className}>
+        <MarkdownHooks
+          remarkPlugins={remarkPlugins}
+          rehypePlugins={rehypePlugins}
+          components={{ ...MdxComponents, ...components }}
+        >
+          {content}
+        </MarkdownHooks>
+      </div>
+    );
+  },
 );
 
 Markdown.displayName = "Markdown";
