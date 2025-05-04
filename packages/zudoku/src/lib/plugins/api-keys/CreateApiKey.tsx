@@ -12,7 +12,7 @@ import {
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
-import { ApiKeyService } from "./index.js";
+import { type ApiKeyService } from "./index.js";
 
 type CreateApiKey = { description: string; expiresOn?: string };
 
@@ -50,7 +50,7 @@ export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
   }
 
   return (
-    <div className="max-w-screen-lg pt-[--padding-content-top] pb-[--padding-content-bottom]">
+    <div className="max-w-screen-lg pt-(--padding-content-top) pb-(--padding-content-bottom)">
       <div className="flex justify-between mb-4 border-b pb-1">
         <h1 className="font-medium text-2xl">New API Key</h1>
       </div>

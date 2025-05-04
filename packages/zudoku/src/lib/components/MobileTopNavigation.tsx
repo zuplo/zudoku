@@ -58,7 +58,7 @@ export const MobileTopNavigation = () => {
             </ul>
           </div>
           {options.page?.showPoweredBy !== false && (
-            <PoweredByZudoku className="flex-grow-0 justify-center gap-1" />
+            <PoweredByZudoku className="grow-0 justify-center gap-1" />
           )}
         </div>
       </DrawerContent>

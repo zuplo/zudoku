@@ -19,12 +19,12 @@ export const SidebarWrapper = ({
   }, []);
 
   return (
-    <div className="grid sticky top-[--header-height] lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
+    <div className="grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
       <nav
         ref={navRef}
         className={cn(
           "hidden max-w-[calc(var(--side-nav-width)+var(--padding-nav-item))] lg:flex scrollbar flex-col overflow-y-auto shrink-0 text-sm pe-3 ps-4 lg:ps-8",
-          "-mx-[--padding-nav-item] pb-[8vh] pt-[--padding-content-top] scroll-pt-2 gap-1",
+          "-mx-(--padding-nav-item) pb-[8vh] pt-(--padding-content-top) scroll-pt-2 gap-1",
           // Revert the padding/margin on the first child
           "-mt-2.5",
           className,
