@@ -1,6 +1,49 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "./defaultTheme.css" layer(theme);
+@import "tailwindcss" source("..");
+@plugin "@tailwindcss/typography";
+
+/* @vite-plugin-inject */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
 
 @font-face {
   font-family: Geist;
@@ -76,6 +119,31 @@
     format("woff2");
 }
 
+@utility prose {
+  a {
+    @apply font-normal underline-offset-4 hover:text-primary;
+  }
+  blockquote {
+    @apply not-italic text-neutral-500/75 dark:text-neutral-400;
+    /* Disable adding quote marks to block-quotes: https://github.com/tailwindlabs/tailwindcss-typography/issues/66 */
+    p {
+      &:first-of-type::before,
+      &:last-of-type::after {
+        content: none;
+      }
+    }
+  }
+  hr {
+    @apply border-border;
+  }
+  code::before {
+    content: none;
+  }
+  code::after {
+    content: none;
+  }
+}
+
 @layer base {
   :root {
     --top-header-height: 65px;
@@ -86,17 +154,17 @@
         /* borders */ 2px
     );
     --scroll-padding: calc(var(--header-height) + 10px);
-    --side-nav-width: theme("spacing.72");
-    --padding-content-top: theme("spacing.6");
-    --padding-content-bottom: theme("spacing.12");
-    --padding-nav-item: theme("spacing[2.5]");
+    --side-nav-width: --spacing(72);
+    --padding-content-top: --spacing(6);
+    --padding-content-bottom: --spacing(12);
+    --padding-nav-item: --spacing(2.5);
     --sidecar-grid-cols: 1fr minmax(200px, 260px);
     --scrollbar-width: calc(100vw - 100%);
   }
 
   html {
     /* This is to prevent layout jumping when the scrollbar appears/disappears */
-    @apply -me-[--scrollbar-width] scroll-pt-[--scroll-padding];
+    @apply -me-(--scrollbar-width) scroll-pt-(--scroll-padding);
     --dark: -1;
   }
 
@@ -129,26 +197,25 @@
   }
 
   ::selection {
-    @apply bg-primary/100 text-primary-foreground;
+    @apply bg-primary text-primary-foreground;
   }
 
   .bg-primary::selection,
   .bg-primary ::selection {
-    background: theme(colors.background);
-    color: theme(colors.foreground);
+    background: var(--color-background);
+    color: var(--color-foreground);
   }
 
   .dark {
     color-scheme: dark;
   }
 
-  .prose.prose {
-    @apply prose-a:underline-offset-4 prose-a:font-normal hover:prose-a:text-primary;
-    @apply prose-blockquote:not-italic prose-blockquote:text-neutral-500/75 prose-blockquote:dark:text-neutral-400;
-    @apply prose-code:before:content-none prose-code:after:content-none prose-code:font-normal;
-    @apply prose-headings:prose-code:mx-2 prose-li:my-0.5;
-    @apply prose-hr:border-border;
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 
+  .prose.prose {
     ul.contains-task-list {
       @apply list-none px-0;
       li {
@@ -194,11 +261,11 @@
     );
   }
   .shiki .line.highlighted {
-    @apply bg-[--highlighted-bg];
+    @apply bg-(--highlighted-bg);
   }
 
   .shiki .highlighted-word {
-    @apply bg-[--highlighted-bg] px-0.5 rounded;
+    @apply bg-(--highlighted-bg) px-0.5 rounded;
     box-shadow: 0 0 0 4px var(--highlighted-bg);
   }
 
@@ -300,65 +367,9 @@
         50% calc(50% + var(--s) / 2 + var(--b) / 2) / calc(4 * var(--s))
         calc(var(--s) + var(--b)) repeat-x;
   }
-
-  /* Theme */
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 95%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.75rem;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-  }
-
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
 }
 
-@layer components {
+@layer utilities {
   .stepper > ol {
     --bullet-size: 1.75rem;
     --line-spacing: 0.25rem;
@@ -377,7 +388,7 @@
 
   /* Bullet with number */
   .stepper > ol > li::before {
-    @apply absolute start-0 flex items-center justify-center size-[--bullet-size];
+    @apply absolute start-0 flex items-center justify-center size-(--bullet-size);
     @apply bg-muted/80 border border-border text-muted-foreground text-[calc(var(--bullet-size)/2)] font-semibold rounded-full;
     content: counter(step-counter);
   }

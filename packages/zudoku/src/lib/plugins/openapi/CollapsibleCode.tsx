@@ -45,7 +45,7 @@ export const CollapsibleCode = ({
         forceMount
         className={cn(
           "relative overflow-hidden group",
-          !open && isOverflowing && "max-h-[--max-height]",
+          !open && isOverflowing && "max-h-(--max-height)",
         )}
       >
         {!open && isOverflowing && (
