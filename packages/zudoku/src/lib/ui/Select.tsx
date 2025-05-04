@@ -23,7 +23,7 @@ const SelectTrigger = React.forwardRef<
   >
     <span className="truncate">{children}</span>
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="flex-shrink-0 h-4 w-4 opacity-50" />
+      <ChevronDown className="shrink-0 h-4 w-4 opacity-50" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));

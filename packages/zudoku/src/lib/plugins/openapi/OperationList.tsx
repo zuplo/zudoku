@@ -223,7 +223,7 @@ export const OperationList = ({
 
   return (
     <div
-      className="pt-[--padding-content-top]"
+      className="pt-(--padding-content-top)"
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >

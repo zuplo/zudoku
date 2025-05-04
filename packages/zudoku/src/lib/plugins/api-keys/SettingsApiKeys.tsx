@@ -17,7 +17,7 @@ import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slotlet } from "../../components/SlotletProvider.js";
 import { Button } from "../../ui/Button.js";
 import { cn } from "../../util/cn.js";
-import { ApiKeyService } from "./index.js";
+import { type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();
@@ -53,7 +53,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   });
 
   return (
-    <div className="max-w-screen-lg h-full pt-[--padding-content-top] pb-[--padding-content-bottom]">
+    <div className="max-w-screen-lg h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
       <Slotlet name="api-keys-list-page" />
 
       <div className="flex justify-between mb-4 border-b pb-3">

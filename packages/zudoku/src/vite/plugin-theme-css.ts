@@ -1,3 +1,4 @@
+import Color from "colorjs.io";
 import { type Plugin } from "vite";
 import { type LoadedConfig } from "../config/config.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
@@ -86,10 +87,19 @@ const isHexColor = (value: string): boolean => {
 
 const processColorValue = (value: string | undefined): string => {
   if (!value) return "";
-  if (isHexColor(value)) {
-    return hexToHSLA(value);
+  const c =
+    !value.startsWith("#") && value.split(" ").length >= 3
+      ? // Assume legacy tailwind hsl format
+        `hsl(${value})`
+      : value;
+
+  try {
+    return new Color(c).to("oklch").toString();
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error("Invalid color value:", value, e);
+    return value;
   }
-  return value;
 };
 
 const generateCss = (theme: Theme) =>
@@ -97,7 +107,7 @@ const generateCss = (theme: Theme) =>
     .filter(([key]) => THEME_VARIABLES.includes(key))
     .map(([key, value]) => {
       const processedValue = processColorValue(value);
-      return `--${uncamelize(key)}:${processedValue};`;
+      return `--${uncamelize(key)}: ${processedValue};`;
     })
     .join("\n");
 
@@ -116,23 +126,15 @@ export const viteThemeCss = (getConfig: () => LoadedConfig): Plugin => {
       if (id !== resolvedVirtualModuleId) return;
 
       const config = getConfig();
-
       const cssParts = [];
 
-      // It's important that @import statements come first:
-      // > "@import must precede all other statements (besides @charset or empty @layer)"
-      if (config.theme?.fonts?.sans) {
-        cssParts.push(`@import url('${config.theme.fonts.sans.url}');`);
-      }
-      if (config.theme?.fonts?.mono) {
-        cssParts.push(`@import url('${config.theme.fonts.mono.url}');`);
-      }
-
       if (config.theme?.light) {
-        cssParts.push(`html:not(.dark) { ${generateCss(config.theme.light)} }`);
+        cssParts.push(
+          `html:not(.dark) {\n${generateCss(config.theme.light)}\n}`,
+        );
       }
       if (config.theme?.dark) {
-        cssParts.push(`.dark.dark { ${generateCss(config.theme.dark)} }`);
+        cssParts.push(`.dark {\n${generateCss(config.theme.dark)}\n}`);
       }
 
       return cssParts.join("\n");

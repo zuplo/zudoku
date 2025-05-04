@@ -59,11 +59,11 @@ export function SchemaList() {
 
   return (
     <div
-      className="grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      className="grid grid-cols-(--sidecar-grid-cols) gap-8 justify-between"
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
-      <div className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
+      <div className="pt-(--padding-content-top) pb-(--padding-content-bottom)">
         <Collapsible className="w-full">
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex-1">
