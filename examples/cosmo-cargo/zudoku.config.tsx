@@ -188,6 +188,12 @@ const config: ZudokuConfig = {
       navigationId: "api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
+    {
+      type: "file",
+      input: "./schema/tracking-v1.json",
+      navigationId: "api-tracking",
+      categories: [{ label: "General", tags: ["Tracking"] }],
+    },
   ],
 
   docs: {

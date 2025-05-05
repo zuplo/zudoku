@@ -7,6 +7,7 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
+import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
@@ -109,6 +110,7 @@ export const SchemaPropertyItem = ({
         {schema.type === "array" && "items" in schema && schema.items.enum && (
           <EnumValues values={schema.items.enum} />
         )}
+        {schema.const && <ConstValue schema={schema} hideDescription />}
         {schema.enum && <EnumValues values={schema.enum} />}
         <SchemaExampleAndDefault schema={schema} />
         {(hasLogicalGroupings(schema) ||
