@@ -36,6 +36,7 @@ const getSchemaInfos = (schema?: SchemaObject) => {
         : schema.type,
 
     schema.enum && "enum",
+    schema.const && "const",
     schema.format,
     schema.minimum && `min: ${schema.minimum}`,
     schema.maximum && `max: ${schema.maximum}`,

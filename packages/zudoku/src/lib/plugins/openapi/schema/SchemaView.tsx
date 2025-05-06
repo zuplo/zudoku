@@ -3,6 +3,7 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
+import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
@@ -46,6 +47,10 @@ export const SchemaView = ({
         </span>
       </Card>
     );
+  }
+
+  if (schema.const) {
+    return <ConstValue schema={schema} />;
   }
 
   if (hasLogicalGroupings(schema)) {
