@@ -23,7 +23,7 @@ export const SignUp = () => {
           <CardTitle className="text-lg">Sign up</CardTitle>
           <CardDescription>
             You're being redirected to our secure login provider to complete
-            your sign-in process.
+            your sign up process.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -32,7 +32,7 @@ export const SignUp = () => {
               onClick={() => context.authentication?.signIn()}
               variant="default"
             >
-              Login
+              Register
             </Button>
             <Button variant="link" className="text-muted-foreground" asChild>
               <Link to="/">Go home</Link>
