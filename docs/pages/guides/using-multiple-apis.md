@@ -51,7 +51,7 @@ const navigation = [
 
 ### Step 3: Update your config
 
-Modify your [Zudoku Configuration](./configuration/overview.md) file to include these arrays:
+Modify your [Zudoku Configuration](../configuration/overview.md) file to include these arrays:
 
 ```typescript
 import type { ZudokuConfig } from "zudoku";
