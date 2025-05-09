@@ -92,7 +92,7 @@ export async function loadZudokuConfig(
       }
     }
 
-    config = await tryLoadZudokuConfig(rootDir, getModuleDir(), envVars);
+    config = await tryLoadZudokuConfig(rootDir, getModuleDir());
 
     logger.info(
       colors.yellow(`loaded config file `) +
