@@ -1,0 +1,178 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Shipping Tracking API",
+    "description": "Track shipments and get status updates using tracking numbers.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Cosmo Cargo API Support",
+      "email": "api@sh.example.com",
+      "url": "https://developers.sh.example.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.sh.example.com/v1",
+      "description": "Production environment"
+    },
+    {
+      "url": "https://api.staging.sh.example.com/v1",
+      "description": "Staging environment"
+    },
+    {
+      "url": "https://api.dev.sh.example.com/v1",
+      "description": "Development environment"
+    }
+  ],
+  "paths": {
+    "/tracking/{trackingNumber}": {
+      "get": {
+        "summary": "Get shipping tracking status",
+        "description": "Retrieve tracking information for a specific shipment.",
+        "operationId": "getTrackingStatus",
+        "parameters": [
+          {
+            "name": "trackingNumber",
+            "in": "path",
+            "required": true,
+            "description": "The shipment's tracking number",
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Z0-9]{10,20}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tracking information found",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingTracking"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tracking number not found",
+            "content": {
+              "application/vnd.api+json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "status": { "type": "string", "example": "404" },
+                          "title": { "type": "string", "example": "Not Found" },
+                          "detail": {
+                            "type": "string",
+                            "example": "Tracking number not found."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ShippingTracking": {
+        "type": "object",
+        "required": ["type", "id", "attributes"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "shippingTracking",
+            "description": "Shipping Tracking type of resource"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the tracking resource"
+          },
+          "attributes": {
+            "type": "object",
+            "required": ["trackingNumber", "deliveryStatus"],
+            "properties": {
+              "trackingNumber": {
+                "type": "string",
+                "pattern": "^[A-Z0-9]{10,20}$",
+                "description": "Unique tracking number for the shipment"
+              },
+              "deliveryStatus": {
+                "type": "string",
+                "description": "Current delivery status",
+                "oneOf": [
+                  {
+                    "const": "CREATED",
+                    "title": "Created",
+                    "description": "Shipment has been created"
+                  },
+                  {
+                    "const": "IN_TRANSIT",
+                    "title": "In Transit",
+                    "description": "Shipment is in transit"
+                  },
+                  {
+                    "const": "OUT_FOR_DELIVERY",
+                    "title": "Out for Delivery",
+                    "description": "Shipment is out for delivery"
+                  },
+                  {
+                    "const": "DELIVERED",
+                    "title": "Delivered",
+                    "description": "Shipment has been delivered"
+                  },
+                  {
+                    "const": "EXCEPTION",
+                    "title": "Exception",
+                    "description": "Shipment has encountered an exception"
+                  }
+                ]
+              },
+              "notifications": {
+                "type": "array",
+                "description": "Notification methods configured",
+                "items": {
+                  "type": "string",
+                  "anyOf": [
+                    {
+                      "const": "EMAIL",
+                      "title": "Email",
+                      "description": "Email notification"
+                    },
+                    {
+                      "const": "SMS",
+                      "title": "SMS",
+                      "description": "SMS notification"
+                    },
+                    {
+                      "const": "PUSH",
+                      "title": "Mobile Push Notification",
+                      "description": "Mobile push notification"
+                    },
+                    {
+                      "const": "WEBHOOK",
+                      "title": "Webhook Callback",
+                      "description": "Webhook callback"
+                    }
+                  ]
+                },
+                "uniqueItems": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

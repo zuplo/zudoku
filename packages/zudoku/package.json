@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.41.4",
+  "version": "0.42.2",
   "type": "module",
   "homepage": "https://zudoku.dev",
   "repository": {
@@ -205,7 +205,7 @@
     "@tanstack/react-query": "5.74.3",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "4.3.4",
+    "@vitejs/plugin-react": "4.4.1",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
     "autoprefixer": "10.4.21",
@@ -241,7 +241,7 @@
     "picocolors": "1.1.1",
     "piscina": "5.0.0-alpha.2",
     "postcss": "8.5.3",
-    "posthog-node": "4.11.3",
+    "posthog-node": "4.17.1",
     "prism-react-renderer": "2.4.1",
     "prismjs": "1.30.0",
     "react-error-boundary": "5.0.0",
@@ -272,7 +272,7 @@
     "urql": "4.2.1",
     "vaul": "1.1.2",
     "vfile": "6.0.3",
-    "vite": "6.2.6",
+    "vite": "6.3.5",
     "yaml": "2.7.1",
     "yargs": "17.7.2",
     "zod": "3.24.2",
@@ -310,7 +310,7 @@
     "react-dom": ">=19"
   },
   "optionalDependencies": {
-    "@clerk/clerk-js": "^5.60.0",
+    "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4"
   }

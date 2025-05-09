@@ -6,7 +6,7 @@ import { Button } from "../ui/Button.js";
 const BuildStatusSchema = z.object({
   buildId: z.string(),
   timestamp: z.string(),
-  status: z.enum(["in-progress", "completed", "failed"]),
+  status: z.enum(["in-progress", "success", "failed"]),
 });
 
 export const BuildCheck = ({
@@ -18,8 +18,10 @@ export const BuildCheck = ({
 }) => {
   const buildStatusQuery = useQuery({
     queryKey: ["zuplo-build-check", buildId, endpoint],
-    refetchInterval: 2000,
-    enabled: !!buildId,
+    refetchInterval: 3000,
+    enabled:
+      typeof buildId !== "undefined" &&
+      import.meta.env.ZUPLO_ENVIRONMENT_TYPE === "WORKING_COPY",
     retry: false,
     queryFn: () =>
       fetch(endpoint, { signal: AbortSignal.timeout(2000) })
@@ -38,7 +40,7 @@ export const BuildCheck = ({
     return null;
   }
 
-  const isCompleted = buildStatusQuery.data.status === "completed";
+  const isCompleted = buildStatusQuery.data.status === "success";
 
   return (
     <div className="fixed flex flex-col gap-3 p-4 rounded-xl w-96 border z-20 bg-background left-0 right-0 top-4 mx-auto shadow-lg">

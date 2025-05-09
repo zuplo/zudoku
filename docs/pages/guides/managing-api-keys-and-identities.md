@@ -28,7 +28,7 @@ This separation allows you to:
 - Manage API access independently of user authentication
 - Support multiple API authentication schemes simultaneously
 
-[Learn more about authentication providers](/configuration/authentication)
+[Learn more about authentication providers](../configuration/authentication)
 
 ## Understanding API Identities
 

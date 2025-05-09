@@ -3,6 +3,7 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
+import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
@@ -48,6 +49,10 @@ export const SchemaView = ({
     );
   }
 
+  if (schema.const) {
+    return <ConstValue schema={schema} />;
+  }
+
   if (hasLogicalGroupings(schema)) {
     return <SchemaLogicalGroup schema={schema} />;
   }
@@ -57,12 +62,7 @@ export const SchemaView = ({
   }
 
   if (schema.type === "array" && typeof schema.items === "object") {
-    return (
-      <Card className="p-4 space-y-2 text-sm">
-        <ParamInfos schema={schema} />
-        <SchemaView schema={schema.items as SchemaObject} />
-      </Card>
-    );
+    return <SchemaView schema={schema.items as SchemaObject} />;
   }
 
   if (schema.type === "object") {

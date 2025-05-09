@@ -2852,6 +2852,147 @@
           }
         }
       }
+    },
+    "/schemas/facility-capabilities": {
+      "get": {
+        "tags": ["Schemas"],
+        "summary": "Get facility capabilities",
+        "description": "Retrieve detailed capability information for space cargo facilities, including their operational status and supported features",
+        "operationId": "getFacilityCapabilities",
+        "parameters": [
+          {
+            "name": "facilityIds",
+            "in": "query",
+            "description": "Array of facility IDs to test",
+            "schema": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string",
+                "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+              }
+            }
+          },
+          {
+            "name": "statuses",
+            "in": "query",
+            "description": "Array of status configurations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["CARGO", "PASSENGER", "MAINTENANCE"]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["PENDING", "APPROVED", "REJECTED"]
+                  },
+                  "facilityId": {
+                    "type": "string",
+                    "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test response with array and nullable types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "facilities": {
+                      "type": ["array", "null"],
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+                          },
+                          "status": {
+                            "type": ["string", "null"],
+                            "enum": ["ACTIVE", "MAINTENANCE", "CLOSED"]
+                          },
+                          "capabilities": {
+                            "type": ["array", "null"],
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CARGO",
+                                "PASSENGER",
+                                "MAINTENANCE",
+                                "STORAGE"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "tags": {
+                          "type": ["array", "null"],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "coordinates": {
+                          "type": ["array", "null"],
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "active_facilities": {
+                    "summary": "Active facilities with capabilities",
+                    "value": {
+                      "facilities": [
+                        {
+                          "id": "LAX1",
+                          "status": "ACTIVE",
+                          "capabilities": ["CARGO", "MAINTENANCE"]
+                        },
+                        {
+                          "id": "JFK2",
+                          "status": null,
+                          "capabilities": ["CARGO", "PASSENGER", "STORAGE"]
+                        }
+                      ],
+                      "metadata": {
+                        "tags": ["SPACE", "INTERNATIONAL"],
+                        "coordinates": [34.0522, -118.2437]
+                      }
+                    }
+                  },
+                  "empty_response": {
+                    "summary": "Empty response with null arrays",
+                    "value": {
+                      "facilities": null,
+                      "metadata": {
+                        "tags": null,
+                        "coordinates": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
