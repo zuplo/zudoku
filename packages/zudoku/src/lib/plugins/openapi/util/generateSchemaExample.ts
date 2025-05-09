@@ -93,9 +93,10 @@ export const generateSchemaExample = (
   }
 
   if (schema.allOf) {
-    return schema.allOf.map((allOfSchema) =>
-      generateSchemaExample(allOfSchema as SchemaObject),
-    );
+    // https://swagger.io/docs/specification/v3_0/data-models/oneof-anyof-allof-not/#allof
+    return schema.allOf.reduce((acc, allOfSchema) => {
+      return { ...acc, ...generateSchemaExample(allOfSchema as SchemaObject) };
+    }, {});
   }
 
   switch (schema.type) {

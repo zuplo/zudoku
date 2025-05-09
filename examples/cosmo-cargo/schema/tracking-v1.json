@@ -101,75 +101,91 @@
           },
           "attributes": {
             "type": "object",
-            "required": ["trackingNumber", "deliveryStatus"],
-            "properties": {
-              "trackingNumber": {
-                "type": "string",
-                "pattern": "^[A-Z0-9]{10,20}$",
-                "description": "Unique tracking number for the shipment"
-              },
-              "deliveryStatus": {
-                "type": "string",
-                "description": "Current delivery status",
-                "oneOf": [
-                  {
-                    "const": "CREATED",
-                    "title": "Created",
-                    "description": "Shipment has been created"
-                  },
-                  {
-                    "const": "IN_TRANSIT",
-                    "title": "In Transit",
-                    "description": "Shipment is in transit"
-                  },
-                  {
-                    "const": "OUT_FOR_DELIVERY",
-                    "title": "Out for Delivery",
-                    "description": "Shipment is out for delivery"
-                  },
-                  {
-                    "const": "DELIVERED",
-                    "title": "Delivered",
-                    "description": "Shipment has been delivered"
-                  },
-                  {
-                    "const": "EXCEPTION",
-                    "title": "Exception",
-                    "description": "Shipment has encountered an exception"
+            "allOf": [
+              {
+                "type": "object",
+                "required": ["createdAt"],
+                "properties": {
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date and time the tracking resource was created"
                   }
-                ]
+                }
               },
-              "notifications": {
-                "type": "array",
-                "description": "Notification methods configured",
-                "items": {
-                  "type": "string",
-                  "anyOf": [
-                    {
-                      "const": "EMAIL",
-                      "title": "Email",
-                      "description": "Email notification"
+              {
+                "type": "object",
+                "required": ["trackingNumber", "deliveryStatus"],
+                "properties": {
+                  "trackingNumber": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9]{10,20}$",
+                    "description": "Unique tracking number for the shipment"
+                  },
+                  "deliveryStatus": {
+                    "type": "string",
+                    "description": "Current delivery status",
+                    "oneOf": [
+                      {
+                        "const": "CREATED",
+                        "title": "Created",
+                        "description": "Shipment has been created"
+                      },
+                      {
+                        "const": "IN_TRANSIT",
+                        "title": "In Transit",
+                        "description": "Shipment is in transit"
+                      },
+                      {
+                        "const": "OUT_FOR_DELIVERY",
+                        "title": "Out for Delivery",
+                        "description": "Shipment is out for delivery"
+                      },
+                      {
+                        "const": "DELIVERED",
+                        "title": "Delivered",
+                        "description": "Shipment has been delivered"
+                      },
+                      {
+                        "const": "EXCEPTION",
+                        "title": "Exception",
+                        "description": "Shipment has encountered an exception"
+                      }
+                    ]
+                  },
+                  "notifications": {
+                    "type": "array",
+                    "description": "Notification methods configured",
+                    "items": {
+                      "type": "string",
+                      "anyOf": [
+                        {
+                          "const": "EMAIL",
+                          "title": "Email",
+                          "description": "Email notification"
+                        },
+                        {
+                          "const": "SMS",
+                          "title": "SMS",
+                          "description": "SMS notification"
+                        },
+                        {
+                          "const": "PUSH",
+                          "title": "Mobile Push Notification",
+                          "description": "Mobile push notification"
+                        },
+                        {
+                          "const": "WEBHOOK",
+                          "title": "Webhook Callback",
+                          "description": "Webhook callback"
+                        }
+                      ]
                     },
-                    {
-                      "const": "SMS",
-                      "title": "SMS",
-                      "description": "SMS notification"
-                    },
-                    {
-                      "const": "PUSH",
-                      "title": "Mobile Push Notification",
-                      "description": "Mobile push notification"
-                    },
-                    {
-                      "const": "WEBHOOK",
-                      "title": "Webhook Callback",
-                      "description": "Webhook callback"
-                    }
-                  ]
-                },
-                "uniqueItems": true
+                    "uniqueItems": true
+                  }
+                }
               }
-            }
+            ]
           }
         }
       }
