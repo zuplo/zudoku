@@ -68,7 +68,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       <Slot.Target name="api-keys-list-page-before-keys" />
 
       {data.length === 0 ? (
-        <div className="flex flex-col justify-center gap-4 items-center p-8 border rounded bg-muted/30 text-muted-foreground">
+        <div className="flex flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
           <p className="text-center">
             No API keys created yet.
             <br />
@@ -83,7 +83,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       ) : (
         <ul
           className={cn(
-            "grid grid-cols-1 rounded border divide-y divide-border",
+            "grid grid-cols-1 rounded-sm border divide-y divide-border",
             "lg:grid-cols-[minmax(250px,min-content)_1fr_min-content]",
           )}
         >
@@ -158,7 +158,7 @@ const RevealApiKey = ({ apiKey }: { apiKey: string }) => {
 
   return (
     <div className="flex gap-2 items-center text-sm">
-      <div className="border rounded bg-gray-100 dark:bg-gray-950 p-1 font-mono truncate h-9 items-center flex px-2">
+      <div className="border rounded-sm bg-gray-100 dark:bg-gray-950 p-1 font-mono truncate h-9 items-center flex px-2">
         {revealed ? apiKey : "•".repeat(apiKey.length)}
       </div>
       <Button
