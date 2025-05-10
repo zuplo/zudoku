@@ -36,7 +36,7 @@ export const SidebarBadge = ({
   return (
     <span
       className={cn(
-        "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] font-bold rounded text-background dark:text-zinc-50 h-full",
+        "flex items-center duration-200 transition-opacity text-center uppercase text-[0.65rem] font-bold rounded-sm text-background dark:text-zinc-50 h-full",
         color === "outline" ? "px-3" : "mt-0.5 px-1",
         invert ? ColorMapInvert[color] : ColorMap[color],
         className,
