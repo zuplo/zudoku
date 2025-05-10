@@ -270,7 +270,7 @@
   }
 
   select {
-    @apply focus-visible:ring-primary focus-visible:ring-[1.5px] focus:outline-none;
+    @apply focus-visible:ring-primary focus-visible:ring-[1.5px] focus:outline-hidden;
   }
 
   .CollapsibleContent {
