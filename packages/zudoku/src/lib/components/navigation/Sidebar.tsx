@@ -28,7 +28,7 @@ export const Sidebar = ({
       <Slotlet name="zudoku-after-navigation" />
     </SidebarWrapper>
     <DrawerContent
-        className="lg:hidden h-[100dvh] start-0 w-[320px] rounded-none"
+      className="lg:hidden h-[100dvh] start-0 w-[320px] rounded-none"
       aria-describedby={undefined}
     >
       <div className="p-4 overflow-y-auto overscroll-none">
