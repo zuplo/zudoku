@@ -42,37 +42,41 @@ type OperationLike = {
 export const createOperationSlug = (
   slugify: CountableSlugify,
   operation: OperationLike,
-  tag?: string,
 ) => {
   const summary =
     operation.summary ||
     operation.operationId ||
     `${operation.method}-${operation.path}`;
-  const prefix = tag ? `${tag}-` : "";
 
-  return slugify(prefix + summary);
+  return slugify(summary);
 };
 
-export type SchemaImports = Record<
-  string,
-  () => Promise<{ schema: OpenAPIDocument }>
->;
+export type SchemaImport = () => Promise<{
+  schema: OpenAPIDocument;
+  slugs: ReturnType<typeof getAllSlugs>;
+}>;
+
+export type SchemaImports = Record<string, SchemaImport>;
+
+type Context = {
+  schema: OpenAPIDocument;
+  operations: GraphQLOperationObject[];
+  schemaImports?: SchemaImports;
+  tags: ReturnType<typeof getAllTags>;
+  slugs: ReturnType<typeof getAllSlugs>;
+};
 
 const builder = new SchemaBuilder<{
+  DefaultFieldNullability: false;
   Scalars: {
     JSON: any;
     JSONObject: any;
     JSONSchema: any;
   };
-  Context: {
-    schema: OpenAPIDocument;
-    operations: GraphQLOperationObject[];
-    tags: TagObject[];
-    schemaImports?: SchemaImports;
-    currentTag?: string;
-    slugify: CountableSlugify;
-  };
-}>({});
+  Context: Context;
+}>({
+  defaultFieldNullability: false,
+});
 
 type GraphQLOperationObject = OperationObject & {
   path: string;
@@ -85,7 +89,15 @@ const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
 const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
 const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
 
-export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
+const resolveExtensions = (obj: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([key]) => key.startsWith("x-")),
+  );
+
+export const getAllTags = (
+  schema: OpenAPIDocument,
+  slugs: ReturnType<typeof getAllSlugs>["tags"],
+): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.tags ?? [];
   const operationTags = new Set(
     Object.values(schema.paths ?? {})
@@ -93,15 +105,52 @@ export const getAllTags = (schema: OpenAPIDocument): TagObject[] => {
       .flatMap((op) => (op as OperationObject).tags ?? []),
   );
 
+  const hasUntaggedOperations = Object.values(schema.paths ?? {}).some((path) =>
+    Object.values(path ?? {}).some(
+      (op) => !(op as OperationObject).tags?.length,
+    ),
+  );
+
   return [
     // Keep root tags that are actually used in operations
-    ...rootTags.filter((tag) => operationTags.has(tag.name)),
+    ...rootTags
+      .filter((tag) => operationTags.has(tag.name))
+      .map((tag) => ({ ...tag, slug: slugs[tag.name] })),
     // Add tags found in operations but not defined in root tags
     ...[...operationTags]
       .filter((tag) => !rootTags.some((rt) => rt.name === tag))
-      .map((tag) => ({ name: tag })),
+      .map((tag) => ({ name: tag, slug: slugs[tag] })),
+    // Add untagged operations if there are any
+    ...(hasUntaggedOperations ? [{ name: undefined, slug: undefined }] : []),
   ];
 };
+
+export const getAllSlugs = (
+  ops: GraphQLOperationObject[],
+  schemaTags: TagObject[] = [],
+) => {
+  const slugify = slugifyWithCounter();
+
+  const tags = Array.from(
+    new Set([
+      ...ops.flatMap((op) => op.tags ?? []),
+      ...schemaTags.map((tag) => tag.name),
+    ]),
+  );
+
+  return {
+    operations: Object.fromEntries(
+      ops.map((op) => [
+        getOperationSlugKey(op),
+        createOperationSlug(slugify, op),
+      ]),
+    ),
+    tags: Object.fromEntries(tags.map((tag) => [tag, slugify(tag)])),
+  };
+};
+
+const getOperationSlugKey = (op: GraphQLOperationObject) =>
+  [op.path, op.method, op.operationId, op.summary].filter(Boolean).join("-");
 
 export const getAllOperations = (
   paths?: PathsObject,
@@ -140,14 +189,21 @@ export const getAllOperations = (
   return operations;
 };
 
-const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
+const SchemaTag = builder.objectRef<
+  Omit<TagObject, "name"> & { name?: string; slug?: string }
+>("SchemaTag");
+
+SchemaTag.implement({
   fields: (t) => ({
-    name: t.exposeString("name"),
+    name: t.exposeString("name", { nullable: true }),
+    slug: t.exposeString("slug", { nullable: true }),
+    isUntagged: t.field({ type: "Boolean", resolve: (parent) => !parent.name }),
     description: t.exposeString("description", { nullable: true }),
     operations: t.field({
       type: [OperationItem],
       resolve: (parent, _args, ctx) => {
         const rootTags = ctx.tags.map((tag) => tag.name);
+
         return ctx.operations
           .filter((item) =>
             parent.name
@@ -156,11 +212,29 @@ const SchemaTag = builder.objectRef<TagObject>("SchemaTag").implement({
                 // If none of the tags are present in the root tags, then show them here
                 item.tags?.every((tag) => !rootTags.includes(tag)),
           )
-          .map((item) => ({
-            ...item,
-            parentTag: parent.name,
-          }));
+          .map((item) => ({ ...item, parentTag: parent.name }));
       },
+    }),
+    prev: t.field({
+      type: SchemaTag,
+      nullable: true,
+      resolve: (parent, _args, ctx) => {
+        const index = ctx.tags.findIndex((tag) => tag.slug === parent.slug);
+        return ctx.tags[index - 1];
+      },
+    }),
+    next: t.field({
+      type: SchemaTag,
+      nullable: true,
+      resolve: (parent, _args, ctx) => {
+        const index = ctx.tags.findIndex((tag) => tag.slug === parent.slug);
+        return ctx.tags[index + 1];
+      },
+    }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (parent) => resolveExtensions(parent),
+      nullable: true,
     }),
   }),
 });
@@ -188,6 +262,11 @@ const TagItem = builder.objectRef<TagObject>("TagItem").implement({
   fields: (t) => ({
     name: t.exposeString("name"),
     description: t.exposeString("description", { nullable: true }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (parent) => resolveExtensions(parent),
+      nullable: true,
+    }),
   }),
 });
 
@@ -246,6 +325,11 @@ const ParameterItem = builder
         nullable: true,
       }),
       schema: t.expose("schema", { type: JSONSchemaScalar, nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
   });
 
@@ -303,6 +387,11 @@ const ResponseItem = builder
       content: t.expose("content", { type: [MediaTypeItem], nullable: true }),
       headers: t.expose("headers", { type: JSONScalar, nullable: true }),
       links: t.expose("links", { type: JSONScalar, nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
   });
 
@@ -313,18 +402,16 @@ const OperationItem = builder
       slug: t.field({
         type: "String",
         resolve: (parent, _, ctx) => {
-          const slugData = {
-            summary: parent.summary,
-            operationId: parent.operationId,
-            path: parent.path,
-            method: parent.method,
-          };
+          const slug = ctx.slugs.operations[getOperationSlugKey(parent)];
 
-          //TODO: fix parent tag parent.tags
-          return createOperationSlug(ctx.slugify, slugData, parent.parentTag);
+          if (!slug) {
+            throw new Error(
+              `No slug found for operation: ${getOperationSlugKey(parent)}`,
+            );
+          }
+          return slug;
         },
       }),
-
       path: t.exposeString("path"),
       method: t.exposeString("method"),
       operationId: t.exposeString("operationId", { nullable: true }),
@@ -396,8 +483,50 @@ const OperationItem = builder
         nullable: true,
       }),
       deprecated: t.exposeBoolean("deprecated", { nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
     }),
   });
+
+const SchemaItem = builder
+  .objectRef<{
+    name: string;
+    schema: SchemaObject;
+    extensions?: Record<string, any>;
+  }>("SchemaItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      schema: t.expose("schema", { type: JSONSchemaScalar }),
+      extensions: t.expose("extensions", {
+        type: JSONObjectScalar,
+        nullable: true,
+      }),
+    }),
+  });
+
+const Components = builder.objectRef<{
+  schemas?: Record<string, SchemaObject>;
+}>("Components");
+
+Components.implement({
+  fields: (t) => ({
+    schemas: t.field({
+      type: [SchemaItem],
+      resolve: (parent) => {
+        return Object.entries(parent.schemas ?? {}).map(([name, schema]) => ({
+          name,
+          schema,
+          extensions: resolveExtensions(schema),
+        }));
+      },
+      nullable: true,
+    }),
+  }),
+});
 
 const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
   fields: (t) => ({
@@ -428,16 +557,29 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
           methods: Object.keys(value!) as typeof HttpMethods,
         })),
     }),
-    tags: t.field({
+    tag: t.field({
+      type: SchemaTag,
       args: {
+        slug: t.arg.string(),
         name: t.arg.string(),
+        untagged: t.arg.boolean(),
       },
+      nullable: true,
+      resolve: (_, args, ctx) => {
+        if (args.untagged) {
+          return ctx.tags.find((tag) => tag.name === undefined);
+        }
+        if (args.slug) {
+          return ctx.tags.find((tag) => tag.slug === args.slug);
+        }
+        if (args.name) {
+          return ctx.tags.find((tag) => tag.name === args.name);
+        }
+      },
+    }),
+    tags: t.field({
       type: [SchemaTag],
-      resolve: (root, args, ctx) => {
-        return args.name
-          ? ctx.tags.filter((tag) => tag.name === args.name)
-          : ctx.tags;
-      },
+      resolve: (_root, _args, ctx) => ctx.tags,
     }),
     operations: t.field({
       type: [OperationItem],
@@ -448,7 +590,7 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         tag: t.arg.string(),
         untagged: t.arg.boolean(),
       },
-      resolve: (parent, args, ctx) =>
+      resolve: (_parent, args, ctx) =>
         ctx.operations.filter((op) => {
           return (
             (!args.operationId || op.operationId === args.operationId) &&
@@ -458,6 +600,16 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
             (!args.untagged || (op.tags ?? []).length === 0)
           );
         }),
+    }),
+    components: t.field({
+      type: Components,
+      resolve: (root) => root.components,
+      nullable: true,
+    }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (root) => resolveExtensions(root),
+      nullable: true,
     }),
   }),
 });
@@ -474,27 +626,26 @@ builder.queryType({
         type: t.arg({ type: SchemaSource, required: true }),
         input: t.arg({ type: JSONScalar, required: true }),
       },
-      resolve: async (_, args, ctx) => {
-        let schema: OpenAPIDocument;
-
+      resolve: async (_parent, args, ctx) => {
         if (args.type === "file" && typeof args.input === "string") {
           const loadSchema = ctx.schemaImports?.[args.input];
 
           if (!loadSchema) {
             throw new Error(`No schema loader found for path: ${args.input}`);
           }
-          const module = await loadSchema();
-          schema = module.schema;
+          const { schema, slugs } = await loadSchema();
+          ctx.schema = schema;
+          ctx.operations = getAllOperations(schema.paths);
+          ctx.slugs = slugs;
+          ctx.tags = getAllTags(schema, ctx.slugs.tags);
         } else {
-          schema = await validate(args.input as string);
+          ctx.schema = await validate(args.input as string);
+          ctx.operations = getAllOperations(ctx.schema.paths);
+          ctx.slugs = getAllSlugs(ctx.operations);
+          ctx.tags = getAllTags(ctx.schema, ctx.slugs.tags);
         }
 
-        ctx.schema = schema;
-        ctx.operations = getAllOperations(schema.paths);
-        ctx.slugify = slugifyWithCounter();
-        ctx.tags = getAllTags(schema);
-
-        return schema;
+        return ctx.schema;
       },
     }),
   }),
@@ -504,4 +655,4 @@ export const schema = builder.toSchema();
 
 export const createGraphQLServer = (
   options?: Omit<YogaServerOptions<any, any>, "schema">,
-) => createYoga({ schema, ...options });
+) => createYoga({ schema, batching: true, ...options });

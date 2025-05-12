@@ -38,7 +38,7 @@ const getComponent = (level: number) => {
   }
 };
 
-export type HeadingProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
+export type HeadingProps = React.HTMLAttributes<HTMLHeadingElement> &
   VariantProps<typeof heading> & {
     children: ReactNode;
     className?: string;

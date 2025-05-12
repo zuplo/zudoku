@@ -1,8 +1,8 @@
 import path from "node:path";
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 
-const viteAliasPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteAliasPlugin = (getConfig: () => LoadedConfig): Plugin => {
   return {
     name: "zudoku-component-plugin",
     config: () => {
@@ -16,15 +16,20 @@ const viteAliasPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           "zudoku/plugins/search-inkeep",
           "src/lib/plugins/search-inkeep/index.tsx",
         ],
+        [
+          "zudoku/plugins/search-pagefind",
+          "src/lib/plugins/search-pagefind/index.tsx",
+        ],
         [/^zudoku\/ui\/(.*)\.js/, "src/lib/ui/$1.tsx"],
       ] as const;
 
       const aliases = replacements.map(([find, replacement]) => ({
         find,
-        replacement: path.posix.join(config.moduleDir, replacement),
+        replacement: path.posix.join(config.__meta.moduleDir, replacement),
       }));
 
-      return config.mode === "internal" || config.mode === "standalone"
+      return config.__meta.mode === "internal" ||
+        config.__meta.mode === "standalone"
         ? { resolve: { alias: aliases } }
         : undefined;
     },

@@ -3,7 +3,16 @@ import { IconNames } from "./icon-types.js";
 
 const BadgeSchema = z.object({
   label: z.string(),
-  color: z.enum(["green", "blue", "yellow", "red", "purple", "indigo", "gray"]),
+  color: z.enum([
+    "green",
+    "blue",
+    "yellow",
+    "red",
+    "purple",
+    "indigo",
+    "gray",
+    "outline",
+  ]),
   placement: z.enum(["start", "end"]).optional(),
   invert: z.boolean().optional(),
 });

@@ -1,9 +1,13 @@
+import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { createIndex, type PagefindIndex } from "pagefind";
 import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
+import { logger } from "../../cli/common/logger.js";
 import { type ZudokuConfig } from "../../config/validators/validate.js";
+import invariant from "../../lib/util/invariant.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import { type StaticWorkerData, type WorkerData } from "./worker.js";
@@ -31,25 +35,37 @@ const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
   return paths;
 };
 
+export type WorkerResult = {
+  outputPath: string;
+  html: string;
+  redirect?: { from: string; to: string };
+};
+
 export const prerender = async ({
   html,
   dir,
   basePath = "",
   serverConfigFilename,
+  writeRedirects = true,
 }: {
   html: string;
   dir: string;
   basePath?: string;
   serverConfigFilename: string;
+  writeRedirects: boolean;
 }) => {
   const distDir = path.join(dir, "dist", basePath);
-  const config: ZudokuConfig = await import(
-    pathToFileURL(path.join(distDir, "server", serverConfigFilename)).href
-  ).then((m) => m.default);
+  const serverConfigPath = pathToFileURL(
+    path.join(distDir, "server", serverConfigFilename),
+  ).href;
+  const entryServerPath = pathToFileURL(
+    path.join(distDir, "server/entry.server.js"),
+  ).href;
 
-  const module = await import(
-    pathToFileURL(path.join(distDir, "server/entry.server.js")).href
+  const config: ZudokuConfig = await import(serverConfigPath).then(
+    (m) => m.default,
   );
+  const module = await import(entryServerPath);
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
   const routes = getRoutes(config);
@@ -57,9 +73,7 @@ export const prerender = async ({
 
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
-  const INACTIVITY_TIMEOUT_MS = 10_000; // Timeout after 10 seconds of inactivity
   let lastLogTime = start;
-  let lastActivityTime = start;
 
   const writeProgress = throttle(
     (count: number, total: number, urlPath: string) => {
@@ -68,71 +82,78 @@ export const prerender = async ({
   );
 
   if (!isTTY()) {
-    // eslint-disable-next-line no-console
-    console.log(`prerendering ${paths.length} routes...`);
+    logger.info(colors.dim(`prerendering ${paths.length} routes...`));
   }
 
   let completedCount = 0;
-  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  let pagefindIndex: PagefindIndex | undefined;
 
-  const inactivityTimeout = new Promise<never>((_, reject) => {
-    const checkInactivity = () => {
-      const inactiveTime = performance.now() - lastActivityTime;
-      if (inactiveTime >= INACTIVITY_TIMEOUT_MS) {
-        clearTimeout(timeoutId);
-        reject(
-          new Error(
-            `Prerender timed out after ${INACTIVITY_TIMEOUT_MS}ms of inactivity`,
-          ),
-        );
-        return;
-      }
-      timeoutId = setTimeout(checkInactivity, 1000);
-    };
-    timeoutId = setTimeout(checkInactivity, 1000);
-  });
+  if (config.search?.type === "pagefind") {
+    const { index, errors } = await createIndex();
+    invariant(
+      index,
+      `Failed to create pagefind index: ${JSON.stringify(errors)}`,
+    );
+    pagefindIndex = index;
+  }
 
-  const serverOutDir = path.join(distDir, "server");
-  const pool = new Piscina({
+  const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
-    idleTimeout: 1000,
+    idleTimeout: 5_000,
+    maxThreads: Math.floor(os.cpus().length * 0.8),
     workerData: {
       template: html,
       distDir,
-      serverConfigPath: path.join(serverOutDir, serverConfigFilename),
-      entryServerPath: path.join(serverOutDir, "entry.server.js"),
+      serverConfigPath,
+      entryServerPath,
+      writeRedirects,
     } satisfies StaticWorkerData,
   });
 
-  const prerenderTasks = Promise.all(
+  const workerResults = await Promise.all(
     paths.map(async (urlPath) => {
-      const outputPath = await pool.run({ urlPath } satisfies WorkerData);
+      const result = await pool.run({ urlPath } satisfies WorkerData);
+
+      await pagefindIndex?.addHTMLFile({
+        url: urlPath,
+        content: result.html,
+      });
 
       completedCount++;
-      lastActivityTime = performance.now();
 
       if (isTTY()) {
         writeProgress(completedCount, paths.length, urlPath);
       } else {
         const now = performance.now();
-        if (
-          now - lastLogTime >= LOG_INTERVAL_MS ||
-          completedCount === paths.length
-        ) {
-          // eslint-disable-next-line no-console
-          console.log(`prerendered ${completedCount}/${paths.length} routes`);
+        if (now - lastLogTime >= LOG_INTERVAL_MS) {
+          logger.info(
+            colors.blue(`prerendered ${completedCount}/${paths.length} routes`),
+          );
           lastLogTime = now;
         }
       }
-      return outputPath;
+      return result;
     }),
   );
 
-  const writtenFiles = await Promise.race([prerenderTasks, inactivityTimeout]);
-  clearTimeout(timeoutId);
+  const pagefindWriteResult = await pagefindIndex?.writeFiles({
+    outputPath: path.join(distDir, "pagefind"),
+  });
 
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
-  writeLine(`prerendered ${paths.length} routes in ${seconds} seconds\n`);
+
+  const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds`;
+
+  if (isTTY()) {
+    writeLine(colors.blue(message + "\n"));
+  } else {
+    logger.info(colors.blue(message));
+  }
+  if (pagefindWriteResult?.outputPath) {
+    logger.info(
+      colors.blue(`✓ pagefind index built: ${pagefindWriteResult.outputPath}`),
+    );
+  }
 
   await generateSitemap({
     basePath: config.basePath,
@@ -141,5 +162,5 @@ export const prerender = async ({
     baseOutputDir: distDir,
   });
 
-  return writtenFiles;
+  return workerResults;
 };

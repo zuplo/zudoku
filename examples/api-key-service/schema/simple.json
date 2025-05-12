@@ -1,0 +1,41 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Echo API",
+    "version": "1.0.0",
+    "description": "A simple echo API service"
+  },
+  "servers": [
+    {
+      "url": "https://echo.zuplo.io",
+      "description": "Echo server"
+    }
+  ],
+  "paths": {
+    "/hello-world": {
+      "get": {
+        "summary": "Hello World endpoint",
+        "description": "Returns a hello world message",
+        "operationId": "helloWorld",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Hello, World!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

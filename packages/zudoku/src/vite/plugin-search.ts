@@ -1,9 +1,7 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 
-export const viteSearchPlugin = (
-  getConfig: () => ZudokuPluginOptions,
-): Plugin => {
+export const viteSearchPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-search-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -19,7 +17,7 @@ export const viteSearchPlugin = (
 
       const config = getConfig();
 
-      if (!config.search || config.mode === "standalone") {
+      if (!config.search || config.__meta.mode === "standalone") {
         return `export const configuredSearchPlugin = undefined;`;
       }
 
@@ -30,6 +28,16 @@ export const viteSearchPlugin = (
           `import config from 'virtual:zudoku-config';`,
           `import { inkeepSearchPlugin } from "zudoku/plugins/search-inkeep";`,
           `export const configuredSearchPlugin = inkeepSearchPlugin(config.search);`,
+        );
+
+        return code.join("\n");
+      }
+
+      if (config.search.type === "pagefind") {
+        code.push(
+          `import config from 'virtual:zudoku-config';`,
+          `import { pagefindSearchPlugin } from "zudoku/plugins/search-pagefind";`,
+          `export const configuredSearchPlugin = pagefindSearchPlugin(config.search);`,
         );
 
         return code.join("\n");

@@ -1,3 +1,4 @@
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Heading } from "../../components/Heading.js";
 import { Card } from "../../ui/Card.js";
 import type { ParameterGroup } from "./OperationListItem.js";
@@ -7,16 +8,19 @@ import {
 } from "./ParameterListItem.js";
 
 export const ParameterList = ({
+  summary,
   group,
   parameters,
   id,
 }: {
+  summary?: string;
   group: ParameterGroup;
   parameters: ParameterListItemResult[];
   id: string;
 }) => (
   <>
     <Heading level={3} id={`${id}/${group}-parameters`} className="capitalize">
+      {summary && <VisuallyHidden>{summary} &rsaquo; </VisuallyHidden>}
       {group === "header" ? "Headers" : `${group} Parameters`}
     </Heading>
     <Card>

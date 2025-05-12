@@ -1,69 +1,51 @@
-import type { ResultOf } from "@graphql-typed-document-node/core";
-import slugify from "@sindresorhus/slugify";
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { ReactNode } from "react";
+import { type ReactNode } from "react";
 import { matchPath } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
 import { type ZudokuPlugin } from "../../core/plugins.js";
-import type { SchemaImports } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
+import type { GetSidebarOperationsQuery } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
-import { OasPluginConfig } from "./interfaces.js";
+import { type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createSidebarCategory } from "./util/createSidebarCategory.js";
 import { getRoutes, getVersions } from "./util/getRoutes.js";
 
-const GetCategoriesQuery = graphql(`
-  query GetCategories($input: JSON!, $type: SchemaType!) {
+const GetSidebarOperationsQuery = graphql(`
+  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
-      url
       tags {
-        name
-      }
-    }
-  }
-`);
-
-const GetOperationsQuery = graphql(`
-  query GetOperations($input: JSON!, $type: SchemaType!, $tag: String) {
-    schema(input: $input, type: $type) {
-      operations(tag: $tag) {
         slug
-        deprecated
-        method
-        summary
-        operationId
-        path
-        tags {
-          name
+        name
+        extensions
+        operations {
+          summary
+          slug
+          method
+          operationId
+          path
         }
       }
-      untagged: operations(untagged: true) {
-        slug
-        deprecated
-        method
-        summary
-        operationId
-        path
+      components {
+        schemas {
+          __typename
+        }
       }
     }
   }
 `);
 
-export type OperationResult = ResultOf<
-  typeof GetOperationsQuery
->["schema"]["operations"][number];
+export type OperationResult =
+  GetSidebarOperationsQuery["schema"]["tags"][number]["operations"][number];
 
-type InternalOasPluginConfig = { schemaImports?: SchemaImports };
-
-export type OpenApiPluginOptions = OasPluginConfig & InternalOasPluginConfig;
+export type OpenApiPluginOptions = OasPluginConfig;
 
 export const UNTAGGED_PATH = "~endpoints";
 
-export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
+export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
   const basePath = joinUrl(config.navigationId ?? "/reference");
   const client = new GraphQLClient(config);
 
@@ -134,7 +116,7 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
         );
       },
     }),
-    getSidebar: async (path: string) => {
+    getSidebar: async (path, context) => {
       if (!matchPath({ path: basePath, end: false }, path)) {
         return [];
       }
@@ -147,70 +129,56 @@ export const openApiPlugin = (config: OpenApiPluginOptions): ZudokuPlugin => {
       try {
         const versionParam = match?.params.version;
         const version = versionParam ?? getVersions(config).at(0);
-        const type = config.type;
-        const input =
-          config.type === "file" ? config.input[version!] : config.input;
+        const { type } = config;
+        const input = type === "file" ? config.input[version!] : config.input;
 
-        const collapsible = config.loadTags === true || config.type === "url";
-        const collapsed = !config.loadTags && config.type !== "url";
+        const data = await context.queryClient.ensureQueryData({
+          queryKey: ["sidebar-operations-query", input],
+          queryFn: () =>
+            client.fetch(GetSidebarOperationsQuery, { type, input }),
+        });
 
-        // find  tag name by slug in config.tagPages
-        const tagName = config.tagPages?.find(
-          (tag) => slugify(tag) === match?.params.tag,
-        );
+        const categories = data.schema.tags.flatMap((tag) => {
+          if (!tag.name || tag.operations.length === 0) return [];
 
-        const [tagData, operationsData] = await Promise.all([
-          client.fetch(GetCategoriesQuery, { type, input }),
-          client.fetch(GetOperationsQuery, {
-            type,
-            input,
-            tag: !config.loadTags ? tagName : undefined,
-          }),
-        ]);
+          const categoryPath = joinUrl(basePath, versionParam, tag.slug);
 
-        const categories = tagData.schema.tags.flatMap((tag) => {
-          const categoryPath = joinUrl(
-            basePath,
-            versionParam,
-            slugify(tag.name),
-          );
-
-          const operations = operationsData.schema.operations.filter(
-            (operation) =>
-              operation.tags?.length !== 0 &&
-              operation.tags?.map((t) => t.name).includes(tag.name),
-          );
-
-          // skip empty categories
-          if (config.loadTags && operations.length === 0) {
-            return [];
-          }
+          const isCollapsed =
+            tag.extensions?.["x-zudoku-collapsed"] ??
+            !config.options?.expandAllTags;
+          const isCollapsible =
+            tag.extensions?.["x-zudoku-collapsible"] ?? true;
 
           return createSidebarCategory({
             label: tag.name,
             path: categoryPath,
-            operations:
-              match?.params.tag !== UNTAGGED_PATH || config.loadTags
-                ? operations
-                : [],
-            collapsible,
-            collapsed,
+            operations: tag.operations,
+            collapsed: isCollapsed,
+            collapsible: isCollapsible,
           });
         });
 
-        if (operationsData.schema.untagged.length > 0) {
+        const untaggedOperations = data.schema.tags.find(
+          (tag) => !tag.name,
+        )?.operations;
+
+        if (untaggedOperations) {
           categories.push(
             createSidebarCategory({
               label: "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
-              operations:
-                match?.params.tag === UNTAGGED_PATH || config.loadTags
-                  ? operationsData.schema.untagged
-                  : [],
-              collapsible,
-              collapsed,
+              operations: untaggedOperations,
+              collapsed: !config.options?.expandAllTags,
             }),
           );
+        }
+
+        if (data.schema.components?.schemas?.length) {
+          categories.push({
+            type: "link" as const,
+            label: "Schemas",
+            href: joinUrl(basePath, versionParam, "~schemas"),
+          });
         }
 
         return categories;

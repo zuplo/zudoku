@@ -1,171 +1,128 @@
+import { InfoIcon } from "lucide-react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
+import { Card } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
+import { ConstValue } from "../components/ConstValue.js";
+import { EnumValues } from "../components/EnumValues.js";
+import { ParamInfos } from "../ParamInfos.js";
+import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import {
   SchemaLogicalGroup,
   SchemaPropertyItem,
 } from "./SchemaPropertyItem.js";
-import { hasLogicalGroupings } from "./utils.js";
+import { hasLogicalGroupings, isBasicType } from "./utils.js";
+
+const renderMarkdown = (content?: string) =>
+  content && (
+    <Markdown
+      className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
+      content={content}
+    />
+  );
+
+const renderBasicSchema = (schema: SchemaObject) => (
+  <Card className="p-4 space-y-2">
+    <span className="text-sm text-muted-foreground">
+      <ParamInfos schema={schema} />
+    </span>
+    {schema.enum && <EnumValues values={schema.enum} />}
+    {renderMarkdown(schema.description)}
+    <SchemaExampleAndDefault schema={schema} />
+  </Card>
+);
 
 export const SchemaView = ({
   schema,
-  level = 0,
   defaultOpen = false,
 }: {
   schema?: SchemaObject | null;
-  level?: number;
   defaultOpen?: boolean;
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
       <Card className="p-4">
         <span className="text-sm text-muted-foreground italic">
-          No response specified
+          No schema specified
         </span>
       </Card>
     );
   }
 
-  const renderSchema = (schema: SchemaObject, level: number) => {
-    if (hasLogicalGroupings(schema)) {
-      return <SchemaLogicalGroup schema={schema} level={level} />;
-    }
+  if (schema.const) {
+    return <ConstValue schema={schema} />;
+  }
 
-    // Sometimes items is not defined
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (schema.type === "array" && schema.items) {
-      const itemsSchema = schema.items as SchemaObject;
+  if (hasLogicalGroupings(schema)) {
+    return <SchemaLogicalGroup schema={schema} />;
+  }
 
-      if (
-        typeof itemsSchema.type === "string" &&
-        ["string", "number", "boolean", "integer"].includes(itemsSchema.type)
-      ) {
-        return (
-          <Card className="p-4">
-            <span className="text-sm text-muted-foreground">
-              {itemsSchema.type}[]
-            </span>
-            {schema.description && (
-              <Markdown
-                className={cn(
-                  ProseClasses,
-                  "text-sm leading-normal line-clamp-4",
-                )}
-                content={schema.description}
-              />
-            )}
-          </Card>
-        );
-      } else if (itemsSchema.type === "object") {
-        return (
-          <Card className="flex flex-col gap-2 bg-border/30 p-4">
-            <span className="text-sm text-muted-foreground">object[]</span>
-            {renderSchema(itemsSchema, level + 1)}
-          </Card>
-        );
-      } else {
-        return renderSchema(itemsSchema, level + 1);
-      }
-    }
+  if (isBasicType(schema.type)) {
+    return renderBasicSchema(schema);
+  }
 
-    if (
-      schema.type === "object" &&
-      (!schema.properties || Object.keys(schema.properties).length === 0)
-    ) {
-      return (
-        <Card className="p-4 flex gap-2 items-center">
-          {"name" in schema && <>{schema.name as string}</>}
-          <span className="text-sm text-muted-foreground">object</span>
-          {schema.description && (
-            <Markdown
-              className={cn(
-                ProseClasses,
-                "text-sm leading-normal line-clamp-4",
-              )}
-              content={schema.description}
-            />
+  if (schema.type === "array" && typeof schema.items === "object") {
+    return <SchemaView schema={schema.items} />;
+  }
+
+  if (schema.type === "object") {
+    const groupedProperties = groupBy(
+      Object.entries(schema.properties ?? {}),
+      ([propertyName, property]) => {
+        return property.deprecated
+          ? "deprecated"
+          : schema.required?.includes(propertyName)
+            ? "required"
+            : "optional";
+      },
+    );
+    const groupNames = ["required", "optional", "deprecated"] as const;
+
+    const additionalProperties =
+      typeof schema.additionalProperties === "object" ? (
+        <SchemaView schema={schema.additionalProperties} />
+      ) : schema.additionalProperties === true ? (
+        <div
+          className={cn(
+            ProseClasses,
+            "text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1",
           )}
-        </Card>
-      );
-    }
+        >
+          <span>Additional properties are allowed</span>
+          <a
+            className="p-0.5 -m-0.5"
+            href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <InfoIcon size={14} />
+          </a>
+        </div>
+      ) : null;
 
-    if (schema.properties) {
-      const groupedProperties = groupBy(
-        Object.entries(schema.properties),
-        ([propertyName, property]) => {
-          return property.deprecated
-            ? "deprecated"
-            : schema.required?.includes(propertyName)
-              ? "required"
-              : "optional";
-        },
-      );
+    return (
+      <Card className="divide-y overflow-hidden">
+        {groupNames.map(
+          (group) =>
+            groupedProperties[group] && (
+              <ul key={group} className="divide-y">
+                {groupedProperties[group].map(([name, schema]) => (
+                  <SchemaPropertyItem
+                    key={name}
+                    name={name}
+                    schema={schema}
+                    group={group}
+                    defaultOpen={defaultOpen}
+                  />
+                ))}
+              </ul>
+            ),
+        )}
+        {additionalProperties}
+      </Card>
+    );
+  }
 
-      const groupNames = ["required", "optional", "deprecated"] as const;
-
-      return (
-        <Card className="divide-y overflow-hidden">
-          {groupNames.map(
-            (group) =>
-              groupedProperties[group] && (
-                <ul key={group} className="divide-y">
-                  {groupedProperties[group].map(([name, schema]) => (
-                    <SchemaPropertyItem
-                      key={name}
-                      name={name}
-                      schema={schema}
-                      group={group}
-                      level={level}
-                      defaultOpen={defaultOpen}
-                    />
-                  ))}
-                </ul>
-              ),
-          )}
-        </Card>
-      );
-    }
-
-    if (
-      typeof schema.type === "string" &&
-      ["string", "number", "boolean", "integer", "null"].includes(schema.type)
-    ) {
-      return (
-        <Card className="p-4">
-          <span className="text-sm text-muted-foreground">{schema.type}</span>
-          {schema.description && (
-            <Markdown
-              className={cn(
-                ProseClasses,
-                "text-sm leading-normal line-clamp-4",
-              )}
-              content={schema.description}
-            />
-          )}
-        </Card>
-      );
-    }
-
-    if (schema.additionalProperties) {
-      return (
-        <Card className="my-2">
-          <CardHeader>
-            <CardTitle>Additional Properties:</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {renderSchema(
-              schema.additionalProperties as SchemaObject,
-              level + 1,
-            )}
-          </CardContent>
-        </Card>
-      );
-    }
-
-    return null;
-  };
-
-  return renderSchema(schema, level);
+  return null;
 };

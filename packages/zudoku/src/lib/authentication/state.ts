@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { create, type Mutate, type StoreApi } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -20,7 +19,7 @@ export type StoreWithPersist<T> = Mutate<
   [["zustand/persist", unknown]]
 >;
 
-export const withStorageDOMEvents = <T>(store: StoreWithPersist<T>) => {
+const withStorageDOMEvents = <T>(store: StoreWithPersist<T>) => {
   const storageEventCallback = (e: StorageEvent) => {
     if (e.key === store.persist.getOptions().name && e.newValue) {
       void store.persist.rehydrate();
@@ -38,14 +37,20 @@ export const useAuthState = create<AuthState>()(
   persist(
     (state) => ({
       isAuthenticated: false,
-      isPending: false,
+      isPending: true,
       profile: null,
       providerData: null,
     }),
     {
+      merge: (persistedState, currentState) => {
+        return {
+          ...currentState,
+          isPending: false,
+          ...(typeof persistedState === "object" ? persistedState : {}),
+        };
+      },
       name: "auth-state",
       storage: createJSONStorage(() => localStorage),
-      // partialize: (s) => ({ state: s }),
     },
   ),
 );
@@ -62,36 +67,3 @@ export interface UserProfile {
   pictureUrl: string | undefined;
   [key: string]: string | boolean | undefined;
 }
-
-interface SelectedServerState {
-  selectedServer?: string;
-  setSelectedServer: (newServer: string) => void;
-}
-
-export const useSelectedServerStore = create<SelectedServerState>()(
-  persist(
-    (set) => ({
-      selectedServer: undefined,
-      setSelectedServer: (newServer: string) =>
-        set({ selectedServer: newServer }),
-    }),
-    { name: "zudoku-selected-server" },
-  ),
-);
-
-/**
- * Simple wrapper for `useSelectedServerStore` to fall back to first of the provided servers
- */
-export const useSelectedServer = (servers: Array<{ url: string }>) => {
-  const { selectedServer, setSelectedServer } = useSelectedServerStore();
-
-  const finalSelectedServer = useMemo(
-    () =>
-      selectedServer && servers.some((s) => s.url === selectedServer)
-        ? selectedServer
-        : (servers.at(0)?.url ?? ""),
-    [selectedServer, servers],
-  );
-
-  return { selectedServer: finalSelectedServer, setSelectedServer };
-};

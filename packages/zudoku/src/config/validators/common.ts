@@ -1,18 +1,20 @@
 import type { ReactNode } from "react";
+import { isValidElement } from "react";
 import z, {
-  RefinementCtx,
+  type RefinementCtx,
   type ZodEnumDef,
-  ZodOptional,
-  ZodString,
-  ZodType,
-  ZodUnion,
+  type ZodOptional,
+  type ZodString,
+  type ZodType,
+  type ZodUnion,
 } from "zod";
 import { fromError } from "zod-validation-error";
-import { ZudokuContext } from "../../lib/core/ZudokuContext.js";
+import type { AuthState } from "../../lib/authentication/state.js";
+import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
+import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
+import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
-
-const AnyObject = z.object({}).passthrough();
 
 const ThemeSchema = z
   .object({
@@ -44,20 +46,27 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
+const ApiOptionsSchema = z
+  .object({
+    examplesLanguage: z.string(),
+    disablePlayground: z.boolean(),
+    showVersionSelect: z.enum(["always", "if-available", "hide"]),
+    expandAllTags: z.boolean(),
+    transformExamples: z.custom<transformExamples>(
+      (val) => typeof val === "function",
+    ),
+  })
+  .partial();
+
 const ApiConfigSchema = z
   .object({
     id: z.string(),
     server: z.string(),
     navigationId: z.string(),
-    loadTags: z.boolean(),
     categories: z.array(ApiCatalogCategorySchema),
+    options: ApiOptionsSchema,
   })
   .partial();
-
-const ApiPostProcessorSchema = z
-  .function()
-  .args(AnyObject)
-  .returns(z.union([AnyObject, z.promise(AnyObject)]));
 
 const ApiSchema = z.union([
   z
@@ -68,10 +77,7 @@ const ApiSchema = z.union([
       type: z.literal("file"),
       input: z.union([z.string(), z.array(z.string())]),
     })
-    .merge(ApiConfigSchema)
-    .merge(
-      z.object({ postProcessors: ApiPostProcessorSchema.array().optional() }),
-    ),
+    .merge(ApiConfigSchema),
   z
     .object({ type: z.literal("raw"), input: z.string() })
     .merge(ApiConfigSchema),
@@ -119,8 +125,54 @@ const ApiKeysSchema = z.union([
 const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
   alt: z.string().optional(),
-  width: z.string().optional(),
+  width: z.string().or(z.number()).optional(),
 });
+
+export const FooterSocialIcons = [
+  "reddit",
+  "discord",
+  "github",
+  "x",
+  "linkedin",
+  "facebook",
+  "instagram",
+  "youtube",
+  "tiktok",
+  "twitch",
+  "pinterest",
+  "snapchat",
+  "whatsapp",
+  "telegram",
+] as const;
+
+export const FooterSocialSchema = z.object({
+  label: z.string().optional(),
+  href: z.string(),
+  icon: z
+    .union([
+      z.enum(FooterSocialIcons),
+      z.custom<ReactNode>((val) => isValidElement(val)),
+    ])
+    .optional(),
+});
+
+export const FooterSchema = z
+  .object({
+    columns: z
+      .array(
+        z.object({
+          position: z.enum(["start", "center", "end"]).optional(),
+          title: z.string(),
+          links: z.array(z.object({ label: z.string(), href: z.string() })),
+        }),
+      )
+      .optional(),
+    social: z.array(FooterSocialSchema).optional(),
+    copyright: z.string().optional(),
+    logo: LogoSchema.optional(),
+    position: z.enum(["start", "center", "end"]).optional(),
+  })
+  .optional();
 
 const SiteMapSchema = z
   .object({
@@ -182,7 +234,10 @@ const TopNavigationItemSchema = z.object({
   label: z.string(),
   id: z.string(),
   default: z.string().optional(),
-  display: z.enum(["auth", "anon", "always"]).default("always").optional(),
+  display: z
+    .enum(["auth", "anon", "always", "hide"])
+    .default("always")
+    .optional(),
 });
 
 type BannerColorType = ZodOptional<
@@ -203,17 +258,42 @@ const Redirect = z.object({
 });
 
 const SearchSchema = z
-  .object({
-    type: z.literal("inkeep"),
-    apiKey: z.string(),
-    integrationId: z.string(),
-    organizationId: z.string(),
-    primaryBrandColor: z.string(),
-    organizationDisplayName: z.string(),
-  })
+  .union([
+    z.object({
+      type: z.literal("inkeep"),
+      apiKey: z.string(),
+      integrationId: z.string(),
+      organizationId: z.string(),
+      primaryBrandColor: z.string(),
+      organizationDisplayName: z.string(),
+    }),
+    z.object({
+      type: z.literal("pagefind"),
+
+      ranking: z
+        .object({
+          termFrequency: z.number(),
+          pageLength: z.number(),
+          termSimilarity: z.number(),
+          termSaturation: z.number(),
+        })
+        .optional(),
+      maxResults: z.number().optional(),
+      maxSubResults: z.number().optional(),
+      transformResults: z
+        .custom<
+          (data: {
+            result: PagefindSearchFragment;
+            auth: AuthState;
+            context: ZudokuContext;
+          }) => PagefindSearchFragment | boolean | undefined | void
+        >((val) => typeof val === "function")
+        .optional(),
+    }),
+  ])
   .optional();
 
-const AuthenticationSchema = z.union([
+const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
     clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
@@ -238,6 +318,23 @@ const AuthenticationSchema = z.union([
     clientId: z.string(),
     domain: z.string(),
     audience: z.string().optional(),
+    scopes: z.array(z.string()).optional(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
+  z.object({
+    type: z.literal("supabase"),
+    supabaseUrl: z.string(),
+    supabaseKey: z.string(),
+    provider: z.enum([
+      "google",
+      "github",
+      "gitlab",
+      "bitbucket",
+      "facebook",
+      "twitter",
+    ]),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -275,6 +372,7 @@ const PageSchema = z
     pageTitle: z.string(),
     logoUrl: z.string(),
     logo: LogoSchema,
+    showPoweredBy: z.boolean().optional(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
@@ -283,6 +381,7 @@ const PageSchema = z
         .optional() as BannerColorType,
       dismissible: z.boolean().optional(),
     }),
+    footer: FooterSchema,
   })
   .partial();
 
@@ -316,7 +415,16 @@ export const CdnUrlSchema = z
 export const CommonConfigSchema = z.object({
   protectedRoutes: z.array(z.string()).optional(),
   basePath: z.string().optional(),
+  canonicalUrlOrigin: z.string().optional(),
   cdnUrl: CdnUrlSchema.optional(),
+  port: z.number().optional(),
+  https: z
+    .object({
+      key: z.string(),
+      cert: z.string(),
+      ca: z.string().optional(),
+    })
+    .optional(),
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),
@@ -336,9 +444,12 @@ export const CommonConfigSchema = z.object({
   apiKeys: ApiKeysSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
-  isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
+    apis: ApiOptionsSchema,
+    /**
+     * @deprecated Use `apis.examplesLanguage` or `defaults.apis.examplesLanguage` instead
+     */
     examplesLanguage: z.string().optional(),
   }),
 });

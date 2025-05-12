@@ -12,6 +12,7 @@ import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import {
+  BuildCheck,
   Layout,
   RouteGuard,
   RouterError,
@@ -21,6 +22,7 @@ import {
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { ZuploEnv } from "./env.js";
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -38,9 +40,14 @@ export const convertZudokuConfigToOptions = (
     !config.page?.logo?.src?.dark;
 
   return {
+    basePath: config.basePath,
+    canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
     page: {
       ...config.page,
+      showPoweredBy:
+        ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
+        config.page?.showPoweredBy,
       logo: {
         ...(isUsingFallback ? { width: "130px" } : {}),
         ...config.page?.logo,
@@ -81,7 +88,7 @@ export const getRoutesByOptions = (
   enableStatusPages = false,
 ) => {
   const allPlugins = [
-    ...(options.plugins ? options.plugins : []),
+    ...(options.plugins ?? []),
     ...(options.authentication?.getAuthenticationPlugin
       ? [options.authentication.getAuthenticationPlugin()]
       : []),
@@ -113,12 +120,22 @@ export const getRoutesByOptions = (
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   const options = convertZudokuConfigToOptions(config);
-  const routes = getRoutesByOptions(options, config.enableStatusPages);
+  const routes = getRoutesByOptions(
+    options,
+    import.meta.env.IS_ZUPLO || config.enableStatusPages,
+  );
 
   return [
     {
       element: (
         <Zudoku {...options}>
+          <BuildCheck
+            buildId={
+              import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID
+                ? import.meta.env.ZUPLO_BUILD_ID
+                : undefined
+            }
+          />
           <Layout />
         </Zudoku>
       ),

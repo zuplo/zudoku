@@ -2,6 +2,7 @@ import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
 import { findOutputPathOfServerConfig } from "../config/loader.js";
+import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig, loadZudokuConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
@@ -54,44 +55,48 @@ export async function runBuild(options: { dir: string }) {
 
     const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
 
+    invariant(viteClientConfig.build?.outDir, "Client build outDir is missing");
+    invariant(viteServerConfig.build?.outDir, "Server build outDir is missing");
+
     try {
-      const writtenFiles = await prerender({
+      const results = await prerender({
         html,
         dir: options.dir,
         basePath: config.basePath,
         serverConfigFilename,
+        writeRedirects: process.env.VERCEL === undefined,
       });
 
-      if (writtenFiles.includes("index.html")) {
-        return;
+      const indexHtml = path.join(viteClientConfig.build.outDir, "index.html");
+
+      if (!results.find((r) => r.outputPath === indexHtml)) {
+        await writeFile(indexHtml, html, "utf-8");
       }
 
-      await writeFile(
-        path.join(options.dir, DIST_DIR, config.basePath ?? "", "index.html"),
-        html,
-        "utf-8",
-      );
+      // Delete the server build output directory because we don't need it anymore
+      await rm(viteServerConfig.build.outDir, { recursive: true, force: true });
 
-      const serverDir = path.join(options.dir, DIST_DIR, "server");
-      await rm(serverDir, { recursive: true, force: true });
+      if (process.env.VERCEL) {
+        await mkdir(path.join(options.dir, ".vercel/output/static"), {
+          recursive: true,
+        });
+        await rename(
+          path.join(options.dir, DIST_DIR),
+          path.join(options.dir, ".vercel/output/static"),
+        );
+      }
+
+      // Write the build output file
+      await writeOutput(options.dir, {
+        config,
+        redirects: results.flatMap((r) => r.redirect ?? []),
+      });
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console
       console.error(e);
+      throw e;
     }
-
-    if (process.env.VERCEL) {
-      await mkdir(path.join(options.dir, ".vercel/output/static"), {
-        recursive: true,
-      });
-      await rename(
-        path.join(options.dir, DIST_DIR),
-        path.join(options.dir, ".vercel/output/static"),
-      );
-    }
-
-    // Write the build output file
-    await writeOutput(options.dir, config);
 
     return;
   }

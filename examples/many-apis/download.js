@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-import yaml from "js-yaml";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,110 +5,111 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const MAX_CONCURRENT_DOWNLOADS = 5;
 const API_GURU_URL = "https://api.apis.guru/v2/list.json";
 const OUTPUT_DIR = path.join(__dirname, "apis");
-const NAVIGATION_FILE = path.join(OUTPUT_DIR, "navigation.json");
+const APIS_FILE = path.join(OUTPUT_DIR, "_apis.json");
+const NAVIGATION_FILE = path.join(OUTPUT_DIR, "_navigation.json");
 
-const downloadAndConvertFile = async (url, outputFilePath) => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to download ${url}: ${response.statusText}`);
-    }
-    let data = await response.text();
+// TODO: fix the ones that are commented out
+const selectedProviders = [
+  "ably.io:platform",
+  "ably.net:control",
+  "1password.local:connect",
+  "apple.com:app-store-connect",
+  "apptigent.com",
+  "appwrite.io:client",
+  "asana.com",
+  "atlassian.com:jira",
+  "bitbucket.org",
+  "billingo.hu",
+  "clickmeter.com",
+  // "docker.com:engine",
+  // "digitalocean.com",
+  // "docusign.net",
+  "enode.io",
+  "getpostman.com",
+  // "github.com",
+  "neutrinoapi.net",
+  "tomtom.com:maps",
+  "twitter.com:current",
+];
 
-    if (url.endsWith(".yaml") || url.endsWith(".yml")) {
-      const jsonData = yaml.load(data);
-      data = JSON.stringify(jsonData, null, 2);
-      outputFilePath = outputFilePath.replace(/\.(yaml|yml)$/, ".json");
-    } else {
-      const parsedData = JSON.parse(data);
-      // Skip swagger
-      if (parsedData.swagger === "2.0") {
-        console.log(`Skipping ${outputFilePath} because it is Swagger 2.0`);
-        return false;
-      }
-      data = JSON.stringify(parsedData, null, 2);
-    }
+function slugify(text) {
+  return text
+    .toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .toLowerCase();
+}
 
-    fs.writeFileSync(outputFilePath, data);
-    console.log(`Downloaded and converted: ${outputFilePath}`);
-    return true;
-  } catch (error) {
-    console.error(`Error downloading ${url}:`, error);
-    return false;
-  }
-};
+async function main() {
+  fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
+  fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 
-const isVersionGTE3 = (version) => {
-  const [major, minor] = version.split(".").map(Number);
-  return major > 3 || (major === 3 && (minor === undefined || minor >= 0));
-};
-
-const main = async () => {
   const response = await fetch(API_GURU_URL);
   if (!response.ok) {
-    console.error(`Failed to fetch API list: ${response.statusText}`);
-    return;
+    throw new Error(`Failed to fetch ${API_GURU_URL}: ${response.statusText}`);
   }
+  const listData = await response.json();
 
-  const apis = await response.json();
+  const downloadTasks = selectedProviders.map(async (apiKey) => {
+    const apiObj = listData[apiKey];
+    if (!apiObj?.preferred) return null;
 
-  if (!fs.existsSync(OUTPUT_DIR)) {
-    fs.mkdirSync(OUTPUT_DIR);
-  }
+    const versionObj = apiObj.versions?.[apiObj.preferred];
+    if (!versionObj?.swaggerUrl) return null;
 
-  const downloadQueue = [];
-  const navigation = [];
+    const info = versionObj.info || {};
+    const xOrigins = Array.isArray(info["x-origin"]) ? info["x-origin"] : [];
+    if (!xOrigins.some((o) => o.format === "openapi")) return null;
 
-  for (const apiKey in apis) {
-    const apiData = apis[apiKey];
-    const versions = apiData.versions;
-
-    const versionKeyToDownload = Object.keys(versions).find((versionKey) => {
-      const versionData = versions[versionKey];
-      return versionData.swaggerUrl && isVersionGTE3(versionData.info.version);
-    });
-
-    if (versionKeyToDownload) {
-      const versionData = versions[versionKeyToDownload];
-      const apiName = apiKey.replace(/[:/]/g, "_");
-      const swaggerUrl = versionData.swaggerUrl;
-      const outputFilePath = path.join(OUTPUT_DIR, `${apiName}.json`);
-
-      console.log(`Queueing download for ${apiName}`);
-
-      const downloadTask = downloadAndConvertFile(
-        swaggerUrl,
-        outputFilePath,
-      ).then((success) => {
-        if (success) {
-          navigation.push({ label: apiName, id: apiName });
-        }
-      });
-
-      downloadQueue.push(downloadTask);
-
-      if (downloadQueue.length >= MAX_CONCURRENT_DOWNLOADS) {
-        await Promise.all(downloadQueue);
-        downloadQueue.length = 0;
+    try {
+      const schemaResponse = await fetch(versionObj.swaggerUrl);
+      if (!schemaResponse.ok) {
+        console.warn(
+          `Failed to download schema for "${apiKey}" from ${versionObj.swaggerUrl}`,
+        );
+        return null;
       }
-    } else {
-      console.log(`No suitable version found for ${apiKey}`);
+
+      const schemaData = await schemaResponse.text();
+      const fileNameSafeKey = apiKey.replace(/[^\w.-]+/g, "_");
+      const localFileName = `${fileNameSafeKey}-${apiObj.preferred}.json`;
+      const outPath = path.join(OUTPUT_DIR, localFileName);
+      fs.writeFileSync(outPath, schemaData, "utf-8");
+
+      return { info, localFileName };
+    } catch (err) {
+      console.warn(`Error downloading "${apiKey}":`, err);
+      return null;
     }
-  }
+  });
 
-  if (downloadQueue.length > 0) {
-    await Promise.all(downloadQueue);
-  }
-
-  fs.writeFileSync(NAVIGATION_FILE, JSON.stringify(navigation, null, 2));
-  console.log(`Navigation file generated at ${NAVIGATION_FILE}`);
-
-  console.log(
-    `All files downloaded. Total APIs processed: ${navigation.length}`,
+  const results = (await Promise.all(downloadTasks)).sort((a, b) =>
+    a.info.title.localeCompare(b.info.title),
   );
-};
 
-main().catch((err) => console.error(err));
+  const apis = results.map(({ info, localFileName }) => ({
+    type: "file",
+    input: path.join("apis", localFileName),
+    navigationId: slugify(info.title || "untitled-api"),
+  }));
+
+  const navigation = results.map(({ info }) => ({
+    type: "link",
+    label: info.title || "Untitled API",
+    href: slugify(info.title || "untitled-api"),
+  }));
+
+  fs.writeFileSync(APIS_FILE, JSON.stringify(apis, null, 2), "utf-8");
+  fs.writeFileSync(
+    NAVIGATION_FILE,
+    JSON.stringify(navigation, null, 2),
+    "utf-8",
+  );
+}
+
+void main();

@@ -1,0 +1,111 @@
+---
+sidebar_icon: pickaxe
+---
+
+# Build Configuration
+
+The `zudoku.build.ts` file allows you to configure build-time settings and processors for your Zudoku project. This file is executed during the build process and can be used to transform your API schemas before they are used in the documentation.
+
+:::tip{title="Security Note"}
+Unlike `zudoku.config.ts` which runs in both client and server environments, `zudoku.build.ts` runs exclusively in Node.js during build time. This means:
+
+- Sensitive operations (like API calls, file system access) can safely be performed
+- No build-time code or data is included in the final client bundle
+- Environment variables and secrets can be safely accessed
+- No browser-specific APIs are available
+  :::
+
+## File Location
+
+Create a file named `zudoku.build.ts` in the root of your project:
+
+```bash
+your-project/
+├── zudoku.config.ts
+├── zudoku.build.ts    # <-- Add this file
+└── ...
+```
+
+## Basic Configuration
+
+Here's a basic example of a build configuration file:
+
+```ts
+import type { ZudokuBuildConfig } from "zudoku";
+
+const buildConfig: ZudokuBuildConfig = {
+  processors: [
+    async ({ schema }) => {
+      // Transform your schema here
+      return schema;
+    },
+  ],
+  remarkPlugins: [],
+  rehypePlugins: [],
+};
+
+export default buildConfig;
+```
+
+## Configuration Options
+
+### `processors`
+
+An array of functions that transform your API schemas. Each processor receives:
+
+- `file`: The path to the schema file
+- `schema`: The OpenAPI schema object
+- `dereference`: A function to dereference the schema
+
+Processors are executed in order, and each processor receives the output of the previous one.
+
+:::tip
+For detailed information about processors and available built-in processors, see the [Schema Processors](../guides/processors) guide.
+:::
+
+Here's a simple example that adds a description to all operations:
+
+```ts
+async function addDescriptionProcessor({ schema }) {
+  if (!schema.paths) return schema;
+
+  // Add a description to all operations
+  Object.values(schema.paths).forEach((path) => {
+    Object.values(path).forEach((operation) => {
+      if (typeof operation === "object" && operation) {
+        operation.description = "This is a public API endpoint";
+      }
+    });
+  });
+
+  return schema;
+}
+
+export default {
+  processors: [addDescriptionProcessor],
+};
+```
+
+### `remarkPlugins`
+
+An array of [Remark](https://github.com/remarkjs/remark) plugins to transform Markdown content. These plugins run before the content is converted to HTML.
+
+```ts
+import remarkContributors from "remark-contributors";
+
+export default {
+  remarkPlugins: [remarkContributors],
+};
+```
+
+### `rehypePlugins`
+
+An array of [Rehype](https://github.com/rehypejs/rehype) plugins to transform HTML content. These plugins run after Markdown is converted to HTML.
+
+```ts
+import rehypeKatex from "rehype-katex";
+
+export default {
+  rehypePlugins: [rehypeKatex],
+};
+```

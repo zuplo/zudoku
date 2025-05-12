@@ -1,9 +1,10 @@
 import autoprefixer from "autoprefixer";
+import { fileURLToPath } from "node:url";
 import path from "path";
 import tailwindcss from "tailwindcss";
 import { defineConfig } from "vite";
 import tailwindConfig from "./src/app/tailwind.js";
-import { getPluginOptions } from "./src/vite/config.js";
+import { getStandaloneConfig } from "./src/vite/config.js";
 import vitePlugin from "./src/vite/plugin.js";
 
 const entries: Record<string, string> = {
@@ -11,17 +12,15 @@ const entries: Record<string, string> = {
   demo: "./src/app/demo.tsx",
 };
 
-const config = {
-  ...getPluginOptions({
-    mode: "standalone",
-    dir: path.resolve(__dirname),
-  }),
-  __meta: {},
-};
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+process.env.ZUDOKU_ENV = "standalone";
 
 export default defineConfig({
+  mode: "standalone",
   define: {
     "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+    "process.env.ZUPLO_BUILD_CONFIG": "undefined",
   },
   build: {
     sourcemap: true,
@@ -55,13 +54,13 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vitePlugin(config)],
+  plugins: [vitePlugin(getStandaloneConfig(__dirname))],
   css: {
     postcss: {
       plugins: [
         tailwindcss({
           ...tailwindConfig(),
-          content: ["./src/lib/**/*.{js,ts,jsx,tsx}"],
+          content: ["./src/lib/**/*.{js,ts,jsx,tsx,md,mdx}"],
         }),
         autoprefixer,
       ],

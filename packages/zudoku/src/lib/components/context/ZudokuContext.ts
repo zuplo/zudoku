@@ -2,9 +2,9 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
 import { useAuth } from "../../authentication/hook.js";
-import { ZudokuContext } from "../../core/ZudokuContext.js";
-import { joinPath } from "../../util/joinPath.js";
-import { CACHE_KEYS } from "../cache.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
+import { joinUrl } from "../../util/joinUrl.js";
+import { CACHE_KEYS, NO_DEHYDRATE } from "../cache.js";
 import { traverseSidebar } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
@@ -26,7 +26,7 @@ export const useApiIdentities = () => {
 
   return useQuery({
     queryFn: getApiIdentities,
-    queryKey: [CACHE_KEYS.API_IDENTITIES],
+    queryKey: CACHE_KEYS.API_IDENTITIES,
   });
 };
 
@@ -39,13 +39,13 @@ export const useCurrentNavigation = () => {
     matchPath(route, location.pathname),
   );
 
-  const currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
+  let currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
     return traverseSidebar(sidebar, (item) => {
       const itemId =
         item.type === "doc"
-          ? joinPath(item.id)
+          ? joinUrl(item.id)
           : item.type === "category" && item.link
-            ? joinPath(item.link.id)
+            ? joinUrl(item.link.id)
             : undefined;
 
       if (itemId === location.pathname) {
@@ -57,9 +57,18 @@ export const useCurrentNavigation = () => {
     topNavigation.find((t) => t.id === currentSidebarItem?.[0]) ??
     topNavigation.find((item) => matchPath(item.id, location.pathname));
 
+  if (
+    currentTopNavItem &&
+    !currentSidebarItem &&
+    currentTopNavItem.id in sidebars
+  ) {
+    currentSidebarItem = ["", sidebars[currentTopNavItem.id]!];
+  }
+
   const { data } = useSuspenseQuery({
     queryFn: () => getPluginSidebar(location.pathname),
-    queryKey: ["plugin-sidebar", location.pathname],
+    // We just want to suspend here and don't store in SSR dehydrated state
+    queryKey: ["plugin-sidebar", NO_DEHYDRATE, location.pathname],
   });
 
   const hideSidebar =

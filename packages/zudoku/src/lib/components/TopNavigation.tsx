@@ -1,16 +1,18 @@
+import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { NavLink, useNavigation } from "react-router";
-import { TopNavigationItem } from "../../config/validators/common.js";
+import type { TopNavigationItem } from "../../config/validators/common.js";
 import { useAuth } from "../authentication/hook.js";
-import { ZudokuError } from "../util/invariant.js";
-import { joinPath } from "../util/joinPath.js";
+import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { traverseSidebar } from "./navigation/utils.js";
+import { Slotlet } from "./SlotletProvider.js";
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>
-  (item: { display?: "auth" | "anon" | "always" }) => {
+  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
+    if (item.display === "hide") return false;
     return (
       (item.display === "auth" && isAuthenticated) ||
       (item.display === "anon" && !isAuthenticated) ||
@@ -19,26 +21,56 @@ export const isHiddenItem =
     );
   };
 
+export const PageProgress = () => {
+  const navigation = useNavigation();
+  const isNavigating = navigation.state === "loading";
+  // delay the animation to avoid flickering
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsAnimating(isNavigating), 100);
+
+    return () => clearTimeout(timer);
+  }, [isNavigating]);
+
+  const { isFinished, progress } = useNProgress({ isAnimating });
+
+  return (
+    <div
+      className="absolute w-0 left-0 right-0 bottom-[-1px] h-[2px] bg-primary transition-all duration-300 ease-in-out"
+      style={{
+        opacity: isFinished ? 0 : 1,
+        width: isFinished ? 0 : `${progress * 100}%`,
+      }}
+    />
+  );
+};
+
 export const TopNavigation = () => {
   const { topNavigation } = useZudoku();
   const { isAuthenticated } = useAuth();
 
-  // Hide top nav if there is only one item
-  if (topNavigation.length <= 1) {
+  const filteredItems = topNavigation.filter(isHiddenItem(isAuthenticated));
+
+  if (filteredItems.length === 0) {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
   }
 
   return (
     <Suspense>
-      <nav className="hidden lg:block text-sm px-12 h-[--top-nav-height]">
-        <ul className="flex flex-row items-center gap-8">
-          {topNavigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
-            <li key={item.id}>
-              <TopNavItem {...item} />
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <div className="items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm relative">
+        <nav className="text-sm">
+          <ul className="flex flex-row items-center gap-8">
+            {filteredItems.map((item) => (
+              <li key={item.id}>
+                <TopNavItem {...item} />
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <Slotlet name="top-navigation-side" />
+      </div>
+      <PageProgress />
     </Suspense>
   );
 };
@@ -62,15 +94,10 @@ export const TopNavItem = ({
     defaultLink ??
     (currentSidebar
       ? traverseSidebar(currentSidebar, (item) => {
-          if (item.type === "doc") return joinPath(item.id);
+          if (item.type === "doc") return joinUrl(item.id);
         })
-      : joinPath(id));
-
-  if (!first) {
-    throw new ZudokuError("Page not found.", {
-      developerHint: `No links found in top navigation for '${id}'. Check that the sidebar isn't empty or that a default link is set.`,
-    });
-  }
+      : joinUrl(id)) ??
+    joinUrl(id);
 
   return (
     // We don't use isActive here because it has to be inside the sidebar,

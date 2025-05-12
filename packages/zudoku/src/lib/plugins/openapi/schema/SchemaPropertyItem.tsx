@@ -1,28 +1,28 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
-import { ListPlusIcon, RefreshCcwDotIcon } from "lucide-react";
+import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
-import { Badge } from "zudoku/ui/Badge.js";
+import { InlineCode } from "../../../components/InlineCode.js";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
+import { ConstValue } from "../components/ConstValue.js";
+import { EnumValues } from "../components/EnumValues.js";
+import { SelectOnClick } from "../components/SelectOnClick.js";
+import { ParamInfos } from "../ParamInfos.js";
 import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
+import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   hasLogicalGroupings,
+  isArrayType,
   isCircularRef,
   isComplexType,
   LogicalSchemaTypeMap,
 } from "./utils.js";
 
-export const SchemaLogicalGroup = ({
-  schema,
-  level,
-}: {
-  schema: SchemaObject;
-  level: number;
-}) => {
+export const SchemaLogicalGroup = ({ schema }: { schema: SchemaObject }) => {
   const [isOpen, setIsOpen] = useState(true);
   const toggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
 
@@ -35,31 +35,31 @@ export const SchemaLogicalGroup = ({
         type={type}
         isOpen={isOpen}
         toggleOpen={toggleOpen}
-        level={level}
       />
     );
   }
 };
 
 const RecursiveIndicator = () => (
-  <div className="flex items-center gap-2 italic text-sm text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-md">
-    <RefreshCcwDotIcon size={16} />
+  <InlineCode
+    className="inline-flex items-center gap-1.5 italic text-xs translate-y-0.5"
+    selectOnClick={false}
+  >
+    <RefreshCcwDotIcon size={13} />
     <span>circular</span>
-  </div>
+  </InlineCode>
 );
 
 export const SchemaPropertyItem = ({
   name,
   schema,
   group,
-  level,
   defaultOpen = false,
   showCollapseButton = true,
 }: {
   name: string;
   schema: SchemaObject;
   group: "required" | "optional" | "deprecated";
-  level: number;
   defaultOpen?: boolean;
   showCollapseButton?: boolean;
 }) => {
@@ -68,13 +68,15 @@ export const SchemaPropertyItem = ({
   if (isCircularRef(schema)) {
     return (
       <li className="p-4 bg-border/20 hover:bg-border/30">
-        <div className="flex flex-col gap-1 justify-between text-sm">
-          <div className="flex gap-2 items-center">
+        <div className="flex flex-col gap-2.5 justify-between text-sm">
+          <div className="space-x-2">
             <code>{name}</code>
-            <Badge variant="muted">object</Badge>
-            {group === "optional" && <Badge variant="outline">optional</Badge>}
-            <RecursiveIndicator />
+            <ParamInfos
+              schema={schema}
+              extraItems={[<RecursiveIndicator key="circular-ref" />]}
+            />
           </div>
+          <SchemaExampleAndDefault schema={schema} />
         </div>
       </li>
     );
@@ -82,32 +84,39 @@ export const SchemaPropertyItem = ({
 
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
-      <div className="flex flex-col gap-1 justify-between text-sm">
-        <div className="flex gap-2 items-center">
-          <code>{name}</code>
-          <Badge variant="muted">
-            {schema.type === "array" && schema.items.type ? (
-              <span>{schema.items.type}[]</span>
-            ) : Array.isArray(schema.type) ? (
-              <span>{schema.type.join(" | ")}</span>
-            ) : (
-              <span>{schema.type}</span>
-            )}
-          </Badge>
-          {group === "optional" && <Badge variant="outline">optional</Badge>}
-          {schema.type === "array" &&
-            "items" in schema &&
-            isCircularRef(schema.items) && <RecursiveIndicator />}
+      <div className="flex flex-col gap-2.5 justify-between text-sm">
+        <div className="space-x-2">
+          <SelectOnClick asChild>
+            <code>{name}</code>
+          </SelectOnClick>
+          <ParamInfos
+            schema={schema}
+            extraItems={[
+              group !== "optional" && (
+                <span className="text-primary">required</span>
+              ),
+              isArrayType(schema) &&
+                "items" in schema &&
+                isCircularRef(schema.items) && <RecursiveIndicator />,
+            ]}
+          />
         </div>
-
         {schema.description && (
           <Markdown
             className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
             content={schema.description}
           />
         )}
-
-        {(hasLogicalGroupings(schema) || isComplexType(schema)) && (
+        {schema.type === "array" && "items" in schema && schema.items.enum && (
+          <EnumValues values={schema.items.enum} />
+        )}
+        {schema.const && <ConstValue schema={schema} hideDescription />}
+        {schema.enum && <EnumValues values={schema.enum} />}
+        <SchemaExampleAndDefault schema={schema} />
+        {(hasLogicalGroupings(schema) ||
+          isComplexType(schema) ||
+          isArrayType(schema) ||
+          schema.additionalProperties) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}
@@ -115,30 +124,24 @@ export const SchemaPropertyItem = ({
           >
             {showCollapseButton && (
               <Collapsible.Trigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 flex gap-1.5"
-                >
-                  <ListPlusIcon size={18} />
-                  {!isOpen
-                    ? "Show nested properties"
-                    : "Hide nested properties"}
+                <Button variant="expand" size="sm">
+                  {isOpen ? <MinusIcon size={12} /> : <PlusIcon size={12} />}
+                  {!isOpen ? "Show properties" : "Hide properties"}
                 </Button>
               </Collapsible.Trigger>
             )}
             <Collapsible.Content>
               <div className="mt-2">
                 {hasLogicalGroupings(schema) ? (
-                  <SchemaLogicalGroup schema={schema} level={level + 1} />
+                  <SchemaLogicalGroup schema={schema} />
                 ) : schema.type === "object" ? (
-                  <SchemaView schema={schema} level={level + 1} />
+                  <SchemaView schema={schema} />
                 ) : (
-                  schema.type === "array" &&
+                  isArrayType(schema) &&
                   "items" in schema &&
                   typeof schema.items === "object" &&
                   !isCircularRef(schema.items) && (
-                    <SchemaView schema={schema.items} level={level + 1} />
+                    <SchemaView schema={schema.items} />
                   )
                 )}
               </div>

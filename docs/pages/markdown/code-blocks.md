@@ -21,21 +21,38 @@ The code block above will render as:
 console.log("Every repo must come with a mascot.");
 ```
 
-### Supported Languages
+:::note
+
+You can also use the [`SyntaxHighlight` component](../components/syntax-highlight) to render code blocks.
+
+:::
+
+You can add a title to code blocks by adding a title attribute after the backticks:
+
+````md
+```tsx title="hello.tsx"
+console.log("Hello, World!");
+```
+````
+
+```tsx title="hello.tsx"
+console.log("Hello, World!");
+```
+
+## Supported Languages
 
 Currently, Zudoku supports the following languages for syntax highlighting:
 
 - Markup - `markup`, `html`, `xml`, `svg`, `mathml`, `ssml`, `atom`, `rss`
 - Ruby - `ruby`, `rb`
 - Bash - `bash`, `sh`, `shell`
-- PHP - `php`
 - JSON - `json`, `webmanifest`
 - Java - `java`
 - C# - `csharp`, `cs`, `dotnet`
 - Objective-C - `objectivec`, `objc`
 - Markdown - `markdown`, `md`
-- JavaScript - `javascript`, `js`
-- TypeScript - `typescript`, `ts`
+- JavaScript - `javascript`, `js`, `jsx`
+- TypeScript - `typescript`, `ts`, `tsx`
 
 :::note
 

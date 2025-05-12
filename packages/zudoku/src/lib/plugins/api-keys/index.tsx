@@ -92,6 +92,9 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
   };
 };
 
+export const createApiKeyService = <T extends ApiKeyService>(service: T): T =>
+  service;
+
 export const apiKeyPlugin = (
   options: ApiKeyPluginOptions,
 ): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {

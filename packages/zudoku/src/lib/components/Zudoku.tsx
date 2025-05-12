@@ -1,8 +1,8 @@
 import { MDXProvider } from "@mdx-js/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
-  Fragment,
   memo,
   type PropsWithChildren,
   useContext,
@@ -11,9 +11,12 @@ import {
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { Outlet, useNavigation } from "react-router";
+import { Outlet, useLocation, useNavigation } from "react-router";
 import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
-import { ZudokuContext, ZudokuContextOptions } from "../core/ZudokuContext.js";
+import {
+  ZudokuContext,
+  type ZudokuContextOptions,
+} from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { MdxComponents } from "../util/MdxComponents.js";
@@ -22,9 +25,12 @@ import {
   ComponentsProvider,
   DEFAULT_COMPONENTS,
 } from "./context/ComponentsContext.js";
+import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
 import { SlotletProvider } from "./SlotletProvider.js";
+
+let zudokuContext: ZudokuContext | undefined;
 
 const ZudokoInner = memo(
   ({ children, ...props }: PropsWithChildren<ZudokuContextOptions>) => {
@@ -33,6 +39,7 @@ const ZudokoInner = memo(
       [props.overrides],
     );
 
+    const location = useLocation();
     const mdxComponents = useMemo(() => {
       const componentsFromPlugins = (props.plugins ?? [])
         .filter(isMdxProviderPlugin)
@@ -56,6 +63,7 @@ const ZudokoInner = memo(
       [stagger, didNavigate],
     );
     const navigation = useNavigation();
+    const queryClient = useQueryClient();
 
     useEffect(() => {
       if (didNavigate) {
@@ -64,18 +72,21 @@ const ZudokoInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    const [zudokuContext] = useState(() => new ZudokuContext(props));
+    zudokuContext ??= new ZudokuContext(props, queryClient);
 
     const heads = props.plugins
-      ?.filter(hasHead)
+      ?.flatMap((plugin) =>
+        hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
+      )
       // eslint-disable-next-line react/no-array-index-key
-      .map((plugin, i) => <Fragment key={i}>{plugin.getHead?.()}</Fragment>);
+      .map((entry, i) => <Helmet key={i}>{entry}</Helmet>);
 
     return (
       <>
-        <Helmet>{heads}</Helmet>
+        {heads}
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
+            <RouterEventsEmitter />
             <MDXProvider components={mdxComponents}>
               <ThemeProvider attribute="class" disableTransitionOnChange>
                 <ComponentsProvider value={components}>

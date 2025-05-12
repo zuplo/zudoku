@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import { SchemaObject } from "../../oas/parser/index.js";
+import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
@@ -97,7 +97,6 @@ export const SidecarExamples = ({
             <SyntaxHighlight
               language={language}
               noBackground
-              copyable
               className="[--scrollbar-color:gray] text-xs max-h-[500px] p-2"
               code={formattedExample}
             />

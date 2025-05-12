@@ -1,0 +1,28 @@
+{
+  "name": "api-identity-plugin",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "zudoku dev",
+    "build": "zudoku build",
+    "preview": "zudoku preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zudoku": "workspace:*"
+  }
+}

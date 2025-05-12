@@ -1,5 +1,5 @@
-import { Auth0AuthenticationConfig } from "../../../config/config.js";
-import { AuthenticationProviderInitializer } from "../authentication.js";
+import { type Auth0AuthenticationConfig } from "../../../config/config.js";
+import { type AuthenticationProviderInitializer } from "../authentication.js";
 import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
 
@@ -11,6 +11,7 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
       issuer: `https://${config.domain}`,
       clientId: config.clientId,
       audience: config.audience,
+      scopes: config.scopes,
     });
   }
 

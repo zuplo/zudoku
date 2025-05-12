@@ -2,13 +2,13 @@
 // https://github.com/hi-ogawa/vite-plugins/tree/main/packages/ssr-css
 import path from "node:path";
 import { type DevEnvironment, isCSSRequest, type Plugin } from "vite";
-import type { ZudokuPluginOptions } from "../../config/config.js";
+import type { LoadedConfig } from "../../config/config.js";
 import { collectStyle } from "./collect.js";
 
 const VIRTUAL_ENTRY = "virtual:ssr-css.css";
 
 export function vitePluginSsrCss(
-  getConfig: () => ZudokuPluginOptions,
+  getConfig: () => LoadedConfig,
   pluginOpts: { entries: string[] },
 ): Plugin {
   let server: DevEnvironment;

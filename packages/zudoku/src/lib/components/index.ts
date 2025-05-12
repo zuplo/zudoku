@@ -1,5 +1,6 @@
 import { useMDXComponents as useMDXComponentsImport } from "@mdx-js/react";
 import { Helmet } from "@zudoku/react-helmet-async";
+import { useTheme as useThemeImport } from "next-themes";
 import { Link as LinkImport } from "react-router";
 import { useAuth as useAuthImport } from "../authentication/hook.js";
 import { RouteGuard as RouteGuardImport } from "../core/RouteGuard.js";
@@ -11,6 +12,7 @@ import {
   Bootstrap as BootstrapImport,
   BootstrapStatic as BootstrapStaticImport,
 } from "./Bootstrap.js";
+import { BuildCheck as BuildCheckImport } from "./BuildCheck.js";
 import {
   CACHE_KEYS as CACHE_KEYS_IMPORT,
   useCache as useCacheImport,
@@ -46,3 +48,5 @@ export const Spinner = /*@__PURE__*/ SpinnerImport;
 export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;
 export const Button = /*@__PURE__*/ ButtonImport;
 export const Link = /*@__PURE__*/ LinkImport;
+export const useTheme = /*@__PURE__*/ useThemeImport;
+export const BuildCheck = /*@__PURE__*/ BuildCheckImport;

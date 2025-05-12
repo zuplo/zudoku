@@ -1,32 +1,47 @@
 import fs from "node:fs/promises";
 import path from "path";
+import type { PrerenderResponse } from "./PrerenderResponse.js";
 
-export class FileWritingResponse {
-  private buffer = "";
-  private dontSave = false;
+export class FileWritingResponse implements PrerenderResponse {
   private resolve = () => {};
   private resolved = new Promise<void>((res) => (this.resolve = res));
+  private dontSave = false;
+
+  public buffer = "";
+  public redirectedTo?: string;
+  public statusCode = 200;
+  public options: { fileName: string; writeRedirects: boolean };
 
   set() {}
   status(status: number) {
+    this.statusCode = status;
     if (status >= 300) {
       this.dontSave = true;
     }
   }
   on() {}
 
-  constructor(private readonly fileName: string) {}
-
-  redirect() {
-    this.buffer = "redirected";
-    this.dontSave = true;
-    this.resolve();
+  constructor(options: { fileName: string; writeRedirects: boolean }) {
+    this.options = options;
   }
 
-  send = async (chunk: string) => {
+  redirect(status: number, url: string) {
+    this.statusCode = status;
+    if (this.options.writeRedirects) {
+      this.write(
+        `<!doctype html><meta http-equiv="refresh" content="0; url=${url}">`,
+      );
+    } else {
+      this.dontSave = true;
+    }
+    this.redirectedTo = url;
+    void this.end();
+  }
+
+  async send(chunk: string) {
     this.write(chunk);
     await this.end();
-  };
+  }
 
   write(chunk: string, _encoding?: string) {
     this.buffer += chunk;
@@ -34,8 +49,8 @@ export class FileWritingResponse {
 
   async end(chunk = "") {
     if (!this.dontSave) {
-      await fs.mkdir(path.dirname(this.fileName), { recursive: true });
-      await fs.writeFile(this.fileName, this.buffer + chunk);
+      await fs.mkdir(path.dirname(this.options.fileName), { recursive: true });
+      await fs.writeFile(this.options.fileName, this.buffer + chunk);
     }
     this.resolve();
   }

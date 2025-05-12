@@ -1,16 +1,20 @@
 import { glob } from "glob";
+import { minimatch } from "minimatch";
 import path from "node:path";
-import { type Plugin } from "vite";
-import type { ZudokuPluginOptions } from "../config/config.js";
+import type { Plugin, ViteDevServer } from "vite";
+import type { LoadedConfig } from "../config/config.js";
 import { DocResolver } from "../lib/plugins/markdown/resolver.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import { writePluginDebugCode } from "./debug.js";
+import { reload } from "./plugin-config-reload.js";
 
-const ensureLeadingSlash = (str: string) =>
-  str.startsWith("/") ? str : `/${str}`;
+const ensureLeadingSlash = joinUrl;
 
-const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
+const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
+
+  let server: ViteDevServer;
 
   return {
     name: "zudoku-docs-plugin",
@@ -19,19 +23,38 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
         return resolvedVirtualModuleId;
       }
     },
+    configureServer(srv) {
+      server = srv;
+    },
+    watchChange(id, change) {
+      if (change.event !== "delete" && change.event !== "create") return;
+
+      const config = getConfig();
+      const resolver = new DocResolver(config);
+      const docsConfigs = resolver.getDocsConfigs();
+
+      const matches = docsConfigs.some((docConfig) =>
+        minimatch(
+          ensureLeadingSlash(path.relative(config.__meta.rootDir, id)),
+          docConfig.files,
+        ),
+      );
+
+      if (matches) reload(server);
+    },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
-        if (config.mode === "standalone") {
+        if (config.__meta.mode === "standalone") {
           return `export const configuredDocsPlugins = [];`;
         }
 
         const code: string[] = [
           // IMPORTANT! This path here is important, we MUST resolve
           // files here as Typescript from the appDir
-          config.mode === "internal"
-            ? `import { markdownPlugin } from "${config.moduleDir}/src/lib/plugins/markdown/index.tsx";`
+          config.__meta.mode === "internal"
+            ? `import { markdownPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/markdown/index.tsx";`
             : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
           `const docsPluginOptions = [];`,
         ];
@@ -58,7 +81,7 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           // This does only happen in dev SSR environments, so for prod the `basePath` is not added
 
           const globbedFiles = await glob(docsConfig.files, {
-            root: config.rootDir,
+            root: config.__meta.rootDir,
             ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
             absolute: false,
             posix: true,
@@ -87,7 +110,7 @@ const viteDocsPlugin = (getConfig: () => ZudokuPluginOptions): Plugin => {
           `export { configuredDocsPlugins };`,
         );
 
-        await writePluginDebugCode(config.rootDir, "docs-plugin", code);
+        await writePluginDebugCode(config.__meta.rootDir, "docs-plugin", code);
 
         return code.join("\n");
       }

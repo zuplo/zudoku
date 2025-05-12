@@ -10,18 +10,18 @@ const entries: Record<string, string> = {
   "auth-clerk": "./src/lib/authentication/providers/clerk.tsx",
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
+  plugins: "./src/lib/core/plugins.ts",
+  hooks: "./src/lib/hooks/index.ts",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",
   "plugin-redirect": "./src/lib/plugins/redirect/index.tsx",
   "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
+  "plugin-search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
   "plugin-api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
   ...globEntries("./src/lib/ui/**/*.{ts,tsx}", "ui"),
-  ...globEntries(
-    "./src/lib/plugins/openapi/post-processors/*.ts",
-    "post-processors",
-  ),
+  ...globEntries("./src/lib/plugins/openapi/processors/*.ts", "processors"),
 };
 
 export default defineConfig({
@@ -41,7 +41,7 @@ export default defineConfig({
       name: "Zudoku",
       formats: ["es"],
       fileName: (_format, fileName) =>
-        fileName.startsWith("ui/") || fileName.startsWith("post-processors/")
+        fileName.startsWith("ui/") || fileName.startsWith("processors/")
           ? `${fileName}.js`
           : `zudoku.${fileName}.js`,
     },

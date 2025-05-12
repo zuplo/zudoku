@@ -1,24 +1,28 @@
 import { cva } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
-import { NavLink, useSearchParams } from "react-router";
+import { NavLink, useLocation, useSearchParams } from "react-router";
 
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
-import { joinPath } from "../../util/joinPath.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { SidebarBadge } from "./SidebarBadge.js";
 import { SidebarCategory } from "./SidebarCategory.js";
 
 export const navigationListItem = cva(
-  "flex items-center gap-2 px-[--padding-nav-item] py-1.5 rounded-lg hover:bg-accent",
+  "flex items-center gap-2 px-[--padding-nav-item] my-0.5 py-1.5 rounded-lg hover:bg-accent tabular-nums",
   {
     variants: {
       isActive: {
-        true: "text-primary font-medium",
+        true: "bg-accent font-medium",
         false: "text-foreground/80",
       },
       isMuted: {
         true: "text-foreground/30",
+        false: "",
+      },
+      isPending: {
+        true: "bg-accent animate-pulse",
         false: "",
       },
     },
@@ -37,6 +41,7 @@ export const SidebarItem = ({
   item: SidebarItemType;
   onRequestClose?: () => void;
 }) => {
+  const location = useLocation();
   const { activeAnchor } = useViewportAnchor();
   const [searchParams] = useSearchParams();
 
@@ -48,9 +53,12 @@ export const SidebarItem = ({
     case "doc":
       return (
         <NavLink
-          className={({ isActive }) => navigationListItem({ isActive })}
-          to={joinPath(item.id)}
+          className={({ isActive, isPending }) =>
+            navigationListItem({ isActive, isPending })
+          }
+          to={joinUrl(item.id)}
           onClick={onRequestClose}
+          end
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
@@ -66,12 +74,16 @@ export const SidebarItem = ({
         </NavLink>
       );
     case "link":
-      return item.href.startsWith("#") ? (
+      return !item.href.startsWith("http") ? (
         <AnchorLink
-          to={{ hash: item.href, search: searchParams.toString() }}
-          {...{ [DATA_ANCHOR_ATTR]: item.href.slice(1) }}
+          to={{
+            pathname: item.href.split("#")[0],
+            hash: item.href.split("#")[1],
+            search: searchParams.toString(),
+          }}
+          {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
           className={navigationListItem({
-            isActive: item.href.slice(1) === activeAnchor,
+            isActive: item.href === [location.pathname, activeAnchor].join("#"),
             className: item.badge?.placement !== "start" && "justify-between",
           })}
           onClick={onRequestClose}
@@ -87,25 +99,6 @@ export const SidebarItem = ({
             <span className="break-all">{item.label}</span>
           )}
         </AnchorLink>
-      ) : !item.href.startsWith("http") ? (
-        <NavLink
-          className={navigationListItem({
-            isActive: item.href.split("#")[1] === activeAnchor,
-            className: item.badge?.placement !== "start" && "justify-between",
-          })}
-          to={item.href}
-        >
-          {item.badge ? (
-            <>
-              <span className="truncate" title={item.label}>
-                {item.label}
-              </span>
-              <SidebarBadge {...item.badge} />
-            </>
-          ) : (
-            <span className="break-all">{item.label}</span>
-          )}
-        </NavLink>
       ) : (
         <a
           className={navigationListItem()}

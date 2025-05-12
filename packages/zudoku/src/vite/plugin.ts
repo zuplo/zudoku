@@ -1,6 +1,6 @@
 import react from "@vitejs/plugin-react";
 import { type PluginOption } from "vite";
-import { LoadedConfig, type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 import { vitePluginSsrCss } from "./css/plugin.js";
 import viteApiKeysPlugin from "./plugin-api-keys.js";
 import viteApiPlugin from "./plugin-api.js";
@@ -18,7 +18,7 @@ import { viteSidebarPlugin } from "./plugin-sidebar.js";
 import { viteThemeCss } from "./plugin-theme-css.js";
 
 export default function vitePlugin(
-  initialConfig: ZudokuPluginOptions,
+  initialConfig: LoadedConfig,
   onConfigChange?: () => Promise<LoadedConfig>,
 ): PluginOption {
   const [configReloadPlugin, getCurrentConfig] = createConfigReloadPlugin(

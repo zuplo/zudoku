@@ -1,18 +1,19 @@
 import logger from "loglevel";
 import * as oauth from "oauth4webapi";
-import { OpenIDAuthenticationConfig } from "../../../config/config.js";
+import { type OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import {
-  AuthenticationProvider,
-  AuthenticationProviderInitializer,
+  type AuthenticationProvider,
+  type AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
-import { useAuthState, UserProfile } from "../state.js";
+import { useAuthState, type UserProfile } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
+const STATE_KEY = "oauth-state";
 
 export interface OpenIdProviderData {
   accessToken: string;
@@ -50,7 +51,8 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   protected authorizationServer: oauth.AuthorizationServer | undefined;
 
-  protected callbackUrlPath: string;
+  protected absoluteCallbackUrlPath: string;
+  protected relativeCallbackUrlPath: string;
   protected logoutRedirectUrlPath: string;
   protected onAuthorizationUrl?: (
     authorizationUrl: URL,
@@ -60,7 +62,8 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   private readonly redirectToAfterSignIn: string;
   private readonly redirectToAfterSignOut: string;
   private readonly audience?: string;
-
+  private readonly scopes: string[];
+  private readonly root: string;
   constructor({
     issuer,
     audience,
@@ -69,6 +72,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     redirectToAfterSignIn,
     redirectToAfterSignOut,
     basePath,
+    scopes,
   }: OpenIDAuthenticationConfig) {
     this.client = {
       client_id: clientId,
@@ -76,14 +80,19 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     };
     this.audience = audience;
     this.issuer = issuer;
-    this.callbackUrlPath = joinUrl(basePath, "/oauth/callback");
+    this.relativeCallbackUrlPath = "/oauth/callback";
+    this.absoluteCallbackUrlPath = joinUrl(
+      basePath,
+      this.relativeCallbackUrlPath,
+    );
+    this.scopes = scopes ?? ["openid", "profile", "email"];
 
-    const root = joinUrl(basePath, "/");
+    this.root = joinUrl(basePath, "/");
 
-    this.logoutRedirectUrlPath = root;
-    this.redirectToAfterSignUp = redirectToAfterSignUp ?? root;
-    this.redirectToAfterSignIn = redirectToAfterSignIn ?? root;
-    this.redirectToAfterSignOut = redirectToAfterSignOut ?? root;
+    this.logoutRedirectUrlPath = this.root;
+    this.redirectToAfterSignUp = redirectToAfterSignUp ?? this.root;
+    this.redirectToAfterSignIn = redirectToAfterSignIn ?? this.root;
+    this.redirectToAfterSignOut = redirectToAfterSignOut ?? this.root;
   }
 
   protected async getAuthServer() {
@@ -169,16 +178,23 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       authorizationServer.authorization_endpoint,
     );
 
-    sessionStorage.setItem("redirect-to", redirectTo);
+    const finalRedirect = redirectTo.startsWith(window.location.origin)
+      ? this.root !== "/" &&
+        redirectTo.startsWith(window.location.origin + this.root)
+        ? redirectTo.slice(window.location.origin.length + this.root.length)
+        : redirectTo.slice(window.location.origin.length)
+      : redirectTo;
+
+    sessionStorage.setItem("redirect-to", finalRedirect);
 
     const redirectUrl = new URL(window.location.origin);
-    redirectUrl.pathname = this.callbackUrlPath;
+    redirectUrl.pathname = this.absoluteCallbackUrlPath;
     redirectUrl.search = "";
 
     authorizationUrl.searchParams.set("client_id", this.client.client_id);
     authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
     authorizationUrl.searchParams.set("response_type", "code");
-    authorizationUrl.searchParams.set("scope", "openid profile email");
+    authorizationUrl.searchParams.set("scope", this.scopes.join(" "));
     authorizationUrl.searchParams.set("code_challenge", codeChallenge);
     authorizationUrl.searchParams.set(
       "code_challenge_method",
@@ -194,16 +210,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     });
 
     /**
-     * We cannot be sure the AS supports PKCE so we're going to use state too. Use of PKCE is
-     * backwards compatible even if the AS doesn't support it which is why we're using it regardless.
+     * The state parameter is used to prevent CSRF attacks and should be used in all authorization requests.
+     * It is independent of PKCE and should be used regardless of PKCE support.
      */
-    if (
-      authorizationServer.code_challenge_methods_supported?.includes("S256") !==
-      true
-    ) {
-      const state = oauth.generateRandomState();
-      authorizationUrl.searchParams.set("state", state);
-    }
+    const state = oauth.generateRandomState();
+    sessionStorage.setItem(STATE_KEY, state);
+    authorizationUrl.searchParams.set("state", state);
 
     // now redirect the user to authorizationUrl.href
     location.href = authorizationUrl.href;
@@ -251,6 +263,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     }
   }
 
+  signRequest = async (request: Request): Promise<Request> => {
+    const accessToken = await this.getAccessToken();
+    request.headers.set("Authorization", `Bearer ${accessToken}`);
+    return request;
+  };
+
   signOut = async () => {
     useAuthState.setState({
       isAuthenticated: false,
@@ -288,6 +306,12 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   handleCallback = async () => {
     const url = new URL(window.location.href);
     const state = url.searchParams.get("state");
+    const storedState = sessionStorage.getItem(STATE_KEY);
+    sessionStorage.removeItem(STATE_KEY);
+
+    if (state !== storedState) {
+      throw new AuthorizationError("Invalid state parameter");
+    }
 
     // one eternity later, the user lands back on the redirect_uri
     // Authorization Code Grant Request & Response
@@ -314,7 +338,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     }
 
     const redirectUrl = new URL(url);
-    redirectUrl.pathname = this.callbackUrlPath;
+    redirectUrl.pathname = this.absoluteCallbackUrlPath;
     redirectUrl.search = "";
 
     const response = await oauth.authorizationCodeGrantRequest(
@@ -372,7 +396,10 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   getAuthenticationPlugin() {
     // TODO: This API is a bit messy, we need to refactor auth plugins/providers
     // to remove the extra layers of abstraction.
-    return new OpenIdAuthPlugin(this.callbackUrlPath, this.handleCallback);
+    return new OpenIdAuthPlugin(
+      this.relativeCallbackUrlPath,
+      this.handleCallback,
+    );
   }
 }
 

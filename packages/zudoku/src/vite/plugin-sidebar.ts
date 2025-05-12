@@ -1,9 +1,12 @@
-import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import icons from "lucide-react/dist/esm/dynamicIconImports.js";
+import { type Plugin, type ViteDevServer } from "vite";
+import { type LoadedConfig } from "../config/config.js";
 import { SidebarManager } from "../config/validators/SidebarSchema.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
+
+const iconNames = Object.keys(icons);
 
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
@@ -13,10 +16,18 @@ const replaceSidebarIcons = (code: string) => {
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
-    collectedIcons.add(match[1]!);
+    if (!iconNames.includes(match[1]!)) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `Icon ${match[1]!} not found, see: https://lucide.dev/icons/`,
+      );
+      collectedIcons.add("MissingIcon as " + toPascalCase(match[1]!));
+    } else {
+      collectedIcons.add(toPascalCase(match[1]!));
+    }
   }
 
-  const importStatement = `import { ${[...collectedIcons].map(toPascalCase).join(", ")} } from "zudoku/icons";`;
+  const importStatement = `import { ${[...collectedIcons].join(", ")} } from "zudoku/icons";`;
   const replacedString = code.replaceAll(
     matchIconAnnotation,
     // The element will be created by the implementers side
@@ -26,12 +37,18 @@ const replaceSidebarIcons = (code: string) => {
   return `${importStatement}export const configuredSidebar = ${replacedString};`;
 };
 
-export const viteSidebarPlugin = (
-  getConfig: () => ZudokuPluginOptions,
-): Plugin => {
-  const virtualModuleId = "virtual:zudoku-sidebar";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+const virtualModuleId = "virtual:zudoku-sidebar";
+export const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
+export const invalidate = (server: ViteDevServer) => {
+  const sidebarModule =
+    server.environments.ssr.moduleGraph.getModuleById(virtualModuleId);
+  if (!sidebarModule) return;
+
+  server.environments.ssr.moduleGraph.invalidateModule(sidebarModule);
+};
+
+export const viteSidebarPlugin = (getConfig: () => LoadedConfig): Plugin => {
   return {
     name: "zudoku-sidebar-plugin",
     resolveId(id) {
@@ -43,12 +60,12 @@ export const viteSidebarPlugin = (
       if (id !== resolvedVirtualModuleId) return;
       const config = getConfig();
 
-      const manager = new SidebarManager(config.rootDir, config.sidebar);
+      const manager = new SidebarManager(config.__meta.rootDir, config.sidebar);
       const resolvedSidebars = await manager.resolveSidebars();
 
       const code = JSON.stringify(resolvedSidebars);
       await writePluginDebugCode(
-        config.rootDir,
+        config.__meta.rootDir,
         "sidebar-plugin",
         code,
         "json",

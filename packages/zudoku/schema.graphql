@@ -2,6 +2,10 @@ schema {
   query: Query
 }
 
+type Components {
+  schemas: [SchemaItem!]
+}
+
 type EncodingItem {
   allowReserved: Boolean
   contentType: String
@@ -45,6 +49,7 @@ type OperationItem {
   contentTypes: [String!]!
   deprecated: Boolean
   description: String
+  extensions: JSONObject
   method: String!
   operationId: String
   parameters: [ParameterItem!]
@@ -70,6 +75,7 @@ type ParameterItem {
   description: String
   examples: [ExampleItem!]
   explode: Boolean
+  extensions: JSONObject
   in: ParameterIn!
   name: String!
   required: Boolean
@@ -95,13 +101,16 @@ type RequestBodyObject {
 type ResponseItem {
   content: [MediaTypeObject!]
   description: String
+  extensions: JSONObject
   headers: JSON
   links: JSON
   statusCode: String!
 }
 
 type Schema {
+  components: Components
   description: String
+  extensions: JSONObject
   openapi: String!
   operations(
     method: String
@@ -113,16 +122,28 @@ type Schema {
   paths: [PathItem!]!
   servers: [Server!]!
   summary: String
-  tags(name: String): [SchemaTag!]!
+  tag(name: String, slug: String, untagged: Boolean): SchemaTag
+  tags: [SchemaTag!]!
   title: String!
   url: String
   version: String!
 }
 
+type SchemaItem {
+  extensions: JSONObject
+  name: String!
+  schema: JSONSchema!
+}
+
 type SchemaTag {
   description: String
-  name: String!
+  extensions: JSONObject
+  isUntagged: Boolean!
+  name: String
+  next: SchemaTag
   operations: [OperationItem!]!
+  prev: SchemaTag
+  slug: String
 }
 
 enum SchemaType {
@@ -138,5 +159,6 @@ type Server {
 
 type TagItem {
   description: String
+  extensions: JSONObject
   name: String!
 }

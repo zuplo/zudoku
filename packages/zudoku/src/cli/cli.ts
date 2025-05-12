@@ -6,11 +6,19 @@ import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
 import build from "./cmds/build.js";
 import dev from "./cmds/dev.js";
+import preview from "./cmds/preview.js";
 import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
 import { logger } from "./common/logger.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
-import { printCriticalFailureToConsoleAndExit } from "./common/output.js";
+import {
+  printCriticalFailureToConsoleAndExit,
+  printDiagnosticsToConsole,
+} from "./common/output.js";
+
+process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
+  ? "internal"
+  : "module";
 
 const MIN_NODE_VERSION = "20.0.0";
 
@@ -38,8 +46,20 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
   }
 
   const cli = yargs(hideBin(process.argv))
+    .option("zuplo", {
+      type: "boolean",
+      description: "Enable Zuplo mode",
+      global: true,
+    })
+    .middleware((argv) => {
+      if (argv.zuplo) {
+        process.env.ZUPLO = "1";
+        printDiagnosticsToConsole("Running in Zuplo mode");
+      }
+    })
     .command(build)
     .command(dev)
+    .command(preview)
     .demandCommand()
     .strictCommands()
     .version(packageJson?.version)

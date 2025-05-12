@@ -1,23 +1,36 @@
 import type { LucideIcon } from "lucide-react";
-import { type ReactElement } from "react";
-import { type RouteObject } from "react-router";
+import type { ReactElement } from "react";
+import type { Location, RouteObject } from "react-router";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
-import { MdxComponentsType } from "../util/MdxComponents.js";
-import { ZudokuContext, type ApiIdentity } from "./ZudokuContext.js";
+import type { MdxComponentsType } from "../util/MdxComponents.js";
+import type {
+  ApiIdentity,
+  ZudokuContext,
+  ZudokuEvents,
+} from "./ZudokuContext.js";
 
 export type ZudokuPlugin =
   | CommonPlugin
   | ProfileMenuPlugin
   | NavigationPlugin
   | ApiIdentityPlugin
-  | SearchProviderPlugin;
+  | SearchProviderPlugin
+  | EventConsumerPlugin;
 
 export type { RouteObject };
 
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
-  getSidebar?: (path: string) => Promise<Sidebar>;
+  getSidebar?: (path: string, context: ZudokuContext) => Promise<Sidebar>;
 }
+
+export const createApiIdentityPlugin = (
+  plugin: ApiIdentityPlugin,
+): ApiIdentityPlugin => plugin;
+
+export const createProfileMenuPlugin = (
+  plugin: ProfileMenuPlugin,
+): ProfileMenuPlugin => plugin;
 
 export interface ApiIdentityPlugin {
   getIdentities: (context: ZudokuContext) => Promise<ApiIdentity[]>;
@@ -47,9 +60,18 @@ export interface CommonPlugin {
   initialize?: (
     context: ZudokuContext,
   ) => Promise<void | boolean> | void | boolean;
-  getHead?: () => ReactElement | undefined;
+  getHead?: ({ location }: { location: Location }) => ReactElement | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
+
+export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
+  events: { [K in keyof Event]?: Event[K] };
+};
+
+export const isEventConsumerPlugin = (
+  obj: ZudokuPlugin,
+): obj is EventConsumerPlugin =>
+  "events" in obj && typeof obj.events === "object";
 
 export const isProfileMenuPlugin = (
   obj: ZudokuPlugin,

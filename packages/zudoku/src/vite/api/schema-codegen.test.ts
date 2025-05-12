@@ -59,7 +59,9 @@ describe("Generate OpenAPI schema module", () => {
         .schema;
 
     expect(successSchema).toStrictEqual(input.components.schemas.Pet);
+    expect(successSchema.__$ref).toStrictEqual("#/components/schemas/Pet");
     expect(errorSchema).toStrictEqual(input.components.schemas.Error);
+    expect(errorSchema.__$ref).toStrictEqual("#/components/schemas/Error");
   });
 
   it("should handle circular refs", async () => {
@@ -168,6 +170,70 @@ describe("Generate OpenAPI schema module", () => {
     expect(pet.oneOf[1]).toStrictEqual(input.components.schemas.Dog);
   });
 
+  it("should handle URL-encoded characters in references", async () => {
+    const input = {
+      components: { schemas: { "Type With Space": { type: "string" } } },
+      info: { schema: { $ref: "#/components/schemas/Type With Space" } },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    expect(schema.info.schema).toStrictEqual(
+      input.components.schemas["Type With Space"],
+    );
+  });
+
+  it("should generate proper slugs for tags and operations", async () => {
+    const input = {
+      openapi: "3.0.0",
+      info: {
+        title: "Test API",
+        version: "1.0.0",
+      },
+      tags: [{ name: "Pets & Animals" }, { name: "Admins & Users" }],
+      paths: {
+        "/pets": {
+          tags: ["Pets & Animals"],
+          get: {
+            tags: ["Pets & Animals"],
+            responses: { "200": { description: "OK" } },
+          },
+          post: {
+            tags: ["Pets & Animals", "Some other tag"],
+            responses: { "201": { description: "Created" } },
+          },
+          head: {
+            tags: ["Pets & Animals"],
+            responses: { "200": { description: "OK" } },
+          },
+        },
+        "/users": {
+          get: {
+            tags: ["Admins & Users"],
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    };
+
+    const { slugs } = await executeCode(await generateCode(input));
+
+    expect(slugs.operations).toMatchInlineSnapshot(`
+      {
+        "/pets-get": "get-pets",
+        "/pets-head": "head-pets",
+        "/pets-post": "post-pets",
+        "/users-get": "get-users",
+      }
+    `);
+    expect(slugs.tags).toMatchInlineSnapshot(`
+      {
+        "Admins & Users": "admins-and-users",
+        "Pets & Animals": "pets-and-animals",
+        "Some other tag": "some-other-tag",
+      }
+    `);
+  });
+
   it("should generate correct code for circular refs", async () => {
     const input = {
       definitions: {
@@ -200,6 +266,7 @@ describe("Generate OpenAPI schema module", () => {
         "#/definitions/pet": __refs[0],
         "#/definitions/thing": __refs[1]
       };
+      const __refMapPaths = Object.keys(__refMap);
       Object.assign(__refs[0], {
         "title": "pet",
         "type": "object",
@@ -221,7 +288,9 @@ describe("Generate OpenAPI schema module", () => {
           }
         }
       });
+      Object.defineProperty(__refs[0], "__$ref", { value: __refMapPaths[0], enumerable: false });
       Object.assign(__refs[1], __refMap["#/definitions/thing"]);
+      Object.defineProperty(__refs[1], "__$ref", { value: __refMapPaths[1], enumerable: false });
       export const schema = {
         "definitions": {
           "child": {
@@ -257,6 +326,10 @@ describe("Generate OpenAPI schema module", () => {
             }
           }
         }
+      };
+      export const slugs = {
+        operations: {},
+        tags: {},
       };"
     `);
   });

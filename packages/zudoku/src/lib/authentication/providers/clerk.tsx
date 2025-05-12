@@ -1,6 +1,6 @@
 import type { Clerk } from "@clerk/clerk-js";
-import { ClerkAuthenticationConfig } from "../../../config/config.js";
-import { AuthenticationProviderInitializer } from "../authentication.js";
+import { type ClerkAuthenticationConfig } from "../../../config/config.js";
+import { type AuthenticationProviderInitializer } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { useAuthState } from "../state.js";
 
@@ -30,6 +30,9 @@ class ClerkAuthPlugin extends AuthenticationPlugin {
             clerk.session.user.emailAddresses[0]?.emailAddress,
           emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerk.session.user.imageUrl,
+        },
+        providerData: {
+          user: clerk.session.user,
         },
       });
     } else {
@@ -74,6 +77,15 @@ const clerkAuth: AuthenticationProviderInitializer<
           emailVerified: verifiedEmail !== undefined,
           pictureUrl: clerkApi.user.imageUrl,
         },
+        providerData: {
+          user: {
+            publicMetadata: clerkApi.user.publicMetadata,
+            id: clerkApi.user.id,
+            emailAddresses: clerkApi.user.emailAddresses,
+            imageUrl: clerkApi.user.imageUrl,
+            fullName: clerkApi.user.fullName,
+          },
+        },
       });
     }
 
@@ -92,8 +104,16 @@ const clerkAuth: AuthenticationProviderInitializer<
     return response;
   }
 
+  async function signRequest(request: Request): Promise<Request> {
+    const response = await getAccessToken();
+    request.headers.set("Authorization", `Bearer ${response}`);
+    return request;
+  }
+
   return {
+    clerk: clerkApi,
     getAccessToken,
+    signRequest,
     signOut: async () => {
       await ensureLoaded;
       await clerkApi?.signOut({
@@ -106,18 +126,22 @@ const clerkAuth: AuthenticationProviderInitializer<
         providerData: null,
       });
     },
-    signIn: async () => {
+    signIn: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignIn({
-        signInForceRedirectUrl: window.location.origin + redirectToAfterSignIn,
-        signUpForceRedirectUrl: window.location.origin + redirectToAfterSignUp,
+        signInForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignIn,
+        signUpForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignUp,
       });
     },
-    signUp: async () => {
+    signUp: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignUp({
-        signInForceRedirectUrl: window.location.origin + redirectToAfterSignIn,
-        signUpForceRedirectUrl: window.location.origin + redirectToAfterSignUp,
+        signInForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignIn,
+        signUpForceRedirectUrl:
+          redirectTo ?? window.location.origin + redirectToAfterSignUp,
       });
     },
     getAuthenticationPlugin() {

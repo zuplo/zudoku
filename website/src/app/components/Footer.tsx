@@ -10,20 +10,27 @@ export const Footer = () => (
               <strong className="text-white">Examples</strong>
               <ul className="">
                 <li className="pt-4">
-                  <a
-                    className="hover:text-white"
-                    href="https://docs-zudoku.pages.dev"
-                  >
+                  <a className="hover:text-white" href="https://zuplo.com/docs">
                     Zuplo Docs
                   </a>
                 </li>
                 <li className="pt-4">
                   <a
                     className="hover:text-white"
-                    href="/demo?api-url=https://rickandmorty.zuplo.io/openapi.json"
+                    href="https://cosmocargo.dev"
                     target="_blank"
                   >
-                    Rick and Morty
+                    Cosmo Cargo
+                  </a>
+                </li>
+                <li className="pt-4">
+                  <a
+                    className="hover:text-white"
+                    href="https://outpost.hookdeck.com/docs"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Outpost (Hookdeck)
                   </a>
                 </li>
               </ul>

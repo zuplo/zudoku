@@ -48,7 +48,6 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
           run_install: false
 
       - name: Install Node.js
@@ -205,6 +204,11 @@ jobs:
 
       # Trigger updates of internal projects using Zudoku
       - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
+        # Only for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
+      - run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'
         env:

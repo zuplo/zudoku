@@ -4,8 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "zudoku dev",
-    "build": "zudoku build"
+    "dev": "zudoku dev --zuplo",
+    "build": "zudoku build --zuplo",
+    "preview": "zudoku preview --zuplo"
   },
   "nx": {
     "tags": [
@@ -26,7 +27,7 @@
     "zudoku": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^20",
+    "@types/node": "catalog:",
     "typescript": "^5"
   }
 }

@@ -1,9 +1,7 @@
 import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type LoadedConfig } from "../config/config.js";
 
-const viteCustomPagesPlugin = (
-  getConfig: () => ZudokuPluginOptions,
-): Plugin => {
+const viteCustomPagesPlugin = (getConfig: () => LoadedConfig): Plugin => {
   const virtualModuleId = "virtual:zudoku-custom-pages-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
   return {
@@ -17,14 +15,14 @@ const viteCustomPagesPlugin = (
       if (id === resolvedVirtualModuleId) {
         const config = getConfig();
 
-        if (!config.customPages || config.mode === "standalone") {
+        if (!config.customPages || config.__meta.mode === "standalone") {
           return `export const configuredCustomPagesPlugin = undefined;`;
         }
 
         const code = [
           `import config from "virtual:zudoku-config";`,
-          config.mode === "internal"
-            ? `import { customPagesPlugin } from "${config.moduleDir}/src/lib/plugins/custom-pages/index.tsx";`
+          config.__meta.mode === "internal"
+            ? `import { customPagesPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/custom-pages/index.tsx";`
             : `import { customPagesPlugin } from "zudoku/plugins/custom-pages";`,
           `export const configuredCustomPagesPlugin = customPagesPlugin(config.customPages);`,
         ];

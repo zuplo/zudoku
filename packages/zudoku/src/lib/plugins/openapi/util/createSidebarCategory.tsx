@@ -28,12 +28,10 @@ export const createSidebarCategory = ({
     type: "link" as const,
     label: operation.summary ?? operation.path,
     href: `${path}#${operation.slug}`,
-    ...(operation.method && {
-      badge: {
-        label: operation.method,
-        color: MethodColorMap[operation.method.toLowerCase()]!,
-        invert: true,
-      } as const,
-    }),
+    badge: {
+      label: operation.method,
+      color: MethodColorMap[operation.method.toLowerCase()]!,
+      invert: true,
+    },
   })),
 });

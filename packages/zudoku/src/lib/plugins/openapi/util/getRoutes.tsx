@@ -1,4 +1,3 @@
-import slugify from "@sindresorhus/slugify";
 import { redirect, type RouteObject } from "react-router";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { GraphQLClient } from "../client/GraphQLClient.js";
@@ -48,15 +47,28 @@ const createRoute = ({
   },
 });
 
+const createAdditionalRoutes = (basePath: string) => [
+  // Category without tagged operations
+  createRoute({
+    path: joinUrl(basePath, UNTAGGED_PATH),
+    untagged: true,
+  }),
+  // Schema list route
+  {
+    path: joinUrl(basePath, "~schemas"),
+    lazy: async () => {
+      const { SchemaList } = await import("../SchemaList.js");
+      return { element: <SchemaList /> };
+    },
+  },
+];
+
 // Creates routes for a specific version, including tag-based routes and the untagged operations route.
 const createVersionRoutes = (
   versionPath: string,
   tagPages: string[],
 ): RouteObject[] => {
-  const firstTagRoute = joinUrl(
-    versionPath,
-    tagPages[0] ? slugify(tagPages[0]) : UNTAGGED_PATH,
-  );
+  const firstTagRoute = joinUrl(versionPath, tagPages.at(0) ?? UNTAGGED_PATH);
 
   return [
     // Redirect to first tag on the index route
@@ -64,15 +76,11 @@ const createVersionRoutes = (
     // Create routes for each tag
     ...tagPages.map((tag) =>
       createRoute({
-        path: joinUrl(versionPath, slugify(tag)),
+        path: joinUrl(versionPath, tag),
         tag,
       }),
     ),
-    // Category without tagged operations
-    createRoute({
-      path: joinUrl(versionPath, UNTAGGED_PATH),
-      untagged: true,
-    }),
+    ...createAdditionalRoutes(versionPath),
   ];
 };
 
@@ -97,7 +105,10 @@ export const getRoutes = ({
       createOasProvider({
         basePath,
         routePath: basePath,
-        routes: [createRoute({ path: basePath + "/:tag?" })],
+        routes: [
+          createRoute({ path: basePath + "/:tag?" }),
+          ...createAdditionalRoutes(basePath),
+        ],
         client,
         config,
       }),

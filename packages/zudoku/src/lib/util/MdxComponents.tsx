@@ -1,9 +1,11 @@
-import { MDXComponents } from "mdx/types.js";
-import { Link } from "react-router";
+import { type MDXComponents } from "mdx/types.js";
+import { AnchorLink } from "../components/AnchorLink.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
-import { SyntaxHighlight } from "../components/SyntaxHighlight.js";
+import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
+import { Stepper } from "../ui/Stepper.js";
+import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
 
 export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
@@ -46,11 +48,14 @@ export const MdxComponents = {
   ),
   a: ({ href, node, ...props }) =>
     href && !href.startsWith("http") ? (
-      <Link to={href} relative="path" {...props} />
+      <AnchorLink to={href} relative="path" {...props} />
     ) : (
       <a href={href} target="_blank" {...props} rel="noreferrer" />
     ),
+  Button,
   Callout,
+  Stepper,
+  SyntaxHighlight,
   tip: (props) => <Callout type="tip" {...props} />,
   info: (props) => <Callout type="info" {...props} />,
   note: (props) => <Callout type="note" {...props} />,

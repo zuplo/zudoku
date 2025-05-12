@@ -1,13 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useState, useTransition } from "react";
-import { useSelectedServer } from "../../authentication/state.js";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Button } from "../../ui/Button.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 import { SimpleSelect } from "./SimpleSelect.js";
+import { useSelectedServer } from "./state.js";
 
 const ServersQuery = graphql(/* GraphQL */ `
   query ServersQuery($input: JSON!, $type: SchemaType!) {

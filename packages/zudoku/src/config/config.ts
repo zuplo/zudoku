@@ -1,19 +1,18 @@
-import { ConfigWithMeta } from "./common.js";
+import type { Provider } from "@supabase/supabase-js";
+import type { ConfigWithMeta } from "./common.js";
+import type { BuildConfig } from "./validators/BuildSchema.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 
-export type URLString = `https://${string}` | `http://${string}`;
+export type { ZudokuConfig };
 
-export { type ZudokuConfig };
-
+export type ZudokuBuildConfig = BuildConfig;
 export type LoadedConfig = ConfigWithMeta<ZudokuConfig>;
 
-export interface ZudokuPluginOptions extends ConfigWithMeta<ZudokuConfig> {
-  rootDir: string;
-  moduleDir: string;
-
-  // Internal use only
-  mode: "internal" | "module" | "standalone";
-}
+type RedirectOptions = {
+  redirectToAfterSignUp?: string;
+  redirectToAfterSignIn?: string;
+  redirectToAfterSignOut?: string;
+};
 
 export type ClerkAuthenticationConfig = {
   type: "clerk";
@@ -35,14 +34,13 @@ export type Auth0AuthenticationConfig = {
   clientId: string;
   domain: string;
   audience?: string;
-
-  redirectToAfterSignUp?: string;
-  redirectToAfterSignIn?: string;
-  redirectToAfterSignOut?: string;
+  scopes?: string[];
 } & RedirectOptions;
 
-type RedirectOptions = {
-  redirectToAfterSignUp?: string;
-  redirectToAfterSignIn?: string;
-  redirectToAfterSignOut?: string;
-};
+export type SupabaseAuthenticationConfig = {
+  type: "supabase";
+  provider: Provider;
+  supabaseUrl: string;
+  supabaseKey: string;
+  basePath?: string;
+} & RedirectOptions;

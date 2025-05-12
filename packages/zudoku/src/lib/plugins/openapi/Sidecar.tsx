@@ -2,10 +2,11 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
-import { useSelectedServer } from "../../authentication/state.js";
+import { useZudoku } from "zudoku/components";
+import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
-import { SyntaxHighlight } from "../../components/SyntaxHighlight.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
+import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -19,6 +20,7 @@ import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
+import { useSelectedServer } from "./state.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
 
@@ -101,8 +103,10 @@ export const Sidecar = ({
   onSelectResponse: (response: string) => void;
 }) => {
   const { input, type, options } = useOasConfig();
+  const auth = useAuthState();
   const query = useCreateQuery(GetServerQuery, { input, type });
   const result = useSuspenseQuery(query);
+  const context = useZudoku();
 
   const methodTextColor = methodForColor(operation.method);
 
@@ -111,9 +115,20 @@ export const Sidecar = ({
   const [selectedExample, setSelectedExample] = useState<unknown>();
 
   const selectedLang =
-    searchParams.get("lang") ?? options?.examplesDefaultLanguage ?? "shell";
+    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
   const requestBodyContent = operation.requestBody?.content;
+
+  const transformedRequestBodyContent =
+    requestBodyContent && options?.transformExamples
+      ? options.transformExamples({
+          auth,
+          type: "request",
+          operation,
+          content: requestBodyContent,
+          context,
+        })
+      : requestBodyContent;
 
   const path = (
     <PathRenderer
@@ -136,8 +151,10 @@ export const Sidecar = ({
   const code = useMemo(() => {
     const example =
       selectedExample ??
-      (requestBodyContent?.[0]?.schema
-        ? generateSchemaExample(requestBodyContent[0].schema as SchemaObject)
+      (transformedRequestBodyContent?.[0]?.schema
+        ? generateSchemaExample(
+            transformedRequestBodyContent[0].schema as SchemaObject,
+          )
         : undefined);
 
     const snippet = new HTTPSnippet({
@@ -151,7 +168,7 @@ export const Sidecar = ({
             mimeType: "application/json",
           }
         : ({} as any),
-      headers: [],
+      headers: [{ name: "Content-Type", value: "application/json" }],
       queryString: [],
       httpVersion: "",
       cookies: [],
@@ -162,30 +179,38 @@ export const Sidecar = ({
     return getConverted(snippet, selectedLang);
   }, [
     selectedExample,
-    requestBodyContent,
+    transformedRequestBodyContent,
     operation.method,
     operation.path,
     selectedServer,
-    result.data.schema.url,
     selectedLang,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
+
+  const showPlayground =
+    isOnScreen &&
+    (operation.extensions["x-explorer-enabled"] === true ||
+      operation.extensions["x-zudoku-playground-enabled"] === true ||
+      (operation.extensions["x-explorer-enabled"] === undefined &&
+        operation.extensions["x-zudoku-playground-enabled"] === undefined &&
+        !options?.disablePlayground));
 
   return (
     <aside
       ref={ref}
       className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
+      data-pagefind-ignore="all"
     >
       <SidecarBox.Root>
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
-          <span className="font-mono break-words">
+          <span className="font-mono break-words leading-6">
             <span className={cn("font-semibold", methodTextColor)}>
               {operation.method.toLocaleUpperCase()}
             </span>
             &nbsp;
             {path}
           </span>
-          {isOnScreen && (
+          {showPlayground && (
             <PlaygroundDialogWrapper
               servers={result.data.schema.servers.map((server) => server.url)}
               operation={operation}
@@ -224,9 +249,9 @@ export const Sidecar = ({
           </>
         )}
       </SidecarBox.Root>
-      {isOnScreen && requestBodyContent && (
+      {isOnScreen && transformedRequestBodyContent && (
         <RequestBodySidecarBox
-          content={requestBodyContent}
+          content={transformedRequestBodyContent}
           onExampleChange={setSelectedExample}
         />
       )}
@@ -234,7 +259,19 @@ export const Sidecar = ({
         <ResponsesSidecarBox
           selectedResponse={selectedResponse}
           onSelectResponse={onSelectResponse}
-          responses={operation.responses}
+          responses={operation.responses.map((response) => ({
+            ...response,
+            content:
+              response.content && options?.transformExamples
+                ? options.transformExamples({
+                    auth,
+                    type: "response",
+                    context,
+                    operation,
+                    content: response.content,
+                  })
+                : response.content,
+          }))}
         />
       )}
     </aside>

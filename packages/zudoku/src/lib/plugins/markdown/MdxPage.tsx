@@ -2,18 +2,18 @@ import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { type PropsWithChildren, useEffect } from "react";
-import { Link, useHref } from "react-router";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
+import { Pagination } from "../../components/Pagination.js";
+import { Toc } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { cn } from "../../util/cn.js";
-import { Toc } from "./Toc.js";
-import { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
+import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
 
 declare global {
   interface Window {
@@ -51,12 +51,6 @@ export const MdxPage = ({
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
-  let canonicalUrl = null;
-  const path = useHref("");
-  if (typeof window !== "undefined") {
-    const domain = window.location.origin;
-    canonicalUrl = `${domain}${path}`;
-  }
 
   const title = frontmatter.title;
   const category = frontmatter.category ?? categoryTitle;
@@ -90,16 +84,19 @@ export const MdxPage = ({
   }, [file]);
 
   return (
-    <div className="xl:grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between">
+    <div
+      className="grid grid-cols-1 xl:grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      data-pagefind-filter="section:markdown"
+      data-pagefind-meta="section:markdown"
+    >
       <Helmet>
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
-        {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
       </Helmet>
       <div
         className={cn(
           ProseClasses,
-          "max-w-full xl:w-full xl:max-w-prose flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
+          "max-w-full xl:w-full xl:max-w-3xl flex-1 flex-shrink pt-[--padding-content-top]",
         )}
       >
         {(category || title) && (
@@ -117,41 +114,12 @@ export const MdxPage = ({
         />
         {!hidePager && (
           <>
-            <hr />
-            <div className="not-prose flex flex-wrap items-center justify-between gap-2 lg:gap-8">
-              {prev ? (
-                <Link
-                  to={prev.id}
-                  className="flex flex-col items-stretch gap-2 flex-1 min-w-max border rounded px-6 py-4 text-start hover:border-primary/85 transition shadow-sm hover:shadow-md"
-                  title={prev.label}
-                >
-                  <div className="text-sm text-muted-foreground">
-                    ← Previous page
-                  </div>
-                  <div className="text-lg text-primary truncate">
-                    {prev.label}
-                  </div>
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-              {next ? (
-                <Link
-                  to={next.id}
-                  className="flex flex-col items-stretch gap-2 flex-1 min-w-max border rounded px-6 py-4 text-end hover:border-primary/85 transition shadow-sm hover:shadow-md"
-                  title={next.label}
-                >
-                  <div className="text-sm text-muted-foreground">
-                    Next page →
-                  </div>
-                  <div className="text-lg text-primary truncate">
-                    {next.label}
-                  </div>
-                </Link>
-              ) : (
-                <div className="flex-1" />
-              )}
-            </div>
+            <hr className="my-10" />
+            <Pagination
+              prev={prev ? { to: prev.id, label: prev.label } : undefined}
+              next={next ? { to: next.id, label: next.label } : undefined}
+              className="mb-4"
+            />
           </>
         )}
       </div>

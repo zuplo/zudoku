@@ -6,81 +6,38 @@ Zudoku uses a single file for configuration. It controls the structure, metadata
 
 You can find the file in the root directory of your project. It will be start with `zudoku.config`. The file can be in either JavaScript or TypeScript format and use a `.js`, `.mjs`, `.jsx`, `.ts`, or `.tsx` file extension.
 
-When you create a project with `create-zudoku-app`, a default configuration file is generated for you. This file is a good starting point and can be customized to suit your needs.
+When you create a project, a default configuration file is generated for you. This file is a good starting point and can be customized to suit your needs.
 
 ## Example
 
-Below is real example that is used to configure the default Zudoku site that `create-zudoku-app` will generate. You can edit this configuration to suit your own needs.
+Below is an example of the default Zudoku configuration. You can edit this configuration to suit your own needs.
 
 ```typescript
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
   topNavigation: [
-    { id: "documentation", label: "Documentation" },
+    { id: "docs", label: "Documentation" },
     { id: "api", label: "API Reference" },
   ],
   sidebar: {
-    documentation: [
+    docs: [
       {
         type: "category",
         label: "Overview",
-        items: ["example", "other-example"],
+        items: ["introduction", "example"],
       },
     ],
   },
-  // Protect specific routes that require authentication
-  protectedRoutes: [
-    "/admin/*", // Protect all routes under /admin
-    "/api/private", // Protect private API documentation
-  ],
-  redirects: [{ from: "/", to: "/documentation" }],
+  redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: {
-    type: "url",
-    input: "https://api.example.com/openapi.json", // Enter the URL for your OpenAPI document
-    // input: "https://rickandmorty.zuplo.io/openapi.json", // ...or, uncomment this line to see an example
+    type: "file",
+    input: "./apis/openapi.yaml",
     navigationId: "api",
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",
   },
-};
-
-export default config;
-```
-
-## Multiple Files
-
-The configuration file is a standard JavaScript or TypeScript file, so you can split it into multiple files if you prefer. This can be useful if you have a large configuration or want to keep your code organized.
-
-For example, if you wanted to move your sidebar configuration to a separate file, you could create a new file called `sidebar.ts` and export the sidebar configuration from there.
-
-```ts
-// sidebar.ts
-import type { Sidebar } from "zudoku";
-
-export const sidebar: Record<string, Sidebar> = {
-  documentation: [
-    {
-      type: "category",
-      label: "Overview",
-      items: ["example", "other-example"],
-    },
-  ],
-};
-```
-
-Then you can import the sidebar configuration into your main configuration file.
-
-```ts
-// zudoku.config.ts
-import type { ZudokuConfig } from "zudoku";
-import { sidebar } from "./sidebar";
-
-const config = {
-  // ...
-  sidebar,
-  // ...
 };
 
 export default config;
@@ -291,4 +248,116 @@ Implements any page redirects you want to use. This gives you control over the r
   ]
   // ...
 }
+```
+
+### `port`
+
+The port on which the development server will run. Defaults to `3000`. This option can also be passed to the CLI as `--port' (which takes precedence).
+
+```json
+{
+  "port": 9001
+}
+```
+
+If the port is already in use, the next available port will be used.
+
+### `basePath`
+
+Sets the base path for your documentation site. This is useful when you want to host your documentation under a specific path.
+
+```ts
+{
+  basePath: "/docs",
+  // A page defined as `/intro` would result in: https://example.com/docs/intro
+}
+```
+
+### `canonicalUrlOrigin`
+
+Sets the canonical [origin URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) for your documentation site. This is used for SEO purposes and helps search engines understand the preferred version of a page.
+
+```ts
+{
+  basePath: '/docs',
+  canonicalUrlOrigin: "https://example.com",
+  // visiting the page `/intro` would result in:
+  // https://example.com/docs/intro
+}
+```
+
+This is the resulting HTML that will be added to the `<head>` of your pages:
+
+```html
+<link rel="canonical" href="https://example.com/docs/intro" />
+```
+
+### `cdnUrl`
+
+Configures the CDN URL for your documentation site's assets. You can provide either a string for a single CDN URL or an object to specify different URLs for base and media assets.
+
+```ts
+// Single CDN URL
+{
+  cdnUrl: "https://cdn.example.com"
+}
+
+// Separate URLs for base and media assets
+{
+  cdnUrl: {
+    base: "https://cdn.example.com",
+    media: "https://media.example.com"
+  }
+}
+```
+
+### `https`
+
+Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is optional.
+
+```json
+{
+  "https": {
+    "key": "/path/to/key.pem",
+    "cert": "/path/to/cert.pem",
+    "ca": "/path/to/ca.pem"
+  }
+}
+```
+
+## Multiple Files
+
+The configuration file is a standard JavaScript or TypeScript file, so you can split it into multiple files if you prefer. This can be useful if you have a large configuration or want to keep your code organized.
+
+For example, if you wanted to move your sidebar configuration to a separate file, you could create a new file called `sidebar.ts` and export the sidebar configuration from there.
+
+```ts
+// sidebar.ts
+import type { Sidebar } from "zudoku";
+
+export const sidebar: Record<string, Sidebar> = {
+  documentation: [
+    {
+      type: "category",
+      label: "Overview",
+      items: ["example", "other-example"],
+    },
+  ],
+};
+```
+
+Then you can import the sidebar configuration into your main configuration file.
+
+```ts
+// zudoku.config.ts
+import type { ZudokuConfig } from "zudoku";
+import { sidebar } from "./sidebar";
+
+const config = {
+  // ...
+  sidebar,
+  // ...
+};
+
+export default config;
 ```

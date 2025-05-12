@@ -1,128 +1,31 @@
-import { $RefParser, JSONSchema } from "@apidevtools/json-schema-ref-parser";
-import { upgrade, validate } from "@scalar/openapi-parser";
+import { deepEqual } from "fast-equals";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { tsImport } from "tsx/esm/api";
-import { type Plugin } from "vite";
-import { type ZudokuPluginOptions } from "../config/config.js";
+import { type Plugin, runnerImport } from "vite";
+import { ZuploEnv } from "../app/env.js";
+import { type LoadedConfig } from "../config/config.js";
+import { fileExists } from "../config/loader.js";
+import {
+  type BuildConfig,
+  type Processor,
+  validateBuildConfig,
+} from "../config/validators/BuildSchema.js";
 import {
   getAllOperations,
+  getAllSlugs,
   getAllTags,
-  type OpenAPIDocument,
 } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
-import { generateCode } from "./api/schema-codegen.js";
-
-type ProcessedSchema = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  schema: OpenAPIDocument;
-  version: string;
-  inputPath: string;
-};
-
-const API_COUNT_THRESHOLD = 50;
-
-const schemaMap = new Map<string, string>();
-
-const validateSchema = async (schema: JSONSchema, filePath: string) => {
-  const validated = await validate(schema);
-  if (validated.errors?.length) {
-    // eslint-disable-next-line no-console
-    console.warn(`Schema warnings in ${filePath}:`);
-    for (const error of validated.errors) {
-      // eslint-disable-next-line no-console
-      console.warn(error);
-    }
-  }
-
-  return schema as OpenAPIDocument;
-};
-
-async function processSchemas(
-  config: ZudokuPluginOptions,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  zuploProcessors: Array<(schema: any) => Promise<any>> = [],
-): Promise<Record<string, ProcessedSchema[]>> {
-  const tmpDir = path.posix.join(
-    config.rootDir,
-    "node_modules/.zudoku/processed",
-  );
-  await fs.rm(tmpDir, { recursive: true, force: true });
-  await fs.mkdir(tmpDir, { recursive: true });
-
-  if (!config.apis) return {};
-
-  const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
-  const processedSchemas: Record<string, ProcessedSchema[]> = {};
-
-  for (const apiConfig of apis) {
-    if (apiConfig.type !== "file" || !apiConfig.navigationId) {
-      continue;
-    }
-
-    const postProcessors = [
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (schema: any) => upgrade(schema).specification,
-      ...(apiConfig.postProcessors ?? []),
-      ...zuploProcessors,
-    ];
-
-    const inputs = Array.isArray(apiConfig.input)
-      ? apiConfig.input
-      : [apiConfig.input];
-
-    const inputFiles = await Promise.all(
-      inputs.map(async (input) => {
-        const fullPath = path.resolve(config.rootDir, input);
-        const parser = new $RefParser();
-        const schema = await parser.bundle(fullPath);
-
-        config.__meta.registerDependency(...parser.$refs.paths());
-
-        return validateSchema(schema, input);
-      }),
-    );
-
-    const processedInputs = await Promise.all(
-      inputFiles.map(async (schema, index) => {
-        const processedSchema = await postProcessors.reduce(
-          async (acc, postProcessor) => postProcessor(await acc),
-          Promise.resolve(schema),
-        );
-
-        const inputPath = inputs[index]!;
-        const code = await generateCode(processedSchema);
-
-        const processedFilePath = path.posix.join(
-          tmpDir,
-          `${path.basename(inputPath)}.js`,
-        );
-        await fs.writeFile(processedFilePath, code);
-        schemaMap.set(inputPath, processedFilePath);
-
-        return {
-          schema: processedSchema,
-          version: processedSchema.info.version || "default",
-          inputPath,
-        } satisfies ProcessedSchema;
-      }),
-    );
-
-    if (processedInputs.length === 0) {
-      throw new Error("No schema found");
-    }
-
-    processedSchemas[apiConfig.navigationId] = processedInputs;
-  }
-
-  return processedSchemas;
-}
+import { ensureArray } from "../lib/util/ensureArray.js";
+import { SchemaManager } from "./api/SchemaManager.js";
+import { reload } from "./plugin-config-reload.js";
+import { invalidate as invalidateSidebar } from "./plugin-sidebar.js";
 
 const viteApiPlugin = async (
-  getConfig: () => ZudokuPluginOptions,
+  getConfig: () => LoadedConfig,
 ): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
@@ -130,22 +33,64 @@ const viteApiPlugin = async (
   const initialConfig = getConfig();
 
   // Load Zuplo-specific processors if in Zuplo environment
-  const zuploProcessors = initialConfig.isZuplo
-    ? await tsImport("../zuplo/with-zuplo-processors.js", import.meta.url)
-        .then((m) => m.default(initialConfig.rootDir))
-        .catch((e) => {
-          // eslint-disable-next-line no-console
-          console.warn("Failed to load Zuplo processors", e);
-          return [];
-        })
+  const zuploProcessors = ZuploEnv.isZuplo
+    ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
+        path.resolve(import.meta.dirname, "../zuplo/with-zuplo-processors.js"),
+      ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 
-  let processedSchemas: Record<string, ProcessedSchema[]>;
+  const buildFilePath = path.join(
+    initialConfig.__meta.rootDir,
+    "zudoku.build.ts",
+  );
+  const buildFileExists = await fileExists(buildFilePath);
+
+  let buildProcessors: Processor[] = [];
+  let buildConfig: BuildConfig | undefined = undefined;
+
+  if (buildFileExists) {
+    const buildModule = await runnerImport<{ default: BuildConfig }>(
+      buildFilePath,
+    ).then((m) => m.module.default);
+
+    buildConfig = validateBuildConfig(buildModule);
+    buildProcessors = buildConfig?.processors ?? [];
+  }
+
+  const tmpStoreDir = path.posix.join(
+    initialConfig.__meta.rootDir,
+    "node_modules/.zudoku/processed",
+  );
+
+  const processors = [...buildProcessors, ...zuploProcessors];
+  const schemaManager = new SchemaManager({
+    storeDir: tmpStoreDir,
+    config: initialConfig,
+    processors,
+  });
 
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      processedSchemas = await processSchemas(getConfig(), zuploProcessors);
+      await fs.rm(tmpStoreDir, { recursive: true, force: true });
+      await fs.mkdir(tmpStoreDir, { recursive: true });
+
+      await schemaManager.processAllSchemas();
+
+      schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
+    },
+    configureServer(server) {
+      server.watcher.on("change", async (id) => {
+        if (!schemaManager.trackedFiles.has(id)) return;
+
+        // eslint-disable-next-line no-console
+        console.log(`Re-processing schema ${id}`);
+
+        await schemaManager.processSchema(id);
+        schemaManager.trackedFiles.forEach((file) => server.watcher.add(file));
+        invalidateSidebar(server);
+        reload(server);
+      });
     },
     resolveId(id) {
       if (id === virtualModuleId) {
@@ -157,118 +102,126 @@ const viteApiPlugin = async (
 
       const config = getConfig();
 
-      if (config.mode === "standalone") {
+      if (!deepEqual(schemaManager.config.apis, config.apis)) {
+        schemaManager.config = config;
+        await schemaManager.processAllSchemas();
+        schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
+      }
+
+      if (config.__meta.mode === "standalone") {
         return [
           "export const configuredApiPlugins = [];",
           "export const configuredApiCatalogPlugins = [];",
         ].join("\n");
       }
 
-      const apiPluginOptions = {
-        options: {
-          examplesDefaultLanguage: config.defaults?.examplesLanguage,
-        },
-      };
-
       const code = [
         `import config from "virtual:zudoku-config";`,
-        `import { openApiPlugin } from "zudoku/plugins/openapi";`,
-        `import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";`,
         `const configuredApiPlugins = [];`,
         `const configuredApiCatalogPlugins = [];`,
-        `const apiPluginOptions = ${JSON.stringify(apiPluginOptions)};`,
       ];
 
       if (config.apis) {
-        const apis = Array.isArray(config.apis) ? config.apis : [config.apis];
+        code.push('import { openApiPlugin } from "zudoku/plugins/openapi";');
+        code.push(
+          `const apis = Array.isArray(config.apis) ? config.apis : [config.apis]`,
+        );
+        const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
-        const versionMaps: Record<string, Record<string, string>> = {};
 
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.navigationId) {
-            const schemas = processedSchemas[apiConfig.navigationId];
-            if (!schemas?.length) continue;
-            const latestSchema = schemas[0]?.schema;
-            if (!latestSchema?.info) continue;
+            const latestSchema = schemaManager.getLatestSchema(
+              apiConfig.navigationId,
+            );
+            if (!latestSchema?.schema.info) continue;
 
             apiMetadata.push({
               path: apiConfig.navigationId,
-              label: latestSchema.info.title,
-              description: latestSchema.info.description ?? "",
+              label: latestSchema.schema.info.title,
+              description: latestSchema.schema.info.description ?? "",
               categories: apiConfig.categories ?? [],
             });
-
-            const versionMap = Object.fromEntries(
-              schemas.map((processed) => [
-                processed.version,
-                processed.inputPath,
-              ]),
-            );
-
-            if (Object.keys(versionMap).length > 0) {
-              versionMaps[apiConfig.navigationId] = versionMap;
-            }
           }
         }
 
         // Generate API plugin code
+        let apiIndex = -1;
         for (const apiConfig of apis) {
+          apiIndex++;
           if (apiConfig.type === "file") {
-            if (
-              !apiConfig.navigationId ||
-              !versionMaps[apiConfig.navigationId]
-            ) {
-              continue;
-            }
+            if (!apiConfig.navigationId) continue;
 
-            const schemas = processedSchemas[apiConfig.navigationId];
-            if (!schemas?.length) continue;
-
-            const tags = [
-              ...new Set(
-                schemas
-                  .flatMap((schema) => getAllTags(schema.schema))
-                  .map(({ name }) => name),
-              ),
-            ];
-
-            const maxOperationCount = Math.max(
-              ...schemas.flatMap((schema) => [
-                getAllOperations(schema.schema.paths).length,
-              ]),
+            const schemas = schemaManager.getSchemasForId(
+              apiConfig.navigationId,
             );
 
-            // If the API has less than 50 operations, we preload all tags to be shown
-            const loadTags =
-              apiConfig.loadTags ?? maxOperationCount < API_COUNT_THRESHOLD;
+            if (!schemas?.length) continue;
+
+            const tags = Array.from(
+              new Set(
+                schemas
+                  .flatMap(({ schema }) => {
+                    const operations = getAllOperations(schema.paths);
+                    const slugs = getAllSlugs(operations);
+                    return getAllTags(schema, slugs.tags);
+                  })
+                  .map(({ slug }) => slug),
+              ),
+            );
+
+            const schemaMapEntries = Array.from(
+              schemaManager.schemaMap.entries(),
+            );
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
-              `  ...apiPluginOptions,`,
               `  type: "file",`,
-              `  input: ${JSON.stringify(versionMaps[apiConfig.navigationId])},`,
+              `  input: ${JSON.stringify(
+                Object.fromEntries(
+                  schemas.map((s) => [s.version, s.inputPath]),
+                ),
+              )},`,
               `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
-              `  loadTags: ${JSON.stringify(loadTags)},`,
+              `  options: {`,
+              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+              `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
+              `    transformExamples: config.defaults?.apis?.transformExamples,`,
+              `    ...(apis[${apiIndex}].options ?? {}),`,
+              `  },`,
               `  schemaImports: {`,
-              ...Array.from(schemaMap.entries()).map(
-                ([key, schemaPath]) =>
-                  `    "${key}": () => import("${schemaPath.replace(/\\/g, "/")}"),`,
+              ...schemaMapEntries.map(
+                ([key, processed]) =>
+                  `    "${key.replace(/\\/g, "\\\\")}": () => import("${processed.filePath.replace(/\\/g, "/")}?d=${processed.processedTime}"),`,
               ),
               `  },`,
               "}));",
             );
           } else {
             code.push(
-              `configuredApiPlugins.push(openApiPlugin(${JSON.stringify({ ...apiConfig, ...apiPluginOptions })}));`,
+              "configuredApiPlugins.push(openApiPlugin({",
+              `  ...${JSON.stringify(apiConfig)},`,
+              "  options: {",
+              `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
+              `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
+              `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
+              `    ...${JSON.stringify(apiConfig.options ?? {})},`,
+              "  },",
+              "}));",
             );
           }
         }
 
         if (config.catalogs) {
-          const catalogs = Array.isArray(config.catalogs)
-            ? config.catalogs
-            : [config.catalogs];
+          code.push(
+            'import { apiCatalogPlugin } from "zudoku/plugins/api-catalog";',
+          );
+
+          const catalogs = ensureArray(config.catalogs);
 
           const categories = apis
             .flatMap((api) => api.categories ?? [])

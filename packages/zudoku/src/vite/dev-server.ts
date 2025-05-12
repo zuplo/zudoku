@@ -1,15 +1,17 @@
 import express, { type Express } from "express";
-import { createHttpTerminator, HttpTerminator } from "http-terminator";
-import { Server } from "node:http";
+import { createHttpTerminator, type HttpTerminator } from "http-terminator";
+import fs from "node:fs/promises";
+import http, { type Server } from "node:http";
+import https from "node:https";
 import path from "node:path";
 import {
   createServer as createViteServer,
   isRunnableDevEnvironment,
   type ViteDevServer,
 } from "vite";
-import { type render as serverRender } from "../app/entry.server.js";
 import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
+import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type { LoadedConfig } from "../config/config.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
 import {
@@ -17,26 +19,52 @@ import {
   getAppServerEntryPath,
   getViteConfig,
   loadZudokuConfig,
-  ZudokuConfigEnv,
+  type ZudokuConfigEnv,
 } from "./config.js";
 import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
 
+const DEFAULT_DEV_PORT = 3000;
+
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+type EntryServerImport = typeof import("../app/entry.server.js");
+
 export class DevServer {
-  private server: Server | undefined;
   private currentConfig: LoadedConfig | undefined;
   private terminator: HttpTerminator | undefined;
+  public resolvedPort = 0;
+  public protocol = "http";
 
   constructor(
     private options: {
-      port: number;
       dir: string;
       ssr?: boolean;
       open?: boolean;
+      argPort?: number;
     },
   ) {}
 
-  async start() {
+  private async createNodeServer(
+    app: Express,
+    config: LoadedConfig,
+  ): Promise<Server> {
+    if (!config.https) return http.createServer(app);
+
+    this.protocol = "https";
+    const { dir } = this.options;
+
+    const [key, cert, ca] = await Promise.all([
+      fs.readFile(path.resolve(dir, config.https.key)),
+      fs.readFile(path.resolve(dir, config.https.cert)),
+      config.https.ca
+        ? fs.readFile(path.resolve(dir, config.https.ca))
+        : undefined,
+    ]);
+
+    return https.createServer({ key, cert, ca }, app);
+  }
+
+  async start(): Promise<{ vite: ViteDevServer; express: Express }> {
     const app = express();
 
     const configEnv: ZudokuConfigEnv = {
@@ -50,15 +78,22 @@ export class DevServer {
       (zudokuConfig) => (this.currentConfig = zudokuConfig),
     );
 
+    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+    this.currentConfig = config;
+
+    this.resolvedPort = await findAvailablePort(
+      this.options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
+    );
+
+    const server = await this.createNodeServer(app, config);
+
     viteConfig.server = {
       ...viteConfig.server,
       open: this.options.open,
+      hmr: { server },
     };
 
     const vite = await createViteServer(viteConfig);
-
-    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
-    this.currentConfig = config;
 
     const graphql = createGraphQLServer({
       graphqlEndpoint: "/__z/graphql",
@@ -94,11 +129,25 @@ export class DevServer {
         .set({ "Content-Type": "text/javascript" })
         .end(transformed.code);
     });
+
     app.use(vite.middlewares);
 
     printDiagnosticsToConsole(
       `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
     );
+
+    if (config.search?.type === "pagefind") {
+      const pagefindPath = path.join(
+        vite.config.publicDir,
+        "pagefind/pagefind.js",
+      );
+      const exists = await fs.stat(pagefindPath).catch(() => false);
+
+      if (!exists) {
+        await fs.mkdir(path.dirname(pagefindPath), { recursive: true });
+        await fs.writeFile(pagefindPath, 'throw new Error("NOT_BUILT_YET");');
+      }
+    }
 
     app.use("*", async (request, response, next) => {
       const url = request.originalUrl;
@@ -118,16 +167,16 @@ export class DevServer {
             throw new Error("Error loading configuration.");
           }
 
-          const module = await ssrEnvironment.runner.import(
+          const server = await ssrEnvironment.runner.import<EntryServerImport>(
             getAppServerEntryPath(),
           );
-          const render = module.render as typeof serverRender;
 
-          void render({
+          void server.render({
             template,
             request,
             response,
-            config: this.currentConfig,
+            routes: server.getRoutesByConfig(this.currentConfig),
+            basePath: this.currentConfig.basePath,
           });
         } else {
           response
@@ -143,17 +192,13 @@ export class DevServer {
 
     app.use(errorMiddleware(vite));
 
-    return new Promise<{
-      vite: ViteDevServer;
-      express: Express;
-    }>((resolve) => {
-      this.server = app.listen(this.options.port, () =>
-        resolve({ vite, express: app }),
-      );
-      this.terminator = createHttpTerminator({
-        server: this.server,
-      });
+    await new Promise<void>((resolve) => {
+      server.listen(this.resolvedPort, () => resolve());
     });
+
+    this.terminator = createHttpTerminator({ server });
+
+    return { vite, express: app };
   }
 
   async stop() {

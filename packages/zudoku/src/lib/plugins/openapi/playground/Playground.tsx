@@ -1,12 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { PathRenderer } from "../../../components/PathRenderer.js";
 
-import { Label } from "zudoku/ui/Label.js";
-import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import {
   Select,
   SelectContent,
@@ -15,18 +13,23 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
-import { useSelectedServer } from "../../../authentication/state.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { Card } from "../../../ui/Card.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
 import { cn } from "../../../util/cn.js";
+import { objectEntries } from "../../../util/objectEntries.js";
+import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
-import { Content } from "../SidecarExamples.js";
+import { type Content } from "../SidecarExamples.js";
+import { useSelectedServer } from "../state.js";
 import { createUrl } from "./createUrl.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { Headers } from "./Headers.js";
+import { IdentityDialog } from "./IdentityDialog.js";
+import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
+import { useIdentityStore } from "./rememberedIdentity.js";
+import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import SubmitButton from "./SubmitButton.js";
 
@@ -55,8 +58,17 @@ export type PathParam = {
   isRequired?: boolean;
 };
 
+const bodyContentTypeMap = {
+  Plain: "text/plain",
+  JSON: "application/json",
+  XML: "application/xml",
+  YAML: "application/yaml",
+  CSV: "text/csv",
+} as const;
+
 export type PlaygroundForm = {
   body: string;
+  bodyContentType: keyof typeof bodyContentTypeMap;
   queryParams: Array<{
     name: string;
     value: string;
@@ -97,6 +109,9 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: Content;
+  requiresLogin?: boolean;
+  onLogin?: () => void;
+  onSignUp?: () => void;
 };
 
 export const Playground = ({
@@ -109,15 +124,27 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
   examples,
+  requiresLogin = false,
+  onLogin,
+  onSignUp,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
   );
+  const [showSelectIdentity, setShowSelectIdentity] = useState(false);
+  const identities = useApiIdentities();
+  const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
+  const [skipLogin, setSkipLogin] = useState(false);
+  const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
+  const abortControllerRef = useRef<AbortController | undefined>(undefined);
+  const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
+
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
         body: defaultBody,
+        bodyContentType: "JSON",
         queryParams: queryParams
           .map((param) => ({
             name: param.name,
@@ -150,54 +177,68 @@ export const Playground = ({
               active: false,
             },
           ]),
-        identity: NO_IDENTITY,
+        identity: getRememberedIdentity(
+          identities.data?.map((i) => i.id) ?? [],
+        ),
       },
     });
   const formState = watch();
-  const identities = useApiIdentities();
-
-  const setOnce = useRef(false);
-  useEffect(() => {
-    if (setOnce.current) return;
-    const firstIdentity = identities.data?.at(0);
-    if (firstIdentity) {
-      setValue("identity", firstIdentity.id);
-      setOnce.current = true;
-    }
-  }, [setValue, identities.data]);
-
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (formState.identity) {
+      latestSetRememberedIdentity.current(formState.identity);
+    }
+  }, [latestSetRememberedIdentity, formState.identity]);
 
   const queryMutation = useMutation({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
+
+      const shouldSetContentType = !data.headers.some(
+        (h) => h.active && h.name.toLowerCase() === "content-type",
+      );
+
+      const headers = Object.fromEntries([
+        ...data.headers
+          .filter((h) => h.name && h.active)
+          .map((header) => [header.name, header.value]),
+        ...(shouldSetContentType
+          ? [["content-type", bodyContentTypeMap[data.bodyContentType]]]
+          : []),
+      ]);
+
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
           method: method.toUpperCase(),
-          headers: Object.fromEntries(
-            data.headers
-              .filter((h) => h.name && h.active)
-              .map((header) => [header.name, header.value]),
-          ),
+          headers,
           body: data.body ? data.body : undefined,
         },
       );
 
       if (data.identity !== NO_IDENTITY) {
-        identities.data
+        await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
       }
+
+      const warningTimeout = setTimeout(
+        () => setShowLongRunningWarning(true),
+        3210,
+      );
+      abortControllerRef.current = new AbortController();
+
       try {
         const response = await fetch(request, {
-          signal: AbortSignal.timeout(5000),
+          signal: abortControllerRef.current.signal,
         });
 
+        clearTimeout(warningTimeout);
+        setShowLongRunningWarning(false);
+
         const time = performance.now() - start;
-
         const body = await response.text();
-
         const url = new URL(request.url);
 
         return {
@@ -218,6 +259,8 @@ export const Playground = ({
           },
         } satisfies PlaygroundResult;
       } catch (error) {
+        clearTimeout(warningTimeout);
+        setShowLongRunningWarning(false);
         if (error instanceof TypeError) {
           throw new Error(
             "The request failed, possibly due to network issues or CORS policy.",
@@ -228,6 +271,12 @@ export const Playground = ({
       }
     },
   });
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const path = (
     <PathRenderer
@@ -264,7 +313,7 @@ export const Playground = ({
   const serverSelect = (
     <div className="inline-block opacity-50 hover:opacity-100 transition">
       {server ? (
-        <span>{server.replace(/^https?:\/\//, "")}</span>
+        <span>{server.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
       ) : (
         servers.length > 1 && (
           <Select
@@ -274,13 +323,13 @@ export const Playground = ({
             value={selectedServer}
             defaultValue={selectedServer}
           >
-            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto">
+            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto translate-y-[4px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {servers.map((s) => (
                 <SelectItem key={s} value={s}>
-                  {s.replace(/^https?:\/\//, "")}
+                  {s.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -290,14 +339,45 @@ export const Playground = ({
     </div>
   );
 
+  const showLogin = requiresLogin && !skipLogin;
+  const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
+    method.toUpperCase(),
+  );
+
   return (
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
     >
       <form
-        onSubmit={handleSubmit((data) => queryMutation.mutateAsync(data))}
+        onSubmit={handleSubmit((data) => {
+          if (identities.data?.length === 0 || data.identity) {
+            queryMutation.mutate(data);
+          } else {
+            setShowSelectIdentity(true);
+          }
+        })}
         ref={formRef}
+        className="relative"
       >
+        <IdentityDialog
+          identities={identities.data ?? []}
+          open={showSelectIdentity}
+          onOpenChange={setShowSelectIdentity}
+          onSubmit={({ rememberedIdentity, identity }) => {
+            if (rememberedIdentity) {
+              setValue("identity", identity ?? NO_IDENTITY);
+            }
+            setShowSelectIdentity(false);
+            queryMutation.mutate({ ...formState, identity });
+          }}
+        />
+        <RequestLoginDialog
+          open={showLogin}
+          setOpen={(open) => setSkipLogin(!open)}
+          onSignUp={onSignUp}
+          onLogin={onLogin}
+        />
+
         <div className="grid grid-cols-2 text-sm h-full">
           <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:left-auto">
             <div className="flex gap-2 items-stretch">
@@ -305,7 +385,7 @@ export const Playground = ({
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center p-2 font-mono text-xs break-words">
+                <div className="items-center px-2 py-0.5 font-mono text-xs break-all leading-6">
                   {serverSelect}
                   {path}
                   {urlQueryParams.length > 0 ? "?" : ""}
@@ -316,7 +396,7 @@ export const Playground = ({
               <SubmitButton
                 identities={identities.data ?? []}
                 formRef={formRef}
-                disabled={form.formState.isSubmitting}
+                disabled={identities.isLoading || form.formState.isSubmitting}
               />
             </div>
             <Tabs defaultValue="parameters">
@@ -341,7 +421,12 @@ export const Playground = ({
                       <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="body">Body</TabsTrigger>
+                  <TabsTrigger value="body">
+                    Body
+                    {formState.body && (
+                      <div className="w-2 h-2 rounded-full bg-blue-400 ml-2" />
+                    )}
+                  </TabsTrigger>
                 </TabsList>
               </div>
               <TabsContent value="headers">
@@ -351,7 +436,7 @@ export const Playground = ({
                 {pathParams.length > 0 && (
                   <div className="flex flex-col gap-4 my-4">
                     <span className="font-semibold">Path Parameters</span>
-                    <PathParams control={control} />
+                    <PathParams url={url} control={control} />
                   </div>
                 )}
                 <div className="flex flex-col gap-4 my-4">
@@ -375,31 +460,58 @@ export const Playground = ({
                 <Textarea
                   {...register("body")}
                   className={cn(
-                    "border w-full rounded-lg p-2 bg-muted h-40 font-mono",
-                    !["POST", "PUT", "PATCH", "DELETE"].includes(
-                      method.toUpperCase(),
-                    ) && "h-20",
+                    "border w-full rounded-lg bg-muted/40 p-2 h-64 font-mono text-[13px]",
+                    !isBodySupported && "h-20 bg-muted",
                   )}
                   placeholder={
-                    !["POST", "PUT", "PATCH", "DELETE"].includes(
-                      method.toUpperCase(),
-                    )
+                    !isBodySupported
                       ? "This request does not support a body"
                       : undefined
                   }
-                  disabled={
-                    !["POST", "PUT", "PATCH", "DELETE"].includes(
-                      method.toUpperCase(),
-                    )
-                  }
+                  disabled={!isBodySupported}
                 />
-                {examples && (
-                  <ExamplesDropdown
-                    examples={examples}
-                    onSelect={(example) =>
-                      setValue("body", JSON.stringify(example.value, null, 2))
-                    }
-                  />
+                {isBodySupported && (
+                  <div className="flex items-center gap-2 mt-2 justify-between">
+                    <Select
+                      value={formState.bodyContentType}
+                      onValueChange={(value) =>
+                        setValue(
+                          "bodyContentType",
+                          value as keyof typeof bodyContentTypeMap,
+                        )
+                      }
+                    >
+                      <SelectTrigger className="w-[100px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(bodyContentTypeMap).map((format) => (
+                          <SelectItem key={format} value={format}>
+                            {format}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {examples && examples.length > 0 && (
+                      <ExamplesDropdown
+                        examples={examples}
+                        onSelect={(example, mediaType) => {
+                          setValue(
+                            "body",
+                            JSON.stringify(example.value, null, 2),
+                          );
+
+                          const format = objectEntries(bodyContentTypeMap).find(
+                            ([_, contentType]) => contentType === mediaType,
+                          )?.[0];
+
+                          if (format) {
+                            setValue("bodyContentType", format);
+                          }
+                        }}
+                      />
+                    )}
+                  </div>
                 )}
               </TabsContent>
               <TabsContent value="auth">
@@ -414,43 +526,11 @@ export const Playground = ({
                     </Alert>
                   )}
                   <div className="flex flex-col items-center gap-2">
-                    <Card className="w-full overflow-hidden">
-                      <RadioGroup
-                        onValueChange={(value) => setValue("identity", value)}
-                        value={formState.identity}
-                        defaultValue={formState.identity}
-                        className="gap-0"
-                        disabled={identities.data?.length === 0}
-                      >
-                        <Label
-                          className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
-                          htmlFor="none"
-                        >
-                          <RadioGroupItem value={NO_IDENTITY} id="none">
-                            None
-                          </RadioGroupItem>
-                          <Label htmlFor="none" className="ml-2">
-                            None
-                          </Label>
-                        </Label>
-                        {identities.data?.map((identity) => (
-                          <Label
-                            key={identity.id}
-                            className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
-                          >
-                            <RadioGroupItem
-                              value={identity.id}
-                              id={identity.id}
-                            >
-                              {identity.label}
-                            </RadioGroupItem>
-                            <Label htmlFor={identity.id} className="ml-2">
-                              {identity.label}
-                            </Label>
-                          </Label>
-                        ))}
-                      </RadioGroup>
-                    </Card>
+                    <IdentitySelector
+                      value={formState.identity}
+                      identities={identities.data ?? []}
+                      setValue={(value) => setValue("identity", value)}
+                    />
                   </div>
                 </div>
               </TabsContent>
@@ -461,6 +541,13 @@ export const Playground = ({
             showPathParamsWarning={formState.pathParams.some(
               (p) => p.value === "",
             )}
+            showLongRunningWarning={showLongRunningWarning}
+            onCancel={() => {
+              abortControllerRef.current?.abort(
+                "Request cancelled by the user",
+              );
+              setShowLongRunningWarning(false);
+            }}
           />
         </div>
       </form>

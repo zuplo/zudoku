@@ -10,7 +10,7 @@ export const docs: SidebarEntry = [
     type: "category",
     label: "Getting started",
     icon: "sparkles",
-    items: ["introduction", "app-quickstart", "html-quickstart"],
+    items: ["introduction", "app-quickstart"],
   },
   {
     type: "category",
@@ -22,11 +22,18 @@ export const docs: SidebarEntry = [
       "configuration/api-catalog",
       "configuration/navigation",
       "configuration/search",
+      "configuration/footer",
       "configuration/authentication",
-      "configuration/customization",
+      "configuration/build-configuration",
       "configuration/sentry",
       "configuration/vite-config",
     ],
+  },
+  {
+    type: "category",
+    label: "Customization",
+    icon: "palette",
+    items: ["customization/colors-theme", "customization/fonts"],
   },
   {
     type: "category",
@@ -37,13 +44,16 @@ export const docs: SidebarEntry = [
   },
   {
     type: "category",
-    label: "Guide",
+    label: "Guides",
     icon: "monitor-check",
     items: [
-      "static-files",
-      "environment-variables",
-      "custom-pages",
-      "using-multiple-apis",
+      "guides/static-files",
+      "guides/environment-variables",
+      "guides/custom-pages",
+      "guides/using-multiple-apis",
+      "guides/managing-api-keys-and-identities",
+      "guides/transforming-examples",
+      "guides/processors",
     ],
   },
   {
@@ -62,7 +72,7 @@ export const docs: SidebarEntry = [
     type: "category",
     label: "Extending",
     icon: "blocks",
-    items: ["custom-plugins", "api-keys"],
+    items: ["custom-plugins", "extending/events"],
   },
 ];
 export const components: SidebarEntry = [
@@ -73,9 +83,11 @@ export const components: SidebarEntry = [
     items: [
       "components/callout",
       "components/icons",
-      "components/shadcn",
+      "components/stepper",
+      "components/syntax-highlight",
       "components/playground",
       "components/table",
+      "components/shadcn",
     ],
   },
 ];

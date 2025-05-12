@@ -1,12 +1,12 @@
 import {
-  type ReactNode,
   createContext,
+  use,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type PropsWithChildren,
 } from "react";
 
 type AnchorContextType = {
@@ -16,21 +16,14 @@ type AnchorContextType = {
   unobserve: (element: HTMLElement | null) => void;
 };
 
-const ViewportAnchorContext = createContext<AnchorContextType | undefined>(
-  undefined,
-);
+const ViewportAnchorContext = createContext<AnchorContextType>({
+  activeAnchor: "",
+  setActiveAnchor: () => {},
+  observe: () => {},
+  unobserve: () => {},
+});
 
-export const useViewportAnchor = () => {
-  const context = useContext(ViewportAnchorContext);
-
-  if (!context) {
-    throw new Error(
-      "useViewportAnchor must be used within a CurrentAnchorProvider",
-    );
-  }
-
-  return context;
-};
+export const useViewportAnchor = () => use(ViewportAnchorContext);
 
 export const useRegisterAnchorElement = () => {
   const elementRef = useRef<HTMLElement | null>(null);
@@ -55,11 +48,7 @@ export const useRegisterAnchorElement = () => {
   return { ref: setRef };
 };
 
-export const ViewportAnchorProvider = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+export const ViewportAnchorProvider = ({ children }: PropsWithChildren) => {
   const [activeAnchor, setActiveAnchor] = useState("");
   const observerRef = useRef<IntersectionObserver | null>(null);
   const registeredElements = useRef(new Set<HTMLElement>());
@@ -75,9 +64,7 @@ export const ViewportAnchorProvider = ({
         }
       },
       {
-        // 115px is the height of the sticky header
-        // see --header-height in `main.css`
-        rootMargin: "115px 0px -80% 0px",
+        rootMargin: "0px 0px -80% 0px",
         threshold: 0.75,
       },
     );
@@ -100,14 +87,11 @@ export const ViewportAnchorProvider = ({
         window.innerHeight + window.scrollY >= document.body.scrollHeight;
 
       if (hasReachedTop) {
-        // reset the active anchor when we reach the top
         setActiveAnchor("");
       } else if (hasReachedBottom) {
-        requestIdleCallback(() => {
-          // set the last anchor when we reach the bottom
-          const lastItem = Array.from(elements).pop();
-          setActiveAnchor(lastItem?.id ?? "");
-        });
+        const lastItem = Array.from(elements).pop();
+        const lastId = lastItem?.id ?? "";
+        setActiveAnchor(lastId);
       }
     };
 

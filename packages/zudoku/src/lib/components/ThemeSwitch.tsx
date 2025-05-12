@@ -22,7 +22,7 @@ export const ThemeSwitch = () => {
         <div
           className={cn(
             "border border-transparent rounded-full p-0.5 [&>svg>circle]:transition-colors [&>svg>path]:transition-transform transition-all [&>svg>path]:duration-200 [&>svg>circle]:duration-500 [&>svg>circle]:fill-transparent",
-            resolvedTheme === "light" && "border-border bg-muted/50",
+            resolvedTheme === "light" && "border-border bg-muted",
             resolvedTheme === "dark" &&
               "group-hover:[&>svg>path]:scale-110 group-hover:[&>svg>path]:-translate-x-[1px] group-hover:[&>svg>path]:-translate-y-[1px] group-hover:rotate-[15deg] ",
           )}
