@@ -76,6 +76,7 @@ const config = {
     options: {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
+      disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
     },
