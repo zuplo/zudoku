@@ -58,7 +58,7 @@ console.log(
   ].join(" ;"),
 );
 // eslint-disable-next-line no-console
-console.log('» Learn more about Zudoku https://zudoku.dev')
+console.log("» Learn more about Zudoku https://zudoku.dev");
 
 async function hydrateLazyRoutes(routes: RouteObject[]) {
   const path = window.location.pathname;
