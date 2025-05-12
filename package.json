@@ -31,8 +31,8 @@
   },
   "devDependencies": {
     "@nx/eslint": "21.0.3",
-    "@nx/vite": "20.8.1",
-    "@nx/web": "20.8.1",
+    "@nx/vite": "21.0.3",
+    "@nx/web": "21.0.3",
     "@typescript-eslint/eslint-plugin": "8.32.0",
     "@typescript-eslint/parser": "8.32.0",
     "eslint": "8.57.0",
@@ -43,7 +43,7 @@
     "eslint-plugin-react-refresh": "0.4.20",
     "husky": "9.1.7",
     "lint-staged": "15.5.0",
-    "nx": "20.8.1",
+    "nx": "21.0.3",
     "prettier": "3.5.3",
     "prettier-plugin-organize-imports": "4.1.0",
     "typescript": "5.8.3"
