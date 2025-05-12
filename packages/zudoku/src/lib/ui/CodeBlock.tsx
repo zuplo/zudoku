@@ -57,7 +57,7 @@ export const CodeBlock = ({
       {showLanguageIndicator && (
         <span
           className={cn(
-            "absolute top-1.5 right-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
+            "absolute top-1.5 end-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
             title && "top-12",
           )}
         >
@@ -70,7 +70,7 @@ export const CodeBlock = ({
           aria-label="Copy code"
           title="Copy code"
           className={cn(
-            "absolute top-2 right-2 p-2 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-muted-foreground transition",
+            "absolute top-2 end-2 p-2 hover:outline hover:outline-border/75 dark:hover:outline-border rounded-md text-sm text-muted-foreground transition",
             title && "top-10",
             showCopy === "hover" && "opacity-0 group-hover:opacity-100",
             showCopyText && "flex gap-2 items-center font-medium",
