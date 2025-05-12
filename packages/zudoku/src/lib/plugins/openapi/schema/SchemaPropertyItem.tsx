@@ -115,7 +115,8 @@ export const SchemaPropertyItem = ({
         <SchemaExampleAndDefault schema={schema} />
         {(hasLogicalGroupings(schema) ||
           isComplexType(schema) ||
-          isArrayType(schema)) && (
+          isArrayType(schema) ||
+          schema.additionalProperties) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}

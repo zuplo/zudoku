@@ -187,8 +187,50 @@
             "type": "object",
             "description": "Empty object for future extensibility",
             "properties": {}
+          },
+          "customFields": {
+            "type": "object",
+            "description": "Dictionary of custom string fields that can be added to the shipment",
+            "additionalProperties": {
+              "type": "string",
+              "description": "Custom field value"
+            },
+            "example": {
+              "customerReference": "CUST-123",
+              "internalNotes": "Handle with care",
+              "specialInstructions": "Leave at front desk"
+            }
+          },
+          "facilityCapabilities": {
+            "type": "object",
+            "description": "Dictionary of facility capabilities and their status",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the capability is enabled"
+                },
+                "lastChecked": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "When the capability was last verified"
+                }
+              }
+            },
+            "example": {
+              "temperatureControl": {
+                "enabled": true,
+                "lastChecked": "2024-03-15T10:30:00Z"
+              },
+              "hazardousMaterials": {
+                "enabled": false,
+                "lastChecked": "2024-03-14T15:45:00Z"
+              }
+            }
           }
-        }
+        },
+        "additionalProperties": true
       },
       "Address": {
         "type": "object",
