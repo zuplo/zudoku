@@ -217,7 +217,7 @@
     "embla-carousel-react": "8.6.0",
     "esm-loader-css": "^1.0.3",
     "estree-util-value-to-estree": "3.3.3",
-    "express": "4.21.2",
+    "express": "5.1.0",
     "fast-equals": "5.2.2",
     "glob": "11.0.1",
     "graphql": "16.10.0",
