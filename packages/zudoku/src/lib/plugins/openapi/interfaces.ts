@@ -1,7 +1,7 @@
-import { AuthState } from "../../authentication/state.js";
-import { ZudokuContext } from "../../core/ZudokuContext.js";
+import { type AuthState } from "../../authentication/state.js";
+import { type ZudokuContext } from "../../core/ZudokuContext.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
-import { OperationListItemResult } from "./OperationList.js";
+import { type OperationListItemResult } from "./OperationList.js";
 
 type DynamicInput = () => Promise<unknown>;
 
@@ -49,6 +49,7 @@ type BaseOasConfig = {
   options?: {
     examplesLanguage?: string;
     disablePlayground?: boolean;
+    disableSidecar?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
     transformExamples?: transformExamples;

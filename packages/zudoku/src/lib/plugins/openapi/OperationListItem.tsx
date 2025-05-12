@@ -11,6 +11,7 @@ import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
+import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { methodForColor } from "./util/methodToColor.js";
@@ -30,6 +31,7 @@ export const OperationListItem = ({
     operation.parameters ?? [],
     (param) => param.in,
   );
+  const { options } = useOasConfig();
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
@@ -72,7 +74,12 @@ export const OperationListItem = ({
           </SelectOnClick>
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div
+          className={cn(
+            "flex flex-col gap-4",
+            options?.disableSidecar && "col-span-full",
+          )}
+        >
           {operation.description && (
             <Markdown
               className={`${ProseClasses} max-w-full prose-img:max-w-prose`}
@@ -165,11 +172,13 @@ export const OperationListItem = ({
           )}
         </div>
 
-        <Sidecar
-          selectedResponse={selectedResponse}
-          onSelectResponse={setSelectedResponse}
-          operation={operation}
-        />
+        {renderIf(!options?.disableSidecar, () => (
+          <Sidecar
+            selectedResponse={selectedResponse}
+            onSelectResponse={setSelectedResponse}
+            operation={operation}
+          />
+        ))}
       </div>
     </div>
   );

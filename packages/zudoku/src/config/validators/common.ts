@@ -50,6 +50,7 @@ const ApiOptionsSchema = z
   .object({
     examplesLanguage: z.string(),
     disablePlayground: z.boolean(),
+    disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     transformExamples: z.custom<transformExamples>(
