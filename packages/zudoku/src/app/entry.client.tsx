@@ -41,7 +41,7 @@ console.log(
     "color: #FF00BD",
     "line-height: 50px",
     "font-weight: bolder",
-    "font-size: 40px",
+    "font-size: 30px",
     "-webkit-text-stroke-width: 2px",
     "-webkit-text-stroke-color: #df0097",
     "text-transform: uppercase",
