@@ -28,8 +28,6 @@ npm install -g pnpm
 
 3. Install [nx](https://nx.dev/) globally by running:
 
-4. Install [nx](https://nx.dev/) globally by running:
-
 ```
 pnpm add --global nx@latest
 ```
