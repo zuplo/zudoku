@@ -38,11 +38,11 @@ if (root.childElementCount > 0) {
 console.log(
   "%cZUDOKU%c by Zuplo v" + window.ZUDOKU_VERSION,
   [
-    "color: #df0097",
+    "color: #FF00BD",
     "line-height: 50px",
     "font-weight: bolder",
     "font-size: 30px",
-    "-webkit-text-stroke-width: 2px",
+    "-webkit-text-stroke-width: 1px",
     "-webkit-text-stroke-color: #FF00BD",
     "text-transform: uppercase",
     "text-align: center",
