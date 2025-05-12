@@ -26,7 +26,8 @@
     ]
   },
   "engines": {
-    "node": ">=22"
+    "node": ">=22",
+    "pnpm": ">=10"
   },
   "devDependencies": {
     "@nx/eslint": "21.0.3",
@@ -59,7 +60,15 @@
     },
     "patchedDependencies": {
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "@swc/core",
+      "core-js",
+      "esbuild",
+      "nx",
+      "unrs-resolver"
+    ]
   },
   "nx": {
     "includedScripts": [
@@ -68,5 +77,6 @@
       "format",
       "format:ci"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.10.0"
 }
