@@ -1,4 +1,4 @@
-import React, { type ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 import { useRegisterAnchorElement } from "./context/ViewportAnchorContext.js";
 
 import { cva, type VariantProps } from "class-variance-authority";
@@ -38,7 +38,7 @@ const getComponent = (level: number) => {
   }
 };
 
-export type HeadingProps = React.HTMLAttributes<HTMLHeadingElement> &
+export type HeadingProps = HTMLAttributes<HTMLHeadingElement> &
   VariantProps<typeof heading> & {
     children: ReactNode;
     className?: string;
@@ -66,7 +66,7 @@ export const Heading = ({
       {id && (
         <a
           href={`#${id}`}
-          className="before:content-['#'] no-underline absolute text-primary -left-[0.8em] pr-2.5 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity duration-200"
+          className="before:content-['#'] no-underline absolute text-primary -start-[0.8em] pe-2.5 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity duration-200"
           aria-label={`Link to ${id}`}
         >
           {/* Zero width space */}

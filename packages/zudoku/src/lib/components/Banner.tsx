@@ -41,7 +41,7 @@ export const Banner = () => {
       {page.banner.dismissible && (
         <button
           type="button"
-          className="md:absolute md:right-4 -m-1.5 p-1.5 hover:bg-accent-foreground/10 rounded-md"
+          className="md:absolute md:end-4 -m-1.5 p-1.5 hover:bg-accent-foreground/10 rounded-md"
           onClick={() => setIsBannerOpen(false)}
         >
           <CircleXIcon size={16} />

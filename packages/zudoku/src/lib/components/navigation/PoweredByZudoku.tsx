@@ -22,7 +22,12 @@ export const PoweredByZudoku = ({ className }: { className?: string }) => (
       powered by {import.meta.env.IS_ZUPLO ? "Zuplo" : "Zudoku"}
     </div>
     <div className="text-xs font-medium opacity-70 hover:text-foreground transition-colors cursor-pointer">
-      <ChevronRightIcon size={12} absoluteStrokeWidth strokeWidth={1.5} />
+      <ChevronRightIcon
+        size={12}
+        absoluteStrokeWidth
+        strokeWidth={1.5}
+        className="rtl:rotate-180"
+      />
     </div>
   </a>
 );

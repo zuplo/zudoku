@@ -246,7 +246,7 @@ export const OperationList = ({
               >
                 {schema.tag.name ?? "Other endpoints"}
                 {showVersions && (
-                  <span className="text-xl text-muted-foreground ml-1.5">
+                  <span className="text-xl text-muted-foreground ms-1.5">
                     {" "}
                     ({version})
                   </span>

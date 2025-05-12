@@ -159,7 +159,10 @@ export class DevServer {
       }
 
       try {
-        const rawHtml = getDevHtml("/__z/entry.client.tsx");
+        const rawHtml = getDevHtml({
+          jsEntry: "/__z/entry.client.tsx",
+          dir: this.currentConfig?.page?.dir,
+        });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
         if (this.options.ssr) {

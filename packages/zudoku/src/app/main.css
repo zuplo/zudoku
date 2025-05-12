@@ -96,7 +96,7 @@
 
   html {
     /* This is to prevent layout jumping when the scrollbar appears/disappears */
-    @apply -mr-[--scrollbar-width] scroll-pt-[--scroll-padding];
+    @apply -me-[--scrollbar-width] scroll-pt-[--scroll-padding];
   }
 
   html,
@@ -326,7 +326,7 @@
 
   /* Bullet with number */
   .stepper > ol > li::before {
-    @apply absolute left-0 flex items-center justify-center size-[--bullet-size];
+    @apply absolute start-0 flex items-center justify-center size-[--bullet-size];
     @apply bg-muted/80 border border-border text-muted-foreground text-[calc(var(--bullet-size)/2)] font-semibold rounded-full;
     content: counter(step-counter);
   }

@@ -69,7 +69,7 @@ export const SchemaPropertyItem = ({
     return (
       <li className="p-4 bg-border/20 hover:bg-border/30">
         <div className="flex flex-col gap-2.5 justify-between text-sm">
-          <div className="space-x-2">
+          <div className="space-x-2 rtl:space-x-reverse">
             <code>{name}</code>
             <ParamInfos
               schema={schema}
@@ -85,7 +85,7 @@ export const SchemaPropertyItem = ({
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
       <div className="flex flex-col gap-2.5 justify-between text-sm">
-        <div className="space-x-2">
+        <div className="space-x-2 rtl:space-x-reverse">
           <SelectOnClick asChild>
             <code>{name}</code>
           </SelectOnClick>
