@@ -39,7 +39,7 @@ overrides:
 
 patchedDependencies:
   decode-named-character-reference@1.0.2:
-    hash: djcvjv2zk32xfqoxzwsbvomeg4
+    hash: ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307
     path: patches/decode-named-character-reference@1.0.2.patch
 
 importers:
@@ -673,16 +673,6 @@ importers:
       zustand:
         specifier: 5.0.3
         version: 5.0.3(@types/react@19.1.1)(react@19.1.0)(use-sync-external-store@1.4.0(react@19.1.0))
-    optionalDependencies:
-      '@clerk/clerk-js':
-        specifier: ^5.63.1
-        version: 5.63.1(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@sentry/react':
-        specifier: ^9.12.0
-        version: 9.12.0(react@19.1.0)
-      '@supabase/supabase-js':
-        specifier: ^2.49.4
-        version: 2.49.4
     devDependencies:
       '@graphql-codegen/cli':
         specifier: 5.0.5
@@ -756,6 +746,16 @@ importers:
       vitest:
         specifier: 3.1.1
         version: 3.1.1(@types/debug@4.1.12)(@types/node@22.13.5)(happy-dom@17.4.4)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)(yaml@2.7.1)
+    optionalDependencies:
+      '@clerk/clerk-js':
+        specifier: ^5.63.1
+        version: 5.63.1(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@sentry/react':
+        specifier: ^9.12.0
+        version: 9.12.0(react@19.1.0)
+      '@supabase/supabase-js':
+        specifier: ^2.49.4
+        version: 2.49.4
 
   website:
     dependencies:
@@ -15600,7 +15600,7 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  decode-named-character-reference@1.0.2(patch_hash=djcvjv2zk32xfqoxzwsbvomeg4):
+  decode-named-character-reference@1.0.2(patch_hash=ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307):
     dependencies:
       character-entities: 2.0.2
 
@@ -16032,7 +16032,7 @@ snapshots:
       '@typescript-eslint/parser': 8.32.0(eslint@8.57.0)(typescript@5.7.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0)
       eslint-plugin-import: 2.31.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.0)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@8.57.0)
       eslint-plugin-react: 7.37.5(eslint@8.57.0)
@@ -16056,7 +16056,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.0):
+  eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       '@nolyfill/is-core-module': 1.0.39
       debug: 4.4.0
@@ -16071,14 +16071,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.0):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
       '@typescript-eslint/parser': 8.32.0(eslint@8.57.0)(typescript@5.7.2)
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.31.0)(eslint@8.57.0)
+      eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -16103,7 +16103,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 8.57.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@8.57.0)
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.31.0(@typescript-eslint/parser@8.32.0(eslint@8.57.0)(typescript@5.7.2))(eslint@8.57.0))(eslint@8.57.0))(eslint@8.57.0)
       hasown: 2.0.2
       is-core-module: 2.15.1
       is-glob: 4.0.3
@@ -17717,7 +17717,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
-      decode-named-character-reference: 1.0.2(patch_hash=djcvjv2zk32xfqoxzwsbvomeg4)
+      decode-named-character-reference: 1.0.2(patch_hash=ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307)
       devlop: 1.1.0
       mdast-util-to-string: 4.0.0
       micromark: 4.0.0
@@ -17967,7 +17967,7 @@ snapshots:
 
   micromark-core-commonmark@2.0.0:
     dependencies:
-      decode-named-character-reference: 1.0.2(patch_hash=djcvjv2zk32xfqoxzwsbvomeg4)
+      decode-named-character-reference: 1.0.2(patch_hash=ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307)
       devlop: 1.1.0
       micromark-factory-destination: 2.0.0
       micromark-factory-label: 2.0.0
@@ -18265,7 +18265,7 @@ snapshots:
 
   micromark-util-decode-string@2.0.0:
     dependencies:
-      decode-named-character-reference: 1.0.2(patch_hash=djcvjv2zk32xfqoxzwsbvomeg4)
+      decode-named-character-reference: 1.0.2(patch_hash=ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307)
       micromark-util-character: 2.1.1
       micromark-util-decode-numeric-character-reference: 2.0.1
       micromark-util-symbol: 2.0.0
@@ -18363,7 +18363,7 @@ snapshots:
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.4.0
-      decode-named-character-reference: 1.0.2(patch_hash=djcvjv2zk32xfqoxzwsbvomeg4)
+      decode-named-character-reference: 1.0.2(patch_hash=ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307)
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.0
       micromark-factory-space: 2.0.1
@@ -18891,7 +18891,7 @@ snapshots:
       character-entities: 2.0.2
       character-entities-legacy: 3.0.0
       character-reference-invalid: 2.0.1
-      decode-named-character-reference: 1.0.2(patch_hash=djcvjv2zk32xfqoxzwsbvomeg4)
+      decode-named-character-reference: 1.0.2(patch_hash=ec8a38481443e0ab8417be537f4803c3d304e0e619d6032e8e75ec2b834a8307)
       is-alphanumerical: 2.0.1
       is-decimal: 2.0.1
       is-hexadecimal: 2.0.1

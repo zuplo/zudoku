@@ -60,7 +60,15 @@
     },
     "patchedDependencies": {
       "decode-named-character-reference@1.0.2": "patches/decode-named-character-reference@1.0.2.patch"
-    }
+    },
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "@swc/core",
+      "core-js",
+      "esbuild",
+      "nx",
+      "unrs-resolver"
+    ]
   },
   "nx": {
     "includedScripts": [
