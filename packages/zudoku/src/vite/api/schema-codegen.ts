@@ -1,8 +1,13 @@
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
-import { getSegmentsFromPath } from "@scalar/openapi-parser";
 import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
 import { type OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
+
+const unescapeJsonPointer = (uri: string) =>
+  decodeURIComponent(uri.replace(/~1/g, "/").replace(/~0/g, "~"));
+
+const getSegmentsFromPath = (path: string) =>
+  path.split("/").slice(1).map(unescapeJsonPointer);
 
 // Find all $ref occurrences in the schema and assign them unique variable names
 const createLocalRefMap = (obj: RecordAny) => {
@@ -40,18 +45,23 @@ const lookup = (
   filePath?: string,
 ): RecordAny => {
   const parts = getSegmentsFromPath(path);
-  let value = schema;
+  let val = schema;
 
   for (const part of parts) {
-    if (value === undefined) {
+    while (val.$ref?.startsWith("#/")) {
+      val = val.$ref === path ? val : lookup(schema, val.$ref, filePath);
+    }
+
+    if (val[part] === undefined) {
       throw new Error(
-        `Error in ${filePath ?? "code generation"}: Could not find value for path: ${path}`,
+        `Error in ${filePath ?? "code generation"}: Could not find path segment ${part} in path: ${path}`,
       );
     }
-    value = value[part];
+
+    val = val[part];
   }
 
-  return value;
+  return val;
 };
 
 /**

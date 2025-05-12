@@ -7,6 +7,7 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
+import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
@@ -15,6 +16,7 @@ import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   hasLogicalGroupings,
+  isArrayType,
   isCircularRef,
   isComplexType,
   LogicalSchemaTypeMap,
@@ -93,7 +95,7 @@ export const SchemaPropertyItem = ({
               group !== "optional" && (
                 <span className="text-primary">required</span>
               ),
-              schema.type === "array" &&
+              isArrayType(schema) &&
                 "items" in schema &&
                 isCircularRef(schema.items) && <RecursiveIndicator />,
             ]}
@@ -108,9 +110,13 @@ export const SchemaPropertyItem = ({
         {schema.type === "array" && "items" in schema && schema.items.enum && (
           <EnumValues values={schema.items.enum} />
         )}
+        {schema.const && <ConstValue schema={schema} hideDescription />}
         {schema.enum && <EnumValues values={schema.enum} />}
         <SchemaExampleAndDefault schema={schema} />
-        {(hasLogicalGroupings(schema) || isComplexType(schema)) && (
+        {(hasLogicalGroupings(schema) ||
+          isComplexType(schema) ||
+          isArrayType(schema) ||
+          schema.additionalProperties) && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}
@@ -118,7 +124,7 @@ export const SchemaPropertyItem = ({
           >
             {showCollapseButton && (
               <Collapsible.Trigger asChild>
-                <Button variant="expand" size="sm" className="h-7">
+                <Button variant="expand" size="sm">
                   {isOpen ? <MinusIcon size={12} /> : <PlusIcon size={12} />}
                   {!isOpen ? "Show properties" : "Hide properties"}
                 </Button>
@@ -131,7 +137,7 @@ export const SchemaPropertyItem = ({
                 ) : schema.type === "object" ? (
                   <SchemaView schema={schema} />
                 ) : (
-                  schema.type === "array" &&
+                  isArrayType(schema) &&
                   "items" in schema &&
                   typeof schema.items === "object" &&
                   !isCircularRef(schema.items) && (

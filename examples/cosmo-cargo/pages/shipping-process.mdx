@@ -1,0 +1,96 @@
+---
+sidebar_label: Shipping Process
+---
+
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "zudoku/ui/Card";
+
+# Intergalactic Shipping Process
+
+Our streamlined process ensures your cargo reaches its destination safely and efficiently.
+
+<Stepper>
+
+1. **Prepare Your Cargo**
+
+   Before shipping, ensure your cargo meets our safety standards:
+
+   - Vacuum-sealed packaging
+   - Anti-matter containment (if applicable)
+   - Radiation shielding
+   - Zero-gravity stabilization
+
+   :::warning
+   Improperly packaged cargo may be rejected at our spaceports.
+   :::
+
+1. **Book Your Shipment**
+
+   Use our API to create a shipping request:
+
+   ```js
+   const shipment = await cosmocargo.shipments.create({
+     origin: "Earth",
+     destination: "Mars Colony Alpha",
+     cargo: {
+       items: ["supplies", "equipment"],
+       weight: "500kg",
+       specialHandling: ["zero-g", "radiation-shielded"],
+     },
+   });
+   ```
+
+1. **Spaceport Processing**
+
+   Your cargo undergoes:
+
+   - Automated scanning
+   - Weight verification
+   - Safety compliance checks
+   - Route optimization
+
+   :::tip
+   Arrive at least 2 hours before your scheduled launch window.
+   :::
+
+1. **Launch & Transit**
+
+   - Quantum-powered propulsion
+   - Automated navigation
+   - Real-time tracking
+   - Emergency protocols
+
+1. **Delivery & Confirmation**
+
+   Upon arrival:
+
+   - Automated unloading
+   - Final inspection
+   - Digital signature collection
+   - Delivery confirmation
+
+</Stepper>
+
+<Card className="not-prose">
+  <CardHeader>
+    <CardTitle>Need Help?</CardTitle>
+    <CardDescription>
+      Our space logistics team is here to assist
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    <p>
+      Contact our 24/7 support team for any questions about the shipping
+      process.
+    </p>
+  </CardContent>
+  <CardFooter>
+    <Button>Contact Support</Button>
+  </CardFooter>
+</Card>

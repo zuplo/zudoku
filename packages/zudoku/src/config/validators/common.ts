@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { isValidElement } from "react";
 import z, {
   type RefinementCtx,
   type ZodEnumDef,
@@ -14,8 +15,6 @@ import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
-
-const AnyObject = z.object({}).passthrough();
 
 const ThemeSchema = z
   .object({
@@ -69,11 +68,6 @@ const ApiConfigSchema = z
   })
   .partial();
 
-const ApiPostProcessorSchema = z
-  .function()
-  .args(AnyObject)
-  .returns(z.union([AnyObject, z.promise(AnyObject)]));
-
 const ApiSchema = z.union([
   z
     .object({ type: z.literal("url"), input: z.string() })
@@ -83,10 +77,7 @@ const ApiSchema = z.union([
       type: z.literal("file"),
       input: z.union([z.string(), z.array(z.string())]),
     })
-    .merge(ApiConfigSchema)
-    .merge(
-      z.object({ postProcessors: ApiPostProcessorSchema.array().optional() }),
-    ),
+    .merge(ApiConfigSchema),
   z
     .object({ type: z.literal("raw"), input: z.string() })
     .merge(ApiConfigSchema),
@@ -134,8 +125,54 @@ const ApiKeysSchema = z.union([
 const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
   alt: z.string().optional(),
-  width: z.string().optional(),
+  width: z.string().or(z.number()).optional(),
 });
+
+export const FooterSocialIcons = [
+  "reddit",
+  "discord",
+  "github",
+  "x",
+  "linkedin",
+  "facebook",
+  "instagram",
+  "youtube",
+  "tiktok",
+  "twitch",
+  "pinterest",
+  "snapchat",
+  "whatsapp",
+  "telegram",
+] as const;
+
+export const FooterSocialSchema = z.object({
+  label: z.string().optional(),
+  href: z.string(),
+  icon: z
+    .union([
+      z.enum(FooterSocialIcons),
+      z.custom<ReactNode>((val) => isValidElement(val)),
+    ])
+    .optional(),
+});
+
+export const FooterSchema = z
+  .object({
+    columns: z
+      .array(
+        z.object({
+          position: z.enum(["start", "center", "end"]).optional(),
+          title: z.string(),
+          links: z.array(z.object({ label: z.string(), href: z.string() })),
+        }),
+      )
+      .optional(),
+    social: z.array(FooterSocialSchema).optional(),
+    copyright: z.string().optional(),
+    logo: LogoSchema.optional(),
+    position: z.enum(["start", "center", "end"]).optional(),
+  })
+  .optional();
 
 const SiteMapSchema = z
   .object({
@@ -281,6 +318,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     clientId: z.string(),
     domain: z.string(),
     audience: z.string().optional(),
+    scopes: z.array(z.string()).optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -343,6 +381,7 @@ const PageSchema = z
         .optional() as BannerColorType,
       dismissible: z.boolean().optional(),
     }),
+    footer: FooterSchema,
   })
   .partial();
 
@@ -405,7 +444,6 @@ export const CommonConfigSchema = z.object({
   apiKeys: ApiKeysSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
-  isZuplo: z.boolean().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,

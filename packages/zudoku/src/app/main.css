@@ -127,6 +127,12 @@
     @apply bg-primary/100 text-primary-foreground;
   }
 
+  .bg-primary::selection,
+  .bg-primary ::selection {
+    background: theme(colors.background);
+    color: theme(colors.foreground);
+  }
+
   .dark {
     color-scheme: dark;
   }
@@ -327,8 +333,8 @@
 
   /* Vertical line */
   .stepper > ol > li::after {
-    @apply absolute content-[''] w-[2px] bg-border -translate-x-1/2;
-    left: calc(var(--bullet-size) / 2);
+    @apply absolute content-[''] w-[2px] bg-border -translate-x-1/2 rtl:translate-x-1/2;
+    inset-inline-start: calc(var(--bullet-size) / 2);
     top: calc(var(--bullet-size) + var(--line-spacing));
     height: calc(100% - var(--bullet-size) - (2 * var(--line-spacing)));
   }

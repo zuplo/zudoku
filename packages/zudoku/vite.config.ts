@@ -21,10 +21,7 @@ const entries: Record<string, string> = {
   "plugin-search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
   "plugin-api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
   ...globEntries("./src/lib/ui/**/*.{ts,tsx}", "ui"),
-  ...globEntries(
-    "./src/lib/plugins/openapi/post-processors/*.ts",
-    "post-processors",
-  ),
+  ...globEntries("./src/lib/plugins/openapi/processors/*.ts", "processors"),
 };
 
 export default defineConfig({
@@ -44,7 +41,7 @@ export default defineConfig({
       name: "Zudoku",
       formats: ["es"],
       fileName: (_format, fileName) =>
-        fileName.startsWith("ui/") || fileName.startsWith("post-processors/")
+        fileName.startsWith("ui/") || fileName.startsWith("processors/")
           ? `${fileName}.js`
           : `zudoku.${fileName}.js`,
     },

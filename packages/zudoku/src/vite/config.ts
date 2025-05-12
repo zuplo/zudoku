@@ -12,6 +12,7 @@ import {
   loadEnv as viteLoadEnv,
 } from "vite";
 import packageJson from "../../package.json" with { type: "json" };
+import { ZuploEnv } from "../app/env.js";
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
@@ -36,7 +37,7 @@ const getDocsConfigFiles = (
 };
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
-  const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
+  const envPrefix = ["ZUPLO_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
 
   process.env = { ...localEnv, ...process.env };
@@ -91,7 +92,7 @@ export async function loadZudokuConfig(
       }
     }
 
-    config = await tryLoadZudokuConfig(rootDir, getModuleDir(), envVars);
+    config = await tryLoadZudokuConfig(rootDir, getModuleDir());
 
     logger.info(
       colors.yellow(`loaded config file `) +
@@ -187,6 +188,9 @@ export async function getViteConfig(
     define: {
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
+      // This env var doesn't start with the public `ZUPLO_` prefix, so we need to manually define it here
+      "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
       ...publicEnv,
     },
     ssr: {

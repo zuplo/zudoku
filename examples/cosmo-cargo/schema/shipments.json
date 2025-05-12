@@ -34,6 +34,11 @@
     {
       "name": "System",
       "description": "Endpoints for system health checks and retrieving API version information."
+    },
+    {
+      "name": "Schemas",
+      "description": "Endpoints for retrieving and validating data schemas used across the Cosmo Cargo platform.",
+      "x-zudoku-collapsed": false
     }
   ],
   "servers": [
@@ -182,8 +187,50 @@
             "type": "object",
             "description": "Empty object for future extensibility",
             "properties": {}
+          },
+          "customFields": {
+            "type": "object",
+            "description": "Dictionary of custom string fields that can be added to the shipment",
+            "additionalProperties": {
+              "type": "string",
+              "description": "Custom field value"
+            },
+            "example": {
+              "customerReference": "CUST-123",
+              "internalNotes": "Handle with care",
+              "specialInstructions": "Leave at front desk"
+            }
+          },
+          "facilityCapabilities": {
+            "type": "object",
+            "description": "Dictionary of facility capabilities and their status",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Whether the capability is enabled"
+                },
+                "lastChecked": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "When the capability was last verified"
+                }
+              }
+            },
+            "example": {
+              "temperatureControl": {
+                "enabled": true,
+                "lastChecked": "2024-03-15T10:30:00Z"
+              },
+              "hazardousMaterials": {
+                "enabled": false,
+                "lastChecked": "2024-03-14T15:45:00Z"
+              }
+            }
           }
-        }
+        },
+        "additionalProperties": true
       },
       "Address": {
         "type": "object",
@@ -380,6 +427,128 @@
           }
         },
         "additionalProperties": false
+      },
+      "SchemaValidationRequest": {
+        "type": "object",
+        "description": "Request to validate data against a specific schema",
+        "required": ["data"],
+        "properties": {
+          "data": {
+            "type": "object",
+            "description": "The data to validate against the schema"
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "strictMode": {
+                "type": "boolean",
+                "description": "Whether to validate in strict mode",
+                "default": false
+              },
+              "allowAdditionalProperties": {
+                "type": "boolean",
+                "description": "Whether to allow properties not defined in the schema",
+                "default": true
+              }
+            }
+          }
+        }
+      },
+      "SchemaValidationResponse": {
+        "type": "object",
+        "description": "Response from schema validation",
+        "required": ["valid"],
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "description": "Whether the data is valid according to the schema"
+          },
+          "errors": {
+            "type": "array",
+            "description": "Validation errors if any",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "JSON path to the invalid property"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Error message"
+                },
+                "code": {
+                  "type": "string",
+                  "description": "Error code",
+                  "enum": [
+                    "REQUIRED",
+                    "TYPE_MISMATCH",
+                    "ENUM_VIOLATION",
+                    "FORMAT_VIOLATION",
+                    "CONSTRAINT_VIOLATION"
+                  ]
+                }
+              }
+            }
+          },
+          "schemaId": {
+            "type": "string",
+            "description": "Identifier of the schema used for validation"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the validation was performed"
+          }
+        }
+      },
+      "SchemaMetadata": {
+        "type": "object",
+        "description": "Metadata about a schema",
+        "required": ["id", "name", "version"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier for the schema"
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable name of the schema"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version of the schema",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the schema"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the schema was created"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When the schema was last updated"
+          },
+          "spaceEntityType": {
+            "type": "string",
+            "description": "The type of space entity this schema represents",
+            "enum": [
+              "CARGO",
+              "VESSEL",
+              "CREW",
+              "ROUTE",
+              "STATION",
+              "PLANET",
+              "ASTEROID",
+              "SATELLITE"
+            ]
+          }
+        }
       }
     }
   },
@@ -1534,6 +1703,218 @@
         }
       }
     },
+    "/schemas": {
+      "get": {
+        "tags": ["Schemas"],
+        "summary": "List available schemas",
+        "description": "Retrieve a list of all available data schemas in the Cosmo Cargo platform",
+        "operationId": "listSchemas",
+        "parameters": [
+          {
+            "name": "entityType",
+            "in": "query",
+            "description": "Filter schemas by space entity type",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "CARGO",
+                "VESSEL",
+                "CREW",
+                "ROUTE",
+                "STATION",
+                "PLANET",
+                "ASTEROID",
+                "SATELLITE"
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "in": "query",
+            "description": "Filter schemas by version",
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of schemas retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "schemas": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SchemaMetadata"
+                      }
+                    },
+                    "count": {
+                      "type": "integer",
+                      "description": "Total number of schemas returned"
+                    }
+                  }
+                },
+                "example": {
+                  "schemas": [
+                    {
+                      "id": "cargo-manifest-v1",
+                      "name": "Cargo Manifest",
+                      "version": "1.0.0",
+                      "description": "Schema for interplanetary cargo manifests",
+                      "createdAt": "2024-06-15T08:00:00Z",
+                      "updatedAt": "2024-06-15T08:00:00Z",
+                      "spaceEntityType": "CARGO"
+                    },
+                    {
+                      "id": "vessel-specs-v2",
+                      "name": "Vessel Specifications",
+                      "version": "2.1.0",
+                      "description": "Technical specifications for space vessels",
+                      "createdAt": "2024-05-10T14:30:00Z",
+                      "updatedAt": "2024-07-22T09:15:00Z",
+                      "spaceEntityType": "VESSEL"
+                    },
+                    {
+                      "id": "route-plan-v3",
+                      "name": "Route Planning",
+                      "version": "3.0.2",
+                      "description": "Interplanetary route planning and navigation",
+                      "createdAt": "2024-04-01T11:45:00Z",
+                      "updatedAt": "2024-07-15T16:20:00Z",
+                      "spaceEntityType": "ROUTE"
+                    }
+                  ],
+                  "count": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas/{schemaId}": {
+      "get": {
+        "tags": ["Schemas"],
+        "summary": "Get schema details",
+        "description": "Retrieve detailed information about a specific schema, including its structure",
+        "operationId": "getSchema",
+        "parameters": [
+          {
+            "name": "schemaId",
+            "in": "path",
+            "required": true,
+            "description": "Unique identifier of the schema",
+            "schema": {
+              "type": "string"
+            },
+            "example": "cargo-manifest-v1"
+          },
+          {
+            "name": "includeStructure",
+            "in": "query",
+            "description": "Whether to include the full schema structure",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Schema details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "metadata": {
+                      "$ref": "#/components/schemas/SchemaMetadata"
+                    },
+                    "structure": {
+                      "type": "object",
+                      "description": "The JSON Schema structure"
+                    }
+                  }
+                },
+                "example": {
+                  "metadata": {
+                    "id": "cargo-manifest-v1",
+                    "name": "Cargo Manifest",
+                    "version": "1.0.0",
+                    "description": "Schema for interplanetary cargo manifests",
+                    "createdAt": "2024-06-15T08:00:00Z",
+                    "updatedAt": "2024-06-15T08:00:00Z",
+                    "spaceEntityType": "CARGO"
+                  },
+                  "structure": {
+                    "type": "object",
+                    "required": ["manifestId", "vesselId", "items"],
+                    "properties": {
+                      "manifestId": {
+                        "type": "string",
+                        "description": "Unique identifier for the cargo manifest"
+                      },
+                      "vesselId": {
+                        "type": "string",
+                        "description": "ID of the vessel carrying the cargo"
+                      },
+                      "departureDate": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "When the vessel departs"
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "itemId": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "quantity": {
+                              "type": "integer",
+                              "minimum": 1
+                            },
+                            "weight": {
+                              "type": "number"
+                            },
+                            "hazardClass": {
+                              "type": "string",
+                              "enum": ["NONE", "CLASS_1", "CLASS_2", "CLASS_3"]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Schema not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "code": "SCHEMA_NOT_FOUND",
+                  "message": "Schema with ID 'cargo-manifest-v1' not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/shipments/{shipmentId}/label": {
       "get": {
         "tags": ["Documentation"],
@@ -2507,6 +2888,147 @@
                 "example": {
                   "code": "ROUTE_NOT_FOUND",
                   "message": "No route found between specified facilities"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas/facility-capabilities": {
+      "get": {
+        "tags": ["Schemas"],
+        "summary": "Get facility capabilities",
+        "description": "Retrieve detailed capability information for space cargo facilities, including their operational status and supported features",
+        "operationId": "getFacilityCapabilities",
+        "parameters": [
+          {
+            "name": "facilityIds",
+            "in": "query",
+            "description": "Array of facility IDs to test",
+            "schema": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string",
+                "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+              }
+            }
+          },
+          {
+            "name": "statuses",
+            "in": "query",
+            "description": "Array of status configurations",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["CARGO", "PASSENGER", "MAINTENANCE"]
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["PENDING", "APPROVED", "REJECTED"]
+                  },
+                  "facilityId": {
+                    "type": "string",
+                    "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Test response with array and nullable types",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "facilities": {
+                      "type": ["array", "null"],
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "enum": ["LAX1", "JFK2", "ORD3", "DFW4", "SEA5"]
+                          },
+                          "status": {
+                            "type": ["string", "null"],
+                            "enum": ["ACTIVE", "MAINTENANCE", "CLOSED"]
+                          },
+                          "capabilities": {
+                            "type": ["array", "null"],
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "CARGO",
+                                "PASSENGER",
+                                "MAINTENANCE",
+                                "STORAGE"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "tags": {
+                          "type": ["array", "null"],
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "coordinates": {
+                          "type": ["array", "null"],
+                          "items": {
+                            "type": "number"
+                          },
+                          "minItems": 2,
+                          "maxItems": 2
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "active_facilities": {
+                    "summary": "Active facilities with capabilities",
+                    "value": {
+                      "facilities": [
+                        {
+                          "id": "LAX1",
+                          "status": "ACTIVE",
+                          "capabilities": ["CARGO", "MAINTENANCE"]
+                        },
+                        {
+                          "id": "JFK2",
+                          "status": null,
+                          "capabilities": ["CARGO", "PASSENGER", "STORAGE"]
+                        }
+                      ],
+                      "metadata": {
+                        "tags": ["SPACE", "INTERNATIONAL"],
+                        "coordinates": [34.0522, -118.2437]
+                      }
+                    }
+                  },
+                  "empty_response": {
+                    "summary": "Empty response with null arrays",
+                    "value": {
+                      "facilities": null,
+                      "metadata": {
+                        "tags": null,
+                        "coordinates": null
+                      }
+                    }
+                  }
                 }
               }
             }

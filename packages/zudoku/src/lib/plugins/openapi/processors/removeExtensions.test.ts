@@ -64,11 +64,15 @@ const baseDoc = {
       },
     },
   },
-};
+} as any;
 
 describe("removeExtensions", () => {
   it("removes all x- extensions by default", () => {
-    const processed = removeExtensions()(baseDoc);
+    const processed = removeExtensions()({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
     const removedExtensions = [
       "x-root-ext",
@@ -93,7 +97,7 @@ describe("removeExtensions", () => {
       ["paths", "/test", "get", "responses", "200", "description"],
       "OK",
     );
-    expect(processed.tags[0].name).toBe("example");
+    expect(processed.tags?.[0]?.name).toBe("example");
   });
 
   it("removes only specified x- extensions when names are provided", () => {
@@ -104,7 +108,11 @@ describe("removeExtensions", () => {
 
     const processed = removeExtensions({
       keys: ["x-path-ext", "x-param-ext"],
-    })(docWithExtraExtensions);
+    })({
+      schema: docWithExtraExtensions,
+      file: "/file.json",
+      dereference: async (id) => id,
+    }) as any;
 
     // Assert specified extensions are removed
     expect(processed.paths["/test"]["x-path-ext"]).toBeUndefined();
@@ -131,9 +139,13 @@ describe("removeExtensions", () => {
           },
         },
       },
-    };
+    } as any;
 
-    const processed = removeExtensions()(deeplyNested);
+    const processed = removeExtensions()({
+      schema: deeplyNested,
+      file: "/file.json",
+      dereference: async (id) => id,
+    }) as any;
 
     expect(processed.a.b.c["x-deep-ext"]).toBeUndefined();
     expect(processed.a.b.c.d["x-another-ext"]).toBeUndefined();
@@ -144,9 +156,13 @@ describe("removeExtensions", () => {
     const docWithoutExtensions = {
       openapi: "3.1.0",
       info: { title: "API without extensions" },
-    };
+    } as any;
 
-    const processed = removeExtensions()(docWithoutExtensions);
+    const processed = removeExtensions()({
+      schema: docWithoutExtensions,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
     expect(processed).toEqual(docWithoutExtensions);
   });
@@ -154,7 +170,11 @@ describe("removeExtensions", () => {
   it("removes extensions based on shouldRemove callback", () => {
     const processed = removeExtensions({
       shouldRemove: (key) => key.startsWith("x-zuplo"),
-    })(baseDoc);
+    })({
+      schema: baseDoc,
+      file: "/file.json",
+      dereference: async (id) => id,
+    });
 
     // Should remove x-zuplo extensions
     const removedExtensions = [

@@ -12,6 +12,7 @@ import {
   Bootstrap as BootstrapImport,
   BootstrapStatic as BootstrapStaticImport,
 } from "./Bootstrap.js";
+import { BuildCheck as BuildCheckImport } from "./BuildCheck.js";
 import {
   CACHE_KEYS as CACHE_KEYS_IMPORT,
   useCache as useCacheImport,
@@ -48,3 +49,4 @@ export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;
 export const Button = /*@__PURE__*/ ButtonImport;
 export const Link = /*@__PURE__*/ LinkImport;
 export const useTheme = /*@__PURE__*/ useThemeImport;
+export const BuildCheck = /*@__PURE__*/ BuildCheckImport;

@@ -23,7 +23,7 @@ export const OpenAPI = () => {
         </svg>
       ),
       title: "Supports OpenAPI 3.x",
-      desc: "We aim to support the latest OpenAPI specification. Zudoku currently supports OpenAPI 3.x and 2.0 is coming soon. If something is missing, please let us know. This is a very active project and we are always looking to improve.",
+      desc: "We aim to support the latest OpenAPI specification. Zudoku currently supports OpenAPI 3.x and 2.0. If something is missing, please let us know. This is a very active project and we are always looking to improve.",
     },
     {
       icon: (
@@ -60,8 +60,7 @@ export const OpenAPI = () => {
             </p>
             <p>
               Use your existing OpenAPI specification to generate beautiful API
-              documentation with Zudoku. Zudoku supports OpenAPI 3.x and 2.0 is
-              coming soon.
+              documentation with Zudoku.
             </p>
           </div>
           <div className="mt-8 max-w-lg lg:max-w-none">

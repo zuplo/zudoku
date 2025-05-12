@@ -27,6 +27,9 @@ npm install -g pnpm
 2. Run `pnpm install` to install dependencies.
 
 3. Install [nx](https://nx.dev/) globally by running:
+
+4. Install [nx](https://nx.dev/) globally by running:
+
 ```
 pnpm add --global nx@latest
 ```
@@ -47,20 +50,12 @@ To authenticate run:
 nx login
 ```
 
-## 4. Build
+## 4. Dev
 
-To build the project run:
-
-```
-nx run zudoku:build
-```
-
-## 5. Dev
-
-To run a sample locally, run the following.
+To run the extensive sample project called "Cosmo Cargo" locally, run the following:
 
 ```
-nx run with-config:dev
+nx run cosmo-cargo:dev
 ```
 
 # Submitting Contributions

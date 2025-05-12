@@ -96,7 +96,7 @@ export const MdxPage = ({
       <div
         className={cn(
           ProseClasses,
-          "max-w-full xl:w-full xl:max-w-3xl flex-1 flex-shrink pt-[--padding-content-top] pb-[--padding-content-bottom]",
+          "max-w-full xl:w-full xl:max-w-3xl flex-1 flex-shrink pt-[--padding-content-top]",
         )}
       >
         {(category || title) && (
@@ -114,10 +114,11 @@ export const MdxPage = ({
         />
         {!hidePager && (
           <>
-            <hr />
+            <hr className="my-10" />
             <Pagination
               prev={prev ? { to: prev.id, label: prev.label } : undefined}
               next={next ? { to: next.id, label: next.label } : undefined}
+              className="mb-4"
             />
           </>
         )}

@@ -24,6 +24,11 @@ export const generateSchemaExample = (
     }
   }
 
+  // No example needed for const values
+  if (schema.const !== undefined) {
+    return schema.const;
+  }
+
   // For object schemas with properties
   if (schema.type === "object" && schema.properties) {
     const example: Record<string, any> = {};
@@ -50,8 +55,48 @@ export const generateSchemaExample = (
     return [];
   }
 
+  if (schema.format !== undefined) {
+    // Partial implementation of JSON Schema format examples
+    // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.7.3
+    switch (schema.format) {
+      case "date-time":
+        return "2024-08-25T15:00:00Z";
+      case "date":
+        return "2024-08-25";
+      case "time":
+        return "15:00:00";
+      case "email":
+        return "test@example.com";
+      case "uri":
+        return "https://www.example.com/path/to/resource";
+      case "uri-reference":
+        return "/path/to/resource";
+      case "uuid":
+        return "00000000-0000-0000-0000-000000000000";
+    }
+  }
+
   if (schema.enum) {
     return schema.enum[0];
+  }
+
+  if (schema.oneOf) {
+    const randomIndex = Math.floor(Math.random() * schema.oneOf.length);
+    return generateSchemaExample(schema.oneOf[randomIndex] as SchemaObject);
+  }
+
+  if (schema.anyOf) {
+    // Should likely be expanded to return a partial set of values, but it would require
+    // detection if being used within an array or a string type.
+    const randomIndex = Math.floor(Math.random() * schema.anyOf.length);
+    return generateSchemaExample(schema.anyOf[randomIndex] as SchemaObject);
+  }
+
+  if (schema.allOf) {
+    // https://swagger.io/docs/specification/v3_0/data-models/oneof-anyof-allof-not/#allof
+    return schema.allOf.reduce((acc, allOfSchema) => {
+      return { ...acc, ...generateSchemaExample(allOfSchema as SchemaObject) };
+    }, {});
   }
 
   switch (schema.type) {

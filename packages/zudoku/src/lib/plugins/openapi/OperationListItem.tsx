@@ -35,7 +35,7 @@ export const OperationListItem = ({
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
 
   return (
-    <div className="border-b-2 mb-16 pb-16">
+    <div>
       {operation.deprecated && (
         <Badge variant="muted" className="text-xs mb-4">
           deprecated
@@ -52,7 +52,7 @@ export const OperationListItem = ({
           level={2}
           id={operation.slug}
           registerSidebarAnchor
-          className="break-all"
+          className="break-all col-span-full"
         >
           {operation.summary}
         </Heading>

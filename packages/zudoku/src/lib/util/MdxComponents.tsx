@@ -2,6 +2,7 @@ import { type MDXComponents } from "mdx/types.js";
 import { AnchorLink } from "../components/AnchorLink.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
+import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
 import { Stepper } from "../ui/Stepper.js";
 import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
@@ -51,6 +52,7 @@ export const MdxComponents = {
     ) : (
       <a href={href} target="_blank" {...props} rel="noreferrer" />
     ),
+  Button,
   Callout,
   Stepper,
   SyntaxHighlight,

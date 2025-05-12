@@ -2,7 +2,7 @@ import { type ResultOf } from "@graphql-typed-document-node/core";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -151,10 +151,11 @@ export const OperationList = ({
   untagged?: boolean;
 }) => {
   const { input, type, versions, version, options } = useOasConfig();
+  const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
     type,
-    tag,
+    tag: tag ?? tagFromParams,
     untagged,
   });
   const result = useSuspenseQuery(query);
@@ -178,7 +179,18 @@ export const OperationList = ({
   // Prefetch for Playground
   useApiIdentities();
 
-  if (!schema.tag) return null;
+  if (!schema.tag) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center text-center">
+        <div className="text-muted-foreground font-medium">
+          No operations found
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground">
+          This API doesn't have any operations defined yet.
+        </div>
+      </div>
+    );
+  }
 
   const { operations, next, prev, description: tagDescription } = schema.tag;
 
@@ -308,13 +320,15 @@ export const OperationList = ({
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
       <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
         {operations.map((fragment) => (
-          <OperationListItem
-            serverUrl={selectedServer}
-            key={fragment.slug}
-            operationFragment={fragment}
-          />
+          <div key={fragment.slug}>
+            <OperationListItem
+              serverUrl={selectedServer}
+              operationFragment={fragment}
+            />
+            <hr className="my-10" />
+          </div>
         ))}
-        <Pagination {...paginationProps} />
+        <Pagination className="mb-4" {...paginationProps} />
       </div>
     </div>
   );

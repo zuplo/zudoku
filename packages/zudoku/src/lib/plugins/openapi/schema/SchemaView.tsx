@@ -1,8 +1,10 @@
+import { InfoIcon } from "lucide-react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../ui/Card.js";
+import { Card } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
+import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
@@ -48,6 +50,10 @@ export const SchemaView = ({
     );
   }
 
+  if (schema.const) {
+    return <ConstValue schema={schema} />;
+  }
+
   if (hasLogicalGroupings(schema)) {
     return <SchemaLogicalGroup schema={schema} />;
   }
@@ -57,12 +63,7 @@ export const SchemaView = ({
   }
 
   if (schema.type === "array" && typeof schema.items === "object") {
-    return (
-      <Card className="p-4 space-y-2 text-sm">
-        <ParamInfos schema={schema} />
-        <SchemaView schema={schema.items as SchemaObject} />
-      </Card>
-    );
+    return <SchemaView schema={schema.items} />;
   }
 
   if (schema.type === "object") {
@@ -77,6 +78,28 @@ export const SchemaView = ({
       },
     );
     const groupNames = ["required", "optional", "deprecated"] as const;
+
+    const additionalProperties =
+      typeof schema.additionalProperties === "object" ? (
+        <SchemaView schema={schema.additionalProperties} />
+      ) : schema.additionalProperties === true ? (
+        <div
+          className={cn(
+            ProseClasses,
+            "text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1",
+          )}
+        >
+          <span>Additional properties are allowed</span>
+          <a
+            className="p-0.5 -m-0.5"
+            href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <InfoIcon size={14} />
+          </a>
+        </div>
+      ) : null;
 
     return (
       <Card className="divide-y overflow-hidden">
@@ -96,19 +119,7 @@ export const SchemaView = ({
               </ul>
             ),
         )}
-      </Card>
-    );
-  }
-
-  if (schema.additionalProperties) {
-    return (
-      <Card className="my-2">
-        <CardHeader>
-          <CardTitle>Additional Properties:</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <SchemaView schema={schema.additionalProperties as SchemaObject} />
-        </CardContent>
+        {additionalProperties}
       </Card>
     );
   }

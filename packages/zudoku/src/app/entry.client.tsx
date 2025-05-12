@@ -34,6 +34,32 @@ if (root.childElementCount > 0) {
   void render(routes);
 }
 
+// eslint-disable-next-line no-console
+console.log(
+  "%cZUDOKU%c by Zuplo v" + window.ZUDOKU_VERSION,
+  [
+    "color: #FF00BD",
+    "line-height: 50px",
+    "font-weight: bolder",
+    "font-size: 30px",
+    "-webkit-text-stroke-width: 1px",
+    "-webkit-text-stroke-color: #FF00BD",
+    "text-transform: uppercase",
+    "text-align: center",
+    "letter-spacing: 5px",
+  ].join(" ;"),
+  [
+    "color: #Df0097",
+    "line-height: 50px",
+    "font-weight: bolder",
+    "font-size: 15px",
+    "text-align: center",
+    "letter-spacing: 5px",
+  ].join(" ;"),
+);
+// eslint-disable-next-line no-console
+console.log("» Learn more about Zudoku https://zudoku.dev");
+
 async function hydrateLazyRoutes(routes: RouteObject[]) {
   const path = window.location.pathname;
   const lazyMatches = matchRoutes(routes, path, config.basePath)?.filter(
@@ -43,6 +69,8 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
   if (lazyMatches?.length) {
     await Promise.all(
       lazyMatches.map(async (m) => {
+        if (typeof m.route.lazy !== "function") return;
+
         const routeModule = await m.route.lazy!();
         Object.assign(m.route, { ...routeModule, lazy: undefined });
       }),

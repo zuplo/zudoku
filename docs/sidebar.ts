@@ -10,7 +10,7 @@ export const docs: SidebarEntry = [
     type: "category",
     label: "Getting started",
     icon: "sparkles",
-    items: ["introduction", "app-quickstart", "html-quickstart"],
+    items: ["introduction", "app-quickstart"],
   },
   {
     type: "category",
@@ -22,7 +22,9 @@ export const docs: SidebarEntry = [
       "configuration/api-catalog",
       "configuration/navigation",
       "configuration/search",
+      "configuration/footer",
       "configuration/authentication",
+      "configuration/build-configuration",
       "configuration/sentry",
       "configuration/vite-config",
     ],
@@ -51,6 +53,7 @@ export const docs: SidebarEntry = [
       "guides/using-multiple-apis",
       "guides/managing-api-keys-and-identities",
       "guides/transforming-examples",
+      "guides/processors",
     ],
   },
   {

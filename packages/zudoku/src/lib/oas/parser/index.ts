@@ -96,6 +96,7 @@ export const validate = async (schemaInput: unknown) => {
   }
 
   const dereferenced = await dereference(schema);
+  const upgraded = upgradeSchema(dereferenced);
 
-  return upgradeSchema(dereferenced);
+  return upgraded;
 };
