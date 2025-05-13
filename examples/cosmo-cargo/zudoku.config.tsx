@@ -99,32 +99,36 @@ const config: ZudokuConfig = {
     },
   },
   protectedRoutes: ["/only-members"],
-  topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "api-shipments", label: "Shipments API" },
-    { id: "catalog", label: "API Catalog" },
+  navigation: [
+    {
+      type: "link",
+      href: "/catalog",
+      label: "API Catalog",
+    },
+    {
+      type: "category",
+      label: "Space Operations",
+      link: "global",
+      items: [
+        {
+          type: "category",
+          icon: "telescope",
+          collapsed: false,
+          label: "Space Operations",
+          items: ["shipping-process", "tracking"],
+        },
+        "global",
+        {
+          type: "category",
+          icon: "library-big",
+          label: "Shipping Guides",
+          items: ["interstellar", "intergalactic"],
+        },
+      ],
+    },
   ],
-  sidebar: {
-    documentation: [
-      "documentation",
-      {
-        type: "category",
-        icon: "telescope",
-        collapsed: false,
-        label: "Space Operations",
-        items: ["shipping-process", "tracking"],
-      },
-      "global",
-      {
-        type: "category",
-        icon: "library-big",
-        label: "Shipping Guides",
-        items: ["interstellar", "intergalactic"],
-      },
-    ],
-  },
   catalogs: {
-    navigationId: "catalog",
+    path: "catalog",
     label: "API Catalog",
   },
   authentication: {
@@ -150,7 +154,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/shipments.json",
-      navigationId: "api-shipments",
+      path: "api-shipments",
       categories: [{ label: "General", tags: ["Shipments"] }],
       options: {
         transformExamples: ({ content, auth }) => {
@@ -182,25 +186,25 @@ const config: ZudokuConfig = {
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
-      navigationId: "api-label",
+      path: "api-label",
       categories: [{ label: "General", tags: ["Labels"] }],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
-      navigationId: "api-webhooks",
+      path: "api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],
     },
     {
       type: "file",
       input: "./schema/interplanetary.json",
-      navigationId: "api-interplanetary",
+      path: "api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
-      navigationId: "api-tracking",
+      path: "api-tracking",
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],

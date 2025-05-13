@@ -33,7 +33,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "./apis/openapi.yaml",
-    navigationId: "api",
+    path: "api",
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",
@@ -55,7 +55,7 @@ There are multiple options for referencing your OpenAPI document. The example be
   "apis": {
     "type": "url",
     "input": "https://rickandmorty.zuplo.io/openapi.json",
-    "navigationId": "api"
+    "path": "api"
   }
   // ...
 }

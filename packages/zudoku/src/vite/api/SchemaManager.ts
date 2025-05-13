@@ -25,7 +25,7 @@ export class SchemaManager {
   private storeDir: string;
   private processors: Processor[];
   private processedSchemas: Record<string, ProcessedSchema[]> = {};
-  private fileToNavigationId: Map<string, string> = new Map();
+  private fileToPath: Map<string, string> = new Map();
   public config: LoadedConfig;
   public trackedFiles = new Set<string>();
   public schemaMap = new Map<
@@ -68,34 +68,33 @@ export class SchemaManager {
     ];
   }
 
-  private getNavigationIdForFile = (input: string) => {
+  private getPathForFile = (input: string) => {
     const filePath = path.resolve(this.config.__meta.rootDir, input);
 
-    if (this.fileToNavigationId.has(filePath)) {
-      return this.fileToNavigationId.get(filePath);
+    if (this.fileToPath.has(filePath)) {
+      return this.fileToPath.get(filePath);
     }
 
     const apis = ensureArray(this.config.apis ?? []);
     for (const apiConfig of apis) {
-      if (!apiConfig || apiConfig.type !== "file" || !apiConfig.navigationId)
-        continue;
+      if (!apiConfig || apiConfig.type !== "file" || !apiConfig.path) continue;
 
       const inputs = ensureArray(apiConfig.input).map((i) =>
         path.resolve(this.config.__meta.rootDir, i),
       );
       if (inputs.includes(filePath)) {
-        this.fileToNavigationId.set(filePath, apiConfig.navigationId);
-        return apiConfig.navigationId;
+        this.fileToPath.set(filePath, apiConfig.path);
+        return apiConfig.path;
       }
     }
   };
 
   public processSchema = async (input: string) => {
     const filePath = path.resolve(this.config.__meta.rootDir, input);
-    const navigationId = this.getNavigationIdForFile(filePath);
-    if (!navigationId) {
+    const pathId = this.getPathForFile(filePath);
+    if (!pathId) {
       // eslint-disable-next-line no-console
-      console.warn(`No navigation ID found for file ${input}`);
+      console.warn(`No path found for file ${input}`);
       return;
     }
 
@@ -135,34 +134,34 @@ export class SchemaManager {
       inputPath: filePath,
     } satisfies ProcessedSchema;
 
-    const schemas = this.processedSchemas[navigationId];
+    const schemas = this.processedSchemas[pathId];
 
     if (!schemas) {
-      throw new Error(`No schemas found for navigation ID ${navigationId}.`);
+      throw new Error(`No schemas found for navigation ID ${pathId}.`);
     }
 
     const index = schemas.findIndex((s) => s.inputPath === filePath);
     if (index > -1) {
       schemas[index] = processed;
     }
-    this.fileToNavigationId.set(filePath, navigationId);
+    this.fileToPath.set(filePath, pathId);
     return processed;
   };
 
   public processAllSchemas = async () => {
     this.schemaMap.clear();
     this.trackedFiles.clear();
-    this.fileToNavigationId.clear();
+    this.fileToPath.clear();
     this.processedSchemas = {};
 
     const apis = ensureArray(this.config.apis ?? []);
     for (const apiConfig of apis) {
-      if (apiConfig.type !== "file" || !apiConfig.navigationId) continue;
+      if (apiConfig.type !== "file" || !apiConfig.path) continue;
 
       const inputs = ensureArray(apiConfig.input);
       if (inputs.length === 0) throw new Error("No schema found");
 
-      this.processedSchemas[apiConfig.navigationId] = inputs.map((input) => ({
+      this.processedSchemas[apiConfig.path] = inputs.map((input) => ({
         schema: {} as OpenAPIDocument,
         version: "",
         inputPath: path.resolve(this.config.__meta.rootDir, input),
@@ -178,17 +177,15 @@ export class SchemaManager {
 
       if (errors.length > 0) {
         throw new Error(
-          `Failed to process schemas for ${apiConfig.navigationId}: ${errors.join(", ")}`,
+          `Failed to process schemas for ${apiConfig.path}: ${errors.join(", ")}`,
         );
       }
     }
   };
 
-  public getLatestSchema = (navigationId: string) =>
-    this.processedSchemas[navigationId]?.at(0);
+  public getLatestSchema = (path: string) => this.processedSchemas[path]?.at(0);
 
-  public getSchemasForId = (navigationId: string) =>
-    this.processedSchemas[navigationId];
+  public getSchemasForPath = (path: string) => this.processedSchemas[path];
 
   private validateSchema = async (
     schema: JSONSchema,

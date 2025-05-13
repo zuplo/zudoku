@@ -95,7 +95,7 @@ async function main() {
   const apis = results.map(({ info, localFileName }) => ({
     type: "file",
     input: path.join("apis", localFileName),
-    navigationId: slugify(info.title || "untitled-api"),
+    path: slugify(info.title || "untitled-api"),
   }));
 
   const navigation = results.map(({ info }) => ({
