@@ -2,12 +2,23 @@ import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
 import { Suspense, useEffect, useState } from "react";
 import { NavLink, useNavigation } from "react-router";
-import type { TopNavigationItem } from "../../config/validators/validate.js";
+import { type SidebarItem } from "../../config/validators/SidebarSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { isHiddenItem, traverseSidebar } from "./navigation/utils.js";
 import { Slot } from "./Slot.js";
+
+export const isHiddenItem =
+  (isAuthenticated?: boolean) =>
+  (item: SidebarItem): boolean => {
+    if (item.display === "hide") return false;
+    return (
+      (item.display === "auth" && isAuthenticated) ||
+      (item.display === "anon" && !isAuthenticated) ||
+      !item.display ||
+      item.display === "always"
+    );
+  };
 
 export const PageProgress = () => {
   const navigation = useNavigation();
@@ -35,10 +46,10 @@ export const PageProgress = () => {
 };
 
 export const TopNavigation = () => {
-  const { topNavigation } = useZudoku();
+  const { navigation } = useZudoku();
   const { isAuthenticated } = useAuth();
 
-  const filteredItems = topNavigation.filter(isHiddenItem(isAuthenticated));
+  const filteredItems = navigation.filter(isHiddenItem(isAuthenticated));
 
   if (filteredItems.length === 0 || import.meta.env.MODE === "standalone") {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
@@ -50,7 +61,7 @@ export const TopNavigation = () => {
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
             {filteredItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.label + item.type}>
                 <TopNavItem {...item} />
               </li>
             ))}
@@ -63,34 +74,24 @@ export const TopNavigation = () => {
   );
 };
 
-export const TopNavItem = ({
-  id,
-  label,
-  default: defaultLink,
-}: TopNavigationItem) => {
-  const { sidebars } = useZudoku();
-  const currentSidebar = sidebars[id];
+export const getPathForItem = (item: SidebarItem) => {
+  if (item.type === "doc") return joinUrl(item.id);
+  if (item.type === "link") return item.href;
+  if (item.type === "category") return joinUrl(item.link?.id ?? "");
+};
+
+export const TopNavItem = (item: SidebarItem) => {
   const currentNav = useCurrentNavigation();
   const isNavigating = Boolean(useNavigation().location);
-  const isActive = currentNav.topNavItem?.id === id && !isNavigating;
-
-  // TODO: This is a bit of a hack to get the first link in the sidebar
-  // We should really process this when we load the config so we can validate
-  // that the sidebar is actually set. In this case we just fall back to linking
-  // to the id if we can't resolve a sidebar.
-  const first =
-    defaultLink ??
-    (currentSidebar
-      ? traverseSidebar(currentSidebar, (item) => {
-          if (item.type === "doc") return joinUrl(item.id);
-        })
-      : joinUrl(id)) ??
-    joinUrl(id);
+  const isActive =
+    JSON.stringify(currentNav.topNavItem) === JSON.stringify(item) &&
+    !isNavigating;
 
   return (
     // We don't use isActive here because it has to be inside the sidebar,
     // the top nav id doesn't necessarily start with the sidebar id
     <NavLink
+      to={getPathForItem(item) ?? ""}
       className={({ isPending }) =>
         cx(
           "block lg:py-3.5 font-medium -mb-px",
@@ -99,9 +100,8 @@ export const TopNavItem = ({
             : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
         )
       }
-      to={first}
     >
-      {label}
+      {item.label}
     </NavLink>
   );
 };

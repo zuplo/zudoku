@@ -47,36 +47,32 @@ const isSidebarItem = (item: unknown): item is SidebarItem =>
   item !== undefined;
 
 export class SidebarManager {
-  sidebars: SidebarClass[];
+  sidebars: SidebarClass;
   private switchQueue: Array<{ from: string; to: string; item: SidebarItem }> =
     [];
-  constructor(rootDir: string, sidebarConfig: ZudokuConfig["sidebar"]) {
-    this.sidebars = Object.entries(sidebarConfig ?? {}).map(
-      ([parent, items]) => new SidebarClass(this, rootDir, parent, items),
-    );
+  constructor(rootDir: string, sidebarConfig: ZudokuConfig["navigation"]) {
+    this.sidebars = new SidebarClass(this, rootDir, "", sidebarConfig ?? []);
   }
 
   async resolveSidebars() {
-    await Promise.all(this.sidebars.map((sidebar) => sidebar.resolve()));
+    await this.sidebars.resolve();
 
     // switch all collected items
-    for (const { from, to, item } of this.switchQueue) {
-      const fromSidebar = this.sidebars.find((s) => s.parent === from);
-      const toSidebar = this.sidebars.find((s) => s.parent === to);
+    // for (const { from, to, item } of this.switchQueue) {
+    //   const fromSidebar = this.sidebars.find((s) => s.parent === from);
+    //   const toSidebar = this.sidebars.find((s) => s.parent === to);
 
-      if (!fromSidebar || !toSidebar) {
-        throw new Error(`Sidebar ${from} or ${to} not found`);
-      }
+    //   if (!fromSidebar || !toSidebar) {
+    //     throw new Error(`Sidebar ${from} or ${to} not found`);
+    //   }
 
-      fromSidebar.resolvedItems = fromSidebar.resolvedItems.filter(
-        (resolvedItem) => resolvedItem !== item,
-      );
-      toSidebar.resolvedItems.push(item);
-    }
+    //   fromSidebar.resolvedItems = fromSidebar.resolvedItems.filter(
+    //     (resolvedItem) => resolvedItem !== item,
+    //   );
+    //   toSidebar.resolvedItems.push(item);
+    // }
 
-    return Object.fromEntries(
-      this.sidebars.map((sidebar) => [sidebar.parent, sidebar.resolvedItems]),
-    );
+    return this.sidebars.resolvedItems;
   }
 
   switchSidebar(from: string, to: string, item: SidebarItem) {
@@ -137,10 +133,10 @@ export class SidebarClass {
       categoryLabel,
     };
 
-    if (data.sidebar && data.sidebar !== this.parent) {
-      this.manager.switchSidebar(this.parent, data.sidebar, doc);
-      return undefined;
-    }
+    // if (data.sidebar && data.sidebar !== this.parent) {
+    //   this.manager.switchSidebar(this.parent, data.sidebar, doc);
+    //   return undefined;
+    // }
 
     return doc;
   }
@@ -217,4 +213,3 @@ export class SidebarClass {
 }
 
 export type Sidebar = SidebarItem[];
-export type SidebarConfig = Record<string, Sidebar>;

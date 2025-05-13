@@ -90,7 +90,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/placeholder.json",
-      navigationId: "api-placeholder",
+      path: "api-placeholder",
     },
   ],
   slots: {

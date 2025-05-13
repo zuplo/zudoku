@@ -16,7 +16,7 @@ import { ThemeSwitch } from "./ThemeSwitch.js";
 import { PageProgress, TopNavItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
-  const { topNavigation, options } = useZudoku();
+  const { navigation, options } = useZudoku();
   const { isAuthenticated } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -46,15 +46,13 @@ export const MobileTopNavigation = () => {
               <li>
                 <ThemeSwitch />
               </li>
-              {topNavigation
-                .filter(isHiddenItem(isAuthenticated))
-                .map((item) => (
-                  <li key={item.label}>
-                    <button type="button" onClick={() => setDrawerOpen(false)}>
-                      <TopNavItem {...item} />
-                    </button>
-                  </li>
-                ))}
+              {navigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+                <li key={item.label}>
+                  <button type="button" onClick={() => setDrawerOpen(false)}>
+                    <TopNavItem {...item} />
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
           {options.page?.showPoweredBy !== false && (

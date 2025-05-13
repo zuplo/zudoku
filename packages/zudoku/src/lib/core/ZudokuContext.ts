@@ -4,11 +4,8 @@ import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod";
-import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
-import type {
-  FooterSchema,
-  TopNavigationItem,
-} from "../../config/validators/validate.js";
+import type { Sidebar } from "../../config/validators/SidebarSchema.js";
+import type { FooterSchema } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
@@ -83,8 +80,7 @@ export type ZudokuContextOptions = {
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationPlugin;
-  topNavigation?: TopNavigationItem[];
-  sidebars?: SidebarConfig;
+  navigation?: Sidebar;
   plugins?: ZudokuPlugin[];
   slots?: Record<string, SlotType>;
   /**
@@ -104,8 +100,7 @@ export type ZudokuContextOptions = {
 
 export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
-  public sidebars: SidebarConfig;
-  public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
+  public navigation: Sidebar;
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
   public readonly authentication?: ZudokuContextOptions["authentication"];
@@ -124,8 +119,7 @@ export class ZudokuContext {
     this.queryClient = queryClient;
     this.options = { ...options, protectedRoutes };
     this.plugins = options.plugins ?? [];
-    this.topNavigation = options.topNavigation ?? [];
-    this.sidebars = options.sidebars ?? {};
+    this.navigation = options.navigation ?? [];
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.meta = options.metadata;
