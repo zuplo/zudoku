@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { IconNames } from "./icon-types.js";
+import { type IconNames } from "./icon-types.js";
 
 const BadgeSchema = z.object({
   label: z.string(),
@@ -32,12 +32,18 @@ export const InputSidebarItemCategoryLinkDocSchema = z.union([
   z.string(),
 ]);
 
+export const DisplaySchema = z
+  .enum(["auth", "anon", "always", "hide"])
+  .default("always")
+  .optional();
+
 export const BaseInputSidebarItemDocSchema = z.object({
   type: z.literal("doc"),
   id: z.string(),
   icon: z.custom<IconNames>().optional(),
   label: z.string().optional(),
   badge: BadgeSchema.optional(),
+  display: DisplaySchema,
 });
 
 export type BaseInputSidebarItemDoc = z.infer<
@@ -55,6 +61,7 @@ export const InputSidebarItemLinkSchema = z.object({
   href: z.string(),
   description: z.string().optional(),
   badge: BadgeSchema.optional(),
+  display: DisplaySchema,
 });
 
 export type InputSidebarItemLink = z.infer<typeof InputSidebarItemLinkSchema>;
@@ -67,6 +74,7 @@ export const BaseInputSidebarItemCategorySchema = z.object({
   collapsible: z.boolean().optional(),
   collapsed: z.boolean().optional(),
   link: InputSidebarItemCategoryLinkDocSchema.optional(),
+  display: DisplaySchema,
 });
 
 export type InputSidebarItem =

@@ -18,7 +18,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "./apis/openapi.yaml",
-    navigationId: "api",
+    path: "api",
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",

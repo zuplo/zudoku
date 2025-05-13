@@ -20,12 +20,12 @@ const apis = [
   {
     type: "file",
     input: "apis/my-first-api.json",
-    navigationId: "my-first-api",
+    path: "my-first-api",
   },
   {
     type: "file",
     input: "apis/my-second-api.json",
-    navigationId: "my-second-api",
+    path: "my-second-api",
   },
 ] as const;
 ```
@@ -78,7 +78,7 @@ export default config;
 
 Make sure that:
 
-1. The `navigationId` in each API config matches the `href` in the navigation
+1. The `path` in each API config matches the `href` in the navigation
 2. Your OpenAPI files are placed in the correct location as specified in the `input` field
 3. The `label` in navigation matches what you want to display in the sidebar
 

@@ -3,11 +3,8 @@ import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { z } from "zod";
-import type {
-  FooterSchema,
-  TopNavigationItem,
-} from "../../config/validators/common.js";
-import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
+import type { FooterSchema } from "../../config/validators/common.js";
+import type { Sidebar } from "../../config/validators/SidebarSchema.js";
 import type { AuthenticationProvider } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
@@ -81,8 +78,7 @@ export type ZudokuContextOptions = {
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationProvider;
-  topNavigation?: TopNavigationItem[];
-  sidebars?: SidebarConfig;
+  navigation?: Sidebar;
   plugins?: ZudokuPlugin[];
   slotlets?: Slotlets;
   mdx?: {
@@ -94,8 +90,7 @@ export type ZudokuContextOptions = {
 
 export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
-  public sidebars: SidebarConfig;
-  public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
+  public navigation: Sidebar;
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
   public authentication?: ZudokuContextOptions["authentication"];
@@ -107,8 +102,7 @@ export class ZudokuContext {
     public readonly queryClient: QueryClient,
   ) {
     this.plugins = options.plugins ?? [];
-    this.topNavigation = options.topNavigation ?? [];
-    this.sidebars = options.sidebars ?? {};
+    this.navigation = options.navigation ?? [];
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
     this.authentication = options.authentication;
     this.meta = options.metadata;
