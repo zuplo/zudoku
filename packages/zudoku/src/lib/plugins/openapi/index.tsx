@@ -47,7 +47,7 @@ export type OpenApiPluginOptions = OasPluginConfig;
 export const UNTAGGED_PATH = "~endpoints";
 
 export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
-  const basePath = joinUrl(config.navigationId ?? "/reference");
+  const basePath = joinUrl(config.path);
   const client = new GraphQLClient(config);
 
   return {

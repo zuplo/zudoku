@@ -69,7 +69,7 @@ const ApiConfigSchema = z
   .object({
     id: z.string(),
     server: z.string(),
-    navigationId: z.string(),
+    path: z.string(),
     categories: z.array(ApiCatalogCategorySchema),
     options: ApiOptionsSchema,
   })
@@ -463,8 +463,7 @@ const BaseConfigSchema = z.object({
     })
     .optional(),
   page: PageSchema,
-  topNavigation: z.array(TopNavigationItemSchema),
-  sidebar: z.record(InputSidebarSchema),
+  navigation: InputSidebarSchema,
   theme: z
     .object({
       light: ThemeSchema,
@@ -505,22 +504,8 @@ export const refine = (
   config: z.output<typeof ZudokuConfigSchema>,
   ctx: RefinementCtx,
 ) => {
-  // check if sidebar ids are found in top navigation
-  if (!config.sidebar || !config.topNavigation) return;
-
-  const topNavIds = config.topNavigation.map((item) => item.id);
-
-  const nonExistentKeys = Object.keys(config.sidebar).filter(
-    (key) => !topNavIds.includes(key),
-  );
-
-  if (nonExistentKeys.length > 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Sidebar ID [${nonExistentKeys.map((v) => `"${v}"`).join(", ")}] not found in top navigation.
-Following IDs are available: ${topNavIds.join(", ")}`,
-    });
-  }
+  // With single navigation tree, no additional validation needed for now
+  // TODO: Add validation for navigation structure if needed
 };
 
 export const ZudokuConfigSchema = BaseConfigSchema.partial();

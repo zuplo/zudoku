@@ -128,14 +128,12 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         const apiMetadata: ApiCatalogItem[] = [];
 
         for (const apiConfig of apis) {
-          if (apiConfig.type === "file" && apiConfig.navigationId) {
-            const latestSchema = schemaManager.getLatestSchema(
-              apiConfig.navigationId,
-            );
+          if (apiConfig.type === "file" && apiConfig.path) {
+            const latestSchema = schemaManager.getLatestSchema(apiConfig.path);
             if (!latestSchema?.schema.info) continue;
 
             apiMetadata.push({
-              path: apiConfig.navigationId,
+              path: apiConfig.path,
               label: latestSchema.schema.info.title,
               description: latestSchema.schema.info.description ?? "",
               categories: apiConfig.categories ?? [],
@@ -148,11 +146,9 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         for (const apiConfig of apis) {
           apiIndex++;
           if (apiConfig.type === "file") {
-            if (!apiConfig.navigationId) continue;
+            if (!apiConfig.path) continue;
 
-            const schemas = schemaManager.getSchemasForId(
-              apiConfig.navigationId,
-            );
+            const schemas = schemaManager.getSchemasForPath(apiConfig.path);
 
             if (!schemas?.length) continue;
 
@@ -180,7 +176,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                   schemas.map((s) => [s.version, s.inputPath]),
                 ),
               )},`,
-              `  navigationId: ${JSON.stringify(apiConfig.navigationId)},`,
+              `  path: ${JSON.stringify(apiConfig.path)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
               `  options: {`,
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,

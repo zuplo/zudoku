@@ -31,10 +31,11 @@ const config = {
       : undefined,
     pageTitle,
   },
-  topNavigation: [
+  navigation: [
     {
-      id: "/",
+      type: "link",
       label: "API Reference",
+      href: "/",
     },
   ],
   plugins: [
@@ -42,7 +43,7 @@ const config = {
     openApiPlugin({
       type: "url",
       input: apiUrl!,
-      navigationId: "/",
+      path: "/",
     }),
   ],
 } satisfies ZudokuConfig;

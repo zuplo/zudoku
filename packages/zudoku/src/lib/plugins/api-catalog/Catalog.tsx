@@ -13,7 +13,7 @@ export const Catalog = ({
   filterCatalogItems = (items) => items,
   label = "API Library",
   categoryLabel,
-}: Omit<ApiCatalogPluginOptions, "navigationId"> & {
+}: Omit<ApiCatalogPluginOptions, "path"> & {
   categoryLabel?: string;
 }) => {
   const auth = useAuthState();
