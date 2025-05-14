@@ -3,16 +3,16 @@ title: API Catalog
 sidebar_icon: book-open
 ---
 
-If you're dealing with multiple APIs and multiple OpenAPI files the API Catalog comes in handy. It creates an overview over all your APIs and lets you organize them in Catagories and Tags.
+If you're dealing with multiple APIs and multiple OpenAPI files the API Catalog comes in handy. It creates an overview over all your APIs and lets you organize them in categories and tags.
 
 ## Enable API Catalog
 
-The first step to enable the API Catalog, you need to add a `catalog` object to your Zudoku configuration file.
+The first step to enable the API Catalog, you need to add a `catalogs` object to your Zudoku configuration file.
 
 ```js
 const config = {
   // ...
-  catalog: {
+  catalogs: {
     navigationId: "catalog",
     label: "API Catalog",
   },
@@ -60,7 +60,7 @@ You can select which APIs are shown in the catalog by using the `items` property
 ```js
 const config = {
   // ...
-  catalog: {
+  catalogs: {
     navigationId: "catalog",
     label: "API Catalog",
     // Only show the operational API in the catalog
@@ -85,14 +85,14 @@ const config = {
 };
 ```
 
-### Adding authentication & filter items for user
+### Filtering catalog items
 
-You can filter which APIs are shown in the catalog by using the `filter` property.
+You can filter which APIs are shown in the catalog by using the `filterItems` property. The function receives the items and context as arguments.
 
 ```js
 const config = {
   // ...
-  catalog: {
+  catalogs: {
     navigationId: "catalog",
     label: "API Catalog",
     filterItems: (items, { auth: AuthState }) => {
