@@ -149,7 +149,7 @@ export class DevServer {
       }
     }
 
-    app.use("*", async (request, response, next) => {
+    app.use(/(.*)/, async (request, response, next) => {
       const url = request.originalUrl;
 
       const ssrEnvironment = vite.environments.ssr;
