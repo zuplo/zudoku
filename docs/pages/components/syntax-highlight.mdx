@@ -23,6 +23,7 @@ type SyntaxHighlightProps = {
   showLanguageIndicator?: boolean;
   noBackground?: boolean;
   className?: string;
+  showLineNumbers?: boolean;
 };
 ```
 
@@ -32,9 +33,9 @@ You can either use `children` or `code` prop to pass the code to the component.
 
 ```tsx
 <SyntaxHighlight language="typescript">
-for (let i = 0; i < Infinity; i++) {
+  {`for (let i = 0; i < Infinity; i++) {
   console.log(i);
-}
+}`}
 </SyntaxHighlight>
 ```
 
