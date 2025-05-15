@@ -1,9 +1,5 @@
 /**
  * Normalizes a redirect URL by removing the origin and optionally the root path
- * @param redirectTo The full redirect URL
- * @param root The root path to optionally remove (defaults to '/')
- * @param origin The origin to remove (defaults to window.location.origin)
- * @returns The normalized redirect path
  */
 export function normalizeRedirectUrl(
   redirectTo: string,

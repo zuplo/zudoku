@@ -19,8 +19,8 @@ export function CallbackHandler({
         return joinUrl(
           normalizeRedirectUrl(
             await handleCallback(),
-            options.basePath ?? "/",
             window.location.origin,
+            options.basePath,
           ),
         );
       } catch (error) {
