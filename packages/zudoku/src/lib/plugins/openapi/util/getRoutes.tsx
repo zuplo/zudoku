@@ -1,7 +1,21 @@
-import { redirect, type RouteObject } from "react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  generatePath,
+  Navigate,
+  redirect,
+  type RouteObject,
+  useLocation,
+  useParams,
+} from "react-router";
 import { joinUrl } from "../../../util/joinUrl.js";
 import type { GraphQLClient } from "../client/GraphQLClient.js";
-import { type OpenApiPluginOptions, UNTAGGED_PATH } from "../index.js";
+import { useCreateQuery } from "../client/useCreateQuery.js";
+import { useOasConfig } from "../context.js";
+import {
+  GetSidebarOperationsQuery,
+  type OpenApiPluginOptions,
+  UNTAGGED_PATH,
+} from "../index.js";
 import type { OasPluginConfig } from "../interfaces.js";
 
 // Creates the main provider route that wraps operation routes.
@@ -44,6 +58,56 @@ const createRoute = ({
   async lazy() {
     const { OperationList } = await import("../OperationList.js");
     return { element: <OperationList tag={tag} untagged={untagged} /> };
+  },
+});
+
+const NonTagPagesOperationList = ({
+  render,
+  path,
+}: {
+  render: (tag: string) => React.ReactNode;
+  path: string;
+}) => {
+  const { type, input } = useOasConfig();
+  const { tag: currentTag } = useParams();
+  const location = useLocation();
+  const query = useCreateQuery(GetSidebarOperationsQuery, { type, input });
+  const {
+    data: { schema },
+  } = useSuspenseQuery(query);
+
+  const firstTag = schema.tags.at(0);
+
+  if (!currentTag && firstTag?.slug) {
+    return (
+      <Navigate
+        to={{
+          pathname: generatePath(path, { tag: firstTag.slug }),
+          search: location.search,
+        }}
+      />
+    );
+  }
+
+  if (currentTag && schema.tags.some((t) => t.slug === currentTag)) {
+    return render(currentTag);
+  }
+
+  return null;
+};
+
+const createNonTagPagesRoute = ({ path }: { path: string }): RouteObject => ({
+  path,
+  async lazy() {
+    const { OperationList } = await import("../OperationList.js");
+    return {
+      element: (
+        <NonTagPagesOperationList
+          path={path}
+          render={(tag) => <OperationList tag={tag} />}
+        />
+      ),
+    };
   },
 });
 
@@ -106,7 +170,7 @@ export const getRoutes = ({
         basePath,
         routePath: basePath,
         routes: [
-          createRoute({ path: basePath + "/:tag?" }),
+          createNonTagPagesRoute({ path: basePath + "/:tag?" }),
           ...createAdditionalRoutes(basePath),
         ],
         client,
