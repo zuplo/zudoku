@@ -32,9 +32,6 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   return (
     <>
-      {import.meta.env.MODE === "standalone" && (
-        <style>{`:root { --top-nav-height: 0px; }`}</style>
-      )}
       <Helmet titleTemplate={meta?.title}>
         {options.canonicalUrlOrigin && (
           <link
@@ -58,7 +55,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
       <div
         className={cn(
           "grid max-w-screen-2xl w-full lg:mx-auto",
-          "has-[:only-child]:grid-rows-1 grid-rows-[0_min-content_1fr] lg:grid-rows-[min-content_1fr]",
+          "[&:has(>:only-child)]:grid-rows-1 grid-rows-[0_min-content_1fr] lg:grid-rows-[min-content_1fr]",
           "grid-cols-1 lg:grid-cols-[var(--side-nav-width)_1fr]",
         )}
       >
