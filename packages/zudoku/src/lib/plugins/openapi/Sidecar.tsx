@@ -168,8 +168,40 @@ export const Sidecar = ({
             mimeType: "application/json",
           }
         : ({} as any),
-      headers: [{ name: "Content-Type", value: "application/json" }],
-      queryString: [],
+      headers: [
+        { name: "Content-Type", value: "application/json" },
+        ...(operation.parameters
+          ?.filter((p) => p.in === "header" && p.required === true)
+          .map((p) => ({
+            name: p.name,
+            value:
+              p.examples?.find((x) => x.value)?.value ??
+              p.schema?.default ??
+              (p.schema?.type === "string"
+                ? "string"
+                : p.schema?.type === "number" || p.schema?.type === "integer"
+                  ? "0"
+                  : p.schema?.type === "boolean"
+                    ? "true"
+                    : ""),
+          })) ?? []),
+      ],
+      queryString:
+        operation.parameters
+          ?.filter((p) => p.in === "query" && p.required === true)
+          .map((p) => ({
+            name: p.name,
+            value:
+              p.examples?.find((x) => x.value)?.value ??
+              p.schema?.default ??
+              (p.schema?.type === "string"
+                ? "string"
+                : p.schema?.type === "number" || p.schema?.type === "integer"
+                  ? "0"
+                  : p.schema?.type === "boolean"
+                    ? "true"
+                    : ""),
+          })) ?? [],
       httpVersion: "",
       cookies: [],
       headersSize: 0,
@@ -184,6 +216,7 @@ export const Sidecar = ({
     operation.path,
     selectedServer,
     selectedLang,
+    operation.parameters,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
