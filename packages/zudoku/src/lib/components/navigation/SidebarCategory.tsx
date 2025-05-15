@@ -2,11 +2,11 @@ import * as Collapsible from "@radix-ui/react-collapsible";
 import { deepEqual } from "fast-equals";
 import { ChevronRightIcon } from "lucide-react";
 import { memo, useEffect, useState } from "react";
-import { NavLink, useMatch } from "react-router";
+import { NavLink, useLocation, useMatch } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
-import { joinPath } from "../../util/joinPath.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { navigationListItem, SidebarItem } from "./SidebarItem.js";
 import { useIsCategoryOpen } from "./utils.js";
 
@@ -19,6 +19,7 @@ const SidebarCategoryInner = ({
 }) => {
   const isCategoryOpen = useIsCategoryOpen(category);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const location = useLocation();
 
   const isCollapsible = category.collapsible ?? true;
   const isCollapsed = category.collapsed ?? true;
@@ -83,7 +84,10 @@ const SidebarCategoryInner = ({
       <Collapsible.Trigger className="group" asChild disabled={!isCollapsible}>
         {category.link?.type === "doc" ? (
           <NavLink
-            to={joinPath(category.link.id)}
+            to={{
+              pathname: joinUrl(category.link.id),
+              search: location.search,
+            }}
             className={styles}
             onClick={() => {
               setHasInteracted(true);

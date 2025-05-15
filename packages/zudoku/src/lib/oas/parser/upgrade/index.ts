@@ -10,7 +10,7 @@ import type { OpenAPIDocument } from "../index.js";
 
 export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
   if (schema.openapi?.startsWith("3.0")) {
-    schema.openapi = "3.1.0";
+    schema.openapi = "3.1.1";
   }
 
   schema = traverse(schema, (sub) => {
@@ -40,26 +40,17 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
     return sub;
   });
 
-  schema = traverse(schema, (sub) => {
-    // may be null or undefined
-    if (sub.example) {
-      const isExampleObject =
-        typeof sub.example === "object" &&
-        (sub.example.summary !== undefined ||
-          sub.example.description !== undefined ||
-          sub.example.value !== undefined ||
-          sub.example.externalValue !== undefined);
-
-      const exampleValue = isExampleObject
-        ? sub.example
-        : { value: sub.example };
-
-      if (!sub.examples) {
-        sub.examples = { default: exampleValue };
+  schema = traverse(schema, (sub, path) => {
+    if (sub.example !== undefined) {
+      // Arrays in schemas
+      if (isSchemaPath(path ?? [])) {
+        sub.examples = [sub.example];
       } else {
+        // Objects everywhere else
         sub.examples = {
-          default: exampleValue,
-          ...sub.examples,
+          default: {
+            value: sub.example,
+          },
         };
       }
       delete sub.example;
@@ -67,17 +58,54 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
     return sub;
   });
 
-  schema = traverse(schema, (sub) => {
-    if (sub.type === "object" && sub.properties !== undefined) {
-      for (const [, value] of Object.entries(sub.properties)) {
-        const v = (value ?? {}) as RecordAny;
-        if (v.type === "string" && v.format === "binary") {
-          v.contentEncoding = "application/octet-stream";
-          delete v.format;
+  // Multipart file uploads with a binary file
+  schema = traverse(schema, (schema, path) => {
+    if (schema.type === "object" && schema.properties !== undefined) {
+      // Check if this is a multipart request body schema
+      const parentPath = path?.slice(0, -1);
+      const isMultipart = parentPath?.some((segment, index) => {
+        return (
+          segment === "content" && path?.[index + 1] === "multipart/form-data"
+        );
+      });
+
+      if (isMultipart) {
+        // Types
+        const entries: [string, any][] = Object.entries(schema.properties);
+
+        for (const [, value] of entries) {
+          if (
+            typeof value === "object" &&
+            value.type === "string" &&
+            value.format === "binary"
+          ) {
+            value.contentMediaType = "application/octet-stream";
+            delete value.format;
+          }
         }
       }
     }
-    return sub;
+
+    return schema;
+  });
+
+  // Uploading a binary file in a POST request
+  schema = traverse(schema, (schema, path) => {
+    if (
+      path?.includes("content") &&
+      path.includes("application/octet-stream")
+    ) {
+      return {};
+    }
+
+    if (schema.type === "string" && schema.format === "binary") {
+      return {
+        type: "string",
+        contentMediaType: "application/octet-stream",
+      };
+    }
+
+    return schema;
   });
 
   schema = traverse(schema, (sub) => {
@@ -88,6 +116,7 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
     return sub;
   });
 
+  // Uploading an image with base64 encoding
   schema = traverse(schema, (sub) => {
     if (sub.type === "string" && sub.format === "base64") {
       return {
@@ -99,5 +128,46 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
     return sub;
   });
 
+  schema = traverse(schema, (schema, path) => {
+    if (schema.type === "string" && schema.format === "byte") {
+      const parentPath = path?.slice(0, -1);
+      const contentMediaType = parentPath?.find(
+        (_, index) => path?.[index - 1] === "content",
+      );
+
+      return {
+        type: "string",
+        contentEncoding: "base64",
+        contentMediaType,
+      };
+    }
+
+    return schema;
+  });
+
   return schema as OpenAPIDocument;
 };
+
+export function isSchemaPath(path: string[]): boolean {
+  const schemaLocations = [
+    ["components", "schemas"],
+    "properties",
+    "items",
+    "allOf",
+    "anyOf",
+    "oneOf",
+    "not",
+    "additionalProperties",
+  ];
+
+  return (
+    schemaLocations.some((location) => {
+      if (Array.isArray(location)) {
+        return location.every((segment, index) => path[index] === segment);
+      }
+      return path.includes(location);
+    }) ||
+    path.includes("schema") ||
+    path.some((segment) => segment.endsWith("Schema"))
+  );
+}

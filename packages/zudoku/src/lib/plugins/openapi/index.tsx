@@ -6,7 +6,8 @@ import { type ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
-import type { GetSidebarOperationsQuery } from "./graphql/graphql.js";
+import { createQuery } from "./client/useCreateQuery.js";
+import type { GetSidebarOperationsQuery as GetSidebarOperationsQueryResult } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
@@ -14,7 +15,7 @@ import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createSidebarCategory } from "./util/createSidebarCategory.js";
 import { getRoutes, getVersions } from "./util/getRoutes.js";
 
-const GetSidebarOperationsQuery = graphql(`
+export const GetSidebarOperationsQuery = graphql(`
   query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
       tags {
@@ -39,7 +40,7 @@ const GetSidebarOperationsQuery = graphql(`
 `);
 
 export type OperationResult =
-  GetSidebarOperationsQuery["schema"]["tags"][number]["operations"][number];
+  GetSidebarOperationsQueryResult["schema"]["tags"][number]["operations"][number];
 
 export type OpenApiPluginOptions = OasPluginConfig;
 
@@ -132,11 +133,11 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         const { type } = config;
         const input = type === "file" ? config.input[version!] : config.input;
 
-        const data = await context.queryClient.ensureQueryData({
-          queryKey: ["sidebar-operations-query", input],
-          queryFn: () =>
-            client.fetch(GetSidebarOperationsQuery, { type, input }),
+        const query = createQuery(client, GetSidebarOperationsQuery, {
+          type,
+          input,
         });
+        const data = await context.queryClient.ensureQueryData(query);
 
         const categories = data.schema.tags.flatMap((tag) => {
           if (!tag.name || tag.operations.length === 0) return [];

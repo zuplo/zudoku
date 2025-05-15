@@ -52,7 +52,7 @@ export const TopNavigation = () => {
 
   const filteredItems = topNavigation.filter(isHiddenItem(isAuthenticated));
 
-  if (filteredItems.length === 0) {
+  if (filteredItems.length === 0 || import.meta.env.MODE === "standalone") {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
   }
 
