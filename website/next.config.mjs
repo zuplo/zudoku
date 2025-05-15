@@ -12,7 +12,7 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: "/demo",
+        source: "/demo/:path*",
         destination: "https://cdn.zudoku.dev/demo",
       },
       {
