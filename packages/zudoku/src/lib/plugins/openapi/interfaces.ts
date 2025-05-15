@@ -42,7 +42,7 @@ export type transformExamples = (options: {
 
 type BaseOasConfig = {
   server?: string;
-  navigationId?: string;
+  path?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
   schemaImports?: SchemaImports;

@@ -63,8 +63,7 @@ export const convertZudokuConfigToOptions = (
       title: "%s - Zudoku",
       ...config.metadata,
     },
-    sidebars: configuredSidebar,
-    topNavigation: config.topNavigation,
+    navigation: configuredSidebar,
     mdx: config.mdx,
     authentication: configuredAuthProvider,
     plugins: [
@@ -114,6 +113,8 @@ export const getRoutesByOptions = (
         },
       },
     ]);
+
+  // @TODO Detect conflicts in routes and log warning
 
   return routes;
 };

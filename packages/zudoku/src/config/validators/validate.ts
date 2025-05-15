@@ -5,7 +5,7 @@ import { fromError } from "zod-validation-error";
 import type { ExposedComponentProps } from "../../lib/components/SlotletProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import { type MdxComponentsType } from "../../lib/util/MdxComponents.js";
-import { CommonConfigSchema, refine } from "./common.js";
+import { CommonConfigSchema } from "./common.js";
 
 /**
  * These are the configuration elements that are only available if using
@@ -37,9 +37,7 @@ const CodeConfigSchema = z.object({
   }>(),
 });
 
-const ConfigSchema = CommonConfigSchema.merge(CodeConfigSchema)
-  .partial()
-  .superRefine(refine);
+const ConfigSchema = CommonConfigSchema.merge(CodeConfigSchema).partial();
 
 /**
  * Type for the zudoku.config.{js,ts,tsx,jsx} files

@@ -33,7 +33,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
-    navigationId: "api",
+    path: "api",
   },
 };
 
