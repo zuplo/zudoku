@@ -60,7 +60,7 @@ export const QueryParams = ({
                           onChange={(e) => {
                             field.onChange(e);
                           }}
-                          className="border-0 font-mono text-xs bg-transparent hover:bg-transparent"
+                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                         />
                       ) : (
                         <InlineInput asChild>
@@ -111,7 +111,7 @@ export const QueryParams = ({
                             field.onChange(e);
                             form.setValue(`queryParams.${i}.active`, true);
                           }}
-                          className="font-mono text-xs border-0 shadow-none"
+                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                         />
                       );
                     }}
