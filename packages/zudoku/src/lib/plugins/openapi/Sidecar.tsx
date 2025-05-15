@@ -231,7 +231,7 @@ export const Sidecar = ({
   return (
     <aside
       ref={ref}
-      className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
+      className="flex flex-col overflow-hidden sticky top-(--scroll-padding) gap-4"
       data-pagefind-ignore="all"
     >
       <SidecarBox.Root>

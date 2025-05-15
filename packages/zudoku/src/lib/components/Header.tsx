@@ -66,10 +66,10 @@ export const Header = memo(function HeaderInner() {
     .sort((i) => i.weight ?? 0);
 
   return (
-    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
+    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur-xs w-full">
       <Banner />
       <div className="border-b">
-        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height] border-transparent">
+        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-(--top-header-height) border-transparent">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
@@ -122,7 +122,7 @@ export const Header = memo(function HeaderInner() {
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && (
                 <ClientOnly
-                  fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
+                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
                 >
                   {!isAuthenticated ? (
                     <Button variant="ghost" onClick={() => auth.login()}>

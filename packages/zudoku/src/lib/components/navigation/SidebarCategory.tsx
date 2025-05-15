@@ -121,7 +121,7 @@ const SidebarCategoryInner = ({
           "ms-6 my-1",
         )}
       >
-        <ul className="relative after:absolute after:-start-[--padding-nav-item] after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
+        <ul className="relative after:absolute after:-start-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <SidebarItem
               key={
