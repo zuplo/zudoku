@@ -1,18 +1,28 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Navigate } from "react-router";
+import { useZudoku } from "zudoku/components";
 import { ZudokuError } from "../../util/invariant.js";
+import { joinUrl } from "../../util/joinUrl.js";
+import { normalizeRedirectUrl } from "../../util/url.js";
 
 export function CallbackHandler({
   handleCallback,
 }: {
   handleCallback: () => Promise<string>;
 }) {
+  const { options } = useZudoku();
   const executeCallback = useSuspenseQuery({
     retry: false,
     queryKey: ["oauth-callback"],
     queryFn: async () => {
       try {
-        return await handleCallback();
+        return joinUrl(
+          normalizeRedirectUrl(
+            await handleCallback(),
+            options.basePath ?? "/",
+            window.location.origin,
+          ),
+        );
       } catch (error) {
         throw new ZudokuError("Could not validate user", {
           cause: error,

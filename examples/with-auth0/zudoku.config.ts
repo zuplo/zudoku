@@ -24,7 +24,7 @@ const config: ZudokuConfig = {
     type: "auth0",
     domain: "zuplo-samples.us.auth0.com",
     clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
-    audience: "http://localhost:3000",
+    audience: "https://api.example.com/",
   },
   apiKeys: {
     enabled: true,
