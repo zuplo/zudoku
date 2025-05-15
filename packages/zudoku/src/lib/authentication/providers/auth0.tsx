@@ -37,7 +37,7 @@ class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
     });
 
     const redirectUrl = new URL(window.location.origin);
-    redirectUrl.pathname = this.logoutRedirectUrlPath;
+    redirectUrl.pathname = this.redirectToAfterSignOut;
 
     // SEE: https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0
     // For Auth0 tenants created on or after 14 November 2023, RP-Initiated

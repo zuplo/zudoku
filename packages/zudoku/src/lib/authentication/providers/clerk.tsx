@@ -50,8 +50,8 @@ const clerkAuth: AuthenticationProviderInitializer<
 > = ({
   clerkPubKey,
   redirectToAfterSignOut = "/",
-  redirectToAfterSignUp = "/",
-  redirectToAfterSignIn = "/",
+  redirectToAfterSignUp,
+  redirectToAfterSignIn,
 }) => {
   let clerkApi: Clerk | undefined;
   const ensureLoaded = (async () => {
@@ -129,19 +129,23 @@ const clerkAuth: AuthenticationProviderInitializer<
     signIn: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignIn({
-        signInForceRedirectUrl:
-          redirectTo ?? window.location.origin + redirectToAfterSignIn,
-        signUpForceRedirectUrl:
-          redirectTo ?? window.location.origin + redirectToAfterSignUp,
+        signInForceRedirectUrl: redirectToAfterSignIn
+          ? window.location.origin + redirectToAfterSignIn
+          : redirectTo,
+        signUpForceRedirectUrl: redirectToAfterSignUp
+          ? window.location.origin + redirectToAfterSignUp
+          : redirectTo,
       });
     },
     signUp: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignUp({
-        signInForceRedirectUrl:
-          redirectTo ?? window.location.origin + redirectToAfterSignIn,
-        signUpForceRedirectUrl:
-          redirectTo ?? window.location.origin + redirectToAfterSignUp,
+        signInForceRedirectUrl: redirectToAfterSignIn
+          ? window.location.origin + redirectToAfterSignIn
+          : redirectTo,
+        signUpForceRedirectUrl: redirectToAfterSignUp
+          ? window.location.origin + redirectToAfterSignUp
+          : redirectTo,
       });
     },
     getAuthenticationPlugin() {

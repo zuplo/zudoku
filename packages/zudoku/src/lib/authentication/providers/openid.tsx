@@ -23,18 +23,17 @@ export interface OpenIdProviderData {
   tokenType: string;
 }
 
+export const OPENID_CALLBACK_PATH = "/oauth/callback";
+
 class OpenIdAuthPlugin extends AuthenticationPlugin {
-  constructor(
-    private callbackUrlPath: string,
-    private handleCallback: () => Promise<string>,
-  ) {
+  constructor(private handleCallback: () => Promise<string>) {
     super();
   }
   getRoutes() {
     return [
       ...super.getRoutes(),
       {
-        path: this.callbackUrlPath,
+        path: OPENID_CALLBACK_PATH,
         element: (
           <ClientOnly>
             <CallbackHandler handleCallback={this.handleCallback} />
@@ -48,29 +47,28 @@ class OpenIdAuthPlugin extends AuthenticationPlugin {
 export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   protected client: oauth.Client;
   protected issuer: string;
-
   protected authorizationServer: oauth.AuthorizationServer | undefined;
 
-  protected absoluteCallbackUrlPath: string;
-  protected relativeCallbackUrlPath: string;
-  protected logoutRedirectUrlPath: string;
+  protected callbackUrlPath: string;
+
   protected onAuthorizationUrl?: (
     authorizationUrl: URL,
     options: { isSignIn: boolean; isSignUp: boolean },
   ) => void;
-  private readonly redirectToAfterSignUp: string;
-  private readonly redirectToAfterSignIn: string;
-  private readonly redirectToAfterSignOut: string;
+
+  protected readonly redirectToAfterSignUp: string | undefined;
+  protected readonly redirectToAfterSignIn: string | undefined;
+  protected readonly redirectToAfterSignOut: string;
   private readonly audience?: string;
   private readonly scopes: string[];
-  private readonly root: string;
+
   constructor({
     issuer,
     audience,
     clientId,
     redirectToAfterSignUp,
     redirectToAfterSignIn,
-    redirectToAfterSignOut,
+    redirectToAfterSignOut = "/",
     basePath,
     scopes,
   }: OpenIDAuthenticationConfig) {
@@ -80,19 +78,13 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     };
     this.audience = audience;
     this.issuer = issuer;
-    this.relativeCallbackUrlPath = "/oauth/callback";
-    this.absoluteCallbackUrlPath = joinUrl(
-      basePath,
-      this.relativeCallbackUrlPath,
-    );
+    // This is the callback URL for the OAuth provider. So it needs the base path.
+    this.callbackUrlPath = joinUrl(basePath, OPENID_CALLBACK_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
 
-    this.root = joinUrl(basePath, "/");
-
-    this.logoutRedirectUrlPath = this.root;
-    this.redirectToAfterSignUp = redirectToAfterSignUp ?? this.root;
-    this.redirectToAfterSignIn = redirectToAfterSignIn ?? this.root;
-    this.redirectToAfterSignOut = redirectToAfterSignOut ?? this.root;
+    this.redirectToAfterSignUp = redirectToAfterSignUp;
+    this.redirectToAfterSignIn = redirectToAfterSignIn;
+    this.redirectToAfterSignOut = redirectToAfterSignOut;
   }
 
   protected async getAuthServer() {
@@ -138,14 +130,14 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   async signUp({ redirectTo }: { redirectTo?: string } = {}) {
     return this.authorize({
-      redirectTo: redirectTo ?? this.redirectToAfterSignUp,
+      redirectTo: this.redirectToAfterSignUp ?? redirectTo ?? "/",
       isSignUp: true,
     });
   }
 
   async signIn({ redirectTo }: { redirectTo?: string } = {}) {
     return this.authorize({
-      redirectTo: redirectTo ?? this.redirectToAfterSignIn,
+      redirectTo: this.redirectToAfterSignIn ?? redirectTo ?? "/",
     });
   }
 
@@ -178,17 +170,10 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
       authorizationServer.authorization_endpoint,
     );
 
-    const finalRedirect = redirectTo.startsWith(window.location.origin)
-      ? this.root !== "/" &&
-        redirectTo.startsWith(window.location.origin + this.root)
-        ? redirectTo.slice(window.location.origin.length + this.root.length)
-        : redirectTo.slice(window.location.origin.length)
-      : redirectTo;
-
-    sessionStorage.setItem("redirect-to", finalRedirect);
+    sessionStorage.setItem("redirect-to", redirectTo);
 
     const redirectUrl = new URL(window.location.origin);
-    redirectUrl.pathname = this.absoluteCallbackUrlPath;
+    redirectUrl.pathname = this.callbackUrlPath;
     redirectUrl.search = "";
 
     authorizationUrl.searchParams.set("client_id", this.client.client_id);
@@ -282,7 +267,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     const redirectUrl = new URL(
       window.location.origin + this.redirectToAfterSignOut,
     );
-    redirectUrl.pathname = this.logoutRedirectUrlPath;
+    redirectUrl.pathname = this.callbackUrlPath;
 
     let logoutUrl: URL;
     // The endSessionEndpoint is set, the IdP supports some form of logout,
@@ -338,7 +323,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     }
 
     const redirectUrl = new URL(url);
-    redirectUrl.pathname = this.absoluteCallbackUrlPath;
+    redirectUrl.pathname = this.callbackUrlPath;
     redirectUrl.search = "";
 
     const response = await oauth.authorizationCodeGrantRequest(
@@ -396,10 +381,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   getAuthenticationPlugin() {
     // TODO: This API is a bit messy, we need to refactor auth plugins/providers
     // to remove the extra layers of abstraction.
-    return new OpenIdAuthPlugin(
-      this.relativeCallbackUrlPath,
-      this.handleCallback,
-    );
+    return new OpenIdAuthPlugin(this.handleCallback);
   }
 }
 
