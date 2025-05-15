@@ -111,7 +111,7 @@ export const QueryParams = ({
                             field.onChange(e);
                             form.setValue(`queryParams.${i}.active`, true);
                           }}
-                          className="font-mono text-xs border-0 ring-1 ring-ring"
+                          className="font-mono text-xs border-0 shadow-none"
                         />
                       );
                     }}
