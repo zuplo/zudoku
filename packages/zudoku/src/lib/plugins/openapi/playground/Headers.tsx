@@ -113,7 +113,7 @@ export const Headers = ({
                       <Autocomplete
                         {...field}
                         placeholder="Name"
-                        className="border-0 shadow-none bg-transparent text-xs font-mono"
+                        className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                         options={[...missingHeaders, ...headerOptions]}
                         onEnterPress={() => handleHeaderEnter(i)}
                         onChange={(e) => {
@@ -166,7 +166,7 @@ export const Headers = ({
                             field.onChange(e);
                             setValue(`headers.${i}.active`, true);
                           }}
-                          className="font-mono text-xs border-0"
+                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                         />
                       );
                     }}
