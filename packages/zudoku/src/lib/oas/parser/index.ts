@@ -1,3 +1,4 @@
+import { merge as mergeAllOf } from "allof-merge";
 import { GraphQLError } from "graphql/error/index.js";
 import { OpenAPIV3, type OpenAPIV3_1 } from "openapi-types";
 import { dereference, type JSONSchema } from "./dereference/index.js";
@@ -87,6 +88,9 @@ const parseSchemaInput = async (
 
 /**
  * Validates, dereferences and upgrades the OpenAPI schema (to v3.1) if necessary.
+ *
+ * This only happens for URL schemas (or in standalone mode).
+ * File schemas are pre-processed by the SchemaManager
  */
 export const validate = async (schemaInput: unknown) => {
   const schema = await parseSchemaInput(schemaInput);
@@ -97,6 +101,7 @@ export const validate = async (schemaInput: unknown) => {
 
   const dereferenced = await dereference(schema);
   const upgraded = upgradeSchema(dereferenced);
+  const merged = mergeAllOf(upgraded) as OpenAPIDocument;
 
-  return upgraded;
+  return merged;
 };

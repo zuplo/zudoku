@@ -121,6 +121,38 @@
               "EQUIPMENT"
             ]
           },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Simple string-to-string dictionary for cargo metadata",
+            "example": {
+              "manufacturer": "SpaceTech Inc",
+              "batchNumber": "ST-2024-001"
+            }
+          },
+          "safetyChecks": {
+            "type": "object",
+            "properties": {
+              "default": {
+                "type": "string",
+                "description": "Default safety check procedure"
+              }
+            },
+            "required": ["default"],
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SafetyCheck"
+            },
+            "description": "Dictionary with fixed keys and complex value types",
+            "example": {
+              "default": "Standard equipment check",
+              "radiation": {
+                "procedure": "Radiation level check",
+                "frequency": "DAILY"
+              }
+            }
+          },
           "temperatureControl": {
             "type": "object",
             "properties": {
@@ -138,6 +170,165 @@
             }
           }
         }
+      },
+      "SafetyCheck": {
+        "type": "object",
+        "properties": {
+          "procedure": {
+            "type": "string"
+          },
+          "frequency": {
+            "type": "string",
+            "enum": ["DAILY", "WEEKLY", "MONTHLY"]
+          }
+        }
+      },
+      "SpecializedCargo": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Cargo" },
+          {
+            "type": "object",
+            "properties": {
+              "specialization": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["CRYO", "QUANTUM", "ANTIMATTER"]
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "containmentLevel": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 5
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "cryogenicTemp": {
+                        "type": "number",
+                        "maximum": -150,
+                        "description": "Required for CRYO type"
+                      },
+                      "coherenceTime": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Required for QUANTUM type"
+                      },
+                      "antimatterMass": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Required for ANTIMATTER type"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            "required": ["specialization"]
+          }
+        ]
+      },
+      "ShippingRoute": {
+        "type": "object",
+        "properties": {
+          "routeType": {
+            "type": "string",
+            "enum": ["DIRECT", "MULTI_HOP"]
+          },
+          "route": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "direct": {
+                    "type": "object",
+                    "properties": {
+                      "estimatedDays": { "type": "integer", "minimum": 1 },
+                      "fuelType": {
+                        "type": "string",
+                        "enum": ["ION", "CHEMICAL", "SOLAR"]
+                      }
+                    },
+                    "required": ["estimatedDays", "fuelType"]
+                  }
+                },
+                "required": ["direct"]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "multiHop": {
+                    "type": "object",
+                    "properties": {
+                      "stops": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "Earth",
+                            "Mars",
+                            "Venus",
+                            "Mercury",
+                            "Jupiter"
+                          ]
+                        },
+                        "minItems": 2
+                      },
+                      "stopDuration": { "type": "integer", "minimum": 0 }
+                    },
+                    "required": ["stops", "stopDuration"]
+                  }
+                },
+                "required": ["multiHop"]
+              }
+            ]
+          },
+          "requirements": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "gravitationalAssist": {
+                      "type": "object",
+                      "properties": {
+                        "planet": { "type": "string" },
+                        "minVelocity": { "type": "number" }
+                      },
+                      "required": ["planet", "minVelocity"]
+                    }
+                  },
+                  "required": ["gravitationalAssist"]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "refuel": {
+                      "type": "object",
+                      "properties": {
+                        "station": { "type": "string" },
+                        "amount": { "type": "number" }
+                      },
+                      "required": ["station", "amount"]
+                    }
+                  },
+                  "required": ["refuel"]
+                }
+              ]
+            }
+          }
+        },
+        "required": ["routeType", "route"]
       },
       "Error": {
         "type": "object",
@@ -252,6 +443,153 @@
                   "code": "NOT_FOUND",
                   "message": "Shipment with tracking number not found"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interplanetary/specialized-shipments": {
+      "post": {
+        "tags": ["Interplanetary"],
+        "summary": "Create specialized shipment",
+        "description": "Creates a new interplanetary shipment for specialized cargo types like cryo, quantum, or antimatter",
+        "operationId": "createSpecializedShipment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  { "$ref": "#/components/schemas/InterplanetaryShipment" },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "cargo": {
+                        "$ref": "#/components/schemas/SpecializedCargo"
+                      }
+                    }
+                  }
+                ]
+              },
+              "example": {
+                "originPlanet": "Earth",
+                "destinationPlanet": "Mars",
+                "cargo": {
+                  "weight": 1.5,
+                  "volume": 2.0,
+                  "category": "HAZARDOUS",
+                  "specialization": {
+                    "type": "CRYO",
+                    "containmentLevel": 4,
+                    "cryogenicTemp": -196.5
+                  }
+                },
+                "shippingClass": "PRIORITY",
+                "radiationShielding": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Specialized shipment created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    { "$ref": "#/components/schemas/InterplanetaryShipment" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "cargo": {
+                          "$ref": "#/components/schemas/SpecializedCargo"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interplanetary/route-planning": {
+      "post": {
+        "tags": ["Interplanetary"],
+        "summary": "Plan shipping route",
+        "description": "Plans a shipping route with either direct or multi-hop configuration",
+        "operationId": "planShippingRoute",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShippingRoute"
+              },
+              "examples": {
+                "direct": {
+                  "value": {
+                    "routeType": "DIRECT",
+                    "route": {
+                      "direct": {
+                        "estimatedDays": 180,
+                        "fuelType": "ION"
+                      }
+                    }
+                  }
+                },
+                "multiHop": {
+                  "value": {
+                    "routeType": "MULTI_HOP",
+                    "route": {
+                      "multiHop": {
+                        "stops": ["Earth", "Mars", "Jupiter"],
+                        "stopDuration": 5
+                      }
+                    },
+                    "requirements": [
+                      {
+                        "gravitationalAssist": {
+                          "planet": "Venus",
+                          "minVelocity": 11.2
+                        }
+                      },
+                      {
+                        "refuel": { "station": "Mars-Station-1", "amount": 500 }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Route planned successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShippingRoute"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid route configuration",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Error" }
               }
             }
           }
