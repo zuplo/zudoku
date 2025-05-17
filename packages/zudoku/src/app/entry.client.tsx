@@ -34,31 +34,46 @@ if (root.childElementCount > 0) {
   void render(routes);
 }
 
-// eslint-disable-next-line no-console
-console.log(
-  "%cZUDOKU%c by Zuplo v" + window.ZUDOKU_VERSION,
-  [
-    "color: #FF00BD",
-    "line-height: 50px",
-    "font-weight: bolder",
-    "font-size: 30px",
-    "-webkit-text-stroke-width: 1px",
-    "-webkit-text-stroke-color: #FF00BD",
-    "text-transform: uppercase",
-    "text-align: center",
-    "letter-spacing: 5px",
-  ].join(" ;"),
-  [
-    "color: #Df0097",
-    "line-height: 50px",
-    "font-weight: bolder",
-    "font-size: 15px",
-    "text-align: center",
-    "letter-spacing: 5px",
-  ].join(" ;"),
-);
-// eslint-disable-next-line no-console
-console.log("» Learn more about Zudoku https://zudoku.dev");
+if (import.meta.env.IS_ZUPLO) {
+  // eslint-disable-next-line no-console
+  console.log(
+    `%cPowered by Zuplo v${window.ZUDOKU_VERSION}`,
+    [
+      "color: #Df0097",
+      "line-height: 50px",
+      "font-weight: bolder",
+      "font-size: 15px",
+      "text-align: center",
+      "letter-spacing: 5px",
+    ].join(" ;"),
+  );
+} else {
+  // eslint-disable-next-line no-console
+  console.log(
+    `%cZUDOKU%c by Zuplo v${window.ZUDOKU_VERSION}`,
+    [
+      "color: #FF00BD",
+      "line-height: 50px",
+      "font-weight: bolder",
+      "font-size: 30px",
+      "-webkit-text-stroke-width: 1px",
+      "-webkit-text-stroke-color: #FF00BD",
+      "text-transform: uppercase",
+      "text-align: center",
+      "letter-spacing: 5px",
+    ].join(" ;"),
+    [
+      "color: #Df0097",
+      "line-height: 50px",
+      "font-weight: bolder",
+      "font-size: 15px",
+      "text-align: center",
+      "letter-spacing: 5px",
+    ].join(" ;"),
+  );
+  // eslint-disable-next-line no-console
+  console.log("» Learn more about Zudoku https://zudoku.dev");
+}
 
 async function hydrateLazyRoutes(routes: RouteObject[]) {
   const path = window.location.pathname;
