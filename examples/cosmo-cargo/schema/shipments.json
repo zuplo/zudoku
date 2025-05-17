@@ -116,6 +116,13 @@
             "format": "email",
             "example": "recipient@example.com"
           },
+          "notes": {
+            "type": "array",
+            "description": "Notes about the shipment",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            }
+          },
           "recipientAddress": {
             "$ref": "#/components/schemas/Address"
           },

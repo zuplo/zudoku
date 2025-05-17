@@ -1,10 +1,15 @@
 import { type SchemaObject } from "../../../oas/graphql/index.js";
+import { isCircularRef } from "../schema/utils.js";
 
 export const generateSchemaExample = (
-  schema: SchemaObject,
+  schema?: SchemaObject,
   name?: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
+  if (!schema || isCircularRef(schema)) {
+    return null;
+  }
+
   // Check for schema-level example first
   if (schema.example !== undefined) {
     return schema.example;
