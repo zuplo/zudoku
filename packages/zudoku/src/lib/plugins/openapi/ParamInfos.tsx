@@ -30,7 +30,9 @@ const getSchemaInfos = (schema?: SchemaObject) => {
 
   return [
     schema.type === "array" && schema.items.type
-      ? `${schema.items.type}[]`
+      ? Array.isArray(schema.items.type)
+        ? `(${schema.items.type.join(" | ")})[]`
+        : `${schema.items.type}[]`
       : Array.isArray(schema.type)
         ? schema.type.join(" | ")
         : schema.type,

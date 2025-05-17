@@ -12,11 +12,13 @@ export const isArrayType = (value: SchemaObject) =>
   // schema.type might be an array of types, so we need to check if "array" is one of them
   (Array.isArray(value.type) && value.type.includes("array"));
 
-export const isComplexType = (value: SchemaObject) =>
-  (value.type === "object" && Object.keys(value.properties ?? {}).length > 0) ||
-  (value.type === "array" &&
-    typeof value.items === "object" &&
-    (!value.items.type || value.items.type === "object"));
+export const isComplexType = (value?: SchemaObject) =>
+  value &&
+  ((value.type === "object" &&
+    Object.keys(value.properties ?? {}).length > 0) ||
+    (value.type === "array" &&
+      typeof value.items === "object" &&
+      (!value.items.type || value.items.type === "object")));
 
 export const hasLogicalGroupings = (value: SchemaObject) =>
   Boolean(value.oneOf ?? value.allOf ?? value.anyOf);
@@ -30,4 +32,14 @@ export const LogicalSchemaTypeMap = {
 export type LogicalGroupType = "AND" | "OR" | "ONE";
 
 export const isCircularRef = (schema: unknown): schema is string =>
-  schema === CIRCULAR_REF;
+  typeof schema === "string" && schema.startsWith(CIRCULAR_REF);
+
+export const isArrayCircularRef = (
+  schema: SchemaObject,
+): schema is SchemaObject & { items: SchemaObject } =>
+  isArrayType(schema) && "items" in schema && isCircularRef(schema.items);
+
+export const extractCircularRefInfo = (
+  ref?: string | SchemaObject,
+): string | undefined =>
+  typeof ref === "string" ? ref.split(":")[1] : undefined;

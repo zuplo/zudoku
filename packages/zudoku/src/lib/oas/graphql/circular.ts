@@ -1,43 +1,51 @@
 import { GraphQLJSON } from "graphql-type-json";
 import { GraphQLScalarType } from "graphql/index.js";
-import { RecordAny } from "../../util/traverse.js";
+import type { RecordAny } from "../../util/traverse.js";
 
 export const CIRCULAR_REF = "$[Circular Reference]";
 
+const OPENAPI_PROPS = new Set([
+  "properties",
+  "items",
+  "additionalProperties",
+  "allOf",
+  "anyOf",
+  "oneOf",
+]);
+
 const handleCircularRefs = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   obj: any,
-  visited = new Map<string, string[]>(),
+  visited = new WeakSet(),
+  refs = new WeakMap(),
   path: string[] = [],
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): any => {
-  if (obj === CIRCULAR_REF) return CIRCULAR_REF;
   if (obj === null || typeof obj !== "object") return obj;
 
-  const currentPath = path.join(".");
+  if (visited.has(obj)) {
+    const cached = refs.get(obj);
+    if (cached) return cached;
+    const circularProp = path.find((p) => !OPENAPI_PROPS.has(p)) || path[0];
 
-  if (obj.type === "object" && obj.properties) {
-    const schemaKey = Object.keys(obj.properties).sort().join("-");
-
-    if (visited.has(schemaKey)) {
-      const prevPaths = visited.get(schemaKey)!;
-      if (prevPaths.some((prev) => currentPath.startsWith(prev))) {
-        return CIRCULAR_REF;
-      }
-      visited.set(schemaKey, [...prevPaths, currentPath]);
-    } else {
-      visited.set(schemaKey, [currentPath]);
-    }
+    return [CIRCULAR_REF, circularProp].filter(Boolean).join(":");
   }
 
+  visited.add(obj);
+
   if (Array.isArray(obj)) {
-    return obj.map((item, index) =>
-      handleCircularRefs(item, visited, [...path, `${index}`]),
+    const result = obj.map((item, index) =>
+      handleCircularRefs(item, visited, refs, [...path, index.toString()]),
     );
+    refs.set(obj, result);
+    return result;
   }
 
   const result: RecordAny = {};
   for (const [key, value] of Object.entries(obj)) {
-    result[key] = handleCircularRefs(value, visited, [...path, key]);
+    result[key] = handleCircularRefs(value, visited, refs, [...path, key]);
   }
+  refs.set(obj, result);
   return result;
 };
 
