@@ -22,6 +22,7 @@ export const docs: SidebarEntry = [
       "configuration/api-catalog",
       "configuration/navigation",
       "configuration/search",
+      "configuration/page",
       "configuration/footer",
       "configuration/authentication",
       "configuration/build-configuration",
