@@ -12,43 +12,30 @@ const IdentitySelector = ({
   identities?: ApiIdentity[];
   setValue: (value: string) => void;
   value?: string;
-}) => {
-  return (
-    <Card className="w-full overflow-hidden">
-      <RadioGroup
-        onValueChange={(value) => setValue(value)}
-        value={value}
-        defaultValue={NO_IDENTITY}
-        className="gap-0"
-        disabled={identities?.length === 0}
-      >
+}) => (
+  <Card className="w-full overflow-hidden">
+    <RadioGroup
+      onValueChange={(value) => setValue(value)}
+      value={value}
+      defaultValue={NO_IDENTITY}
+      className="gap-0"
+      disabled={identities?.length === 0}
+    >
+      <Label className="h-12 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent">
+        <RadioGroupItem value={NO_IDENTITY} id="none" />
+        <span>None</span>
+      </Label>
+      {identities?.map((identity) => (
         <Label
-          className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
-          htmlFor="none"
+          key={identity.id}
+          className="h-12 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent"
         >
-          <RadioGroupItem value={NO_IDENTITY} id="none">
-            None
-          </RadioGroupItem>
-          <Label htmlFor="none" className="ms-2">
-            None
-          </Label>
+          <RadioGroupItem value={identity.id} id={identity.id} />
+          <span>{identity.label}</span>
         </Label>
-        {identities?.map((identity) => (
-          <Label
-            key={identity.id}
-            className="h-12 border-b items-center flex p-4 cursor-pointer hover:bg-accent"
-          >
-            <RadioGroupItem value={identity.id} id={identity.id}>
-              {identity.label}
-            </RadioGroupItem>
-            <Label htmlFor={identity.id} className="ms-2">
-              {identity.label}
-            </Label>
-          </Label>
-        ))}
-      </RadioGroup>
-    </Card>
-  );
-};
+      ))}
+    </RadioGroup>
+  </Card>
+);
 
 export default IdentitySelector;
