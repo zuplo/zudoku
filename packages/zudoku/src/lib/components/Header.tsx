@@ -105,7 +105,7 @@ export const Header = memo(function HeaderInner() {
                     />
                   </>
                 )}
-                <span className="font-bold text-2xl text-foreground/85 tracking-wide">
+                <span className="font-semibold text-2xl">
                   {page?.pageTitle}
                 </span>
               </div>
