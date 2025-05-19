@@ -142,6 +142,7 @@
     @apply prose-blockquote:not-italic prose-blockquote:text-neutral-500/75 prose-blockquote:dark:text-neutral-400;
     @apply prose-headings:prose-code:mx-2;
     @apply prose-code:before:content-none prose-code:after:content-none;
+    @apply prose-hr:border-border;
 
     ul.contains-task-list {
       @apply list-none px-0;
