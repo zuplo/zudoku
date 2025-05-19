@@ -76,7 +76,7 @@ module.exports = {
     "@typescript-eslint/prefer-nullish-coalescing": [
       "warn",
       {
-        ignorePrimitives: { string: true },
+        ignorePrimitives: { string: true, boolean: true },
         ignoreConditionalTests: true,
       },
     ],

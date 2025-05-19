@@ -3,6 +3,7 @@ import {
   type JSONSchema,
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
+import { merge as mergeAllOf } from "allof-merge";
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { LoadedConfig } from "../../config/config.js";
@@ -44,6 +45,7 @@ export class SchemaManager {
     this.config = config;
     this.processors = [
       ({ schema }) => upgrade(schema).specification,
+      ({ schema }) => mergeAllOf(schema),
       ...processors,
     ];
   }

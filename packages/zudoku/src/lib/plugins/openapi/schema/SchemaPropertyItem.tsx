@@ -15,7 +15,9 @@ import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
+  extractCircularRefInfo,
   hasLogicalGroupings,
+  isArrayCircularRef,
   isArrayType,
   isCircularRef,
   isComplexType,
@@ -40,13 +42,13 @@ export const SchemaLogicalGroup = ({ schema }: { schema: SchemaObject }) => {
   }
 };
 
-const RecursiveIndicator = () => (
+const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
   <InlineCode
     className="inline-flex items-center gap-1.5 italic text-xs translate-y-0.5"
     selectOnClick={false}
   >
     <RefreshCcwDotIcon size={13} />
-    <span>circular</span>
+    <span>{circularProp ? `${circularProp} (circular)` : "circular"}</span>
   </InlineCode>
 );
 
@@ -82,6 +84,16 @@ export const SchemaPropertyItem = ({
     );
   }
 
+  const isCollapsible = Boolean(
+    (hasLogicalGroupings(schema) ||
+      isComplexType(schema) ||
+      (isArrayType(schema) &&
+        "items" in schema &&
+        isComplexType(schema.items)) ||
+      schema.additionalProperties) &&
+      !isArrayCircularRef(schema),
+  );
+
   return (
     <li className="p-4 bg-border/20 hover:bg-border/30">
       <div className="flex flex-col gap-2.5 justify-between text-sm">
@@ -95,9 +107,11 @@ export const SchemaPropertyItem = ({
               group !== "optional" && (
                 <span className="text-primary">required</span>
               ),
-              isArrayType(schema) &&
-                "items" in schema &&
-                isCircularRef(schema.items) && <RecursiveIndicator />,
+              isArrayCircularRef(schema) && (
+                <RecursiveIndicator
+                  circularProp={extractCircularRefInfo(schema.items)}
+                />
+              ),
             ]}
           />
         </div>
@@ -113,10 +127,7 @@ export const SchemaPropertyItem = ({
         {schema.const && <ConstValue schema={schema} hideDescription />}
         {schema.enum && <EnumValues values={schema.enum} />}
         <SchemaExampleAndDefault schema={schema} />
-        {(hasLogicalGroupings(schema) ||
-          isComplexType(schema) ||
-          isArrayType(schema) ||
-          schema.additionalProperties) && (
+        {isCollapsible && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
             open={isOpen}
@@ -136,14 +147,9 @@ export const SchemaPropertyItem = ({
                   <SchemaLogicalGroup schema={schema} />
                 ) : schema.type === "object" ? (
                   <SchemaView schema={schema} />
-                ) : (
-                  isArrayType(schema) &&
-                  "items" in schema &&
-                  typeof schema.items === "object" &&
-                  !isCircularRef(schema.items) && (
-                    <SchemaView schema={schema.items} />
-                  )
-                )}
+                ) : isArrayType(schema) && "items" in schema ? (
+                  <SchemaView schema={schema.items} />
+                ) : null}
               </div>
             </Collapsible.Content>
           </Collapsible.Root>
