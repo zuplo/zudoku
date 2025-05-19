@@ -1,4 +1,5 @@
 import { type MDXComponents } from "mdx/types.js";
+import { CodeBlock } from "zudoku/ui/CodeBlock.js";
 import { AnchorLink } from "../components/AnchorLink.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
@@ -6,6 +7,7 @@ import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
 import { Stepper } from "../ui/Stepper.js";
 import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
+import { cn } from "./cn.js";
 
 export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
@@ -62,26 +64,37 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
-  pre: ({ children }) => <>{children}</>,
-  code: ({ className, children, ...props }) => {
-    // `inline` provided by the rehype plugin, as react-markdown removed support for that
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { inline, title } = props as Record<string, unknown>;
-
-    if (inline === true || inline === "true") {
-      return <InlineCode className={className}>{children}</InlineCode>;
-    }
-
+  pre: (props) => (
+    <pre className={cn("not-prose my-4", props.className)} {...props} />
+  ),
+  code: ({
+    className,
+    node: _node,
+    children,
+    title,
+    inline,
+    showLineNumbers,
+    ...props
+  }) => {
     const match = className?.match(/language?-(\w+)/);
 
+    if (inline === "true" || inline === true) {
+      return (
+        <InlineCode className={cn(className, "inline")}>{children}</InlineCode>
+      );
+    }
+
     return (
-      <SyntaxHighlight
+      <CodeBlock
         language={match?.[1]}
-        className="rounded-xl p-4 border dark:!bg-foreground/10 dark:border-transparent"
         showLanguageIndicator
-        code={String(children).trim()}
-        title={typeof title === "string" ? title : undefined}
-      />
+        showLineNumbers={showLineNumbers}
+        title={title}
+      >
+        <code className={cn(className, "not-inline")} {...props}>
+          {children}
+        </code>
+      </CodeBlock>
     );
   },
 } satisfies MdxComponentsType;

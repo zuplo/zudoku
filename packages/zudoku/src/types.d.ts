@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+
 declare module "virtual:zudoku-docs-plugins" {
   export const configuredDocsPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
   /**
@@ -46,4 +48,9 @@ declare module "virtual:zudoku-auth" {
   export const configuredAuthProvider:
     | import("./lib/authentication/authentication.ts").AuthenticationProvider
     | undefined;
+}
+
+declare module "virtual:zudoku-shiki-register" {
+  import type { HighlighterCore } from "shiki/core";
+  export const registerShiki: (highlighter: HighlighterCore) => Promise<void>;
 }

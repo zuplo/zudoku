@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { isValidElement } from "react";
+import type { BundledLanguage, BundledTheme } from "shiki";
 import z, {
   type RefinementCtx,
   type ZodEnumDef,
@@ -437,6 +438,16 @@ export const CommonConfigSchema = z.object({
       fonts: FontsConfigSchema,
     })
     .partial(),
+  syntaxHighlighting: z
+    .object({
+      languages: z.array(z.custom<BundledLanguage>()),
+      themes: z.object({
+        light: z.custom<BundledTheme>(),
+        dark: z.custom<BundledTheme>(),
+      }),
+    })
+    .partial()
+    .optional(),
   metadata: MetadataSchema,
   authentication: AuthenticationSchema,
   search: SearchSchema,

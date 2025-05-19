@@ -49,7 +49,7 @@ export const CollapsibleCode = ({
         )}
       >
         {!open && isOverflowing && (
-          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/60 dark:to-zinc-950/90 z-10 group-hover:to-transparent"></div>
+          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/60 dark:to-zinc-950/90 z-10 transition-all group-hover:to-transparent"></div>
         )}
         <div ref={contentRef}>{children}</div>
         {!open && isOverflowing && (
@@ -68,7 +68,10 @@ export const CollapsibleCode = ({
       </CollapsibleContent>
       {isOverflowing && (
         <div
-          className={cn("flex justify-center w-full mb-2", !open && "hidden")}
+          className={cn(
+            "flex justify-center w-full py-2 bg-muted/50",
+            !open && "hidden",
+          )}
         >
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
