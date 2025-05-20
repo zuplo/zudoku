@@ -1,4 +1,4 @@
-name: Preview Build
+name: Public Package Build
 
 on:
   pull_request:
@@ -9,6 +9,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      deployments: write
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
@@ -21,7 +22,7 @@ jobs:
           cache: "pnpm"
 
       - name: Install Verdaccio
-        run: npm install -g verdaccio nx npm-auth-to-token
+        run: npm install -g verdaccio nx npm-auth-to-token wrangler
 
       - name: Start Verdaccio
         run: |
@@ -47,24 +48,9 @@ jobs:
           pnpm install --no-frozen-lockfile --registry http://localhost:4873
           nx run cosmo-cargo:build
 
-      # - name: Authenticate to Google Cloud
-      #   id: auth
-      #   uses: google-github-actions/auth@v2
-      #   with:
-      #     token_format: access_token
-      #     workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
-      #     service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
-      #     access_token_lifetime: 300s
-
-      # - name: Deploy to GCS
-      #   uses: google-github-actions/upload-cloud-storage@v2
-      #   with:
-      #     path: examples/cosmo-cargo/dist
-      #     destination: zudoku-preview/pr-${{ github.event.pull_request.number }}
-      #     parent: false
-      #     glob: "**/*"
-      #   env:
-      #     CLOUDSDK_AUTH_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-
-      # - name: Output Preview URL
-      #   run: 'echo "Preview available at: https://storage.googleapis.com/zudoku-preview/pr-${{ github.event.pull_request.number }}/index.html"'
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy examples/cosmo-cargo/dist --project-name=cosmocargo-public-package
