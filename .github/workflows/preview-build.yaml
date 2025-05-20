@@ -1,0 +1,70 @@
+name: Preview Build
+
+on:
+  pull_request:
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install Verdaccio
+        run: npm install -g verdaccio nx npm-auth-to-token
+
+      - name: Start Verdaccio
+        run: |
+          tmp_registry_log=$(mktemp)
+          nohup verdaccio &>$tmp_registry_log &
+          grep -q 'http address' <(tail -f $tmp_registry_log)
+          npm-auth-to-token -u test -p test -e test@test.com -r http://localhost:4873
+
+      - name: Run pnpm install
+        run: pnpm install --registry http://localhost:4873
+
+      - name: Build and publish package
+        run: nx run zudoku:publish:local
+
+      - name: Update package.json
+        run: |
+          VERSION=$(node -p "require('./packages/zudoku/package.json').version")
+          cd examples/cosmo-cargo
+          pnpm pkg set "devDependencies.zudoku=$VERSION"
+
+      - name: Build example
+        run: |
+          pnpm install --no-frozen-lockfile --registry http://localhost:4873
+          nx run cosmo-cargo:build
+
+      # - name: Authenticate to Google Cloud
+      #   id: auth
+      #   uses: google-github-actions/auth@v2
+      #   with:
+      #     token_format: access_token
+      #     workload_identity_provider: ${{ vars.GCP_ACTIONS_IDENTITY_PROVIDER }}
+      #     service_account: github-actions-opensource@zuplo-production.iam.gserviceaccount.com
+      #     access_token_lifetime: 300s
+
+      # - name: Deploy to GCS
+      #   uses: google-github-actions/upload-cloud-storage@v2
+      #   with:
+      #     path: examples/cosmo-cargo/dist
+      #     destination: zudoku-preview/pr-${{ github.event.pull_request.number }}
+      #     parent: false
+      #     glob: "**/*"
+      #   env:
+      #     CLOUDSDK_AUTH_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+
+      # - name: Output Preview URL
+      #   run: 'echo "Preview available at: https://storage.googleapis.com/zudoku-preview/pr-${{ github.event.pull_request.number }}/index.html"'
