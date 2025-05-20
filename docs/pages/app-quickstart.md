@@ -8,7 +8,7 @@ The recommended way to get started with Zudoku is to use the `create-zudoku-app`
 
 # Prerequisites
 
-- [Node.js](https://nodejs.org/) at least `v22.7.0`
+- [Node.js](https://nodejs.org/) at least `v22.7.0` (or `>=20.19` will work as well)
 
 # Getting Started
 
