@@ -33,7 +33,7 @@ export const ResponseContent = ({
     responses.find((r) => r.statusCode === selectedResponse) ?? responses[0];
 
   const cardHeader = (
-    <div className="bg-muted flex flex-col">
+    <div className="bg-border/20 flex flex-col">
       <div className="flex flex-row items-center gap-2 justify-between px-4 py-2">
         <Tabs.List className="flex flex-row text-muted-foreground font-medium text-sm gap-4">
           {responses.map((response) => (
