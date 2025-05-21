@@ -59,12 +59,12 @@ export const Footer = () => {
                 >
                   <span className="text-sm font-semibold">{column.title}</span>
                   <ul className="mt-4 space-y-2">
-                    {column.links.map((link, i) => {
+                    {column.links.map((link) => {
                       const className =
                         "flex flex-row gap-1 items-center text-sm text-muted-foreground hover:text-accent-foreground";
 
                       return (
-                        <li key={link.href + i}>
+                        <li key={link.href + link.label}>
                           {isExternalUrl(link.href) ? (
                             <a
                               href={link.href}
@@ -76,10 +76,7 @@ export const Footer = () => {
                               <ExternalLinkIcon size={12} />
                             </a>
                           ) : (
-                            <AnchorLink
-                              to={link.href + i}
-                              className={className}
-                            >
+                            <AnchorLink to={link.href} className={className}>
                               <span>{link.label}</span>
                             </AnchorLink>
                           )}
