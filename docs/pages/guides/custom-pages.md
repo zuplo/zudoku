@@ -87,7 +87,7 @@ This configuration will allow Zudoku to load the contents of the `<MyCustomPage 
 
 ### Updating Your `tsconfig.json`
 
-Your `include` property in `tsconfig.json` should automatically be updated to reflect the new custom pages, but in case it isn't, your should look like this:
+Your `include` property in `tsconfig.json` should automatically be updated to reflect the new custom pages, but in case it isn't, it should look like this:
 
 ```json
 {
