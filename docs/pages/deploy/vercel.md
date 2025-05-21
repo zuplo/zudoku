@@ -50,7 +50,7 @@ Answer _Yes_ and select to modify the Output Directory.
 By default Vercel looks for a directory named `public`, but the Zudoku build will be found in `dist`. Set the output directory like this:
 
 ```bash
-? What's your Output Directory? ./dist
+? What's your Output Directory? dist
 ```
 
 After this is complete, your site will build and Vercel will respond with the URL for you to test it.
