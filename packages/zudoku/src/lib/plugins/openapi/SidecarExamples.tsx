@@ -22,7 +22,13 @@ const formatForDisplay = (value: unknown): string => {
 
 const getLanguage = (mediaType?: string): string => {
   if (!mediaType) return "plain";
+  if (mediaType.endsWith("+json")) return "json";
+  if (mediaType.endsWith("+xml")) return "xml";
+  if (mediaType.endsWith("+yaml")) return "yaml";
+
   const languages: Record<string, string> = {
+    "text/html": "html",
+    "application/x-ndjson": "json",
     "application/json": "json",
     "application/xml": "xml",
     "application/x-yaml": "yaml",
