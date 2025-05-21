@@ -103,10 +103,17 @@ export async function loadZudokuConfig(
 
     return { config, envPrefix, publicEnv };
   } catch (error) {
-    logger.error(colors.red(`Error loading Zudoku config`), {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    logger.error(colors.red(`Error loading Zudoku config:\n${errorMessage}`), {
       timestamp: true,
-      error,
     });
+
+    if (config) {
+      // return the last valid config if it exists
+      return { config, envPrefix, publicEnv };
+    }
+    process.exit(1);
   }
 
   logger.error(colors.red(`no zudoku config file found in project root.`), {
@@ -153,10 +160,19 @@ export async function getViteConfig(
   );
 
   const handleConfigChange = async () => {
-    const { config } = await loadZudokuConfig(configEnv, dir, true);
-    onConfigChange?.(config);
+    try {
+      const { config: newConfig } = await loadZudokuConfig(
+        configEnv,
+        dir,
+        true,
+      );
+      onConfigChange?.(newConfig);
 
-    return config;
+      return newConfig;
+    } catch (error) {
+      logger.error(error);
+      return config;
+    }
   };
 
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);

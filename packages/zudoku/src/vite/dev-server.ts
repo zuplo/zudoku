@@ -30,7 +30,6 @@ const DEFAULT_DEV_PORT = 3000;
 type EntryServerImport = typeof import("../app/entry.server.js");
 
 export class DevServer {
-  private currentConfig: LoadedConfig | undefined;
   private terminator: HttpTerminator | undefined;
   public resolvedPort = 0;
   public protocol = "http";
@@ -72,20 +71,17 @@ export class DevServer {
       command: "serve",
       isSsrBuild: this.options.ssr,
     };
-    const viteConfig = await getViteConfig(
-      this.options.dir,
+    const viteConfig = await getViteConfig(this.options.dir, configEnv);
+    let { config: zudokuConfig } = await loadZudokuConfig(
       configEnv,
-      (zudokuConfig) => (this.currentConfig = zudokuConfig),
+      this.options.dir,
     );
-
-    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
-    this.currentConfig = config;
 
     this.resolvedPort = await findAvailablePort(
-      this.options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
+      this.options.argPort ?? zudokuConfig.port ?? DEFAULT_DEV_PORT,
     );
 
-    const server = await this.createNodeServer(app, config);
+    const server = await this.createNodeServer(app, zudokuConfig);
 
     viteConfig.server = {
       ...viteConfig.server,
@@ -104,8 +100,14 @@ export class DevServer {
       "/__z/entry.client.tsx",
     );
 
-    app.use((req, res, next) => {
-      const base = this.currentConfig?.basePath;
+    app.use(async (_req, _res, next) => {
+      const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+      zudokuConfig = config;
+      next();
+    });
+
+    app.use(async (req, res, next) => {
+      const base = zudokuConfig.basePath;
       if (
         req.method.toLowerCase() === "get" &&
         req.url === "/" &&
@@ -136,7 +138,7 @@ export class DevServer {
       `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
     );
 
-    if (config.search?.type === "pagefind") {
+    if (zudokuConfig.search?.type === "pagefind") {
       const pagefindPath = path.join(
         vite.config.publicDir,
         "pagefind/pagefind.js",
@@ -161,15 +163,11 @@ export class DevServer {
       try {
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
-          dir: this.currentConfig?.page?.dir,
+          dir: zudokuConfig.page?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
         if (this.options.ssr) {
-          if (!this.currentConfig) {
-            throw new Error("Error loading configuration.");
-          }
-
           const server = await ssrEnvironment.runner.import<EntryServerImport>(
             getAppServerEntryPath(),
           );
@@ -178,8 +176,8 @@ export class DevServer {
             template,
             request,
             response,
-            routes: server.getRoutesByConfig(this.currentConfig),
-            basePath: this.currentConfig.basePath,
+            routes: server.getRoutesByConfig(zudokuConfig),
+            basePath: zudokuConfig.basePath,
           });
         } else {
           response
