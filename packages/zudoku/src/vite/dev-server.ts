@@ -30,7 +30,6 @@ const DEFAULT_DEV_PORT = 3000;
 type EntryServerImport = typeof import("../app/entry.server.js");
 
 export class DevServer {
-  private currentConfig: LoadedConfig | undefined;
   private terminator: HttpTerminator | undefined;
   public resolvedPort = 0;
   public protocol = "http";
@@ -72,14 +71,8 @@ export class DevServer {
       command: "serve",
       isSsrBuild: this.options.ssr,
     };
-    const viteConfig = await getViteConfig(
-      this.options.dir,
-      configEnv,
-      (zudokuConfig) => (this.currentConfig = zudokuConfig),
-    );
-
+    const viteConfig = await getViteConfig(this.options.dir, configEnv);
     const { config } = await loadZudokuConfig(configEnv, this.options.dir);
-    this.currentConfig = config;
 
     this.resolvedPort = await findAvailablePort(
       this.options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
@@ -104,8 +97,9 @@ export class DevServer {
       "/__z/entry.client.tsx",
     );
 
-    app.use((req, res, next) => {
-      const base = this.currentConfig?.basePath;
+    app.use(async (req, res, next) => {
+      const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+      const base = config.basePath;
       if (
         req.method.toLowerCase() === "get" &&
         req.url === "/" &&
@@ -159,17 +153,14 @@ export class DevServer {
       }
 
       try {
+        const { config } = await loadZudokuConfig(configEnv, this.options.dir);
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
-          dir: this.currentConfig?.page?.dir,
+          dir: config.page?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
         if (this.options.ssr) {
-          if (!this.currentConfig) {
-            throw new Error("Error loading configuration.");
-          }
-
           const server = await ssrEnvironment.runner.import<EntryServerImport>(
             getAppServerEntryPath(),
           );
@@ -178,8 +169,8 @@ export class DevServer {
             template,
             request,
             response,
-            routes: server.getRoutesByConfig(this.currentConfig),
-            basePath: this.currentConfig.basePath,
+            routes: server.getRoutesByConfig(config),
+            basePath: config.basePath,
           });
         } else {
           response

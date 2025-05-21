@@ -86,13 +86,6 @@ export async function loadZudokuConfig(
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
-    const envVars: Record<string, string | undefined> = {};
-    for (const key in process.env) {
-      if (envPrefix.some((prefix) => key.startsWith(prefix))) {
-        envVars[key] = process.env[key];
-      }
-    }
-
     config = await tryLoadZudokuConfig(rootDir, getModuleDir());
 
     logger.info(
@@ -103,16 +96,19 @@ export async function loadZudokuConfig(
 
     return { config, envPrefix, publicEnv };
   } catch (error) {
-    logger.error(colors.red(`Error loading Zudoku config`), {
-      timestamp: true,
-      error,
-    });
-  }
+    const errorMessage = error instanceof Error ? error.message : String(error);
 
-  logger.error(colors.red(`no zudoku config file found in project root.`), {
-    timestamp: true,
-  });
-  process.exit(1);
+    logger.error(colors.red(`Error loading Zudoku config:\n${errorMessage}`), {
+      timestamp: true,
+    });
+
+    if (config) {
+      // return the last valid config if it exists
+      return { config, envPrefix, publicEnv };
+    }
+
+    throw new Error("Failed to load Zudoku config");
+  }
 }
 
 function getModuleDir() {
@@ -153,10 +149,19 @@ export async function getViteConfig(
   );
 
   const handleConfigChange = async () => {
-    const { config } = await loadZudokuConfig(configEnv, dir, true);
-    onConfigChange?.(config);
+    try {
+      const { config: newConfig } = await loadZudokuConfig(
+        configEnv,
+        dir,
+        true,
+      );
+      onConfigChange?.(newConfig);
 
-    return config;
+      return newConfig;
+    } catch (error) {
+      logger.error(error);
+      return config;
+    }
   };
 
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
