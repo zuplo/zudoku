@@ -36,7 +36,9 @@ export const createConfigReloadPlugin = (
         if (file !== newConfig.__meta.configPath && file.endsWith(".tsx"))
           return;
 
-        reload(server);
+        Object.values(server.environments).forEach((env) => {
+          env.moduleGraph.invalidateAll();
+        });
 
         logger.info(
           colors.blue(

@@ -72,16 +72,13 @@ export class DevServer {
       isSsrBuild: this.options.ssr,
     };
     const viteConfig = await getViteConfig(this.options.dir, configEnv);
-    let { config: zudokuConfig } = await loadZudokuConfig(
-      configEnv,
-      this.options.dir,
-    );
+    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
 
     this.resolvedPort = await findAvailablePort(
-      this.options.argPort ?? zudokuConfig.port ?? DEFAULT_DEV_PORT,
+      this.options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
     );
 
-    const server = await this.createNodeServer(app, zudokuConfig);
+    const server = await this.createNodeServer(app, config);
 
     viteConfig.server = {
       ...viteConfig.server,
@@ -100,14 +97,9 @@ export class DevServer {
       "/__z/entry.client.tsx",
     );
 
-    app.use(async (_req, _res, next) => {
-      const { config } = await loadZudokuConfig(configEnv, this.options.dir);
-      zudokuConfig = config;
-      next();
-    });
-
     app.use(async (req, res, next) => {
-      const base = zudokuConfig.basePath;
+      const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+      const base = config.basePath;
       if (
         req.method.toLowerCase() === "get" &&
         req.url === "/" &&
@@ -138,7 +130,7 @@ export class DevServer {
       `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
     );
 
-    if (zudokuConfig.search?.type === "pagefind") {
+    if (config.search?.type === "pagefind") {
       const pagefindPath = path.join(
         vite.config.publicDir,
         "pagefind/pagefind.js",
@@ -161,9 +153,10 @@ export class DevServer {
       }
 
       try {
+        const { config } = await loadZudokuConfig(configEnv, this.options.dir);
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
-          dir: zudokuConfig.page?.dir,
+          dir: config.page?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
@@ -176,8 +169,8 @@ export class DevServer {
             template,
             request,
             response,
-            routes: server.getRoutesByConfig(zudokuConfig),
-            basePath: zudokuConfig.basePath,
+            routes: server.getRoutesByConfig(config),
+            basePath: config.basePath,
           });
         } else {
           response

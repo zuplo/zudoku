@@ -86,13 +86,6 @@ export async function loadZudokuConfig(
   ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
 
   try {
-    const envVars: Record<string, string | undefined> = {};
-    for (const key in process.env) {
-      if (envPrefix.some((prefix) => key.startsWith(prefix))) {
-        envVars[key] = process.env[key];
-      }
-    }
-
     config = await tryLoadZudokuConfig(rootDir, getModuleDir());
 
     logger.info(
@@ -113,13 +106,9 @@ export async function loadZudokuConfig(
       // return the last valid config if it exists
       return { config, envPrefix, publicEnv };
     }
-    process.exit(1);
-  }
 
-  logger.error(colors.red(`no zudoku config file found in project root.`), {
-    timestamp: true,
-  });
-  process.exit(1);
+    throw new Error("Failed to load Zudoku config");
+  }
 }
 
 function getModuleDir() {
