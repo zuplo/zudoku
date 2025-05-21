@@ -16,7 +16,7 @@
     },
     "publish:local": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build:ci"],
+      "dependsOn": ["build", "build:ci"],
       "options": {
         "cwd": "packages/zudoku",
         "commands": [

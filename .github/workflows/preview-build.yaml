@@ -1,0 +1,112 @@
+name: Public Package Build
+
+on:
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      deployments: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v2
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install global dependencies
+        run: npm install -g verdaccio nx npm-auth-to-token wrangler
+
+      - name: Start local NPM registry
+        run: |
+          tmp_registry_log=$(mktemp)
+          nohup verdaccio &>$tmp_registry_log &
+          grep -q 'http address' <(tail -f $tmp_registry_log)
+          npm-auth-to-token -u test -p test -e test@test.com -r http://localhost:4873
+
+      - name: Run first pnpm install
+        run: pnpm install
+
+      - name: Build and publish package
+        run: nx run zudoku:publish:local
+
+      - name: Update package.json
+        run: |
+          VERSION=$(node -p "require('./packages/zudoku/package.json').version")
+          cd examples/cosmo-cargo
+          pnpm pkg set "devDependencies.zudoku=$VERSION"
+
+      - name: Run second pnpm install
+        run: pnpm install --no-frozen-lockfile --prefer-offline --registry http://localhost:4873
+
+      - name: Build Cosmo Cargo example
+        run: nx run cosmo-cargo:build
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy examples/cosmo-cargo/dist --project-name=cosmocargo-public-package
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentUrl = "${{ steps.deploy.outputs.deployment-url }}";
+            const sha = "${{ github.event.pull_request.head.sha }}" || "${{ github.sha }}";
+
+            const comment = `Preview build of published Zudoku package for commit ${sha}.
+
+            See the deployment at: **${deploymentUrl}**
+
+            > [!NOTE]
+            > This is a preview of the Cosmo Cargo example using the Zudoku package published to [a local registry](https://verdaccio.org) to ensure it'll be working when published to the public NPM registry.
+
+            _Last updated: ${new Date().toISOString()}_`;
+
+            try {
+              const { data: comments } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                per_page: 100
+              });
+
+              const botComment = comments.find((c) => 
+                c.user.login === "github-actions[bot]" && 
+                c.body.includes("Preview build of published Zudoku package")
+              );
+
+              if (botComment) {
+                await github.rest.issues.updateComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  comment_id: botComment.id,
+                  body: comment
+                });
+              } else {
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: comment
+                });
+              }
+            } catch (error) {
+              core.error(`Failed to comment on PR: ${error.message}`);
+              throw error;
+            }
