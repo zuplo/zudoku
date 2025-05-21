@@ -1,5 +1,6 @@
 import slugify from "@sindresorhus/slugify";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { Helmet } from "@zudoku/react-helmet-async";
 import {
   ChevronRightIcon,
   ChevronsDownUpIcon,
@@ -47,15 +48,22 @@ export function SchemaList() {
   const { data } = useSuspenseQuery(schemasQuery);
 
   const schemas = data.schema.components?.schemas ?? [];
-
-  if (!schemas.length) {
-    return <div>No schemas found</div>;
-  }
-
   const hasMultipleVersions = Object.entries(versions).length > 1;
   const showVersions =
     options?.showVersionSelect === "always" ||
     (hasMultipleVersions && options?.showVersionSelect !== "hide");
+
+  if (!schemas.length) {
+    return (
+      <div>
+        <Helmet>
+          <title>Schemas {showVersions ? version : ""}</title>
+          <meta name="description" content="List of schemas used by the API." />
+        </Helmet>
+        No schemas found
+      </div>
+    );
+  }
 
   return (
     <div
@@ -63,6 +71,10 @@ export function SchemaList() {
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
+      <Helmet>
+        <title>Schemas {showVersions ? version : ""}</title>
+        <meta name="description" content="List of schemas used by the API." />
+      </Helmet>
       <div className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
         <Collapsible className="w-full">
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
