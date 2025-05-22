@@ -88,8 +88,7 @@
     --top-nav-height: 50px;
     --banner-height: 40px;
     --header-height: calc(
-      var(--top-header-height) + var(--top-nav-height) + var(--banner-height) -
-        /* borders */ 2px
+      var(--top-header-height) + var(--top-nav-height) + var(--banner-height)
     );
     --scroll-padding: calc(var(--header-height) + 10px);
     --side-nav-width: --spacing(72);
