@@ -30,6 +30,7 @@
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",
     "./auth/supabase": "./src/lib/authentication/providers/supabase.ts",
+    "./auth/azureb2c": "./src/lib/authentication/providers/azureb2c.ts",
     "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.ts",
@@ -87,6 +88,10 @@
       "./auth/supabase": {
         "import": "./lib/zudoku.auth-supabase.js",
         "types": "./dist/lib/authentication/providers/supabase.d.ts"
+      },
+      "./auth/azureb2c": {
+        "import": "./lib/zudoku.auth-azureb2c.js",
+        "types": "./dist/lib/authentication/providers/azureb2c.d.ts"
       },
       "./plugins": {
         "import": "./lib/zudoku.plugins.js",
@@ -288,7 +293,8 @@
     "yargs": "17.7.2",
     "zod": "3.24.2",
     "zod-validation-error": "3.4.0",
-    "zustand": "5.0.3"
+    "zustand": "5.0.3",
+    "@azure/msal-browser": "^3.10.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.5",

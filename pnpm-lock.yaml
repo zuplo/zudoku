@@ -340,6 +340,9 @@ importers:
       '@apidevtools/json-schema-ref-parser':
         specifier: 12.0.2
         version: 12.0.2
+      '@azure/msal-browser':
+        specifier: ^3.10.0
+        version: 3.28.1
       '@envelop/core':
         specifier: 5.2.3
         version: 5.2.3
@@ -863,6 +866,14 @@ packages:
     hasBin: true
     peerDependencies:
       graphql: '*'
+
+  '@azure/msal-browser@3.28.1':
+    resolution: {integrity: sha512-OHHEWMB5+Zrix8yKvLVzU3rKDFvh7SOzAzXfICD7YgUXLxfHpTPX2pzOotrri1kskwhHqIj4a5LvhZlIqE7C7g==}
+    engines: {node: '>=0.8.0'}
+
+  '@azure/msal-common@14.16.0':
+    resolution: {integrity: sha512-1KOZj9IpcDSwpNiQNjt0jDYZpQvNZay7QAEi/5DLubay40iGYtLzya/jbjRPLyOTZhEKyL1MzPuw2HqBCjceYA==}
+    engines: {node: '>=0.8.0'}
 
   '@babel/code-frame@7.26.2':
     resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
@@ -9192,6 +9203,12 @@ snapshots:
       signedsource: 1.0.0
     transitivePeerDependencies:
       - encoding
+
+  '@azure/msal-browser@3.28.1':
+    dependencies:
+      '@azure/msal-common': 14.16.0
+
+  '@azure/msal-common@14.16.0': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:

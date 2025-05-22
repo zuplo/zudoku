@@ -113,6 +113,33 @@ When configuring your OpenID provider, you will need to set the following:
 
 By default, the scopes "openid", "profile", and "email" are requested. You can customize these by providing your own array of scopes.
 
+### Azure B2C
+
+For Azure B2C authentication, you will need to provide your Azure B2C tenant name, client ID, and policy name.
+
+```typescript
+{
+  // ...
+  authentication: {
+    type: "azureb2c",
+    clientId: "<your-azure-b2c-client-id>",
+    tenantName: "<your-tenant-name>",
+    policyName: "<your-policy-name>",
+    scopes: ["openid", "profile", "email", "custom_scope"] // Optional custom scopes
+  },
+  // ...
+}
+```
+
+When configuring your Azure B2C application, you will need to set the following:
+
+- Redirect URI to `https://your-site.com/oauth/callback`
+- For local development, set the redirect URI to `http://localhost:3000/oauth/callback`
+- Add your site hostname (your-site.com) to the list of allowed CORS origins
+- Configure the appropriate user flows (policies) in your Azure B2C tenant
+
+By default, the scopes "openid", "profile", and "email" are requested. You can customize these by providing your own array of scopes.
+
 ## User Data
 
 After the user authenticates, the user profile is loaded via the provider's [User Info endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo). The following fields are used to display the user profile:

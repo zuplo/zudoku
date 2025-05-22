@@ -44,3 +44,15 @@ export type SupabaseAuthenticationConfig = {
   supabaseKey: string;
   basePath?: string;
 } & RedirectOptions;
+
+export type AzureB2CAuthenticationConfig = {
+  type: "azureb2c";
+  clientId: string;
+  tenantName: string;
+  policyName: string;
+  scopes?: string[];
+  basePath?: string;
+  redirectToAfterSignUp?: string;
+  redirectToAfterSignIn?: string;
+  redirectToAfterSignOut?: string;
+} & RedirectOptions;
