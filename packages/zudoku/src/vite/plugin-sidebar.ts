@@ -60,7 +60,10 @@ export const viteSidebarPlugin = (getConfig: () => LoadedConfig): Plugin => {
       if (id !== resolvedVirtualModuleId) return;
       const config = getConfig();
 
-      const manager = new SidebarManager(config.__meta.rootDir, config.sidebar);
+      const manager = new SidebarManager(
+        config.__meta.rootDir,
+        config.navigation,
+      );
       const resolvedSidebars = await manager.resolveSidebars();
 
       const code = JSON.stringify(resolvedSidebars);

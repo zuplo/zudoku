@@ -22,7 +22,7 @@ export type CatalogCategory = {
 };
 
 export type ApiCatalogPluginOptions = {
-  navigationId: string;
+  path: string;
   label: string;
   categories?: CatalogCategory[];
   items: ApiCatalogItem[];
@@ -39,13 +39,13 @@ export type filterCatalogItems<ProviderData = unknown> = (
 ) => ApiCatalogItem[];
 
 export const apiCatalogPlugin = ({
-  navigationId,
+  path,
   items,
   label,
   categories = [],
   filterCatalogItems,
 }: {
-  navigationId: string;
+  path: string;
   label: string;
   categories?: CatalogCategory[];
   items: ApiCatalogItem[];
@@ -54,7 +54,7 @@ export const apiCatalogPlugin = ({
   const paths = Object.fromEntries(
     categories.flatMap((category) =>
       [undefined, ...category.tags].map((tag) => [
-        joinUrl(navigationId, tag ? getKey(category.label, tag) : undefined),
+        joinUrl(path, tag ? getKey(category.label, tag) : undefined),
         tag,
       ]),
     ),
@@ -76,7 +76,7 @@ export const apiCatalogPlugin = ({
         collapsible: false,
         items: category.tags.map((tag) => ({
           type: "doc" as const,
-          id: joinUrl(navigationId, getKey(category.label, tag)),
+          id: joinUrl(path, getKey(category.label, tag)),
           label: tag,
           badge: {
             label: String(
@@ -91,7 +91,7 @@ export const apiCatalogPlugin = ({
 
       sidebar.unshift({
         type: "doc" as const,
-        id: joinUrl(navigationId),
+        id: joinUrl(path),
         label: "Overview",
         badge: { label: String(items.length), color: "outline" as const },
       });
