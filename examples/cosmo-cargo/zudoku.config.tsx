@@ -234,7 +234,7 @@ const config: ZudokuConfig = {
       primaryForeground: "#0f1719",
       secondary: "12 6.5% 15.1%",
       secondaryForeground: "60 9.1% 97.8%",
-      muted: "12 6.5% 15.1%",
+      muted: "14 9% 9%",
       mutedForeground: "24 5.4% 63.9%",
       accent: "12 6.5% 15.1%",
       accentForeground: "60 9.1% 97.8%",

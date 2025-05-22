@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { cn } from "zudoku/ui/util.js";
 import type { MediaTypeObject } from "../graphql/graphql.js";
 import { SchemaView } from "../schema/SchemaView.js";
 
@@ -33,14 +34,18 @@ export const ResponseContent = ({
     responses.find((r) => r.statusCode === selectedResponse) ?? responses[0];
 
   const cardHeader = (
-    <div className="bg-border/20 flex flex-col">
+    <div className="flex flex-col bg-muted text-muted-foreground">
       <div className="flex flex-row items-center gap-2 justify-between px-4 py-2">
-        <Tabs.List className="flex flex-row text-muted-foreground font-medium text-sm gap-4">
+        <Tabs.List className="flex flex-row font-medium text-sm gap-4">
           {responses.map((response) => (
             <Tabs.Trigger
               key={response.statusCode}
               value={response.statusCode}
-              className="py-1 -mx-2 px-2 rounded-md data-[state=active]:bg-background data-[state=active]:drop-shadow data-[state=active]:font-semibold data-[state=active]:text-foreground"
+              className={cn(
+                "py-1 -mx-2 px-2 rounded-md",
+                "data-[state=active]:dark:ring-1 data-[state=active]:dark:ring-border data-[state=active]:bg-background data-[state=active]:drop-shadow",
+                "data-[state=active]:font-semibold data-[state=active]:text-foreground",
+              )}
             >
               {response.statusCode}
             </Tabs.Trigger>
