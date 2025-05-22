@@ -36,16 +36,19 @@ const renderBasicSchema = (schema: SchemaObject) => (
 export const SchemaView = ({
   schema,
   defaultOpen = false,
+  cardHeader,
 }: {
   schema?: SchemaObject | null;
   defaultOpen?: boolean;
+  cardHeader?: React.ReactNode;
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
-      <Card className="p-4">
-        <span className="text-sm text-muted-foreground italic">
+      <Card className="overflow-hidden">
+        {cardHeader}
+        <div className="text-sm text-muted-foreground italic p-4">
           No schema specified
-        </span>
+        </div>
       </Card>
     );
   }
@@ -103,6 +106,7 @@ export const SchemaView = ({
 
     return (
       <Card className="divide-y overflow-hidden">
+        {cardHeader}
         {groupNames.map(
           (group) =>
             groupedProperties[group] && (

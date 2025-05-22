@@ -1,28 +1,15 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { cn } from "../../util/cn.js";
-import type { OperationListItemResult } from "./OperationList.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
-
-type Responses = OperationListItemResult["responses"];
-
-const ResponseContent = ({ response }: { response: Responses[number] }) => {
-  return (
-    <Tabs.Content value={response.statusCode}>
-      <SidecarExamples
-        content={response.content ?? []}
-        description={response.description ?? undefined}
-      />
-    </Tabs.Content>
-  );
-};
+import type { ResponseItem } from "./graphql/graphql.js";
 
 export const ResponsesSidecarBox = ({
   responses,
   selectedResponse,
   onSelectResponse,
 }: {
-  responses: Responses;
+  responses: ResponseItem[];
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
 }) => {
@@ -52,7 +39,9 @@ export const ResponsesSidecarBox = ({
           </Tabs.List>
         </SidecarBox.Head>
         {responses.map((response) => (
-          <ResponseContent key={response.statusCode} response={response} />
+          <Tabs.Content key={response.statusCode} value={response.statusCode}>
+            <SidecarExamples content={response.content ?? []} />
+          </Tabs.Content>
         ))}
       </Tabs.Root>
     </SidecarBox.Root>

@@ -3,13 +3,13 @@ import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
 import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
+import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
@@ -135,39 +135,11 @@ export const OperationListItem = ({
                 )}
                 Responses
               </Heading>
-              <Tabs
-                onValueChange={(value) => setSelectedResponse(value)}
-                value={selectedResponse}
-              >
-                {operation.responses.length > 1 && (
-                  <TabsList>
-                    {operation.responses.map((response) => (
-                      <TabsTrigger
-                        value={response.statusCode}
-                        key={response.statusCode}
-                        title={response.description ?? undefined}
-                      >
-                        {response.statusCode}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                )}
-                <ul className="list-none m-0 px-0">
-                  {operation.responses.map((response) => (
-                    <TabsContent
-                      value={response.statusCode}
-                      key={response.statusCode}
-                    >
-                      <SchemaView
-                        schema={
-                          response.content?.find((content) => content.schema)
-                            ?.schema
-                        }
-                      />
-                    </TabsContent>
-                  ))}
-                </ul>
-              </Tabs>
+              <ResponseContent
+                responses={operation.responses}
+                selectedResponse={selectedResponse}
+                onSelectResponse={setSelectedResponse}
+              />
             </>
           )}
         </div>
