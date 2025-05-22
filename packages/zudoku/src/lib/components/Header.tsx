@@ -19,6 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
+import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
@@ -65,10 +66,12 @@ export const Header = memo(function HeaderInner() {
     .flatMap((p) => p.getProfileMenuItems(context))
     .sort((i) => i.weight ?? 0);
 
+  const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
+
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur-xs w-full">
       <Banner />
-      <div className="border-b">
+      <div className={borderBottom}>
         <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-(--top-header-height) border-transparent">
           <div className="flex">
             <Link to="/">
@@ -181,7 +184,7 @@ export const Header = memo(function HeaderInner() {
           </div>
         </div>
       </div>
-      <div className="border-b hidden lg:block">
+      <div className={cn("hidden lg:block", borderBottom)}>
         <div className="max-w-screen-2xl mx-auto border-transparent">
           <Slotlet name="top-navigation-before" />
           <TopNavigation />
