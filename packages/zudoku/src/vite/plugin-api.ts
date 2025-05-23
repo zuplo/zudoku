@@ -4,7 +4,7 @@ import path from "node:path";
 import { type Plugin, runnerImport } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { type LoadedConfig } from "../config/config.js";
-import { fileExists } from "../config/loader.js";
+import { fileExists } from "../config/file-exists.js";
 import {
   type BuildConfig,
   type Processor,

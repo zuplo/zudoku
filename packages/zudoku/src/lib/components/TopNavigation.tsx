@@ -2,7 +2,7 @@ import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
 import { Suspense, useEffect, useState } from "react";
 import { NavLink, useNavigation } from "react-router";
-import type { TopNavigationItem } from "../../config/validators/common.js";
+import type { TopNavigationItem } from "../../config/validators/validate.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";

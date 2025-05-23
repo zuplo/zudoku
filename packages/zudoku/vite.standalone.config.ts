@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import path from "path";
 import { defineConfig } from "vite";
-import { getStandaloneConfig } from "./src/vite/config.js";
+import { getStandaloneConfig } from "./src/config/loader.js";
 import vitePlugin from "./src/vite/plugin.js";
 
 const entries: Record<string, string> = {

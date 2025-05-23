@@ -13,12 +13,12 @@ import { logger } from "../cli/common/logger.js";
 import { printDiagnosticsToConsole } from "../cli/common/output.js";
 import { findAvailablePort } from "../cli/common/utils/ports.js";
 import type { LoadedConfig } from "../config/config.js";
+import { loadZudokuConfig } from "../config/loader.js";
 import { createGraphQLServer } from "../lib/oas/graphql/index.js";
 import {
   getAppClientEntryPath,
   getAppServerEntryPath,
   getViteConfig,
-  loadZudokuConfig,
   type ZudokuConfigEnv,
 } from "./config.js";
 import { errorMiddleware } from "./error-handler.js";

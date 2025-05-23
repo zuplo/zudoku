@@ -1,10 +1,13 @@
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
-import { findOutputPathOfServerConfig } from "../config/loader.js";
+import {
+  findOutputPathOfServerConfig,
+  loadZudokuConfig,
+} from "../config/loader.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
-import { getViteConfig, loadZudokuConfig } from "./config.js";
+import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
 import { writeOutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { expect, it } from "vitest";
-import { loadZudokuConfig } from "./config.js";
+import { loadZudokuConfig } from "../config/loader.js";
 
 it("Should correctly load zudoku.config.ts file", async () => {
   const rootPath = path.resolve("../../examples/with-config/");

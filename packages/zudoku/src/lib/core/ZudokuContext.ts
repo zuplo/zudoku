@@ -4,11 +4,11 @@ import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod";
+import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import type {
   FooterSchema,
   TopNavigationItem,
-} from "../../config/validators/common.js";
-import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
+} from "../../config/validators/validate.js";
 import type { AuthenticationProvider } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
