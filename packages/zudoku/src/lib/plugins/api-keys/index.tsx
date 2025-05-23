@@ -1,10 +1,10 @@
-import { FileKey2Icon } from "lucide-react";
+import { KeyRoundIcon } from "lucide-react";
 import { type RouteObject } from "react-router";
 import { type ZudokuContext } from "../../core/ZudokuContext.js";
 import {
   type ApiIdentityPlugin,
-  type ZudokuPlugin,
   type ProfileMenuPlugin,
+  type ZudokuPlugin,
 } from "../../core/plugins.js";
 import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
@@ -82,6 +82,12 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
             endpoint + `/${DEPLOYMENT_NAME}/consumers/${consumerId}/roll-key`,
             {
               method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                expiresOn: new Date(),
+              }),
             },
           ),
         ),
@@ -135,7 +141,7 @@ export const apiKeyPlugin = (
         label: "API Keys",
         path: "/settings/api-keys",
         category: "middle",
-        icon: FileKey2Icon,
+        icon: KeyRoundIcon,
       },
     ],
     getSidebar: async (path, context) => {
@@ -143,7 +149,7 @@ export const apiKeyPlugin = (
         {
           type: "link",
           label: "API Keys",
-          icon: FileKey2Icon,
+          icon: KeyRoundIcon,
           href: "/settings/api-keys",
         },
       ];

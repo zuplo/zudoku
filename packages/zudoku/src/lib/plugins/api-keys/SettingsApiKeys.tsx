@@ -3,17 +3,29 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckIcon,
   CopyIcon,
   EyeIcon,
   EyeOffIcon,
+  LoaderPinwheelIcon,
   RotateCwIcon,
   TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { Card, CardHeader } from "zudoku/ui/Card.js";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "zudoku/ui/Dialog.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slotlet } from "../../components/SlotletProvider.js";
 import { Button } from "../../ui/Button.js";
@@ -128,37 +140,75 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
                   <div className="flex justify-end">
                     {service.rollKey && (
-                      <Button
-                        size="icon"
-                        title="Roll this key"
-                        variant="ghost"
-                        onClick={() => {
-                          if (!confirm("Do you want to roll this key?")) {
-                            return;
-                          }
-
-                          rollKeyMutation.mutate(consumers.id);
-                        }}
-                      >
-                        <RotateCwIcon size={16} />
-                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            size="icon"
+                            title="Roll this key"
+                            variant="ghost"
+                            disabled={rollKeyMutation.isPending}
+                          >
+                            <RotateCwIcon size={16} />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Roll API Key</DialogTitle>
+                            <DialogDescription>
+                              Are you sure you want to roll this API key?
+                            </DialogDescription>
+                          </DialogHeader>
+                          <DialogFooter>
+                            <DialogClose asChild>
+                              <Button variant="outline">Cancel</Button>
+                            </DialogClose>
+                            <DialogClose asChild>
+                              <Button
+                                onClick={() => {
+                                  rollKeyMutation.mutate(consumers.id);
+                                }}
+                              >
+                                Roll Key
+                              </Button>
+                            </DialogClose>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     )}
                   </div>
                 </CardHeader>
-
                 <div className="divide-y col-span-full grid-cols-subgrid grid">
-                  {consumers.apiKeys.map((apiKey) => (
-                    <RevealApiKey
-                      key={apiKey.id}
-                      apiKey={apiKey}
-                      onDeleteKey={() => {
-                        deleteKeyMutation.mutate({
-                          consumerId: consumers.id,
-                          keyId: apiKey.id,
-                        });
-                      }}
-                    />
-                  ))}
+                  <AnimatePresence>
+                    {rollKeyMutation.isPending && (
+                      <motion.div
+                        className={cn(
+                          "flex col-span-full items-center gap-2 px-6 py-1 text-xs bg-muted/30 font-medium",
+                        )}
+                        initial={{ opacity: 0, y: 0 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <LoaderPinwheelIcon
+                          size={16}
+                          className="animate-spin opacity-80"
+                        />
+                        Rolling key...
+                      </motion.div>
+                    )}
+                    {consumers.apiKeys.map((apiKey) => (
+                      <RevealApiKey
+                        key={apiKey.id}
+                        apiKey={apiKey}
+                        onDeleteKey={() => {
+                          deleteKeyMutation.mutate({
+                            consumerId: consumers.id,
+                            keyId: apiKey.id,
+                          });
+                        }}
+                      />
+                    ))}
+                  </AnimatePresence>
                 </div>
               </Card>
             ))}
@@ -209,80 +259,107 @@ const RevealApiKey = ({
   const expiresSoon = daysUntilExpiry <= 7 && !isExpired;
 
   return (
-    <div className="grid grid-cols-8">
-      <div className="grid col-span-6 grid-cols-subgrid p-6">
-        <div className="flex flex-col gap-1">
-          <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
-            <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
-              <div
-                className={cn(
-                  "rounded-full w-2 h-2 bg-emerald-400 mr-2",
-                  (expiresSoon || isExpired) && "bg-neutral-200",
-                )}
-              ></div>
-              <span>
-                <span className={revealed ? "" : "opacity-20"}>
-                  {revealed
-                    ? key.slice(0, -5)
-                    : "**** ".repeat(key.slice(0, -5).length / 5) +
-                      "*".repeat(key.slice(0, -5).length % 5)}
-                </span>
-                <span>{key.slice(-5)}</span>
+    <motion.div
+      className="grid col-span-full grid-cols-subgrid p-6"
+      initial={{ opacity: 0, y: 0 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="flex flex-col gap-1">
+        <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
+          <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
+            <div
+              className={cn(
+                "rounded-full w-2 h-2 bg-emerald-400 mr-2",
+                (expiresSoon || isExpired) && "bg-neutral-200",
+              )}
+            ></div>
+            <span>
+              <span className={revealed ? "" : "opacity-20"}>
+                {revealed
+                  ? key.slice(0, -5)
+                  : "**** ".repeat(key.slice(0, -5).length / 5) +
+                    "*".repeat(key.slice(0, -5).length % 5)}
               </span>
-            </div>
-            <Button
-              variant="ghost"
-              onClick={() => setRevealed((prev) => !prev)}
-              size="icon"
-            >
-              {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                void navigator.clipboard.writeText(key).then(() => {
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                });
-              }}
-              size="icon"
-            >
-              {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
-            </Button>
+              <span>{key.slice(-5)}</span>
+            </span>
           </div>
-          <div className="flex gap-1 mt-0.5 text-nowrap">
-            {createdOn && (
-              <span className="text-xs text-muted-foreground">
-                Created {getTimeAgo(createdOn)}.
-              </span>
-            )}{" "}
-            {expiresOn && expiresSoon && (
-              <span className="text-xs text-primary">
-                Expires in {daysUntilExpiry}{" "}
-                {daysUntilExpiry === 1 ? "day" : "days"}.
-              </span>
-            )}
-            {expiresOn && isExpired && (
-              <span className="text-xs text-primary">
-                Expired {daysUntilExpiry * -1} days ago.
-              </span>
-            )}
-          </div>
+          <Button
+            variant="ghost"
+            onClick={() => setRevealed((prev) => !prev)}
+            size="icon"
+          >
+            {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              void navigator.clipboard.writeText(key).then(() => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              });
+            }}
+            size="icon"
+          >
+            {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+          </Button>
         </div>
-        <div className="flex justify-end">
-          {isExpired && onDeleteKey && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                onDeleteKey();
-              }}
-            >
-              <TrashIcon size={16} />
-            </Button>
+        <div className="flex gap-1 mt-0.5 text-nowrap">
+          {createdOn && (
+            <span className="text-xs text-muted-foreground">
+              Created {getTimeAgo(createdOn)}.
+            </span>
+          )}{" "}
+          {expiresOn && expiresSoon && (
+            <span className="text-xs text-primary">
+              Expires in {daysUntilExpiry}{" "}
+              {daysUntilExpiry === 1 ? "day" : "days"}.
+            </span>
+          )}
+          {expiresOn && isExpired && (
+            <span className="text-xs text-primary">
+              Expired{" "}
+              {daysUntilExpiry === 0
+                ? "today."
+                : `${daysUntilExpiry * -1} days ago.`}
+            </span>
           )}
         </div>
       </div>
-    </div>
+      <div className="flex justify-end">
+        {isExpired && onDeleteKey && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <TrashIcon size={16} />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete API Key</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to delete this API key?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <DialogClose asChild>
+                  <Button
+                    onClick={() => {
+                      onDeleteKey();
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+    </motion.div>
   );
 };
