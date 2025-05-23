@@ -107,34 +107,39 @@ function loadEnv(configEnv: ConfigEnv, rootDir: string) {
   return { publicEnv, envPrefix };
 }
 
-async function hasConfigChanged(): Promise<boolean> {
+async function hasConfigChanged() {
   if (!config || !modifiedTimes) return true;
 
-  try {
-    for (const depPath of config.__meta.dependencies) {
-      const depStat = await stat(depPath);
-      const cachedMtime = modifiedTimes.get(depPath);
+  const files = [config.__meta.configPath, ...config.__meta.dependencies];
 
-      if (!cachedMtime || depStat.mtimeMs !== cachedMtime) {
-        return true;
-      }
-    }
-    return false;
+  try {
+    const hasChanged = await Promise.all(
+      files.map(async (depPath) => {
+        const depStat = await stat(depPath);
+        const cachedMtime = modifiedTimes?.get(depPath);
+        return !cachedMtime || depStat.mtimeMs !== cachedMtime;
+      }),
+    ).then((results) => results.some(Boolean));
+
+    return hasChanged;
   } catch {
     return true;
   }
 }
 
-async function updateModifiedTimes(loadedConfig: ConfigWithMeta) {
+async function updateModifiedTimes() {
+  if (!config) return;
+
+  const files = [config.__meta.configPath, ...config.__meta.dependencies];
+
   modifiedTimes = new Map();
-  for (const depPath of loadedConfig.__meta.dependencies) {
-    try {
+
+  await Promise.all(
+    files.map(async (depPath) => {
       const depStat = await stat(depPath);
-      modifiedTimes.set(depPath, depStat.mtimeMs);
-    } catch {
-      modifiedTimes.delete(depPath);
-    }
-  }
+      modifiedTimes?.set(depPath, depStat.mtimeMs);
+    }),
+  );
 }
 
 export async function loadZudokuConfig(
@@ -155,7 +160,6 @@ export async function loadZudokuConfig(
 
   try {
     config = await loadZudokuConfigWithMeta(rootDir);
-    await updateModifiedTimes(config);
 
     logger.info(
       colors.yellow(`loaded config file `) +
@@ -177,6 +181,8 @@ export async function loadZudokuConfig(
     }
 
     throw new Error("Failed to load Zudoku config");
+  } finally {
+    await updateModifiedTimes();
   }
 }
 
