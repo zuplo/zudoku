@@ -85,7 +85,7 @@ export const MdxPage = ({
 
   return (
     <div
-      className="grid grid-cols-1 xl:grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      className="grid grid-cols-1 xl:grid-cols-(--sidecar-grid-cols) gap-8 justify-between"
       data-pagefind-filter="section:markdown"
       data-pagefind-meta="section:markdown"
     >
@@ -96,7 +96,7 @@ export const MdxPage = ({
       <div
         className={cn(
           ProseClasses,
-          "max-w-full xl:w-full xl:max-w-3xl flex-1 flex-shrink pt-[--padding-content-top]",
+          "max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)",
         )}
       >
         {(category || title) && (

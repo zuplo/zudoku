@@ -9,7 +9,7 @@ export const PoweredByZudoku = ({ className }: { className?: string }) => (
     target="_blank"
     rel="noopener noreferrer"
     className={cn(
-      "flex justify-between items-center w-full border border-transparent hover:border-border rounded-full hover:shadow-sm h-7 px-3 text-nowrap hover:bg-muted/80 transition-all",
+      "flex justify-between items-center w-full border border-transparent hover:border-border rounded-full hover:shadow-xs h-7 px-3 text-nowrap hover:bg-muted/80 transition-all",
       className,
     )}
   >

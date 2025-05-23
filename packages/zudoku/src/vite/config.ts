@@ -1,8 +1,6 @@
-import autoprefixer from "autoprefixer";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import colors from "picocolors";
-import tailwindcss from "tailwindcss";
 import {
   type ConfigEnv,
   type InlineConfig,
@@ -12,7 +10,6 @@ import {
 } from "vite";
 import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
-import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { loadZudokuConfig } from "../config/loader.js";
@@ -235,31 +232,31 @@ export async function getViteConfig(
       removePluginHookSsrArgument: "warn",
       removeServerHot: "warn",
     },
-    css: {
-      postcss: {
-        plugins: [
-          tailwindcss({
-            ...tailwindConfig(config),
-            content: [
-              // Zudoku components and styles
-              // Tailwind seems to crash if it tries to parse compiled .js files
-              // as a workaround, we will just ship the source file and use those
-              // `${moduleDir}/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              `${config.__meta.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              // Include the config file and every file it depends on
-              config.__meta.configPath,
-              ...config.__meta.dependencies.map(
-                (dep) => `${path.dirname(config.__meta.configPath)}/${dep}`,
-              ),
-              `${dir}/src/**/*.{js,ts,jsx,tsx,md,mdx}`,
-              // All doc files
-              ...getDocsConfigFiles(config.docs, dir),
-            ],
-          }),
-          autoprefixer,
-        ],
-      },
-    },
+    // css: {
+    //   postcss: {
+    //     plugins: [
+    // tailwindcss({
+    //   ...tailwindConfig(config),
+    //   content: [
+    //     // Zudoku components and styles
+    //     // Tailwind seems to crash if it tries to parse compiled .js files
+    //     // as a workaround, we will just ship the source file and use those
+    //     // `${moduleDir}/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
+    //     `${config.__meta.moduleDir}/src/lib/**/*.{js,ts,jsx,tsx,md,mdx}`,
+    //     // Include the config file and every file it depends on
+    //     config.__meta.configPath,
+    //     ...config.__meta.dependencies.map(
+    //       (dep) => `${path.dirname(config.__meta.configPath)}/${dep}`,
+    //     ),
+    //     `${dir}/src/**/*.{js,ts,jsx,tsx,md,mdx}`,
+    //     // All doc files
+    //     ...getDocsConfigFiles(config.docs, dir),
+    //   ],
+    // }),
+    // autoprefixer,
+    //     ],
+    //   },
+    // },
   };
 
   // If the user has supplied a vite.config file, merge it with ours

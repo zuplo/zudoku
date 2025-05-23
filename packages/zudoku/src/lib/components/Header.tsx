@@ -19,6 +19,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
+import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
@@ -65,11 +66,13 @@ export const Header = memo(function HeaderInner() {
     .flatMap((p) => p.getProfileMenuItems(context))
     .sort((i) => i.weight ?? 0);
 
+  const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
+
   return (
-    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
+    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur-xs w-full">
       <Banner />
-      <div className="border-b">
-        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height] border-transparent">
+      <div className={borderBottom}>
+        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-(--top-header-height) border-transparent">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
@@ -122,7 +125,7 @@ export const Header = memo(function HeaderInner() {
               <Slotlet name="head-navigation-start" />
               {isAuthEnabled && (
                 <ClientOnly
-                  fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
+                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
                 >
                   {!isAuthenticated ? (
                     <Button variant="ghost" onClick={() => auth.login()}>
@@ -181,7 +184,7 @@ export const Header = memo(function HeaderInner() {
           </div>
         </div>
       </div>
-      <div className="border-b hidden lg:block">
+      <div className={cn("hidden lg:block", borderBottom)}>
         <div className="max-w-screen-2xl mx-auto border-transparent">
           <Slotlet name="top-navigation-before" />
           <TopNavigation />

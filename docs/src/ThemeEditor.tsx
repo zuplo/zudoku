@@ -217,16 +217,15 @@ export const ThemeEditor = () => {
                     )}
                     style={
                       {
-                        "--theme-primary": `hsl(${
-                          activeColor?.activeColor[resolvedTheme]
-                        })`,
+                        "--theme-primary":
+                          activeColor?.activeColor[resolvedTheme],
                       } as React.CSSProperties
                     }
                   >
                     <div
                       className="w-4 h-4 rounded-full me-2"
                       style={{
-                        backgroundColor: `hsl(${color.activeColor[resolvedTheme]})`,
+                        backgroundColor: color.activeColor[resolvedTheme],
                       }}
                     />
 

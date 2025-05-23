@@ -26,7 +26,7 @@ export const EnumValues = ({
       <span className="text-muted-foreground">Enum values: </span>
       {visibleValues.map((value) => (
         <div key={value}>
-          <SelectOnClick className="border rounded px-1 font-mono">
+          <SelectOnClick className="border rounded-sm px-1 font-mono">
             {value}
           </SelectOnClick>
         </div>
