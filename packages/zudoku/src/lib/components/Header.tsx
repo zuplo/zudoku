@@ -58,12 +58,23 @@ export const Header = memo(function HeaderInner() {
   const auth = useAuth();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
-  const { page, plugins } = context;
+  const { page, plugins, options } = context;
 
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
     .flatMap((p) => p.getProfileMenuItems(context))
     .sort((i) => i.weight ?? 0);
+
+  const logoLightSrc = page?.logo
+    ? /https?:\/\//.test(page.logo.src.light)
+      ? page.logo.src.light
+      : joinUrl(options.basePath, page.logo.src.light)
+    : undefined;
+  const logoDarkSrc = page?.logo
+    ? /https?:\/\//.test(page.logo.src.dark)
+      ? page.logo.src.dark
+      : joinUrl(options.basePath, page.logo.src.dark)
+    : undefined;
 
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
@@ -76,31 +87,17 @@ export const Header = memo(function HeaderInner() {
                 {page?.logo && (
                   <>
                     <img
-                      src={
-                        /https?:\/\//.test(page.logo.src.light)
-                          ? page.logo.src.light
-                          : joinUrl(
-                              import.meta.env.BASE_URL,
-                              page.logo.src.light,
-                            )
-                      }
+                      src={logoLightSrc}
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className="h-10 dark:hidden"
+                      className="max-h-[--top-header-height] dark:hidden"
                       loading="lazy"
                     />
                     <img
-                      src={
-                        /https?:\/\//.test(page.logo.src.dark)
-                          ? page.logo.src.dark
-                          : joinUrl(
-                              import.meta.env.BASE_URL,
-                              page.logo.src.dark,
-                            )
-                      }
+                      src={logoDarkSrc}
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className="h-10 hidden dark:block"
+                      className="max-h-[--top-header-height] hidden dark:block"
                       loading="lazy"
                     />
                   </>

@@ -31,18 +31,6 @@ await registerShiki(highlighter);
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
 ): ZudokuContextOptions => {
-  const fallbackLogoLight =
-    config.page?.logoUrl ??
-    "https://cdn.zudoku.dev/logos/zudoku-logo-full-light.svg";
-  const fallbackLogoDark =
-    config.page?.logoUrl ??
-    "https://cdn.zudoku.dev/logos/zudoku-logo-full-dark.svg";
-
-  const isUsingFallback =
-    !config.page?.logoUrl &&
-    !config.page?.logo?.src?.light &&
-    !config.page?.logo?.src?.dark;
-
   return {
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
@@ -52,14 +40,7 @@ export const convertZudokuConfigToOptions = (
       showPoweredBy:
         ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
         config.page?.showPoweredBy,
-      logo: {
-        ...(isUsingFallback ? { width: "130px" } : {}),
-        ...config.page?.logo,
-        src: {
-          light: config.page?.logo?.src?.light ?? fallbackLogoLight,
-          dark: config.page?.logo?.src?.dark ?? fallbackLogoDark,
-        },
-      },
+      logo: config.page?.logo,
     },
     slotlets: config.UNSAFE_slotlets,
     metadata: {

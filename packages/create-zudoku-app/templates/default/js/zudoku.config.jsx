@@ -1,5 +1,12 @@
 /** @type {import('zudoku').ZudokuConfig} */
 const config = {
+  page: {
+    logo: {
+      src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+      alt: "Zudoku",
+      width: "130px",
+    },
+  },
   topNavigation: [
     { id: "docs", label: "Documentation" },
     { id: "api", label: "API Reference" },
