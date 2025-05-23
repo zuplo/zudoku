@@ -4,7 +4,7 @@ import path from "path";
 import tailwindcss from "tailwindcss";
 import { defineConfig } from "vite";
 import tailwindConfig from "./src/app/tailwind.js";
-import { getStandaloneConfig } from "./src/vite/config.js";
+import { getStandaloneConfig } from "./src/config/loader.js";
 import vitePlugin from "./src/vite/plugin.js";
 
 const entries: Record<string, string> = {

@@ -6,8 +6,8 @@ import { runnerImport, loadEnv as viteLoadEnv, type ConfigEnv } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { getModuleDir } from "../vite/config.js";
 import { fileExists } from "./file-exists.js";
-import type { CommonConfig } from "./validators/common.js";
-import { validateConfig, type ZudokuConfig } from "./validators/validate.js";
+import type { ZudokuConfig } from "./validators/validate.js";
+import { validateConfig } from "./validators/validate.js";
 
 export type ConfigWithMeta = ZudokuConfig & {
   __meta: {
@@ -48,7 +48,7 @@ async function loadZudokuConfigWithMeta(
   const configPath = await getConfigFilePath(rootDir);
 
   const { module, dependencies } = await runnerImport<{
-    default: CommonConfig;
+    default: ZudokuConfig;
   }>(configPath, {
     server: {
       // this allows us to 'load' CSS files in the config
@@ -179,3 +179,13 @@ export async function loadZudokuConfig(
     throw new Error("Failed to load Zudoku config");
   }
 }
+
+export const getStandaloneConfig = (rootDir: string): ConfigWithMeta => ({
+  __meta: {
+    rootDir,
+    moduleDir: getModuleDir(),
+    mode: "standalone",
+    dependencies: [],
+    configPath: "",
+  },
+});

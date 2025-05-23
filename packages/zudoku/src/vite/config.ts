@@ -16,7 +16,7 @@ import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { loadZudokuConfig } from "../config/loader.js";
-import { CdnUrlSchema } from "../config/validators/common.js";
+import { CdnUrlSchema } from "../config/validators/validate.js";
 import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import vitePlugin from "./plugin.js";
@@ -34,16 +34,6 @@ const getDocsConfigFiles = (
 
   return docsArray.map((doc) => path.posix.join(baseDir, doc.files));
 };
-
-export const getStandaloneConfig = (rootDir: string): LoadedConfig => ({
-  __meta: {
-    rootDir,
-    moduleDir: getModuleDir(),
-    mode: "standalone",
-    dependencies: [],
-    configPath: "",
-  },
-});
 
 export function getModuleDir() {
   // NOTE: This is relative to the /dist folder because the dev server
