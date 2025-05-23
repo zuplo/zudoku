@@ -1,4 +1,3 @@
-import { DialogTrigger } from "@radix-ui/react-dialog";
 import {
   useMutation,
   useQueryClient,
@@ -7,54 +6,42 @@ import {
 import {
   CheckIcon,
   CopyIcon,
-  KeyRoundIcon,
+  EyeIcon,
+  EyeOffIcon,
   RotateCwIcon,
   TrashIcon,
 } from "lucide-react";
 import { useState } from "react";
-import { Link, Outlet } from "react-router";
-import { Alert, AlertDescription } from "zudoku/ui/Alert.js";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "zudoku/ui/AlertDialog.js";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "zudoku/ui/Dialog.js";
+import { Link } from "react-router";
+import { Card, CardHeader } from "zudoku/ui/Card.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slotlet } from "../../components/SlotletProvider.js";
-import { Badge } from "../../ui/Badge.js";
 import { Button } from "../../ui/Button.js";
 import { cn } from "../../util/cn.js";
-import { CreateApiKey } from "./CreateApiKey.js";
-import { ApiKeyService } from "./index.js";
+import { type ApiKey, type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();
   const queryClient = useQueryClient();
   const { data } = useSuspenseQuery({
-    queryFn: () => service.getKeys(context),
+    queryFn: () => service.getConsumers(context),
     queryKey: ["api-keys"],
     retry: false,
   });
 
   const deleteKeyMutation = useMutation({
-    mutationFn: (id: string) => {
+    mutationFn: ({
+      consumerId,
+      keyId,
+    }: {
+      consumerId: string;
+      keyId: string;
+    }) => {
       if (!service.deleteKey) {
         throw new Error("deleteKey not implemented");
       }
 
-      return service.deleteKey(id, context);
+      return service.deleteKey(consumerId, keyId, context);
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["api-keys"] });
@@ -72,47 +59,26 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["api-keys"] }),
   });
 
-  const [open, setOpen] = useState(false);
-
   return (
-    <div className="w-full h-full pt-[--padding-content-top] pb-[--padding-content-bottom]">
+    <div className="max-w-screen-lg h-full pt-[--padding-content-top] pb-[--padding-content-bottom]">
       <Slotlet name="api-keys-list-page" />
-      <Outlet />
 
-      <div className="flex justify-between mb-2 pb-3 items-end gap-4">
-        <div className="flex flex-col gap-2">
-          <h1 className="font-medium text-2xl">API Keys</h1>
-          <p className="text-sm text-muted-foreground max-w-prose">
-            Manage your API keys and create new ones. Do not share your API key
-            with others or expose it in the browser or other client-side code.
-          </p>
-        </div>
+      <div className="flex justify-between pb-3">
+        <h1 className="font-medium text-2xl">API Keys</h1>
         {service.createKey && (
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button>Create API Key</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create API Key</DialogTitle>
-                <DialogDescription>
-                  Create a new API key to use in your application.
-                </DialogDescription>
-              </DialogHeader>
-              <CreateApiKey service={service} onOpenChange={setOpen} />
-            </DialogContent>
-          </Dialog>
+          <Button asChild>
+            <Link to="/settings/api-keys/new">Create API Key</Link>
+          </Button>
         )}
       </div>
+      <p>Create, manage, and monitor your API keys</p>
 
       <Slotlet name="api-keys-list-page-before-keys" />
 
+      <div className="h-8"></div>
       {data.length === 0 ? (
         <div className="flex flex-col justify-center gap-4 items-center p-8 border rounded bg-muted/30 text-muted-foreground">
-          <div className="rounded-full bg-muted p-4">
-            <KeyRoundIcon size={32} />
-          </div>
-          <p className="text-center text-sm">
+          <p className="text-center">
             No API keys created yet.
             <br />
             Get started and create your first key.
@@ -126,119 +92,74 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       ) : (
         <ul
           className={cn(
-            "grid rounded-md border divide-y divide-border overflow-hidden",
-            "grid-cols-[1fr_max-content_min-content] gap-x-2",
-            "md:grid-cols-[4fr_max-content_max-content_max-content_minmax(min-content,1fr)] sm:gap-x-10",
+            "grid grid-cols-1 divide-y divide-border",
+            "lg:grid-cols-[1fr_min-content]",
           )}
         >
-          <div className="p-3 py-2 grid grid-cols-subgrid col-span-full bg-muted text-sm">
-            <div>Description</div>
-            <div>Key</div>
-            <div className="hidden md:block">Created</div>
-            <div className="hidden md:block">Expires</div>
-            <div></div>
-          </div>
-          {data.map((key) => (
-            <li
-              className="px-3 py-1.5 grid grid-cols-subgrid col-span-full items-center"
-              key={key.id}
+          {data.map((consumers) => (
+            <Card
+              className="grid grid-cols-subgrid col-span-full items-center mb-4"
+              key={consumers.id}
             >
-              <div className="max-w-md text-sm overflow-hidden text-ellipsis line-clamp-2 min-w-0 break-all">
-                {key.description ? (
-                  key.description
-                ) : (
-                  <span className="text-muted-foreground text-">
-                    Unnamed API Key
-                  </span>
-                )}
-              </div>
-              <RevealApiKey apiKey={key.key} />
-              <div className="text-muted-foreground text-sm text-nowrap hidden md:block">
-                {key.createdOn && new Date(key.createdOn).toLocaleString()}
-              </div>
-              <div className="text-muted-foreground text-sm text-nowrap hidden md:block">
-                {key.expiresOn ? (
-                  <>Expires on {new Date(key.expiresOn).toLocaleString()}</>
-                ) : (
-                  "Never"
-                )}
-              </div>
-              <div className="flex justify-end">
-                {service.rollKey && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button size="icon" title="Roll this key" variant="ghost">
-                        <RotateCwIcon size={16} />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Roll API Key</AlertDialogTitle>
-                      </AlertDialogHeader>
-                      {rollKeyMutation.isError && (
-                        <Alert variant="destructive">
-                          <AlertDescription>
-                            {rollKeyMutation.error.message}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                      <AlertDialogDescription>
-                        Are you sure you want to roll this API key? This will
-                        invalidate the current key and create a new one.
-                      </AlertDialogDescription>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </AlertDialogCancel>
-                        <Button
-                          variant="destructive"
-                          onClick={() => rollKeyMutation.mutate(key.id)}
-                        >
-                          Invalidate & Roll
-                        </Button>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-                {service.deleteKey && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost-destructive" size="icon">
-                        <TrashIcon size={16} />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete API Key</AlertDialogTitle>
-                      </AlertDialogHeader>
-                      {deleteKeyMutation.isError && (
-                        <Alert variant="destructive">
-                          <AlertDescription>
-                            {deleteKeyMutation.error.message}
-                          </AlertDescription>
-                        </Alert>
-                      )}
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this API key? This will
-                        permanently delete the key and it will no longer work.
-                      </AlertDialogDescription>
+              <CardHeader className="border-b col-span-full grid-cols-subgrid grid">
+                <div className="flex flex-col text-sm justify-center">
+                  <div className="font-medium text-lg">
+                    {consumers.name ?? consumers.id}
+                    <div className="text-muted-foreground text-xs">
+                      {consumers.createdOn}
+                    </div>
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    {consumers.createdOn && (
+                      <div>
+                        Created on{" "}
+                        {new Date(consumers.createdOn).toLocaleDateString()}
+                      </div>
+                    )}
+                    {consumers.expiresOn && (
+                      <div>
+                        Expires on{" "}
+                        {new Date(consumers.expiresOn).toLocaleDateString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                      <AlertDialogFooter>
-                        <AlertDialogCancel asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </AlertDialogCancel>
-                        <Button
-                          variant="destructive"
-                          onClick={() => deleteKeyMutation.mutate(key.id)}
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
+                <div className="flex justify-end">
+                  {service.rollKey && (
+                    <Button
+                      size="icon"
+                      title="Roll this key"
+                      variant="ghost"
+                      onClick={() => {
+                        if (!confirm("Do you want to roll this key?")) {
+                          return;
+                        }
+
+                        rollKeyMutation.mutate(consumers.id);
+                      }}
+                    >
+                      <RotateCwIcon size={16} />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+
+              <div className="divide-y col-span-full grid-cols-subgrid grid">
+                {consumers.apiKeys.map((apiKey) => (
+                  <RevealApiKey
+                    key={apiKey.id}
+                    apiKey={apiKey}
+                    onDeleteKey={() => {
+                      deleteKeyMutation.mutate({
+                        consumerId: consumers.id,
+                        keyId: apiKey.id,
+                      });
+                    }}
+                  />
+                ))}
               </div>
-            </li>
+            </Card>
           ))}
         </ul>
       )}
@@ -246,38 +167,120 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   );
 };
 
-const RevealApiKey = ({ apiKey }: { apiKey: string }) => {
+const getTimeAgo = (date: string) => {
+  const now = new Date();
+  const created = new Date(date);
+  const diffInSeconds = Math.floor((now.getTime() - created.getTime()) / 1000);
+
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+  if (diffInSeconds < 60) return rtf.format(-diffInSeconds, "second");
+  if (diffInSeconds < 3600)
+    return rtf.format(-Math.floor(diffInSeconds / 60), "minute");
+  if (diffInSeconds < 86400)
+    return rtf.format(-Math.floor(diffInSeconds / 3600), "hour");
+  if (diffInSeconds < 2592000)
+    return rtf.format(-Math.floor(diffInSeconds / 86400), "day");
+  if (diffInSeconds < 31536000)
+    return rtf.format(-Math.floor(diffInSeconds / 2592000), "month");
+  return rtf.format(-Math.floor(diffInSeconds / 31536000), "year");
+};
+
+const RevealApiKey = ({
+  apiKey,
+  onDeleteKey,
+}: {
+  apiKey: ApiKey;
+  onDeleteKey: () => void;
+}) => {
+  const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  return (
-    <div className="flex gap-0.5 items-center text-sm">
-      <Badge variant="secondary" className="font-mono">
-        {apiKey.slice(0, 4)}
-        <span className="hidden sm:inline">
-          {"•".repeat(Math.max(Math.min(20, apiKey.length - 8), 4))}
-        </span>
-        <span className="inline sm:hidden">
-          {"•".repeat(Math.max(Math.min(5, apiKey.length - 8), 4))}
-        </span>
-        {apiKey.slice(-4)}
-      </Badge>
+  const { key, createdOn, expiresOn } = apiKey;
+  const isExpired = expiresOn && new Date(expiresOn) < new Date();
+  const daysUntilExpiry = expiresOn
+    ? Math.ceil(
+        (new Date(expiresOn).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24),
+      )
+    : Infinity;
+  const expiresSoon = daysUntilExpiry <= 7 && !isExpired;
 
-      <Button
-        variant="ghost"
-        onClick={() => {
-          void navigator.clipboard.writeText(apiKey).then(() => {
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          });
-        }}
-        size="icon-xs"
-      >
-        {copied ? (
-          <CheckIcon className="text-green-600" size={15} />
-        ) : (
-          <CopyIcon size={15} />
-        )}
-      </Button>
+  return (
+    <div className="grid grid-cols-8">
+      <div className="grid col-span-6 grid-cols-subgrid p-6">
+        <div className="flex flex-col gap-1">
+          <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
+            <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
+              <div
+                className={cn(
+                  "rounded-full w-2 h-2 bg-emerald-400 mr-2",
+                  (expiresSoon || isExpired) && "bg-neutral-200",
+                )}
+              ></div>
+              <span>
+                <span className={revealed ? "" : "opacity-20"}>
+                  {revealed
+                    ? key.slice(0, -5)
+                    : "**** ".repeat(key.slice(0, -5).length / 5) +
+                      "*".repeat(key.slice(0, -5).length % 5)}
+                </span>
+                <span>{key.slice(-5)}</span>
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              onClick={() => setRevealed((prev) => !prev)}
+              size="icon"
+            >
+              {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                void navigator.clipboard.writeText(key).then(() => {
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                });
+              }}
+              size="icon"
+            >
+              {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+            </Button>
+          </div>
+          <div className="flex gap-1 mt-0.5">
+            {createdOn && (
+              <span className="text-xs text-muted-foreground">
+                Created {getTimeAgo(createdOn)}.
+              </span>
+            )}{" "}
+            {expiresOn && expiresSoon && (
+              <span className="text-xs text-primary">
+                Expires in {daysUntilExpiry}{" "}
+                {daysUntilExpiry === 1 ? "day" : "days"}.
+              </span>
+            )}
+            {expiresOn && isExpired && (
+              <span className="text-xs text-primary">
+                Expired {daysUntilExpiry * -1} days ago.
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="flex justify-end">
+          {isExpired && onDeleteKey && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                onDeleteKey();
+              }}
+            >
+              <TrashIcon size={16} />
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

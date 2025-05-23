@@ -4,5 +4,22 @@
     "version": "1.0.0",
     "title": "My Zuplo API"
   },
-  "paths": {}
+  "servers": [
+    {
+      "url": "https://jsonplaceholder.typicode.com/",
+      "description": "Example API server"
+    }
+  ],
+  "paths": {
+    "/todos": {
+      "get": {
+        "summary": "Get all API keys",
+        "responses": {
+          "200": {
+            "description": "A list of API keys"
+          }
+        }
+      }
+    }
+  }
 }
