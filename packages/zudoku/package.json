@@ -229,6 +229,7 @@
     "estree-util-value-to-estree": "3.3.3",
     "express": "5.1.0",
     "fast-equals": "5.2.2",
+    "framer-motion": "^12.12.2",
     "glob": "11.0.1",
     "graphql": "16.10.0",
     "graphql-type-json": "0.3.2",
