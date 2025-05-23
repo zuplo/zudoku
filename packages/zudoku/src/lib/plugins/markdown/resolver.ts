@@ -1,5 +1,7 @@
-import { ZudokuDocsConfig } from "../../../config/validators/common.js";
-import { ZudokuConfig } from "../../../config/validators/validate.js";
+import type {
+  ZudokuConfig,
+  ZudokuDocsConfig,
+} from "../../../config/validators/validate.js";
 
 const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
