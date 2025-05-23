@@ -1,6 +1,7 @@
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
+import { ZuploEnv } from "../app/env.js";
 import {
   findOutputPathOfServerConfig,
   loadZudokuConfig,
@@ -122,7 +123,7 @@ export async function runBuild(options: { dir: string }) {
         redirects: results.flatMap((r) => r.redirect ?? []),
       });
 
-      if (config.isZuplo) {
+      if (ZuploEnv.isZuplo) {
         if (!issuer) {
           throw new Error("Issuer is required for Zuplo");
         }
