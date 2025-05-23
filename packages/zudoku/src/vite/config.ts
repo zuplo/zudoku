@@ -9,14 +9,13 @@ import {
   type LogLevel,
   loadConfigFromFile,
   mergeConfig,
-  loadEnv as viteLoadEnv,
 } from "vite";
 import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import tailwindConfig from "../app/tailwind.js";
 import { logger } from "../cli/common/logger.js";
 import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
-import { tryLoadZudokuConfig } from "../config/loader.js";
+import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/common.js";
 import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -24,7 +23,6 @@ import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
-  forceReload?: boolean;
 };
 
 const getDocsConfigFiles = (
@@ -37,29 +35,6 @@ const getDocsConfigFiles = (
   return docsArray.map((doc) => path.posix.join(baseDir, doc.files));
 };
 
-function loadEnv(configEnv: ConfigEnv, rootDir: string) {
-  const envPrefix = ["ZUPLO_", "ZUDOKU_PUBLIC_"];
-  const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
-
-  process.env = { ...localEnv, ...process.env };
-
-  const publicEnv = Object.entries(process.env).reduce(
-    (val, [key]) => {
-      if (envPrefix.some((prefix) => key.startsWith(prefix))) {
-        val[key] = JSON.stringify(process.env[key]);
-      }
-      return val;
-    },
-    {} as Record<string, string>,
-  );
-
-  return { publicEnv, envPrefix };
-}
-
-let config: LoadedConfig | undefined;
-let envPrefix: string[] | undefined;
-let publicEnv: Record<string, string> | undefined;
-
 export const getStandaloneConfig = (rootDir: string): LoadedConfig => ({
   __meta: {
     rootDir,
@@ -70,48 +45,7 @@ export const getStandaloneConfig = (rootDir: string): LoadedConfig => ({
   },
 });
 
-export async function loadZudokuConfig(
-  configEnv: ConfigEnv,
-  rootDir: string,
-  forceReload?: boolean,
-): Promise<{
-  config: LoadedConfig;
-  envPrefix: string[];
-  publicEnv: Record<string, string>;
-}> {
-  if (!forceReload && config && envPrefix && publicEnv) {
-    return { config, envPrefix, publicEnv };
-  }
-
-  ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
-
-  try {
-    config = await tryLoadZudokuConfig(rootDir, getModuleDir());
-
-    logger.info(
-      colors.yellow(`loaded config file `) +
-        colors.dim(config.__meta.configPath),
-      { timestamp: true },
-    );
-
-    return { config, envPrefix, publicEnv };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
-    logger.error(colors.red(`Error loading Zudoku config:\n${errorMessage}`), {
-      timestamp: true,
-    });
-
-    if (config) {
-      // return the last valid config if it exists
-      return { config, envPrefix, publicEnv };
-    }
-
-    throw new Error("Failed to load Zudoku config");
-  }
-}
-
-function getModuleDir() {
+export function getModuleDir() {
   // NOTE: This is relative to the /dist folder because the dev server
   // runs the compiled JS files, but vite uses the raw TS files
   const moduleDir = fileURLToPath(new URL("../../", import.meta.url))
@@ -150,11 +84,7 @@ export async function getViteConfig(
 
   const handleConfigChange = async () => {
     try {
-      const { config: newConfig } = await loadZudokuConfig(
-        configEnv,
-        dir,
-        true,
-      );
+      const { config: newConfig } = await loadZudokuConfig(configEnv, dir);
       onConfigChange?.(newConfig);
 
       return newConfig;

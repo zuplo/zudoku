@@ -1,10 +1,28 @@
 import { stat } from "node:fs/promises";
 import path from "node:path";
+import colors from "picocolors";
 import type { RollupOutput, RollupWatcher } from "rollup";
-import { runnerImport } from "vite";
-import { type ConfigWithMeta } from "./common.js";
-import { type CommonConfig } from "./validators/common.js";
-import { validateConfig } from "./validators/validate.js";
+import { runnerImport, loadEnv as viteLoadEnv, type ConfigEnv } from "vite";
+import { logger } from "../cli/common/logger.js";
+import { getModuleDir } from "../vite/config.js";
+import { fileExists } from "./file-exists.js";
+import type { CommonConfig } from "./validators/common.js";
+import { validateConfig, type ZudokuConfig } from "./validators/validate.js";
+
+export type ConfigWithMeta = ZudokuConfig & {
+  __meta: {
+    rootDir: string;
+    moduleDir: string;
+    configPath: string;
+    mode: typeof process.env.ZUDOKU_ENV;
+    dependencies: string[];
+  };
+};
+
+let config: ConfigWithMeta | undefined;
+let envPrefix: string[] | undefined;
+let publicEnv: Record<string, string> | undefined;
+let modifiedTimes: Map<string, number> | undefined;
 
 const zudokuConfigFiles = [
   "zudoku.config.js",
@@ -13,11 +31,6 @@ const zudokuConfigFiles = [
   "zudoku.config.tsx",
   "zudoku.config.mjs",
 ];
-
-export const fileExists = (path: string) =>
-  stat(path)
-    .then(() => true)
-    .catch(() => false);
 
 async function getConfigFilePath(rootDir: string) {
   for (const fileName of zudokuConfigFiles) {
@@ -29,40 +42,30 @@ async function getConfigFilePath(rootDir: string) {
   throw new Error(`No zudoku config file found in project root.`);
 }
 
-async function loadZudokuConfig<TConfig>(
-  configPath: string,
-): Promise<{ dependencies: string[]; config: TConfig }> {
-  const { module, dependencies } = await runnerImport<{ default: TConfig }>(
-    configPath,
-    {
-      server: {
-        // this allows us to 'load' CSS files in the config
-        // see https://github.com/vitejs/vite/pull/19577
-        perEnvironmentStartEndDuringDev: true,
-      },
-    },
-  );
-
-  return {
-    dependencies: [configPath, ...dependencies],
-    config: module.default,
-  };
-}
-
-export async function tryLoadZudokuConfig<TConfig extends CommonConfig>(
+async function loadZudokuConfigWithMeta(
   rootDir: string,
-  moduleDir: string,
-): Promise<ConfigWithMeta<TConfig>> {
+): Promise<ConfigWithMeta> {
   const configPath = await getConfigFilePath(rootDir);
 
-  const { config, dependencies } = await loadZudokuConfig<TConfig>(configPath);
+  const { module, dependencies } = await runnerImport<{
+    default: CommonConfig;
+  }>(configPath, {
+    server: {
+      // this allows us to 'load' CSS files in the config
+      // see https://github.com/vitejs/vite/pull/19577
+      perEnvironmentStartEndDuringDev: true,
+    },
+  });
+
+  const config = module.default;
+
   validateConfig(config);
 
-  const configWithMetadata: ConfigWithMeta<TConfig> = {
+  const configWithMetadata: ConfigWithMeta = {
     ...config,
     __meta: {
       rootDir,
-      moduleDir,
+      moduleDir: getModuleDir(),
       mode: process.env.ZUDOKU_ENV,
       dependencies,
       configPath,
@@ -87,4 +90,92 @@ export function findOutputPathOfServerConfig(
     }
   }
   throw new Error("Could not find server config output file");
+}
+
+function loadEnv(configEnv: ConfigEnv, rootDir: string) {
+  const envPrefix = ["ZUPLO_", "ZUDOKU_PUBLIC_"];
+  const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
+
+  process.env = { ...localEnv, ...process.env };
+
+  const publicEnv = Object.fromEntries(
+    Object.entries(process.env)
+      .filter(([key]) => envPrefix.some((prefix) => key.startsWith(prefix)))
+      .map(([key, value]) => [key, JSON.stringify(value)]),
+  );
+
+  return { publicEnv, envPrefix };
+}
+
+async function hasConfigChanged(): Promise<boolean> {
+  if (!config || !modifiedTimes) return true;
+
+  try {
+    for (const depPath of config.__meta.dependencies) {
+      const depStat = await stat(depPath);
+      const cachedMtime = modifiedTimes.get(depPath);
+
+      if (!cachedMtime || depStat.mtimeMs !== cachedMtime) {
+        return true;
+      }
+    }
+    return false;
+  } catch {
+    return true;
+  }
+}
+
+async function updateModifiedTimes(loadedConfig: ConfigWithMeta) {
+  modifiedTimes = new Map();
+  for (const depPath of loadedConfig.__meta.dependencies) {
+    try {
+      const depStat = await stat(depPath);
+      modifiedTimes.set(depPath, depStat.mtimeMs);
+    } catch {
+      modifiedTimes.delete(depPath);
+    }
+  }
+}
+
+export async function loadZudokuConfig(
+  configEnv: ConfigEnv,
+  rootDir: string,
+): Promise<{
+  config: ConfigWithMeta;
+  envPrefix: string[];
+  publicEnv: Record<string, string>;
+}> {
+  const shouldReload = await hasConfigChanged();
+
+  if (!shouldReload && config && envPrefix && publicEnv) {
+    return { config, envPrefix, publicEnv };
+  }
+
+  ({ publicEnv, envPrefix } = loadEnv(configEnv, rootDir));
+
+  try {
+    config = await loadZudokuConfigWithMeta(rootDir);
+    await updateModifiedTimes(config);
+
+    logger.info(
+      colors.yellow(`loaded config file `) +
+        colors.dim(config.__meta.configPath),
+      { timestamp: true },
+    );
+
+    return { config, envPrefix, publicEnv };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    logger.error(colors.red(`Error loading Zudoku config:\n${errorMessage}`), {
+      timestamp: true,
+    });
+
+    if (config) {
+      // return the last valid config if it exists
+      return { config, envPrefix, publicEnv };
+    }
+
+    throw new Error("Failed to load Zudoku config");
+  }
 }
