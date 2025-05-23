@@ -47,6 +47,7 @@ class OpenIdAuthPlugin extends AuthenticationPlugin {
 export class OpenIDAuthenticationProvider implements AuthenticationProvider {
   protected client: oauth.Client;
   protected issuer: string;
+  protected metadata: string;
   protected authorizationServer: oauth.AuthorizationServer | undefined;
 
   protected callbackUrlPath: string;
@@ -64,6 +65,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   constructor({
     issuer,
+    metadata,
     audience,
     clientId,
     redirectToAfterSignUp,
@@ -78,6 +80,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     };
     this.audience = audience;
     this.issuer = issuer;
+    this.metadata = metadata ?? issuer;
     // This is the callback URL for the OAuth provider. So it needs the base path.
     this.callbackUrlPath = joinUrl(basePath, OPENID_CALLBACK_PATH);
     this.scopes = scopes ?? ["openid", "profile", "email"];
@@ -89,7 +92,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
 
   protected async getAuthServer() {
     if (!this.authorizationServer) {
-      const issuerUrl = new URL(this.issuer);
+      const issuerUrl = new URL(this.metadata);
       const response = await oauth.discoveryRequest(issuerUrl);
       this.authorizationServer = await oauth.processDiscoveryResponse(
         issuerUrl,
