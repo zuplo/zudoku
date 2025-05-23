@@ -1,22 +1,28 @@
-import { KeyRoundIcon } from "lucide-react";
+import { FileKey2Icon } from "lucide-react";
 import { type RouteObject } from "react-router";
-import { ZudokuContext } from "../../core/ZudokuContext.js";
+import { type ZudokuContext } from "../../core/ZudokuContext.js";
 import {
   type ApiIdentityPlugin,
   type ZudokuPlugin,
-  ProfileMenuPlugin,
+  type ProfileMenuPlugin,
 } from "../../core/plugins.js";
+import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
-import { ApiKeyDialog } from "./ApiKeyDialog.js";
+import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
-const DEFAULT_API_KEY_ENDPOINT =
-  "https://zudoku-rewiringamerica-main-ef9c9c0.d2.zuplo.dev";
+
+const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
+// const DEFAULT_API_KEY_ENDPOINT =
+//   "https://zudoku-duck-main-5e0fa1a.d2.zuplo.dev/v2/client";
 
 export type ApiKeyService = {
-  getKeys: (context: ZudokuContext) => Promise<ApiKey[]>;
-  checkIn?: (context: ZudokuContext) => Promise<void>;
-  rollKey?: (id: string, context: ZudokuContext) => Promise<void>;
-  deleteKey?: (id: string, context: ZudokuContext) => Promise<void>;
+  getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
+  rollKey?: (consumerId: string, context: ZudokuContext) => Promise<void>;
+  deleteKey?: (
+    consumerId: string,
+    keyId: string,
+    context: ZudokuContext,
+  ) => Promise<void>;
   updateKeyDescription?: (
     apiKey: { id: string; description: string },
     context: ZudokuContext,
@@ -27,6 +33,9 @@ export type ApiKeyService = {
     context: ZudokuContext,
   ) => Promise<void>;
 };
+
+const DEPLOYMENT_NAME = "apricot-rattlesnake-main-3f502c6";
+// const DEPLOYMENT_NAME = "zudoku-apikeys-poc-main-c9ec5aa";
 
 export type GetApiKeysOptions = ApiKeyService | { endpoint: string } | object;
 
@@ -39,87 +48,71 @@ export interface ApiKey {
   updatedOn?: string;
   expiresOn?: string;
   key: string;
-  previousKeys?: Pick<
-    ApiKey,
-    "key" | "createdOn" | "updatedOn" | "expiresOn"
-  >[];
+}
+
+export interface ApiConsumer {
+  id: string;
+  name: string;
+  apiKeys: ApiKey[];
+  description?: string;
+  createdOn?: string;
+  updatedOn?: string;
+  expiresOn?: string;
+  key?: ApiKey;
 }
 
 const createDefaultHandler = (endpoint: string): ApiKeyService => {
   return {
-    checkIn: async (context) => {
-      const response = await fetch(
-        await context.signRequest(
-          new Request(endpoint + `/v1/developer/check-in`, {
-            method: "POST",
-            headers: {
-              "x-zudoku-url": window.location.origin,
-            },
-          }),
-        ),
-      );
-      console.log(response);
-
-      invariant(response.ok, "Failed to check in");
-    },
-    deleteKey: async (id, context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys/${id}`, {
-        headers: {
-          "x-zudoku-url": window.location.origin,
+    deleteKey: async (consumerId, keyId, context) => {
+      const request = new Request(
+        endpoint + `/${DEPLOYMENT_NAME}/consumers/${consumerId}/keys/${keyId}`,
+        {
+          method: "DELETE",
         },
-        method: "DELETE",
-      });
-
+      );
       await context.signRequest(request);
 
       const response = await fetch(request);
       invariant(response.ok, "Failed to delete API key");
     },
-    rollKey: async (id, context) => {
+    rollKey: async (consumerId, context) => {
       const response = await fetch(
         await context.signRequest(
-          new Request(endpoint + `/v1/developer/api-keys/${id}/key`, {
-            method: "DELETE",
-          }),
+          new Request(
+            endpoint + `/${DEPLOYMENT_NAME}/consumers/${consumerId}/roll-key`,
+            {
+              method: "POST",
+            },
+          ),
         ),
       );
       invariant(response.ok, "Failed to delete API key");
     },
-    getKeys: async (context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys`, {
-        headers: {
-          "x-zudoku-url": window.location.origin,
-        },
-      });
-
+    getConsumers: async (context) => {
+      const request = new Request(endpoint + `/${DEPLOYMENT_NAME}/consumers`);
       await context.signRequest(request);
 
       const keys = await fetch(request);
       invariant(keys.ok, "Failed to fetch API keys");
 
-      return (await keys.json()).data
-        .flatMap(
-          (consumer: {
+      const data = (await keys.json()) as {
+        data: [
+          {
             id: string;
             name: string;
-            apiKeys: ApiKey[];
-            description: string;
-          }) => {
-            return consumer.apiKeys.at(0)
-              ? {
-                  ...consumer.apiKeys.at(0),
-                  description: consumer.description,
-                  id: consumer.name,
-                  previousKeys: consumer.apiKeys.slice(1),
-                }
-              : [];
+            apiKeys: {
+              data: ApiKey[];
+            };
           },
-        )
-        .toSorted(
-          (a: ApiKey, b: ApiKey) =>
-            new Date(b.createdOn ?? "").getTime() -
-            new Date(a.createdOn ?? "").getTime(),
-        );
+        ];
+      };
+
+      return data.data.map((consumer) => ({
+        id: consumer.id,
+        name: consumer.name,
+        apiKeys: consumer.apiKeys.data,
+        key: consumer.apiKeys.data.at(0),
+      }));
     },
   };
 };
@@ -134,60 +127,61 @@ export const apiKeyPlugin = (
     "endpoint" in options ? options.endpoint : DEFAULT_API_KEY_ENDPOINT;
 
   const service =
-    "getKeys" in options ? options : createDefaultHandler(endpoint);
-
-  let context: ZudokuContext | undefined;
+    "getConsumers" in options ? options : createDefaultHandler(endpoint);
 
   return {
-    initialize: async (c) => {
-      context = c;
-    },
-    events: {
-      auth: ({ prev, next }) => {
-        if (!prev.isAuthenticated && next.isAuthenticated) {
-          void service.checkIn?.(context!);
-        }
-      },
-    },
     getProfileMenuItems: () => [
       {
         label: "API Keys",
         path: "/settings/api-keys",
         category: "middle",
-        icon: KeyRoundIcon,
+        icon: FileKey2Icon,
       },
     ],
+    getSidebar: async (path, context) => {
+      return [
+        {
+          type: "link",
+          label: "API Keys",
+          icon: FileKey2Icon,
+          href: "/settings/api-keys",
+        },
+      ];
+    },
     getIdentities: async (context) => {
       try {
-        const keys = await service.getKeys(context);
+        const consumers = await service.getConsumers(context);
 
-        return keys.map((key) => ({
+        return consumers.map((consumer) => ({
           authorizeRequest: (request) => {
-            request.headers.set("Authorization", `Bearer ${key.key}`);
+            request.headers.set(
+              "Authorization",
+              `Bearer ${consumer.apiKeys.at(0)?.key}`,
+            );
             return request;
           },
-          id: key.id,
-          label: key.description ?? key.id,
+          id: consumer.id,
+          label: consumer.description ?? consumer.id,
         }));
       } catch {
         return [];
       }
     },
-    getProtectedRoutes: () => {
-      return ["/settings/api-keys"];
-    },
     getRoutes: (): RouteObject[] => {
+      // TODO: Make lazy
       return [
         {
-          path: "/settings/api-keys",
-          element: <SettingsApiKeys service={service} />,
+          element: <ProtectedRoute />,
+          errorElement: <RouterError />,
           children: [
             {
-              path: ":id",
-              element: (
-                <ApiKeyDialog service={service} onOpenChange={() => {}} />
-              ),
+              path: "/settings/api-keys",
+              element: <SettingsApiKeys service={service} />,
             },
+            // {
+            //   path: "/settings/api-keys/new",
+            //   element: <CreateApiKey service={service} />,
+            // },
           ],
         },
       ];
