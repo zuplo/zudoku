@@ -1,7 +1,7 @@
 import { type Auth0AuthenticationConfig } from "../../../config/config.js";
 import {
-  type AuthenticationProviderPlugin,
   type AuthenticationProviderInitializer,
+  type AuthenticationProviderPlugin,
 } from "../authentication.js";
 import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
