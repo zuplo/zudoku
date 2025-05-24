@@ -1,9 +1,15 @@
 import { type Auth0AuthenticationConfig } from "../../../config/config.js";
-import { type AuthenticationProviderInitializer } from "../authentication.js";
+import {
+  type AuthenticationProviderPlugin,
+  type AuthenticationProviderInitializer,
+} from "../authentication.js";
 import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
 
-class Auth0AuthenticationProvider extends OpenIDAuthenticationProvider {
+class Auth0AuthenticationProvider
+  extends OpenIDAuthenticationProvider
+  implements AuthenticationProviderPlugin
+{
   constructor(config: Auth0AuthenticationConfig) {
     super({
       ...config,

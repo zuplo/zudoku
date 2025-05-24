@@ -6,16 +6,17 @@ import {
 } from "@supabase/supabase-js";
 import { type SupabaseAuthenticationConfig } from "../../../config/config.js";
 import {
-  type AuthenticationProvider,
   type AuthenticationProviderInitializer,
+  type AuthenticationProviderPlugin,
 } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState, type UserProfile } from "../state.js";
 
-class SupabaseAuthPlugin extends AuthenticationPlugin {}
-
-class SupabaseAuthenticationProvider implements AuthenticationProvider {
+class SupabaseAuthenticationProvider
+  extends AuthenticationPlugin
+  implements AuthenticationProviderPlugin
+{
   private readonly client: SupabaseClient;
   private readonly provider: Provider;
   private readonly redirectToAfterSignUp: string;
@@ -31,6 +32,7 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
     redirectToAfterSignOut,
     basePath,
   }: SupabaseAuthenticationConfig) {
+    super();
     this.provider = provider;
     this.client = createClient(supabaseUrl, supabaseKey, {
       auth: {
@@ -138,8 +140,6 @@ class SupabaseAuthenticationProvider implements AuthenticationProvider {
       providerData: undefined,
     });
   };
-
-  getAuthenticationPlugin = () => new SupabaseAuthPlugin();
 
   onPageLoad = async () => {
     const { data, error } = await this.client.auth.getSession();

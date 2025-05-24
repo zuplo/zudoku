@@ -4,8 +4,8 @@ import { type OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import {
-  type AuthenticationProvider,
   type AuthenticationProviderInitializer,
+  type AuthenticationProviderPlugin,
 } from "../authentication.js";
 import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
@@ -25,26 +25,10 @@ export interface OpenIdProviderData {
 
 export const OPENID_CALLBACK_PATH = "/oauth/callback";
 
-class OpenIdAuthPlugin extends AuthenticationPlugin {
-  constructor(private handleCallback: () => Promise<string>) {
-    super();
-  }
-  getRoutes() {
-    return [
-      ...super.getRoutes(),
-      {
-        path: OPENID_CALLBACK_PATH,
-        element: (
-          <ClientOnly>
-            <CallbackHandler handleCallback={this.handleCallback} />
-          </ClientOnly>
-        ),
-      },
-    ];
-  }
-}
-
-export class OpenIDAuthenticationProvider implements AuthenticationProvider {
+export class OpenIDAuthenticationProvider
+  extends AuthenticationPlugin
+  implements AuthenticationProviderPlugin
+{
   protected client: oauth.Client;
   protected issuer: string;
   protected authorizationServer: oauth.AuthorizationServer | undefined;
@@ -72,6 +56,7 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     basePath,
     scopes,
   }: OpenIDAuthenticationConfig) {
+    super();
     this.client = {
       client_id: clientId,
       token_endpoint_auth_method: "none",
@@ -378,10 +363,18 @@ export class OpenIDAuthenticationProvider implements AuthenticationProvider {
     return redirectTo;
   };
 
-  getAuthenticationPlugin() {
-    // TODO: This API is a bit messy, we need to refactor auth plugins/providers
-    // to remove the extra layers of abstraction.
-    return new OpenIdAuthPlugin(this.handleCallback);
+  getRoutes() {
+    return [
+      ...super.getRoutes(),
+      {
+        path: OPENID_CALLBACK_PATH,
+        element: (
+          <ClientOnly>
+            <CallbackHandler handleCallback={this.handleCallback} />
+          </ClientOnly>
+        ),
+      },
+    ];
   }
 }
 
