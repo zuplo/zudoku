@@ -197,7 +197,6 @@ const config: ZudokuConfig = {
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],
-
   docs: {
     files: "/pages/**/*.mdx",
   },

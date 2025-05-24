@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactElement } from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Sidebar } from "../../config/validators/SidebarSchema.js";
+import type { AuthenticationProviderPlugin } from "../authentication/authentication.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import type {
   ApiIdentity,
@@ -15,7 +16,8 @@ export type ZudokuPlugin =
   | NavigationPlugin
   | ApiIdentityPlugin
   | SearchProviderPlugin
-  | EventConsumerPlugin;
+  | EventConsumerPlugin
+  | AuthenticationProviderPlugin;
 
 export type { RouteObject };
 
@@ -82,6 +84,11 @@ export const isNavigationPlugin = (
   obj: ZudokuPlugin,
 ): obj is NavigationPlugin =>
   "getRoutes" in obj && typeof obj.getRoutes === "function";
+
+export const isAuthenticationPlugin = (
+  obj: ZudokuPlugin,
+): obj is AuthenticationProviderPlugin =>
+  "signUp" in obj && typeof obj.signUp === "function";
 
 export const isSearchPlugin = (
   obj: ZudokuPlugin,
