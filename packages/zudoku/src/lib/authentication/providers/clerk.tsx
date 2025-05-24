@@ -1,10 +1,14 @@
 import type { Clerk } from "@clerk/clerk-js";
+import { LogOutIcon } from "lucide-react";
 import { type ZudokuPlugin } from "zudoku/plugins";
 import { type ClerkAuthenticationConfig } from "../../../config/config.js";
 import {
   type AuthenticationProviderInitializer,
   type AuthenticationProviderPlugin,
 } from "../authentication.js";
+import { SignIn } from "../components/SignIn.js";
+import { SignOut } from "../components/SignOut.js";
+import { SignUp } from "../components/SignUp.js";
 import { useAuthState } from "../state.js";
 
 const clerkAuth: AuthenticationProviderInitializer<
@@ -73,6 +77,33 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   return {
+    getRoutes: () => {
+      return [
+        {
+          path: "/signout",
+          element: <SignOut />,
+        },
+        {
+          path: "/signin",
+          element: <SignIn />,
+        },
+        {
+          path: "/signup",
+          element: <SignUp />,
+        },
+      ];
+    },
+
+    getProfileMenuItems() {
+      return [
+        {
+          label: "Logout",
+          path: "/signout",
+          category: "bottom",
+          icon: LogOutIcon,
+        } as const,
+      ];
+    },
     initialize: async () => {
       const clerk = await ensureLoaded;
 

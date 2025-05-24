@@ -70,8 +70,8 @@ export const convertZudokuConfigToOptions = (
     sidebars: configuredSidebar,
     topNavigation: config.topNavigation,
     mdx: config.mdx,
-    authentication: configuredAuthProvider,
     plugins: [
+      ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...configuredDocsPlugins,
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
