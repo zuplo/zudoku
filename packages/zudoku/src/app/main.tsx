@@ -79,7 +79,6 @@ export const convertZudokuConfigToOptions = (
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
       ...configuredApiCatalogPlugins,
-      ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
