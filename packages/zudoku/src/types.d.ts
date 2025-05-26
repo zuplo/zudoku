@@ -46,7 +46,7 @@ declare module "virtual:zudoku-config" {
 }
 declare module "virtual:zudoku-auth" {
   export const configuredAuthProvider:
-    | import("./lib/authentication/authentication.ts").AuthenticationProvider
+    | import("./lib/authentication/authentication.ts").AuthenticationPlugin
     | undefined;
 }
 

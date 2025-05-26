@@ -9,7 +9,7 @@ import type {
   FooterSchema,
   TopNavigationItem,
 } from "../../config/validators/validate.js";
-import type { AuthenticationProvider } from "../authentication/authentication.js";
+import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { Slotlets } from "../components/SlotletProvider.js";
@@ -18,6 +18,7 @@ import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
 import {
   isApiIdentityPlugin,
+  isAuthenticationPlugin,
   isEventConsumerPlugin,
   isNavigationPlugin,
   type NavigationPlugin,
@@ -81,7 +82,7 @@ export type ZudokuContextOptions = {
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
   page?: Page;
-  authentication?: AuthenticationProvider;
+  authentication?: AuthenticationPlugin;
   topNavigation?: TopNavigationItem[];
   sidebars?: SidebarConfig;
   plugins?: ZudokuPlugin[];
@@ -122,7 +123,7 @@ export class ZudokuContext {
     this.topNavigation = options.topNavigation ?? [];
     this.sidebars = options.sidebars ?? {};
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
-    this.authentication = options.authentication;
+    this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.meta = options.metadata;
     this.page = options.page;
     this.plugins.forEach((plugin) => {
