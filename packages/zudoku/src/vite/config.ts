@@ -167,6 +167,7 @@ export async function getViteConfig(
       chunkSizeWarningLimit: 1500,
     },
     experimental: {
+      enableNativePlugin: "resolver",
       renderBuiltUrl(filename) {
         if (cdnUrl?.base && [".js", ".css"].includes(path.extname(filename))) {
           return joinUrl(cdnUrl.base, filename);
@@ -180,9 +181,6 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "es2022",
-      },
       entries: [
         configEnv.isSsrBuild
           ? getAppServerEntryPath()

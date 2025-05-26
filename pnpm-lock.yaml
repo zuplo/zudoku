@@ -457,7 +457,7 @@ importers:
         version: 0.5.16(tailwindcss@4.1.7)
       '@tailwindcss/vite':
         specifier: 4.1.7
-        version: 4.1.7(vite@6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1))
+        version: 4.1.7(rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1))
       '@tanem/react-nprogress':
         specifier: 5.0.55
         version: 5.0.55(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -472,7 +472,7 @@ importers:
         version: 19.1.2(@types/react@19.1.1)
       '@vitejs/plugin-react':
         specifier: 4.4.1
-        version: 4.4.1(vite@6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1))
+        version: 4.4.1(rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1))
       '@zudoku/httpsnippet':
         specifier: 10.0.9
         version: 10.0.9
@@ -629,9 +629,6 @@ importers:
       remark-rehype:
         specifier: ^11.1.2
         version: 11.1.2
-      rollup:
-        specifier: 4.40.1
-        version: 4.40.1
       semver:
         specifier: 7.7.1
         version: 7.7.1
@@ -672,8 +669,8 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
       vite:
-        specifier: 6.3.5
-        version: 6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1)
+        specifier: npm:rolldown-vite@latest
+        version: rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1)
       yaml:
         specifier: 2.7.1
         version: 2.7.1
@@ -2837,6 +2834,13 @@ packages:
     peerDependencies:
       '@opentelemetry/api': ^1.1.0
 
+  '@oxc-project/runtime@0.72.2':
+    resolution: {integrity: sha512-J2lsPDen2mFs3cOA1gIBd0wsHEhum2vTnuKIRwmj3HJJcIz/XgeNdzvgSOioIXOJgURIpcDaK05jwaDG1rhDwg==}
+    engines: {node: '>=6.9.0'}
+
+  '@oxc-project/types@0.72.2':
+    resolution: {integrity: sha512-il5RF8AP85XC0CMjHF4cnVT9nT/v/ocm6qlZQpSiAR9qBbQMGkFKloBZwm7PcnOdiUX97yHgsKM7uDCCWCu3tg==}
+
   '@pagefind/darwin-arm64@1.4.0-alpha.1':
     resolution: {integrity: sha512-b9Pw+J8wX8o0OxeIQeQU3lmcE8n8/nKT8TKpUjKHYdsbVdgNbITHkVr/g5JFUl3zo/qet4ZY3ZZQkFL7l8kNzw==}
     cpu: [arm64]
@@ -3470,6 +3474,69 @@ packages:
 
   '@repeaterjs/repeater@3.0.6':
     resolution: {integrity: sha512-Javneu5lsuhwNCryN+pXH93VPQ8g0dBX7wItHFgYiwQmzE1sVdg5tWHiOgHywzL2W21XQopa7IwIEnNbmeUJYA==}
+
+  '@rolldown/binding-darwin-arm64@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-6hkP5kUK1MzFao7sk6mohXOK4xA6dhBJgpu2jMHTMM0QZ5le3zCcZ9cj/+P5GrgBpnV7Dgk7fSTqcE3ryLARAw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@rolldown/binding-darwin-x64@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-CVh4x4iwQLgWAQFODhX5Sx5wZTdKSlshZ9WXo1rPV+LNUPjEn1AZdpX6WI9mIF+9qXfOq+Rs1OgqHqA/B286ng==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@rolldown/binding-freebsd-x64@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-zYuga7WSt9auD5cKXYtuA3X9VZ7+BBQozou3r9PbHvAP7LlZucQZzReyU6rKXg1ckac1QngNm5vUb3ox2Qv68w==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@rolldown/binding-linux-arm-gnueabihf@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-YUBvJl+ffMguQBoy03vk7u8+0vUqKA5T39Mw1VPwqNKyluTzIOvIEXzM6rPib2RrSvs0eY48TTbV6bee9Ruh9A==}
+    cpu: [arm]
+    os: [linux]
+
+  '@rolldown/binding-linux-arm64-gnu@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-xBbJvtdPN1PnANS/hLNzDpuozorqobObc2QDibkPILwCq8fWlyu20l5WPEQaCTmnz5Gz9qjr/Eqzoid51m+1MA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rolldown/binding-linux-arm64-musl@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-e3jRs4+S79cnM7nksMIo2vrIgDIgAA5sdXOmK7R7qMWBsjSQX/i59XoIZlb+6LX5DvrGFDCzgqzfe5qX/s7BHw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rolldown/binding-linux-x64-gnu@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-y/lIlst8+vQ7matZREoWWrvJJehq2S2Hwq4XvZmmebdFD2jUHSpa6cSN/vyWYpT9F2stNzu/qxNFS9PlPgtSfA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rolldown/binding-linux-x64-musl@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-giMW/lKHOfrLWHr2qICPFWEGzMROFboh8CZxDSQjIEPCwzfENQxRgJpJdkdA/RdKuqk2AqwfW4qfE7deTPy+IA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rolldown/binding-wasm32-wasi@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-IB8wB+Llk7AkHoTqw9j99ArvmzF52oh1X9nl4KLUXLiBevdykxSrFCZUu44guPde2e5OnPxwyHRmyE+Ieu+r5g==}
+    engines: {node: '>=14.21.3'}
+    cpu: [wasm32]
+
+  '@rolldown/binding-win32-arm64-msvc@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-uHEL13Ey9Q8FWufCc0HlvzDLYxdXyqIxV+ngbsWYkC/sbhdPU28EEl39pM4t3yQZpIVeYYRfcSLApV5OyxeWvA==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@rolldown/binding-win32-ia32-msvc@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-qnMKSVGi7evdbY9Wh7i2KC4GKELyeQi2+DP2QmTEs6cupv6jB/HOEOLUSoURbzMAkihwVDIcVl34Z1ezEDLg0A==}
+    cpu: [ia32]
+    os: [win32]
+
+  '@rolldown/binding-win32-x64-msvc@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-GBkOvOJk0x9RreZK8AONpFJMjvEK4kGH2k+AVGdvXb97GC+3y7iQkuxPZ9SeXqbVg76lwiGKbEJcSftLSS3TFg==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rolldown/pluginutils@1.0.0-beta.10-commit.174c548':
+    resolution: {integrity: sha512-KPEn79vaz3R6/jQGWsGVpOYnZT1Ro+fDRC63JEtbskHGzg650ZQk/+ou9v6g2GZmIEy42zTSsCACCzd2v4xFmw==}
 
   '@rollup/pluginutils@5.1.0':
     resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
@@ -4578,6 +4645,10 @@ packages:
   ansi-styles@6.2.1:
     resolution: {integrity: sha512-bN798gFfQX+viw3R7yrGWRqnrN2oRkEkUjjl4JNn4E8GxxbjtG3FbrEIIY3l8/hrwUwIeCZvi4QuOTP4MErVug==}
     engines: {node: '>=12'}
+
+  ansis@4.1.0:
+    resolution: {integrity: sha512-BGcItUBWSMRgOCe+SVZJ+S7yTRG0eGt9cXAHev72yuGcY23hnLA7Bky5L/xLyPINoSN95geovfBkqoTlNZYa7w==}
+    engines: {node: '>=14'}
 
   arch@2.2.0:
     resolution: {integrity: sha512-Of/R0wqp83cgHozfIYLbBMnej79U/SVGOOyuB3VVFv1NRM/PSFMK12x9KVtiYzJqmnU5WR2qp0Z5rHb7sWGnFQ==}
@@ -8085,6 +8156,50 @@ packages:
   roarr@7.21.1:
     resolution: {integrity: sha512-3niqt5bXFY1InKU8HKWqqYTYjtrBaxBMnXELXCXUYgtNYGUtZM5rB46HIC430AyacL95iEniGf7RgqsesykLmQ==}
     engines: {node: '>=18.0'}
+
+  rolldown-vite@6.3.16:
+    resolution: {integrity: sha512-aXSghipLk+1W3ku4JdZPAYH9io6m6yi4mEzmuhXZ3M+68TTJyDiXeWN8C13N7ClvwTN3Ckc/9nUpbWuYbbB9eA==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || ^20.0.0 || >=22.0.0
+      esbuild: ^0.25.0
+      jiti: '>=1.21.0'
+      less: '*'
+      sass: '*'
+      sass-embedded: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.16.0
+      tsx: ^4.8.1
+      yaml: ^2.4.2
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      esbuild:
+        optional: true
+      jiti:
+        optional: true
+      less:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+      tsx:
+        optional: true
+      yaml:
+        optional: true
+
+  rolldown@1.0.0-beta.10-commit.174c548:
+    resolution: {integrity: sha512-8kwmcwQILDPAcOhwVxaEjec5gTMTx34JTBrQ1BNj8sFiVCRc7ovmpeKbdEqcMgAtfYqo4w32ruu098ot2I6enQ==}
+    hasBin: true
 
   rollup-plugin-visualizer@5.14.0:
     resolution: {integrity: sha512-VlDXneTDaKsHIw8yzJAFWtrzguoJ/LnQ+lMpoVfYJ3jJF4Ihe5oYLAqLklIK/35lgUY+1yEzCkHyZ1j4A5w5fA==}
@@ -11626,6 +11741,10 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@opentelemetry/core': 1.30.1(@opentelemetry/api@1.9.0)
 
+  '@oxc-project/runtime@0.72.2': {}
+
+  '@oxc-project/types@0.72.2': {}
+
   '@pagefind/darwin-arm64@1.4.0-alpha.1':
     optional: true
 
@@ -12267,6 +12386,46 @@ snapshots:
 
   '@repeaterjs/repeater@3.0.6': {}
 
+  '@rolldown/binding-darwin-arm64@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-darwin-x64@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-freebsd-x64@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-linux-arm-gnueabihf@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-linux-arm64-gnu@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-linux-arm64-musl@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-linux-x64-gnu@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-linux-x64-musl@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-wasm32-wasi@1.0.0-beta.10-commit.174c548':
+    dependencies:
+      '@napi-rs/wasm-runtime': 0.2.10
+    optional: true
+
+  '@rolldown/binding-win32-arm64-msvc@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-win32-ia32-msvc@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/binding-win32-x64-msvc@1.0.0-beta.10-commit.174c548':
+    optional: true
+
+  '@rolldown/pluginutils@1.0.0-beta.10-commit.174c548': {}
+
   '@rollup/pluginutils@5.1.0(rollup@4.40.1)':
     dependencies:
       '@types/estree': 1.0.7
@@ -12798,12 +12957,12 @@ snapshots:
       postcss-selector-parser: 6.0.10
       tailwindcss: 4.1.7
 
-  '@tailwindcss/vite@4.1.7(vite@6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1))':
+  '@tailwindcss/vite@4.1.7(rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1))':
     dependencies:
       '@tailwindcss/node': 4.1.7
       '@tailwindcss/oxide': 4.1.7
       tailwindcss: 4.1.7
-      vite: 6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1)
+      vite: rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1)
 
   '@tanem/react-nprogress@5.0.55(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:
@@ -13292,14 +13451,14 @@ snapshots:
 
   '@vercel/ncc@0.38.3': {}
 
-  '@vitejs/plugin-react@4.4.1(vite@6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1))':
+  '@vitejs/plugin-react@4.4.1(rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1))':
     dependencies:
       '@babel/core': 7.27.1
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.27.1)
       '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.27.1)
       '@types/babel__core': 7.20.5
       react-refresh: 0.17.0
-      vite: 6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1)
+      vite: rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -13541,6 +13700,8 @@ snapshots:
   ansi-styles@5.2.0: {}
 
   ansi-styles@6.2.1: {}
+
+  ansis@4.1.0: {}
 
   arch@2.2.0: {}
 
@@ -18084,6 +18245,43 @@ snapshots:
       fast-printf: 1.6.9
       safe-stable-stringify: 2.5.0
       semver-compare: 1.0.0
+
+  rolldown-vite@6.3.16(@types/node@22.13.5)(esbuild@0.25.1)(jiti@2.4.2)(tsx@4.19.3)(yaml@2.7.1):
+    dependencies:
+      '@oxc-project/runtime': 0.72.2
+      fdir: 6.4.5(picomatch@4.0.2)
+      lightningcss: 1.30.1
+      picomatch: 4.0.2
+      postcss: 8.5.3
+      rolldown: 1.0.0-beta.10-commit.174c548
+      tinyglobby: 0.2.14
+    optionalDependencies:
+      '@types/node': 22.13.5
+      esbuild: 0.25.1
+      fsevents: 2.3.3
+      jiti: 2.4.2
+      tsx: 4.19.3
+      yaml: 2.7.1
+
+  rolldown@1.0.0-beta.10-commit.174c548:
+    dependencies:
+      '@oxc-project/runtime': 0.72.2
+      '@oxc-project/types': 0.72.2
+      '@rolldown/pluginutils': 1.0.0-beta.10-commit.174c548
+      ansis: 4.1.0
+    optionalDependencies:
+      '@rolldown/binding-darwin-arm64': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-darwin-x64': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-freebsd-x64': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-linux-arm-gnueabihf': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-linux-arm64-gnu': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-linux-arm64-musl': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-linux-x64-gnu': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-linux-x64-musl': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-wasm32-wasi': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-win32-arm64-msvc': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-win32-ia32-msvc': 1.0.0-beta.10-commit.174c548
+      '@rolldown/binding-win32-x64-msvc': 1.0.0-beta.10-commit.174c548
 
   rollup-plugin-visualizer@5.14.0(rollup@4.40.1):
     dependencies:
