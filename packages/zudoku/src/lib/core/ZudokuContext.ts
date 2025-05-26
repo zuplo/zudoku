@@ -9,7 +9,7 @@ import type {
   FooterSchema,
   TopNavigationItem,
 } from "../../config/validators/validate.js";
-import type { AuthenticationProviderPlugin } from "../authentication/authentication.js";
+import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { Slotlets } from "../components/SlotletProvider.js";
@@ -82,7 +82,7 @@ export type ZudokuContextOptions = {
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
   page?: Page;
-  authentication?: AuthenticationProviderPlugin;
+  authentication?: AuthenticationPlugin;
   topNavigation?: TopNavigationItem[];
   sidebars?: SidebarConfig;
   plugins?: ZudokuPlugin[];

@@ -6,16 +6,16 @@ import {
 } from "@supabase/supabase-js";
 import { type SupabaseAuthenticationConfig } from "../../../config/config.js";
 import {
+  type AuthenticationPlugin,
   type AuthenticationProviderInitializer,
-  type AuthenticationProviderPlugin,
 } from "../authentication.js";
-import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState, type UserProfile } from "../state.js";
 
 class SupabaseAuthenticationProvider
-  extends AuthenticationPlugin
-  implements AuthenticationProviderPlugin
+  extends CoreAuthenticationPlugin
+  implements AuthenticationPlugin
 {
   private readonly client: SupabaseClient;
   private readonly provider: Provider;
