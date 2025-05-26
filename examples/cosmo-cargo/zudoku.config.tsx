@@ -27,6 +27,11 @@ const config: ZudokuConfig = {
     title: "Cosmo Cargo Inc.",
   },
   page: {
+    logo: {
+      src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+      width: 130,
+      alt: "Cosmo Cargo Inc.",
+    },
     banner: {
       message: (
         <div className="text-center">
@@ -208,7 +213,6 @@ const config: ZudokuConfig = {
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],
-
   docs: {
     files: "/pages/**/*.mdx",
   },

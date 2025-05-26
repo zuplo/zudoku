@@ -1,49 +1,15 @@
 import type { Clerk } from "@clerk/clerk-js";
+import { LogOutIcon } from "lucide-react";
+import { type ZudokuPlugin } from "zudoku/plugins";
 import { type ClerkAuthenticationConfig } from "../../../config/config.js";
-import { type AuthenticationProviderInitializer } from "../authentication.js";
-import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
+import {
+  type AuthenticationPlugin,
+  type AuthenticationProviderInitializer,
+} from "../authentication.js";
+import { SignIn } from "../components/SignIn.js";
+import { SignOut } from "../components/SignOut.js";
+import { SignUp } from "../components/SignUp.js";
 import { useAuthState } from "../state.js";
-
-class ClerkAuthPlugin extends AuthenticationPlugin {
-  constructor(private clerk: Promise<Clerk | undefined>) {
-    super();
-  }
-  initialize = async () => {
-    const clerk = await this.clerk;
-
-    if (!clerk) {
-      return;
-    }
-
-    if (clerk.session) {
-      const verifiedEmail = clerk.session.user.emailAddresses.find(
-        (email) => email.verification.status === "verified",
-      );
-      useAuthState.setState({
-        isAuthenticated: true,
-        isPending: false,
-        profile: {
-          sub: clerk.session.user.id,
-          name: clerk.session.user.fullName ?? undefined,
-          email:
-            verifiedEmail?.emailAddress ??
-            clerk.session.user.emailAddresses[0]?.emailAddress,
-          emailVerified: verifiedEmail !== undefined,
-          pictureUrl: clerk.session.user.imageUrl,
-        },
-        providerData: {
-          user: clerk.session.user,
-        },
-      });
-    } else {
-      useAuthState.setState({
-        isAuthenticated: false,
-        isPending: false,
-        profile: undefined,
-      });
-    }
-  };
-}
 
 const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
@@ -52,7 +18,7 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignOut = "/",
   redirectToAfterSignUp,
   redirectToAfterSignIn,
-}) => {
+}): AuthenticationPlugin & ZudokuPlugin => {
   let clerkApi: Clerk | undefined;
   const ensureLoaded = (async () => {
     if (typeof window === "undefined") return;
@@ -111,7 +77,68 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   return {
-    clerk: clerkApi,
+    getRoutes: () => {
+      return [
+        {
+          path: "/signout",
+          element: <SignOut />,
+        },
+        {
+          path: "/signin",
+          element: <SignIn />,
+        },
+        {
+          path: "/signup",
+          element: <SignUp />,
+        },
+      ];
+    },
+
+    getProfileMenuItems() {
+      return [
+        {
+          label: "Logout",
+          path: "/signout",
+          category: "bottom",
+          icon: LogOutIcon,
+        } as const,
+      ];
+    },
+    initialize: async () => {
+      const clerk = await ensureLoaded;
+
+      if (!clerk) {
+        return;
+      }
+
+      if (clerk.session) {
+        const verifiedEmail = clerk.session.user.emailAddresses.find(
+          (email) => email.verification.status === "verified",
+        );
+        useAuthState.setState({
+          isAuthenticated: true,
+          isPending: false,
+          profile: {
+            sub: clerk.session.user.id,
+            name: clerk.session.user.fullName ?? undefined,
+            email:
+              verifiedEmail?.emailAddress ??
+              clerk.session.user.emailAddresses[0]?.emailAddress,
+            emailVerified: verifiedEmail !== undefined,
+            pictureUrl: clerk.session.user.imageUrl,
+          },
+          providerData: {
+            user: clerk.session.user,
+          },
+        });
+      } else {
+        useAuthState.setState({
+          isAuthenticated: false,
+          isPending: false,
+          profile: undefined,
+        });
+      }
+    },
     getAccessToken,
     signRequest,
     signOut: async () => {
@@ -147,9 +174,6 @@ const clerkAuth: AuthenticationProviderInitializer<
           ? window.location.origin + redirectToAfterSignUp
           : redirectTo,
       });
-    },
-    getAuthenticationPlugin() {
-      return new ClerkAuthPlugin(ensureLoaded);
     },
   };
 };

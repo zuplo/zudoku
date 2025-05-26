@@ -37,6 +37,17 @@
       ],
       "cache": true
     },
+    "build:dev": {
+      "dependsOn": ["generate:icon-types"],
+      "outputs": ["{projectRoot}/dist"],
+      "inputs": [
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.tsx",
+        "!{projectRoot}/**/*.css",
+        "{projectRoot}/package.json"
+      ],
+      "cache": true
+    },
     "build:vite": {
       "dependsOn": ["^build"],
       "outputs": ["{projectRoot}/lib", "{projectRoot}/stats.html"],

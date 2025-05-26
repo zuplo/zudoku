@@ -10,7 +10,7 @@ import { SignUp } from "./components/SignUp.js";
 
 type PluginInterface = NavigationPlugin & CommonPlugin & ProfileMenuPlugin;
 
-export class AuthenticationPlugin implements PluginInterface {
+export class CoreAuthenticationPlugin implements PluginInterface {
   getRoutes() {
     return [
       {

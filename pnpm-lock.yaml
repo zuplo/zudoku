@@ -743,6 +743,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 3.1.1
         version: 3.1.1(vitest@3.1.1(@types/debug@4.1.12)(@types/node@22.13.5)(happy-dom@17.4.4)(jiti@2.4.2)(lightningcss@1.29.2)(tsx@4.19.3)(yaml@2.7.1))
+      esbuild:
+        specifier: 0.25.1
+        version: 0.25.1
       happy-dom:
         specifier: 17.4.4
         version: 17.4.4
