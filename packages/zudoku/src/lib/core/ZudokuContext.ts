@@ -12,7 +12,7 @@ import type {
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
-import type { Slotlets } from "../components/SlotletProvider.js";
+import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
@@ -86,7 +86,7 @@ export type ZudokuContextOptions = {
   topNavigation?: TopNavigationItem[];
   sidebars?: SidebarConfig;
   plugins?: ZudokuPlugin[];
-  slotlets?: Slotlets;
+  slots?: Record<string, SlotType>;
   mdx?: {
     components?: MdxComponentsType;
   };

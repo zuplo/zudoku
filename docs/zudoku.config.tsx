@@ -92,7 +92,7 @@ const config: ZudokuConfig = {
       navigationId: "api-placeholder",
     },
   ],
-  UNSAFE_slotlets: {
+  slots: {
     "head-navigation-end": () => (
       <div className="flex items-center border-r pe-2">
         <Button variant="ghost" size="icon" asChild>

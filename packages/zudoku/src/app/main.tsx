@@ -42,7 +42,7 @@ export const convertZudokuConfigToOptions = (
         config.page?.showPoweredBy,
       logo: config.page?.logo,
     },
-    slotlets: config.UNSAFE_slotlets,
+    slots: config.slots,
     metadata: {
       favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
       title: "%s - Zudoku",

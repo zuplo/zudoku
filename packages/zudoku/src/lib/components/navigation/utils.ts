@@ -110,3 +110,15 @@ export const usePrevNext = (): {
 
   return { prev, next };
 };
+
+export const isHiddenItem =
+  (isAuthenticated?: boolean) =>
+  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
+    if (item.display === "hide") return false;
+    return (
+      (item.display === "auth" && isAuthenticated) ||
+      (item.display === "anon" && !isAuthenticated) ||
+      !item.display ||
+      item.display === "always"
+    );
+  };
