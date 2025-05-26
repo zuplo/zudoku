@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ClientOnly, Link, useTheme } from "zudoku/components";
 import {
   ClipboardPasteIcon,
@@ -285,7 +285,7 @@ export const ThemeEditor = () => {
                       {
                         "--theme-primary":
                           activeColor?.activeColor[resolvedTheme],
-                      } as React.CSSProperties
+                      } as CSSProperties
                     }
                   >
                     <div
