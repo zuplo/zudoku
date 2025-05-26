@@ -1,4 +1,4 @@
-import { useEffect, useId, type ReactNode } from "react";
+import { useId, useLayoutEffect, type ReactNode } from "react";
 import {
   useRenderSlot,
   useSlotContext,
@@ -43,7 +43,11 @@ export const Slot = {
     const setSlot = useSlotContext((s) => s.setSlot);
     const clearSlot = useSlotContext((s) => s.clearSlot);
 
-    useEffect(() => {
+    if (import.meta.env.SSR) {
+      setSlot(id, name, children, type);
+    }
+
+    useLayoutEffect(() => {
       setSlot(id, name, children, type);
       return () => clearSlot(id, name);
     }, [id, name, children, type, setSlot, clearSlot]);
