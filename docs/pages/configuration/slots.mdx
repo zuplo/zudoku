@@ -1,11 +1,10 @@
 ---
 title: Slots
+sidebar_icon: between-horizontal-start
 description: Learn how to use slots to inject custom content into predefined locations throughout your Zudoku site.
 ---
 
-# Slots
-
-Slots provide a powerful way to inject custom content into predefined locations throughout your Zudoku site. They allow you to extend the default layout and functionality without modifying the core components.
+Slots provide a powerful way to inject custom content into predefined locations throughout Zudoku. They allow you to extend the default layout and functionality without modifying the core components.
 
 ## Configuration
 
@@ -38,12 +37,12 @@ export default config;
 
 Slots accept either:
 
-- **React components/elements**: Direct JSX elements
-- **Functions**: Functions that return JSX elements and receive routing props
+- **React components/elements**: JSX elements
+- **Function components**: Functions that return JSX elements and receive routing props
 
 ```tsx
 slots: {
-  // Direct JSX element
+  // JSX element
   "footer-after": <CustomFooter />,
 
   // Function with access to routing props
