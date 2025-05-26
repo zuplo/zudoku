@@ -46,7 +46,7 @@ export const TopNavigation = () => {
 
   return (
     <Suspense>
-      <div className="items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm relative">
+      <div className="items-center justify-between px-8 h-(--top-nav-height) hidden lg:flex text-sm relative">
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
             {filteredItems.map((item) => (

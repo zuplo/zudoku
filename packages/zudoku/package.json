@@ -140,10 +140,6 @@
         "require": "./dist/vite/plugin.js",
         "import": "./dist/vite/plugin.js"
       },
-      "./tailwind": {
-        "require": "./dist/app/tailwind.js",
-        "import": "./dist/app/tailwind.js"
-      },
       "./main.css": {
         "require": "./src/app/main.css",
         "import": "./src/app/main.css"
@@ -212,6 +208,7 @@
     "@sindresorhus/slugify": "2.2.1",
     "@stefanprobst/rehype-extract-toc": "3.0.0",
     "@tailwindcss/typography": "0.5.16",
+    "@tailwindcss/vite": "4.1.7",
     "@tanem/react-nprogress": "5.0.55",
     "@tanstack/react-query": "5.74.3",
     "@types/react": "catalog:",
@@ -220,10 +217,10 @@
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
     "allof-merge": "0.6.6",
-    "autoprefixer": "10.4.21",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
+    "colorjs.io": "0.5.2",
     "devlop": "^1.1.0",
     "dotenv": "16.5.0",
     "embla-carousel-react": "8.6.0",
@@ -251,7 +248,6 @@
     "pagefind": "1.4.0-alpha.1",
     "picocolors": "1.1.1",
     "piscina": "5.0.0-alpha.2",
-    "postcss": "8.5.3",
     "posthog-node": "4.17.1",
     "react-error-boundary": "5.0.0",
     "react-hook-form": "7.55.0",
@@ -276,8 +272,8 @@
     "sitemap": "8.0.0",
     "spin-delay": "2.0.1",
     "strip-ansi": "7.1.0",
-    "tailwind-merge": "2.6.0",
-    "tailwindcss": "3.4.17",
+    "tailwind-merge": "3.3.0",
+    "tailwindcss": "4.1.7",
     "ulidx": "2.4.1",
     "unified": "^11.0.5",
     "unist-util-visit": "5.0.0",

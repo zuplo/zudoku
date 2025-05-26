@@ -26,10 +26,7 @@ export const Pagination = ({
       {prev && (
         <Button variant="ghost" asChild>
           <Link to={prev.to} relative="path" className={linkClass}>
-            <ArrowLeftIcon
-              className="ltr:group-hover:motion-safe:animate-bounce-x-start rtl:rotate-180"
-              size={12}
-            />
+            <ArrowLeftIcon size={12} />
             <span className="truncate">{prev.label}</span>
           </Link>
         </Button>
@@ -37,11 +34,8 @@ export const Pagination = ({
       {next && (
         <Button variant="ghost" asChild>
           <Link to={next.to} relative="path" className={linkClass}>
-            <span className="truncate ">{next.label}</span>
-            <ArrowRightIcon
-              className="ltr:group-hover:motion-safe:animate-bounce-x-end rtl:rotate-180"
-              size={12}
-            />
+            <span className="truncate">{next.label}</span>
+            <ArrowRightIcon size={12} />
           </Link>
         </Button>
       )}
