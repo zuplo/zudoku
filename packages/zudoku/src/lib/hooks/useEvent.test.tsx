@@ -7,10 +7,6 @@ import { ZudokuProvider } from "../components/context/ZudokuProvider.js";
 import { ZudokuContext, type ZudokuEvents } from "../core/ZudokuContext.js";
 import { useEvent } from "./useEvent.js";
 
-/**
- * @vitest-environment happy-dom
- */
-
 const createTestContext = () => {
   const queryClient = new QueryClient();
   const context = new ZudokuContext({}, queryClient);

@@ -20,7 +20,7 @@
     "skipDefaultLibCheck": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "types": ["vite/client"],
+    "types": ["vite/client", "@testing-library/jest-dom", "vitest/globals"],
     "paths": {
       "zudoku/components": ["./src/lib/components/index.ts"],
       "zudoku/ui/*": ["./src/lib/ui/*"],
