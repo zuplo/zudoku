@@ -1,4 +1,4 @@
-export interface AuthenticationProviderPlugin {
+export interface AuthenticationPlugin {
   signUp(options?: { redirectTo?: string }): Promise<void>;
   signIn(options?: { redirectTo?: string }): Promise<void>;
   signOut(): Promise<void>;
@@ -9,5 +9,5 @@ export interface AuthenticationProviderPlugin {
 }
 
 export interface AuthenticationProviderInitializer<TConfig> {
-  (config: TConfig): AuthenticationProviderPlugin;
+  (config: TConfig): AuthenticationPlugin;
 }

@@ -4,10 +4,10 @@ import { type OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import {
+  type AuthenticationPlugin,
   type AuthenticationProviderInitializer,
-  type AuthenticationProviderPlugin,
 } from "../authentication.js";
-import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { useAuthState, type UserProfile } from "../state.js";
@@ -26,8 +26,8 @@ export interface OpenIdProviderData {
 export const OPENID_CALLBACK_PATH = "/oauth/callback";
 
 export class OpenIDAuthenticationProvider
-  extends AuthenticationPlugin
-  implements AuthenticationProviderPlugin
+  extends CoreAuthenticationPlugin
+  implements AuthenticationPlugin
 {
   protected client: oauth.Client;
   protected issuer: string;
