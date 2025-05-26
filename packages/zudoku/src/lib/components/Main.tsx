@@ -31,7 +31,6 @@ export const Main = ({ children }: PropsWithChildren) => {
           <DrawerTrigger className="flex items-center gap-2 px-4">
             <PanelLeftIcon size={16} strokeWidth={1.5} />
             <span className="text-sm">Menu</span>
-            <Slot.Target name="current-heading" />
           </DrawerTrigger>
         </div>
       )}
@@ -43,7 +42,6 @@ export const Main = ({ children }: PropsWithChildren) => {
           isNavigating && "animate-pulse",
         )}
       >
-        <Slotlet name="zudoku-before-content" />
         <Slot.Target name="content-before" />
         {children}
         <Slot.Target name="content-after" />
