@@ -5,7 +5,7 @@ import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Sidebar } from "./navigation/Sidebar.js";
-import { Slotlet } from "./SlotletProvider.js";
+import { Slot } from "./Slot.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -42,9 +42,9 @@ export const Main = ({ children }: PropsWithChildren) => {
           isNavigating && "animate-pulse",
         )}
       >
-        <Slotlet name="zudoku-before-content" />
+        <Slot.Target name="content-before" />
         {children}
-        <Slotlet name="zudoku-after-content" />
+        <Slot.Target name="content-after" />
       </main>
     </Drawer>
   );

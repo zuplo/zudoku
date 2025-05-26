@@ -6,20 +6,8 @@ import type { TopNavigationItem } from "../../config/validators/validate.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { traverseSidebar } from "./navigation/utils.js";
-import { Slotlet } from "./SlotletProvider.js";
-
-export const isHiddenItem =
-  (isAuthenticated?: boolean) =>
-  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
-    if (item.display === "hide") return false;
-    return (
-      (item.display === "auth" && isAuthenticated) ||
-      (item.display === "anon" && !isAuthenticated) ||
-      !item.display ||
-      item.display === "always"
-    );
-  };
+import { isHiddenItem, traverseSidebar } from "./navigation/utils.js";
+import { Slot } from "./Slot.js";
 
 export const PageProgress = () => {
   const navigation = useNavigation();
@@ -68,7 +56,7 @@ export const TopNavigation = () => {
             ))}
           </ul>
         </nav>
-        <Slotlet name="top-navigation-side" />
+        <Slot.Target name="top-navigation-side" />
       </div>
       <PageProgress />
     </Suspense>

@@ -1,5 +1,6 @@
 ---
 title: Vite Config
+sidebar_icon: server-crash
 ---
 
 Zuplo is built on top of [Vite](https://vitejs.dev/) and can be customized using a [Vite configuration file](https://vitejs.dev/config/) if advanced functionality is required.
