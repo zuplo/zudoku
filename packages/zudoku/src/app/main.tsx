@@ -51,8 +51,8 @@ export const convertZudokuConfigToOptions = (
     sidebars: configuredSidebar,
     topNavigation: config.topNavigation,
     mdx: config.mdx,
-    authentication: configuredAuthProvider,
     plugins: [
+      ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...configuredDocsPlugins,
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
@@ -60,9 +60,6 @@ export const convertZudokuConfigToOptions = (
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
       ...configuredApiCatalogPlugins,
-      ...(configuredAuthProvider?.getAuthenticationPlugin
-        ? [configuredAuthProvider.getAuthenticationPlugin()]
-        : []),
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
@@ -78,9 +75,7 @@ export const getRoutesByOptions = (
 ) => {
   const allPlugins = [
     ...(options.plugins ?? []),
-    ...(options.authentication?.getAuthenticationPlugin
-      ? [options.authentication.getAuthenticationPlugin()]
-      : []),
+    ...(options.authentication ? [options.authentication] : []),
   ];
 
   const routes = allPlugins

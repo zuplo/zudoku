@@ -130,7 +130,7 @@ export const Header = memo(function HeaderInner() {
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost">
-                            {profile?.name ? `${profile.name}` : "My Account"}
+                            {profile?.name ?? "My Account"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
