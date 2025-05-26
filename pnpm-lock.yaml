@@ -135,10 +135,11 @@ importers:
         version: link:../../packages/zudoku
 
   examples/cosmo-cargo:
-    devDependencies:
+    dependencies:
       '@clerk/clerk-js':
         specifier: ^5.43.4
         version: 5.65.0(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+    devDependencies:
       '@mdx-js/react':
         specifier: 3.0.1
         version: 3.0.1(@types/react@19.1.1)(react@19.1.0)
