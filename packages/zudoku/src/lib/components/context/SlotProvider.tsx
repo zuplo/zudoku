@@ -73,6 +73,7 @@ const createSlotStore = ({
           id,
           content,
           type,
+          // Use negative sequence values for "prepend" to ensure they are sorted before positive values for "append".
           sequence: type === "prepend" ? -newSequence : newSequence,
         } satisfies SlotItem;
 
@@ -90,16 +91,17 @@ const createSlotStore = ({
     clearSlot: (id, name) =>
       set((state) => {
         const items = new Map(state.items);
+        const sequences = new Map(state.sequences);
         const existing = items.get(name) ?? [];
         const filtered = existing.filter((item) => item.id !== id);
 
         if (filtered.length === 0) {
           items.delete(name);
+          sequences.delete(name);
         } else {
           items.set(name, filtered);
         }
-
-        return { items };
+        return { items, sequences };
       }),
   }));
 };
