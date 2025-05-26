@@ -19,8 +19,13 @@ const DIST_DIR = "dist";
 const getIssuer = async (config: ZudokuConfig) => {
   switch (config.authentication?.type) {
     case "clerk": {
-      const { Clerk } = await import("@clerk/clerk-js");
-      return new Clerk(config.authentication.clerkPubKey).frontendApi;
+      const frontendApiEncoded = config.authentication.clerkPubKey
+        .split("_")
+        .at(-1);
+      invariant(frontendApiEncoded, "Clerk public key is invalid");
+      const frontendApi = atob(frontendApiEncoded).split("$").at(0);
+      invariant(frontendApi, "Clerk frontend API is invalid");
+      return frontendApi;
     }
     case "auth0": {
       return `https://${config.authentication.domain}`;
