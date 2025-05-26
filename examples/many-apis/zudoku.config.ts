@@ -3,6 +3,13 @@ import apis from "./apis/_apis.json";
 import navigation from "./apis/_navigation.json";
 
 const config: ZudokuConfig = {
+  page: {
+    logo: {
+      src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+      alt: "Zudoku",
+      width: 130,
+    },
+  },
   topNavigation: [
     {
       id: "overview",
