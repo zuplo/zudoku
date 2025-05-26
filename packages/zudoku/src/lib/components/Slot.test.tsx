@@ -14,6 +14,10 @@ import { Slot } from "./Slot.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
 
+/**
+ * @vitest-environment happy-dom
+ */
+
 const createWrapper = (slots: Record<string, ReactNode> = {}) => {
   const queryClient = new QueryClient();
   const context = new ZudokuContext({}, queryClient);
