@@ -12,8 +12,6 @@ import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
-// const DEFAULT_API_KEY_ENDPOINT =
-//   "https://zudoku-duck-main-5e0fa1a.d2.zuplo.dev/v2/client";
 
 export type ApiKeyService = {
   getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
@@ -34,12 +32,9 @@ export type ApiKeyService = {
   ) => Promise<void>;
 };
 
-const DEPLOYMENT_NAME = "apricot-rattlesnake-main-3f502c6";
-// const DEPLOYMENT_NAME = "zudoku-apikeys-poc-main-c9ec5aa";
-
-export type GetApiKeysOptions = ApiKeyService | { endpoint: string } | object;
-
-export type ApiKeyPluginOptions = object & GetApiKeysOptions;
+export type ApiKeyPluginOptions =
+  | ApiKeyService
+  | ({ deploymentName: string } & Partial<ApiKeyService>);
 
 export interface ApiKey {
   id: string;
@@ -61,11 +56,12 @@ export interface ApiConsumer {
   key?: ApiKey;
 }
 
-const createDefaultHandler = (endpoint: string): ApiKeyService => {
+const createDefaultHandler = (deploymentName: string): ApiKeyService => {
   return {
     deleteKey: async (consumerId, keyId, context) => {
       const request = new Request(
-        endpoint + `/${DEPLOYMENT_NAME}/consumers/${consumerId}/keys/${keyId}`,
+        DEFAULT_API_KEY_ENDPOINT +
+          `/${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
         {
           method: "DELETE",
         },
@@ -79,7 +75,8 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
       const response = await fetch(
         await context.signRequest(
           new Request(
-            endpoint + `/${DEPLOYMENT_NAME}/consumers/${consumerId}/roll-key`,
+            DEFAULT_API_KEY_ENDPOINT +
+              `/${deploymentName}/consumers/${consumerId}/roll-key`,
             {
               method: "POST",
               headers: {
@@ -95,7 +92,9 @@ const createDefaultHandler = (endpoint: string): ApiKeyService => {
       invariant(response.ok, "Failed to delete API key");
     },
     getConsumers: async (context) => {
-      const request = new Request(endpoint + `/${DEPLOYMENT_NAME}/consumers`);
+      const request = new Request(
+        DEFAULT_API_KEY_ENDPOINT + `/${deploymentName}/consumers`,
+      );
       await context.signRequest(request);
 
       const keys = await fetch(request);
@@ -129,11 +128,10 @@ export const createApiKeyService = <T extends ApiKeyService>(service: T): T =>
 export const apiKeyPlugin = (
   options: ApiKeyPluginOptions,
 ): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
-  const endpoint =
-    "endpoint" in options ? options.endpoint : DEFAULT_API_KEY_ENDPOINT;
-
-  const service =
-    "getConsumers" in options ? options : createDefaultHandler(endpoint);
+  const service: ApiKeyService =
+    "deploymentName" in options
+      ? createDefaultHandler(options.deploymentName)
+      : options;
 
   return {
     getProfileMenuItems: () => [
