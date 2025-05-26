@@ -25,7 +25,7 @@ import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { Search } from "./Search.js";
-import { Slotlet } from "./SlotletProvider.js";
+import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavigation } from "./TopNavigation.js";
 
@@ -116,7 +116,7 @@ export const Header = memo(function HeaderInner() {
           <div className="flex items-center gap-8">
             <MobileTopNavigation />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
-              <Slotlet name="head-navigation-start" />
+              <Slot.Target name="head-navigation-start" />
               {isAuthEnabled && (
                 <ClientOnly
                   fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
@@ -172,7 +172,7 @@ export const Header = memo(function HeaderInner() {
                   )}
                 </ClientOnly>
               )}
-              <Slotlet name="head-navigation-end" />
+              <Slot.Target name="head-navigation-end" />
               <ThemeSwitch />
             </div>
           </div>
@@ -180,9 +180,9 @@ export const Header = memo(function HeaderInner() {
       </div>
       <div className="border-b hidden lg:block">
         <div className="max-w-screen-2xl mx-auto border-transparent">
-          <Slotlet name="top-navigation-before" />
+          <Slot.Target name="top-navigation-before" />
           <TopNavigation />
-          <Slotlet name="top-navigation-after" />
+          <Slot.Target name="top-navigation-after" />
         </div>
       </div>
     </header>

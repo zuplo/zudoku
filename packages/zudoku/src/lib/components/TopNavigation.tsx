@@ -7,6 +7,7 @@ import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { isHiddenItem, traverseSidebar } from "./navigation/utils.js";
+import { Slot } from "./Slot.js";
 
 export const PageProgress = () => {
   const navigation = useNavigation();
@@ -55,7 +56,7 @@ export const TopNavigation = () => {
             ))}
           </ul>
         </nav>
-        <Slotlet name="top-navigation-side" />
+        <Slot.Target name="top-navigation-side" />
       </div>
       <PageProgress />
     </Suspense>

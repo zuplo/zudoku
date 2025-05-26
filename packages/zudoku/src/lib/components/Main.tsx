@@ -5,7 +5,7 @@ import { Drawer, DrawerTrigger } from "zudoku/ui/Drawer.js";
 import { cn } from "../util/cn.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { Sidebar } from "./navigation/Sidebar.js";
-import { Slotlet } from "./SlotletProvider.js";
+import { Slot } from "./Slot.js";
 
 export const Main = ({ children }: PropsWithChildren) => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -31,6 +31,7 @@ export const Main = ({ children }: PropsWithChildren) => {
           <DrawerTrigger className="flex items-center gap-2 px-4">
             <PanelLeftIcon size={16} strokeWidth={1.5} />
             <span className="text-sm">Menu</span>
+            <Slot.Target name="current-heading" />
           </DrawerTrigger>
         </div>
       )}
@@ -43,8 +44,9 @@ export const Main = ({ children }: PropsWithChildren) => {
         )}
       >
         <Slotlet name="zudoku-before-content" />
+        <Slot.Target name="content-before" />
         {children}
-        <Slotlet name="zudoku-after-content" />
+        <Slot.Target name="content-after" />
       </main>
     </Drawer>
   );

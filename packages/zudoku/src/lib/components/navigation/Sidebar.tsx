@@ -1,7 +1,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
 import { DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
-import { Slotlet } from "../SlotletProvider.js";
+import { Slot } from "../Slot.js";
 import { SidebarItem } from "./SidebarItem.js";
 import { SidebarWrapper } from "./SidebarWrapper.js";
 
@@ -14,7 +14,7 @@ export const Sidebar = ({
 }) => (
   <>
     <SidebarWrapper>
-      <Slotlet name="zudoku-before-navigation" />
+      <Slot.Target name="navigation-before" />
       {sidebar.map((item) => (
         <SidebarItem
           key={
@@ -25,7 +25,7 @@ export const Sidebar = ({
           item={item}
         />
       ))}
-      <Slotlet name="zudoku-after-navigation" />
+      <Slot.Target name="navigation-after" />
     </SidebarWrapper>
     <DrawerContent
       className="lg:hidden h-[100dvh] start-0 w-[320px] rounded-none"
