@@ -87,7 +87,7 @@ const ZudokoInner = memo(
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
             <RouterEventsEmitter />
-            <SlotProvider slots={props.slots}>
+            <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
               <MDXProvider components={mdxComponents}>
                 <ThemeProvider attribute="class" disableTransitionOnChange>
                   <ComponentsProvider value={components}>

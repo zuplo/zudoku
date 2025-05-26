@@ -87,6 +87,10 @@ export type ZudokuContextOptions = {
   sidebars?: SidebarConfig;
   plugins?: ZudokuPlugin[];
   slots?: Record<string, SlotType>;
+  /**
+   * @deprecated Use `slots` instead
+   */
+  UNSAFE_slotlets?: Record<string, SlotType>;
   mdx?: {
     components?: MdxComponentsType;
   };

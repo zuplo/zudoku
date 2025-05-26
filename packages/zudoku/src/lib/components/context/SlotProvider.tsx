@@ -4,6 +4,7 @@ import {
   use,
   useMemo,
   useRef,
+  type ComponentType,
   type PropsWithChildren,
   type ReactNode,
 } from "react";
@@ -13,9 +14,7 @@ import {
   type ExposedComponentProps,
 } from "../../util/useExposedProps.js";
 
-export type SlotType =
-  | ReactNode
-  | ((props: ExposedComponentProps) => ReactNode);
+export type SlotType = ReactNode | ComponentType<ExposedComponentProps>;
 
 type SlotItem = {
   id: string;
@@ -137,13 +136,12 @@ export const useRenderSlot = (name: string) => {
         if (typeOrder !== 0) return typeOrder;
         return a.sequence - b.sequence;
       })
-      .map((item) => {
-        const content =
-          typeof item.content === "function"
-            ? item.content(exposedProps)
-            : item.content;
-
-        return <Fragment key={item.id}>{content}</Fragment>;
-      });
+      .map((item) =>
+        typeof item.content === "function" ? (
+          <item.content key={item.id} {...exposedProps} />
+        ) : (
+          <Fragment key={item.id}>{item.content}</Fragment>
+        ),
+      );
   }, [items, exposedProps]);
 };

@@ -418,6 +418,10 @@ export const CdnUrlSchema = z
 
 const BaseConfigSchema = z.object({
   slots: z.record(z.string(), z.custom<SlotType>()),
+  /**
+   * @deprecated Use `slots` instead
+   */
+  UNSAFE_slotlets: z.record(z.string(), z.custom<SlotType>()),
   mdx: z
     .object({
       components: z.custom<MdxComponentsType>(),
