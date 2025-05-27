@@ -62,7 +62,6 @@ const config: ZudokuConfig = {
     { id: "docs", label: "Documentation" },
     { id: "components", label: "Components" },
     { id: "theme-playground", label: "Themes" },
-    { id: "api-keys", label: "API Keys" },
   ],
   sidebar: {
     docs,
@@ -92,11 +91,6 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/placeholder.json",
       navigationId: "api-placeholder",
-    },
-    {
-      type: "file",
-      input: "./api/api-keys.json",
-      navigationId: "api-keys",
     },
   ],
   slots: {

@@ -1,6 +1,5 @@
 import type { ZudokuConfig, ZudokuContext } from "zudoku";
 import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
-import { apiKeyPlugin } from "zudoku/plugins/api-keys";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
@@ -149,12 +148,7 @@ const config: ZudokuConfig = {
     { path: "/", element: <Landingpage /> },
     { path: "/only-members", element: <div>Only members</div> },
   ],
-  plugins: [
-    new CosmoCargoApiIdentityPlugin(),
-    apiKeyPlugin({
-      endpoint: "http://localhost:9000",
-    }),
-  ],
+  plugins: [new CosmoCargoApiIdentityPlugin()],
   apis: [
     {
       type: "file",
