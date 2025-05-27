@@ -3,7 +3,6 @@ import type { ComponentType, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
 import z, {
-  type RefinementCtx,
   type ZodEnumDef,
   type ZodOptional,
   type ZodString,
@@ -404,7 +403,7 @@ const PageSchema = z
   .partial();
 
 const ApiCatalogSchema = z.object({
-  navigationId: z.string(),
+  path: z.string(),
   label: z.string(),
   items: z.array(z.string()).optional(),
   filterItems: z.function().args(z.any()).returns(z.any()).optional(),
@@ -500,26 +499,17 @@ const BaseConfigSchema = z.object({
   }),
 });
 
-export const refine = (
-  config: z.output<typeof ZudokuConfigSchema>,
-  ctx: RefinementCtx,
-) => {
-  // With single navigation tree, no additional validation needed for now
-  // TODO: Add validation for navigation structure if needed
-};
-
-export const ZudokuConfigSchema = BaseConfigSchema.partial();
-export const ZudokuConfig = ZudokuConfigSchema.superRefine(refine);
+export const ZudokuConfig = BaseConfigSchema.partial();
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type TopNavigationItem = z.infer<typeof TopNavigationItemSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
-export type ZudokuConfig = z.input<typeof ZudokuConfigSchema>;
+export type ZudokuConfig = z.input<typeof ZudokuConfig>;
 
 export function validateConfig(config: unknown) {
-  const validationResult = ZudokuConfigSchema.safeParse(config);
+  const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
     // eslint-disable-next-line no-console

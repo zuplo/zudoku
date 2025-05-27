@@ -137,7 +137,7 @@ export const navigationListItem = cva(
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>
-  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
+  (item: SidebarItem): boolean => {
     if (item.display === "hide") return false;
     return (
       (item.display === "auth" && isAuthenticated) ||
