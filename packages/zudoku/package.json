@@ -159,7 +159,7 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.app.json",
-    "build:dev": "esbuild './src/cli/**/*.ts' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
+    "build:dev": "esbuild './src/**/*.ts' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
     "build:vite": "vite build",
     "generate:types": "node scripts/generate-types.js",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
