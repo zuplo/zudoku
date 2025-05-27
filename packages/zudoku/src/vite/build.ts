@@ -28,7 +28,7 @@ const getIssuer = async (config: ZudokuConfig) => {
       return frontendApi;
     }
     case "auth0": {
-      return `https://${config.authentication.domain}`;
+      return `https://${config.authentication.domain}/`;
     }
     case "openid": {
       return config.authentication.issuer;
