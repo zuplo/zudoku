@@ -91,8 +91,8 @@ export const ColorizedParam = ({
       className={cn(
         // This may not contain (inline-)flex or (inline-)block otherwise it breaks the browser's full text search
         "relative transition-all duration-100 rounded-lg",
-        "border border-[--border-color] p-0.5 text-[--param-color] bg-[--background-color]",
-        "data-[active=true]:border-[--param-color] data-[active=true]:shadow data-[active=true]:bottom-px",
+        "border border-(--border-color) p-0.5 text-(--param-color) bg-(--background-color)",
+        "data-[active=true]:border-(--param-color) data-[active=true]:shadow-sm data-[active=true]:bottom-px",
         className,
       )}
       title={title}

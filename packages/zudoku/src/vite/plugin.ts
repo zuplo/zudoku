@@ -1,3 +1,4 @@
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { type PluginOption } from "vite";
 import { type LoadedConfig } from "../config/config.js";
@@ -8,6 +9,7 @@ import viteAuthPlugin from "./plugin-auth.js";
 import viteAliasPlugin from "./plugin-component.js";
 import { createConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
+import { configureTailwindPlugin } from "./plugin-configure-tailwind.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
@@ -47,5 +49,7 @@ export default function vitePlugin(
     viteRedirectPlugin(getCurrentConfig),
     viteThemeCss(getCurrentConfig),
     configReloadPlugin,
+    configureTailwindPlugin(getCurrentConfig),
+    tailwindcss(),
   ];
 }

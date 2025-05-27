@@ -12,13 +12,14 @@ import z, {
 } from "zod";
 import { fromError } from "zod-validation-error";
 import type { AuthState } from "../../lib/authentication/state.js";
-import type { ExposedComponentProps } from "../../lib/components/SlotletProvider.js";
+import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
 import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
+import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
 
 const ThemeSchema = z
@@ -415,12 +416,12 @@ export const CdnUrlSchema = z
   })
   .optional();
 
-const ConfigSchema = z.object({
-  // slotlets are a concept we are working on and not yet finalized
-  UNSAFE_slotlets: z.record(
-    z.string(),
-    z.custom<ReactNode | ComponentType<ExposedComponentProps>>(),
-  ),
+const BaseConfigSchema = z.object({
+  slots: z.record(z.string(), z.custom<SlotType>()),
+  /**
+   * @deprecated Use `slots` instead
+   */
+  UNSAFE_slotlets: z.record(z.string(), z.custom<SlotType>()),
   mdx: z
     .object({
       components: z.custom<MdxComponentsType>(),
@@ -512,7 +513,7 @@ Following IDs are available: ${topNavIds.join(", ")}`,
   }
 };
 
-export const ZudokuConfigSchema = ConfigSchema.partial();
+export const ZudokuConfigSchema = BaseConfigSchema.partial();
 export const ZudokuConfig = ZudokuConfigSchema.superRefine(refine);
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
@@ -523,7 +524,7 @@ export type ZudokuRedirect = z.infer<typeof Redirect>;
 export type ZudokuConfig = z.input<typeof ZudokuConfigSchema>;
 
 export function validateConfig(config: unknown) {
-  const validationResult = ConfigSchema.safeParse(config);
+  const validationResult = ZudokuConfigSchema.safeParse(config);
 
   if (!validationResult.success) {
     // eslint-disable-next-line no-console

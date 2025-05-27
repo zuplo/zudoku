@@ -142,13 +142,13 @@ footer: {
 }
 ```
 
-## Customizing with Slotlets
+## Customizing with Slot
 
-Zudoku provides `footer-before` and `footer-after` slotlets that allow you to insert custom content before or after the main footer columns:
+Zudoku provides `footer-before` and `footer-after` slots that allow you to insert custom content before or after the main footer columns:
 
 ```tsx
 // In your zudoku.config.tsx
-UNSAFE_slotlets: {
+slots: {
   "footer-before": () => (
     <div>
       <h3>Custom pre-footer content</h3>

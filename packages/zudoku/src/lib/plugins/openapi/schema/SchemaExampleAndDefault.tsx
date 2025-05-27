@@ -16,7 +16,7 @@ export const SchemaExampleAndDefault = ({
       {example && (
         <div>
           <span className="text-muted-foreground">Example: </span>
-          <SelectOnClick className="border rounded px-1 font-mono">
+          <SelectOnClick className="border rounded-sm px-1 font-mono">
             {typeof example === "object" || typeof example === "boolean"
               ? JSON.stringify(example)
               : example}
@@ -26,7 +26,7 @@ export const SchemaExampleAndDefault = ({
       {defaultValue && (
         <div>
           <span className="text-muted-foreground">Default: </span>
-          <SelectOnClick className="border rounded px-1 font-mono">
+          <SelectOnClick className="border rounded-sm px-1 font-mono">
             {typeof defaultValue === "object" ||
             typeof defaultValue === "boolean"
               ? JSON.stringify(defaultValue)

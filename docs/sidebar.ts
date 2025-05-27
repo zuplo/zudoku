@@ -24,6 +24,7 @@ export const docs: SidebarEntry = [
       "configuration/search",
       "configuration/page",
       "configuration/footer",
+      "configuration/slots",
       "configuration/authentication",
       "configuration/build-configuration",
       "configuration/sentry",
@@ -84,6 +85,7 @@ export const components: SidebarEntry = [
     items: [
       "components/callout",
       "components/icons",
+      "components/slot",
       "components/stepper",
       "components/syntax-highlight",
       "components/playground",

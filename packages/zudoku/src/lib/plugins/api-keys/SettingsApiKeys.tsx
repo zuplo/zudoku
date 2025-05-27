@@ -27,7 +27,7 @@ import {
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
-import { Slotlet } from "../../components/SlotletProvider.js";
+import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
 import { cn } from "../../util/cn.js";
 import { type ApiKey, type ApiKeyService } from "./index.js";
@@ -72,8 +72,8 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   });
 
   return (
-    <div className="max-w-screen-lg h-full pt-[--padding-content-top] pb-[--padding-content-bottom]">
-      <Slotlet name="api-keys-list-page" />
+    <div className="max-w-screen-lg h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
+      <Slot.Target name="api-keys-list-page" />
 
       <div className="flex justify-between pb-3">
         <h1 className="font-medium text-2xl">API Keys</h1>
@@ -85,12 +85,12 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       </div>
       <p>Create, manage, and monitor your API keys</p>
 
-      <Slotlet name="api-keys-list-page-before-keys" />
+      <Slot.Target name="api-keys-list-page-before-keys" />
 
       <div className="h-8"></div>
       <div className="grid grid-cols-8">
         {data.length === 0 ? (
-          <div className="flex flex-col justify-center gap-4 items-center p-8 border rounded bg-muted/30 text-muted-foreground">
+          <div className="flex flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
             <p className="text-center">
               No API keys created yet.
               <br />

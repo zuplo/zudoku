@@ -29,7 +29,7 @@ export const Catalog = ({
   const dataSet = activeCategory ? { "data-pagefind-ignore": "all" } : {};
 
   return (
-    <section className="pt-[--padding-content-top]" {...dataSet}>
+    <section className="pt-(--padding-content-top)" {...dataSet}>
       <Helmet>
         <title>
           {categoryLabel ? `${categoryLabel} - ` : ""}

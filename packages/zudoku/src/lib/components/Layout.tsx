@@ -9,7 +9,7 @@ import { useZudoku } from "./context/ZudokuContext.js";
 import { Footer } from "./Footer.js";
 import { Header } from "./Header.js";
 import { Main } from "./Main.js";
-import { Slotlet } from "./SlotletProvider.js";
+import { Slot } from "./Slot.js";
 import { Spinner } from "./Spinner.js";
 
 const LoadingFallback = () => (
@@ -48,9 +48,9 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
         )}
         {meta?.favicon && <link rel="icon" href={meta.favicon} />}
       </Helmet>
-      <Slotlet name="layout-before-head" />
+      <Slot.Target name="layout-before-head" />
       <Header />
-      <Slotlet name="layout-after-head" />
+      <Slot.Target name="layout-after-head" />
 
       <div
         className={cn(

@@ -29,7 +29,7 @@ const SubmitButton = ({
   return (
     <div className="flex">
       <Button
-        className="rounded-r-none inset-shadow-sm"
+        className="rounded-r-none inset-shadow-xs"
         disabled={disabled}
         onClick={() => formRef?.current?.requestSubmit()}
       >
@@ -39,7 +39,7 @@ const SubmitButton = ({
         <DropdownMenuTrigger asChild>
           <Button
             disabled={disabled}
-            className="rounded-l-none border-l border-border/40 inset-shadow-sm w-6"
+            className="rounded-l-none border-l border-border/40 inset-shadow-xs w-6"
             size="icon"
           >
             <ChevronDownIcon className="w-4 h-4" />

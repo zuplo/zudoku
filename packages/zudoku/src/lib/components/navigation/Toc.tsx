@@ -80,7 +80,7 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
   }, [activeAnchor]);
 
   return (
-    <aside className="sticky scrollbar top-8 lg:top-[--header-height] h-[calc(100vh-var(--header-height))] pt-[--padding-content-top] pb-[--padding-content-bottom] overflow-y-auto ps-1 text-sm">
+    <aside className="sticky scrollbar top-8 lg:top-(--header-height) h-[calc(100vh-var(--header-height))] pt-(--padding-content-top) pb-(--padding-content-bottom) overflow-y-auto ps-1 text-sm">
       <div className="flex items-center gap-2 font-medium mb-2">
         <ListTreeIcon size={16} />
         On this page
@@ -89,7 +89,7 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
         <div className="absolute inset-0 end-auto bg-border w-[2px]" />
         <div
           className={cn(
-            "absolute -start-px -translate-y-1 h-6 w-[4px] rounded bg-primary",
+            "absolute -start-px -translate-y-1 h-6 w-[4px] rounded-sm bg-primary",
             paintedOnce.current &&
               "ease-out [transition:top_150ms,opacity_325ms]",
           )}

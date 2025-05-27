@@ -99,17 +99,25 @@ const config: ZudokuConfig = {
       navigationId: "api-keys",
     },
   ],
-  UNSAFE_slotlets: {
+  slots: {
     "head-navigation-end": () => (
       <div className="flex items-center border-r pe-2">
         <Button variant="ghost" size="icon" asChild>
-          <a href="https://github.com/zuplo/zudoku">
-            <GithubIcon className="w-4 h-4 dark:invert" />
+          <a
+            href="https://github.com/zuplo/zudoku"
+            aria-label="Visit Zudoku on GitHub"
+            rel="noopener noreferrer"
+          >
+            <GithubIcon className="w-4 h-4 dark:invert" aria-hidden="true" />
           </a>
         </Button>
         <Button variant="ghost" size="icon" asChild>
-          <a href="https://discord.gg/stPRhjbA55">
-            <DiscordIcon className="w-5 h-5 dark:invert" />
+          <a
+            href="https://discord.gg/stPRhjbA55"
+            aria-label="Join Zudoku Discord community"
+            rel="noopener noreferrer"
+          >
+            <DiscordIcon className="w-5 h-5 dark:invert" aria-hidden="true" />
           </a>
         </Button>
       </div>
