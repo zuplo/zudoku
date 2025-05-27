@@ -10,6 +10,7 @@ export { defaultLanguages } from "./lib/shiki.js";
 
 export type {
   ApiIdentityPlugin,
+  AuthenticationPlugin,
   CommonPlugin,
   NavigationPlugin,
   ProfileMenuPlugin,
