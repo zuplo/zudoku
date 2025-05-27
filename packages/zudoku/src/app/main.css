@@ -86,7 +86,7 @@
   :root {
     --top-header-height: 65px;
     --top-nav-height: 50px;
-    --banner-height: 40px;
+    --banner-height: 35px;
     --header-height: calc(
       var(--top-header-height) + var(--top-nav-height) + var(--banner-height)
     );
