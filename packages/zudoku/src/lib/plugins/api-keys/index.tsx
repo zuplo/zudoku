@@ -142,7 +142,11 @@ export const apiKeyPlugin = (
         icon: KeyRoundIcon,
       },
     ],
-    getSidebar: async (path, context) => {
+    getSidebar: async (path) => {
+      if (!path.startsWith("/settings")) {
+        return [];
+      }
+
       return [
         {
           type: "link",
