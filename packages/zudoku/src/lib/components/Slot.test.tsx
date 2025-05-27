@@ -416,11 +416,13 @@ describe("Slot", () => {
     });
 
     it("handles async content", async () => {
+      vi.useFakeTimers();
+
       const AsyncContent = () => {
         const [content, setContent] = useState("Loading...");
 
         useEffect(() => {
-          setTimeout(() => setContent("Loaded content"), 0);
+          setTimeout(() => setContent("Loaded content"), 250);
         }, []);
 
         return <div>{content}</div>;
@@ -436,7 +438,14 @@ describe("Slot", () => {
       );
 
       expect(screen.getByText("Loading...")).toBeInTheDocument();
-      expect(await screen.findByText("Loaded content")).toBeInTheDocument();
+
+      await act(async () => {
+        vi.advanceTimersToNextTimer();
+      });
+
+      expect(screen.getByText("Loaded content")).toBeInTheDocument();
+
+      vi.useRealTimers();
     });
 
     it("renders render functions", async () => {
