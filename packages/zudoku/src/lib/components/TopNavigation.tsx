@@ -6,19 +6,8 @@ import { type SidebarItem } from "../../config/validators/SidebarSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
+import { isHiddenItem } from "./navigation/utils.js";
 import { Slot } from "./Slot.js";
-
-export const isHiddenItem =
-  (isAuthenticated?: boolean) =>
-  (item: SidebarItem): boolean => {
-    if (item.display === "hide") return false;
-    return (
-      (item.display === "auth" && isAuthenticated) ||
-      (item.display === "anon" && !isAuthenticated) ||
-      !item.display ||
-      item.display === "always"
-    );
-  };
 
 export const PageProgress = () => {
   const navigation = useNavigation();
@@ -75,9 +64,14 @@ export const TopNavigation = () => {
 };
 
 export const getPathForItem = (item: SidebarItem) => {
-  if (item.type === "doc") return joinUrl(item.id);
-  if (item.type === "link") return item.href;
-  if (item.type === "category") return joinUrl(item.link?.id ?? "");
+  switch (item.type) {
+    case "doc":
+      return joinUrl(item.id);
+    case "link":
+      return item.href;
+    case "category":
+      return joinUrl(item.link?.id ?? "");
+  }
 };
 
 export const TopNavItem = (item: SidebarItem) => {
@@ -91,7 +85,7 @@ export const TopNavItem = (item: SidebarItem) => {
     // We don't use isActive here because it has to be inside the sidebar,
     // the top nav id doesn't necessarily start with the sidebar id
     <NavLink
-      to={getPathForItem(item) ?? ""}
+      to={getPathForItem(item)}
       className={({ isPending }) =>
         cx(
           "block lg:py-3.5 font-medium -mb-px",
