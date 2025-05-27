@@ -31,7 +31,7 @@ export const Banner = () => {
   return (
     <div
       className={cn(
-        "relative text-primary-foreground text-sm font-medium px-4 py-2 flex gap-2 items-center",
+        "relative text-primary-foreground text-sm font-medium px-4 py-2 flex gap-2 items-center lg:h-(--banner-height)",
         mappedColor,
       )}
       data-pagefind-ignore="all"
