@@ -133,7 +133,7 @@ export async function runBuild(options: { dir: string }) {
           throw new Error("Issuer is required for Zuplo");
         }
         await writeFile(
-          path.join(viteClientConfig.build.outDir, "zuplo.json"),
+          path.join(options.dir, "dist/.output/zuplo.json"),
           JSON.stringify({ issuer }, null, 2),
           "utf-8",
         );
