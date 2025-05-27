@@ -19,7 +19,7 @@ export type ZudokuPlugin =
   | EventConsumerPlugin
   | AuthenticationPlugin;
 
-export type { RouteObject };
+export type { AuthenticationPlugin, RouteObject };
 
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
