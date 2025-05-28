@@ -2,7 +2,7 @@ import { glob } from "glob";
 import { minimatch } from "minimatch";
 import path from "node:path";
 import type { Plugin, ViteDevServer } from "vite";
-import type { LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 import { DocResolver } from "../lib/plugins/markdown/resolver.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { writePluginDebugCode } from "./debug.js";
@@ -10,7 +10,7 @@ import { reload } from "./plugin-config-reload.js";
 
 const ensureLeadingSlash = joinUrl;
 
-const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
+const viteDocsPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -29,7 +29,7 @@ const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
     watchChange(id, change) {
       if (change.event !== "delete" && change.event !== "create") return;
 
-      const config = getConfig();
+      const config = getCurrentConfig();
       const resolver = new DocResolver(config);
       const docsConfigs = resolver.getDocsConfigs();
 
@@ -44,7 +44,7 @@ const viteDocsPlugin = (getConfig: () => LoadedConfig): Plugin => {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const config = getConfig();
+        const config = getCurrentConfig();
 
         if (config.__meta.mode === "standalone") {
           return `export const configuredDocsPlugins = [];`;

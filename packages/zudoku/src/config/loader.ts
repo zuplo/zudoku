@@ -4,6 +4,7 @@ import colors from "picocolors";
 import type { RollupOutput, RollupWatcher } from "rollup";
 import { runnerImport, loadEnv as viteLoadEnv, type ConfigEnv } from "vite";
 import { logger } from "../cli/common/logger.js";
+import invariant from "../lib/util/invariant.js";
 import { getModuleDir } from "../vite/config.js";
 import { fileExists } from "./file-exists.js";
 import type { ZudokuConfig } from "./validators/validate.js";
@@ -141,6 +142,11 @@ async function updateModifiedTimes() {
     }),
   );
 }
+
+export const getCurrentConfig = () => {
+  invariant(config, "Config not loaded");
+  return config;
+};
 
 export async function loadZudokuConfig(
   configEnv: ConfigEnv,

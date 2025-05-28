@@ -1,14 +1,12 @@
 import path from "node:path";
 import type { Plugin } from "vite";
-import type { LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
 // Font imports need to be at the very top of the file
 const FONT_REPLACE = "/* @vite-plugin-inject font */";
 const MAIN_REPLACE = "/* @vite-plugin-inject main */";
 
-export const configureTailwindPlugin = (
-  getCurrentConfig: () => LoadedConfig,
-): Plugin => {
+export const viteTailwindPlugin = (): Plugin => {
   return {
     name: "zudoku-configure-tailwind",
     enforce: "pre",
