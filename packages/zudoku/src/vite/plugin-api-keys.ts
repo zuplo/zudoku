@@ -1,7 +1,7 @@
 import { type Plugin } from "vite";
-import type { LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
-const viteApiKeysPlugin = (getConfig: () => LoadedConfig): Plugin => {
+const viteApiKeysPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-keys-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
   return {
@@ -13,7 +13,7 @@ const viteApiKeysPlugin = (getConfig: () => LoadedConfig): Plugin => {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const config = getConfig();
+        const config = getCurrentConfig();
 
         if (!config.apiKeys || config.__meta.mode === "standalone") {
           return `export const configuredApiKeysPlugin = undefined;`;

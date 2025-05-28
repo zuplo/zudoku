@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import path from "path";
 import { defineConfig } from "vite";
-import { getStandaloneConfig } from "./src/config/loader.js";
+import { setStandaloneConfig } from "./src/config/loader.js";
 import vitePlugin from "./src/vite/plugin.js";
 
 const entries: Record<string, string> = {
@@ -12,6 +12,8 @@ const entries: Record<string, string> = {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.ZUDOKU_ENV = "standalone";
+
+setStandaloneConfig(__dirname);
 
 export default defineConfig({
   mode: "standalone",
@@ -52,5 +54,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vitePlugin(getStandaloneConfig(__dirname))],
+  plugins: [vitePlugin()],
 });

@@ -1,7 +1,7 @@
 import { type Plugin } from "vite";
-import { type LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
-const viteRedirectPlugin = (getConfig: () => LoadedConfig): Plugin => {
+const viteRedirectPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-redirect-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -14,7 +14,7 @@ const viteRedirectPlugin = (getConfig: () => LoadedConfig): Plugin => {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const config = getConfig();
+        const config = getCurrentConfig();
         if (!config.redirects || config.__meta.mode === "standalone") {
           return `export const configuredRedirectPlugin = undefined;`;
         }

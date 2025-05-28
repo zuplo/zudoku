@@ -2,18 +2,16 @@ import { glob } from "glob";
 import matter from "gray-matter";
 import { readFile } from "node:fs/promises";
 import type { Plugin } from "vite";
-import type { LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 import { reload } from "./plugin-config-reload.js";
 
 // This plugin is responsible to restart the dev server when the frontmatter changed inside a markdown file.
-export const viteFrontmatterPlugin = (
-  getConfig: () => LoadedConfig,
-): Plugin => ({
+export const viteFrontmatterPlugin = (): Plugin => ({
   // set enforce: "pre" so it's run before the MDX plugin
   enforce: "pre",
   name: "zudoku-frontmatter-plugin",
   configureServer: async (server) => {
-    const config = getConfig();
+    const config = getCurrentConfig();
     const files = await glob("**/*.{md,mdx}", {
       cwd: config.__meta.rootDir,
       ignore: ["node_modules", "dist"],
