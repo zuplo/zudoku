@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from "lucide-react";
+import { CheckIcon, ChevronDownIcon } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
 import {
@@ -55,9 +55,9 @@ const SubmitButton = ({
                 }}
               >
                 {identity.label}
-                <span className="ms-2">
-                  {formIdentity === identity.id && "✓"}
-                </span>
+                {formIdentity === identity.id && (
+                  <CheckIcon className="ms-2" size={16} />
+                )}
               </DropdownMenuItem>
             ),
           )}
