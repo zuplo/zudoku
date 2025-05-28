@@ -22,7 +22,7 @@ export const PathParams = ({
   );
 
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg overflow-hidden">
       <ParamsGrid>
         {sortedFields.map((field, i) => (
           <ParamsGridItem key={field.id}>

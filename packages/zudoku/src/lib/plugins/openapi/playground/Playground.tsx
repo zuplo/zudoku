@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
-import { PathRenderer } from "../../../components/PathRenderer.js";
-
 import {
   Select,
   SelectContent,
@@ -14,7 +13,7 @@ import {
 } from "zudoku/ui/Select.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
+import { PathRenderer } from "../../../components/PathRenderer.js";
 import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
 import { useLatest } from "../../../util/useLatest.js";
@@ -195,8 +194,13 @@ export const Playground = ({
     }
   }, [latestSetRememberedIdentity, formState.identity]);
 
+  const [mutationId, setMutationId] = useState(crypto.randomUUID());
+
   const queryMutation = useMutation({
     gcTime: 0,
+    onMutate: (data) => {
+      setMutationId(crypto.randomUUID());
+    },
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
@@ -385,17 +389,61 @@ export const Playground = ({
         />
 
         <div className="grid grid-cols-2 text-sm h-full">
-          <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:start-auto">
+          <div className="col-span-2 p-4 border-b">
             <div className="flex gap-2 items-stretch">
-              <div className="flex flex-1 items-center w-full border rounded-md">
+              <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center px-2 py-0.5 font-mono text-xs break-all leading-6">
-                  {serverSelect}
-                  {path}
-                  {urlQueryParams.length > 0 ? "?" : ""}
-                  {urlQueryParams}
+                <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
+                  <div className="h-full py-1.5">
+                    {serverSelect}
+                    {path}
+                    {urlQueryParams.length > 0 ? "?" : ""}
+                    {urlQueryParams}
+                  </div>
+                  <motion.div
+                    key={mutationId}
+                    className="h-[1px] bg-primary absolute left-0 -bottom-0 z-10"
+                    initial={{
+                      width: 0,
+                      opacity: 0,
+                    }}
+                    animate={{
+                      width: queryMutation.isPending
+                        ? "30%"
+                        : queryMutation.isSuccess || queryMutation.isError
+                          ? "100%"
+                          : 0,
+                      opacity: queryMutation.isPending
+                        ? 1
+                        : queryMutation.isSuccess || queryMutation.isError
+                          ? 0
+                          : 0,
+                    }}
+                    transition={{
+                      width: {
+                        duration: queryMutation.isPending
+                          ? 0.5
+                          : queryMutation.isSuccess || queryMutation.isError
+                            ? 0.25
+                            : 0.1,
+                        ease: "easeInOut",
+                      },
+                      opacity: {
+                        duration: queryMutation.isPending
+                          ? 0.1
+                          : queryMutation.isSuccess || queryMutation.isError
+                            ? 0.3
+                            : 0.1,
+                        delay: queryMutation.isPending
+                          ? 0
+                          : queryMutation.isSuccess || queryMutation.isError
+                            ? 0.25
+                            : 0,
+                      },
+                    }}
+                  />
                 </div>
               </div>
 
@@ -405,142 +453,110 @@ export const Playground = ({
                 disabled={identities.isLoading || form.formState.isSubmitting}
               />
             </div>
-            <Tabs defaultValue="parameters">
-              <div className="flex flex-wrap gap-1 justify-between">
-                <TabsList>
-                  <TabsTrigger value="parameters">
-                    Parameters
-                    {(formState.pathParams.some((p) => p.value !== "") ||
-                      formState.queryParams.some((p) => p.active)) && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="headers">
-                    Headers
-                    {formState.headers.filter((h) => h.active).length > 0 && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="auth">
-                    Auth
-                    {formState.identity !== NO_IDENTITY && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="body">
-                    Body
-                    {formState.body && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="headers">
-                <Headers control={control} headers={headers} />
-              </TabsContent>
-              <TabsContent value="parameters">
-                {pathParams.length > 0 && (
-                  <div className="flex flex-col gap-4 my-4">
-                    <span className="font-semibold">Path Parameters</span>
-                    <PathParams url={url} control={control} />
-                  </div>
-                )}
-                <div className="flex flex-col gap-4 my-4">
-                  <span className="font-semibold">Query Parameters</span>
-                  <QueryParams control={control} queryParams={queryParams} />
-                </div>
-              </TabsContent>
-              <TabsContent value="body">
-                {!["POST", "PUT", "PATCH", "DELETE"].includes(
-                  method.toUpperCase(),
-                ) && (
-                  <Alert className="mb-2">
-                    <InfoIcon className="w-4 h-4" />
-                    <AlertTitle>Body</AlertTitle>
-                    <AlertDescription>
-                      Body is only supported for POST, PUT, PATCH, and DELETE
-                      requests
-                    </AlertDescription>
-                  </Alert>
-                )}
-                <Textarea
-                  {...register("body")}
-                  className={cn(
-                    "border w-full rounded-lg bg-muted/40 p-2 h-64 font-mono text-[13px]",
-                    !isBodySupported && "h-20 bg-muted",
-                  )}
-                  placeholder={
-                    !isBodySupported
-                      ? "This request does not support a body"
-                      : undefined
-                  }
-                  disabled={!isBodySupported}
+          </div>
+          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:start-auto overflow-y-auto h-[76vh] overflow-hidden">
+            <div className="flex flex-col gap-2">
+              {identities.data?.length === 0 && (
+                <Alert>
+                  <InfoIcon className="w-4 h-4" />
+                  <AlertTitle>Authentication</AlertTitle>
+                  <AlertDescription>
+                    No identities found. Please create an identity first.
+                  </AlertDescription>
+                </Alert>
+              )}
+              <div className="flex flex-col gap-2   ">
+                <span className="font-semibold">Authentication</span>
+                <IdentitySelector
+                  value={formState.identity}
+                  identities={identities.data ?? []}
+                  setValue={(value) => setValue("identity", value)}
                 />
-                {isBodySupported && (
-                  <div className="flex items-center gap-2 mt-2 justify-between">
-                    <Select
-                      value={formState.bodyContentType}
-                      onValueChange={(value) =>
-                        setValue(
-                          "bodyContentType",
-                          value as keyof typeof bodyContentTypeMap,
-                        )
+              </div>
+            </div>
+
+            {pathParams.length > 0 && (
+              <div className="flex flex-col gap-2   ">
+                <span className="font-semibold">Path Parameters</span>
+                <PathParams url={url} control={control} />
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2 ">
+              <span className="font-semibold">Query Parameters</span>
+              <QueryParams control={control} queryParams={queryParams} />
+            </div>
+
+            <div className="flex flex-col gap-2 ">
+              <span className="font-semibold">Headers</span>
+              <Headers control={control} headers={headers} />
+            </div>
+
+            {!["POST", "PUT", "PATCH", "DELETE"].includes(
+              method.toUpperCase(),
+            ) && (
+              <Alert className="mb-2">
+                <InfoIcon className="w-4 h-4" />
+                <AlertTitle>Body</AlertTitle>
+                <AlertDescription>
+                  Body is only supported for POST, PUT, PATCH, and DELETE
+                  requests
+                </AlertDescription>
+              </Alert>
+            )}
+            <Textarea
+              {...register("body")}
+              className={cn(
+                "border w-full rounded-lg bg-muted/40 p-2 h-64 font-mono text-[13px]",
+                !isBodySupported && "h-20 bg-muted",
+              )}
+              placeholder={
+                !isBodySupported
+                  ? "This request does not support a body"
+                  : undefined
+              }
+              disabled={!isBodySupported}
+            />
+            {isBodySupported && (
+              <div className="flex items-center gap-2 mt-2 justify-between">
+                <Select
+                  value={formState.bodyContentType}
+                  onValueChange={(value) =>
+                    setValue(
+                      "bodyContentType",
+                      value as keyof typeof bodyContentTypeMap,
+                    )
+                  }
+                >
+                  <SelectTrigger className="w-[100px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(bodyContentTypeMap).map((format) => (
+                      <SelectItem key={format} value={format}>
+                        {format}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {examples && examples.length > 0 && (
+                  <ExamplesDropdown
+                    examples={examples}
+                    onSelect={(example, mediaType) => {
+                      setValue("body", JSON.stringify(example.value, null, 2));
+
+                      const format = objectEntries(bodyContentTypeMap).find(
+                        ([_, contentType]) => contentType === mediaType,
+                      )?.[0];
+
+                      if (format) {
+                        setValue("bodyContentType", format);
                       }
-                    >
-                      <SelectTrigger className="w-[100px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(bodyContentTypeMap).map((format) => (
-                          <SelectItem key={format} value={format}>
-                            {format}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {examples && examples.length > 0 && (
-                      <ExamplesDropdown
-                        examples={examples}
-                        onSelect={(example, mediaType) => {
-                          setValue(
-                            "body",
-                            JSON.stringify(example.value, null, 2),
-                          );
-
-                          const format = objectEntries(bodyContentTypeMap).find(
-                            ([_, contentType]) => contentType === mediaType,
-                          )?.[0];
-
-                          if (format) {
-                            setValue("bodyContentType", format);
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
+                    }}
+                  />
                 )}
-              </TabsContent>
-              <TabsContent value="auth">
-                <div className="flex flex-col gap-4 my-4">
-                  {identities.data?.length === 0 && (
-                    <Alert>
-                      <InfoIcon className="w-4 h-4" />
-                      <AlertTitle>Authentication</AlertTitle>
-                      <AlertDescription>
-                        No identities found. Please create an identity first.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="flex flex-col items-center gap-2">
-                    <IdentitySelector
-                      value={formState.identity}
-                      identities={identities.data ?? []}
-                      setValue={(value) => setValue("identity", value)}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            )}
           </div>
           <ResultPanel
             queryMutation={queryMutation}
