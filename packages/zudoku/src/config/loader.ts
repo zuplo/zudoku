@@ -148,6 +148,10 @@ export const getCurrentConfig = () => {
   return config;
 };
 
+export const setCurrentConfig = (newConfig: ConfigWithMeta) => {
+  config = newConfig;
+};
+
 export async function loadZudokuConfig(
   configEnv: ConfigEnv,
   rootDir: string,
@@ -192,12 +196,14 @@ export async function loadZudokuConfig(
   }
 }
 
-export const getStandaloneConfig = (rootDir: string): ConfigWithMeta => ({
-  __meta: {
-    rootDir,
-    moduleDir: getModuleDir(),
-    mode: "standalone",
-    dependencies: [],
-    configPath: "",
-  },
-});
+export const setStandaloneConfig = (rootDir: string) => {
+  config = {
+    __meta: {
+      rootDir,
+      moduleDir: getModuleDir(),
+      mode: "standalone",
+      dependencies: [],
+      configPath: "",
+    },
+  };
+};
