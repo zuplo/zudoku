@@ -1,9 +1,10 @@
+import { cva } from "class-variance-authority";
 import { useLocation } from "react-router";
 import type {
   SidebarItem,
   SidebarItemCategory,
 } from "../../../config/validators/SidebarSchema.js";
-import { joinPath } from "../../util/joinPath.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
 
 export type TraverseCallback<T> = (
@@ -47,7 +48,7 @@ export const useCurrentItem = () => {
   const currentSidebar = nav.sidebar;
 
   return traverseSidebar(currentSidebar, (item) => {
-    if (item.type === "doc" && joinPath(item.id) === location.pathname) {
+    if (item.type === "doc" && joinUrl(item.id) === location.pathname) {
       return item;
     }
   });
@@ -58,14 +59,14 @@ export const useIsCategoryOpen = (category: SidebarItemCategory) => {
 
   return traverseSidebarItem(category, (item) => {
     if (item.type === "category" && item.link) {
-      const categoryLinkPath = joinPath(item.link.id);
+      const categoryLinkPath = joinUrl(item.link.id);
       if (categoryLinkPath === location.pathname) {
         return true;
       }
     }
 
     if (item.type === "doc") {
-      const docPath = joinPath(item.id);
+      const docPath = joinUrl(item.id);
       if (docPath === location.pathname) {
         return true;
       }
@@ -89,9 +90,9 @@ export const usePrevNext = (): {
   traverseSidebar(currentSidebar, (item) => {
     const itemId =
       item.type === "doc"
-        ? joinPath(item.id)
+        ? joinUrl(item.id)
         : item.type === "category" && item.link
-          ? joinPath(item.link.id)
+          ? joinUrl(item.link.id)
           : undefined;
 
     if (!itemId) return;
@@ -110,6 +111,29 @@ export const usePrevNext = (): {
 
   return { prev, next };
 };
+
+export const navigationListItem = cva(
+  "relative flex items-center gap-2 px-(--padding-nav-item) my-0.5 py-1.5 rounded-lg hover:bg-accent tabular-nums",
+  {
+    variants: {
+      isActive: {
+        true: "bg-accent font-medium",
+        false: "text-foreground/80",
+      },
+      isMuted: {
+        true: "text-foreground/30",
+        false: "",
+      },
+      isPending: {
+        true: "bg-accent animate-pulse",
+        false: "",
+      },
+    },
+    defaultVariants: {
+      isActive: false,
+    },
+  },
+);
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>

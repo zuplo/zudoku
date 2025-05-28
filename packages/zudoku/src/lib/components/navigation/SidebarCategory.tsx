@@ -7,8 +7,8 @@ import { Button } from "zudoku/ui/Button.js";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { navigationListItem, SidebarItem } from "./SidebarItem.js";
-import { useIsCategoryOpen } from "./utils.js";
+import { SidebarItem } from "./SidebarItem.js";
+import { navigationListItem, useIsCategoryOpen } from "./utils.js";
 
 const SidebarCategoryInner = ({
   category,
