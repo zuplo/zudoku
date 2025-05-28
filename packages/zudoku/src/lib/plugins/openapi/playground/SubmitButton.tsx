@@ -1,5 +1,4 @@
 import { ChevronDownIcon } from "lucide-react";
-import { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
 import {
@@ -8,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
-import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import { type ApiIdentity } from "../../../core/ZudokuContext.js";
 import { NO_IDENTITY } from "./Playground.js";
 
@@ -21,8 +19,9 @@ const SubmitButton = ({
   formRef?: React.RefObject<HTMLFormElement | null>;
   disabled?: boolean;
 }) => {
-  const { setValue } = useFormContext();
-  const [dropdownValue, setDropdownValue] = useState<string | undefined>();
+  const { setValue, watch } = useFormContext();
+  const formIdentity = watch("identity");
+
   if (identities.length === 0) {
     return <Button disabled={disabled}>Send</Button>;
   }
@@ -45,28 +44,24 @@ const SubmitButton = ({
             <ChevronDownIcon className="w-4 h-4" />
           </Button>
         </DropdownMenuTrigger>
-        <RadioGroup value={dropdownValue}>
-          <DropdownMenuContent className="w-56" align="end" alignOffset={-150}>
-            {[{ id: NO_IDENTITY, label: "None" }, ...identities].map(
-              (identity) => (
-                <DropdownMenuItem
-                  key={identity.id}
-                  onClick={() => {
-                    setDropdownValue(identity.id);
-                    setValue("identity", identity.id);
-                    formRef?.current?.requestSubmit();
-                  }}
-                  onMouseEnter={() => setDropdownValue(identity.id)}
-                  onMouseLeave={() => setDropdownValue(undefined)}
-                >
-                  <RadioGroupItem value={identity.id} className="me-2" />
-
-                  {identity.label}
-                </DropdownMenuItem>
-              ),
-            )}
-          </DropdownMenuContent>
-        </RadioGroup>
+        <DropdownMenuContent className="w-56" align="end" alignOffset={-150}>
+          {[{ id: NO_IDENTITY, label: "None" }, ...identities].map(
+            (identity) => (
+              <DropdownMenuItem
+                key={identity.id}
+                onClick={() => {
+                  setValue("identity", identity.id);
+                  formRef?.current?.requestSubmit();
+                }}
+              >
+                {identity.label}
+                <span className="ms-2">
+                  {formIdentity === identity.id && "✓"}
+                </span>
+              </DropdownMenuItem>
+            ),
+          )}
+        </DropdownMenuContent>
       </DropdownMenu>
     </div>
   );
