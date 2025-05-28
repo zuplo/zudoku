@@ -22,4 +22,5 @@ export type {
 export { ZudokuContext, type ApiIdentity } from "./lib/core/ZudokuContext.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";
 
+/** @deprecated Import from `zudoku/hooks` instead */
 export { useEvent } from "./lib/hooks/index.js";

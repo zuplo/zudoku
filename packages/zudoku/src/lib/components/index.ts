@@ -40,6 +40,7 @@ export const ClientOnly = /*@__PURE__*/ ClientOnlyImport;
 export const Button = /*@__PURE__*/ ButtonImport;
 export const Link = /*@__PURE__*/ LinkImport;
 export const BuildCheck = /*@__PURE__*/ BuildCheckImport;
+export const Zudoku = /*@__PURE__*/ ZudokuImport;
 
 /** @deprecated Import from `zudoku/hooks` instead */
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;
@@ -51,8 +52,5 @@ export const useAuth = /*@__PURE__*/ useAuthImport;
 export const useCache = /*@__PURE__*/ useCacheImport;
 /** @deprecated Import from `zudoku/hooks` instead */
 export const CACHE_KEYS = /*@__PURE__*/ CACHE_KEYS_IMPORT;
-export const Zudoku = /*@__PURE__*/ ZudokuImport;
 /** @deprecated Import from `zudoku/hooks` instead */
 export const useTheme = /*@__PURE__*/ useThemeImport;
-
-
