@@ -196,6 +196,7 @@ export const Playground = ({
   }, [latestSetRememberedIdentity, formState.identity]);
 
   const queryMutation = useMutation({
+    gcTime: 0,
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
