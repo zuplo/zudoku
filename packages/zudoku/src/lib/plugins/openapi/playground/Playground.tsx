@@ -52,6 +52,7 @@ export type QueryParam = {
   enum?: string[];
   type?: string;
 };
+
 export type PathParam = {
   name: string;
   defaultValue?: string;
@@ -75,7 +76,10 @@ export type PlaygroundForm = {
     active: boolean;
     enum?: string[];
   }>;
-  pathParams: Array<{ name: string; value: string }>;
+  pathParams: Array<{
+    name: string;
+    value: string;
+  }>;
   headers: Array<{
     name: string;
     value: string;

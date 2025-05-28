@@ -865,9 +865,20 @@
             "in": "path",
             "required": true,
             "schema": {
+              "default": "SH123456789",
               "type": "string"
             },
             "example": "SH123456789"
+          },
+          {
+            "name": "includeHistory",
+            "in": "query",
+            "description": "Include detailed tracking history and events in the response",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "example": true
           }
         ],
         "responses": {
