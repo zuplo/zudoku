@@ -24,13 +24,17 @@ export function getDevHtml({
 
 export function getBuildHtml({
   jsEntry,
-  cssEntry,
+  cssEntries,
   dir,
 }: {
   jsEntry: string;
-  cssEntry: string;
+  cssEntries: string[];
   dir?: "ltr" | "rtl";
 }) {
+  const cssLinks = cssEntries
+    .map((css) => `    <link rel="stylesheet" crossorigin href="${css}">`)
+    .join("\n");
+
   return `
 <!doctype html>
 <html lang="en" ${dir ? `dir="${dir}"` : ""}>
@@ -38,7 +42,7 @@ export function getBuildHtml({
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
     <script type="module" crossorigin src="${jsEntry}"></script>
-    <link rel="stylesheet" crossorigin href="${cssEntry}">
+${cssLinks}
     <!--app-helmet-->
     <link rel="preconnect" href="https://cdn.zudoku.dev/">
   </head>

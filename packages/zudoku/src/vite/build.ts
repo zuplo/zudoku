@@ -74,18 +74,20 @@ export async function runBuild(options: { dir: string }) {
   const issuer = await getIssuer(config);
 
   if ("output" in clientResult) {
-    const [jsEntry, cssEntry] = [
+    const [jsEntry, cssEntries] = [
       clientResult.output.find((o) => "isEntry" in o && o.isEntry)?.fileName,
-      clientResult.output.find((o) => o.fileName.endsWith(".css"))?.fileName,
+      clientResult.output
+        .filter((o) => o.fileName.endsWith(".css"))
+        .map((o) => o.fileName),
     ];
 
-    if (!jsEntry || !cssEntry) {
+    if (!jsEntry || cssEntries.length === 0) {
       throw new Error("Build failed. No js or css assets found");
     }
 
     const html = getBuildHtml({
       jsEntry: joinUrl(viteClientConfig.base, jsEntry),
-      cssEntry: joinUrl(viteClientConfig.base, cssEntry),
+      cssEntries: cssEntries.map((css) => joinUrl(viteClientConfig.base, css)),
       dir: config.page?.dir,
     });
 
