@@ -28,7 +28,6 @@ export const PlaygroundDialogWrapper = ({
       isRequired: p.required ?? false,
       enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
-      pattern: p.schema?.pattern,
     }));
 
   const queryParams = operation.parameters
