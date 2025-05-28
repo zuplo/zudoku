@@ -11,7 +11,6 @@ import {
 import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
-import type { LoadedConfig, ZudokuConfig } from "../config/config.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/validate.js";
 import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
@@ -20,16 +19,6 @@ import vitePlugin from "./plugin.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
-};
-
-const getDocsConfigFiles = (
-  docsConfig: ZudokuConfig["docs"],
-  baseDir: string,
-): string[] => {
-  if (!docsConfig) return [];
-  const docsArray = Array.isArray(docsConfig) ? docsConfig : [docsConfig];
-
-  return docsArray.map((doc) => path.posix.join(baseDir, doc.files));
 };
 
 export function getModuleDir() {
@@ -62,24 +51,11 @@ const MEDIA_REGEX =
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
-  onConfigChange?: (config: LoadedConfig) => void,
 ): Promise<InlineConfig> {
   const { config, publicEnv, envPrefix } = await loadZudokuConfig(
     configEnv,
     dir,
   );
-
-  const handleConfigChange = async () => {
-    try {
-      const { config: newConfig } = await loadZudokuConfig(configEnv, dir);
-      onConfigChange?.(newConfig);
-
-      return newConfig;
-    } catch (error) {
-      logger.error(error);
-      return config;
-    }
-  };
 
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
@@ -223,7 +199,7 @@ export async function getViteConfig(
       "/__z/entry.client.tsx",
       "**/pagefind.js",
     ],
-    plugins: [vitePlugin(config, handleConfigChange)],
+    plugins: [vitePlugin()],
     future: {
       removeServerModuleGraph: "warn",
       removeSsrLoadModule: "warn",

@@ -80,10 +80,10 @@ export const Header = memo(function HeaderInner() {
   const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
 
   return (
-    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur-xs w-full">
+    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <Banner />
       <div className={borderBottom}>
-        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-(--top-header-height) border-transparent">
+        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">

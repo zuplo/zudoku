@@ -15,7 +15,7 @@ import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
 import { type Plugin } from "vite";
-import { type LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
@@ -124,8 +124,8 @@ const rehypeExcerptWithMdxExport = () => (tree: any) => {
   });
 };
 
-const viteMdxPlugin = (getConfig: () => LoadedConfig): Plugin => {
-  const config = getConfig();
+const viteMdxPlugin = (): Plugin => {
+  const config = getCurrentConfig();
 
   return {
     enforce: "pre",

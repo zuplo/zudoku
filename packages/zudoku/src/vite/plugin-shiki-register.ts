@@ -1,14 +1,12 @@
 import type { Plugin } from "vite";
-import type { LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 import {
   defaultHighlightOptions,
   defaultLanguages,
   highlighter,
 } from "../lib/shiki.js";
 
-export const viteShikiRegisterPlugin = (
-  getCurrentConfig: () => LoadedConfig,
-): Plugin => {
+export const viteShikiRegisterPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-shiki-register";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 

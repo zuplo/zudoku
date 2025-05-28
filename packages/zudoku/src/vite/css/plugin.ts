@@ -2,18 +2,15 @@
 // https://github.com/hi-ogawa/vite-plugins/tree/main/packages/ssr-css
 import path from "node:path";
 import { type DevEnvironment, isCSSRequest, type Plugin } from "vite";
-import type { LoadedConfig } from "../../config/config.js";
+import { getCurrentConfig } from "../../config/loader.js";
 import { collectStyle } from "./collect.js";
 
 const VIRTUAL_ENTRY = "virtual:ssr-css.css";
 
-export function vitePluginSsrCss(
-  getConfig: () => LoadedConfig,
-  pluginOpts: { entries: string[] },
-): Plugin {
+export function vitePluginSsrCss(pluginOpts: { entries: string[] }): Plugin {
   let server: DevEnvironment;
 
-  const config = getConfig();
+  const config = getCurrentConfig();
 
   const virtualHref = path.join(
     config.basePath ?? "",
