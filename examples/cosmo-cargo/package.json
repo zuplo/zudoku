@@ -20,12 +20,14 @@
       }
     }
   },
+  "dependencies": {
+    "@clerk/clerk-js": "^5.43.4"
+  },
   "devDependencies": {
     "@mdx-js/react": "3.0.1",
     "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "zudoku": "workspace:*",
-    "@clerk/clerk-js": "^5.43.4"
+    "zudoku": "workspace:*"
   }
 }

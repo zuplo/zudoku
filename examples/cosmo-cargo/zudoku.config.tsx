@@ -1,15 +1,19 @@
-import type { ZudokuConfig } from "zudoku";
+import type { ZudokuConfig, ZudokuContext } from "zudoku";
 import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
-  async getIdentities() {
+  async getIdentities(context: ZudokuContext) {
     return [
       {
         label: `Unlimited Subscription`,
         id: "UNLNTD",
-        authorizeRequest: (request: Request) => {
-          request.headers.set("X-Authorization", `Bearer 1234567890`);
+        authorizeRequest: async (request: Request) => {
+          request.headers.set(
+            "Authorization",
+            `Bearer ` + (await context.authentication.getAccessToken()),
+          );
+
           return request;
         },
       },
@@ -144,6 +148,7 @@ const config: ZudokuConfig = {
     { path: "/", element: <Landingpage /> },
     { path: "/only-members", element: <div>Only members</div> },
   ],
+  plugins: [new CosmoCargoApiIdentityPlugin()],
   apis: [
     {
       type: "file",
@@ -249,7 +254,6 @@ const config: ZudokuConfig = {
       ring: "35.5 91.7% 32.9%",
     },
   },
-  plugins: [new CosmoCargoApiIdentityPlugin()],
 };
 
 export default config;

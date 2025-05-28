@@ -24,6 +24,7 @@ export type { AuthenticationPlugin, RouteObject };
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
   getSidebar?: (path: string, context: ZudokuContext) => Promise<Sidebar>;
+  getProtectedRoutes?: () => string[];
 }
 
 export const createApiIdentityPlugin = (

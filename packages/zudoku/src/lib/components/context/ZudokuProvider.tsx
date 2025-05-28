@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { PropsWithChildren } from "react";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
+import { NO_DEHYDRATE } from "../cache.js";
 import { ZudokuReactContext } from "./ZudokuContext.js";
 
 export const ZudokuProvider = ({
@@ -12,7 +13,7 @@ export const ZudokuProvider = ({
       await context.initialize();
       return true;
     },
-    queryKey: ["zudoku-initialize"],
+    queryKey: ["zudoku-initialize", NO_DEHYDRATE],
   });
 
   return (

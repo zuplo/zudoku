@@ -17,6 +17,8 @@ export const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
+        "ghost-destructive":
+          "text-destructive hover:bg-destructive hover:text-destructive-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         expand:
           "flex gap-1.5 border bg-transparent rounded-xl text-muted-foreground hover:text-foreground",
@@ -26,7 +28,8 @@ export const buttonVariants = cva(
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         xl: "h-14 rounded-lg px-10 text-lg",
-        icon: "h-9 w-9",
+        icon: "size-9",
+        "icon-xs": "size-7",
       },
     },
     defaultVariants: {

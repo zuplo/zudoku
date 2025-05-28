@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
+import { ActionButton } from "zudoku/ui/ActionButton.js";
+import { DialogClose, DialogFooter } from "zudoku/ui/Dialog.js";
 import {
   Select,
   SelectContent,
@@ -14,9 +16,15 @@ import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { type ApiKeyService } from "./index.js";
 
-type CreateApiKey = { description: string; expiresOn?: string };
+type CreateApiKey = { description?: string; expiresOn?: string };
 
-export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
+export const CreateApiKey = ({
+  service,
+  onOpenChange,
+}: {
+  service: ApiKeyService;
+  onOpenChange: (open: boolean) => void;
+}) => {
   const context = useZudoku();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -35,7 +43,7 @@ export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
         expiresOn !== "never" ? addDaysToDate(Number(expiresOn)) : undefined;
 
       return service.createKey(
-        { description: description, expiresOn: expiresOnDate },
+        { description: description || "Secret Key", expiresOn: expiresOnDate },
         context,
       );
     },
@@ -50,44 +58,48 @@ export const CreateApiKey = ({ service }: { service: ApiKeyService }) => {
   }
 
   return (
-    <div className="max-w-screen-lg pt-(--padding-content-top) pb-(--padding-content-bottom)">
-      <div className="flex justify-between mb-4 border-b pb-1">
-        <h1 className="font-medium text-2xl">New API Key</h1>
+    <form
+      onSubmit={form.handleSubmit((data) =>
+        createKeyMutation.mutate(
+          { ...data },
+          {
+            onSuccess: () => onOpenChange(false),
+          },
+        ),
+      )}
+    >
+      <div className="flex gap-2 flex-col text-sm font-medium">
+        Name
+        <Input {...form.register("description")} />
+        Expiration
+        <Select
+          onValueChange={(value) => form.setValue("expiresOn", value)}
+          defaultValue={form.getValues("expiresOn")}
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {[7, 30, 60, 90].map((option) => (
+                <SelectItem value={String(option)} key={option}>
+                  {option} days
+                </SelectItem>
+              ))}
+              <SelectItem value="never">Never</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <ActionButton isPending={createKeyMutation.isPending}>
+            Generate Key
+          </ActionButton>
+        </DialogFooter>
       </div>
-      <form
-        onSubmit={form.handleSubmit((data) => createKeyMutation.mutate(data))}
-      >
-        <div className="flex gap-2 flex-col">
-          Note
-          <Input {...form.register("description")} />
-          Expiration
-          <Select
-            onValueChange={(value) => form.setValue("expiresOn", value)}
-            defaultValue={form.getValues("expiresOn")}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {[7, 30, 60, 90].map((option) => (
-                  <SelectItem value={String(option)} key={option}>
-                    {option} days
-                  </SelectItem>
-                ))}
-                <SelectItem value="never">Never</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          <div className="flex gap-2">
-            <Button>Generate Key</Button>
-            <Button variant="outline" asChild>
-              <Link to="/settings/api-keys/">Cancel</Link>
-            </Button>
-          </div>
-        </div>
-      </form>
-    </div>
+    </form>
   );
 };
 

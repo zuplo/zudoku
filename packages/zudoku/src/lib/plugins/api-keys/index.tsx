@@ -1,24 +1,26 @@
-import { FileKey2Icon } from "lucide-react";
+import { KeyRoundIcon } from "lucide-react";
 import { type RouteObject } from "react-router";
-import { ZudokuContext } from "../../core/ZudokuContext.js";
+import { type ZudokuContext } from "../../core/ZudokuContext.js";
 import {
   type ApiIdentityPlugin,
+  type ProfileMenuPlugin,
   type ZudokuPlugin,
-  ProfileMenuPlugin,
 } from "../../core/plugins.js";
 import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
-import { CreateApiKey } from "./CreateApiKey.js";
 import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
-const DEFAULT_API_KEY_ENDPOINT =
-  "https://zudoku-rewiringamerica-main-ef9c9c0.d2.zuplo.dev";
+const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
 
 export type ApiKeyService = {
-  getKeys: (context: ZudokuContext) => Promise<ApiKey[]>;
-  rollKey?: (id: string, context: ZudokuContext) => Promise<void>;
-  deleteKey?: (id: string, context: ZudokuContext) => Promise<void>;
+  getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
+  rollKey?: (consumerId: string, context: ZudokuContext) => Promise<void>;
+  deleteKey?: (
+    consumerId: string,
+    keyId: string,
+    context: ZudokuContext,
+  ) => Promise<void>;
   updateKeyDescription?: (
     apiKey: { id: string; description: string },
     context: ZudokuContext,
@@ -30,9 +32,9 @@ export type ApiKeyService = {
   ) => Promise<void>;
 };
 
-export type GetApiKeysOptions = ApiKeyService | { endpoint: string } | object;
-
-export type ApiKeyPluginOptions = object & GetApiKeysOptions;
+export type ApiKeyPluginOptions =
+  | ApiKeyService
+  | ({ deploymentName: string } & Partial<ApiKeyService>);
 
 export interface ApiKey {
   id: string;
@@ -43,51 +45,79 @@ export interface ApiKey {
   key: string;
 }
 
-const createDefaultHandler = (endpoint: string): ApiKeyService => {
-  return {
-    deleteKey: async (id, context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys/${id}`, {
-        method: "DELETE",
-      });
+export interface ApiConsumer {
+  id: string;
+  name: string;
+  apiKeys: ApiKey[];
+  description?: string;
+  createdOn?: string;
+  updatedOn?: string;
+  expiresOn?: string;
+  key?: ApiKey;
+}
 
+const createDefaultHandler = (deploymentName: string): ApiKeyService => {
+  return {
+    deleteKey: async (consumerId, keyId, context) => {
+      const request = new Request(
+        DEFAULT_API_KEY_ENDPOINT +
+          `/${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
+        {
+          method: "DELETE",
+        },
+      );
       await context.signRequest(request);
 
       const response = await fetch(request);
       invariant(response.ok, "Failed to delete API key");
     },
-    rollKey: async (id, context) => {
+    rollKey: async (consumerId, context) => {
       const response = await fetch(
         await context.signRequest(
-          new Request(endpoint + `/v1/developer/api-keys/${id}/key`, {
-            method: "DELETE",
-          }),
+          new Request(
+            DEFAULT_API_KEY_ENDPOINT +
+              `/${deploymentName}/consumers/${consumerId}/roll-key`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                expiresOn: new Date(),
+              }),
+            },
+          ),
         ),
       );
       invariant(response.ok, "Failed to delete API key");
     },
-    createKey: async (apiKey, context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiKey),
-      });
-
-      await context.signRequest(request);
-
-      const response = await fetch(request);
-      invariant(response.ok, "Failed to create API key");
-    },
-    getKeys: async (context) => {
-      const request = new Request(endpoint + `/v1/developer/api-keys`);
-
+    getConsumers: async (context) => {
+      const request = new Request(
+        DEFAULT_API_KEY_ENDPOINT + `/${deploymentName}/consumers`,
+      );
       await context.signRequest(request);
 
       const keys = await fetch(request);
       invariant(keys.ok, "Failed to fetch API keys");
 
-      return await keys.json();
+      const data = (await keys.json()) as {
+        data: [
+          {
+            id: string;
+            name: string;
+            apiKeys: {
+              data: ApiKey[];
+            };
+          },
+        ];
+      };
+
+      return data.data.map((consumer) => ({
+        id: consumer.id,
+        name: consumer.name,
+        apiKeys: consumer.apiKeys.data,
+        key: consumer.apiKeys.data.at(0),
+      }));
     },
   };
 };
@@ -98,11 +128,10 @@ export const createApiKeyService = <T extends ApiKeyService>(service: T): T =>
 export const apiKeyPlugin = (
   options: ApiKeyPluginOptions,
 ): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
-  const endpoint =
-    "endpoint" in options ? options.endpoint : DEFAULT_API_KEY_ENDPOINT;
-
-  const service =
-    "getKeys" in options ? options : createDefaultHandler(endpoint);
+  const service: ApiKeyService =
+    "deploymentName" in options
+      ? createDefaultHandler(options.deploymentName)
+      : options;
 
   return {
     getProfileMenuItems: () => [
@@ -110,20 +139,37 @@ export const apiKeyPlugin = (
         label: "API Keys",
         path: "/settings/api-keys",
         category: "middle",
-        icon: FileKey2Icon,
+        icon: KeyRoundIcon,
       },
     ],
+    getSidebar: async (path) => {
+      if (!path.startsWith("/settings")) {
+        return [];
+      }
+
+      return [
+        {
+          type: "link",
+          label: "API Keys",
+          icon: KeyRoundIcon,
+          href: "/settings/api-keys",
+        },
+      ];
+    },
     getIdentities: async (context) => {
       try {
-        const keys = await service.getKeys(context);
+        const consumers = await service.getConsumers(context);
 
-        return keys.map((key) => ({
+        return consumers.map((consumer) => ({
           authorizeRequest: (request) => {
-            request.headers.set("Authorization", `Bearer ${key.key}`);
+            request.headers.set(
+              "Authorization",
+              `Bearer ${consumer.apiKeys.at(0)?.key}`,
+            );
             return request;
           },
-          id: key.id,
-          label: key.description ?? key.id,
+          id: consumer.id,
+          label: consumer.description ?? consumer.id,
         }));
       } catch {
         return [];
@@ -140,10 +186,10 @@ export const apiKeyPlugin = (
               path: "/settings/api-keys",
               element: <SettingsApiKeys service={service} />,
             },
-            {
-              path: "/settings/api-keys/new",
-              element: <CreateApiKey service={service} />,
-            },
+            // {
+            //   path: "/settings/api-keys/new",
+            //   element: <CreateApiKey service={service} />,
+            // },
           ],
         },
       ];

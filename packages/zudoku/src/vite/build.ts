@@ -1,10 +1,12 @@
 import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as viteBuild } from "vite";
+import { ZuploEnv } from "../app/env.js";
 import {
   findOutputPathOfServerConfig,
   loadZudokuConfig,
 } from "../config/loader.js";
+import type { ZudokuConfig } from "../config/validators/validate.js";
 import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
@@ -14,6 +16,34 @@ import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
 
+const getIssuer = async (config: ZudokuConfig) => {
+  switch (config.authentication?.type) {
+    case "clerk": {
+      const frontendApiEncoded = config.authentication.clerkPubKey
+        .split("_")
+        .at(-1);
+      invariant(frontendApiEncoded, "Clerk public key is invalid");
+      const frontendApi = atob(frontendApiEncoded).split("$").at(0);
+      invariant(frontendApi, "Clerk frontend API is invalid");
+      return frontendApi;
+    }
+    case "auth0": {
+      return `https://${config.authentication.domain}/`;
+    }
+    case "openid": {
+      return config.authentication.issuer;
+    }
+    case "supabase": {
+      return config.authentication.supabaseUrl;
+    }
+    case undefined: {
+      return undefined;
+    }
+    default: {
+      throw new Error(`Unsupported authentication type`);
+    }
+  }
+};
 export async function runBuild(options: { dir: string }) {
   // Shouldn't run in parallel because it's potentially racy
   const viteClientConfig = await getViteConfig(options.dir, {
@@ -40,6 +70,8 @@ export async function runBuild(options: { dir: string }) {
     { mode: "production", command: "build" },
     options.dir,
   );
+
+  const issuer = await getIssuer(config);
 
   if ("output" in clientResult) {
     const [jsEntry, cssEntry] = [
@@ -95,6 +127,17 @@ export async function runBuild(options: { dir: string }) {
         config,
         redirects: results.flatMap((r) => r.redirect ?? []),
       });
+
+      if (ZuploEnv.isZuplo) {
+        if (!issuer) {
+          throw new Error("Issuer is required for Zuplo");
+        }
+        await writeFile(
+          path.join(options.dir, "dist/.output/zuplo.json"),
+          JSON.stringify({ issuer }, null, 2),
+          "utf-8",
+        );
+      }
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
       // eslint-disable-next-line no-console

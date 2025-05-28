@@ -1,4 +1,5 @@
 import { type Plugin } from "vite";
+import { ZuploEnv } from "../app/env.js";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteApiKeysPlugin = (): Plugin => {
@@ -19,12 +20,16 @@ const viteApiKeysPlugin = (): Plugin => {
           return `export const configuredApiKeysPlugin = undefined;`;
         }
 
+        const deploymentName = ZuploEnv.buildConfig?.deploymentName;
         const code = [
           `import config from "virtual:zudoku-config";`,
           config.__meta.mode === "internal"
             ? `import { apiKeyPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/api-keys/index.tsx";`
             : `import { apiKeyPlugin } from "zudoku/plugins/api-keys";`,
-          `export const configuredApiKeysPlugin = apiKeyPlugin(config.apiKeys);`,
+          `export const configuredApiKeysPlugin = apiKeyPlugin({
+            ...config.apiKeys,
+            ${deploymentName ? `deploymentName: "${deploymentName}"` : ""}
+          });`,
         ];
 
         return {

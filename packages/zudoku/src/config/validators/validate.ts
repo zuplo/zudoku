@@ -90,44 +90,38 @@ const ApiSchema = z.union([
     .merge(ApiConfigSchema),
 ]);
 
-const ApiKeysSchema = z.union([
-  z.object({
-    enabled: z.boolean(),
-    endpoint: z.string(),
-  }),
-  z.object({
-    enabled: z.boolean(),
-    getKeys: z.custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
-      (val) => typeof val === "function",
-    ),
-    rollKey: z
-      .custom<
-        (id: string, context: ZudokuContext) => Promise<void>
-      >((val) => typeof val === "function")
-      .optional(),
-    deleteKey: z
-      .custom<
-        (id: string, context: ZudokuContext) => Promise<void>
-      >((val) => typeof val === "function")
-      .optional(),
-    updateKeyDescription: z
-      .custom<
-        (
-          apiKey: { id: string; description: string },
-          context: ZudokuContext,
-        ) => Promise<void>
-      >((val) => typeof val === "function")
-      .optional(),
-    createKey: z
-      .custom<
-        (
-          apiKey: { description: string; expiresOn?: string },
-          context: ZudokuContext,
-        ) => Promise<void>
-      >((val) => typeof val === "function")
-      .optional(),
-  }),
-]);
+const ApiKeysSchema = z.object({
+  enabled: z.boolean(),
+  getKeys: z.custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
+    (val) => typeof val === "function",
+  ),
+  rollKey: z
+    .custom<
+      (id: string, context: ZudokuContext) => Promise<void>
+    >((val) => typeof val === "function")
+    .optional(),
+  deleteKey: z
+    .custom<
+      (id: string, context: ZudokuContext) => Promise<void>
+    >((val) => typeof val === "function")
+    .optional(),
+  updateKeyDescription: z
+    .custom<
+      (
+        apiKey: { id: string; description: string },
+        context: ZudokuContext,
+      ) => Promise<void>
+    >((val) => typeof val === "function")
+    .optional(),
+  createKey: z
+    .custom<
+      (
+        apiKey: { description: string; expiresOn?: string },
+        context: ZudokuContext,
+      ) => Promise<void>
+    >((val) => typeof val === "function")
+    .optional(),
+});
 
 const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),

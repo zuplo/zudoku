@@ -11,6 +11,7 @@ const config: ZudokuConfig = {
   basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
   page: {
+    showPoweredBy: true,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
