@@ -236,6 +236,7 @@ export const Playground = ({
 
       try {
         const response = await fetch(request, {
+          cache: "no-store",
           signal: abortControllerRef.current.signal,
         });
 
