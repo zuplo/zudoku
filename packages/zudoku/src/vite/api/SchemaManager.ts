@@ -6,6 +6,7 @@ import { upgrade, validate } from "@scalar/openapi-parser";
 import { merge as mergeAllOf } from "allof-merge";
 import fs from "node:fs/promises";
 import path from "node:path";
+import colors from "picocolors";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
@@ -45,7 +46,24 @@ export class SchemaManager {
     this.config = config;
     this.processors = [
       ({ schema }) => upgrade(schema).specification,
-      ({ schema }) => mergeAllOf(schema),
+      ({ schema, file }) => {
+        try {
+          return mergeAllOf(schema, {
+            onMergeError: (message, path) => {
+              throw new Error(`${message} at '${path.join(".")}'`);
+            },
+          });
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.warn(
+            colors.yellow(
+              `Failed to merge \`allOf\` in ${file}: ` +
+                (error instanceof Error ? error.message : error),
+            ),
+          );
+          return schema; // Return original schema if merge fails
+        }
+      },
       ...processors,
     ];
   }
