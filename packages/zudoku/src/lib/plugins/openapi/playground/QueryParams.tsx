@@ -28,7 +28,7 @@ export const QueryParams = ({
   const requiredFields = queryParams.map((param) => Boolean(param.isRequired));
 
   return (
-    <Card className="rounded-lg">
+    <Card className="rounded-lg overflow-hidden">
       <div className="w-full ">
         <ParamsGrid>
           {fields.map((field, i) => {
