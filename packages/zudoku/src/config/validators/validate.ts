@@ -3,7 +3,6 @@ import type { ComponentType, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
 import z, {
-  type RefinementCtx,
   type ZodEnumDef,
   type ZodOptional,
   type ZodString,
@@ -69,7 +68,7 @@ const ApiConfigSchema = z
   .object({
     id: z.string(),
     server: z.string(),
-    navigationId: z.string(),
+    path: z.string(),
     categories: z.array(ApiCatalogCategorySchema),
     options: ApiOptionsSchema,
   })
@@ -388,7 +387,7 @@ const PageSchema = z
   .partial();
 
 const ApiCatalogSchema = z.object({
-  navigationId: z.string(),
+  path: z.string(),
   label: z.string(),
   items: z.array(z.string()).optional(),
   filterItems: z.function().args(z.any()).returns(z.any()).optional(),
@@ -447,8 +446,7 @@ const BaseConfigSchema = z.object({
     })
     .optional(),
   page: PageSchema,
-  topNavigation: z.array(TopNavigationItemSchema),
-  sidebar: z.record(InputSidebarSchema),
+  navigation: InputSidebarSchema,
   theme: z
     .object({
       light: ThemeSchema,
@@ -485,40 +483,17 @@ const BaseConfigSchema = z.object({
   }),
 });
 
-export const refine = (
-  config: z.output<typeof ZudokuConfigSchema>,
-  ctx: RefinementCtx,
-) => {
-  // check if sidebar ids are found in top navigation
-  if (!config.sidebar || !config.topNavigation) return;
-
-  const topNavIds = config.topNavigation.map((item) => item.id);
-
-  const nonExistentKeys = Object.keys(config.sidebar).filter(
-    (key) => !topNavIds.includes(key),
-  );
-
-  if (nonExistentKeys.length > 0) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: `Sidebar ID [${nonExistentKeys.map((v) => `"${v}"`).join(", ")}] not found in top navigation.
-Following IDs are available: ${topNavIds.join(", ")}`,
-    });
-  }
-};
-
-export const ZudokuConfigSchema = BaseConfigSchema.partial();
-export const ZudokuConfig = ZudokuConfigSchema.superRefine(refine);
+export const ZudokuConfig = BaseConfigSchema.partial();
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type TopNavigationItem = z.infer<typeof TopNavigationItemSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
-export type ZudokuConfig = z.input<typeof ZudokuConfigSchema>;
+export type ZudokuConfig = z.input<typeof ZudokuConfig>;
 
 export function validateConfig(config: unknown) {
-  const validationResult = ZudokuConfigSchema.safeParse(config);
+  const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
     // eslint-disable-next-line no-console

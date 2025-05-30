@@ -43,7 +43,7 @@ describe("SchemaManager", () => {
       apis: [
         {
           type: "file",
-          navigationId: "test-api",
+          path: "test-api",
           input: schemaPath,
         },
       ],
@@ -82,7 +82,7 @@ describe("SchemaManager", () => {
       apis: [
         {
           type: "file",
-          navigationId: "test-api",
+          path: "test-api",
           input: [schemaPathV2, schemaPath], // v2 first, then v1
         },
       ],
@@ -92,7 +92,7 @@ describe("SchemaManager", () => {
 
     await manager.processAllSchemas();
 
-    const schemas = manager.getSchemasForId("test-api");
+    const schemas = manager.getSchemasForPath("test-api");
     expect(schemas).toHaveLength(2);
     expect(schemas?.[0]?.version).toBe("2.0.0"); // v2 first
     expect(schemas?.[1]?.version).toBe("1.0.0"); // v1 second
@@ -113,7 +113,7 @@ describe("SchemaManager", () => {
       apis: [
         {
           type: "file",
-          navigationId: "test-api",
+          path: "test-api",
           input: schemaPath,
         },
       ],
