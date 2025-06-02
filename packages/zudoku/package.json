@@ -284,7 +284,7 @@
     "yaml": "2.7.1",
     "yargs": "17.7.2",
     "zod": "3.24.2",
-    "zod-validation-error": "3.4.0",
+    "zod-validation-error": "3.4.1",
     "zustand": "5.0.3"
   },
   "devDependencies": {
