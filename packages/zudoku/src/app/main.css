@@ -166,7 +166,7 @@
     @apply leading-normal;
   }
   .code-block .shiki {
-    @apply grid;
+    @apply grid grid-rows-1;
     grid-auto-rows: 1lh;
   }
 
