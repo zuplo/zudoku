@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
-import { useZudoku } from "zudoku/components";
+import { useZudoku } from "zudoku/hooks";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
@@ -105,7 +105,7 @@ export const Sidecar = ({
   const { selectedServer } = useSelectedServer(result.data.schema.servers);
 
   const code = useMemo(() => {
-    const example =
+    const exampleBody =
       selectedExample ??
       (transformedRequestBodyContent?.[0]?.schema
         ? generateSchemaExample(
@@ -116,7 +116,7 @@ export const Sidecar = ({
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: example,
+      exampleBody,
     });
 
     return getConverted(snippet, selectedLang);

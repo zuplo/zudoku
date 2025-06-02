@@ -1,5 +1,5 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
-import { OperationsFragmentFragment } from "../graphql/graphql.js";
+import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 
 export const createHttpSnippet = ({
   operation,
