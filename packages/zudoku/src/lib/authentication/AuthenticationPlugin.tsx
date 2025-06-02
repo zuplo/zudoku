@@ -28,20 +28,6 @@ export class CoreAuthenticationPlugin implements PluginInterface {
     ];
   }
 
-  async getSidebar(path: string) {
-    if (path.startsWith("/settings")) {
-      return [
-        {
-          type: "link" as const,
-          label: "Logout",
-          href: "/signout",
-        },
-      ];
-    }
-
-    return [];
-  }
-
   getProfileMenuItems() {
     return [
       {
