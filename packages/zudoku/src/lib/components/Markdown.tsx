@@ -1,5 +1,6 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { MarkdownHooks, type Components } from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { createConfiguredShikiRehypePlugins } from "../shiki.js";
 import { MdxComponents } from "../util/MdxComponents.js";
@@ -21,8 +22,17 @@ export const Markdown = memo(
     components?: Components;
   }) => {
     const { syntaxHighlighting } = useZudoku().options;
-    const rehypePlugins = createConfiguredShikiRehypePlugins(
-      syntaxHighlighting?.themes,
+    const rehypePlugins = useMemo(
+      () => [
+        rehypeRaw,
+        ...createConfiguredShikiRehypePlugins(syntaxHighlighting?.themes),
+      ],
+      [syntaxHighlighting?.themes],
+    );
+
+    const mdComponents = useMemo(
+      () => ({ ...MdxComponents, ...components }),
+      [components],
     );
 
     return (
@@ -30,7 +40,7 @@ export const Markdown = memo(
         <MarkdownHooks
           remarkPlugins={remarkPlugins}
           rehypePlugins={rehypePlugins}
-          components={{ ...MdxComponents, ...components }}
+          components={mdComponents}
         >
           {content}
         </MarkdownHooks>
