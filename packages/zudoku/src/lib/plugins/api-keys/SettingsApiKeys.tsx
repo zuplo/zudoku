@@ -3,17 +3,18 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   CheckIcon,
   CopyIcon,
   EyeIcon,
   EyeOffIcon,
-  LoaderPinwheelIcon,
+  PencilLineIcon,
   RotateCwIcon,
   TrashIcon,
+  XIcon,
 } from "lucide-react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router";
 import { Card, CardHeader } from "zudoku/ui/Card.js";
 import {
@@ -29,13 +30,18 @@ import {
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
+import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
-import { type ApiKey, type ApiKeyService } from "./index.js";
+import { ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();
   const queryClient = useQueryClient();
-  const { data } = useSuspenseQuery({
+  const [editingConsumerId, setEditingConsumerId] = useState<string | null>(
+    null,
+  );
+  const [editingLabel, setEditingLabel] = useState<string>("");
+  const { data, isFetching } = useSuspenseQuery({
     queryFn: () => service.getConsumers(context),
     queryKey: ["api-keys"],
     retry: false,
@@ -55,6 +61,80 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       return service.deleteKey(consumerId, keyId, context);
     },
+    onMutate: async ({ consumerId, keyId }) => {
+      await queryClient.cancelQueries({ queryKey: ["api-keys"] });
+      const previousData = queryClient.getQueryData<ApiConsumer[]>([
+        "api-keys",
+      ]);
+      queryClient.setQueryData<ApiConsumer[]>(["api-keys"], (old) => {
+        if (!old) {
+          return old;
+        }
+
+        return old.map((consumer) => {
+          if (consumer.id === consumerId) {
+            return {
+              ...consumer,
+              apiKeys: consumer.apiKeys.filter((key) => key.id !== keyId),
+            };
+          }
+          return consumer;
+        });
+      });
+
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(["api-keys"], context.previousData);
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["api-keys"] });
+    },
+  });
+
+  const updateConsumerMutation = useMutation({
+    mutationFn: ({
+      consumerId,
+      label,
+    }: {
+      consumerId: string;
+      label: string;
+    }) => {
+      if (!service.updateConsumer) {
+        throw new Error("updateConsumer not implemented");
+      }
+
+      return service.updateConsumer({ id: consumerId, label }, context);
+    },
+    onMutate: async ({ consumerId, label }) => {
+      await queryClient.cancelQueries({ queryKey: ["api-keys"] });
+
+      const previousData = queryClient.getQueryData(["api-keys"]);
+      queryClient.setQueryData<ApiConsumer[]>(["api-keys"], (old) => {
+        if (!old) {
+          return old;
+        }
+
+        return old.map((consumer) => {
+          if (consumer.id === consumerId) {
+            return {
+              ...consumer,
+              label,
+            };
+          }
+          return consumer;
+        });
+      });
+
+      return { previousData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(["api-keys"], context.previousData);
+      }
+    },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["api-keys"] });
     },
@@ -70,6 +150,27 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["api-keys"] }),
   });
+
+  const handleStartEdit = (consumerId: string, currentLabel: string) => {
+    setEditingConsumerId(consumerId);
+    setEditingLabel(currentLabel);
+  };
+
+  const handleSaveEdit = (consumerId: string) => {
+    if (editingLabel.trim()) {
+      updateConsumerMutation.mutate({
+        consumerId,
+        label: editingLabel.trim(),
+      });
+    }
+    setEditingConsumerId(null);
+    setEditingLabel("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingConsumerId(null);
+    setEditingLabel("");
+  };
 
   return (
     <div className="max-w-screen-lg h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
@@ -89,7 +190,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       <div className="h-8"></div>
       <div className="grid grid-cols-8">
-        {data.length !== 0 ? (
+        {data.length === 0 ? (
           <div className="flex col-span-full flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
             <p className="text-center">
               You have no API keys yet.
@@ -111,13 +212,49 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
           >
             {data.map((consumers) => (
               <Card
-                className="grid grid-cols-subgrid col-span-full items-center mb-4"
+                className="grid grid-cols-subgrid col-span-full items-center mb-4 group"
                 key={consumers.id}
               >
                 <CardHeader className="border-b col-span-full grid-cols-subgrid grid">
-                  <div className="flex flex-col text-sm justify-center">
-                    <div className="font-medium text-lg">
-                      {consumers.name ?? consumers.id}
+                  <div className="h-10 flex flex-col text-sm justify-center">
+                    <div className="font-medium text-lg flex items-center gap-2">
+                      {editingConsumerId === consumers.id ? (
+                        <div className="flex items-center gap-2 w-full">
+                          <Input
+                            maxLength={32}
+                            value={editingLabel}
+                            onChange={(e) => setEditingLabel(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                handleSaveEdit(consumers.id);
+                              } else if (e.key === "Escape") {
+                                handleCancelEdit();
+                              }
+                            }}
+                            className="text-lg font-medium"
+                            autoFocus
+                          />
+                          <div className="flex items-center">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleSaveEdit(consumers.id)}
+                              disabled={!editingLabel.trim()}
+                            >
+                              <CheckIcon size={16} />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={handleCancelEdit}
+                            >
+                              <XIcon size={16} />
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>{consumers.label}</>
+                      )}
                       <div className="text-muted-foreground text-xs">
                         {consumers.createdOn}
                       </div>
@@ -139,6 +276,22 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                   </div>
 
                   <div className="flex justify-end">
+                    {service.updateConsumer && (
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() =>
+                          handleStartEdit(consumers.id, consumers.label)
+                        }
+                        className={cn(
+                          editingConsumerId === consumers.id &&
+                            "opacity-0! pointer-events-none",
+                        )}
+                        disabled={editingConsumerId === consumers.id}
+                      >
+                        <PencilLineIcon size={16} />
+                      </Button>
+                    )}
                     {service.rollKey && (
                       <Dialog>
                         <DialogTrigger asChild>
@@ -182,36 +335,27 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                     )}
                   </div>
                 </CardHeader>
-                <div className="divide-y col-span-full grid-cols-subgrid grid">
+                <div className="col-span-full grid-cols-subgrid grid">
                   <AnimatePresence>
-                    {rollKeyMutation.isPending && (
-                      <motion.div
-                        className={cn(
-                          "flex col-span-full items-center gap-2 px-6 py-1 text-xs bg-muted/30 font-medium",
-                        )}
-                        initial={{ opacity: 0, y: 0 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <LoaderPinwheelIcon
-                          size={16}
-                          className="animate-spin opacity-80"
-                        />
-                        Rolling key...
-                      </motion.div>
-                    )}
                     {consumers.apiKeys.map((apiKey) => (
-                      <RevealApiKey
-                        key={apiKey.id}
-                        apiKey={apiKey}
-                        onDeleteKey={() => {
-                          deleteKeyMutation.mutate({
-                            consumerId: consumers.id,
-                            keyId: apiKey.id,
-                          });
-                        }}
-                      />
+                      <React.Fragment key={apiKey.id}>
+                        <RevealApiKey
+                          apiKey={apiKey}
+                          onDeleteKey={() => {
+                            deleteKeyMutation.mutate({
+                              consumerId: consumers.id,
+                              keyId: apiKey.id,
+                            });
+                          }}
+                          className={
+                            deleteKeyMutation.variables?.keyId === apiKey.id &&
+                            (deleteKeyMutation.isPending || isFetching)
+                              ? "opacity-10!"
+                              : undefined
+                          }
+                        />
+                        <div className="col-span-full h-px bg-border"></div>
+                      </React.Fragment>
                     ))}
                   </AnimatePresence>
                 </div>
@@ -246,9 +390,11 @@ const getTimeAgo = (date: string) => {
 const RevealApiKey = ({
   apiKey,
   onDeleteKey,
+  className,
 }: {
   apiKey: ApiKey;
   onDeleteKey: () => void;
+  className?: string;
 }) => {
   const [revealed, setRevealed] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -264,13 +410,7 @@ const RevealApiKey = ({
   const expiresSoon = daysUntilExpiry <= 7 && !isExpired;
 
   return (
-    <motion.div
-      className="grid col-span-full grid-cols-subgrid p-6"
-      initial={{ opacity: 0, y: 0 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
       <div className="flex flex-col gap-1">
         <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
           <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
@@ -365,6 +505,6 @@ const RevealApiKey = ({
           </Dialog>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };

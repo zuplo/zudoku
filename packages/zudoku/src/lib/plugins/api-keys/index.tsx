@@ -21,8 +21,8 @@ export type ApiKeyService = {
     keyId: string,
     context: ZudokuContext,
   ) => Promise<void>;
-  updateKeyDescription?: (
-    apiKey: { id: string; description: string },
+  updateConsumer?: (
+    consumer: { id: string; label?: string },
     context: ZudokuContext,
   ) => Promise<void>;
   getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
@@ -47,7 +47,7 @@ export interface ApiKey {
 
 export interface ApiConsumer {
   id: string;
-  name: string;
+  label: string;
   apiKeys: ApiKey[];
   description?: string;
   createdOn?: string;
@@ -70,6 +70,26 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
 
       const response = await fetch(request);
       invariant(response.ok, "Failed to delete API key");
+    },
+    updateConsumer: async (consumer, context) => {
+      const response = await fetch(
+        await context.signRequest(
+          new Request(
+            DEFAULT_API_KEY_ENDPOINT +
+              `/${deploymentName}/consumers/${consumer.id}`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                label: consumer.label,
+              }),
+            },
+          ),
+        ),
+      );
+      invariant(response.ok, "Failed to update API key description");
     },
     rollKey: async (consumerId, context) => {
       const response = await fetch(
@@ -104,7 +124,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
         data: [
           {
             id: string;
-            name: string;
+            label: string;
             apiKeys: {
               data: ApiKey[];
             };
@@ -114,7 +134,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
 
       return data.data.map((consumer) => ({
         id: consumer.id,
-        name: consumer.name,
+        label: consumer.label || "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
       }));
