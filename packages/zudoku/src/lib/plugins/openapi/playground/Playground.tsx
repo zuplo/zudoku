@@ -180,9 +180,10 @@ export const Playground = ({
               active: false,
             },
           ]),
-        identity: getRememberedIdentity(
-          identities.data?.map((i) => i.id) ?? [],
-        ),
+        identity: getRememberedIdentity([
+          NO_IDENTITY,
+          ...(identities.data?.map((i) => i.id) ?? []),
+        ]),
       },
     });
   const formState = watch();
