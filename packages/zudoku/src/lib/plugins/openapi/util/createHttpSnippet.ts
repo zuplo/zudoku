@@ -8,14 +8,17 @@ export const createHttpSnippet = ({
 }: {
   operation: OperationsFragmentFragment;
   selectedServer: string;
-  exampleBody: string;
+  exampleBody: {
+    mimeType: string;
+    text: string;
+  };
 }) => {
   return new HTTPSnippet({
     method: operation.method.toLocaleUpperCase(),
     url:
       selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postData: exampleBody as any,
+    postData: exampleBody,
     headers:
       operation.parameters
         ?.filter((p) => p.in === "header" && p.required === true)
