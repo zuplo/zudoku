@@ -8,9 +8,9 @@ export const createHttpSnippet = ({
 }: {
   operation: OperationsFragmentFragment;
   selectedServer: string;
-  exampleBody?: {
+  exampleBody: {
     mimeType: string;
-    text: string;
+    text?: string;
   };
 }) => {
   return new HTTPSnippet({
@@ -18,9 +18,9 @@ export const createHttpSnippet = ({
     url:
       selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postData: exampleBody as any,
+    postData: exampleBody,
     headers: [
-      ...(exampleBody?.mimeType
+      ...(exampleBody.text
         ? [{ name: "Content-Type", value: exampleBody.mimeType }]
         : []),
       ...(operation.parameters

@@ -121,7 +121,7 @@ export const Sidecar = ({
             mimeType: "application/json",
             text: JSON.stringify(exampleBody, null, 2),
           }
-        : undefined,
+        : { mimeType: "application/json" },
     });
 
     return getConverted(snippet, selectedLang);
