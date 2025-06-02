@@ -31,6 +31,7 @@ import { useIdentityStore } from "./rememberedIdentity.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import SubmitButton from "./SubmitButton.js";
+import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
 
@@ -138,7 +139,7 @@ export const Playground = ({
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
-  const [skipLogin, setSkipLogin] = useState(false);
+  const { skipLogin, setSkipLogin } = useRememberSkipLoginDialog();
   const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
