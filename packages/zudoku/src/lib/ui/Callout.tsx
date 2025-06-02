@@ -98,6 +98,7 @@ export const Callout = ({
           icon && "col-start-2",
           !title && icon && "row-start-1",
           textColor,
+          "overflow-x-auto",
         )}
       >
         {children}
