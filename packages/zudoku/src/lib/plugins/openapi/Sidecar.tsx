@@ -150,7 +150,7 @@ export const Sidecar = ({
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
           <span className="font-mono break-words leading-6">
             <span className={cn("font-semibold", methodTextColor)}>
-              {operation.method.toLocaleUpperCase()}
+              {operation.method.toUpperCase()}
             </span>
             &nbsp;
             {path}

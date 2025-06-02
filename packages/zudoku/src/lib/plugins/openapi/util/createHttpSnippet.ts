@@ -14,7 +14,7 @@ export const createHttpSnippet = ({
   };
 }) => {
   return new HTTPSnippet({
-    method: operation.method.toLocaleUpperCase(),
+    method: operation.method.toUpperCase(),
     url:
       selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
