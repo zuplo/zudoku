@@ -8,7 +8,7 @@ export const createHttpSnippet = ({
 }: {
   operation: OperationsFragmentFragment;
   selectedServer: string;
-  exampleBody: {
+  exampleBody?: {
     mimeType: string;
     text: string;
   };
@@ -18,9 +18,12 @@ export const createHttpSnippet = ({
     url:
       selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postData: exampleBody,
-    headers:
-      operation.parameters
+    postData: exampleBody as any,
+    headers: [
+      ...(exampleBody?.mimeType
+        ? [{ name: "Content-Type", value: exampleBody.mimeType }]
+        : []),
+      ...(operation.parameters
         ?.filter((p) => p.in === "header" && p.required === true)
         .map((p) => ({
           name: p.name,
@@ -34,7 +37,8 @@ export const createHttpSnippet = ({
                 : p.schema?.type === "boolean"
                   ? "<bool>"
                   : "<value>"),
-        })) ?? [],
+        })) ?? []),
+    ],
     queryString:
       operation.parameters
         ?.filter((p) => p.in === "query" && p.required === true)

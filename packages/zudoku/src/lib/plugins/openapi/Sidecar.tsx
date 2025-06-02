@@ -116,10 +116,12 @@ export const Sidecar = ({
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: {
-        mimeType: "application/json",
-        text: JSON.stringify(exampleBody, null, 2),
-      },
+      exampleBody: exampleBody
+        ? {
+            mimeType: "application/json",
+            text: JSON.stringify(exampleBody, null, 2),
+          }
+        : undefined,
     });
 
     return getConverted(snippet, selectedLang);
