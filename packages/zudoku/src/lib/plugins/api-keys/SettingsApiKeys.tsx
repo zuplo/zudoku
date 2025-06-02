@@ -89,12 +89,12 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       <div className="h-8"></div>
       <div className="grid grid-cols-8">
-        {data.length === 0 ? (
-          <div className="flex flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
+        {data.length !== 0 ? (
+          <div className="flex col-span-full flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
             <p className="text-center">
-              No API keys created yet.
+              You have no API keys yet.
               <br />
-              Get started and create your first key.
+              {service.createKey && "Get started and create your first key."}
             </p>
             {service.createKey && (
               <Button asChild variant="outline">
@@ -147,6 +147,11 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                             title="Roll this key"
                             variant="ghost"
                             disabled={rollKeyMutation.isPending}
+                            className={
+                              rollKeyMutation.isPending
+                                ? "animate-spin"
+                                : undefined
+                            }
                           >
                             <RotateCwIcon size={16} />
                           </Button>
