@@ -142,20 +142,7 @@ export const apiKeyPlugin = (
         icon: KeyRoundIcon,
       },
     ],
-    getSidebar: async (path) => {
-      if (!path.startsWith("/settings")) {
-        return [];
-      }
 
-      return [
-        {
-          type: "link",
-          label: "API Keys",
-          icon: KeyRoundIcon,
-          href: "/settings/api-keys",
-        },
-      ];
-    },
     getIdentities: async (context) => {
       try {
         const consumers = await service.getConsumers(context);
