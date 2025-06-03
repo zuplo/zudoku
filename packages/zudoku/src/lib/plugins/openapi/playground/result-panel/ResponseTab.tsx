@@ -16,6 +16,7 @@ import {
 } from "zudoku/ui/Select.js";
 import { Card } from "../../../../ui/Card.js";
 import { SyntaxHighlight } from "../../../../ui/SyntaxHighlight.js";
+import { humanFileSize } from "../../../../util/humanFileSize.js";
 import { convertToTypes } from "./convertToTypes.js";
 
 const statusCodeMap: Record<number, string> = {
@@ -29,14 +30,6 @@ const statusCodeMap: Record<number, string> = {
   404: "Not Found",
   405: "Method Not Allowed",
   500: "Internal Server Error",
-};
-
-const humanFileSize = (bytes: number) => {
-  const exponent = Math.floor(Math.log(bytes) / Math.log(1000.0));
-  const decimal = (bytes / Math.pow(1000.0, exponent)).toFixed(
-    exponent ? 2 : 0,
-  );
-  return `${decimal} ${exponent ? `${"kMGTPEZY"[exponent - 1]}B` : "B"}`;
 };
 
 const mimeTypeToLanguage = (mimeType: string) => {
@@ -193,7 +186,7 @@ export const ResponseTab = ({
         />
       </Card>
       <div className="flex gap-2 justify-between items-center">
-        <div className="flex text-xs gap-2 border bg-muted rounded-md p-2 items-center h-8 font-mono divide-x">
+        <div className="flex text-xs gap-5 border bg-muted rounded-md p-2 items-center h-8 font-mono">
           <div>
             <span className="text-muted-foreground">Status</span> {status}{" "}
             {statusCodeMap[status] ?? ""}
