@@ -17,6 +17,7 @@ import { type Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
 import BodyPanel from "./BodyPanel.js";
 import { createUrl } from "./createUrl.js";
+import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
 import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
@@ -81,6 +82,9 @@ export type PlaygroundResult = {
   size: number;
   body: string;
   time: number;
+  isBinary?: boolean;
+  fileName?: string;
+  blob?: Blob;
   request: {
     method: string;
     url: string;
@@ -225,15 +229,34 @@ export const Playground = ({
         setShowLongRunningWarning(false);
 
         const time = performance.now() - start;
-        const body = await response.text();
         const url = new URL(request.url);
+        const responseHeaders = Array.from(response.headers.entries());
+        const contentType = response.headers.get("content-type") || "";
+        const isBinary = isBinaryContentType(contentType);
+
+        let body = "";
+        let blob: Blob | undefined;
+        let fileName: string | undefined;
+
+        if (isBinary) {
+          blob = await response.blob();
+          fileName = extractFileName(responseHeaders, request.url);
+          body = `Binary content (${contentType})`;
+        } else {
+          body = await response.text();
+        }
+
+        const responseSize = response.headers.get("content-length");
 
         return {
           status: response.status,
-          headers: Array.from(response.headers.entries()),
-          size: body.length,
+          headers: responseHeaders,
+          size: responseSize ? parseInt(responseSize) : body.length,
           body,
           time,
+          isBinary,
+          fileName,
+          blob,
           request: {
             method: request.method.toUpperCase(),
             url: request.url,
@@ -406,7 +429,7 @@ export const Playground = ({
               />
             </div>
           </div>
-          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto max-h-[80vh]">
+          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
             {identities.data?.length !== 0 && (
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-2">

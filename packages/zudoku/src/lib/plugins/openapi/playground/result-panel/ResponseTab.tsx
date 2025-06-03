@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRightIcon } from "lucide-react";
+import { ChevronRightIcon, DownloadIcon } from "lucide-react";
 import { Fragment, useState } from "react";
+import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
 import {
   Collapsible,
@@ -94,6 +95,9 @@ export const ResponseTab = ({
   time,
   size,
   url,
+  isBinary = false,
+  fileName,
+  blob,
 }: {
   body?: string;
   headers: Array<[string, string]>;
@@ -101,6 +105,9 @@ export const ResponseTab = ({
   time: number;
   size: number;
   url: string;
+  isBinary?: boolean;
+  fileName?: string;
+  blob?: Blob;
 }) => {
   const detectedLanguage = detectLanguage(headers);
   const jsonContent = tryParseJson(body);
@@ -114,8 +121,21 @@ export const ResponseTab = ({
     queryFn: async () => {
       return convertToTypes(JSON.parse(beautifiedBody));
     },
-    enabled: view === "types",
+    enabled: view === "types" && !isBinary,
   });
+
+  const handleDownload = () => {
+    if (blob && fileName) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+  };
 
   const sortedHeaders = sortHeadersByRelevance([...headers]);
   const shouldDisableHighlighting = size > SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD;
@@ -156,34 +176,56 @@ export const ResponseTab = ({
       </Collapsible>
 
       <Card className="shadow-none">
-        {shouldDisableHighlighting && (
-          <Callout type="info" className="my-0 p-2">
-            Code highlight is disabled for responses larger than{" "}
-            {humanFileSize(SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD)}
-          </Callout>
+        {isBinary ? (
+          <div className="p-4 text-center">
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-lg font-semibold">Binary Content</div>
+              <div className="text-sm text-muted-foreground">
+                This response contains binary data that cannot be displayed as
+                text.
+              </div>
+              <Button
+                onClick={handleDownload}
+                className="flex items-center gap-2"
+                disabled={!blob}
+              >
+                <DownloadIcon className="h-4 w-4" />
+                Download {fileName || "file"} ({humanFileSize(size)})
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {shouldDisableHighlighting && (
+              <Callout type="info" className="my-0 p-2">
+                Code highlight is disabled for responses larger than{" "}
+                {humanFileSize(SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD)}
+              </Callout>
+            )}
+            <SyntaxHighlight
+              language={
+                view === "types"
+                  ? "typescript"
+                  : view === "raw"
+                    ? jsonContent
+                      ? "plain"
+                      : detectedLanguage
+                    : "json"
+              }
+              showCopy="always"
+              disabled={shouldDisableHighlighting}
+              noBackground
+              className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]"
+              code={
+                (view === "raw"
+                  ? body
+                  : view === "types"
+                    ? types.data?.lines.join("\n")
+                    : beautifiedBody) ?? ""
+              }
+            />
+          </>
         )}
-        <SyntaxHighlight
-          language={
-            view === "types"
-              ? "typescript"
-              : view === "raw"
-                ? jsonContent
-                  ? "plain"
-                  : detectedLanguage
-                : "json"
-          }
-          showCopy="always"
-          disabled={shouldDisableHighlighting}
-          noBackground
-          className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]"
-          code={
-            (view === "raw"
-              ? body
-              : view === "types"
-                ? types.data?.lines.join("\n")
-                : beautifiedBody) ?? ""
-          }
-        />
       </Card>
       <div className="flex gap-2 justify-between items-center">
         <div className="flex text-xs gap-5 border bg-muted rounded-md p-2 items-center h-8 font-mono">
@@ -200,7 +242,7 @@ export const ResponseTab = ({
             {humanFileSize(size)}
           </div>
         </div>
-        {jsonContent && (
+        {jsonContent && !isBinary && (
           <div>
             <Select
               value={view}

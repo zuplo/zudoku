@@ -83,6 +83,9 @@ export const ResultPanel = ({
               headers={queryMutation.data.headers}
               body={queryMutation.data.body}
               url={queryMutation.data.request.url}
+              isBinary={queryMutation.data.isBinary}
+              fileName={queryMutation.data.fileName}
+              blob={queryMutation.data.blob}
             />
           </TabsContent>
         </Tabs>
