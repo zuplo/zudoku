@@ -29,3 +29,7 @@ updates:
       radix-ui-dependencies:
         patterns:
           - "*@radix-ui/*"
+      shiki-dependencies:
+        patterns:
+          - "@shikijs/*"
+          - "shiki"
