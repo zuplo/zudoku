@@ -1,5 +1,5 @@
+import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import {
@@ -183,13 +183,8 @@ export const Playground = ({
     }
   }, [latestSetRememberedIdentity, formState.identity]);
 
-  const [mutationId, setMutationId] = useState(crypto.randomUUID());
-
   const queryMutation = useMutation({
     gcTime: 0,
-    onMutate: (data) => {
-      setMutationId(crypto.randomUUID());
-    },
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
@@ -263,6 +258,16 @@ export const Playground = ({
       }
     },
   });
+
+  const isRequestAnimating = queryMutation.isPending;
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsAnimating(isRequestAnimating), 100);
+    return () => clearTimeout(timer);
+  }, [isRequestAnimating]);
+
+  const { isFinished, progress } = useNProgress({ isAnimating });
 
   useEffect(() => {
     return () => {
@@ -384,46 +389,11 @@ export const Playground = ({
                     {urlQueryParams.length > 0 ? "?" : ""}
                     {urlQueryParams}
                   </div>
-                  <motion.div
-                    key={mutationId}
-                    className="h-[1px] bg-primary absolute left-0 -bottom-0 z-10"
-                    initial={{
-                      width: 0,
-                      opacity: 0,
-                    }}
-                    animate={{
-                      width: queryMutation.isPending
-                        ? "30%"
-                        : queryMutation.isSuccess || queryMutation.isError
-                          ? "100%"
-                          : 0,
-                      opacity: queryMutation.isPending
-                        ? 1
-                        : queryMutation.isSuccess || queryMutation.isError
-                          ? 0
-                          : 0,
-                    }}
-                    transition={{
-                      width: {
-                        duration: queryMutation.isPending
-                          ? 0.5
-                          : queryMutation.isSuccess || queryMutation.isError
-                            ? 0.25
-                            : 0.1,
-                        ease: "easeInOut",
-                      },
-                      opacity: {
-                        duration: queryMutation.isPending
-                          ? 0.1
-                          : queryMutation.isSuccess || queryMutation.isError
-                            ? 0.3
-                            : 0.1,
-                        delay: queryMutation.isPending
-                          ? 0
-                          : queryMutation.isSuccess || queryMutation.isError
-                            ? 0.25
-                            : 0,
-                      },
+                  <div
+                    className="h-[1px] bg-primary absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
+                    style={{
+                      opacity: isFinished ? 0 : 1,
+                      width: isFinished ? 0 : `${progress * 100}%`,
                     }}
                   />
                 </div>
@@ -451,13 +421,13 @@ export const Playground = ({
             )}
 
             {pathParams.length > 0 && (
-              <div className="flex flex-col gap-2   ">
+              <div className="flex flex-col gap-2">
                 <span className="font-semibold">Path Parameters</span>
                 <PathParams url={url} control={control} />
               </div>
             )}
 
-            <div className="flex flex-col gap-2 ">
+            <div className="flex flex-col gap-2">
               <span className="font-semibold">Query Parameters</span>
               <QueryParams control={control} queryParams={queryParams} />
             </div>

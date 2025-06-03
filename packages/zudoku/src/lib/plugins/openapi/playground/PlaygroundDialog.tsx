@@ -52,6 +52,7 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
       <DialogContent
         className="max-w-screen-xl w-full overflow-hidden p-0"
         aria-describedby={undefined}
+        showCloseButton={false}
       >
         <VisuallyHidden>
           <DialogTitle>Playground</DialogTitle>
