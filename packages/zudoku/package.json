@@ -229,7 +229,7 @@
     "fast-equals": "5.2.2",
     "framer-motion": "^12.12.2",
     "glob": "11.0.1",
-    "graphql": "16.10.0",
+    "graphql": "16.11.0",
     "graphql-type-json": "0.3.2",
     "graphql-yoga": "5.13.3",
     "gray-matter": "4.0.3",
