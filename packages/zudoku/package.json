@@ -317,8 +317,10 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "5.14.0",
+    "tsx": "4.19.4",
     "typescript": "5.8.3",
-    "vitest": "3.1.4"
+    "vitest": "3.1.4",
+    "zod-to-ts": "1.2.0"
   },
   "peerDependencies": {
     "react": ">=19",

@@ -1,6 +1,5 @@
 import type { Options } from "@mdx-js/rollup";
 import type { ComponentType, ReactNode } from "react";
-import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
 import z, {
   type RefinementCtx,
@@ -10,6 +9,7 @@ import z, {
   type ZodType,
   type ZodUnion,
 } from "zod";
+import { withGetType } from "zod-to-ts";
 import { fromError } from "zod-validation-error";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
@@ -148,15 +148,22 @@ export const FooterSocialIcons = [
   "telegram",
 ] as const;
 
+const ReactNodeSchema = withGetType(z.custom<ReactNode>(), (ts) =>
+  ts.factory.createIdentifier("ReactNode"),
+);
+
+const BundledLanguageSchema = withGetType(z.custom<BundledLanguage>(), (ts) =>
+  ts.factory.createIdentifier("BundledLanguage"),
+);
+
+const BundledThemeSchema = withGetType(z.custom<BundledTheme>(), (ts) =>
+  ts.factory.createIdentifier("BundledTheme"),
+);
+
 export const FooterSocialSchema = z.object({
   label: z.string().optional(),
   href: z.string(),
-  icon: z
-    .union([
-      z.enum(FooterSocialIcons),
-      z.custom<ReactNode>((val) => isValidElement(val)),
-    ])
-    .optional(),
+  icon: z.union([z.enum(FooterSocialIcons), ReactNodeSchema]).optional(),
 });
 
 export const FooterSchema = z
@@ -392,7 +399,7 @@ const PageSchema = z
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
     banner: z.object({
-      message: z.custom<NonNullable<ReactNode>>(),
+      message: ReactNodeSchema,
       color: z
         .enum(["note", "tip", "info", "caution", "danger"])
         .or(z.string())
@@ -440,7 +447,7 @@ const BaseConfigSchema = z.object({
   customPages: z.array(
     z.object({
       path: z.string(),
-      element: z.custom<NonNullable<ReactNode>>().optional(),
+      element: ReactNodeSchema.optional(),
       render: z.custom<ComponentType<ExposedComponentProps>>().optional(),
       prose: z.boolean().optional(),
     }),
@@ -474,10 +481,10 @@ const BaseConfigSchema = z.object({
     .partial(),
   syntaxHighlighting: z
     .object({
-      languages: z.array(z.custom<BundledLanguage>()),
+      languages: z.array(BundledLanguageSchema),
       themes: z.object({
-        light: z.custom<BundledTheme>(),
-        dark: z.custom<BundledTheme>(),
+        light: BundledThemeSchema,
+        dark: BundledThemeSchema,
       }),
     })
     .partial()

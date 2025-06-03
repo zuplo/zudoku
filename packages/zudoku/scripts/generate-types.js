@@ -1,8 +1,9 @@
 import icons from "lucide-react/dist/esm/dynamicIconImports.js";
-
 import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
+import { tsImport } from "tsx/esm/api";
+import { printNode, zodToTs } from "zod-to-ts";
 
 const iconNames = Object.keys(icons)
   .sort()
@@ -42,3 +43,23 @@ await Promise.all([
   generateFiles(languageNames, "langs"),
   generateFiles(themeNames, "themes"),
 ]);
+
+// Generate ZudokuConfig types
+const { ZudokuConfigSchema } = await tsImport(
+  "../src/config/validators/validate.ts",
+  import.meta.url,
+);
+
+const zodToTsSchema = zodToTs(ZudokuConfigSchema, "ZudokuConfig");
+
+const result = `
+import type { ReactNode } from "react";
+
+type BundledLanguage = ${languageNames.map((v) => `"${v}"`).join(" | ")};
+type BundledTheme = ${themeNames.map((v) => `"${v}"`).join(" | ")};
+
+export type ZudokuConfig = ${printNode(zodToTsSchema.node)}
+
+`.trim();
+
+console.log(result);
