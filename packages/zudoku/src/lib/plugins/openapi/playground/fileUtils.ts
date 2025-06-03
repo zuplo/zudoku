@@ -1,11 +1,9 @@
-// Function to detect if content type indicates binary data
 export function isBinaryContentType(contentType: string) {
   return /^(application\/octet-stream|image\/|audio\/|video\/|font\/|application\/pdf|application\/zip|application\/x-protobuf|application\/x-binary)/i.test(
     contentType,
   );
 }
 
-// Function to extract filename from Content-Disposition header or URL
 export const extractFileName = (
   headers: Array<[string, string]>,
   url: string,

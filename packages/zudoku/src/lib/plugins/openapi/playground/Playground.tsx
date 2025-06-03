@@ -2,6 +2,7 @@ import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { Button } from "zudoku/ui/Button.js";
 import {
   Select,
   SelectContent,
@@ -26,7 +27,6 @@ import { QueryParams } from "./QueryParams.js";
 import { useIdentityStore } from "./rememberedIdentity.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
-import SubmitButton from "./SubmitButton.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
@@ -179,7 +179,6 @@ export const Playground = ({
       },
     });
   const formState = watch();
-  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (formState.identity) {
@@ -190,6 +189,7 @@ export const Playground = ({
   const queryMutation = useMutation({
     gcTime: 0,
     mutationFn: async (data: PlaygroundForm) => {
+      console.log("mutationFn", data);
       const start = performance.now();
 
       const headers = Object.fromEntries([
@@ -370,13 +370,13 @@ export const Playground = ({
     >
       <form
         onSubmit={handleSubmit((data) => {
+          console.log("onSubmit", data, performance.now());
           if (identities.data?.length === 0 || data.identity) {
             queryMutation.mutate(data);
           } else {
             setShowSelectIdentity(true);
           }
         })}
-        ref={formRef}
         className="relative"
       >
         <IdentityDialog
@@ -422,11 +422,12 @@ export const Playground = ({
                 </div>
               </div>
 
-              <SubmitButton
-                identities={identities.data ?? []}
-                formRef={formRef}
+              <Button
+                type="submit"
                 disabled={identities.isLoading || form.formState.isSubmitting}
-              />
+              >
+                Send
+              </Button>
             </div>
           </div>
           <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
