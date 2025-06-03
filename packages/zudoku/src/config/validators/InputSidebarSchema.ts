@@ -51,6 +51,7 @@ export const InputSidebarItemDocSchema = z.union([
 
 export const InputSidebarItemLinkSchema = z.object({
   type: z.literal("link"),
+  icon: z.custom<IconNames>().optional(),
   label: z.string(),
   href: z.string(),
   description: z.string().optional(),

@@ -112,10 +112,10 @@ export const SidebarItem = ({
           {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
           className={navigationListItem({
             isActive: item.href === [location.pathname, activeAnchor].join("#"),
-            className: item.badge?.placement !== "start" && "justify-between",
           })}
           onClick={onRequestClose}
         >
+          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
               <TruncatedLabel label={item.label} />
@@ -133,6 +133,7 @@ export const SidebarItem = ({
           rel="noopener noreferrer"
           onClick={onRequestClose}
         >
+          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}
           <span className="whitespace-nowrap">
