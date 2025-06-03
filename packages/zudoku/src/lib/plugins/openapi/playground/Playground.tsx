@@ -189,7 +189,6 @@ export const Playground = ({
   const queryMutation = useMutation({
     gcTime: 0,
     mutationFn: async (data: PlaygroundForm) => {
-      console.log("mutationFn", data);
       const start = performance.now();
 
       const headers = Object.fromEntries([
@@ -370,7 +369,6 @@ export const Playground = ({
     >
       <form
         onSubmit={handleSubmit((data) => {
-          console.log("onSubmit", data, performance.now());
           if (identities.data?.length === 0 || data.identity) {
             queryMutation.mutate(data);
           } else {
