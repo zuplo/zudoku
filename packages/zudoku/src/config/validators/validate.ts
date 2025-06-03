@@ -92,9 +92,11 @@ const ApiSchema = z.union([
 
 const ApiKeysSchema = z.object({
   enabled: z.boolean(),
-  getKeys: z.custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
-    (val) => typeof val === "function",
-  ),
+  getKeys: z
+    .custom<
+      (context: ZudokuContext) => Promise<ApiKey[]>
+    >((val) => typeof val === "function")
+    .optional(),
   rollKey: z
     .custom<
       (id: string, context: ZudokuContext) => Promise<void>
