@@ -83,118 +83,122 @@ export const Headers = ({
     .map(({ name }) => name);
 
   return (
-    <div className="flex flex-col gap-2">
-      <Card className="overflow-hidden rounded-lg">
-        <ParamsGrid>
-          {fields.map((field, i) => {
-            const currentHeader = schemaHeaders.find(
-              (h) => h.name === watch(`headers.${i}.name`),
-            );
-            return (
-              <ParamsGridItem key={field.id}>
-                <div className="flex items-center gap-2 ">
-                  <Controller
-                    control={control}
-                    name={`headers.${i}.active`}
-                    render={({ field }) => (
-                      <Checkbox
-                        id={`headers.${i}.active`}
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked);
-                        }}
-                      />
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    name={`headers.${i}.name`}
-                    render={({ field }) => (
-                      <Autocomplete
-                        {...field}
-                        placeholder="Name"
-                        className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                        options={[...missingHeaders, ...headerOptions]}
-                        onEnterPress={() => handleHeaderEnter(i)}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          setValue(`headers.${i}.active`, true);
-                        }}
-                        ref={(el) => {
-                          nameRefs.current[i] = el;
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <Controller
-                    control={control}
-                    name={`headers.${i}.value`}
-                    render={({ field }) => {
-                      const hasEnum =
-                        currentHeader?.enum && currentHeader.enum.length > 0;
-
-                      if (!hasEnum) {
-                        return (
-                          <Input
-                            placeholder="Value"
-                            className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                            {...field}
-                            ref={(el) => {
-                              valueRefs.current[i] = el;
-                            }}
-                            onKeyDown={(e) => {
-                              if (
-                                e.key === "Enter" &&
-                                e.currentTarget.value.trim()
-                              ) {
-                                handleValueEnter(i);
-                              }
-                            }}
-                            autoComplete="off"
-                          />
-                        );
-                      }
-
-                      return (
-                        <Autocomplete
-                          shouldFilter={false}
-                          value={field.value}
-                          options={currentHeader.enum ?? []}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setValue(`headers.${i}.active`, true);
-                          }}
-                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                        />
-                      );
-                    }}
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-muted-foreground opacity-0 group-hover:opacity-100 rounded-full w-8 h-7"
-                    onClick={() => remove(i)}
-                    type="button"
-                  >
-                    <XIcon size={16} />
-                  </Button>
-                </div>
-              </ParamsGridItem>
-            );
-          })}
-        </ParamsGrid>
-      </Card>
-      <div className="text-end">
+    <div className="flex flex-col gap-2 ">
+      <div className="flex items-center justify-between">
+        <span className="font-semibold">Headers</span>
         <Button
           className=""
           onClick={addNewHeader}
           type="button"
-          variant="secondary"
+          size="sm"
+          variant="ghost"
         >
-          Add header
+          + Add header
         </Button>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Card className="overflow-hidden rounded-lg">
+          <ParamsGrid>
+            {fields.map((field, i) => {
+              const currentHeader = schemaHeaders.find(
+                (h) => h.name === watch(`headers.${i}.name`),
+              );
+              return (
+                <ParamsGridItem key={field.id}>
+                  <div className="flex items-center gap-2 ">
+                    <Controller
+                      control={control}
+                      name={`headers.${i}.active`}
+                      render={({ field }) => (
+                        <Checkbox
+                          id={`headers.${i}.active`}
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                          }}
+                        />
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name={`headers.${i}.name`}
+                      render={({ field }) => (
+                        <Autocomplete
+                          {...field}
+                          placeholder="Name"
+                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                          options={[...missingHeaders, ...headerOptions]}
+                          onEnterPress={() => handleHeaderEnter(i)}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setValue(`headers.${i}.active`, true);
+                          }}
+                          ref={(el) => {
+                            nameRefs.current[i] = el;
+                          }}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Controller
+                      control={control}
+                      name={`headers.${i}.value`}
+                      render={({ field }) => {
+                        const hasEnum =
+                          currentHeader?.enum && currentHeader.enum.length > 0;
+
+                        if (!hasEnum) {
+                          return (
+                            <Input
+                              placeholder="Value"
+                              className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                              {...field}
+                              ref={(el) => {
+                                valueRefs.current[i] = el;
+                              }}
+                              onKeyDown={(e) => {
+                                if (
+                                  e.key === "Enter" &&
+                                  e.currentTarget.value.trim()
+                                ) {
+                                  handleValueEnter(i);
+                                }
+                              }}
+                              autoComplete="off"
+                            />
+                          );
+                        }
+
+                        return (
+                          <Autocomplete
+                            shouldFilter={false}
+                            value={field.value}
+                            options={currentHeader.enum ?? []}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setValue(`headers.${i}.active`, true);
+                            }}
+                            className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                          />
+                        );
+                      }}
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground opacity-0 group-hover:opacity-100 rounded-full w-8 h-7"
+                      onClick={() => remove(i)}
+                      type="button"
+                    >
+                      <XIcon size={16} />
+                    </Button>
+                  </div>
+                </ParamsGridItem>
+              );
+            })}
+          </ParamsGrid>
+        </Card>
       </div>
     </div>
   );
