@@ -1,10 +1,8 @@
+import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { InfoIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
-import { PathRenderer } from "../../../components/PathRenderer.js";
-
+import { Button } from "zudoku/ui/Button.js";
 import {
   Select,
   SelectContent,
@@ -12,17 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { Textarea } from "zudoku/ui/Textarea.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
-import { cn } from "../../../util/cn.js";
-import { objectEntries } from "../../../util/objectEntries.js";
+import { PathRenderer } from "../../../components/PathRenderer.js";
 import { useLatest } from "../../../util/useLatest.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import { type Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
+import BodyPanel from "./BodyPanel.js";
 import { createUrl } from "./createUrl.js";
-import ExamplesDropdown from "./ExamplesDropdown.js";
+import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
 import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
@@ -31,7 +27,7 @@ import { QueryParams } from "./QueryParams.js";
 import { useIdentityStore } from "./rememberedIdentity.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
-import SubmitButton from "./SubmitButton.js";
+import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
 
@@ -59,17 +55,8 @@ export type PathParam = {
   isRequired?: boolean;
 };
 
-const bodyContentTypeMap = {
-  Plain: "text/plain",
-  JSON: "application/json",
-  XML: "application/xml",
-  YAML: "application/yaml",
-  CSV: "text/csv",
-} as const;
-
 export type PlaygroundForm = {
   body: string;
-  bodyContentType: keyof typeof bodyContentTypeMap;
   queryParams: Array<{
     name: string;
     value: string;
@@ -95,6 +82,9 @@ export type PlaygroundResult = {
   size: number;
   body: string;
   time: number;
+  isBinary?: boolean;
+  fileName?: string;
+  blob?: Blob;
   request: {
     method: string;
     url: string;
@@ -139,7 +129,7 @@ export const Playground = ({
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
-  const [skipLogin, setSkipLogin] = useState(false);
+  const { skipLogin, setSkipLogin } = useRememberSkipLoginDialog();
   const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
@@ -148,46 +138,47 @@ export const Playground = ({
     useForm<PlaygroundForm>({
       defaultValues: {
         body: defaultBody,
-        bodyContentType: "JSON",
-        queryParams: queryParams
-          .map((param) => ({
-            name: param.name,
-            value: param.defaultValue ?? "",
-            active: param.defaultActive ?? false,
-            enum: param.enum ?? [],
-          }))
-          .concat([
-            {
-              name: "",
-              value: "",
-              active: false,
-              enum: [],
-            },
-          ]),
+        queryParams:
+          queryParams.length > 0
+            ? queryParams.map((param) => ({
+                name: param.name,
+                value: param.defaultValue ?? "",
+                active: param.defaultActive ?? false,
+                enum: param.enum ?? [],
+              }))
+            : [
+                {
+                  name: "",
+                  value: "",
+                  active: false,
+                  enum: [],
+                },
+              ],
         pathParams: pathParams.map((param) => ({
           name: param.name,
           value: param.defaultValue ?? "",
         })),
-        headers: headers
-          .map((header) => ({
-            name: header.name,
-            value: header.defaultValue ?? "",
-            active: header.defaultActive ?? false,
-          }))
-          .concat([
-            {
-              name: "",
-              value: "",
-              active: false,
-            },
-          ]),
-        identity: getRememberedIdentity(
-          identities.data?.map((i) => i.id) ?? [],
-        ),
+        headers:
+          headers.length > 0
+            ? headers.map((header) => ({
+                name: header.name,
+                value: header.defaultValue ?? "",
+                active: header.defaultActive ?? false,
+              }))
+            : [
+                {
+                  name: "",
+                  value: "",
+                  active: false,
+                },
+              ],
+        identity: getRememberedIdentity([
+          NO_IDENTITY,
+          ...(identities.data?.map((i) => i.id) ?? []),
+        ]),
       },
     });
   const formState = watch();
-  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (formState.identity) {
@@ -200,17 +191,10 @@ export const Playground = ({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
-      const shouldSetContentType = !data.headers.some(
-        (h) => h.active && h.name.toLowerCase() === "content-type",
-      );
-
       const headers = Object.fromEntries([
         ...data.headers
           .filter((h) => h.name && h.active)
           .map((header) => [header.name, header.value]),
-        ...(shouldSetContentType
-          ? [["content-type", bodyContentTypeMap[data.bodyContentType]]]
-          : []),
       ]);
 
       const request = new Request(
@@ -244,15 +228,34 @@ export const Playground = ({
         setShowLongRunningWarning(false);
 
         const time = performance.now() - start;
-        const body = await response.text();
         const url = new URL(request.url);
+        const responseHeaders = Array.from(response.headers.entries());
+        const contentType = response.headers.get("content-type") || "";
+        const isBinary = isBinaryContentType(contentType);
+
+        let body = "";
+        let blob: Blob | undefined;
+        let fileName: string | undefined;
+
+        if (isBinary) {
+          blob = await response.blob();
+          fileName = extractFileName(responseHeaders, request.url);
+          body = `Binary content (${contentType})`;
+        } else {
+          body = await response.text();
+        }
+
+        const responseSize = response.headers.get("content-length");
 
         return {
           status: response.status,
-          headers: Array.from(response.headers.entries()),
-          size: body.length,
+          headers: responseHeaders,
+          size: responseSize ? parseInt(responseSize) : body.length,
           body,
           time,
+          isBinary,
+          fileName,
+          blob,
           request: {
             method: request.method.toUpperCase(),
             url: request.url,
@@ -277,6 +280,16 @@ export const Playground = ({
       }
     },
   });
+
+  const isRequestAnimating = queryMutation.isPending;
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsAnimating(isRequestAnimating), 100);
+    return () => clearTimeout(timer);
+  }, [isRequestAnimating]);
+
+  const { isFinished, progress } = useNProgress({ isAnimating });
 
   useEffect(() => {
     return () => {
@@ -362,7 +375,6 @@ export const Playground = ({
             setShowSelectIdentity(true);
           }
         })}
-        ref={formRef}
         className="relative"
       >
         <IdentityDialog
@@ -384,164 +396,68 @@ export const Playground = ({
           onLogin={onLogin}
         />
 
-        <div className="grid grid-cols-2 text-sm h-full">
-          <div className="flex flex-col gap-4 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:start-auto">
+        <div className="grid grid-cols-[1fr_min-content_1fr] text-sm">
+          <div className="col-span-3 p-4 border-b">
             <div className="flex gap-2 items-stretch">
-              <div className="flex flex-1 items-center w-full border rounded-md">
+              <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center px-2 py-0.5 font-mono text-xs break-all leading-6">
-                  {serverSelect}
-                  {path}
-                  {urlQueryParams.length > 0 ? "?" : ""}
-                  {urlQueryParams}
+                <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
+                  <div className="h-full py-1.5">
+                    {serverSelect}
+                    {path}
+                    {urlQueryParams.length > 0 ? "?" : ""}
+                    {urlQueryParams}
+                  </div>
+                  <div
+                    className="h-[1px] bg-primary absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
+                    style={{
+                      opacity: isFinished ? 0 : 1,
+                      width: isFinished ? 0 : `${progress * 100}%`,
+                    }}
+                  />
                 </div>
               </div>
 
-              <SubmitButton
-                identities={identities.data ?? []}
-                formRef={formRef}
+              <Button
+                type="submit"
                 disabled={identities.isLoading || form.formState.isSubmitting}
-              />
+              >
+                Send
+              </Button>
             </div>
-            <Tabs defaultValue="parameters">
-              <div className="flex flex-wrap gap-1 justify-between">
-                <TabsList>
-                  <TabsTrigger value="parameters">
-                    Parameters
-                    {(formState.pathParams.some((p) => p.value !== "") ||
-                      formState.queryParams.some((p) => p.active)) && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="headers">
-                    Headers
-                    {formState.headers.filter((h) => h.active).length > 0 && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="auth">
-                    Auth
-                    {formState.identity !== NO_IDENTITY && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                  <TabsTrigger value="body">
-                    Body
-                    {formState.body && (
-                      <div className="w-2 h-2 rounded-full bg-blue-400 ms-2" />
-                    )}
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              <TabsContent value="headers">
-                <Headers control={control} headers={headers} />
-              </TabsContent>
-              <TabsContent value="parameters">
-                {pathParams.length > 0 && (
-                  <div className="flex flex-col gap-4 my-4">
-                    <span className="font-semibold">Path Parameters</span>
-                    <PathParams url={url} control={control} />
-                  </div>
-                )}
-                <div className="flex flex-col gap-4 my-4">
-                  <span className="font-semibold">Query Parameters</span>
-                  <QueryParams control={control} queryParams={queryParams} />
-                </div>
-              </TabsContent>
-              <TabsContent value="body">
-                {!["POST", "PUT", "PATCH", "DELETE"].includes(
-                  method.toUpperCase(),
-                ) && (
-                  <Alert className="mb-2">
-                    <InfoIcon className="w-4 h-4" />
-                    <AlertTitle>Body</AlertTitle>
-                    <AlertDescription>
-                      Body is only supported for POST, PUT, PATCH, and DELETE
-                      requests
-                    </AlertDescription>
-                  </Alert>
-                )}
-                <Textarea
-                  {...register("body")}
-                  className={cn(
-                    "border w-full rounded-lg bg-muted/40 p-2 h-64 font-mono text-[13px]",
-                    !isBodySupported && "h-20 bg-muted",
-                  )}
-                  placeholder={
-                    !isBodySupported
-                      ? "This request does not support a body"
-                      : undefined
-                  }
-                  disabled={!isBodySupported}
-                />
-                {isBodySupported && (
-                  <div className="flex items-center gap-2 mt-2 justify-between">
-                    <Select
-                      value={formState.bodyContentType}
-                      onValueChange={(value) =>
-                        setValue(
-                          "bodyContentType",
-                          value as keyof typeof bodyContentTypeMap,
-                        )
-                      }
-                    >
-                      <SelectTrigger className="w-[100px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(bodyContentTypeMap).map((format) => (
-                          <SelectItem key={format} value={format}>
-                            {format}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {examples && examples.length > 0 && (
-                      <ExamplesDropdown
-                        examples={examples}
-                        onSelect={(example, mediaType) => {
-                          setValue(
-                            "body",
-                            JSON.stringify(example.value, null, 2),
-                          );
-
-                          const format = objectEntries(bodyContentTypeMap).find(
-                            ([_, contentType]) => contentType === mediaType,
-                          )?.[0];
-
-                          if (format) {
-                            setValue("bodyContentType", format);
-                          }
-                        }}
-                      />
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-              <TabsContent value="auth">
-                <div className="flex flex-col gap-4 my-4">
-                  {identities.data?.length === 0 && (
-                    <Alert>
-                      <InfoIcon className="w-4 h-4" />
-                      <AlertTitle>Authentication</AlertTitle>
-                      <AlertDescription>
-                        No identities found. Please create an identity first.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                  <div className="flex flex-col items-center gap-2">
-                    <IdentitySelector
-                      value={formState.identity}
-                      identities={identities.data ?? []}
-                      setValue={(value) => setValue("identity", value)}
-                    />
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
           </div>
+          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
+            {identities.data?.length !== 0 && (
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2">
+                  <span className="font-semibold">Authentication</span>
+                  <IdentitySelector
+                    value={formState.identity}
+                    identities={identities.data ?? []}
+                    setValue={(value) => setValue("identity", value)}
+                  />
+                </div>
+              </div>
+            )}
+
+            {pathParams.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="font-semibold">Path Parameters</span>
+                <PathParams url={url} control={control} />
+              </div>
+            )}
+
+            <div className="flex flex-col gap-2">
+              <span className="font-semibold">Query Parameters</span>
+              <QueryParams control={control} queryParams={queryParams} />
+            </div>
+
+            <Headers control={control} headers={headers} />
+            {isBodySupported && <BodyPanel examples={examples} />}
+          </div>
+          <div className="w-px bg-muted-foreground/20" />
           <ResultPanel
             queryMutation={queryMutation}
             showPathParamsWarning={formState.pathParams.some(

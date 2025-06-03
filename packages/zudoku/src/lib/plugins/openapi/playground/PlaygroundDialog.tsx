@@ -50,8 +50,9 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
       </DialogTrigger>
 
       <DialogContent
-        className="max-w-screen-xl w-full h-5/6 overflow-hidden p-0"
+        className="max-w-screen-xl w-full overflow-hidden p-0"
         aria-describedby={undefined}
+        showCloseButton={false}
       >
         <VisuallyHidden>
           <DialogTitle>Playground</DialogTitle>

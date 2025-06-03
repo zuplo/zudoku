@@ -9,10 +9,7 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
         label: `Unlimited Subscription`,
         id: "UNLNTD",
         authorizeRequest: async (request: Request) => {
-          request.headers.set(
-            "Authorization",
-            `Bearer ` + (await context.authentication.getAccessToken()),
-          );
+          request.headers.set("Authorization", `Bearer 123123`);
 
           return request;
         },

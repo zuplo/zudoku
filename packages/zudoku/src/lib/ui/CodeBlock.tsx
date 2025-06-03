@@ -59,6 +59,7 @@ export const CodeBlock = ({
           className={cn(
             "absolute top-1.5 end-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
             title && "top-12",
+            showCopy === "always" && "hidden",
           )}
         >
           {language}
