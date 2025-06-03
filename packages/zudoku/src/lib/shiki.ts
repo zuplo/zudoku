@@ -37,11 +37,11 @@ export const highlighter = await createHighlighterCore({
 
 type ThemesRecord = CodeOptionsMultipleThemes<BundledTheme>["themes"];
 
-export const defaultHighlightOptions: RehypeShikiCoreOptions = {
+export const defaultHighlightOptions = {
   themes: {
     light: "github-light",
     dark: "github-dark",
-  } satisfies ThemesRecord,
+  },
   defaultColor: false,
   inline: "tailing-curly-colon",
   addLanguageClass: true,
@@ -104,22 +104,17 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
   });
 };
 
-export const createConfiguredShikiRehypePlugins = (themes?: {
-  light: BundledTheme;
-  dark: BundledTheme;
-}): Pluggable[] => {
-  return [
-    [
-      rehypeShikiFromHighlighter,
-      highlighter,
-      {
-        ...defaultHighlightOptions,
-        themes: themes ?? defaultHighlightOptions.themes,
-      } satisfies RehypeShikiCoreOptions,
-    ] satisfies Pluggable,
-    rehypeCodeBlockPlugin,
-  ];
-};
+export const createConfiguredShikiRehypePlugins = (themes?: ThemesRecord) => [
+  [
+    rehypeShikiFromHighlighter,
+    highlighter,
+    {
+      ...defaultHighlightOptions,
+      themes: themes ?? defaultHighlightOptions.themes,
+    },
+  ] satisfies Pluggable,
+  rehypeCodeBlockPlugin,
+];
 
 export const highlight = (
   highlighter: HighlighterCore,
