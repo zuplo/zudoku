@@ -375,8 +375,8 @@ export const Playground = ({
           onLogin={onLogin}
         />
 
-        <div className="grid grid-cols-2 text-sm">
-          <div className="col-span-2 p-4 border-b">
+        <div className="grid grid-cols-[1fr_min-content_1fr] text-sm">
+          <div className="col-span-3 p-4 border-b">
             <div className="flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
@@ -406,7 +406,7 @@ export const Playground = ({
               />
             </div>
           </div>
-          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative after:absolute after:w-px after:inset-0 after:start-auto overflow-y-auto h-[80vh]">
+          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto max-h-[80vh]">
             {identities.data?.length !== 0 && (
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
@@ -435,6 +435,7 @@ export const Playground = ({
             <Headers control={control} headers={headers} />
             {isBodySupported && <BodyPanel examples={examples} />}
           </div>
+          <div className="w-px bg-muted-foreground/20" />
           <ResultPanel
             queryMutation={queryMutation}
             showPathParamsWarning={formState.pathParams.some(
