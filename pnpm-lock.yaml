@@ -663,8 +663,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       urql:
-        specifier: 4.2.1
-        version: 4.2.1(@urql/core@5.0.4(graphql@16.11.0))(react@19.1.0)
+        specifier: 4.2.2
+        version: 4.2.2(@urql/core@5.0.4(graphql@16.11.0))(react@19.1.0)
       vaul:
         specifier: 1.1.2
         version: 1.1.2(@types/react-dom@19.1.2(@types/react@19.1.1))(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -8688,8 +8688,8 @@ packages:
   urlpattern-polyfill@10.1.0:
     resolution: {integrity: sha512-IGjKp/o0NL3Bso1PymYURCJxMPNAf/ILOpendP9f5B6e1rTJgdgiOvgfoT8VxCAdY+Wisb9uhGaJJf3yZ2V9nw==}
 
-  urql@4.2.1:
-    resolution: {integrity: sha512-Y/cVi1rsR96kbF3VX6YgfHw1V3kJ287nR1TqpjGzVPyAmXuwRvBvABI+sHY2WOquWCNh+kvFapM/LLYeiC3wig==}
+  urql@4.2.2:
+    resolution: {integrity: sha512-3GgqNa6iF7bC4hY/ImJKN4REQILcSU9VKcKL8gfELZM8mM5BnLH1BsCc8kBdnVGD1LIFOs4W3O2idNHhON1r0w==}
     peerDependencies:
       '@urql/core': ^5.0.0
       react: '>= 16.8.0'
@@ -8893,9 +8893,6 @@ packages:
   widest-line@4.0.1:
     resolution: {integrity: sha512-o0cyEG0e8GPzT4iGHphIOh0cJOV8fivsXxddQasHPHfoZf1ZexrfeA21w2NaEN1RHE+fXlfISmOE8R9N3u3Qig==}
     engines: {node: '>=12'}
-
-  wonka@6.3.4:
-    resolution: {integrity: sha512-CjpbqNtBGNAeyNS/9W6q3kSkKE52+FjIj7AkFlLr11s/VWGUu6a2CdYSdGxocIhIVjaW/zchesBQUKPVU69Cqg==}
 
   wonka@6.3.5:
     resolution: {integrity: sha512-SSil+ecw6B4/Dm7Pf2sAshKQ5hWFvfyGlfPbEd6A14dOH6VDjrmbY86u6nZvy9omGwwIPFR8V41+of1EezgoUw==}
@@ -18762,11 +18759,11 @@ snapshots:
 
   urlpattern-polyfill@10.1.0: {}
 
-  urql@4.2.1(@urql/core@5.0.4(graphql@16.11.0))(react@19.1.0):
+  urql@4.2.2(@urql/core@5.0.4(graphql@16.11.0))(react@19.1.0):
     dependencies:
       '@urql/core': 5.0.4(graphql@16.11.0)
       react: 19.1.0
-      wonka: 6.3.4
+      wonka: 6.3.5
 
   use-callback-ref@1.3.3(@types/react@19.1.1)(react@19.1.0):
     dependencies:
@@ -19071,8 +19068,6 @@ snapshots:
   widest-line@4.0.1:
     dependencies:
       string-width: 5.1.2
-
-  wonka@6.3.4: {}
 
   wonka@6.3.5: {}
 
