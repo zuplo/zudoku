@@ -130,10 +130,7 @@ export async function runBuild(options: { dir: string }) {
         redirects: results.flatMap((r) => r.redirect ?? []),
       });
 
-      if (ZuploEnv.isZuplo) {
-        if (!issuer) {
-          throw new Error("Issuer is required for Zuplo");
-        }
+      if (ZuploEnv.isZuplo && issuer) {
         await writeFile(
           path.join(options.dir, "dist/.output/zuplo.json"),
           JSON.stringify({ issuer }, null, 2),
