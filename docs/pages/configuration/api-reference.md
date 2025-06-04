@@ -79,6 +79,8 @@ const config = {
       disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
+      disableNoAuthOption: true, // Remove the "No Auth" option in the playground
+      hideAuthSelectorIfSingle: true, // Hide auth selector when only one identity
     },
   },
 };
@@ -93,6 +95,8 @@ Available options:
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
+- `disableNoAuthOption`: Remove the "No Auth" option in the playground
+- `hideAuthSelectorIfSingle`: Hide the auth selector when only a single identity exists
 
 ## Default Options
 
@@ -106,6 +110,8 @@ const config = {
       disablePlayground: false, // Disable the interactive API playground
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
+      disableNoAuthOption: true, // Remove the "No Auth" option in the playground
+      hideAuthSelectorIfSingle: true, // Hide auth selector when only one identity
     },
   },
   apis: {

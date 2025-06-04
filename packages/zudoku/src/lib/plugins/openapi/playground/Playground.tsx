@@ -106,6 +106,10 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  /** Remove the "No Auth" option from the selector */
+  disableNoAuthOption?: boolean;
+  /** Hide the authentication selector if only one identity is available */
+  hideAuthSelectorIfSingle?: boolean;
 };
 
 export const Playground = ({
@@ -121,6 +125,8 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  disableNoAuthOption = false,
+  hideAuthSelectorIfSingle = false,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -172,13 +178,27 @@ export const Playground = ({
                   active: false,
                 },
               ],
-        identity: getRememberedIdentity([
-          NO_IDENTITY,
-          ...(identities.data?.map((i) => i.id) ?? []),
-        ]),
+        identity: disableNoAuthOption
+          ? identities.data?.[0]?.id
+          : getRememberedIdentity([
+              NO_IDENTITY,
+              ...(identities.data?.map((i) => i.id) ?? []),
+            ]),
       },
     });
   const formState = watch();
+
+  useEffect(() => {
+    if (
+      disableNoAuthOption &&
+      (!formState.identity || formState.identity === NO_IDENTITY)
+    ) {
+      const firstId = identities.data?.[0]?.id;
+      if (firstId) {
+        setValue("identity", firstId);
+      }
+    }
+  }, [disableNoAuthOption, formState.identity, identities.data, setValue]);
 
   useEffect(() => {
     if (formState.identity) {
@@ -381,6 +401,7 @@ export const Playground = ({
           identities={identities.data ?? []}
           open={showSelectIdentity}
           onOpenChange={setShowSelectIdentity}
+          disableNoAuth={disableNoAuthOption}
           onSubmit={({ rememberedIdentity, identity }) => {
             if (rememberedIdentity) {
               setValue("identity", identity ?? NO_IDENTITY);
@@ -429,18 +450,20 @@ export const Playground = ({
             </div>
           </div>
           <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
-            {identities.data?.length !== 0 && (
-              <div className="flex flex-col gap-2">
+            {identities.data?.length !== 0 &&
+              (!hideAuthSelectorIfSingle || identities.data.length > 1) && (
                 <div className="flex flex-col gap-2">
-                  <span className="font-semibold">Authentication</span>
-                  <IdentitySelector
-                    value={formState.identity}
-                    identities={identities.data ?? []}
-                    setValue={(value) => setValue("identity", value)}
-                  />
+                  <div className="flex flex-col gap-2">
+                    <span className="font-semibold">Authentication</span>
+                    <IdentitySelector
+                      value={formState.identity}
+                      identities={identities.data ?? []}
+                      setValue={(value) => setValue("identity", value)}
+                      disableNoAuth={disableNoAuthOption}
+                    />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {pathParams.length > 0 && (
               <div className="flex flex-col gap-2">

@@ -17,6 +17,7 @@ const IdentityDialog = ({
   identities,
   open,
   onOpenChange,
+  disableNoAuth = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,6 +29,7 @@ const IdentityDialog = ({
     identity?: string;
   }) => void;
   identities: ApiIdentity[];
+  disableNoAuth?: boolean;
 }) => {
   const [identity, setIdentity] = useState<string | undefined>(undefined);
   const [rememberedIdentity, setRememberedIdentity] = useState<boolean>(false);
@@ -44,6 +46,7 @@ const IdentityDialog = ({
             identities={identities}
             setValue={setIdentity}
             value={identity}
+            disableNoAuth={disableNoAuth}
           />
         </div>
         <DialogFooter className="flex flex-col gap-2">

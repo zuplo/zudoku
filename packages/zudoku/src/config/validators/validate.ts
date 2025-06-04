@@ -62,6 +62,8 @@ const ApiOptionsSchema = z
     transformExamples: z.custom<transformExamples>(
       (val) => typeof val === "function",
     ),
+    disableNoAuthOption: z.boolean(),
+    hideAuthSelectorIfSingle: z.boolean(),
   })
   .partial();
 

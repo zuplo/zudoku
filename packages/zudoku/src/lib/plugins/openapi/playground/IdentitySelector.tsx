@@ -8,10 +8,12 @@ const IdentitySelector = ({
   identities,
   setValue,
   value,
+  disableNoAuth = false,
 }: {
   identities?: ApiIdentity[];
   setValue: (value: string) => void;
   value?: string;
+  disableNoAuth?: boolean;
 }) => (
   <Card className="w-full overflow-hidden rounded-lg">
     <RadioGroup
@@ -21,10 +23,12 @@ const IdentitySelector = ({
       className="gap-0"
       disabled={identities?.length === 0}
     >
-      <Label className="h-10 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent">
-        <RadioGroupItem value={NO_IDENTITY} id="none" />
-        <span>None</span>
-      </Label>
+      {!disableNoAuth && (
+        <Label className="h-10 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent">
+          <RadioGroupItem value={NO_IDENTITY} id="none" />
+          <span>None</span>
+        </Label>
+      )}
       <div className="divide-y">
         {identities?.map((identity) => (
           <Label

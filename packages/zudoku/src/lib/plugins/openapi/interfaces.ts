@@ -53,6 +53,10 @@ type BaseOasConfig = {
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
     transformExamples?: transformExamples;
+    /** Remove the "No Auth" option from the playground */
+    disableNoAuthOption?: boolean;
+    /** Hide the auth selector if only a single identity is available */
+    hideAuthSelectorIfSingle?: boolean;
   };
 };
 

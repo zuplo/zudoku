@@ -1,4 +1,5 @@
 import { useAuth } from "zudoku/components";
+import { useOasConfig } from "./context.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { Content } from "./SidecarExamples.js";
@@ -16,6 +17,7 @@ export const PlaygroundDialogWrapper = ({
 }) => {
   const { isAuthEnabled, login, signup, isPending, isAuthenticated } =
     useAuth();
+  const { options } = useOasConfig();
 
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
@@ -62,6 +64,8 @@ export const PlaygroundDialogWrapper = ({
       requiresLogin={isAuthEnabled && !isAuthenticated && !isPending}
       onLogin={() => login()}
       onSignUp={() => signup()}
+      disableNoAuthOption={options?.disableNoAuthOption}
+      hideAuthSelectorIfSingle={options?.hideAuthSelectorIfSingle}
     />
   );
 };
