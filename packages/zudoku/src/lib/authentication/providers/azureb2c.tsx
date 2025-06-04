@@ -4,36 +4,21 @@ import { type AzureB2CAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import {
-  type AuthenticationProvider,
+  type AuthenticationPlugin,
   type AuthenticationProviderInitializer,
 } from "../authentication.js";
-import { AuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
 
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
+
 const AZUREB2C_CALLBACK_PATH = "/oauth/callback";
 
-class AzureB2CAuthPlugin extends AuthenticationPlugin {
-  constructor(private handleCallback: () => Promise<string>) {
-    super();
-  }
-  getRoutes() {
-    return [
-      ...super.getRoutes(),
-      {
-        path: AZUREB2C_CALLBACK_PATH,
-        element: (
-          <ClientOnly>
-            <CallbackHandler handleCallback={this.handleCallback} />
-          </ClientOnly>
-        ),
-      },
-    ];
-  }
-}
-
-export class AzureB2CAuthenticationProvider implements AuthenticationProvider {
+export class AzureB2CAuthPlugin
+  extends CoreAuthenticationPlugin
+  implements AuthenticationPlugin
+{
   private msalInstance: PublicClientApplication;
   private readonly scopes: string[];
   private readonly redirectToAfterSignUp?: string;
@@ -50,6 +35,7 @@ export class AzureB2CAuthenticationProvider implements AuthenticationProvider {
     redirectToAfterSignOut = "/",
     basePath = "",
   }: AzureB2CAuthenticationConfig) {
+    super();
     this.scopes = scopes ?? ["openid", "profile", "email"];
     this.redirectToAfterSignUp = redirectToAfterSignUp;
     this.redirectToAfterSignIn = redirectToAfterSignIn;
@@ -193,13 +179,23 @@ export class AzureB2CAuthenticationProvider implements AuthenticationProvider {
     return redirectTo;
   };
 
-  getAuthenticationPlugin() {
-    return new AzureB2CAuthPlugin(this.handleCallback);
+  getRoutes() {
+    return [
+      ...super.getRoutes(),
+      {
+        path: AZUREB2C_CALLBACK_PATH,
+        element: (
+          <ClientOnly>
+            <CallbackHandler handleCallback={this.handleCallback} />
+          </ClientOnly>
+        ),
+      },
+    ];
   }
 }
 
 const azureB2CAuth: AuthenticationProviderInitializer<
   AzureB2CAuthenticationConfig
-> = (options) => new AzureB2CAuthenticationProvider(options);
+> = (options) => new AzureB2CAuthPlugin(options);
 
 export default azureB2CAuth;
