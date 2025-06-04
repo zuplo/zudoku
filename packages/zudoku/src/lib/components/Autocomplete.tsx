@@ -71,7 +71,7 @@ const AutocompletePopover = ({
         onMouseEnter={() => setDontClose(true)}
         onMouseLeave={() => setDontClose(false)}
         onOpenAutoFocus={(e) => e.preventDefault()}
-        className={cn("p-0 w-[--radix-popover-trigger-width]", {
+        className={cn("p-0 w-(--radix-popover-trigger-width)", {
           "border-0": count === 0,
         })}
         align="start"

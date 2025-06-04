@@ -17,7 +17,7 @@ export type SidebarItemDoc = Omit<BaseInputSidebarItemDoc, "icon"> & {
   icon?: LucideIcon | string;
 };
 
-export type SidebarItemLink = InputSidebarItemLink & {
+export type SidebarItemLink = Omit<InputSidebarItemLink, "icon"> & {
   icon?: LucideIcon | string;
 };
 

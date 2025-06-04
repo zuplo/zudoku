@@ -22,7 +22,7 @@ export function ErrorAlert({ error }: { error: unknown }) {
     <div
       className={cn(
         ProseClasses,
-        "grid grid-cols-1 !max-w-none pt-[--padding-content-top]",
+        "grid grid-cols-1 !max-w-none pt-(--padding-content-top)",
       )}
     >
       <Heading level={1}>{title}</Heading>

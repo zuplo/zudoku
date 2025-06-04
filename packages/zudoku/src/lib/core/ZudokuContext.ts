@@ -4,20 +4,21 @@ import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod";
+import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
 import type {
   FooterSchema,
   TopNavigationItem,
-} from "../../config/validators/common.js";
-import type { SidebarConfig } from "../../config/validators/SidebarSchema.js";
-import type { AuthenticationProvider } from "../authentication/authentication.js";
+} from "../../config/validators/validate.js";
+import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
-import type { Slotlets } from "../components/SlotletProvider.js";
+import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinPath } from "../util/joinPath.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
 import {
   isApiIdentityPlugin,
+  isAuthenticationPlugin,
   isEventConsumerPlugin,
   isNavigationPlugin,
   type NavigationPlugin,
@@ -81,11 +82,15 @@ export type ZudokuContextOptions = {
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
   page?: Page;
-  authentication?: AuthenticationProvider;
+  authentication?: AuthenticationPlugin;
   topNavigation?: TopNavigationItem[];
   sidebars?: SidebarConfig;
   plugins?: ZudokuPlugin[];
-  slotlets?: Slotlets;
+  slots?: Record<string, SlotType>;
+  /**
+   * @deprecated Use `slots` instead
+   */
+  UNSAFE_slotlets?: Record<string, SlotType>;
   mdx?: {
     components?: MdxComponentsType;
   };
@@ -103,19 +108,26 @@ export class ZudokuContext {
   public topNavigation: NonNullable<ZudokuContextOptions["topNavigation"]>;
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
-  public authentication?: ZudokuContextOptions["authentication"];
+  public readonly authentication?: ZudokuContextOptions["authentication"];
+  public readonly queryClient: QueryClient;
+  public readonly options: ZudokuContextOptions;
   private readonly navigationPlugins: NavigationPlugin[];
   private emitter = createNanoEvents<ZudokuEvents>();
 
-  constructor(
-    public readonly options: ZudokuContextOptions,
-    public readonly queryClient: QueryClient,
-  ) {
+  constructor(options: ZudokuContextOptions, queryClient: QueryClient) {
+    const protectedRoutes = (options.protectedRoutes ?? []).concat(
+      options.plugins?.flatMap((plugin) =>
+        isNavigationPlugin(plugin) ? (plugin.getProtectedRoutes?.() ?? []) : [],
+      ) ?? [],
+    );
+
+    this.queryClient = queryClient;
+    this.options = { ...options, protectedRoutes };
     this.plugins = options.plugins ?? [];
     this.topNavigation = options.topNavigation ?? [];
     this.sidebars = options.sidebars ?? {};
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
-    this.authentication = options.authentication;
+    this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.meta = options.metadata;
     this.page = options.page;
     this.plugins.forEach((plugin) => {

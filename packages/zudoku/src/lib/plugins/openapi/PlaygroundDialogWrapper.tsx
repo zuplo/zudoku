@@ -1,7 +1,7 @@
 import { useAuth } from "zudoku/components";
 import type { OperationListItemResult } from "./OperationList.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { Content } from "./SidecarExamples.js";
+import { type Content } from "./SidecarExamples.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -29,6 +29,7 @@ export const PlaygroundDialogWrapper = ({
       enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
     }));
+
   const queryParams = operation.parameters
     ?.filter((p) => p.in === "query")
     .sort((a, b) => (a.required && !b.required ? -1 : 1))
@@ -38,10 +39,15 @@ export const PlaygroundDialogWrapper = ({
       isRequired: p.required ?? false,
       enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
+      defaultValue: p.schema?.default,
     }));
+
   const pathParams = operation.parameters
     ?.filter((p) => p.in === "path")
-    .map((p) => ({ name: p.name }));
+    .map((p) => ({
+      name: p.name,
+      defaultValue: p.schema?.default,
+    }));
 
   return (
     <PlaygroundDialog

@@ -1,10 +1,7 @@
-import autoprefixer from "autoprefixer";
 import { fileURLToPath } from "node:url";
 import path from "path";
-import tailwindcss from "tailwindcss";
 import { defineConfig } from "vite";
-import tailwindConfig from "./src/app/tailwind.js";
-import { getStandaloneConfig } from "./src/vite/config.js";
+import { setStandaloneConfig } from "./src/config/loader.js";
 import vitePlugin from "./src/vite/plugin.js";
 
 const entries: Record<string, string> = {
@@ -15,6 +12,8 @@ const entries: Record<string, string> = {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.ZUDOKU_ENV = "standalone";
+
+setStandaloneConfig(__dirname);
 
 export default defineConfig({
   mode: "standalone",
@@ -55,16 +54,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vitePlugin(getStandaloneConfig(__dirname))],
-  css: {
-    postcss: {
-      plugins: [
-        tailwindcss({
-          ...tailwindConfig(),
-          content: ["./src/lib/**/*.{js,ts,jsx,tsx,md,mdx}"],
-        }),
-        autoprefixer,
-      ],
-    },
-  },
+  plugins: [vitePlugin()],
 });

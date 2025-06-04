@@ -6,12 +6,15 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 12
 
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "cron"
+      cronjob: "0 0 * * 1,4"
+    open-pull-requests-limit: 12
     groups:
       nx-dependencies:
         patterns:
@@ -23,3 +26,10 @@ updates:
       prettier-dependencies:
         patterns:
           - "*prettier*"
+      radix-ui-dependencies:
+        patterns:
+          - "*@radix-ui/*"
+      shiki-dependencies:
+        patterns:
+          - "@shikijs/*"
+          - "shiki"

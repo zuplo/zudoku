@@ -1,6 +1,6 @@
 {
   "name": "create-zudoku-app",
-  "version": "0.45.1",
+  "version": "0.46.2",
   "keywords": [
     "react",
     "zudoku"
@@ -37,7 +37,7 @@
     "conf": "13.1.0",
     "cross-spawn": "7.0.6",
     "fast-glob": "3.3.1",
-    "picocolors": "1.1.0",
+    "picocolors": "1.1.1",
     "prompts": "2.4.2",
     "tar": "7.4.3",
     "update-check": "1.5.4",

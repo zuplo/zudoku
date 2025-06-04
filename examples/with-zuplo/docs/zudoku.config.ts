@@ -1,6 +1,13 @@
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
+  page: {
+    logo: {
+      src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+      alt: "Zudoku",
+      width: 130,
+    },
+  },
   basePath: "/docs",
   topNavigation: [
     { id: "docs", label: "Documentation" },
@@ -23,6 +30,15 @@ const config: ZudokuConfig = {
   },
   docs: {
     files: "/pages/**/*.mdx",
+  },
+  authentication: {
+    type: "auth0",
+    domain: "auth.zuplo.io",
+    clientId: "v0cOpST3pX6NIs1VGLVvNjaN3mSBomKk",
+    audience: "https://api.example.com/",
+  },
+  apiKeys: {
+    enabled: true,
   },
 };
 

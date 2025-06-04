@@ -19,13 +19,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu.js";
+import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { Search } from "./Search.js";
-import { Slotlet } from "./SlotletProvider.js";
+import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavigation } from "./TopNavigation.js";
 
@@ -58,49 +59,48 @@ export const Header = memo(function HeaderInner() {
   const auth = useAuth();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
-  const { page, plugins } = context;
+  const { page, plugins, options } = context;
 
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
     .flatMap((p) => p.getProfileMenuItems(context))
     .sort((i) => i.weight ?? 0);
 
+  const logoLightSrc = page?.logo
+    ? /https?:\/\//.test(page.logo.src.light)
+      ? page.logo.src.light
+      : joinUrl(options.basePath, page.logo.src.light)
+    : undefined;
+  const logoDarkSrc = page?.logo
+    ? /https?:\/\//.test(page.logo.src.dark)
+      ? page.logo.src.dark
+      : joinUrl(options.basePath, page.logo.src.dark)
+    : undefined;
+
+  const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
+
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <Banner />
-      <div className="border-b">
-        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between px-4 lg:px-8 h-[--top-header-height] border-transparent">
+      <div className={borderBottom}>
+        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
                 {page?.logo && (
                   <>
                     <img
-                      src={
-                        /https?:\/\//.test(page.logo.src.light)
-                          ? page.logo.src.light
-                          : joinUrl(
-                              import.meta.env.BASE_URL,
-                              page.logo.src.light,
-                            )
-                      }
+                      src={logoLightSrc}
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className="h-10 dark:hidden"
+                      className="max-h-(--top-header-height) dark:hidden"
                       loading="lazy"
                     />
                     <img
-                      src={
-                        /https?:\/\//.test(page.logo.src.dark)
-                          ? page.logo.src.dark
-                          : joinUrl(
-                              import.meta.env.BASE_URL,
-                              page.logo.src.dark,
-                            )
-                      }
+                      src={logoDarkSrc}
                       alt={page.logo.alt ?? page.pageTitle}
                       style={{ width: page.logo.width }}
-                      className="h-10 hidden dark:block"
+                      className="max-h-(--top-header-height) hidden dark:block"
                       loading="lazy"
                     />
                   </>
@@ -119,10 +119,10 @@ export const Header = memo(function HeaderInner() {
           <div className="flex items-center gap-8">
             <MobileTopNavigation />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
-              <Slotlet name="head-navigation-start" />
+              <Slot.Target name="head-navigation-start" />
               {isAuthEnabled && (
                 <ClientOnly
-                  fallback={<Skeleton className="rounded h-5 w-24 mr-4" />}
+                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
                 >
                   {!isAuthenticated ? (
                     <Button variant="ghost" onClick={() => auth.login()}>
@@ -133,7 +133,7 @@ export const Header = memo(function HeaderInner() {
                       <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost">
-                            {profile?.name ? `${profile.name}` : "My Account"}
+                            {profile?.name ?? "My Account"}
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56">
@@ -175,17 +175,17 @@ export const Header = memo(function HeaderInner() {
                   )}
                 </ClientOnly>
               )}
-              <Slotlet name="head-navigation-end" />
+              <Slot.Target name="head-navigation-end" />
               <ThemeSwitch />
             </div>
           </div>
         </div>
       </div>
-      <div className="border-b hidden lg:block">
+      <div className={cn("hidden lg:block", borderBottom)}>
         <div className="max-w-screen-2xl mx-auto border-transparent">
-          <Slotlet name="top-navigation-before" />
+          <Slot.Target name="top-navigation-before" />
           <TopNavigation />
-          <Slotlet name="top-navigation-after" />
+          <Slot.Target name="top-navigation-after" />
         </div>
       </div>
     </header>

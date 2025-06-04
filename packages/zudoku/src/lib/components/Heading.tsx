@@ -2,6 +2,8 @@ import type { HTMLAttributes, ReactNode } from "react";
 import { useRegisterAnchorElement } from "./context/ViewportAnchorContext.js";
 
 import { cva, type VariantProps } from "class-variance-authority";
+import { LinkIcon } from "lucide-react";
+import { cn } from "../util/cn.js";
 
 const heading = cva("group relative", {
   variants: {
@@ -59,21 +61,23 @@ export const Heading = ({
 
   return (
     <Component
-      className={heading({ className, level })}
+      className={heading({
+        className: cn(className, "flex items-center gap-[0.33em]"),
+        level,
+      })}
       ref={registerSidebarAnchor ? ref : undefined}
       id={id}
     >
+      {children}
       {id && (
         <a
           href={`#${id}`}
-          className="before:content-['#'] no-underline absolute text-primary -start-[0.8em] pe-2.5 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity duration-200"
+          className="rounded text-[0.8em] text-muted-foreground p-0.5 -m-0.5 opacity-0 group-hover:opacity-50 hover:text-primary hover:!opacity-100 transition-opacity duration-200"
           aria-label={`Link to ${id}`}
         >
-          {/* Zero width space */}
-          &#8203;
+          <LinkIcon className="size-[0.75em] min-w-4 min-h-4" />
         </a>
       )}
-      {children}
     </Component>
   );
 };

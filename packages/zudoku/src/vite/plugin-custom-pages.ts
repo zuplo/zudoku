@@ -1,7 +1,7 @@
 import { type Plugin } from "vite";
-import { type LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
-const viteCustomPagesPlugin = (getConfig: () => LoadedConfig): Plugin => {
+const viteCustomPagesPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-custom-pages-plugin";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
   return {
@@ -13,7 +13,7 @@ const viteCustomPagesPlugin = (getConfig: () => LoadedConfig): Plugin => {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const config = getConfig();
+        const config = getCurrentConfig();
 
         if (!config.customPages || config.__meta.mode === "standalone") {
           return `export const configuredCustomPagesPlugin = undefined;`;

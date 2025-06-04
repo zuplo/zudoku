@@ -67,7 +67,7 @@ export function SchemaList() {
 
   return (
     <div
-      className="grid grid-cols-[--sidecar-grid-cols] gap-8 justify-between"
+      className="grid grid-cols-(--sidecar-grid-cols) gap-8 justify-between"
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
@@ -75,7 +75,7 @@ export function SchemaList() {
         <title>Schemas {showVersions ? version : ""}</title>
         <meta name="description" content="List of schemas used by the API." />
       </Helmet>
-      <div className="pt-[--padding-content-top] pb-[--padding-content-bottom]">
+      <div className="pt-(--padding-content-top) pb-(--padding-content-bottom)">
         <Collapsible className="w-full">
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex-1">
@@ -117,7 +117,7 @@ export function SchemaList() {
                 )}
               >
                 <Markdown
-                  className="border rounded bg-muted/25 border-border px-2.5 md:px-4"
+                  className="border rounded-sm bg-muted/25 border-border px-2.5 md:px-4"
                   content={data.schema.description}
                 />
               </div>

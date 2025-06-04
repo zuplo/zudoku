@@ -1,12 +1,12 @@
 import path from "node:path";
 import { type Plugin } from "vite";
-import { type LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
-const viteAliasPlugin = (getConfig: () => LoadedConfig): Plugin => {
+const viteAliasPlugin = (): Plugin => {
   return {
     name: "zudoku-component-plugin",
     config: () => {
-      const config = getConfig();
+      const config = getCurrentConfig();
 
       const replacements = [
         ["zudoku/components", "src/lib/components/index.ts"],

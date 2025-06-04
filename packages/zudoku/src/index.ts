@@ -3,12 +3,14 @@ export type {
   SidebarConfig as Sidebar,
   SidebarEntry,
 } from "./config/validators/InputSidebarSchema.js";
-export type { ExposedComponentProps } from "./lib/components/SlotletProvider.js";
+export type { SlotType } from "./lib/components/context/SlotProvider.js";
+export { Slot, type CustomSlotNames } from "./lib/components/Slot.js";
 export type { MDXImport } from "./lib/plugins/markdown/index.js";
 export { defaultLanguages } from "./lib/shiki.js";
 
 export type {
   ApiIdentityPlugin,
+  AuthenticationPlugin,
   CommonPlugin,
   NavigationPlugin,
   ProfileMenuPlugin,
@@ -20,4 +22,5 @@ export type {
 export { ZudokuContext, type ApiIdentity } from "./lib/core/ZudokuContext.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";
 
+/** @deprecated Import from `zudoku/hooks` instead */
 export { useEvent } from "./lib/hooks/index.js";

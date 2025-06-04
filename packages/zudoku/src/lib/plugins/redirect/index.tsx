@@ -1,5 +1,5 @@
 import { redirect } from "react-router";
-import { ZudokuRedirect } from "../../../config/validators/common.js";
+import type { ZudokuRedirect } from "../../../config/validators/validate.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 
 export const redirectPlugin = (options: {

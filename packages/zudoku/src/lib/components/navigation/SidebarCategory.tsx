@@ -7,8 +7,8 @@ import { Button } from "zudoku/ui/Button.js";
 import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { navigationListItem, SidebarItem } from "./SidebarItem.js";
-import { useIsCategoryOpen } from "./utils.js";
+import { SidebarItem } from "./SidebarItem.js";
+import { navigationListItem, useIsCategoryOpen } from "./utils.js";
 
 const SidebarCategoryInner = ({
   category,
@@ -121,7 +121,7 @@ const SidebarCategoryInner = ({
           "ms-6 my-1",
         )}
       >
-        <ul className="relative after:absolute after:-start-[--padding-nav-item] after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
+        <ul className="relative after:absolute after:-start-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <SidebarItem
               key={

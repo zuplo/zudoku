@@ -1,36 +1,67 @@
-import { cva } from "class-variance-authority";
 import { ExternalLinkIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
-
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "zudoku/ui/Tooltip.js";
 import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
+import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { SidebarBadge } from "./SidebarBadge.js";
 import { SidebarCategory } from "./SidebarCategory.js";
+import { navigationListItem } from "./utils.js";
 
-export const navigationListItem = cva(
-  "flex items-center gap-2 px-[--padding-nav-item] my-0.5 py-1.5 rounded-lg hover:bg-accent tabular-nums",
-  {
-    variants: {
-      isActive: {
-        true: "bg-accent font-medium",
-        false: "text-foreground/80",
-      },
-      isMuted: {
-        true: "text-foreground/30",
-        false: "",
-      },
-      isPending: {
-        true: "bg-accent animate-pulse",
-        false: "",
-      },
-    },
-    defaultVariants: {
-      isActive: false,
-    },
-  },
-);
+const TruncatedLabel = ({
+  label,
+  className,
+}: {
+  label: string;
+  className?: string;
+}) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    if (!ref.current) return;
+
+    if (ref.current.offsetWidth < ref.current.scrollWidth) {
+      setIsTruncated(true);
+    }
+  }, []);
+
+  return (
+    <>
+      <span
+        className={cn("truncate flex-1", className)}
+        title={label}
+        ref={ref}
+      >
+        {label}
+      </span>
+      {isTruncated && (
+        <TooltipProvider delayDuration={500}>
+          <Tooltip disableHoverableContent>
+            <TooltipTrigger className="absolute inset-0 z-10" />
+            <TooltipContent
+              className="max-w-64 rounded-lg"
+              side="bottom"
+              align="center"
+            >
+              <TooltipArrow />
+              {label}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
+    </>
+  );
+};
 
 export const DATA_ANCHOR_ATTR = "data-anchor";
 
@@ -62,9 +93,7 @@ export const SidebarItem = ({
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <span className="truncate flex-1" title={item.label}>
-                {item.label}
-              </span>
+              <TruncatedLabel label={item.label} className="flex-1" />
               <SidebarBadge {...item.badge} />
             </>
           ) : (
@@ -83,15 +112,13 @@ export const SidebarItem = ({
           {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
           className={navigationListItem({
             isActive: item.href === [location.pathname, activeAnchor].join("#"),
-            className: item.badge?.placement !== "start" && "justify-between",
           })}
           onClick={onRequestClose}
         >
+          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <span className="truncate" title={item.label}>
-                {item.label}
-              </span>
+              <TruncatedLabel label={item.label} />
               <SidebarBadge {...item.badge} />
             </>
           ) : (
@@ -106,6 +133,7 @@ export const SidebarItem = ({
           rel="noopener noreferrer"
           onClick={onRequestClose}
         >
+          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}
           <span className="whitespace-nowrap">

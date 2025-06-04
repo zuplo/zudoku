@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { IconNames } from "./icon-types.js";
+import { type IconNames } from "./icon-types.js";
 
 const BadgeSchema = z.object({
   label: z.string(),
@@ -51,6 +51,7 @@ export const InputSidebarItemDocSchema = z.union([
 
 export const InputSidebarItemLinkSchema = z.object({
   type: z.literal("link"),
+  icon: z.custom<IconNames>().optional(),
   label: z.string(),
   href: z.string(),
   description: z.string().optional(),

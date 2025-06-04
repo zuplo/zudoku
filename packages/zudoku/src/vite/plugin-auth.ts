@@ -1,7 +1,7 @@
 import { type Plugin } from "vite";
-import { type LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
-const viteAuthPlugin = (getConfig: () => LoadedConfig): Plugin => {
+const viteAuthPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-auth";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
@@ -14,7 +14,7 @@ const viteAuthPlugin = (getConfig: () => LoadedConfig): Plugin => {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const config = getConfig();
+        const config = getCurrentConfig();
 
         if (!config.authentication || config.__meta.mode === "standalone") {
           return `export const configuredAuthProvider = undefined;`;

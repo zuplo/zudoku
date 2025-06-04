@@ -1,8 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { HTTPSnippet } from "@zudoku/httpsnippet";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
-import { useZudoku } from "zudoku/components";
+import { useZudoku } from "zudoku/hooks";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
@@ -21,52 +20,9 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { useSelectedServer } from "./state.js";
+import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
-
-const getConverted = (snippet: HTTPSnippet, option: string) => {
-  let converted;
-  switch (option) {
-    case "shell":
-      converted = snippet.convert("shell", "curl");
-      break;
-    case "js":
-      converted = snippet.convert("javascript", "fetch");
-      break;
-    case "python":
-      converted = snippet.convert("python", "requests");
-      break;
-    case "java":
-      converted = snippet.convert("java", "okhttp");
-      break;
-    case "go":
-      converted = snippet.convert("go", "native");
-      break;
-    case "csharp":
-      converted = snippet.convert("csharp", "httpclient");
-      break;
-    case "kotlin":
-      converted = snippet.convert("kotlin", "okhttp");
-      break;
-    case "objc":
-      converted = snippet.convert("objc", "nsurlsession");
-      break;
-    case "php":
-      converted = snippet.convert("php", "http2");
-      break;
-    case "ruby":
-      converted = snippet.convert("ruby");
-      break;
-    case "swift":
-      converted = snippet.convert("swift");
-      break;
-    default:
-      converted = snippet.convert("shell");
-      break;
-  }
-
-  return converted ? converted[0] : "";
-};
 
 export const GetServerQuery = graphql(/* GraphQL */ `
   query getServerQuery($input: JSON!, $type: SchemaType!) {
@@ -149,7 +105,7 @@ export const Sidecar = ({
   const { selectedServer } = useSelectedServer(result.data.schema.servers);
 
   const code = useMemo(() => {
-    const example =
+    const exampleBody =
       selectedExample ??
       (transformedRequestBodyContent?.[0]?.schema
         ? generateSchemaExample(
@@ -157,66 +113,24 @@ export const Sidecar = ({
           )
         : undefined);
 
-    const snippet = new HTTPSnippet({
-      method: operation.method.toLocaleUpperCase(),
-      url:
-        selectedServer +
-        operation.path.replaceAll("{", ":").replaceAll("}", ""),
-      postData: example
+    const snippet = createHttpSnippet({
+      operation,
+      selectedServer,
+      exampleBody: exampleBody
         ? {
-            text: JSON.stringify(example, null, 2),
             mimeType: "application/json",
+            text: JSON.stringify(exampleBody, null, 2),
           }
-        : ({} as any),
-      headers: [
-        { name: "Content-Type", value: "application/json" },
-        ...(operation.parameters
-          ?.filter((p) => p.in === "header" && p.required === true)
-          .map((p) => ({
-            name: p.name,
-            value:
-              p.examples?.find((x) => x.value)?.value ??
-              p.schema?.default ??
-              (p.schema?.type === "string"
-                ? "string"
-                : p.schema?.type === "number" || p.schema?.type === "integer"
-                  ? "0"
-                  : p.schema?.type === "boolean"
-                    ? "true"
-                    : ""),
-          })) ?? []),
-      ],
-      queryString:
-        operation.parameters
-          ?.filter((p) => p.in === "query" && p.required === true)
-          .map((p) => ({
-            name: p.name,
-            value:
-              p.examples?.find((x) => x.value)?.value ??
-              p.schema?.default ??
-              (p.schema?.type === "string"
-                ? "string"
-                : p.schema?.type === "number" || p.schema?.type === "integer"
-                  ? "0"
-                  : p.schema?.type === "boolean"
-                    ? "true"
-                    : ""),
-          })) ?? [],
-      httpVersion: "",
-      cookies: [],
-      headersSize: 0,
-      bodySize: 0,
+        : { mimeType: "application/json" },
     });
 
     return getConverted(snippet, selectedLang);
   }, [
     selectedExample,
     transformedRequestBodyContent,
-    operation.method,
-    operation.path,
+    operation,
     selectedServer,
     selectedLang,
-    operation.parameters,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
@@ -231,14 +145,14 @@ export const Sidecar = ({
   return (
     <aside
       ref={ref}
-      className="flex flex-col overflow-hidden sticky top-[--scroll-padding] gap-4"
+      className="flex flex-col overflow-hidden sticky top-(--scroll-padding) gap-4"
       data-pagefind-ignore="all"
     >
       <SidecarBox.Root>
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
           <span className="font-mono break-words leading-6">
             <span className={cn("font-semibold", methodTextColor)}>
-              {operation.method.toLocaleUpperCase()}
+              {operation.method.toUpperCase()}
             </span>
             &nbsp;
             {path}

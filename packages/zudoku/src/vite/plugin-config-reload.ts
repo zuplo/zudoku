@@ -2,7 +2,7 @@ import path from "node:path";
 import colors from "picocolors";
 import { type Plugin, type ViteDevServer } from "vite";
 import { logger } from "../cli/common/logger.js";
-import { type LoadedConfig } from "../config/config.js";
+import { getCurrentConfig } from "../config/loader.js";
 
 export const reload = ({ ws, environments }: ViteDevServer) => {
   Object.values(environments).forEach((environment) => {
@@ -12,43 +12,36 @@ export const reload = ({ ws, environments }: ViteDevServer) => {
   ws.send({ type: "full-reload" });
 };
 
-export const createConfigReloadPlugin = (
-  initialConfig: LoadedConfig,
-  onConfigChange?: () => Promise<LoadedConfig>,
-): [Plugin, () => LoadedConfig] => {
-  let currentConfig = initialConfig;
-  let importDependencies = initialConfig.__meta.dependencies;
+export const viteConfigReloadPlugin = (): Plugin => ({
+  name: "zudoku-config-reload",
+  configureServer: (server) => {
+    const initialConfig = getCurrentConfig();
+    let importDependencies = initialConfig.__meta.dependencies;
+    server.watcher.on("change", async (file) => {
+      if (
+        !importDependencies.includes(file) &&
+        file !== initialConfig.__meta.configPath
+      ) {
+        return;
+      }
 
-  const plugin: Plugin = {
-    name: "zudoku-config-reload",
-    configureServer: (server) => {
-      if (!onConfigChange) return;
+      const currentConfig = getCurrentConfig();
+      importDependencies = currentConfig.__meta.dependencies;
 
-      server.watcher.on("change", async (file) => {
-        if (!importDependencies.includes(file)) return;
+      // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
+      if (file !== currentConfig.__meta.configPath && file.endsWith(".tsx"))
+        return;
 
-        const newConfig = await onConfigChange();
-        currentConfig = { ...initialConfig, ...newConfig };
-
-        importDependencies = newConfig.__meta.dependencies;
-
-        // Assume `.tsx` files are handled by HMR (skip if the config file itself changed)
-        if (file !== newConfig.__meta.configPath && file.endsWith(".tsx"))
-          return;
-
-        Object.values(server.environments).forEach((env) => {
-          env.moduleGraph.invalidateAll();
-        });
-
-        logger.info(
-          colors.blue(
-            `Config ${path.basename(currentConfig.__meta.configPath)} changed. Reloading...`,
-          ),
-          { timestamp: true },
-        );
+      Object.values(server.environments).forEach((env) => {
+        env.moduleGraph.invalidateAll();
       });
-    },
-  };
 
-  return [plugin, () => currentConfig] as const;
-};
+      logger.info(
+        colors.blue(
+          `Config ${path.basename(currentConfig.__meta.configPath)} changed. Reloading...`,
+        ),
+        { timestamp: true },
+      );
+    });
+  },
+});

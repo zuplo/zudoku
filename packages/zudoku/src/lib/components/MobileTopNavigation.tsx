@@ -10,9 +10,10 @@ import {
 } from "../ui/Drawer.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
+import { isHiddenItem } from "./navigation/utils.js";
 import { Search } from "./Search.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { isHiddenItem, PageProgress, TopNavItem } from "./TopNavigation.js";
+import { PageProgress, TopNavItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
   const { topNavigation, options } = useZudoku();
@@ -57,7 +58,7 @@ export const MobileTopNavigation = () => {
             </ul>
           </div>
           {options.page?.showPoweredBy !== false && (
-            <PoweredByZudoku className="flex-grow-0 justify-center gap-1" />
+            <PoweredByZudoku className="grow-0 justify-center gap-1" />
           )}
         </div>
       </DrawerContent>

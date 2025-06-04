@@ -41,7 +41,7 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
         {props.children ?? (
           <button
             type="button"
-            className="flex gap-1 items-center px-2 py-1 rounded-md transition text-xs bg-primary  text-primary-foreground shadow-sm hover:bg-primary/80"
+            className="flex gap-1 items-center px-2 py-1 rounded-md transition text-xs bg-primary  text-primary-foreground shadow-xs hover:bg-primary/80"
           >
             Test
             <HeroPlayIcon size={14} />
@@ -50,8 +50,9 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
       </DialogTrigger>
 
       <DialogContent
-        className="max-w-screen-xl w-full h-5/6 overflow-hidden p-0"
+        className="max-w-screen-xl w-full overflow-hidden p-0"
         aria-describedby={undefined}
+        showCloseButton={false}
       >
         <VisuallyHidden>
           <DialogTitle>Playground</DialogTitle>

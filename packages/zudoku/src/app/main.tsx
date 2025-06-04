@@ -31,18 +31,6 @@ await registerShiki(highlighter);
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
 ): ZudokuContextOptions => {
-  const fallbackLogoLight =
-    config.page?.logoUrl ??
-    "https://cdn.zudoku.dev/logos/zudoku-logo-full-light.svg";
-  const fallbackLogoDark =
-    config.page?.logoUrl ??
-    "https://cdn.zudoku.dev/logos/zudoku-logo-full-dark.svg";
-
-  const isUsingFallback =
-    !config.page?.logoUrl &&
-    !config.page?.logo?.src?.light &&
-    !config.page?.logo?.src?.dark;
-
   return {
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
@@ -52,16 +40,9 @@ export const convertZudokuConfigToOptions = (
       showPoweredBy:
         ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
         config.page?.showPoweredBy,
-      logo: {
-        ...(isUsingFallback ? { width: "130px" } : {}),
-        ...config.page?.logo,
-        src: {
-          light: config.page?.logo?.src?.light ?? fallbackLogoLight,
-          dark: config.page?.logo?.src?.dark ?? fallbackLogoDark,
-        },
-      },
+      logo: config.page?.logo,
     },
-    slotlets: config.UNSAFE_slotlets,
+    slots: config.slots,
     metadata: {
       favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
       title: "%s - Zudoku",
@@ -70,8 +51,8 @@ export const convertZudokuConfigToOptions = (
     sidebars: configuredSidebar,
     topNavigation: config.topNavigation,
     mdx: config.mdx,
-    authentication: configuredAuthProvider,
     plugins: [
+      ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...configuredDocsPlugins,
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
@@ -79,9 +60,6 @@ export const convertZudokuConfigToOptions = (
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
       ...configuredApiCatalogPlugins,
-      ...(configuredAuthProvider?.getAuthenticationPlugin
-        ? [configuredAuthProvider.getAuthenticationPlugin()]
-        : []),
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
@@ -97,9 +75,7 @@ export const getRoutesByOptions = (
 ) => {
   const allPlugins = [
     ...(options.plugins ?? []),
-    ...(options.authentication?.getAuthenticationPlugin
-      ? [options.authentication.getAuthenticationPlugin()]
-      : []),
+    ...(options.authentication ? [options.authentication] : []),
   ];
 
   const routes = allPlugins

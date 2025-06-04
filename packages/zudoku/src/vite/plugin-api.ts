@@ -3,8 +3,8 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { type Plugin, runnerImport } from "vite";
 import { ZuploEnv } from "../app/env.js";
-import { type LoadedConfig } from "../config/config.js";
-import { fileExists } from "../config/loader.js";
+import { fileExists } from "../config/file-exists.js";
+import { getCurrentConfig } from "../config/loader.js";
 import {
   type BuildConfig,
   type Processor,
@@ -24,13 +24,11 @@ import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateSidebar } from "./plugin-sidebar.js";
 
-const viteApiPlugin = async (
-  getConfig: () => LoadedConfig,
-): Promise<Plugin> => {
+const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
-  const initialConfig = getConfig();
+  const initialConfig = getCurrentConfig();
 
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = ZuploEnv.isZuplo
@@ -100,7 +98,7 @@ const viteApiPlugin = async (
     async load(id) {
       if (id !== resolvedVirtualModuleId) return;
 
-      const config = getConfig();
+      const config = getCurrentConfig();
 
       if (!deepEqual(schemaManager.config.apis, config.apis)) {
         schemaManager.config = config;

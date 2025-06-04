@@ -4,7 +4,7 @@ on:
   pull_request:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,13 +17,13 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v2
+      - uses: pnpm/action-setup@v4
         with:
           run_install: false
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: ".tool-versions"
           cache: "pnpm"
 
       - name: Install global dependencies
@@ -57,6 +57,9 @@ jobs:
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}
         with:
           apiToken: ${{ secrets.COSMO_CARGO_CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.COSMO_CARGO_CLOUDFLARE_ACCOUNT_ID }}

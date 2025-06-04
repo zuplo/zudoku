@@ -9,7 +9,7 @@ export const NotFoundPage = () => {
   const params = useParams();
 
   return (
-    <div className={ProseClasses + " h-full pt-[--padding-content-top]"}>
+    <div className={ProseClasses + " h-full pt-(--padding-content-top)"}>
       <CategoryHeading>404</CategoryHeading>
       <Heading level={1} className="flex gap-3.5 items-center">
         Page not found

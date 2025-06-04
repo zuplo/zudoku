@@ -1,10 +1,10 @@
 import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import type { FooterSocialIcons } from "../../config/validators/common.js";
+import type { FooterSocialIcons } from "../../config/validators/validate.js";
 import { cn } from "../util/cn.js";
 import { AnchorLink } from "./AnchorLink.js";
 import { useZudoku } from "./index.js";
-import { Slotlet } from "./SlotletProvider.js";
+import { Slot } from "./Slot.js";
 
 const SocialIcon = ({
   icon,
@@ -41,7 +41,7 @@ export const Footer = () => {
             "justify-end": footer.position === "end",
           })}
         >
-          <Slotlet name="footer-before" />
+          <Slot.Target name="footer-before" />
           {footer.columns && (
             <div
               className="w-full md:max-w-screen-md grid grid-cols-[1fr_1fr] gap-8 md:grid-cols-[repeat(var(--columns),minmax(0,1fr))]"
@@ -88,7 +88,7 @@ export const Footer = () => {
               ))}
             </div>
           )}
-          <Slotlet name="footer-after" />
+          <Slot.Target name="footer-after" />
         </div>
         <div
           className={cn(

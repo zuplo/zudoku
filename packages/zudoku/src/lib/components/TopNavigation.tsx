@@ -2,24 +2,12 @@ import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
 import { Suspense, useEffect, useState } from "react";
 import { NavLink, useNavigation } from "react-router";
-import type { TopNavigationItem } from "../../config/validators/common.js";
+import type { TopNavigationItem } from "../../config/validators/validate.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { traverseSidebar } from "./navigation/utils.js";
-import { Slotlet } from "./SlotletProvider.js";
-
-export const isHiddenItem =
-  (isAuthenticated?: boolean) =>
-  (item: { display?: "auth" | "anon" | "always" | "hide" }): boolean => {
-    if (item.display === "hide") return false;
-    return (
-      (item.display === "auth" && isAuthenticated) ||
-      (item.display === "anon" && !isAuthenticated) ||
-      !item.display ||
-      item.display === "always"
-    );
-  };
+import { isHiddenItem, traverseSidebar } from "./navigation/utils.js";
+import { Slot } from "./Slot.js";
 
 export const PageProgress = () => {
   const navigation = useNavigation();
@@ -58,7 +46,7 @@ export const TopNavigation = () => {
 
   return (
     <Suspense>
-      <div className="items-center justify-between px-8 h-[--top-nav-height] hidden lg:flex text-sm relative">
+      <div className="items-center justify-between px-8 h-(--top-nav-height) hidden lg:flex text-sm relative">
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
             {filteredItems.map((item) => (
@@ -68,7 +56,7 @@ export const TopNavigation = () => {
             ))}
           </ul>
         </nav>
-        <Slotlet name="top-navigation-side" />
+        <Slot.Target name="top-navigation-side" />
       </div>
       <PageProgress />
     </Suspense>

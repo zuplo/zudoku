@@ -32,7 +32,7 @@ export const ResultPanel = ({
 }) => {
   const status = ((queryMutation.data?.status ?? 0) / 100).toFixed(0);
   return (
-    <div className="min-w-0 p-4 py-8 bg-muted/50">
+    <div className="min-w-0 p-4 py-4 bg-muted/50">
       {queryMutation.error ? (
         <div className="flex flex-col gap-2">
           {showPathParamsWarning && (
@@ -83,6 +83,9 @@ export const ResultPanel = ({
               headers={queryMutation.data.headers}
               body={queryMutation.data.body}
               url={queryMutation.data.request.url}
+              isBinary={queryMutation.data.isBinary}
+              fileName={queryMutation.data.fileName}
+              blob={queryMutation.data.blob}
             />
           </TabsContent>
         </Tabs>

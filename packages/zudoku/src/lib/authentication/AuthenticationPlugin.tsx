@@ -1,8 +1,8 @@
 import { LogOutIcon } from "lucide-react";
 import {
-  CommonPlugin,
-  NavigationPlugin,
-  ProfileMenuPlugin,
+  type CommonPlugin,
+  type NavigationPlugin,
+  type ProfileMenuPlugin,
 } from "../core/plugins.js";
 import { SignIn } from "./components/SignIn.js";
 import { SignOut } from "./components/SignOut.js";
@@ -10,7 +10,7 @@ import { SignUp } from "./components/SignUp.js";
 
 type PluginInterface = NavigationPlugin & CommonPlugin & ProfileMenuPlugin;
 
-export class AuthenticationPlugin implements PluginInterface {
+export class CoreAuthenticationPlugin implements PluginInterface {
   getRoutes() {
     return [
       {

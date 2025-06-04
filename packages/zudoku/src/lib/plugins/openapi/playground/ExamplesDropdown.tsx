@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from "lucide-react";
 import { Button } from "zudoku/ui/Button.js";
 import {
   DropdownMenu,
@@ -20,7 +21,9 @@ const ExamplesDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">Use Example</Button>
+        <Button variant="ghost" size="sm">
+          Use Example <ChevronDownIcon className="w-4 h-4" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-72">
         {examples.map((mediaTypeObject) => (

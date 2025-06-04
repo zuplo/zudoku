@@ -13,7 +13,7 @@ const IdentitySelector = ({
   setValue: (value: string) => void;
   value?: string;
 }) => (
-  <Card className="w-full overflow-hidden">
+  <Card className="w-full overflow-hidden rounded-lg">
     <RadioGroup
       onValueChange={(value) => setValue(value)}
       value={value}
@@ -21,19 +21,21 @@ const IdentitySelector = ({
       className="gap-0"
       disabled={identities?.length === 0}
     >
-      <Label className="h-12 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent">
+      <Label className="h-10 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent">
         <RadioGroupItem value={NO_IDENTITY} id="none" />
         <span>None</span>
       </Label>
-      {identities?.map((identity) => (
-        <Label
-          key={identity.id}
-          className="h-12 border-b items-center flex gap-2 p-4 cursor-pointer hover:bg-accent"
-        >
-          <RadioGroupItem value={identity.id} id={identity.id} />
-          <span>{identity.label}</span>
-        </Label>
-      ))}
+      <div className="divide-y">
+        {identities?.map((identity) => (
+          <Label
+            key={identity.id}
+            className="h-10 items-center flex gap-2 p-4 cursor-pointer hover:bg-accent"
+          >
+            <RadioGroupItem value={identity.id} id={identity.id} />
+            <span>{identity.label}</span>
+          </Label>
+        ))}
+      </div>
     </RadioGroup>
   </Card>
 );

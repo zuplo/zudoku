@@ -223,7 +223,7 @@ export const OperationList = ({
 
   return (
     <div
-      className="pt-[--padding-content-top]"
+      className="pt-(--padding-content-top)"
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
@@ -298,7 +298,7 @@ export const OperationList = ({
                 )}
               >
                 <Markdown
-                  className="border rounded bg-muted/25 border-border px-2.5 md:px-4"
+                  className="border rounded-sm bg-muted/25 border-border px-2.5 md:px-4"
                   content={schema.description}
                 />
               </div>

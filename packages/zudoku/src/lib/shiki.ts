@@ -9,7 +9,12 @@ import type { Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { Fragment, type JSX } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
-import type { BundledLanguage, BundledTheme, HighlighterCore } from "shiki";
+import type {
+  BundledLanguage,
+  BundledTheme,
+  CodeOptionsMultipleThemes,
+  HighlighterCore,
+} from "shiki";
 import { createHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Pluggable } from "unified";
@@ -30,11 +35,13 @@ export const highlighter = await createHighlighterCore({
   },
 });
 
+type ThemesRecord = CodeOptionsMultipleThemes<BundledTheme>["themes"];
+
 export const defaultHighlightOptions = {
   themes: {
     light: "github-light",
     dark: "github-dark",
-  } satisfies { light: BundledTheme; dark: BundledTheme },
+  },
   defaultColor: false,
   inline: "tailing-curly-colon",
   addLanguageClass: true,
@@ -97,31 +104,23 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
   });
 };
 
-export const createConfiguredShikiRehypePlugins = (themes?: {
-  light: BundledTheme;
-  dark: BundledTheme;
-}) => {
-  return [
-    [
-      rehypeShikiFromHighlighter,
-      highlighter,
-      {
-        ...defaultHighlightOptions,
-        themes: themes ?? defaultHighlightOptions.themes,
-      } satisfies RehypeShikiCoreOptions,
-    ] satisfies Pluggable,
-    rehypeCodeBlockPlugin,
-  ];
-};
+export const createConfiguredShikiRehypePlugins = (themes?: ThemesRecord) => [
+  [
+    rehypeShikiFromHighlighter,
+    highlighter,
+    {
+      ...defaultHighlightOptions,
+      themes: themes ?? defaultHighlightOptions.themes,
+    },
+  ] satisfies Pluggable,
+  rehypeCodeBlockPlugin,
+];
 
 export const highlight = (
   highlighter: HighlighterCore,
   code: string,
   lang = "text",
-  themes: {
-    light: BundledTheme;
-    dark: BundledTheme;
-  } = defaultHighlightOptions.themes,
+  themes: ThemesRecord = defaultHighlightOptions.themes,
 ) => {
   const value = highlighter.codeToHast(code, {
     lang,
