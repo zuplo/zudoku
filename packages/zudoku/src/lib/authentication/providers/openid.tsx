@@ -273,6 +273,59 @@ export class OpenIDAuthenticationProvider
     }
   };
 
+  onPageLoad = async () => {
+    const { providerData } = useAuthState.getState();
+
+    if (!providerData) {
+      useAuthState.setState({ isPending: false });
+      return;
+    }
+
+    const tokenState = providerData as OpenIdProviderData;
+
+    if (new Date(tokenState.expiresOn) < new Date()) {
+      if (!tokenState.refreshToken) {
+        useAuthState.setState({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        });
+        return;
+      }
+
+      try {
+        const as = await this.getAuthServer();
+        const request = await oauth.refreshTokenGrantRequest(
+          as,
+          this.client,
+          tokenState.refreshToken,
+        );
+        const response = await oauth.processRefreshTokenResponse(
+          as,
+          this.client,
+          request,
+        );
+
+        if (!response.access_token) {
+          throw new AuthorizationError('No access token in response');
+        }
+
+        this.setTokensFromResponse(response);
+      } catch {
+        useAuthState.setState({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        });
+        return;
+      }
+    }
+
+    useAuthState.setState({ isPending: false });
+  };
+
   handleCallback = async () => {
     const url = new URL(window.location.href);
     const state = url.searchParams.get("state");
