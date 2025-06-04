@@ -145,7 +145,7 @@ export class AzureB2CAuthPlugin
         account,
       });
 
-      return "";
+      throw new AuthorizationError("Token acquisition failed after interactive attempt");
     }
   }
 
