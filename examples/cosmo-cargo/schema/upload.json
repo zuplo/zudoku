@@ -1,0 +1,55 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "File Upload API",
+    "version": "1.0.0",
+    "description": "Allows uploading files with optional description."
+  },
+  "paths": {
+    "/files": {
+      "post": {
+        "summary": "Upload a file",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "description": {
+                    "type": "string"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "string" },
+                    "url": { "type": "string" }
+                  }
+                },
+                "example": {
+                  "id": "123",
+                  "url": "https://example.com/file.png"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
