@@ -387,12 +387,20 @@ const MetadataSchema = z
 
 const FontConfigSchema = z.object({
   url: z.string(),
-  fontFamily: z.string(),
+  fontFamily: z.string().optional(),
 });
 
 const FontsConfigSchema = z.object({
   sans: FontConfigSchema.optional(),
+  serif: FontConfigSchema.optional(),
   mono: FontConfigSchema.optional(),
+});
+
+const ThemeConfigSchema = z.object({
+  registryUrl: z.string().url().optional(),
+  light: ThemeSchema.optional(),
+  dark: ThemeSchema.optional(),
+  fonts: FontsConfigSchema.optional(),
 });
 
 const PageSchema = z
@@ -476,13 +484,7 @@ const BaseConfigSchema = z.object({
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),
-  theme: z
-    .object({
-      light: ThemeSchema,
-      dark: ThemeSchema,
-      fonts: FontsConfigSchema,
-    })
-    .partial(),
+  theme: ThemeConfigSchema,
   syntaxHighlighting: z
     .object({
       languages: z.array(z.custom<BundledLanguage>()),
