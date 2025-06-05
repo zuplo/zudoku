@@ -26,6 +26,9 @@ export type ExampleObject = DeepOmitReference<OpenAPIV3_1.ExampleObject>;
 export type EncodingObject = DeepOmitReference<OpenAPIV3_1.EncodingObject>;
 export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
 export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject>;
+export type WebhooksObject = DeepOmitReference<
+  OpenAPIV3_1.Document["webhooks"]
+>;
 
 export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
 

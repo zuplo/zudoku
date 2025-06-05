@@ -1,5 +1,9 @@
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
-import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
+import {
+  getAllOperations,
+  getAllSlugs,
+  getAllWebhookOperations,
+} from "../../lib/oas/graphql/index.js";
 import { type OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 
@@ -119,8 +123,13 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
   // slugify is quite expensive for big schemas, so we pre-generate the slugs here to shave off time
   const dereferencedSchema =
     await $RefParser.dereference<OpenAPIDocument>(schema);
+  const operations = getAllOperations(dereferencedSchema.paths);
+  const webhookOperations = getAllWebhookOperations(
+    dereferencedSchema.webhooks,
+  );
   const slugs = getAllSlugs(
-    getAllOperations(dereferencedSchema.paths),
+    operations,
+    webhookOperations,
     dereferencedSchema.tags,
   );
 

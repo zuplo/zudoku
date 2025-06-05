@@ -14,6 +14,7 @@ import {
   getAllOperations,
   getAllSlugs,
   getAllTags,
+  getAllWebhookOperations,
 } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
@@ -161,7 +162,10 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                 schemas
                   .flatMap(({ schema }) => {
                     const operations = getAllOperations(schema.paths);
-                    const slugs = getAllSlugs(operations);
+                    const webhookOperations = getAllWebhookOperations(
+                      schema.webhooks,
+                    );
+                    const slugs = getAllSlugs(operations, webhookOperations);
                     return getAllTags(schema, slugs.tags);
                   })
                   .map(({ slug }) => slug),

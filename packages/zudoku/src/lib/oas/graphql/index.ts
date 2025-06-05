@@ -18,6 +18,7 @@ import {
   type ServerObject,
   type TagObject,
   validate,
+  type WebhooksObject,
 } from "../parser/index.js";
 import { GraphQLJSONSchema } from "./circular.js";
 
@@ -30,6 +31,7 @@ export type {
   PathsObject,
   SchemaObject,
   TagObject,
+  WebhooksObject,
 };
 
 type OperationLike = {
@@ -61,6 +63,7 @@ export type SchemaImports = Record<string, SchemaImport>;
 type Context = {
   schema: OpenAPIDocument;
   operations: GraphQLOperationObject[];
+  webhookOperations: GraphQLOperationObject[];
   schemaImports?: SchemaImports;
   tags: ReturnType<typeof getAllTags>;
   slugs: ReturnType<typeof getAllSlugs>;
@@ -99,14 +102,20 @@ export const getAllTags = (
   slugs: ReturnType<typeof getAllSlugs>["tags"],
 ): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.tags ?? [];
-  const operationTags = new Set(
-    Object.values(schema.paths ?? {})
+  const operationTags = new Set([
+    ...Object.values(schema.paths ?? {})
       .flatMap((path) => Object.values(path ?? {}))
       .flatMap((op) => (op as OperationObject).tags ?? []),
-  );
+    ...Object.values(schema.webhooks ?? {})
+      .flatMap((pathItem) => Object.values(pathItem ?? {}))
+      .flatMap((op) => (op as OperationObject).tags ?? []),
+  ]);
 
-  const hasUntaggedOperations = Object.values(schema.paths ?? {}).some((path) =>
-    Object.values(path ?? {}).some(
+  const hasUntaggedOperations = [
+    ...Object.values(schema.paths ?? {}),
+    ...Object.values(schema.webhooks ?? {}),
+  ].some((pathItem) =>
+    Object.values(pathItem ?? {}).some(
       (op) => !(op as OperationObject).tags?.length,
     ),
   );
@@ -127,20 +136,22 @@ export const getAllTags = (
 
 export const getAllSlugs = (
   ops: GraphQLOperationObject[],
+  webhookOps: GraphQLOperationObject[],
   schemaTags: TagObject[] = [],
 ) => {
   const slugify = slugifyWithCounter();
+  const allOps = [...ops, ...webhookOps];
 
   const tags = Array.from(
     new Set([
-      ...ops.flatMap((op) => op.tags ?? []),
+      ...allOps.flatMap((op) => op.tags ?? []),
       ...schemaTags.map((tag) => tag.name),
     ]),
   );
 
   return {
     operations: Object.fromEntries(
-      ops.map((op) => [
+      allOps.map((op) => [
         getOperationSlugKey(op),
         createOperationSlug(slugify, op),
       ]),
@@ -189,6 +200,44 @@ export const getAllOperations = (
   return operations;
 };
 
+export const getAllWebhookOperations = (
+  webhooks?: WebhooksObject,
+): GraphQLOperationObject[] => {
+  const operations = Object.entries(webhooks ?? {}).flatMap(
+    ([webhookName, pathItem]) =>
+      HttpMethods.flatMap((method) => {
+        if (!pathItem?.[method]) return [];
+
+        const operation = pathItem[method] as OperationObject;
+        const pathParameters = pathItem.parameters ?? [];
+        const operationParameters = operation.parameters ?? [];
+
+        // parameters are inherited from the parent path object,
+        // but can be overridden by their `name` and `in` location
+        const parameters = [
+          ...pathParameters.filter(
+            // remove path parameters that are already defined in the operation
+            (pp) =>
+              !operationParameters.some(
+                (op) => op.name === pp.name && op.in === pp.in,
+              ),
+          ),
+          ...operationParameters,
+        ];
+
+        return {
+          ...operation,
+          method,
+          path: `/webhooks/${webhookName}`, // Use a webhook path
+          parameters,
+          tags: operation.tags ?? [],
+        } satisfies GraphQLOperationObject;
+      }),
+  );
+
+  return operations;
+};
+
 const SchemaTag = builder.objectRef<
   Omit<TagObject, "name"> & { name?: string; slug?: string }
 >("SchemaTag");
@@ -203,8 +252,9 @@ SchemaTag.implement({
       type: [OperationItem],
       resolve: (parent, _args, ctx) => {
         const rootTags = ctx.tags.map((tag) => tag.name);
+        const allOperations = [...ctx.operations, ...ctx.webhookOperations];
 
-        return ctx.operations
+        return allOperations
           .filter((item) =>
             parent.name
               ? item.tags?.includes(parent.name)
@@ -589,9 +639,14 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
         operationId: t.arg.string(),
         tag: t.arg.string(),
         untagged: t.arg.boolean(),
+        includeWebhooks: t.arg.boolean(),
       },
-      resolve: (_parent, args, ctx) =>
-        ctx.operations.filter((op) => {
+      resolve: (_parent, args, ctx) => {
+        const allOperations = args.includeWebhooks
+          ? [...ctx.operations, ...ctx.webhookOperations]
+          : ctx.operations;
+
+        return allOperations.filter((op) => {
           return (
             (!args.operationId || op.operationId === args.operationId) &&
             (!args.path || op.path === args.path) &&
@@ -599,7 +654,12 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
             (!args.tag || op.tags?.some((tag) => args.tag?.includes(tag))) &&
             (!args.untagged || (op.tags ?? []).length === 0)
           );
-        }),
+        });
+      },
+    }),
+    webhooks: t.field({
+      type: [OperationItem],
+      resolve: (_parent, _args, ctx) => ctx.webhookOperations,
     }),
     components: t.field({
       type: Components,
@@ -636,12 +696,14 @@ builder.queryType({
           const { schema, slugs } = await loadSchema();
           ctx.schema = schema;
           ctx.operations = getAllOperations(schema.paths);
+          ctx.webhookOperations = getAllWebhookOperations(schema.webhooks);
           ctx.slugs = slugs;
           ctx.tags = getAllTags(schema, ctx.slugs.tags);
         } else {
           ctx.schema = await validate(args.input as string);
           ctx.operations = getAllOperations(ctx.schema.paths);
-          ctx.slugs = getAllSlugs(ctx.operations);
+          ctx.webhookOperations = getAllWebhookOperations(ctx.schema.webhooks);
+          ctx.slugs = getAllSlugs(ctx.operations, ctx.webhookOperations);
           ctx.tags = getAllTags(ctx.schema, ctx.slugs.tags);
         }
 
