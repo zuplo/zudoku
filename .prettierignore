@@ -12,3 +12,4 @@ pnpm-lock.yaml
 stats.html
 .vercel/
 examples/many-apis/apis/
+packages/zudoku/src/config/validators/flat-config.ts

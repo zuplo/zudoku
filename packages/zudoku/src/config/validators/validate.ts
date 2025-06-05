@@ -148,8 +148,13 @@ export const FooterSocialIcons = [
   "telegram",
 ] as const;
 
-const ReactNodeSchema = withGetType(z.custom<ReactNode>(), (ts) =>
-  ts.factory.createIdentifier("ReactNode"),
+const ReactNodeSchema = withGetType(
+  z.custom<NonNullable<ReactNode>>((val) => val != null),
+  (ts) =>
+    ts.factory.createTypeReferenceNode(
+      ts.factory.createIdentifier("NonNullable"),
+      [ts.factory.createTypeReferenceNode("ReactNode", undefined)],
+    ),
 );
 
 const BundledLanguageSchema = withGetType(z.custom<BundledLanguage>(), (ts) =>

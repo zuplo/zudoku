@@ -98,3 +98,26 @@ export const InputSidebarSchema = InputSidebarItemSchema.array();
 
 export type SidebarEntry = z.infer<typeof InputSidebarSchema>;
 export type SidebarConfig = Record<string, SidebarEntry>;
+
+// This is a workaround to generate the recursive InputSidebarItem type string for zod-to-ts.
+// It's a bit of a hack, but it works.
+export const generateInputSidebarItemTypeString = (
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  zodToTs: typeof import("zod-to-ts").zodToTs,
+  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+  printNode: typeof import("zod-to-ts").printNode,
+) => {
+  // Generate the individual component types
+  const docType = zodToTs(InputSidebarItemDocSchema, "Doc");
+  const linkType = zodToTs(InputSidebarItemLinkSchema, "Link");
+  const baseCategoryType = zodToTs(
+    BaseInputSidebarItemCategorySchema,
+    "BaseCategory",
+  );
+
+  return [
+    printNode(docType.node),
+    printNode(linkType.node),
+    printNode(baseCategoryType.node) + " & { items: InputSidebarItem[] }",
+  ].join(" | ");
+};
