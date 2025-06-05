@@ -26,6 +26,48 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it("should validate openid issuer format correctly", () => {
+    const configWithValidAuth0 = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "https://example.auth0.com/",
+      },
+    };
+
+    validateConfig(configWithValidAuth0);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should validate openid issuer format correctly", () => {
+    const configWithValidAuth0 = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "https://example.auth0.com",
+      },
+    };
+
+    validateConfig(configWithValidAuth0);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should validate openid issuer format correctly", () => {
+    const configWithValidAuth0 = {
+      authentication: {
+        type: "openid" as const,
+        clientId: "client123",
+        issuer: "ftp://example.auth0.com/123123",
+      },
+    };
+
+    validateConfig(configWithValidAuth0);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
   it("should reject auth0 domain with protocol", () => {
     const configWithInvalidAuth0Domain = {
       authentication: {
