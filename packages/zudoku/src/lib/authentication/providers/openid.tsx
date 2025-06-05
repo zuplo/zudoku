@@ -308,7 +308,7 @@ export class OpenIDAuthenticationProvider
         );
 
         if (!response.access_token) {
-          throw new AuthorizationError('No access token in response');
+          throw new AuthorizationError("No access token in response");
         }
 
         this.setTokensFromResponse(response);
