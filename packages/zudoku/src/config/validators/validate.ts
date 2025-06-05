@@ -319,7 +319,21 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("auth0"),
     clientId: z.string(),
-    domain: z.string(),
+    domain: z.string().refine(
+      (val) => {
+        if (val.startsWith("http://") || val.startsWith("https://")) {
+          return false;
+        }
+        if (val.includes("/")) {
+          return false;
+        }
+        return val.includes(".") && val.length > 0;
+      },
+      {
+        message:
+          "Domain must be a host only (e.g., 'example.com') without protocol or slashes",
+      },
+    ),
     audience: z.string().optional(),
     scopes: z.array(z.string()).optional(),
     redirectToAfterSignUp: z.string().optional(),
