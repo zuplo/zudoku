@@ -66,10 +66,6 @@
         "import": "./lib/ui/*.js",
         "types": "./dist/lib/ui/*.d.ts"
       },
-      "./hooks": {
-        "import": "./lib/hooks/index.js",
-        "types": "./dist/lib/hooks/index.d.ts"
-      },
       "./client": {
         "types": "./client.d.ts"
       },
@@ -128,6 +124,10 @@
       "./plugins/search-pagefind": {
         "import": "./lib/zudoku.plugin-search-pagefind.js",
         "types": "./dist/lib/plugins/search-pagefind/index.d.ts"
+      },
+      "./hooks": {
+        "import": "./lib/zudoku.hooks.js",
+        "types": "./dist/lib/hooks/index.d.ts"
       },
       "./components": {
         "import": "./lib/zudoku.components.js",
