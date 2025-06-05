@@ -289,8 +289,7 @@
     "yargs": "17.7.2",
     "zod": "3.25.51",
     "zod-validation-error": "3.4.1",
-    "zustand": "5.0.3",
-    "@azure/msal-browser": "^3.10.0"
+    "zustand": "5.0.3"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.6",
@@ -323,7 +322,8 @@
   },
   "peerDependencies": {
     "react": ">=19",
-    "react-dom": ">=19"
+    "react-dom": ">=19",
+    "@azure/msal-browser": "^4.13.0"
   },
   "optionalDependencies": {
     "@clerk/clerk-js": "^5.63.1",

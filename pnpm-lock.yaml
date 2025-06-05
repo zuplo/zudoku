@@ -342,8 +342,8 @@ importers:
         specifier: 12.0.2
         version: 12.0.2
       '@azure/msal-browser':
-        specifier: ^3.10.0
-        version: 3.28.1
+        specifier: ^4.13.0
+        version: 4.13.0
       '@envelop/core':
         specifier: 5.2.3
         version: 5.2.3
@@ -869,12 +869,12 @@ packages:
     peerDependencies:
       graphql: '*'
 
-  '@azure/msal-browser@3.28.1':
-    resolution: {integrity: sha512-OHHEWMB5+Zrix8yKvLVzU3rKDFvh7SOzAzXfICD7YgUXLxfHpTPX2pzOotrri1kskwhHqIj4a5LvhZlIqE7C7g==}
+  '@azure/msal-browser@4.13.0':
+    resolution: {integrity: sha512-n2ySryLd+wHmm/0Y1mwFI4J9UXVCu2DeWKtoWNWLVcpvK2k0Ez1qIigKleUm2ZfTbfAXdue+V8htmFft0qgyGQ==}
     engines: {node: '>=0.8.0'}
 
-  '@azure/msal-common@14.16.0':
-    resolution: {integrity: sha512-1KOZj9IpcDSwpNiQNjt0jDYZpQvNZay7QAEi/5DLubay40iGYtLzya/jbjRPLyOTZhEKyL1MzPuw2HqBCjceYA==}
+  '@azure/msal-common@15.7.0':
+    resolution: {integrity: sha512-m9M5hoFoxhe/HlXNVa4qBHekrX60CVPkWzsjhKQGuzw/OPOmurosKRPDIMn8fug/E1hHI5v33DvT1LVJfItjcg==}
     engines: {node: '>=0.8.0'}
 
   '@babel/code-frame@7.26.2':
@@ -9045,11 +9045,11 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@azure/msal-browser@3.28.1':
+  '@azure/msal-browser@4.13.0':
     dependencies:
-      '@azure/msal-common': 14.16.0
+      '@azure/msal-common': 15.7.0
 
-  '@azure/msal-common@14.16.0': {}
+  '@azure/msal-common@15.7.0': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
