@@ -16,7 +16,7 @@ export const MdxComponents = {
     if (/\.(mp4|webm|mov|avi)$/.test(props.src ?? "")) {
       return <video src={props.src} controls playsInline autoPlay loop />;
     }
-    return <img {...props} className="rounded-md" />;
+    return <img {...props} className={cn("rounded-md", props.className)} />;
   },
   h1: ({ children, id }) => (
     <Heading level={1} id={id}>

@@ -14,7 +14,7 @@ class Auth0AuthenticationProvider
     super({
       ...config,
       type: "openid",
-      issuer: `https://${config.domain}`,
+      issuer: `https://${config.domain}/`,
       clientId: config.clientId,
       audience: config.audience,
       scopes: config.scopes,
