@@ -323,11 +323,23 @@
   "peerDependencies": {
     "react": ">=19",
     "react-dom": ">=19",
-    "@azure/msal-browser": "^4.13.0"
-  },
-  "optionalDependencies": {
+    "@azure/msal-browser": "^4.13.0",
     "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4"
+  },
+  "peerDependenciesMeta": {
+    "@azure/msal-browser": {
+      "optional": true
+    },
+    "@clerk/clerk-js": {
+      "optional": true
+    },
+    "@sentry/react": {
+      "optional": true
+    },
+    "@supabase/supabase-js": {
+      "optional": true
+    }
   }
 }

@@ -10,6 +10,7 @@ const entries: Record<string, string> = {
   "auth-clerk": "./src/lib/authentication/providers/clerk.tsx",
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
+  "auth-azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
   plugins: "./src/lib/core/plugins.ts",
   hooks: "./src/lib/hooks/index.ts",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
