@@ -1,8 +1,12 @@
 import path from "node:path";
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
+import type { FontConfig } from "../config/validators/validate.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
-import { fetchShadcnRegistryTheme } from "../lib/util/shadcn-registry.js";
+import {
+  fetchShadcnRegistryItem,
+  type RegistryItemCss,
+} from "./shadcn-registry.js";
 
 // prettier-ignore
 const THEME_VARIABLES = [
@@ -40,45 +44,91 @@ const generateRegistryCss = (cssVars: Record<string, string>) =>
     .map(([key, value]) => `  --${key}: ${value};`)
     .join("\n");
 
+const processRegistryCustomCss = (css: RegistryItemCss): string => {
+  const processStyles = (
+    styles: RegistryItemCss | string,
+    indent = "",
+  ): string[] => {
+    if (typeof styles === "string") {
+      return [`${indent}${styles}`];
+    }
+
+    const rules = [];
+    for (const [key, value] of Object.entries(styles)) {
+      if (typeof value === "string") {
+        rules.push(`${indent}${key}: ${value};`);
+      } else {
+        rules.push(`${indent}${key} {`);
+        rules.push(...processStyles(value, indent + "  "));
+        rules.push(`${indent}}`);
+      }
+    }
+    return rules;
+  };
+
+  return processStyles(css).join("\n");
+};
+
 const MAIN_REPLACE = "/* @vite-plugin-inject main */";
 
 // prettier-ignore
-const GOOGLE_FONTS = [
+export const GOOGLE_FONTS = [
   "Inter", "Roboto", "Open Sans", "Poppins", "Montserrat", "Outfit",
   "Plus Jakarta Sans", "DM Sans", "IBM Plex Sans", "Geist", "Oxanium",
   "Architects Daughter", "Merriweather", "Playfair Display", "Lora",
   "Source Serif Pro", "Libre Baskerville", "Space Grotesk", "JetBrains Mono",
   "Fira Code", "Source Code Pro", "IBM Plex Mono", "Roboto Mono", "Space Mono", "Geist Mono",
-];
+] as const;
+type GoogleFont = (typeof GOOGLE_FONTS)[number];
 
 const getGoogleFontUrl = (font: string) =>
   `https://fonts.googleapis.com/css2?family=${font.replaceAll(/\s+/g, "+")}:wght@400;500;600;700&display=swap`;
 
-const processFontFamilies = (fontValue: string) => {
+const processFont = (fontValue: string) => {
   const families = fontValue
     .split(",")
     .map((f) => f.trim().replaceAll(/['"]/g, ""));
 
-  return families.flatMap((family) =>
-    GOOGLE_FONTS.includes(family) ? getGoogleFontUrl(family) : family,
-  );
+  return families
+    .filter((family) => GOOGLE_FONTS.includes(family as GoogleFont))
+    .map((family) => getGoogleFontUrl(family));
 };
 
-export const viteThemePlugin = (): Plugin => {
-  const virtualModuleId = "virtual:zudoku-theme.css";
-  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+const processFontConfig = (fontConfig?: FontConfig) => {
+  if (!fontConfig) return { url: undefined, fontFamily: undefined };
 
+  if (typeof fontConfig === "string") {
+    if (GOOGLE_FONTS.includes(fontConfig as GoogleFont)) {
+      return {
+        url: getGoogleFontUrl(fontConfig),
+        fontFamily: fontConfig,
+      };
+    }
+    return { url: undefined, fontFamily: fontConfig };
+  }
+
+  return {
+    url: fontConfig.url,
+    fontFamily: fontConfig.fontFamily,
+  };
+};
+
+export const virtualModuleId = "virtual:zudoku-theme.css";
+export const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+
+export const viteThemePlugin = (): Plugin => {
   return {
     // It is important to run before the Tailwind plugin
     enforce: "pre",
     name: "zudoku-css-theme",
+
     resolveId(id) {
       if (id === "virtual:zudoku-theme.css") {
         return resolvedVirtualModuleId;
       }
     },
+    // Handle the virtual module for dynamic theme content
     async load(id) {
-      // Handle the virtual module for dynamic theme content
       if (id !== resolvedVirtualModuleId) return;
 
       const config = getCurrentConfig();
@@ -88,29 +138,43 @@ export const viteThemePlugin = (): Plugin => {
       const fontImports: string[] = [];
 
       const userFonts = {
-        sans: themeConfig.fonts?.sans?.url,
-        serif: themeConfig.fonts?.serif?.url,
-        mono: themeConfig.fonts?.mono?.url,
+        sans: processFontConfig(themeConfig.fonts?.sans),
+        serif: processFontConfig(themeConfig.fonts?.serif),
+        mono: processFontConfig(themeConfig.fonts?.mono),
       };
 
       fontImports.push(
         ...Object.values(userFonts)
-          .flatMap((font) => (font ? processFontFamilies(font) : []))
-          .map((family) => `@import url('${family}');`),
+          .filter((font) => font.url)
+          .map((font) => `@import url('${font.url}');`),
       );
+
+      if (themeConfig.customCss) {
+        if (typeof themeConfig.customCss === "string") {
+          themeCss.push(themeConfig.customCss);
+        } else {
+          themeCss.push(processRegistryCustomCss(themeConfig.customCss));
+        }
+      }
 
       if (themeConfig.registryUrl) {
         try {
-          const registryItem = await fetchShadcnRegistryTheme(
+          const registryItem = await fetchShadcnRegistryItem(
             themeConfig.registryUrl,
           );
 
           // Extract theme variables from registry
+          const { cssVars = {}, css = {} } = registryItem;
           const {
             theme: regThemeVars = {},
             light: regLightVars = {},
             dark: regDarkVars = {},
-          } = registryItem.cssVars ?? {};
+          } = cssVars;
+
+          // Process custom CSS from registry
+          if (Object.keys(css).length > 0) {
+            themeCss.push(processRegistryCustomCss(css));
+          }
 
           // Merge registry variables with user overrides
           const applyOverrides = (
@@ -148,7 +212,7 @@ export const viteThemePlugin = (): Plugin => {
 
           fontImports.push(
             ...Object.values(themeFonts)
-              .flatMap((font) => (font ? processFontFamilies(font) : []))
+              .flatMap((font) => (font ? processFont(font) : []))
               .map((family) => `@import url('${family}');`),
           );
 
@@ -173,29 +237,27 @@ export const viteThemePlugin = (): Plugin => {
         }
       }
 
-      {
-        if (themeConfig.light) {
-          themeCss.push(`:root {\n${generateCss(themeConfig.light)}\n}`);
-        }
-        if (themeConfig.dark) {
-          themeCss.push(`.dark {\n${generateCss(themeConfig.dark)}\n}`);
-        }
+      if (themeConfig.light) {
+        themeCss.push(`:root {\n${generateCss(themeConfig.light)}\n}`);
+      }
+      if (themeConfig.dark) {
+        themeCss.push(`.dark {\n${generateCss(themeConfig.dark)}\n}`);
+      }
 
-        if (themeConfig.fonts?.sans?.fontFamily) {
-          themeCss.push(
-            `:root {\n  --font-sans: ${themeConfig.fonts.sans.fontFamily};\n}`,
-          );
-        }
-        if (themeConfig.fonts?.serif?.fontFamily) {
-          themeCss.push(
-            `:root {\n  --font-serif: ${themeConfig.fonts.serif.fontFamily};\n}`,
-          );
-        }
-        if (themeConfig.fonts?.mono?.fontFamily) {
-          themeCss.push(
-            `:root {\n  --font-mono: ${themeConfig.fonts.mono.fontFamily};\n}`,
-          );
-        }
+      if (userFonts.sans.fontFamily) {
+        themeCss.push(
+          `:root {\n  --font-sans: ${userFonts.sans.fontFamily};\n}`,
+        );
+      }
+      if (userFonts.serif.fontFamily) {
+        themeCss.push(
+          `:root {\n  --font-serif: ${userFonts.serif.fontFamily};\n}`,
+        );
+      }
+      if (userFonts.mono.fontFamily) {
+        themeCss.push(
+          `:root {\n  --font-mono: ${userFonts.mono.fontFamily};\n}`,
+        );
       }
 
       if (fontImports.length === 0) {
@@ -213,9 +275,10 @@ export const viteThemePlugin = (): Plugin => {
 
       return [...fontImports, ...themeCss].join("\n");
     },
+
+    // Handle static theme content in main.css
+    // This goes through the normal CSS pipeline so Tailwind can process it
     async transform(src, id) {
-      // Handle static theme content in main.css
-      // This goes through the normal CSS pipeline so Tailwind can process it
       if (!id.endsWith("/src/app/main.css")) return;
 
       const config = getCurrentConfig();
@@ -228,10 +291,9 @@ export const viteThemePlugin = (): Plugin => {
 
       const code = [...files].map((file) => `@source "${file}";`);
 
+      // NOTE: Font imports and declarations are handled by virtual:zudoku-theme.css
+      // This @theme block only maps CSS variables to Tailwind utilities
       code.push("@theme inline {");
-
-      // Always add basic color mappings to @theme block for Tailwind utilities
-      // These map CSS variables to Tailwind color tokens (e.g., bg-primary uses --color-primary)
 
       // prettier-ignore
       const colorVars = [
@@ -263,9 +325,6 @@ export const viteThemePlugin = (): Plugin => {
         `  --shadow-xl: var(--shadow-xl);`,
         `  --shadow-2xl: var(--shadow-2xl);`,
       );
-
-      // NOTE: Font imports and declarations are handled by virtual:zudoku-theme.css
-      // This @theme block only maps CSS variables to Tailwind utilities
 
       code.push("}");
 
