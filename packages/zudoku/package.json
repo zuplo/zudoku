@@ -328,6 +328,7 @@
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4"
   },
+  "optionalDependencies": {},
   "peerDependenciesMeta": {
     "@azure/msal-browser": {
       "optional": true
