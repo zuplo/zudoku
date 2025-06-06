@@ -27,7 +27,7 @@ const SidebarCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(category.link?.id ?? "");
+  const isActive = useMatch(category.link?.file ?? "");
 
   useEffect(() => {
     // this is triggered when an item from the sidebar is clicked
@@ -85,7 +85,7 @@ const SidebarCategoryInner = ({
         {category.link?.type === "doc" ? (
           <NavLink
             to={{
-              pathname: joinUrl(category.link.id),
+              pathname: joinUrl(category.link.file),
               search: location.search,
             }}
             className={styles}
@@ -125,7 +125,7 @@ const SidebarCategoryInner = ({
           {category.items.map((item) => (
             <SidebarItem
               key={
-                ("id" in item ? item.id : "") +
+                ("file" in item ? item.file : "") +
                 ("href" in item ? item.href : "") +
                 item.label
               }

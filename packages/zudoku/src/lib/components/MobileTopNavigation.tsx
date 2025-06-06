@@ -20,6 +20,8 @@ export const MobileTopNavigation = () => {
   const { isAuthenticated } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const filteredItems = navigation.filter(isHiddenItem(isAuthenticated));
+
   return (
     <Drawer
       direction={options.page?.dir === "rtl" ? "left" : "right"}
@@ -46,7 +48,7 @@ export const MobileTopNavigation = () => {
               <li>
                 <ThemeSwitch />
               </li>
-              {navigation.filter(isHiddenItem(isAuthenticated)).map((item) => (
+              {filteredItems.map((item) => (
                 <li key={item.label}>
                   <button type="button" onClick={() => setDrawerOpen(false)}>
                     <TopNavItem {...item} />

@@ -66,7 +66,6 @@ const ApiOptionsSchema = z
 
 const ApiConfigSchema = z
   .object({
-    id: z.string(),
     server: z.string(),
     path: z.string(),
     categories: z.array(ApiCatalogCategorySchema),
@@ -229,16 +228,6 @@ const DocsConfigSchema = z.object({
       disablePager: z.boolean(),
     })
     .partial()
-    .optional(),
-});
-
-const TopNavigationItemSchema = z.object({
-  label: z.string(),
-  id: z.string(),
-  default: z.string().optional(),
-  display: z
-    .enum(["auth", "anon", "always", "hide"])
-    .default("always")
     .optional(),
 });
 
@@ -504,7 +493,6 @@ export const ZudokuConfig = BaseConfigSchema.partial();
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
-export type TopNavigationItem = z.infer<typeof TopNavigationItemSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
 export type ZudokuConfig = z.input<typeof ZudokuConfig>;
 

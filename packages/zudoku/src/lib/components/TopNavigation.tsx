@@ -1,5 +1,6 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
+import { deepEqual } from "fast-equals";
 import { Suspense, useEffect, useState } from "react";
 import { NavLink, useNavigation } from "react-router";
 import { type SidebarItem } from "../../config/validators/SidebarSchema.js";
@@ -25,7 +26,7 @@ export const PageProgress = () => {
 
   return (
     <div
-      className="absolute w-0 left-0 right-0 bottom-[-1px] h-[2px] bg-primary transition-all duration-300 ease-in-out"
+      className="absolute w-0 left-0 right-0 top-[-1px] h-[2px] bg-primary transition-all duration-300 ease-in-out"
       style={{
         opacity: isFinished ? 0 : 1,
         width: isFinished ? 0 : `${progress * 100}%`,
@@ -66,32 +67,35 @@ export const TopNavigation = () => {
 export const getPathForItem = (item: SidebarItem) => {
   switch (item.type) {
     case "doc":
-      return joinUrl(item.id);
+      return joinUrl(item.file);
     case "link":
       return item.href;
     case "category":
-      return joinUrl(item.link?.id ?? "");
+      return joinUrl(item.link?.file ?? "");
+    case "custom-page":
+      return item.path;
   }
 };
 
 export const TopNavItem = (item: SidebarItem) => {
   const currentNav = useCurrentNavigation();
-  const isNavigating = Boolean(useNavigation().location);
-  const isActive =
-    JSON.stringify(currentNav.topNavItem) === JSON.stringify(item) &&
-    !isNavigating;
+  const isActiveNavItem = deepEqual(currentNav.topNavItem, item);
+
+  const path = getPathForItem(item);
+
+  const activeClass = "inset-shadow-[0_-2px_0_0_var(--primary)]";
 
   return (
     // We don't use isActive here because it has to be inside the sidebar,
     // the top nav id doesn't necessarily start with the sidebar id
     <NavLink
-      to={getPathForItem(item)}
-      className={({ isPending }) =>
+      to={path}
+      className={({ isActive, isPending }) =>
         cx(
           "block lg:py-3.5 font-medium -mb-px",
-          isActive || isPending
-            ? "border-primary text-foreground"
-            : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
+          isActive || isActiveNavItem || isPending
+            ? [activeClass, "text-foreground"]
+            : "text-foreground/75 hover:text-foreground",
         )
       }
     >

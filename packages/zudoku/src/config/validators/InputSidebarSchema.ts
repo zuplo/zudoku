@@ -19,7 +19,7 @@ const BadgeSchema = z.object({
 
 export const BaseInputSidebarItemCategoryLinkDocSchema = z.object({
   type: z.literal("doc"),
-  id: z.string(),
+  file: z.string(),
   label: z.string().optional(),
 });
 
@@ -39,7 +39,7 @@ export const DisplaySchema = z
 
 export const BaseInputSidebarItemDocSchema = z.object({
   type: z.literal("doc"),
-  id: z.string(),
+  file: z.string(),
   icon: z.custom<IconNames>().optional(),
   label: z.string().optional(),
   badge: BadgeSchema.optional(),
@@ -67,6 +67,18 @@ export const InputSidebarItemLinkSchema = z.object({
 
 export type InputSidebarItemLink = z.infer<typeof InputSidebarItemLinkSchema>;
 
+export const InputSidebarItemCustomPageSchema = z.object({
+  type: z.literal("custom-page"),
+  path: z.string(),
+  label: z.string(),
+  element: z.any(),
+  display: DisplaySchema,
+});
+
+export type InputSidebarItemCustomPage = z.infer<
+  typeof InputSidebarItemCustomPageSchema
+>;
+
 export const BaseInputSidebarItemCategorySchema = z.object({
   type: z.literal("category"),
   icon: z.custom<IconNames>().optional(),
@@ -81,13 +93,15 @@ export const BaseInputSidebarItemCategorySchema = z.object({
 export type InputSidebarItem =
   | z.infer<typeof InputSidebarItemDocSchema>
   | z.infer<typeof InputSidebarItemLinkSchema>
-  | z.infer<typeof InputSidebarItemCategorySchema>;
+  | z.infer<typeof InputSidebarItemCategorySchema>
+  | z.infer<typeof InputSidebarItemCustomPageSchema>;
 
 export const InputSidebarItemSchema: z.ZodType<InputSidebarItem> = z.lazy(() =>
   z.union([
     InputSidebarItemDocSchema,
     InputSidebarItemLinkSchema,
     InputSidebarItemCategorySchema,
+    InputSidebarItemCustomPageSchema,
   ]),
 );
 

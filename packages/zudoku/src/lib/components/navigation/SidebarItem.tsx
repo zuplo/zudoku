@@ -86,7 +86,7 @@ export const SidebarItem = ({
           className={({ isActive, isPending }) =>
             navigationListItem({ isActive, isPending })
           }
-          to={joinUrl(item.id)}
+          to={joinUrl(item.file)}
           onClick={onRequestClose}
           end
         >
@@ -141,5 +141,7 @@ export const SidebarItem = ({
           </span>
         </a>
       );
+    case "custom-page":
+      return null;
   }
 };

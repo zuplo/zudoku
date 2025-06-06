@@ -48,7 +48,7 @@ export const useCurrentItem = () => {
   const currentSidebar = nav.sidebar;
 
   return traverseSidebar(currentSidebar, (item) => {
-    if (item.type === "doc" && joinUrl(item.id) === location.pathname) {
+    if (item.type === "doc" && joinUrl(item.file) === location.pathname) {
       return item;
     }
   });
@@ -59,14 +59,14 @@ export const useIsCategoryOpen = (category: SidebarItemCategory) => {
 
   return traverseSidebarItem(category, (item) => {
     if (item.type === "category" && item.link) {
-      const categoryLinkPath = joinUrl(item.link.id);
+      const categoryLinkPath = joinUrl(item.link.file);
       if (categoryLinkPath === location.pathname) {
         return true;
       }
     }
 
     if (item.type === "doc") {
-      const docPath = joinUrl(item.id);
+      const docPath = joinUrl(item.file);
       if (docPath === location.pathname) {
         return true;
       }
@@ -90,9 +90,9 @@ export const usePrevNext = (): {
   traverseSidebar(currentSidebar, (item) => {
     const itemId =
       item.type === "doc"
-        ? joinUrl(item.id)
+        ? joinUrl(item.file)
         : item.type === "category" && item.link
-          ? joinUrl(item.link.id)
+          ? joinUrl(item.link.file)
           : undefined;
 
     if (!itemId) return;
@@ -139,6 +139,8 @@ export const isHiddenItem =
   (isAuthenticated?: boolean) =>
   (item: SidebarItem): boolean => {
     if (item.display === "hide") return false;
+    if (!item.label) return false;
+
     return (
       (item.display === "auth" && isAuthenticated) ||
       (item.display === "anon" && !isAuthenticated) ||
