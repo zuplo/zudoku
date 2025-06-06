@@ -1,7 +1,7 @@
 <svg width="765" height="278" viewBox="0 0 765 278" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g filter="url(#filter0_d_162_322)">
 <g clip-path="url(#clip0_162_322)">
-<rect x="4" y="2" width="757" height="270" rx="8" fill="#1F1D39"/>
+<rect x="4" y="2" width="757" height="270" rx="8" fill="#181822"/>
 <g filter="url(#filter1_f_162_322)">
 <circle cx="749.667" cy="340.667" r="249.667" fill="#D06DB6" fill-opacity="0.3"/>
 </g>
@@ -39,7 +39,7 @@
 </g>
 </g>
 </g>
-<rect x="4.5" y="2.5" width="756" height="269" rx="7.5" stroke="#E4E4E4"/>
+<rect x="4.5" y="2.5" width="756" height="269" rx="7.5" stroke="#262434"/>
 </g>
 <defs>
 <filter id="filter0_d_162_322" x="0" y="0" width="765" height="278" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
