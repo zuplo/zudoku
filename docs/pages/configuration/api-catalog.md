@@ -3,7 +3,7 @@ title: API Catalog
 sidebar_icon: book-open
 ---
 
-If you're dealing with multiple APIs and multiple OpenAPI files the API Catalog comes in handy. It creates an overview over all your APIs and lets you organize them in categories and tags.
+If you're dealing with multiple APIs and multiple OpenAPI files, the API Catalog comes in handy. It creates an overview of all your APIs and lets you organize them into categories and tags.
 
 ## Enable API Catalog
 

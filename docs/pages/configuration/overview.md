@@ -4,7 +4,7 @@ title: Configuration
 
 Zudoku uses a single file for configuration. It controls the structure, metadata, style, plugins, and routing for your documentation.
 
-You can find the file in the root directory of your project. It will be start with `zudoku.config`. The file can be in either JavaScript or TypeScript format and use a `.js`, `.mjs`, `.jsx`, `.ts`, or `.tsx` file extension.
+You can find the file in the root directory of your project. It will start with `zudoku.config`. The file can be in either JavaScript or TypeScript format and use a `.js`, `.mjs`, `.jsx`, `.ts`, or `.tsx` file extension.
 
 When you create a project, a default configuration file is generated for you. This file is a good starting point and can be customized to suit your needs.
 

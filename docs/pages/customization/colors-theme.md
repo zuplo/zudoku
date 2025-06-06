@@ -40,7 +40,7 @@ const config = {
 
 ## Radius
 
-The `radius` property is used to set the border radius for the theme. It can be a single and all radii will be inherited from that value.
+The `radius` property sets the border radius for the theme. It can be a single value, and all radii will inherit from that value.
 
 ```typescript
 export default {

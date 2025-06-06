@@ -37,7 +37,7 @@ The `transformExamples` function receives an options object with the following p
 1. `operation`: The operation being displayed
 1. `type`: Either "request" or "response" indicating which type of example is being transformed
 1. `auth`: The current authentication state
-1. `context`: ZudokContext
+1. `context`: ZudokuContext
 
 The function should return an array of Content objects with the transformed examples.
 

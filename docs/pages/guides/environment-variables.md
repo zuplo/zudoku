@@ -55,7 +55,7 @@ export const MyComponent = () => {
 
 By default, Zudoku provides type definitions for `import.meta.env` in `zudoku/client.d.ts`. While you can define more custom env variables in `.env.[mode]` files, you may want to get TypeScript IntelliSense for user-defined env variables that are prefixed with `ZUDOKU_PUBLIC_`.
 
-To achieve this, you can create a `zudoku-env.d.ts` in src directory, then augment `ImportMetaEnv` like this:
+To achieve this, you can create a `zudoku-env.d.ts` in the src directory, then augment `ImportMetaEnv` like this:
 
 ```typescript
 /// <reference types="zudoku/client" />

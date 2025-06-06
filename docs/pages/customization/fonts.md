@@ -39,12 +39,12 @@ To use local fonts you can add them to the `public` folder and create a `fonts.c
 /* ... */
 ```
 
-Then you can create a `font` object in your config as above and set the `url` to `/fonts.css`.
+Then you can create a `fonts` object in your config as above and set the `url` to `/fonts.css`.
 
 ```typescript
 const config = {
   theme: {
-    fonts {
+    fonts: {
       sans: {
         fontFamily: "Roboto, sans-serif",
         url: "/fonts.css",
@@ -53,7 +53,7 @@ const config = {
         fontFamily: "Roboto Mono, monospace",
         url: "/fonts.css",
       },
-    }
+    },
   },
 };
 ```

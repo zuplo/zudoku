@@ -5,13 +5,13 @@ sidebar_icon: layers-3
 
 If you want to include pages in your documentation that have greater flexibility than MDX pages, it is possible to include custom pages of your own.
 
-These pages are typically built using standard React markup and can borrow from a set of prebuild components that Zudoku already has such as buttons, links and headers.
+These pages are typically built using standard React markup and can borrow from a set of prebuilt components that Zudoku already has such as buttons, links and headers.
 
 Start by creating the page you want to add.
 
 ## Setup a custom page
 
-Each custom page is a page component of its own and live in a `src` directory at the root of your project. Let's create the `<MyCustomPage />` component as an example.
+Each custom page is a page component of its own and lives in a `src` directory at the root of your project. Let's create the `<MyCustomPage />` component as an example.
 
 From the root of your project run this command:
 
@@ -81,7 +81,7 @@ The `element` key references the name of the custom page component that you want
 }
 ```
 
-This configuration will allow Zudoku to load the contents of the `<MyCustomPage />` component when a user clinks on a link that points to `/a-custom-page`.
+This configuration will allow Zudoku to load the contents of the `<MyCustomPage />` component when a user clicks on a link that points to `/a-custom-page`.
 
 ## Troubleshooting
 
