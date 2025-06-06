@@ -230,7 +230,7 @@ const config: ZudokuConfig = {
       ring: "#0c0a09",
     },
     dark: {
-      background: "#18181b",
+      background: "#161619",
       foreground: "#fafaf9",
       card: "#212129",
       cardForeground: "#fafaf9",
@@ -246,7 +246,7 @@ const config: ZudokuConfig = {
       accentForeground: "#fafaf9",
       destructive: "#9e2648",
       destructiveForeground: "#fafaf9",
-      border: "#24252f",
+      border: "#323341",
       input: "#3c3d4c",
       ring: "#3f3f46",
     },
