@@ -31,14 +31,16 @@ export const useApiIdentities = () => {
   });
 };
 
-const getItemId = (item: SidebarItem) => {
+const getItemPath = (item: SidebarItem) => {
   switch (item.type) {
     case "doc":
-      return joinUrl(item.id);
+      return joinUrl(item.file);
     case "category":
-      return item.link ? joinUrl(item.link.id) : undefined;
+      return item.link ? joinUrl(item.link.file) : undefined;
     case "link":
       return item.href;
+    case "custom-page":
+      return item.path;
     default:
       return undefined;
   }
@@ -53,7 +55,7 @@ export const useCurrentNavigation = () => {
   );
 
   const sidebarItem = traverseSidebar(navigation, (item, parentCategories) => {
-    if (getItemId(item) === location.pathname) {
+    if (getItemPath(item) === location.pathname) {
       return parentCategories.at(0) ?? item;
     }
   });

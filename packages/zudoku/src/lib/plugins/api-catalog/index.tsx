@@ -71,12 +71,12 @@ export const apiCatalogPlugin = ({
       }
 
       const sidebar: SidebarItem[] = categories.map((category) => ({
-        type: "category" as const,
+        type: "category",
         label: category.label,
         collapsible: false,
         items: category.tags.map((tag) => ({
-          type: "doc" as const,
-          id: joinUrl(path, getKey(category.label, tag)),
+          type: "link",
+          href: joinUrl(path, getKey(category.label, tag)),
           label: tag,
           badge: {
             label: String(
@@ -84,16 +84,16 @@ export const apiCatalogPlugin = ({
                 api.categories.find((c) => c.tags.includes(tag)),
               ).length,
             ),
-            color: "outline" as const,
+            color: "outline",
           },
         })),
       }));
 
       sidebar.unshift({
-        type: "doc" as const,
-        id: joinUrl(path),
+        type: "link",
+        href: joinUrl(path),
         label: "Overview",
-        badge: { label: String(items.length), color: "outline" as const },
+        badge: { label: String(items.length), color: "outline" },
       });
 
       return sidebar;

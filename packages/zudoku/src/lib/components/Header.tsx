@@ -182,7 +182,7 @@ export const Header = memo(function HeaderInner() {
         </div>
       </div>
       <div className={cn("hidden lg:block", borderBottom)}>
-        <div className="max-w-screen-2xl mx-auto border-transparent">
+        <div className="max-w-screen-2xl mx-auto border-transparent relative">
           <Slot.Target name="top-navigation-before" />
           <TopNavigation />
           <Slot.Target name="top-navigation-after" />

@@ -101,9 +101,17 @@ const config: ZudokuConfig = {
   protectedRoutes: ["/only-members"],
   navigation: [
     {
-      type: "link",
-      href: "/catalog",
-      label: "API Catalog",
+      type: "custom-page",
+      path: "/",
+      label: "Home",
+      element: <Landingpage />,
+    },
+    {
+      type: "custom-page",
+      path: "/only-members",
+      label: "Only members",
+      display: "auth",
+      element: <div>Only members allowed</div>,
     },
     {
       type: "category",
@@ -126,6 +134,16 @@ const config: ZudokuConfig = {
         },
       ],
     },
+    {
+      type: "link",
+      href: "api-shipments",
+      label: "Shipments",
+    },
+    {
+      type: "link",
+      href: "/catalog",
+      label: "API Catalog",
+    },
   ],
   catalogs: {
     path: "catalog",
@@ -145,11 +163,6 @@ const config: ZudokuConfig = {
   search: {
     type: "pagefind",
   },
-  customPages: [
-    { path: "/", element: <Landingpage /> },
-    { path: "/only-members", element: <div>Only members</div> },
-  ],
-  plugins: [new CosmoCargoApiIdentityPlugin()],
   apis: [
     {
       type: "file",
@@ -186,25 +199,25 @@ const config: ZudokuConfig = {
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
-      path: "api-label",
+      path: "/catalog/api-label",
       categories: [{ label: "General", tags: ["Labels"] }],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
-      path: "api-webhooks",
+      path: "/catalog/api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],
     },
     {
       type: "file",
       input: "./schema/interplanetary.json",
-      path: "api-interplanetary",
+      path: "/catalog/api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
-      path: "api-tracking",
+      path: "/catalog/api-tracking",
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],

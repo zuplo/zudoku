@@ -19,7 +19,7 @@ export const createSidebarCategory = ({
   label,
   link: {
     type: "doc" as const,
-    id: path,
+    file: path,
     label,
   },
   collapsible,
