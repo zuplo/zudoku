@@ -102,9 +102,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                expiresOn: new Date(),
-              }),
+              body: JSON.stringify({}),
             },
           ),
         ),
