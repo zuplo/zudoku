@@ -53,7 +53,7 @@ const config = {
         fontFamily: "Roboto Mono, monospace",
         url: "/fonts.css",
       },
-    }
+    },
   },
 };
 ```
