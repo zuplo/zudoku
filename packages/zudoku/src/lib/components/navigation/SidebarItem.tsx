@@ -102,16 +102,18 @@ export const SidebarItem = ({
         </NavLink>
       );
     case "link":
-      return !item.href.startsWith("http") ? (
+    case "custom-page": {
+      const href = item.type === "link" ? item.href : item.path;
+      return !href.startsWith("http") ? (
         <AnchorLink
           to={{
-            pathname: item.href.split("#")[0],
-            hash: item.href.split("#")[1],
+            pathname: href.split("#")[0],
+            hash: href.split("#")[1],
             search: location.search,
           }}
-          {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
+          {...{ [DATA_ANCHOR_ATTR]: href.split("#")[1] }}
           className={navigationListItem({
-            isActive: item.href === [location.pathname, activeAnchor].join("#"),
+            isActive: href === [location.pathname, activeAnchor].join("#"),
           })}
           onClick={onRequestClose}
         >
@@ -128,7 +130,7 @@ export const SidebarItem = ({
       ) : (
         <a
           className={navigationListItem()}
-          href={item.href}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           onClick={onRequestClose}
@@ -141,7 +143,6 @@ export const SidebarItem = ({
           </span>
         </a>
       );
-    case "custom-page":
-      return null;
+    }
   }
 };

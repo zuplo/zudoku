@@ -72,6 +72,8 @@ export const InputSidebarItemCustomPageSchema = z.object({
   path: z.string(),
   label: z.string(),
   element: z.any(),
+  icon: z.custom<IconNames>().optional(),
+  badge: BadgeSchema.optional(),
   display: DisplaySchema,
 });
 
