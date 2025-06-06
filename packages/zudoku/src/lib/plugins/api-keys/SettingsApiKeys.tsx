@@ -3,7 +3,6 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AnimatePresence } from "framer-motion";
 import {
   CheckIcon,
   CopyIcon,
@@ -14,7 +13,7 @@ import {
   TrashIcon,
   XIcon,
 } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { Card, CardHeader } from "zudoku/ui/Card.js";
 import {
@@ -206,8 +205,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
         ) : (
           <ul
             className={cn(
-              "grid grid-cols-1 divide-y divide-border col-span-6",
-              "lg:grid-cols-[1fr_min-content]",
+              "grid grid-cols-2 divide-y divide-border col-span-full lg:col-span-6",
             )}
           >
             {data.map((consumers) => (
@@ -335,29 +333,25 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                     )}
                   </div>
                 </CardHeader>
-                <div className="col-span-full grid-cols-subgrid grid">
-                  <AnimatePresence>
-                    {consumers.apiKeys.map((apiKey) => (
-                      <React.Fragment key={apiKey.id}>
-                        <RevealApiKey
-                          apiKey={apiKey}
-                          onDeleteKey={() => {
-                            deleteKeyMutation.mutate({
-                              consumerId: consumers.id,
-                              keyId: apiKey.id,
-                            });
-                          }}
-                          className={
-                            deleteKeyMutation.variables?.keyId === apiKey.id &&
-                            (deleteKeyMutation.isPending || isFetching)
-                              ? "opacity-10!"
-                              : undefined
-                          }
-                        />
-                        <div className="col-span-full h-px bg-border"></div>
-                      </React.Fragment>
-                    ))}
-                  </AnimatePresence>
+                <div className="col-span-full grid-cols-subgrid grid divide-y">
+                  {consumers.apiKeys.map((apiKey) => (
+                    <RevealApiKey
+                      key={apiKey.id}
+                      apiKey={apiKey}
+                      onDeleteKey={() => {
+                        deleteKeyMutation.mutate({
+                          consumerId: consumers.id,
+                          keyId: apiKey.id,
+                        });
+                      }}
+                      className={
+                        deleteKeyMutation.variables?.keyId === apiKey.id &&
+                        (deleteKeyMutation.isPending || isFetching)
+                          ? "opacity-10!"
+                          : undefined
+                      }
+                    />
+                  ))}
                 </div>
               </Card>
             ))}
@@ -410,9 +404,9 @@ const RevealApiKey = ({
   const expiresSoon = daysUntilExpiry <= 7 && !isExpired;
 
   return (
-    <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
+    <div className={cn("flex justify-between col-span-full p-6", className)}>
       <div className="flex flex-col gap-1">
-        <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
+        <div className="flex gap-2 items-center text-sm border rounded-md w-full lg:w-fit px-1">
           <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
             <div
               className={cn(
@@ -421,7 +415,7 @@ const RevealApiKey = ({
               )}
             ></div>
             <span>
-              <span className={revealed ? "" : "opacity-20"}>
+              <span className={cn("w-full", revealed ? "" : "opacity-20")}>
                 {revealed
                   ? key.slice(0, -5)
                   : "**** ".repeat(key.slice(0, -5).length / 5) +
