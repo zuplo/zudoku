@@ -1,7 +1,7 @@
 import { useAuth } from "zudoku/components";
 import type { OperationListItemResult } from "./OperationList.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { Content } from "./SidecarExamples.js";
+import { type Content } from "./SidecarExamples.js";
 
 export const PlaygroundDialogWrapper = ({
   server,

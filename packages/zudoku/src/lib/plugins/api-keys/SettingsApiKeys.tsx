@@ -32,7 +32,7 @@ import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
-import { ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
+import { type ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();

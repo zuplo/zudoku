@@ -16,7 +16,7 @@ export const extractFileName = (
     const filenameMatch = contentDisposition.match(
       /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/,
     );
-    if (filenameMatch && filenameMatch[1]) {
+    if (filenameMatch?.[1]) {
       return filenameMatch[1].replace(/['"]/g, "");
     }
   }

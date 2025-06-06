@@ -6,12 +6,15 @@ export interface AuthState<ProviderData = unknown> {
   isPending: boolean;
   profile: UserProfile | null;
   providerData: ProviderData | null;
-}
-
-export class Authentication {
-  async setLoggedIn(isLoggedIn: boolean) {}
-  async setProfile() {}
-  async setPersistentProviderData() {}
+  setAuthenticationPending: () => void;
+  setLoggedOut: () => void;
+  setLoggedIn: ({
+    profile,
+    providerData,
+  }: {
+    profile: UserProfile;
+    providerData: unknown;
+  }) => void;
 }
 
 export type StoreWithPersist<T> = Mutate<
@@ -35,11 +38,38 @@ const withStorageDOMEvents = <T>(store: StoreWithPersist<T>) => {
 
 export const useAuthState = create<AuthState>()(
   persist(
-    (state) => ({
+    (set) => ({
       isAuthenticated: false,
       isPending: true,
       profile: null,
       providerData: null,
+      setAuthenticationPending: () =>
+        set(() => ({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        })),
+      setLoggedOut: () =>
+        set(() => ({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        })),
+      setLoggedIn: ({
+        profile,
+        providerData,
+      }: {
+        profile: UserProfile;
+        providerData: unknown;
+      }) =>
+        set(() => ({
+          isAuthenticated: true,
+          isPending: false,
+          profile,
+          providerData,
+        })),
     }),
     {
       merge: (persistedState, currentState) => {

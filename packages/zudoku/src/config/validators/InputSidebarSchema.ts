@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { IconNames } from "./icon-types.js";
+import { type IconNames } from "./icon-types.js";
 
 const BadgeSchema = z.object({
   label: z.string(),

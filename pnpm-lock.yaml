@@ -341,6 +341,12 @@ importers:
       '@apidevtools/json-schema-ref-parser':
         specifier: 12.0.2
         version: 12.0.2
+      '@azure/msal-browser':
+        specifier: ^4.13.0
+        version: 4.13.0
+      '@clerk/clerk-js':
+        specifier: ^5.63.1
+        version: 5.68.0(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@envelop/core':
         specifier: 5.2.3
         version: 5.2.3
@@ -434,6 +440,9 @@ importers:
       '@sentry/node':
         specifier: 9.26.0
         version: 9.26.0
+      '@sentry/react':
+        specifier: ^9.12.0
+        version: 9.26.0(react@19.1.0)
       '@shikijs/langs':
         specifier: 3.5.0
         version: 3.5.0
@@ -452,6 +461,9 @@ importers:
       '@stefanprobst/rehype-extract-toc':
         specifier: 3.0.0
         version: 3.0.0
+      '@supabase/supabase-js':
+        specifier: ^2.49.4
+        version: 2.49.10
       '@tailwindcss/typography':
         specifier: 0.5.16
         version: 0.5.16(tailwindcss@4.1.7)
@@ -768,16 +780,6 @@ importers:
       vitest:
         specifier: 3.1.4
         version: 3.1.4(@types/debug@4.1.12)(@types/node@22.13.5)(happy-dom@17.5.6)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.3)(yaml@2.7.1)
-    optionalDependencies:
-      '@clerk/clerk-js':
-        specifier: ^5.63.1
-        version: 5.68.0(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@sentry/react':
-        specifier: ^9.12.0
-        version: 9.26.0(react@19.1.0)
-      '@supabase/supabase-js':
-        specifier: ^2.49.4
-        version: 2.49.10
 
   website:
     dependencies:
@@ -865,6 +867,14 @@ packages:
     hasBin: true
     peerDependencies:
       graphql: '*'
+
+  '@azure/msal-browser@4.13.0':
+    resolution: {integrity: sha512-n2ySryLd+wHmm/0Y1mwFI4J9UXVCu2DeWKtoWNWLVcpvK2k0Ez1qIigKleUm2ZfTbfAXdue+V8htmFft0qgyGQ==}
+    engines: {node: '>=0.8.0'}
+
+  '@azure/msal-common@15.7.0':
+    resolution: {integrity: sha512-m9M5hoFoxhe/HlXNVa4qBHekrX60CVPkWzsjhKQGuzw/OPOmurosKRPDIMn8fug/E1hHI5v33DvT1LVJfItjcg==}
+    engines: {node: '>=0.8.0'}
 
   '@babel/code-frame@7.26.2':
     resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
@@ -9034,6 +9044,12 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
+  '@azure/msal-browser@4.13.0':
+    dependencies:
+      '@azure/msal-common': 15.7.0
+
+  '@azure/msal-common@15.7.0': {}
+
   '@babel/code-frame@7.26.2':
     dependencies:
       '@babel/helper-validator-identifier': 7.27.1
@@ -12118,24 +12134,20 @@ snapshots:
   '@sentry-internal/browser-utils@9.26.0':
     dependencies:
       '@sentry/core': 9.26.0
-    optional: true
 
   '@sentry-internal/feedback@9.26.0':
     dependencies:
       '@sentry/core': 9.26.0
-    optional: true
 
   '@sentry-internal/replay-canvas@9.26.0':
     dependencies:
       '@sentry-internal/replay': 9.26.0
       '@sentry/core': 9.26.0
-    optional: true
 
   '@sentry-internal/replay@9.26.0':
     dependencies:
       '@sentry-internal/browser-utils': 9.26.0
       '@sentry/core': 9.26.0
-    optional: true
 
   '@sentry/browser@9.26.0':
     dependencies:
@@ -12144,7 +12156,6 @@ snapshots:
       '@sentry-internal/replay': 9.26.0
       '@sentry-internal/replay-canvas': 9.26.0
       '@sentry/core': 9.26.0
-    optional: true
 
   '@sentry/core@9.26.0': {}
 
@@ -12203,7 +12214,6 @@ snapshots:
       '@sentry/core': 9.26.0
       hoist-non-react-statics: 3.3.2
       react: 19.1.0
-    optional: true
 
   '@shikijs/core@3.5.0':
     dependencies:

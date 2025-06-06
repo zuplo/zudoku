@@ -30,6 +30,7 @@
     "./auth/auth0": "./src/lib/authentication/providers/auth0.ts",
     "./auth/openid": "./src/lib/authentication/providers/openid.ts",
     "./auth/supabase": "./src/lib/authentication/providers/supabase.ts",
+    "./auth/azureb2c": "./src/lib/authentication/providers/azureb2c.ts",
     "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.ts",
@@ -83,6 +84,10 @@
       "./auth/supabase": {
         "import": "./lib/zudoku.auth-supabase.js",
         "types": "./dist/lib/authentication/providers/supabase.d.ts"
+      },
+      "./auth/azureb2c": {
+        "import": "./lib/zudoku.auth-azureb2c.js",
+        "types": "./dist/lib/authentication/providers/azureb2c.d.ts"
       },
       "./plugins": {
         "import": "./lib/zudoku.plugins.js",
@@ -317,11 +322,25 @@
   },
   "peerDependencies": {
     "react": ">=19",
-    "react-dom": ">=19"
-  },
-  "optionalDependencies": {
+    "react-dom": ">=19",
+    "@azure/msal-browser": "^4.13.0",
     "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4"
+  },
+  "optionalDependencies": {},
+  "peerDependenciesMeta": {
+    "@azure/msal-browser": {
+      "optional": true
+    },
+    "@clerk/clerk-js": {
+      "optional": true
+    },
+    "@sentry/react": {
+      "optional": true
+    },
+    "@supabase/supabase-js": {
+      "optional": true
+    }
   }
 }

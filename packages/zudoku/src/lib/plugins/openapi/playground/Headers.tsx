@@ -1,7 +1,7 @@
 import { XIcon } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import {
-  Control,
+  type Control,
   Controller,
   useFieldArray,
   useFormContext,
@@ -12,7 +12,7 @@ import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
-import { Header, type PlaygroundForm } from "./Playground.js";
+import { type Header, type PlaygroundForm } from "./Playground.js";
 
 const headerOptions = Object.freeze([
   "Accept",
