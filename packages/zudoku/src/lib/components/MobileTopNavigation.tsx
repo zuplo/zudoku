@@ -11,9 +11,10 @@ import {
 import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { isHiddenItem } from "./navigation/utils.js";
+import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { PageProgress, TopNavItem } from "./TopNavigation.js";
+import { TopNavItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
   const { navigation, options } = useZudoku();

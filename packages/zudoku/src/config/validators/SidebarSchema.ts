@@ -10,35 +10,29 @@ import type {
   InputSidebarItemCustomPage,
   InputSidebarItemLink,
 } from "./InputSidebarSchema.js";
-import type { ZudokuConfig } from "./validate.js";
 
-export type SidebarItemDoc = Omit<BaseInputSidebarItemDoc, "icon"> & {
+type WithIcon<T> = Omit<T, "icon"> & { icon?: LucideIcon | string };
+type AsDoc<T> = Extract<T, { type: "doc" }>;
+
+export type SidebarItemDoc = WithIcon<AsDoc<BaseInputSidebarItemDoc>> & {
   label: string;
   categoryLabel?: string;
-  icon?: LucideIcon | string;
 };
 
-export type SidebarItemLink = Omit<InputSidebarItemLink, "icon"> & {
-  icon?: LucideIcon | string;
-};
+export type SidebarItemLink = WithIcon<InputSidebarItemLink>;
 
-export type SidebarItemCategoryLinkDoc = BaseInputSidebarItemCategoryLinkDoc & {
-  label: string;
-  icon?: LucideIcon | string;
-};
+export type SidebarItemCategoryLinkDoc = WithIcon<
+  AsDoc<BaseInputSidebarItemCategoryLinkDoc>
+> & { label: string };
 
-export type SidebarItemCategory = Omit<
-  InputSidebarItemCategory,
-  "items" | "link" | "icon"
+export type SidebarItemCategory = WithIcon<
+  Omit<InputSidebarItemCategory, "items" | "link">
 > & {
   items: SidebarItem[];
   link?: SidebarItemCategoryLinkDoc;
-  icon?: LucideIcon | string;
 };
 
-export type SidebarItemCustomPage = Omit<InputSidebarItemCustomPage, "icon"> & {
-  icon?: LucideIcon | string;
-};
+export type SidebarItemCustomPage = WithIcon<InputSidebarItemCustomPage>;
 
 export type SidebarItem =
   | SidebarItemDoc
@@ -46,81 +40,54 @@ export type SidebarItem =
   | SidebarItemCategory
   | SidebarItemCustomPage;
 
+export type Sidebar = SidebarItem[];
+
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
 
 const isSidebarItem = (item: unknown): item is SidebarItem =>
   item !== undefined;
 
-export class SidebarManager {
-  sidebars: SidebarClass;
-  private switchQueue: Array<{ from: string; to: string; item: SidebarItem }> =
-    [];
-  constructor(rootDir: string, sidebarConfig: ZudokuConfig["navigation"]) {
-    this.sidebars = new SidebarClass(this, rootDir, "", sidebarConfig ?? []);
+export class NavigationResolver {
+  private rootDir: string;
+  private globPatterns: string[];
+  private globFiles: string[] = [];
+
+  constructor(rootDir: string, globPatterns: string[]) {
+    this.rootDir = rootDir;
+    this.globPatterns = globPatterns;
   }
 
-  async resolveSidebars() {
-    await this.sidebars.resolve();
+  async resolve(items: InputSidebarItem[]) {
+    this.globFiles = await glob(this.globPatterns, {
+      root: this.rootDir,
+      ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+    });
 
-    // switch all collected items
-    // for (const { from, to, item } of this.switchQueue) {
-    //   const fromSidebar = this.sidebars.find((s) => s.parent === from);
-    //   const toSidebar = this.sidebars.find((s) => s.parent === to);
+    const resolvedItems = await Promise.all(
+      items.map((item) => this.resolveItem(item)),
+    );
 
-    //   if (!fromSidebar || !toSidebar) {
-    //     throw new Error(`Sidebar ${from} or ${to} not found`);
-    //   }
-
-    //   fromSidebar.resolvedItems = fromSidebar.resolvedItems.filter(
-    //     (resolvedItem) => resolvedItem !== item,
-    //   );
-    //   toSidebar.resolvedItems.push(item);
-    // }
-
-    return this.sidebars.resolvedItems;
-  }
-
-  switchSidebar(from: string, to: string, item: SidebarItem) {
-    this.switchQueue.push({ from, to, item });
-  }
-}
-
-export class SidebarClass {
-  resolvedItems: SidebarItem[] = [];
-
-  constructor(
-    private manager: SidebarManager,
-    public rootDir: string,
-    public parent: string,
-    private items: InputSidebarItem[],
-  ) {}
-
-  async resolve() {
-    const resolvedSidebar = (
-      await Promise.all(this.items.map((item) => this.resolveItem(item)))
-    ).filter(isSidebarItem);
-
-    this.resolvedItems = resolvedSidebar;
+    return resolvedItems.filter(isSidebarItem);
   }
 
   private async resolveDoc(
     filePath: string,
     categoryLabel?: string,
   ): Promise<SidebarItemDoc | undefined> {
-    const foundMatches = await glob(`/**/${filePath}.{md,mdx}`, {
-      ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
-      root: this.rootDir,
-    });
+    const foundMatches = this.globFiles.find(
+      (file) =>
+        file.endsWith(`${filePath}.md`) || file.endsWith(`${filePath}.mdx`),
+    );
 
-    if (foundMatches.length === 0) {
+    if (!foundMatches) {
       throw new Error(
         `File not found for document '${filePath}'. Check your sidebar configuration.`,
       );
     }
 
-    const fileConteent = await fs.readFile(foundMatches.at(0)!);
-    const { data, content } = matter(fileConteent);
+    const fileContent = await fs.readFile(foundMatches);
+    const { data, content } = matter(fileContent);
 
     const label =
       data.sidebar_label ??
@@ -137,11 +104,6 @@ export class SidebarClass {
       icon,
       categoryLabel,
     };
-
-    // if (data.sidebar && data.sidebar !== this.parent) {
-    //   this.manager.switchSidebar(this.parent, data.sidebar, doc);
-    //   return undefined;
-    // }
 
     return doc;
   }
@@ -194,7 +156,7 @@ export class SidebarClass {
       case "custom-page":
         return item;
       case "category": {
-        const categoryItem = item;
+        const categoryItem: InputSidebarItemCategory = item;
 
         const items = (
           await Promise.all(
@@ -217,5 +179,3 @@ export class SidebarClass {
     }
   }
 }
-
-export type Sidebar = SidebarItem[];

@@ -1,7 +1,8 @@
 import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { type Plugin, type ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import { SidebarManager } from "../config/validators/SidebarSchema.js";
+import { NavigationResolver as NavigationDocResolver } from "../config/validators/SidebarSchema.js";
+import { ensureArray } from "../lib/util/ensureArray.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
@@ -60,11 +61,11 @@ export const viteSidebarPlugin = (): Plugin => {
       if (id !== resolvedVirtualModuleId) return;
       const config = getCurrentConfig();
 
-      const manager = new SidebarManager(
+      const resolver = new NavigationDocResolver(
         config.__meta.rootDir,
-        config.navigation,
+        ensureArray(config.docs ?? []).flatMap((doc) => doc.files),
       );
-      const resolvedSidebars = await manager.resolveSidebars();
+      const resolvedSidebars = await resolver.resolve(config.navigation ?? []);
 
       const code = JSON.stringify(resolvedSidebars);
       await writePluginDebugCode(
