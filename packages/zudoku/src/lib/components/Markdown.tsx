@@ -1,13 +1,21 @@
 import { memo, useMemo } from "react";
 import { MarkdownHooks, type Components } from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import remarkComment from "remark-comment";
+import remarkDirective from "remark-directive";
+import remarkDirectiveRehype from "remark-directive-rehype";
 import remarkGfm from "remark-gfm";
 import { createConfiguredShikiRehypePlugins } from "../shiki.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { Typography } from "./Typography.js";
 
-const remarkPlugins = [remarkGfm];
+const remarkPlugins = [
+  remarkComment,
+  remarkGfm,
+  remarkDirective,
+  remarkDirectiveRehype,
+];
 
 export const Markdown = memo(
   ({
