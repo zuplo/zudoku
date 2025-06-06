@@ -99,32 +99,61 @@ const config: ZudokuConfig = {
     },
   },
   protectedRoutes: ["/only-members"],
-  topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "api-shipments", label: "Shipments API" },
-    { id: "catalog", label: "API Catalog" },
+  navigation: [
+    {
+      type: "custom-page",
+      path: "/",
+      label: "Home",
+      element: <Landingpage />,
+    },
+    {
+      type: "custom-page",
+      path: "/only-members",
+      label: "Only members",
+      display: "auth",
+      element: <div>Only members allowed</div>,
+    },
+    {
+      type: "category",
+      label: "Space Operations",
+      link: "global",
+      items: [
+        {
+          type: "custom-page",
+          path: "/space-operations",
+          icon: "telescope",
+          label: "Space Operations",
+          element: <div>Space Operations lul</div>,
+        },
+        {
+          type: "category",
+          icon: "telescope",
+          collapsed: false,
+          label: "Space Operations",
+          items: ["shipping-process", "tracking"],
+        },
+        "global",
+        {
+          type: "category",
+          icon: "library-big",
+          label: "Shipping Guides",
+          items: ["interstellar", "intergalactic"],
+        },
+      ],
+    },
+    {
+      type: "link",
+      href: "api-shipments",
+      label: "Shipments",
+    },
+    {
+      type: "link",
+      href: "/catalog",
+      label: "API Catalog",
+    },
   ],
-  sidebar: {
-    documentation: [
-      "documentation",
-      {
-        type: "category",
-        icon: "telescope",
-        collapsed: false,
-        label: "Space Operations",
-        items: ["shipping-process", "tracking"],
-      },
-      "global",
-      {
-        type: "category",
-        icon: "library-big",
-        label: "Shipping Guides",
-        items: ["interstellar", "intergalactic"],
-      },
-    ],
-  },
   catalogs: {
-    navigationId: "catalog",
+    path: "catalog",
     label: "API Catalog",
   },
   authentication: {
@@ -141,16 +170,11 @@ const config: ZudokuConfig = {
   search: {
     type: "pagefind",
   },
-  customPages: [
-    { path: "/", element: <Landingpage /> },
-    { path: "/only-members", element: <div>Only members</div> },
-  ],
-  plugins: [new CosmoCargoApiIdentityPlugin()],
   apis: [
     {
       type: "file",
       input: "./schema/shipments.json",
-      navigationId: "api-shipments",
+      path: "api-shipments",
       categories: [{ label: "General", tags: ["Shipments"] }],
       options: {
         transformExamples: ({ content, auth }) => {
@@ -182,25 +206,25 @@ const config: ZudokuConfig = {
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
-      navigationId: "api-label",
+      path: "/catalog/api-label",
       categories: [{ label: "General", tags: ["Labels"] }],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
-      navigationId: "api-webhooks",
+      path: "/catalog/api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],
     },
     {
       type: "file",
       input: "./schema/interplanetary.json",
-      navigationId: "api-interplanetary",
+      path: "/catalog/api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
-      navigationId: "api-tracking",
+      path: "/catalog/api-tracking",
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],

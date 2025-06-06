@@ -19,7 +19,7 @@ const BadgeSchema = z.object({
 
 export const BaseInputSidebarItemCategoryLinkDocSchema = z.object({
   type: z.literal("doc"),
-  id: z.string(),
+  file: z.string(),
   label: z.string().optional(),
 });
 
@@ -32,12 +32,18 @@ export const InputSidebarItemCategoryLinkDocSchema = z.union([
   z.string(),
 ]);
 
+export const DisplaySchema = z
+  .enum(["auth", "anon", "always", "hide"])
+  .default("always")
+  .optional();
+
 export const BaseInputSidebarItemDocSchema = z.object({
   type: z.literal("doc"),
-  id: z.string(),
+  file: z.string(),
   icon: z.custom<IconNames>().optional(),
   label: z.string().optional(),
   badge: BadgeSchema.optional(),
+  display: DisplaySchema,
 });
 
 export type BaseInputSidebarItemDoc = z.infer<
@@ -56,9 +62,24 @@ export const InputSidebarItemLinkSchema = z.object({
   href: z.string(),
   description: z.string().optional(),
   badge: BadgeSchema.optional(),
+  display: DisplaySchema,
 });
 
 export type InputSidebarItemLink = z.infer<typeof InputSidebarItemLinkSchema>;
+
+export const InputSidebarItemCustomPageSchema = z.object({
+  type: z.literal("custom-page"),
+  path: z.string(),
+  label: z.string(),
+  element: z.any(),
+  icon: z.custom<IconNames>().optional(),
+  badge: BadgeSchema.optional(),
+  display: DisplaySchema,
+});
+
+export type InputSidebarItemCustomPage = z.infer<
+  typeof InputSidebarItemCustomPageSchema
+>;
 
 export const BaseInputSidebarItemCategorySchema = z.object({
   type: z.literal("category"),
@@ -68,18 +89,21 @@ export const BaseInputSidebarItemCategorySchema = z.object({
   collapsible: z.boolean().optional(),
   collapsed: z.boolean().optional(),
   link: InputSidebarItemCategoryLinkDocSchema.optional(),
+  display: DisplaySchema,
 });
 
 export type InputSidebarItem =
   | z.infer<typeof InputSidebarItemDocSchema>
   | z.infer<typeof InputSidebarItemLinkSchema>
-  | z.infer<typeof InputSidebarItemCategorySchema>;
+  | z.infer<typeof InputSidebarItemCategorySchema>
+  | z.infer<typeof InputSidebarItemCustomPageSchema>;
 
 export const InputSidebarItemSchema: z.ZodType<InputSidebarItem> = z.lazy(() =>
   z.union([
     InputSidebarItemDocSchema,
     InputSidebarItemLinkSchema,
     InputSidebarItemCategorySchema,
+    InputSidebarItemCustomPageSchema,
   ]),
 );
 

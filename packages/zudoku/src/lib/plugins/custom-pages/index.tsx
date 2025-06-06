@@ -1,6 +1,8 @@
 import { type ComponentType, type ReactNode } from "react";
 import type { RouteObject } from "react-router";
-import type { NavigationPlugin, ZudokuPlugin } from "../../core/plugins.js";
+import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
+import { traverseSidebar } from "../../components/navigation/utils.js";
+import type { NavigationPlugin } from "../../core/plugins.js";
 import type { ExposedComponentProps } from "../../util/useExposedProps.js";
 import { CustomPage } from "./CustomPage.js";
 
@@ -12,13 +14,20 @@ export type CustomPageConfig = {
 };
 
 export const customPagesPlugin = (
-  config: CustomPageConfig[],
-): ZudokuPlugin & NavigationPlugin => {
-  return {
-    getRoutes: (): RouteObject[] =>
-      config.map(({ path, ...props }) => ({
-        path,
-        element: <CustomPage {...props} />,
-      })),
-  };
-};
+  navigation: SidebarItem[] = [],
+): NavigationPlugin => ({
+  getRoutes: (): RouteObject[] => {
+    const customPages: RouteObject[] = [];
+
+    traverseSidebar(navigation, (item) => {
+      if (item.type === "custom-page") {
+        customPages.push({
+          path: item.path,
+          element: <CustomPage {...item} />,
+        });
+      }
+    });
+
+    return customPages;
+  },
+});

@@ -7,6 +7,7 @@ import type {
   BaseInputSidebarItemDoc,
   InputSidebarItem,
   InputSidebarItemCategory,
+  InputSidebarItemCustomPage,
   InputSidebarItemLink,
 } from "./InputSidebarSchema.js";
 import type { ZudokuConfig } from "./validate.js";
@@ -35,10 +36,15 @@ export type SidebarItemCategory = Omit<
   icon?: LucideIcon | string;
 };
 
+export type SidebarItemCustomPage = Omit<InputSidebarItemCustomPage, "icon"> & {
+  icon?: LucideIcon | string;
+};
+
 export type SidebarItem =
   | SidebarItemDoc
   | SidebarItemLink
-  | SidebarItemCategory;
+  | SidebarItemCategory
+  | SidebarItemCustomPage;
 
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
@@ -47,36 +53,32 @@ const isSidebarItem = (item: unknown): item is SidebarItem =>
   item !== undefined;
 
 export class SidebarManager {
-  sidebars: SidebarClass[];
+  sidebars: SidebarClass;
   private switchQueue: Array<{ from: string; to: string; item: SidebarItem }> =
     [];
-  constructor(rootDir: string, sidebarConfig: ZudokuConfig["sidebar"]) {
-    this.sidebars = Object.entries(sidebarConfig ?? {}).map(
-      ([parent, items]) => new SidebarClass(this, rootDir, parent, items),
-    );
+  constructor(rootDir: string, sidebarConfig: ZudokuConfig["navigation"]) {
+    this.sidebars = new SidebarClass(this, rootDir, "", sidebarConfig ?? []);
   }
 
   async resolveSidebars() {
-    await Promise.all(this.sidebars.map((sidebar) => sidebar.resolve()));
+    await this.sidebars.resolve();
 
     // switch all collected items
-    for (const { from, to, item } of this.switchQueue) {
-      const fromSidebar = this.sidebars.find((s) => s.parent === from);
-      const toSidebar = this.sidebars.find((s) => s.parent === to);
+    // for (const { from, to, item } of this.switchQueue) {
+    //   const fromSidebar = this.sidebars.find((s) => s.parent === from);
+    //   const toSidebar = this.sidebars.find((s) => s.parent === to);
 
-      if (!fromSidebar || !toSidebar) {
-        throw new Error(`Sidebar ${from} or ${to} not found`);
-      }
+    //   if (!fromSidebar || !toSidebar) {
+    //     throw new Error(`Sidebar ${from} or ${to} not found`);
+    //   }
 
-      fromSidebar.resolvedItems = fromSidebar.resolvedItems.filter(
-        (resolvedItem) => resolvedItem !== item,
-      );
-      toSidebar.resolvedItems.push(item);
-    }
+    //   fromSidebar.resolvedItems = fromSidebar.resolvedItems.filter(
+    //     (resolvedItem) => resolvedItem !== item,
+    //   );
+    //   toSidebar.resolvedItems.push(item);
+    // }
 
-    return Object.fromEntries(
-      this.sidebars.map((sidebar) => [sidebar.parent, sidebar.resolvedItems]),
-    );
+    return this.sidebars.resolvedItems;
   }
 
   switchSidebar(from: string, to: string, item: SidebarItem) {
@@ -103,55 +105,54 @@ export class SidebarClass {
   }
 
   private async resolveDoc(
-    id: string,
+    filePath: string,
     categoryLabel?: string,
   ): Promise<SidebarItemDoc | undefined> {
-    const foundMatches = await glob(`/**/${id}.{md,mdx}`, {
+    const foundMatches = await glob(`/**/${filePath}.{md,mdx}`, {
       ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
       root: this.rootDir,
     });
 
     if (foundMatches.length === 0) {
       throw new Error(
-        `File not found for document '${id}'. Check your sidebar configuration.`,
+        `File not found for document '${filePath}'. Check your sidebar configuration.`,
       );
     }
 
-    const file = await fs.readFile(foundMatches.at(0)!);
-
-    const { data, content } = matter(file);
+    const fileConteent = await fs.readFile(foundMatches.at(0)!);
+    const { data, content } = matter(fileConteent);
 
     const label =
       data.sidebar_label ??
       data.title ??
       extractTitleFromContent(content) ??
-      id;
+      filePath;
 
     const icon = data.sidebar_icon;
 
     const doc: SidebarItemDoc = {
       type: "doc",
-      id,
+      file: filePath,
       label,
       icon,
       categoryLabel,
     };
 
-    if (data.sidebar && data.sidebar !== this.parent) {
-      this.manager.switchSidebar(this.parent, data.sidebar, doc);
-      return undefined;
-    }
+    // if (data.sidebar && data.sidebar !== this.parent) {
+    //   this.manager.switchSidebar(this.parent, data.sidebar, doc);
+    //   return undefined;
+    // }
 
     return doc;
   }
 
   private async resolveLink(
-    id: string,
+    file: string,
   ): Promise<SidebarItemCategoryLinkDoc | undefined> {
-    const doc = await this.resolveDoc(id);
+    const doc = await this.resolveDoc(file);
 
     return doc
-      ? { type: "doc", id: id, label: doc.label, icon: doc.icon }
+      ? { type: "doc", file, label: doc.label, icon: doc.icon }
       : undefined;
   }
 
@@ -162,7 +163,7 @@ export class SidebarClass {
       return this.resolveLink(item);
     }
 
-    const doc = await this.resolveDoc(item.id);
+    const doc = await this.resolveDoc(item.file);
     return doc ? { ...item, label: doc.label, icon: doc.icon } : undefined;
   }
 
@@ -174,7 +175,7 @@ export class SidebarClass {
       return this.resolveDoc(item, categoryLabel);
     }
 
-    const doc = await this.resolveDoc(item.id, categoryLabel);
+    const doc = await this.resolveDoc(item.file, categoryLabel);
     return doc ? { ...doc, ...item } : undefined;
   }
 
@@ -190,6 +191,7 @@ export class SidebarClass {
       case "doc":
         return this.resolveSidebarItemDoc(item, categoryLabel);
       case "link":
+      case "custom-page":
         return item;
       case "category": {
         const categoryItem = item;
@@ -217,4 +219,3 @@ export class SidebarClass {
 }
 
 export type Sidebar = SidebarItem[];
-export type SidebarConfig = Record<string, Sidebar>;
