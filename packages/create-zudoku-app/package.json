@@ -41,7 +41,7 @@
     "prompts": "2.4.2",
     "tar": "7.4.3",
     "update-check": "1.5.4",
-    "validate-npm-package-name": "5.0.1"
+    "validate-npm-package-name": "6.0.0"
   },
   "engines": {
     "node": ">=20"
