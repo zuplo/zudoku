@@ -36,11 +36,15 @@ export type SidebarItemCategory = Omit<
   icon?: LucideIcon | string;
 };
 
+export type SidebarItemCustomPage = Omit<InputSidebarItemCustomPage, "icon"> & {
+  icon?: LucideIcon | string;
+};
+
 export type SidebarItem =
   | SidebarItemDoc
   | SidebarItemLink
   | SidebarItemCategory
-  | InputSidebarItemCustomPage;
+  | SidebarItemCustomPage;
 
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);

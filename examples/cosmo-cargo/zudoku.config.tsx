@@ -119,6 +119,13 @@ const config: ZudokuConfig = {
       link: "global",
       items: [
         {
+          type: "custom-page",
+          path: "/space-operations",
+          icon: "telescope",
+          label: "Space Operations",
+          element: <div>Space Operations lul</div>,
+        },
+        {
           type: "category",
           icon: "telescope",
           collapsed: false,

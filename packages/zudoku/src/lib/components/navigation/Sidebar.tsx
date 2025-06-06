@@ -18,6 +18,7 @@ export const Sidebar = ({
       {sidebar.map((item) => (
         <SidebarItem
           key={
+            item.type +
             ("id" in item ? item.id : "") +
             ("href" in item ? item.href : "") +
             item.label
