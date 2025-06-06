@@ -88,9 +88,7 @@ export class AzureB2CAuthPlugin
         .filter(Boolean)
         .join(" ") || account.username;
 
-    useAuthState.setState({
-      isAuthenticated: true,
-      isPending: false,
+    useAuthState.getState().setLoggedIn({
       providerData: {
         accessToken,
         idToken,
@@ -167,12 +165,7 @@ export class AzureB2CAuthPlugin
       });
     }
 
-    useAuthState.setState({
-      isAuthenticated: false,
-      isPending: false,
-      profile: null,
-      providerData: null,
-    });
+    useAuthState.getState().setLoggedOut();
   };
 
   handleCallback = async () => {

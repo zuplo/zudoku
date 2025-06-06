@@ -51,12 +51,7 @@ class SupabaseAuthenticationProvider
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
         await this.updateUserState(session);
       } else if (event === "SIGNED_OUT") {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: undefined,
-          providerData: undefined,
-        });
+        useAuthState.getState().setLoggedOut();
       }
     });
   }
@@ -72,9 +67,7 @@ class SupabaseAuthenticationProvider
       pictureUrl: user.user_metadata.avatar_url,
     };
 
-    useAuthState.setState({
-      isAuthenticated: true,
-      isPending: false,
+    useAuthState.getState().setLoggedIn({
       profile,
       providerData: { session },
     });

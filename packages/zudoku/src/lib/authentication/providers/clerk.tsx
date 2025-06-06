@@ -31,9 +31,7 @@ const clerkAuth: AuthenticationProviderInitializer<
       const verifiedEmail = clerkApi.user.emailAddresses.find(
         (email) => email.verification.status === "verified",
       );
-      useAuthState.setState({
-        isAuthenticated: true,
-        isPending: false,
+      useAuthState.getState().setLoggedIn({
         profile: {
           sub: clerkApi.user.id,
           name: clerkApi.user.fullName ?? undefined,
@@ -115,9 +113,7 @@ const clerkAuth: AuthenticationProviderInitializer<
         const verifiedEmail = clerk.session.user.emailAddresses.find(
           (email) => email.verification.status === "verified",
         );
-        useAuthState.setState({
-          isAuthenticated: true,
-          isPending: false,
+        useAuthState.getState().setLoggedIn({
           profile: {
             sub: clerk.session.user.id,
             name: clerk.session.user.fullName ?? undefined,
@@ -146,12 +142,7 @@ const clerkAuth: AuthenticationProviderInitializer<
       await clerkApi?.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
       });
-      useAuthState.setState({
-        isAuthenticated: false,
-        isPending: false,
-        profile: null,
-        providerData: null,
-      });
+      useAuthState.getState().setLoggedOut();
     },
     signIn: async ({ redirectTo }: { redirectTo?: string } = {}) => {
       await ensureLoaded;
