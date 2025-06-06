@@ -3,6 +3,7 @@
 import path from "node:path";
 import { type DevEnvironment, isCSSRequest, type Plugin } from "vite";
 import { getCurrentConfig } from "../../config/loader.js";
+import { virtualModuleId as THEME_VIRTUAL_MODULE } from "../plugin-theme.js";
 import { collectStyle } from "./collect.js";
 
 const VIRTUAL_ENTRY = "virtual:ssr-css.css";
@@ -30,6 +31,19 @@ export function vitePluginSsrCss(pluginOpts: { entries: string[] }): Plugin {
           invalidateModule(server, `\0${VIRTUAL_ENTRY}?direct`);
         }
         next();
+      });
+
+      // Clear CSS cache when config files change
+      server_.watcher.on("change", (file) => {
+        const currentConfig = getCurrentConfig();
+        if (
+          currentConfig.__meta.dependencies.includes(file) ||
+          file === currentConfig.__meta.configPath
+        ) {
+          cssModuleMap.clear();
+          invalidateModule(server, `\0${VIRTUAL_ENTRY}?direct`);
+          invalidateModule(server, `\0${THEME_VIRTUAL_MODULE}`);
+        }
       });
     },
 
