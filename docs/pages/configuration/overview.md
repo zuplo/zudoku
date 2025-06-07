@@ -325,6 +325,18 @@ Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is opti
 }
 ```
 
+### `enableStatusPages`
+
+Enables static generation of status pages for your site. This results in several files (404.html, 500.html, etc.) being generated in the `dist` directory. This is useful as many hosting providers will seve these files automatically when a user visits a non-existent page or encounters an error.
+
+This option is enabled by default, but you can disable it if you don't need these pages.
+
+````ts
+{
+  enableStatusPages: false
+}
+
+
 ## Multiple Files
 
 The configuration file is a standard JavaScript or TypeScript file, so you can split it into multiple files if you prefer. This can be useful if you have a large configuration or want to keep your code organized.
@@ -344,7 +356,7 @@ export const sidebar: Record<string, Sidebar> = {
     },
   ],
 };
-```
+````
 
 Then you can import the sidebar configuration into your main configuration file.
 
