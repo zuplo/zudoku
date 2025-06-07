@@ -327,7 +327,7 @@ Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is opti
 
 ### `enableStatusPages`
 
-Enables static generation of status pages for your site. This results in several files (404.html, 500.html, etc.) being generated in the `dist` directory. This is useful as many hosting providers will seve these files automatically when a user visits a non-existent page or encounters an error.
+Enables static generation of status pages for your site. This results in several files (404.html, 500.html, etc.) being generated in the `dist` directory. This is useful as many hosting providers will serve these files automatically when a user visits a non-existent page or encounters an error.
 
 This option is enabled by default, but you can disable it if you don't need these pages.
 
