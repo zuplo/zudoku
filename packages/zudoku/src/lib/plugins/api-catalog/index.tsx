@@ -1,6 +1,6 @@
 import slugify from "@sindresorhus/slugify";
 import { matchPath } from "react-router";
-import type { SidebarItem } from "../../../config/validators/SidebarSchema.js";
+import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -61,7 +61,7 @@ export const apiCatalogPlugin = ({
   );
 
   return {
-    getSidebar: async (currentPath) => {
+    getNavigation: async (currentPath) => {
       const matches = Object.keys(paths).some((path) =>
         matchPath(path, currentPath),
       );
@@ -70,7 +70,7 @@ export const apiCatalogPlugin = ({
         return [];
       }
 
-      const sidebar: SidebarItem[] = categories.map((category) => ({
+      const navigation: NavigationItem[] = categories.map((category) => ({
         type: "category",
         label: category.label,
         collapsible: false,
@@ -89,14 +89,14 @@ export const apiCatalogPlugin = ({
         })),
       }));
 
-      sidebar.unshift({
+      navigation.unshift({
         type: "link",
         href: joinUrl(path),
         label: "Overview",
         badge: { label: String(items.length), color: "outline" },
       });
 
-      return sidebar;
+      return navigation;
     },
     getRoutes: () =>
       Object.entries(paths).map(([path, tag]) => ({

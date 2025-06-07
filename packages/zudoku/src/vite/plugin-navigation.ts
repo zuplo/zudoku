@@ -1,7 +1,7 @@
 import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { type Plugin, type ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import { NavigationResolver as NavigationDocResolver } from "../config/validators/SidebarSchema.js";
+import { NavigationResolver as NavigationDocResolver } from "../config/validators/NavigationSchema.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { writePluginDebugCode } from "./debug.js";
 
@@ -12,7 +12,7 @@ const iconNames = Object.keys(icons);
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
 
-const replaceSidebarIcons = (code: string) => {
+const replaceNavigationIcons = (code: string) => {
   const collectedIcons = new Set<string>();
 
   let match;
@@ -35,23 +35,26 @@ const replaceSidebarIcons = (code: string) => {
     (_, iconName) => `"icon": ${toPascalCase(iconName)}`,
   );
 
-  return `${importStatement}export const configuredSidebar = ${replacedString};`;
+  return [
+    importStatement,
+    `export const configuredNavigation = ${replacedString};`,
+  ].join("\n");
 };
 
-const virtualModuleId = "virtual:zudoku-sidebar";
+const virtualModuleId = "virtual:zudoku-navigation";
 export const resolvedVirtualModuleId = "\0" + virtualModuleId;
 
 export const invalidate = (server: ViteDevServer) => {
-  const sidebarModule =
+  const navigationModule =
     server.environments.ssr.moduleGraph.getModuleById(virtualModuleId);
-  if (!sidebarModule) return;
+  if (!navigationModule) return;
 
-  server.environments.ssr.moduleGraph.invalidateModule(sidebarModule);
+  server.environments.ssr.moduleGraph.invalidateModule(navigationModule);
 };
 
-export const viteSidebarPlugin = (): Plugin => {
+export const viteNavigationPlugin = (): Plugin => {
   return {
-    name: "zudoku-sidebar-plugin",
+    name: "zudoku-navigation-plugin",
     resolveId(id) {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId;
@@ -65,12 +68,14 @@ export const viteSidebarPlugin = (): Plugin => {
         config.__meta.rootDir,
         ensureArray(config.docs ?? []).flatMap((doc) => doc.files),
       );
-      const resolvedSidebars = await resolver.resolve(config.navigation ?? []);
+      const resolvedNavigation = await resolver.resolve(
+        config.navigation ?? [],
+      );
 
-      const code = JSON.stringify(resolvedSidebars);
+      const code = JSON.stringify(resolvedNavigation);
       await writePluginDebugCode(
         config.__meta.rootDir,
-        "sidebar-plugin",
+        "navigation-plugin",
         code,
         "json",
       );
@@ -82,8 +87,8 @@ export const viteSidebarPlugin = (): Plugin => {
 
       // In the stringified config all occurrences of icons are replaced with icon components
       // and their imports are added to the top.
-      // They will be created as elements when the sidebar is rendered.
-      return replaceSidebarIcons(code);
+      // They will be created as elements when the navigation is rendered.
+      return replaceNavigationIcons(code);
     },
   };
 };

@@ -1,38 +1,38 @@
 import { cva } from "class-variance-authority";
 import { useLocation } from "react-router";
 import type {
-  SidebarItem,
-  SidebarItemCategory,
-} from "../../../config/validators/SidebarSchema.js";
+  NavigationItem,
+  NavigationItemCategory,
+} from "../../../config/validators/NavigationSchema.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
 
 export type TraverseCallback<T> = (
-  item: SidebarItem,
-  parentCategories: SidebarItem[],
+  item: NavigationItem,
+  parentCategories: NavigationItem[],
 ) => T | void;
 
-export const traverseSidebar = <T>(
-  sidebar: SidebarItem[],
+export const traverseNavigation = <T>(
+  navigation: NavigationItem[],
   callback: TraverseCallback<T>,
 ): T | undefined => {
-  for (const item of sidebar) {
-    const result = traverseSidebarItem(item, callback);
+  for (const item of navigation) {
+    const result = traverseNavigationItem(item, callback);
     if (result !== undefined) return result;
   }
 };
 
-export const traverseSidebarItem = <T>(
-  item: SidebarItem,
+export const traverseNavigationItem = <T>(
+  item: NavigationItem,
   callback: TraverseCallback<T>,
-  parentCategories: SidebarItem[] = [],
+  parentCategories: NavigationItem[] = [],
 ): T | undefined => {
   const result = callback(item, parentCategories);
   if (result !== undefined) return result;
 
   if (item.type === "category") {
     for (const child of item.items) {
-      const childResult = traverseSidebarItem(child, callback, [
+      const childResult = traverseNavigationItem(child, callback, [
         ...parentCategories,
         item,
       ]);
@@ -43,21 +43,19 @@ export const traverseSidebarItem = <T>(
 
 export const useCurrentItem = () => {
   const location = useLocation();
-  const nav = useCurrentNavigation();
+  const { navigation } = useCurrentNavigation();
 
-  const currentSidebar = nav.sidebar;
-
-  return traverseSidebar(currentSidebar, (item) => {
+  return traverseNavigation(navigation, (item) => {
     if (item.type === "doc" && joinUrl(item.file) === location.pathname) {
       return item;
     }
   });
 };
 
-export const useIsCategoryOpen = (category: SidebarItemCategory) => {
+export const useIsCategoryOpen = (category: NavigationItemCategory) => {
   const location = useLocation();
 
-  return traverseSidebarItem(category, (item) => {
+  return traverseNavigationItem(category, (item) => {
     if (item.type === "category" && item.link) {
       const categoryLinkPath = joinUrl(item.link.file);
       if (categoryLinkPath === location.pathname) {
@@ -79,15 +77,14 @@ export const usePrevNext = (): {
   next?: { label: string; id: string };
 } => {
   const currentId = useLocation().pathname;
-  const nav = useCurrentNavigation();
-  const currentSidebar = nav.sidebar;
+  const { navigation } = useCurrentNavigation();
 
   let prev;
   let next;
 
   let foundCurrent = false;
 
-  traverseSidebar(currentSidebar, (item) => {
+  traverseNavigation(navigation, (item) => {
     const itemId =
       item.type === "doc"
         ? joinUrl(item.file)
@@ -137,7 +134,7 @@ export const navigationListItem = cva(
 
 export const isHiddenItem =
   (isAuthenticated?: boolean) =>
-  (item: SidebarItem): boolean => {
+  (item: NavigationItem): boolean => {
     if (item.display === "hide") return false;
     if (!item.label) return false;
 

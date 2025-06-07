@@ -4,13 +4,13 @@ import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod";
-import type { Sidebar } from "../../config/validators/SidebarSchema.js";
+import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { FooterSchema } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
-import { joinPath } from "../util/joinPath.js";
+import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
 import {
@@ -80,7 +80,7 @@ export type ZudokuContextOptions = {
   metadata?: Metadata;
   page?: Page;
   authentication?: AuthenticationPlugin;
-  navigation?: Sidebar;
+  navigation?: Navigation;
   plugins?: ZudokuPlugin[];
   slots?: Record<string, SlotType>;
   /**
@@ -100,7 +100,7 @@ export type ZudokuContextOptions = {
 
 export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
-  public navigation: Sidebar;
+  public navigation: Navigation;
   public meta: ZudokuContextOptions["metadata"];
   public page: ZudokuContextOptions["page"];
   public readonly authentication?: ZudokuContextOptions["authentication"];
@@ -172,10 +172,10 @@ export class ZudokuContext {
     return this.emitter.emit(event, ...data);
   };
 
-  getPluginSidebar = async (path: string) => {
+  getPluginNavigation = async (path: string) => {
     const navigations = await Promise.all(
       this.navigationPlugins.map((plugin) =>
-        plugin.getSidebar?.(joinPath(path), this),
+        plugin.getNavigation?.(joinUrl(path), this),
       ),
     );
 

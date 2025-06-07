@@ -1,8 +1,8 @@
-import type { SidebarItem } from "../../../../config/validators/SidebarSchema.js";
+import type { NavigationItem } from "../../../../config/validators/NavigationSchema.js";
 import type { OperationResult } from "../index.js";
 import { MethodColorMap } from "./methodColorMap.js";
 
-export const createSidebarCategory = ({
+export const createNavigationCategory = ({
   label,
   path,
   operations,
@@ -14,7 +14,7 @@ export const createSidebarCategory = ({
   operations: OperationResult[];
   collapsible?: boolean;
   collapsed?: boolean;
-}): SidebarItem => ({
+}): NavigationItem => ({
   type: "category",
   label,
   link: {

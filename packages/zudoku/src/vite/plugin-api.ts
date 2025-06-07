@@ -22,7 +22,7 @@ import type {
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
-import { invalidate as invalidateSidebar } from "./plugin-sidebar.js";
+import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
@@ -86,7 +86,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
         await schemaManager.processSchema(id);
         schemaManager.trackedFiles.forEach((file) => server.watcher.add(file));
-        invalidateSidebar(server);
+        invalidateNavigation(server);
         reload(server);
       });
     },

@@ -53,7 +53,7 @@ export const OperationListItem = ({
         <Heading
           level={2}
           id={operation.slug}
-          registerSidebarAnchor
+          registerNavigationAnchor
           className="break-all col-span-full"
         >
           {operation.summary}

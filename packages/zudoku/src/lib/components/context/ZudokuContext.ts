@@ -1,12 +1,12 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
-import { type SidebarItem } from "../../../config/validators/SidebarSchema.js";
+import { type NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS } from "../cache.js";
-import { traverseSidebar } from "../navigation/utils.js";
+import { traverseNavigation } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
   undefined,
@@ -31,7 +31,7 @@ export const useApiIdentities = () => {
   });
 };
 
-const getItemPath = (item: SidebarItem) => {
+const getItemPath = (item: NavigationItem) => {
   switch (item.type) {
     case "doc":
       return joinUrl(item.file);
@@ -46,7 +46,7 @@ const getItemPath = (item: SidebarItem) => {
   }
 };
 export const useCurrentNavigation = () => {
-  const { getPluginSidebar, navigation, options } = useZudoku();
+  const { getPluginNavigation, navigation, options } = useZudoku();
   const location = useLocation();
   const auth = useAuth();
 
@@ -54,27 +54,24 @@ export const useCurrentNavigation = () => {
     matchPath(route, location.pathname),
   );
 
-  const sidebarItem = traverseSidebar(navigation, (item, parentCategories) => {
+  const navItem = traverseNavigation(navigation, (item, parentCategories) => {
     if (getItemPath(item) === location.pathname) {
       return parentCategories.at(0) ?? item;
     }
   });
 
   const { data } = useSuspenseQuery({
-    queryFn: () => getPluginSidebar(location.pathname),
-    queryKey: ["plugin-sidebar", location.pathname],
+    queryFn: () => getPluginNavigation(location.pathname),
+    queryKey: ["plugin-navigation", location.pathname],
   });
 
-  const hideSidebar =
+  const hasNavigation =
     auth.isAuthEnabled && !auth.isAuthenticated && isProtectedRoute;
 
   return {
-    sidebar: hideSidebar
+    navigation: hasNavigation
       ? []
-      : [
-          ...(sidebarItem?.type === "category" ? sidebarItem.items : []),
-          ...data,
-        ],
-    topNavItem: sidebarItem,
+      : [...(navItem?.type === "category" ? navItem.items : []), ...data],
+    topNavItem: navItem,
   };
 };

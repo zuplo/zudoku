@@ -1,22 +1,22 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
+import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
 import { Slot } from "../Slot.js";
-import { SidebarItem } from "./SidebarItem.js";
-import { SidebarWrapper } from "./SidebarWrapper.js";
+import { NavigationItem } from "./NavigationItem.js";
+import { NavigationWrapper } from "./NavigationWrapper.js";
 
-export const Sidebar = ({
+export const Navigation = ({
   onRequestClose,
-  sidebar,
+  navigation,
 }: {
   onRequestClose?: () => void;
-  sidebar: SidebarItemType[];
+  navigation: NavigationItemType[];
 }) => (
   <>
-    <SidebarWrapper>
+    <NavigationWrapper>
       <Slot.Target name="navigation-before" />
-      {sidebar.map((item) => (
-        <SidebarItem
+      {navigation.map((item) => (
+        <NavigationItem
           key={
             item.type +
             ("id" in item ? item.id : "") +
@@ -27,17 +27,17 @@ export const Sidebar = ({
         />
       ))}
       <Slot.Target name="navigation-after" />
-    </SidebarWrapper>
+    </NavigationWrapper>
     <DrawerContent
       className="lg:hidden h-[100dvh] start-0 w-[320px] rounded-none"
       aria-describedby={undefined}
     >
       <div className="p-4 overflow-y-auto overscroll-none">
         <VisuallyHidden>
-          <DrawerTitle>Sidebar</DrawerTitle>
+          <DrawerTitle>Navigation</DrawerTitle>
         </VisuallyHidden>
-        {sidebar.map((item) => (
-          <SidebarItem
+        {navigation.map((item) => (
+          <NavigationItem
             key={item.label}
             item={item}
             onRequestClose={onRequestClose}

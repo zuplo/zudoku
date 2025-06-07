@@ -3,49 +3,49 @@ import matter from "gray-matter";
 import { type LucideIcon } from "lucide-react";
 import fs from "node:fs/promises";
 import type {
-  BaseInputSidebarItemCategoryLinkDoc,
-  BaseInputSidebarItemDoc,
-  InputSidebarItem,
-  InputSidebarItemCategory,
-  InputSidebarItemCustomPage,
-  InputSidebarItemLink,
-} from "./InputSidebarSchema.js";
+  BaseInputNavigationItemCategoryLinkDoc,
+  BaseInputNavigationItemDoc,
+  InputNavigationItem,
+  InputNavigationItemCategory,
+  InputNavigationItemCustomPage,
+  InputNavigationItemLink,
+} from "./InputNavigationSchema.js";
 
 type WithIcon<T> = Omit<T, "icon"> & { icon?: LucideIcon | string };
 type AsDoc<T> = Extract<T, { type: "doc" }>;
 
-export type SidebarItemDoc = WithIcon<AsDoc<BaseInputSidebarItemDoc>> & {
+export type NavigationItemDoc = WithIcon<AsDoc<BaseInputNavigationItemDoc>> & {
   label: string;
   categoryLabel?: string;
 };
 
-export type SidebarItemLink = WithIcon<InputSidebarItemLink>;
+export type NavigationItemLink = WithIcon<InputNavigationItemLink>;
 
-export type SidebarItemCategoryLinkDoc = WithIcon<
-  AsDoc<BaseInputSidebarItemCategoryLinkDoc>
+export type NavigationItemCategoryLinkDoc = WithIcon<
+  AsDoc<BaseInputNavigationItemCategoryLinkDoc>
 > & { label: string };
 
-export type SidebarItemCategory = WithIcon<
-  Omit<InputSidebarItemCategory, "items" | "link">
+export type NavigationItemCategory = WithIcon<
+  Omit<InputNavigationItemCategory, "items" | "link">
 > & {
-  items: SidebarItem[];
-  link?: SidebarItemCategoryLinkDoc;
+  items: NavigationItem[];
+  link?: NavigationItemCategoryLinkDoc;
 };
 
-export type SidebarItemCustomPage = WithIcon<InputSidebarItemCustomPage>;
+export type NavigationItemCustomPage = WithIcon<InputNavigationItemCustomPage>;
 
-export type SidebarItem =
-  | SidebarItemDoc
-  | SidebarItemLink
-  | SidebarItemCategory
-  | SidebarItemCustomPage;
+export type NavigationItem =
+  | NavigationItemDoc
+  | NavigationItemLink
+  | NavigationItemCategory
+  | NavigationItemCustomPage;
 
-export type Sidebar = SidebarItem[];
+export type Navigation = NavigationItem[];
 
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
 
-const isSidebarItem = (item: unknown): item is SidebarItem =>
+const isNavigationItem = (item: unknown): item is NavigationItem =>
   item !== undefined;
 
 export class NavigationResolver {
@@ -58,7 +58,7 @@ export class NavigationResolver {
     this.globPatterns = globPatterns;
   }
 
-  async resolve(items: InputSidebarItem[]) {
+  async resolve(items: InputNavigationItem[]) {
     this.globFiles = await glob(this.globPatterns, {
       root: this.rootDir,
       ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
@@ -68,13 +68,13 @@ export class NavigationResolver {
       items.map((item) => this.resolveItem(item)),
     );
 
-    return resolvedItems.filter(isSidebarItem);
+    return resolvedItems.filter(isNavigationItem);
   }
 
   private async resolveDoc(
     filePath: string,
     categoryLabel?: string,
-  ): Promise<SidebarItemDoc | undefined> {
+  ): Promise<NavigationItemDoc | undefined> {
     const foundMatches = this.globFiles.find(
       (file) =>
         file.endsWith(`${filePath}.md`) || file.endsWith(`${filePath}.mdx`),
@@ -82,7 +82,7 @@ export class NavigationResolver {
 
     if (!foundMatches) {
       throw new Error(
-        `File not found for document '${filePath}'. Check your sidebar configuration.`,
+        `File not found for document '${filePath}'. Check your navigation configuration.`,
       );
     }
 
@@ -90,14 +90,15 @@ export class NavigationResolver {
     const { data, content } = matter(fileContent);
 
     const label =
+      data.navigation_label ??
       data.sidebar_label ??
       data.title ??
       extractTitleFromContent(content) ??
       filePath;
 
-    const icon = data.sidebar_icon;
+    const icon = data.navigation_icon ?? data.sidebar_icon;
 
-    const doc: SidebarItemDoc = {
+    const doc: NavigationItemDoc = {
       type: "doc",
       file: filePath,
       label,
@@ -110,7 +111,7 @@ export class NavigationResolver {
 
   private async resolveLink(
     file: string,
-  ): Promise<SidebarItemCategoryLinkDoc | undefined> {
+  ): Promise<NavigationItemCategoryLinkDoc | undefined> {
     const doc = await this.resolveDoc(file);
 
     return doc
@@ -119,8 +120,8 @@ export class NavigationResolver {
   }
 
   private async resolveItemCategoryLinkDoc(
-    item: string | BaseInputSidebarItemCategoryLinkDoc,
-  ): Promise<SidebarItemCategoryLinkDoc | undefined> {
+    item: string | BaseInputNavigationItemCategoryLinkDoc,
+  ): Promise<NavigationItemCategoryLinkDoc | undefined> {
     if (typeof item === "string") {
       return this.resolveLink(item);
     }
@@ -129,10 +130,10 @@ export class NavigationResolver {
     return doc ? { ...item, label: doc.label, icon: doc.icon } : undefined;
   }
 
-  private async resolveSidebarItemDoc(
-    item: string | BaseInputSidebarItemDoc,
+  private async resolveNavigationItemDoc(
+    item: string | BaseInputNavigationItemDoc,
     categoryLabel?: string,
-  ): Promise<SidebarItemDoc | undefined> {
+  ): Promise<NavigationItemDoc | undefined> {
     if (typeof item === "string") {
       return this.resolveDoc(item, categoryLabel);
     }
@@ -142,21 +143,21 @@ export class NavigationResolver {
   }
 
   private async resolveItem(
-    item: InputSidebarItem,
+    item: InputNavigationItem,
     categoryLabel?: string,
-  ): Promise<SidebarItem | undefined> {
+  ): Promise<NavigationItem | undefined> {
     if (typeof item === "string") {
       return this.resolveDoc(item, categoryLabel);
     }
 
     switch (item.type) {
       case "doc":
-        return this.resolveSidebarItemDoc(item, categoryLabel);
+        return this.resolveNavigationItemDoc(item, categoryLabel);
       case "link":
       case "custom-page":
         return item;
       case "category": {
-        const categoryItem: InputSidebarItemCategory = item;
+        const categoryItem: InputNavigationItemCategory = item;
 
         const items = (
           await Promise.all(
@@ -164,7 +165,7 @@ export class NavigationResolver {
               this.resolveItem(subItem, categoryItem.label),
             ),
           )
-        ).filter((item): item is SidebarItem => item !== undefined);
+        ).filter(isNavigationItem);
 
         const resolvedLink = categoryItem.link
           ? await this.resolveItemCategoryLinkDoc(categoryItem.link)

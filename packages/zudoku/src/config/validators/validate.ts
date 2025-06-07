@@ -19,7 +19,7 @@ import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js"
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
-import { InputSidebarSchema } from "./InputSidebarSchema.js";
+import { InputNavigationSchema } from "./InputNavigationSchema.js";
 
 const ThemeSchema = z
   .object({
@@ -451,7 +451,7 @@ const BaseConfigSchema = z.object({
     })
     .optional(),
   page: PageSchema,
-  navigation: InputSidebarSchema,
+  navigation: InputNavigationSchema,
   theme: z
     .object({
       light: ThemeSchema,

@@ -2,11 +2,11 @@ import { cx } from "class-variance-authority";
 import { deepEqual } from "fast-equals";
 import { Suspense } from "react";
 import { NavLink } from "react-router";
-import { type SidebarItem } from "../../config/validators/SidebarSchema.js";
+import { type NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { isHiddenItem } from "./navigation/utils.js";
+import { isHiddenItem, traverseNavigationItem } from "./navigation/utils.js";
 import { Slot } from "./Slot.js";
 
 export const TopNavigation = () => {
@@ -38,37 +38,53 @@ export const TopNavigation = () => {
   );
 };
 
-const getPathForItem = (item: SidebarItem) => {
+const getPathForItem = (item: NavigationItem): string => {
   switch (item.type) {
     case "doc":
       return joinUrl(item.file);
     case "link":
       return item.href;
-    case "category":
-      return joinUrl(item.link?.file ?? "");
+    case "category": {
+      if (item.link?.file) {
+        return joinUrl(item.link.file);
+      }
+
+      return (
+        traverseNavigationItem(item, (child) => {
+          if (child.type !== "category") {
+            return getPathForItem(child);
+          }
+        }) ?? ""
+      );
+    }
     case "custom-page":
       return item.path;
   }
 };
 
-export const TopNavItem = (item: SidebarItem) => {
+export const TopNavItem = (item: NavigationItem) => {
   const currentNav = useCurrentNavigation();
   const isActiveTopNavItem = deepEqual(currentNav.topNavItem, item);
 
   const path = getPathForItem(item);
 
-  const activeClass = "inset-shadow-[0_-2px_0_0_var(--primary)]";
-
   return (
-    // We don't use isActive here because it has to be inside the sidebar,
-    // the top nav id doesn't necessarily start with the sidebar id
+    // We don't use isActive here because it has to be inside the navigation,
+    // the top nav id doesn't necessarily start with the navigation id
     <NavLink
+      viewTransition
       to={path}
       className={({ isActive, isPending }) =>
         cx(
-          "block lg:py-3.5 font-medium -mb-px",
+          "block lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
           isActive || isActiveTopNavItem || isPending
-            ? [activeClass, "text-foreground", isPending && "animate-pulse"]
+            ? [
+                "text-foreground",
+                // underline with view transition animation
+                "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0",
+                "after:h-0.5 after:bg-primary after:[view-transition-name:top-nav-underline]",
+                isPending && "after:bg-primary/25",
+              ]
             : "text-foreground/75 hover:text-foreground",
         )
       }

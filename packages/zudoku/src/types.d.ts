@@ -8,8 +8,8 @@ declare module "virtual:zudoku-docs-plugins" {
   export const configuredMarkdownFiles: Record<string, () => Promise<unknown>>;
 }
 
-declare module "virtual:zudoku-sidebar" {
-  export const configuredSidebar: import("./config/validators/SidebarSchema.ts").SidebarConfig;
+declare module "virtual:zudoku-navigation" {
+  export const configuredNavigation: import("./config/validators/NavigationSchema.ts").NavigationConfig;
 }
 
 declare module "virtual:zudoku-api-plugins" {
