@@ -71,7 +71,7 @@ export const convertZudokuConfigToOptions = (
 
 export const getRoutesByOptions = (
   options: ZudokuContextOptions,
-  enableStatusPages = false,
+  enableStatusPages = true,
 ) => {
   const allPlugins = [
     ...(options.plugins ?? []),
@@ -84,7 +84,7 @@ export const getRoutesByOptions = (
       enableStatusPages
         ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
             (statusCode) => ({
-              path: `/.static/${statusCode}`,
+              path: `/${statusCode}`,
               element: <StatusPage statusCode={statusCode} />,
             }),
           )
