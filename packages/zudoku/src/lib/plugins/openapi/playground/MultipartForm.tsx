@@ -1,14 +1,9 @@
+import { PaperclipIcon, XIcon } from "lucide-react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
-import { XIcon } from "lucide-react";
+import { Card } from "zudoku/ui/Card.js";
+import { Label } from "zudoku/ui/Label.js";
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "zudoku/ui/Select.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 
@@ -20,7 +15,7 @@ const MultipartForm = () => {
   });
 
   return (
-    <div className="flex flex-col gap-2">
+    <div>
       <Button
         variant="ghost"
         size="sm"
@@ -31,87 +26,66 @@ const MultipartForm = () => {
       >
         + Add field
       </Button>
-      <ParamsGrid className="grid-cols-[2fr_2fr_auto_2fr_min-content]">
-        {fields.map((field, i) => {
-          const watched = watch(`formData.${i}`);
-          return (
-            <ParamsGridItem key={field.id}>
-              <Controller
-                name={`formData.${i}.key`}
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    placeholder="Key"
-                    className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                  />
-                )}
-              />
-              <div className="flex items-center gap-2">
+      <Card className="flex flex-col gap-2">
+        <ParamsGrid className="grid-cols-[2fr_2fr_min-content]">
+          {fields.map((field, i) => {
+            return (
+              <ParamsGridItem key={field.id}>
                 <Controller
-                  name={`formData.${i}.value`}
+                  name={`formData.${i}.key`}
                   control={control}
-                  render={({ field }) =>
-                    watched?.type === "file" ? (
-                      <Input
-                        type="file"
-                        onChange={(e) => field.onChange(e.target.files?.[0] ?? null)}
-                        className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                      />
-                    ) : (
-                      <Input
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        placeholder="Value"
-                        className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                      />
-                    )
-                  }
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      placeholder="Key"
+                      className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                    />
+                  )}
                 />
-              </div>
-              <Controller
-                name={`formData.${i}.type`}
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    value={field.value}
-                    onValueChange={(v) => field.onChange(v)}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="h-8 w-24 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="text">text</SelectItem>
-                      <SelectItem value="file">file</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <Controller
-                name={`formData.${i}.contentType`}
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    placeholder="Content-Type"
-                    className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                <div className="flex items-center gap-2">
+                  <Controller
+                    name={`formData.${i}.value`}
+                    control={control}
+                    render={({ field }) => (
+                      <>
+                        <Input
+                          {...field}
+                          onChange={(e) => field.onChange(e.target.value)}
+                          placeholder="Value"
+                          className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                        />
+                        <Label htmlFor={`formData.${i}.file`}>
+                          <Input
+                            id={`formData.${i}.file`}
+                            type="file"
+                            onChange={(e) =>
+                              field.onChange(e.target.files?.[0] ?? null)
+                            }
+                            className="hidden"
+                          />
+                          <PaperclipIcon
+                            size={16}
+                            className="text-muted-foreground"
+                          />
+                        </Label>
+                      </>
+                    )}
                   />
-                )}
-              />
-              <Button
-                size="icon"
-                variant="ghost"
-                className="text-muted-foreground"
-                onClick={() => remove(i)}
-                type="button"
-              >
-                <XIcon size={16} />
-              </Button>
-            </ParamsGridItem>
-          );
-        })}
-      </ParamsGrid>
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="text-muted-foreground"
+                  onClick={() => remove(i)}
+                  type="button"
+                >
+                  <XIcon size={16} />
+                </Button>
+              </ParamsGridItem>
+            );
+          })}
+        </ParamsGrid>
+      </Card>
     </div>
   );
 };

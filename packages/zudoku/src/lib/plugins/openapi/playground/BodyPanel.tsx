@@ -1,5 +1,4 @@
 import { Controller, useFormContext } from "react-hook-form";
-import { Textarea } from "zudoku/ui/Textarea.js";
 import {
   Select,
   SelectContent,
@@ -7,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { Textarea } from "zudoku/ui/Textarea.js";
 import { cn } from "../../../util/cn.js";
 import { type Content } from "../SidecarExamples.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
@@ -14,11 +14,11 @@ import MultipartForm from "./MultipartForm.js";
 import { type PlaygroundForm } from "./Playground.js";
 
 export const BodyPanel = ({ examples }: { examples?: Content }) => {
-  const { register, setValue, watch, control } = useFormContext<PlaygroundForm>();
+  const { register, setValue, watch, control } =
+    useFormContext<PlaygroundForm>();
 
   const headers = watch("headers");
   const bodyType = watch("bodyType");
-
 
   return (
     <div className="flex flex-col gap-2 ">
@@ -38,8 +38,8 @@ export const BodyPanel = ({ examples }: { examples?: Content }) => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="text">text</SelectItem>
-                  <SelectItem value="multipart/form-data">multipart/form</SelectItem>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="form">Form</SelectItem>
                 </SelectContent>
               </Select>
             )}

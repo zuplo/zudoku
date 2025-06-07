@@ -43,7 +43,7 @@
   ],
   "servers": [
     {
-      "url": "https://8f9618f3bc0f4eec989627ceaafd5e4d_oas.api.mockbin.io/",
+      "url": "https://906f8ae2c5e546179bdc40be7159516c_oas.api.mockbin.io",
       "description": "Production environment"
     },
     {
