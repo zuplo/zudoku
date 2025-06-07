@@ -82,10 +82,12 @@ export const getRoutesByOptions = (
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
     .concat(
       enableStatusPages
-        ? [404, 405, 414, 416, 500, 501, 502, 503, 504].map((statusCode) => ({
-            path: `/${statusCode}`,
-            element: <StatusPage statusCode={statusCode} />,
-          }))
+        ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
+            (statusCode) => ({
+              path: `/${statusCode}`,
+              element: <StatusPage statusCode={statusCode} />,
+            }),
+          )
         : [],
     )
     .concat([
