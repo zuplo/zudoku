@@ -331,11 +331,11 @@ Enables static generation of status pages for your site. This results in several
 
 This option is enabled by default, but you can disable it if you don't need these pages.
 
-````ts
+```ts
 {
-  enableStatusPages: false
+  enableStatusPages: false;
 }
-
+```
 
 ## Multiple Files
 
@@ -356,7 +356,7 @@ export const sidebar: Record<string, Sidebar> = {
     },
   ],
 };
-````
+```
 
 Then you can import the sidebar configuration into your main configuration file.
 
