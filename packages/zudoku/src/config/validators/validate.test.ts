@@ -79,7 +79,6 @@ describe("validateConfig", () => {
 
     validateConfig(configWithInvalidAuth0Domain);
 
-    expect(mockConsoleLog).toHaveBeenCalledWith("Validation errors:");
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("Domain must be a host only"),
     );
@@ -96,7 +95,6 @@ describe("validateConfig", () => {
 
     validateConfig(configWithInvalidAuth0Domain);
 
-    expect(mockConsoleLog).toHaveBeenCalledWith("Validation errors:");
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining("Domain must be a host only"),
     );

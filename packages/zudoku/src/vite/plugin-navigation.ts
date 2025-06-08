@@ -1,13 +1,11 @@
-import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { type Plugin, type ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
+import { IconNames } from "../config/validators/icon-types.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
-
-const iconNames = Object.keys(icons);
 
 const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
@@ -17,7 +15,7 @@ const replaceNavigationIcons = (code: string) => {
 
   let match;
   while ((match = matchIconAnnotation.exec(code)) !== null) {
-    if (!iconNames.includes(match[1]!)) {
+    if (!IconNames.includes(match[1]! as IconNames)) {
       // eslint-disable-next-line no-console
       console.warn(
         `Icon ${match[1]!} not found, see: https://lucide.dev/icons/`,

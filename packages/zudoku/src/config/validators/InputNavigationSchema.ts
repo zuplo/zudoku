@@ -1,5 +1,7 @@
 import { z } from "zod/v4";
-import { type IconNames } from "./icon-types.js";
+import { IconNames } from "./icon-types.js";
+
+const IconSchema = z.enum(IconNames);
 
 const BadgeSchema = z.object({
   label: z.string(),
@@ -27,7 +29,7 @@ const InputNavigationDocSchema = z.union([
   z.object({
     type: z.literal("doc"),
     file: z.string(),
-    icon: z.custom<IconNames>().optional(),
+    icon: IconSchema.optional(),
     label: z.string().optional(),
     badge: BadgeSchema.optional(),
     display: DisplaySchema,
@@ -36,7 +38,7 @@ const InputNavigationDocSchema = z.union([
 
 const InputNavigationLinkSchema = z.object({
   type: z.literal("link"),
-  icon: z.custom<IconNames>().optional(),
+  icon: IconSchema.optional(),
   label: z.string(),
   href: z.string(),
   description: z.string().optional(),
@@ -49,14 +51,14 @@ const InputNavigationCustomPageSchema = z.object({
   path: z.string(),
   label: z.string(),
   element: z.any(),
-  icon: z.custom<IconNames>().optional(),
+  icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
 });
 
 const InputNavigationCategorySchema = z.object({
   type: z.literal("category"),
-  icon: z.custom<IconNames>().optional(),
+  icon: IconSchema.optional(),
   label: z.string(),
   description: z.string().optional(),
   collapsible: z.boolean().optional(),
