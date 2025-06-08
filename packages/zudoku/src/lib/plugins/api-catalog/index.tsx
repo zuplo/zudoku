@@ -26,14 +26,14 @@ export type ApiCatalogPluginOptions = {
   label: string;
   categories?: CatalogCategory[];
   items: ApiCatalogItem[];
-  filterCatalogItems?: filterCatalogItems;
+  filterCatalogItems?: FilterCatalogItemsFn;
 };
 
 export type CatalogContext<ProviderData = unknown> = {
   auth: AuthState<ProviderData>;
 };
 
-export type filterCatalogItems<ProviderData = unknown> = (
+export type FilterCatalogItemsFn<ProviderData = unknown> = (
   items: ApiCatalogItem[],
   { auth }: CatalogContext<ProviderData>,
 ) => ApiCatalogItem[];
@@ -49,7 +49,7 @@ export const apiCatalogPlugin = ({
   label: string;
   categories?: CatalogCategory[];
   items: ApiCatalogItem[];
-  filterCatalogItems?: filterCatalogItems;
+  filterCatalogItems?: FilterCatalogItemsFn;
 }): ZudokuPlugin => {
   const paths = Object.fromEntries(
     categories.flatMap((category) =>

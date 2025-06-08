@@ -1,21 +1,16 @@
 import type { Options } from "@mdx-js/rollup";
+import colors from "picocolors";
 import type { ComponentType, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
-import z, {
-  type ZodEnumDef,
-  type ZodOptional,
-  type ZodString,
-  type ZodType,
-  type ZodUnion,
-} from "zod";
-import { fromError } from "zod-validation-error";
+import { z } from "zod/v4";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
+import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
-import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js";
+import type { TransformExamplesFn } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
@@ -58,7 +53,7 @@ const ApiOptionsSchema = z
     disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
-    transformExamples: z.custom<transformExamples>(
+    transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),
   })
@@ -73,19 +68,22 @@ const ApiConfigSchema = z
   })
   .partial();
 
-const ApiSchema = z.union([
-  z
-    .object({ type: z.literal("url"), input: z.string() })
-    .merge(ApiConfigSchema),
-  z
-    .object({
-      type: z.literal("file"),
-      input: z.union([z.string(), z.array(z.string())]),
-    })
-    .merge(ApiConfigSchema),
-  z
-    .object({ type: z.literal("raw"), input: z.string() })
-    .merge(ApiConfigSchema),
+const ApiSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("url"),
+    input: z.string(),
+    ...ApiConfigSchema.shape,
+  }),
+  z.object({
+    type: z.literal("file"),
+    input: z.union([z.string(), z.array(z.string())]),
+    ...ApiConfigSchema.shape,
+  }),
+  z.object({
+    type: z.literal("raw"),
+    input: z.string(),
+    ...ApiConfigSchema.shape,
+  }),
 ]);
 
 const ApiKeysSchema = z.object({
@@ -213,7 +211,7 @@ const SiteMapSchema = z
      */
     exclude: z
       .union([
-        z.function().returns(z.promise(z.array(z.string()))),
+        z.custom<() => Promise<string[]>>((val) => typeof val === "function"),
         z.array(z.string()),
       ])
       .optional(),
@@ -231,25 +229,13 @@ const DocsConfigSchema = z.object({
     .optional(),
 });
 
-type BannerColorType = ZodOptional<
-  ZodUnion<
-    [
-      ZodType<
-        "note" | "tip" | "info" | "caution" | "danger" | (string & {}),
-        ZodEnumDef
-      >,
-      ZodString,
-    ]
-  >
->;
-
 const Redirect = z.object({
   from: z.string(),
   to: z.string(),
 });
 
 const SearchSchema = z
-  .union([
+  .discriminatedUnion("type", [
     z.object({
       type: z.literal("inkeep"),
       apiKey: z.string(),
@@ -382,9 +368,10 @@ const PageSchema = z
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
-        .enum(["note", "tip", "info", "caution", "danger"])
-        .or(z.string())
-        .optional() as BannerColorType,
+        .custom<
+          "note" | "tip" | "info" | "caution" | "danger" | (string & {})
+        >((val) => typeof val === "string")
+        .optional(),
       dismissible: z.boolean().optional(),
     }),
     footer: FooterSchema,
@@ -395,7 +382,9 @@ const ApiCatalogSchema = z.object({
   path: z.string(),
   label: z.string(),
   items: z.array(z.string()).optional(),
-  filterItems: z.function().args(z.any()).returns(z.any()).optional(),
+  filterItems: z
+    .custom<FilterCatalogItemsFn>((val) => typeof val === "function")
+    .optional(),
 });
 
 export const CdnUrlSchema = z
@@ -501,8 +490,8 @@ export function validateConfig(config: unknown) {
 
   if (!validationResult.success) {
     // eslint-disable-next-line no-console
-    console.log("Validation errors:");
+    console.log(colors.yellow("Validation errors:"));
     // eslint-disable-next-line no-console
-    console.log(fromError(validationResult.error).toString());
+    console.log(colors.yellow(z.prettifyError(validationResult.error)));
   }
 }

@@ -1,7 +1,7 @@
 import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { type Plugin, type ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import { NavigationResolver as NavigationDocResolver } from "../config/validators/NavigationSchema.js";
+import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { writePluginDebugCode } from "./debug.js";
 
@@ -64,7 +64,7 @@ export const viteNavigationPlugin = (): Plugin => {
       if (id !== resolvedVirtualModuleId) return;
       const config = getCurrentConfig();
 
-      const resolver = new NavigationDocResolver(
+      const resolver = new NavigationResolver(
         config.__meta.rootDir,
         ensureArray(config.docs ?? []).flatMap((doc) => doc.files),
       );

@@ -4,7 +4,7 @@ import { ChevronRightIcon } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { NavLink, useLocation, useMatch } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
-import type { NavigationItemCategory } from "../../../config/validators/NavigationSchema.js";
+import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { NavigationItem } from "./NavigationItem.js";
@@ -14,7 +14,7 @@ const NavigationCategoryInner = ({
   category,
   onRequestClose,
 }: {
-  category: NavigationItemCategory;
+  category: NavigationCategoryType;
   onRequestClose?: () => void;
 }) => {
   const isCategoryOpen = useIsCategoryOpen(category);

@@ -172,8 +172,7 @@ export async function loadZudokuConfig(
     config = await loadZudokuConfigWithMeta(rootDir);
 
     logger.info(
-      colors.yellow(`loaded config file `) +
-        colors.dim(config.__meta.configPath),
+      colors.cyan(`loaded config file `) + colors.dim(config.__meta.configPath),
       { timestamp: true },
     );
 

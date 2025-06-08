@@ -3,7 +3,7 @@ import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
-import type { z } from "zod";
+import type { z } from "zod/v4";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { FooterSchema } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";

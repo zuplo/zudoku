@@ -3,6 +3,7 @@ import colors from "picocolors";
 import { type Plugin, type ViteDevServer } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { getCurrentConfig } from "../config/loader.js";
+import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 export const reload = ({ ws, environments }: ViteDevServer) => {
   Object.values(environments).forEach((environment) => {
@@ -32,6 +33,7 @@ export const viteConfigReloadPlugin = (): Plugin => ({
       if (file !== currentConfig.__meta.configPath && file.endsWith(".tsx"))
         return;
 
+      invalidateNavigation(server);
       Object.values(server.environments).forEach((env) => {
         env.moduleGraph.invalidateAll();
       });

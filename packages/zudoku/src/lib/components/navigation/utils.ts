@@ -1,8 +1,8 @@
 import { cva } from "class-variance-authority";
 import { useLocation } from "react-router";
 import type {
+  NavigationCategory,
   NavigationItem,
-  NavigationItemCategory,
 } from "../../../config/validators/NavigationSchema.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
@@ -52,7 +52,7 @@ export const useCurrentItem = () => {
   });
 };
 
-export const useIsCategoryOpen = (category: NavigationItemCategory) => {
+export const useIsCategoryOpen = (category: NavigationCategory) => {
   const location = useLocation();
 
   return traverseNavigationItem(category, (item) => {

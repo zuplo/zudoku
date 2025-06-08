@@ -3,42 +3,51 @@ import matter from "gray-matter";
 import { type LucideIcon } from "lucide-react";
 import fs from "node:fs/promises";
 import type {
-  BaseInputNavigationItemCategoryLinkDoc,
-  BaseInputNavigationItemDoc,
+  InputNavigationCategory,
+  InputNavigationCategoryLinkDoc,
+  InputNavigationCustomPage,
+  InputNavigationDoc,
   InputNavigationItem,
-  InputNavigationItemCategory,
-  InputNavigationItemCustomPage,
-  InputNavigationItemLink,
+  InputNavigationLink,
 } from "./InputNavigationSchema.js";
 
-type WithIcon<T> = Omit<T, "icon"> & { icon?: LucideIcon | string };
-type AsDoc<T> = Extract<T, { type: "doc" }>;
+type ReplaceFields<Base, Overrides> = Omit<Base, keyof Overrides> & Overrides;
+// string icons will be transformed to `LucideIcon` in `vite/plugin-navigation.ts`
+type ResolvedIcon = { icon?: LucideIcon | string };
 
-export type NavigationItemDoc = WithIcon<AsDoc<BaseInputNavigationItemDoc>> & {
-  label: string;
-  categoryLabel?: string;
-};
+// `doc` items can have string shorthands, but this resolver will resolve them to the full type
+type FinalNavigationDoc = Extract<InputNavigationDoc, { type: "doc" }>;
+type FinalNavigationCategoryLinkDoc = Extract<
+  InputNavigationCategoryLinkDoc,
+  { type: "doc" }
+>;
 
-export type NavigationItemLink = WithIcon<InputNavigationItemLink>;
+export type NavigationDoc = ReplaceFields<
+  FinalNavigationDoc,
+  { label: string; categoryLabel?: string } & ResolvedIcon
+>;
 
-export type NavigationItemCategoryLinkDoc = WithIcon<
-  AsDoc<BaseInputNavigationItemCategoryLinkDoc>
-> & { label: string };
+export type NavigationLink = ReplaceFields<InputNavigationLink, ResolvedIcon>;
 
-export type NavigationItemCategory = WithIcon<
-  Omit<InputNavigationItemCategory, "items" | "link">
-> & {
-  items: NavigationItem[];
-  link?: NavigationItemCategoryLinkDoc;
-};
+export type NavigationCategoryLinkDoc = ReplaceFields<
+  FinalNavigationCategoryLinkDoc,
+  { label: string } & ResolvedIcon
+>;
 
-export type NavigationItemCustomPage = WithIcon<InputNavigationItemCustomPage>;
+export type NavigationCategory = ReplaceFields<
+  InputNavigationCategory,
+  { items: NavigationItem[]; link?: NavigationCategoryLinkDoc } & ResolvedIcon
+>;
+export type NavigationCustomPage = ReplaceFields<
+  InputNavigationCustomPage,
+  ResolvedIcon
+>;
 
 export type NavigationItem =
-  | NavigationItemDoc
-  | NavigationItemLink
-  | NavigationItemCategory
-  | NavigationItemCustomPage;
+  | NavigationDoc
+  | NavigationLink
+  | NavigationCategory
+  | NavigationCustomPage;
 
 export type Navigation = NavigationItem[];
 
@@ -74,7 +83,7 @@ export class NavigationResolver {
   private async resolveDoc(
     filePath: string,
     categoryLabel?: string,
-  ): Promise<NavigationItemDoc | undefined> {
+  ): Promise<NavigationDoc | undefined> {
     const foundMatches = this.globFiles.find(
       (file) =>
         file.endsWith(`${filePath}.md`) || file.endsWith(`${filePath}.mdx`),
@@ -98,20 +107,20 @@ export class NavigationResolver {
 
     const icon = data.navigation_icon ?? data.sidebar_icon;
 
-    const doc: NavigationItemDoc = {
+    const doc = {
       type: "doc",
       file: filePath,
       label,
       icon,
       categoryLabel,
-    };
+    } satisfies NavigationDoc;
 
     return doc;
   }
 
   private async resolveLink(
     file: string,
-  ): Promise<NavigationItemCategoryLinkDoc | undefined> {
+  ): Promise<NavigationCategoryLinkDoc | undefined> {
     const doc = await this.resolveDoc(file);
 
     return doc
@@ -120,8 +129,8 @@ export class NavigationResolver {
   }
 
   private async resolveItemCategoryLinkDoc(
-    item: string | BaseInputNavigationItemCategoryLinkDoc,
-  ): Promise<NavigationItemCategoryLinkDoc | undefined> {
+    item: string | InputNavigationCategoryLinkDoc,
+  ): Promise<NavigationCategoryLinkDoc | undefined> {
     if (typeof item === "string") {
       return this.resolveLink(item);
     }
@@ -131,9 +140,9 @@ export class NavigationResolver {
   }
 
   private async resolveNavigationItemDoc(
-    item: string | BaseInputNavigationItemDoc,
+    item: string | InputNavigationDoc,
     categoryLabel?: string,
-  ): Promise<NavigationItemDoc | undefined> {
+  ): Promise<NavigationDoc | undefined> {
     if (typeof item === "string") {
       return this.resolveDoc(item, categoryLabel);
     }
@@ -157,11 +166,11 @@ export class NavigationResolver {
       case "custom-page":
         return item;
       case "category": {
-        const categoryItem: InputNavigationItemCategory = item;
+        const categoryItem = item;
 
         const items = (
           await Promise.all(
-            categoryItem.items.map((subItem) =>
+            (categoryItem.items as InputNavigationItem[]).map((subItem) =>
               this.resolveItem(subItem, categoryItem.label),
             ),
           )

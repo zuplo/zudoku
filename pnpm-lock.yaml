@@ -139,6 +139,12 @@ importers:
       '@clerk/clerk-js':
         specifier: ^5.43.4
         version: 5.68.0(@types/react@19.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react:
+        specifier: 'catalog:'
+        version: 19.1.0
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.1.0(react@19.1.0)
     devDependencies:
       '@mdx-js/react':
         specifier: 3.0.1
@@ -146,12 +152,9 @@ importers:
       '@types/react':
         specifier: 'catalog:'
         version: 19.1.1
-      react:
+      '@types/react-dom':
         specifier: 'catalog:'
-        version: 19.1.0
-      react-dom:
-        specifier: 'catalog:'
-        version: 19.1.0(react@19.1.0)
+        version: 19.1.2(@types/react@19.1.1)
       zudoku:
         specifier: workspace:*
         version: link:../../packages/zudoku
@@ -275,6 +278,12 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.13.5
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.1.1
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.1.2(@types/react@19.1.1)
       typescript:
         specifier: ^5
         version: 5.8.3
@@ -690,11 +699,11 @@ importers:
         specifier: 17.7.2
         version: 17.7.2
       zod:
-        specifier: 3.25.51
-        version: 3.25.51
-      zod-validation-error:
-        specifier: 3.4.1
-        version: 3.4.1(zod@3.25.51)
+        specifier: 3.25.56
+        version: 3.25.56
+      zod-to-ts:
+        specifier: 1.2.0
+        version: 1.2.0(typescript@5.8.3)(zod@3.25.56)
       zustand:
         specifier: 5.0.5
         version: 5.0.5(@types/react@19.1.1)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0))
@@ -8952,14 +8961,14 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod-validation-error@3.4.1:
-    resolution: {integrity: sha512-1KP64yqDPQ3rupxNv7oXhf7KdhHHgaqbKuspVoiN93TT0xrBjql+Svjkdjq/Qh/7GSMmgQs3AfvBT0heE35thw==}
-    engines: {node: '>=18.0.0'}
+  zod-to-ts@1.2.0:
+    resolution: {integrity: sha512-x30XE43V+InwGpvTySRNz9kB7qFU8DlyEy7BsSTCHPH1R0QasMmHWZDCzYm6bVXtj/9NNJAZF3jW8rzFvH5OFA==}
     peerDependencies:
-      zod: ^3.24.4
+      typescript: ^4.9.4 || ^5.0.2
+      zod: ^3
 
-  zod@3.25.51:
-    resolution: {integrity: sha512-TQSnBldh+XSGL+opiSIq0575wvDPqu09AqWe1F7JhUMKY+M91/aGlK4MhpVNO7MgYfHcVCB1ffwAUTJzllKJqg==}
+  zod@3.25.56:
+    resolution: {integrity: sha512-rd6eEF3BTNvQnR2e2wwolfTmUTnp70aUTqr0oaGbHifzC3BKJsoV+Gat8vxUMR1hwOKBs6El+qWehrHbCpW6SQ==}
 
   zustand@5.0.5:
     resolution: {integrity: sha512-mILtRfKW9xM47hqxGIxCv12gXusoY/xTSHBYApXozR0HmQv299whhBeeAcRy+KrPPybzosvJBCOmVjq6x12fCg==}
@@ -19031,11 +19040,12 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-validation-error@3.4.1(zod@3.25.51):
+  zod-to-ts@1.2.0(typescript@5.8.3)(zod@3.25.56):
     dependencies:
-      zod: 3.25.51
+      typescript: 5.8.3
+      zod: 3.25.56
 
-  zod@3.25.51: {}
+  zod@3.25.56: {}
 
   zustand@5.0.5(@types/react@19.1.1)(react@19.1.0)(use-sync-external-store@1.5.0(react@19.1.0)):
     optionalDependencies:
