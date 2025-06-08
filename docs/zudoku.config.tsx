@@ -7,6 +7,8 @@ import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
 
+const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
+
 const config: ZudokuConfig = {
   basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
@@ -58,20 +60,22 @@ const config: ZudokuConfig = {
     { from: "/getting-started", to: "/app-quickstart" },
     { from: "/components", to: "/components/callout" },
   ],
-  topNavigation: [
-    { id: "docs", label: "Documentation" },
-    { id: "components", label: "Components" },
-    { id: "theme-playground", label: "Themes" },
-  ],
-  sidebar: {
-    docs,
-    components,
-  },
-  customPages: [
+  navigation: [
     {
-      path: "theme-playground",
-      render: lazy(() => import("./src/ThemeEditor.js")),
-      prose: false,
+      type: "category",
+      label: "Documentation",
+      items: docs,
+    },
+    {
+      type: "category",
+      label: "Components",
+      items: components,
+    },
+    {
+      type: "custom-page",
+      path: "/theme-playground",
+      label: "Themes",
+      element: <ThemePlayground />,
     },
   ],
   plugins: [
@@ -117,6 +121,6 @@ const config: ZudokuConfig = {
       </div>
     ),
   },
-};
+} satisfies ZudokuConfig;
 
 export default config;
