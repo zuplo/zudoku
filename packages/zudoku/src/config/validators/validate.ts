@@ -483,7 +483,13 @@ export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
-export type ZudokuConfig = z.input<typeof ZudokuConfig>;
+
+// Use `z.input` type for flexibility with transforms,
+// but override navigation with `z.infer` for strict validation
+type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
+export type ZudokuConfig = Omit<BaseZudokuConfig, "navigation"> & {
+  navigation?: z.infer<typeof InputNavigationSchema>;
+};
 
 export function validateConfig(config: unknown) {
   const validationResult = ZudokuConfig.safeParse(config);

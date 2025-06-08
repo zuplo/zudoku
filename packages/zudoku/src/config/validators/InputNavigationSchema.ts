@@ -56,7 +56,8 @@ const InputNavigationCustomPageSchema = z.object({
   display: DisplaySchema,
 });
 
-const InputNavigationCategorySchema = z.object({
+// Base category schema without items
+const BaseInputNavigationCategorySchema = z.object({
   type: z.literal("category"),
   icon: IconSchema.optional(),
   label: z.string(),
@@ -65,24 +66,32 @@ const InputNavigationCategorySchema = z.object({
   collapsed: z.boolean().optional(),
   link: InputNavigationCategoryLinkDocSchema.optional(),
   display: DisplaySchema,
-  get items() {
-    return z.array(
-      // needs to be `.or` here: https://github.com/colinhacks/zod/issues/4610
-      InputNavigationDocSchema.or(InputNavigationLinkSchema)
-        .or(InputNavigationCategorySchema)
-        .or(InputNavigationCustomPageSchema),
-    );
-  },
 });
 
-const InputNavigationItemSchema = z.union([
+export type InputNavigationItem =
+  | z.infer<typeof InputNavigationDocSchema>
+  | z.infer<typeof InputNavigationLinkSchema>
+  | z.infer<typeof InputNavigationCustomPageSchema>
+  | (z.infer<typeof BaseInputNavigationCategorySchema> & {
+      items: InputNavigationItem[];
+    });
+
+const InputNavigationCategorySchema: z.ZodType<
+  z.infer<typeof BaseInputNavigationCategorySchema> & {
+    items: InputNavigationItem[];
+  }
+> = BaseInputNavigationCategorySchema.extend({
+  items: z.lazy(() => InputNavigationItemSchema.array()),
+});
+
+const InputNavigationItemSchema: z.ZodType<InputNavigationItem> = z.union([
   InputNavigationDocSchema,
   InputNavigationLinkSchema,
   InputNavigationCustomPageSchema,
   InputNavigationCategorySchema,
 ]);
 
-export const InputNavigationSchema = z.array(InputNavigationItemSchema);
+export const InputNavigationSchema = InputNavigationItemSchema.array();
 
 export type InputNavigationDoc = z.infer<typeof InputNavigationDocSchema>;
 export type InputNavigationLink = z.infer<typeof InputNavigationLinkSchema>;
@@ -90,11 +99,10 @@ export type InputNavigationCustomPage = z.infer<
   typeof InputNavigationCustomPageSchema
 >;
 export type InputNavigationCategory = z.infer<
-  typeof InputNavigationCategorySchema
->;
+  typeof BaseInputNavigationCategorySchema
+> & { items: InputNavigationItem[] };
 export type InputNavigationCategoryLinkDoc = z.infer<
   typeof InputNavigationCategoryLinkDocSchema
 >;
 
-export type InputNavigationItem = z.infer<typeof InputNavigationItemSchema>;
 export type InputNavigation = z.infer<typeof InputNavigationSchema>;
