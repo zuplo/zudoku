@@ -1014,6 +1014,7 @@
             "name": "holdDuration",
             "in": "query",
             "description": "Duration to hold the shipment",
+            "example": "2017-07-21T17:32:28Z",
             "schema": {
               "type": "string",
               "format": "date-time"
@@ -1031,6 +1032,7 @@
             "name": "shipmentId",
             "in": "path",
             "required": true,
+            "example": "123e4567-e89b-12d3-a456-426614174000",
             "schema": {
               "type": "string",
               "format": "uuid"

@@ -39,14 +39,16 @@ export const PlaygroundDialogWrapper = ({
       isRequired: p.required ?? false,
       enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
-      defaultValue: p.schema?.default,
+      defaultValue:
+        p.schema?.default ?? p.examples?.find((x) => x.value)?.value,
     }));
 
   const pathParams = operation.parameters
     ?.filter((p) => p.in === "path")
     .map((p) => ({
       name: p.name,
-      defaultValue: p.schema?.default,
+      defaultValue:
+        p.schema?.default ?? p.examples?.find((x) => x.value)?.value,
     }));
 
   return (
