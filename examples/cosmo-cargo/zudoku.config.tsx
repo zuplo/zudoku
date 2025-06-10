@@ -104,14 +104,13 @@ const config: ZudokuConfig = {
     {
       type: "custom-page",
       path: "/",
-      label: "Home",
       element: <Landingpage />,
     },
     {
       type: "category",
-      label: "Space Operations",
-      link: "global",
+      label: "Documentation",
       items: [
+        "documentation",
         {
           type: "category",
           icon: "telescope",
