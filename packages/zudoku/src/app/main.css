@@ -114,6 +114,11 @@
     @apply h-full overscroll-none;
   }
 
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
   details summary {
     @apply cursor-pointer;
   }
