@@ -317,6 +317,17 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignOut: z.string().optional(),
   }),
   z.object({
+    type: z.literal("azureb2c"),
+    clientId: z.string(),
+    tenantName: z.string(),
+    policyName: z.string(),
+    scopes: z.array(z.string()).optional(),
+    issuer: z.string(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
+  z.object({
     type: z.literal("auth0"),
     clientId: z.string(),
     domain: z.string().refine(

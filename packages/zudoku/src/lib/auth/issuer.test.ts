@@ -69,6 +69,22 @@ describe("getIssuer", () => {
     expect(result).toBe("https://example.com/auth");
   });
 
+  it("should return azureb2c issuer for azureb2c authentication", async () => {
+    const config: ZudokuConfig = {
+      authentication: {
+        type: "azureb2c",
+        tenantName: "example",
+        policyName: "B2C_1_SignUpSignIn",
+        issuer: "https://example.b2clogin.com/example.onmicrosoft.com/v2.0/",
+        clientId: "test-client-id",
+      },
+    };
+    const result = await getIssuer(config);
+    expect(result).toBe(
+      "https://example.b2clogin.com/example.onmicrosoft.com/v2.0/",
+    );
+  });
+
   it("should return supabase URL for supabase authentication", async () => {
     const config: ZudokuConfig = {
       authentication: {
