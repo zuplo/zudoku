@@ -21,7 +21,11 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    { id: "api", label: "Rick & Morty API" },
+    {
+      type: "link",
+      to: "https://rickandmorty.zuplo.io",
+      label: "Rick & Morty API",
+    },
   ],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   apis: {

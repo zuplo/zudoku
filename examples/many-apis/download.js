@@ -101,7 +101,7 @@ async function main() {
   const navigation = results.map(({ info }) => ({
     type: "link",
     label: info.title || "Untitled API",
-    href: slugify(info.title || "untitled-api"),
+    to: slugify(info.title || "untitled-api"),
   }));
 
   fs.writeFileSync(APIS_FILE, JSON.stringify(apis, null, 2), "utf-8");

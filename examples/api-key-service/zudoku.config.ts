@@ -16,8 +16,8 @@ const config: ZudokuConfig = {
     },
   ],
   navigation: [
-    { id: "documentation/introduction", label: "Introduction" },
-    { href: "api", label: "Demo API", type: "link" },
+    "documentation/introduction",
+    { type: "link", to: "api", label: "Demo API" },
   ],
   docs: {
     files: "/pages/**/*.mdx",

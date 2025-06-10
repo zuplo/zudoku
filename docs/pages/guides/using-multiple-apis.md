@@ -39,12 +39,12 @@ const navigation = [
   {
     type: "link",
     label: "My First API",
-    href: "my-first-api",
+    to: "my-first-api",
   },
   {
     type: "link",
     label: "My Second API",
-    href: "my-second-api",
+    to: "my-second-api",
   },
 ] as const;
 ```

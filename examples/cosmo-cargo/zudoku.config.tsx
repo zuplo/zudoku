@@ -98,6 +98,7 @@ const config: ZudokuConfig = {
       },
     },
   },
+  plugins: [new CosmoCargoApiIdentityPlugin()],
   protectedRoutes: ["/only-members"],
   navigation: [
     {
@@ -107,24 +108,10 @@ const config: ZudokuConfig = {
       element: <Landingpage />,
     },
     {
-      type: "custom-page",
-      path: "/only-members",
-      label: "Only members",
-      display: "auth",
-      element: <div>Only members allowed</div>,
-    },
-    {
       type: "category",
       label: "Space Operations",
       link: "global",
       items: [
-        {
-          type: "custom-page",
-          path: "/space-operations",
-          icon: "telescope",
-          label: "Space Operations",
-          element: <div>Space Operations lul</div>,
-        },
         {
           type: "category",
           icon: "telescope",
@@ -143,13 +130,20 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      href: "api-shipments",
+      to: "api-shipments",
       label: "Shipments",
     },
     {
       type: "link",
-      href: "/catalog",
+      to: "/catalog",
       label: "API Catalog",
+    },
+    {
+      type: "custom-page",
+      path: "/only-members",
+      label: "Only members",
+      display: "auth",
+      element: <div>Only members are allowed in here.</div>,
     },
   ],
   catalogs: {

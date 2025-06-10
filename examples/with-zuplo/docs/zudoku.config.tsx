@@ -34,7 +34,7 @@ const config: ZudokuConfig = {
                 color: "purple",
               },
               label: "API Reference",
-              href: "/api",
+              to: "/api",
             },
           ],
         },
@@ -47,12 +47,12 @@ const config: ZudokuConfig = {
             {
               type: "link",
               label: "Zuplo Docs",
-              href: "https://zuplo.com/docs/dev-portal/introduction",
+              to: "https://zuplo.com/docs/dev-portal/introduction",
             },
             {
               type: "link",
               label: "Developer Portal Docs",
-              href: "https://zuplo.com/docs/dev-portal/introduction",
+              to: "https://zuplo.com/docs/dev-portal/introduction",
             },
           ],
         },
@@ -60,7 +60,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      href: "/api",
+      to: "/api",
       label: "API Reference",
     },
   ],

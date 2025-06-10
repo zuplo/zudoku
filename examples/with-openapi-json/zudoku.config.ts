@@ -8,7 +8,7 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
-  navigation: [{ label: "Rick & Morty API", type: "link", href: "api" }],
+  navigation: [{ label: "Rick & Morty API", type: "link", to: "/api" }],
   redirects: [{ from: "/", to: "/api" }],
   apis: {
     type: "file",

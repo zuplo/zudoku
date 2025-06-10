@@ -38,7 +38,7 @@ const getItemPath = (item: NavigationItem) => {
     case "category":
       return item.link ? joinUrl(item.link.path) : undefined;
     case "link":
-      return item.href;
+      return item.to;
     case "custom-page":
       return item.path;
     default:
