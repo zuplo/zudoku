@@ -125,7 +125,8 @@ For Azure B2C authentication, you will need to provide your Azure B2C tenant nam
     clientId: "<your-azure-b2c-client-id>",
     tenantName: "<your-tenant-name>",
     policyName: "<your-policy-name>",
-    scopes: ["openid", "profile", "email", "custom_scope"] // Optional custom scopes
+    issuer: "<your-issuer-url>",
+    scopes: ["openid", "profile", "email", "custom_scope"]
   },
   // ...
 }
