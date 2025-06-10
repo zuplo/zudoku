@@ -218,8 +218,13 @@ const SiteMapSchema = z
   })
   .optional();
 
-const DocsConfigSchema = z.object({
-  files: z.string(),
+const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
+
+export const DocsConfigSchema = z.object({
+  files: z
+    .union([z.string(), z.array(z.string())])
+    .transform((val) => (typeof val === "string" ? [val] : val))
+    .default([DEFAULT_DOCS_FILES]),
   defaultOptions: z
     .object({
       toc: z.boolean(),
@@ -461,7 +466,7 @@ const BaseConfigSchema = z.object({
   metadata: MetadataSchema,
   authentication: AuthenticationSchema,
   search: SearchSchema,
-  docs: z.union([DocsConfigSchema, z.array(DocsConfigSchema)]),
+  docs: DocsConfigSchema.optional(),
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
   catalogs: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,

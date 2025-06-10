@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/consistent-type-imports */
 
-declare module "virtual:zudoku-docs-plugins" {
-  export const configuredDocsPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
+declare module "virtual:zudoku-docs-plugin" {
+  export const configuredDocsPlugin:
+    | import("./lib/core/plugins.ts").ZudokuPlugin
+    | undefined;
   /**
    * Map of markdown files and imports
    */

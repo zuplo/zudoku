@@ -64,7 +64,7 @@ export const viteNavigationPlugin = (): Plugin => {
 
       const resolver = new NavigationResolver(
         config.__meta.rootDir,
-        ensureArray(config.docs ?? []).flatMap((doc) => doc.files),
+        ensureArray(config.docs?.files ?? []),
       );
       const resolvedNavigation = await resolver.resolve(
         config.navigation ?? [],
