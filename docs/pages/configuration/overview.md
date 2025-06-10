@@ -16,24 +16,19 @@ Below is an example of the default Zudoku configuration. You can edit this confi
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
-  topNavigation: [
-    { id: "docs", label: "Documentation" },
-    { id: "api", label: "API Reference" },
+  navigation: [
+    {
+      type: "category",
+      label: "Documentation",
+      items: ["introduction", "example"],
+    },
+    { type: "link", href: "api", label: "API Reference" },
   ],
-  sidebar: {
-    docs: [
-      {
-        type: "category",
-        label: "Overview",
-        items: ["introduction", "example"],
-      },
-    ],
-  },
   redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: {
     type: "file",
     input: "./apis/openapi.yaml",
-    navigationId: "api",
+    path: "api",
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",
@@ -55,7 +50,7 @@ There are multiple options for referencing your OpenAPI document. The example be
   "apis": {
     "type": "url",
     "input": "https://rickandmorty.zuplo.io/openapi.json",
-    "navigationId": "api"
+    "path": "api"
   }
   // ...
 }
@@ -84,50 +79,17 @@ Controls global page attributes across the site, including logos and the site ti
 }
 ```
 
-### `topNavigation`
+### `navigation`
 
-Defines the links and headings for the top horizontal navigation that persists through every page on the site. For full details on the options available, see the [Navigation](./navigation.mdx) page.
-
-_Note: `topNavigation` will only display if there is more than one item in the navigation_
-
-**Example:**
+Defines navigation for both the top bar and the sidebar. Items can be categories, links or custom pages.
 
 ```json
 {
   // ...
-  "topNavigation": [
-    { "id": "documentation", "label": "Documentation" },
-    { "id": "api", "label": "API Reference" }
+  "navigation": [
+    { "type": "category", "label": "Docs", "items": ["introduction"] },
+    { "type": "link", "href": "api", "label": "API Reference" }
   ]
-  // ...
-}
-```
-
-### `sidebar`
-
-Defines the sidebar navigation including top level categories and their sub pages. For full details on the options available, see the [Navigation](./navigation.mdx) page.
-
-The example below uses a key of `documentation` which can be referenced as an `id` in `topNavigation`.
-
-**Example:**
-
-```json
-{
-  // ...
-  "sidebar": {
-    "documentation": [
-      {
-        "type": "category",
-        "label": "Zudoku",
-        "items": ["introduction"]
-      },
-      {
-        "type": "category",
-        "label": "Getting started",
-        "items": ["getting-started", "installation", "configuration"]
-      }
-    ]
-  }
   // ...
 }
 ```
@@ -341,33 +303,31 @@ This option is enabled by default, but you can disable it if you don't need thes
 
 The configuration file is a standard JavaScript or TypeScript file, so you can split it into multiple files if you prefer. This can be useful if you have a large configuration or want to keep your code organized.
 
-For example, if you wanted to move your sidebar configuration to a separate file, you could create a new file called `sidebar.ts` and export the sidebar configuration from there.
+For example, if you wanted to move your navigation configuration to a separate file, you could create a new file called `navigation.ts` and export the navigation configuration from there.
 
 ```ts
-// sidebar.ts
-import type { Sidebar } from "zudoku";
+// navigation.ts
+import type { NavigationItem } from "zudoku";
 
-export const sidebar: Record<string, Sidebar> = {
-  documentation: [
-    {
-      type: "category",
-      label: "Overview",
-      items: ["example", "other-example"],
-    },
-  ],
-};
+export const navigation: NavigationItem[] = [
+  {
+    type: "category",
+    label: "Documentation",
+    items: ["example", "other-example"],
+  },
+];
 ```
 
-Then you can import the sidebar configuration into your main configuration file.
+Then you can import the navigation configuration into your main configuration file.
 
 ```ts
 // zudoku.config.ts
 import type { ZudokuConfig } from "zudoku";
-import { sidebar } from "./sidebar";
+import { navigation } from "./navigation";
 
 const config = {
   // ...
-  sidebar,
+  navigation,
   // ...
 };
 

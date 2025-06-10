@@ -52,6 +52,7 @@ export const docs: SidebarEntry = [
       "guides/static-files",
       "guides/environment-variables",
       "guides/custom-pages",
+      "guides/navigation-migration",
       "guides/using-multiple-apis",
       "guides/managing-api-keys-and-identities",
       "guides/transforming-examples",

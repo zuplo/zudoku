@@ -13,7 +13,7 @@ The first step to enable the API Catalog, you need to add a `catalogs` object to
 const config = {
   // ...
   catalogs: {
-    navigationId: "catalog",
+    path: "catalog",
     label: "API Catalog",
   },
   // ...
@@ -30,19 +30,19 @@ const config = {
     {
       type: "file",
       input: "./operational.json",
-      navigationId: "api-operational",
+      path: "api-operational",
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      navigationId: "api-enduser",
+      path: "api-enduser",
       categories: [{ label: "General", tags: ["End-User"] }],
     },
     {
       type: "file",
       input: "./openapi.json",
-      navigationId: "api-auth",
+      path: "api-auth",
       categories: [{ label: "Other", tags: ["Authentication"] }],
     },
     // ...
@@ -61,7 +61,7 @@ You can select which APIs are shown in the catalog by using the `items` property
 const config = {
   // ...
   catalogs: {
-    navigationId: "catalog",
+    path: "catalog",
     label: "API Catalog",
     // Only show the operational API in the catalog
     items: ["api-operational"],
@@ -71,13 +71,13 @@ const config = {
     {
       type: "file",
       input: "./operational.json",
-      navigationId: "api-operational",
+      path: "api-operational",
       categories: [{ label: "General", tags: ["Operational"] }],
     },
     {
       type: "file",
       input: "./enduser.json",
-      navigationId: "api-enduser",
+      path: "api-enduser",
       categories: [{ label: "General", tags: ["End-User"] }],
     },
   ],
@@ -93,7 +93,7 @@ You can filter which APIs are shown in the catalog by using the `filterItems` pr
 const config = {
   // ...
   catalogs: {
-    navigationId: "catalog",
+    path: "catalog",
     label: "API Catalog",
     filterItems: (items, { auth: AuthState }) => {
       return items.filter((items) => items.tags.includes(auth));
