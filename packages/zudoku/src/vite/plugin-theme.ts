@@ -70,6 +70,7 @@ const processRegistryCustomCss = (css: RegistryItemCss): string => {
 };
 
 const MAIN_REPLACE = "/* @vite-plugin-inject main */";
+const DEFAULT_THEME_REPLACE = "/* @vite-plugin-inject defaultTheme */";
 
 // prettier-ignore
 export const GOOGLE_FONTS = [
@@ -316,19 +317,17 @@ export const viteThemePlugin = (): Plugin => {
         `  --font-sans: var(--font-sans);`,
         `  --font-mono: var(--font-mono);`,
         `  --font-serif: var(--font-serif);`,
-        `  --shadow-2xs: var(--shadow-2xs);`,
-        `  --shadow-xs: var(--shadow-xs);`,
-        `  --shadow-sm: var(--shadow-sm);`,
-        `  --shadow: var(--shadow);`,
-        `  --shadow-md: var(--shadow-md);`,
-        `  --shadow-lg: var(--shadow-lg);`,
-        `  --shadow-xl: var(--shadow-xl);`,
-        `  --shadow-2xl: var(--shadow-2xl);`,
       );
 
       code.push("}");
 
-      return src.replace(MAIN_REPLACE, code.join("\n"));
+      const defaultThemeImport = config.theme?.noDefaultTheme
+        ? ""
+        : '@import "./defaultTheme.css" layer(theme);';
+
+      return src
+        .replace(DEFAULT_THEME_REPLACE, defaultThemeImport)
+        .replace(MAIN_REPLACE, code.join("\n"));
     },
   };
 };

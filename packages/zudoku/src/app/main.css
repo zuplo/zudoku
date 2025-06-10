@@ -1,4 +1,4 @@
-@import "./defaultTheme.css" layer(theme);
+/* @vite-plugin-inject defaultTheme */
 @import "tailwindcss" source("..");
 
 /* @vite-plugin-inject main */

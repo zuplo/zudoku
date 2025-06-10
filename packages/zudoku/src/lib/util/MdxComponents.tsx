@@ -1,6 +1,7 @@
 import { type MDXComponents } from "mdx/types.js";
 import { CodeBlock } from "zudoku/ui/CodeBlock.js";
 import { AnchorLink } from "../components/AnchorLink.js";
+import { FramedImage } from "../components/FramedImage.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { Button } from "../ui/Button.js";
@@ -14,10 +15,20 @@ export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 export const MdxComponents = {
   img: ({ node, ...props }) => {
     if (/\.(mp4|webm|mov|avi)$/.test(props.src ?? "")) {
-      return <video src={props.src} controls playsInline autoPlay loop />;
+      return (
+        <video
+          src={props.src}
+          controls
+          playsInline
+          autoPlay
+          loop
+          className={cn("rounded-lg", props.className)}
+        />
+      );
     }
-    return <img {...props} className={cn("rounded-md", props.className)} />;
+    return <img {...props} className={cn("rounded-lg", props.className)} />;
   },
+  FramedImage,
   h1: ({ children, id }) => (
     <Heading level={1} id={id}>
       {children}

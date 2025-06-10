@@ -421,6 +421,7 @@ const ThemeConfigSchema = z.object({
   light: ThemeSchema.optional(),
   dark: ThemeSchema.optional(),
   fonts: FontsConfigSchema.optional(),
+  noDefaultTheme: z.boolean().optional(),
 });
 
 const PageSchema = z
