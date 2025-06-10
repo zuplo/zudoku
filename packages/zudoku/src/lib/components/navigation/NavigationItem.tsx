@@ -106,7 +106,7 @@ export const NavigationItem = ({
       );
     case "link":
     case "custom-page": {
-      const href = item.type === "link" ? item.href : item.path;
+      const href = item.type === "link" ? item.to : item.path;
       return !href.startsWith("http") ? (
         <AnchorLink
           to={{

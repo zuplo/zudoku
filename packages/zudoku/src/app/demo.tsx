@@ -39,7 +39,7 @@ const config = {
   navigation: [
     {
       type: "link",
-      href: "/",
+      to: "/",
       label: "API Reference",
     },
   ],

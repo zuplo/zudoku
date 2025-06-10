@@ -35,7 +35,7 @@ const config = {
     {
       type: "link",
       label: "API Reference",
-      href: "/",
+      to: "/",
     },
   ],
   plugins: [

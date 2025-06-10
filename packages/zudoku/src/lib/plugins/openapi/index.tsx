@@ -178,7 +178,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
           categories.push({
             type: "link" as const,
             label: "Schemas",
-            href: joinUrl(basePath, versionParam, "~schemas"),
+            to: joinUrl(basePath, versionParam, "~schemas"),
           });
         }
 

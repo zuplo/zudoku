@@ -43,7 +43,7 @@ const getPathForItem = (item: NavigationItem): string => {
     case "doc":
       return joinUrl(item.path);
     case "link":
-      return item.href;
+      return item.to;
     case "category": {
       if (item.link?.path) {
         return joinUrl(item.link.path);

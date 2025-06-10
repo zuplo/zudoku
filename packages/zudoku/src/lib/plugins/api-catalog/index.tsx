@@ -76,7 +76,7 @@ export const apiCatalogPlugin = ({
         collapsible: false,
         items: category.tags.map((tag) => ({
           type: "link",
-          href: joinUrl(path, getKey(category.label, tag)),
+          to: joinUrl(path, getKey(category.label, tag)),
           label: tag,
           badge: {
             label: String(
@@ -91,7 +91,7 @@ export const apiCatalogPlugin = ({
 
       navigation.unshift({
         type: "link",
-        href: joinUrl(path),
+        to: joinUrl(path),
         label: "Overview",
         badge: { label: String(items.length), color: "outline" },
       });

@@ -19,9 +19,10 @@ export const Navigation = ({
         <NavigationItem
           key={
             item.type +
-            ("id" in item ? item.id : "") +
-            ("href" in item ? item.href : "") +
-            item.label
+            (item.label ?? "") +
+            ("path" in item ? item.path : "") +
+            ("file" in item ? item.file : "") +
+            ("to" in item ? item.to : "")
           }
           item={item}
         />

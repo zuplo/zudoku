@@ -24,7 +24,7 @@ describe("InputNavigationSchema types", () => {
     const linkObject = {
       type: "link",
       label: "External Link",
-      href: "https://example.com",
+      to: "https://example.com",
       icon: "external-link",
       description: "Link description",
       badge: { label: "External", color: "blue" },
@@ -55,7 +55,7 @@ describe("InputNavigationSchema types", () => {
       items: [
         "doc.md",
         { type: "doc", file: "test.md" },
-        { type: "link", label: "Link", href: "https://example.com" },
+        { type: "link", label: "Link", to: "https://example.com" },
         { type: "category", label: "Nested", items: ["nested.md"] },
       ],
     } satisfies InputNavigationCategory;
@@ -93,7 +93,7 @@ describe("InputNavigationSchema types", () => {
     // Test that all valid types are assignable
     assertType<InputNavigationItem>("doc.md");
     assertType<InputNavigationItem>({ type: "doc", file: "test.md" });
-    assertType<InputNavigationItem>({ type: "link", label: "Link", href: "/" });
+    assertType<InputNavigationItem>({ type: "link", label: "Link", to: "/" });
     assertType<InputNavigationItem>({
       type: "category",
       label: "C",
@@ -121,7 +121,7 @@ describe("InputNavigationSchema types", () => {
     const link = {
       type: "link",
       label: "Test Link",
-      href: "https://example.com",
+      to: "https://example.com",
     } satisfies InputNavigationLink;
     assertType<InputNavigationLink>(link);
 

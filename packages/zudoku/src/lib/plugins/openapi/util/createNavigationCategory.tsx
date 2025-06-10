@@ -19,6 +19,7 @@ export const createNavigationCategory = ({
   label,
   link: {
     type: "doc" as const,
+    path,
     file: path,
     label,
   },
@@ -27,7 +28,7 @@ export const createNavigationCategory = ({
   items: operations.map((operation) => ({
     type: "link" as const,
     label: operation.summary ?? operation.path,
-    href: `${path}#${operation.slug}`,
+    to: `${path}#${operation.slug}`,
     badge: {
       label: operation.method,
       color: MethodColorMap[operation.method.toLowerCase()]!,

@@ -125,9 +125,11 @@ const NavigationCategoryInner = ({
           {category.items.map((item) => (
             <NavigationItem
               key={
+                item.type +
+                (item.label ?? "") +
+                ("path" in item ? item.path : "") +
                 ("file" in item ? item.file : "") +
-                ("href" in item ? item.href : "") +
-                item.label
+                ("to" in item ? item.to : "")
               }
               onRequestClose={onRequestClose}
               item={item}

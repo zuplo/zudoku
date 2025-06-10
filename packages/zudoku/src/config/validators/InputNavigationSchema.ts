@@ -40,9 +40,9 @@ const InputNavigationDocSchema = z.union([
 
 const InputNavigationLinkSchema = z.object({
   type: z.literal("link"),
-  icon: IconSchema.optional(),
+  to: z.string(),
   label: z.string(),
-  href: z.string(),
+  icon: IconSchema.optional(),
   description: z.string().optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
