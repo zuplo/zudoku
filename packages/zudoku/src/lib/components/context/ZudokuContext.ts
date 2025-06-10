@@ -34,9 +34,9 @@ export const useApiIdentities = () => {
 const getItemPath = (item: NavigationItem) => {
   switch (item.type) {
     case "doc":
-      return joinUrl(item.file);
+      return joinUrl(item.path);
     case "category":
-      return item.link ? joinUrl(item.link.file) : undefined;
+      return item.link ? joinUrl(item.link.path) : undefined;
     case "link":
       return item.href;
     case "custom-page":

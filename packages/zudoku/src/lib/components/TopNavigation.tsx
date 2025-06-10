@@ -41,12 +41,12 @@ export const TopNavigation = () => {
 const getPathForItem = (item: NavigationItem): string => {
   switch (item.type) {
     case "doc":
-      return joinUrl(item.file);
+      return joinUrl(item.path);
     case "link":
       return item.href;
     case "category": {
-      if (item.link?.file) {
-        return joinUrl(item.link.file);
+      if (item.link?.path) {
+        return joinUrl(item.link.path);
       }
 
       return (

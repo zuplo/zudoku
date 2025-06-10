@@ -27,7 +27,7 @@ const NavigationCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(category.link?.file ?? "");
+  const isActive = useMatch(category.link?.path ?? "");
 
   useEffect(() => {
     // this is triggered when an item from the navigation is clicked
@@ -85,7 +85,7 @@ const NavigationCategoryInner = ({
         {category.link?.type === "doc" ? (
           <NavLink
             to={{
-              pathname: joinUrl(category.link.file),
+              pathname: joinUrl(category.link.path),
               search: location.search,
             }}
             className={styles}

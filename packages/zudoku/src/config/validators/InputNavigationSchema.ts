@@ -29,6 +29,8 @@ const InputNavigationDocSchema = z.union([
   z.object({
     type: z.literal("doc"),
     file: z.string(),
+    // Custom URL path for this document (overrides file-based path)
+    path: z.string().optional(),
     icon: IconSchema.optional(),
     label: z.string().optional(),
     badge: BadgeSchema.optional(),
@@ -49,7 +51,7 @@ const InputNavigationLinkSchema = z.object({
 const InputNavigationCustomPageSchema = z.object({
   type: z.literal("custom-page"),
   path: z.string(),
-  label: z.string(),
+  label: z.string().optional(),
   element: z.any(),
   icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),

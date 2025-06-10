@@ -46,7 +46,7 @@ export const useCurrentItem = () => {
   const { navigation } = useCurrentNavigation();
 
   return traverseNavigation(navigation, (item) => {
-    if (item.type === "doc" && joinUrl(item.file) === location.pathname) {
+    if (item.type === "doc" && joinUrl(item.path) === location.pathname) {
       return item;
     }
   });
@@ -57,14 +57,14 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
 
   return traverseNavigationItem(category, (item) => {
     if (item.type === "category" && item.link) {
-      const categoryLinkPath = joinUrl(item.link.file);
+      const categoryLinkPath = joinUrl(item.link.path);
       if (categoryLinkPath === location.pathname) {
         return true;
       }
     }
 
     if (item.type === "doc") {
-      const docPath = joinUrl(item.file);
+      const docPath = joinUrl(item.path);
       if (docPath === location.pathname) {
         return true;
       }
@@ -87,9 +87,9 @@ export const usePrevNext = (): {
   traverseNavigation(navigation, (item) => {
     const itemId =
       item.type === "doc"
-        ? joinUrl(item.file)
+        ? joinUrl(item.path)
         : item.type === "category" && item.link
-          ? joinUrl(item.link.file)
+          ? joinUrl(item.link.path)
           : undefined;
 
     if (!itemId) return;

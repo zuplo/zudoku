@@ -78,7 +78,7 @@ const viteDocsPlugin = (): Plugin => {
         }
       }
 
-      // Resolve navigation to get custom paths
+      // Resolve navigation to get custom paths as in `plugin-navigation.ts`
       if (config.navigation) {
         const resolver = new NavigationResolver(
           config.__meta.rootDir,
@@ -88,7 +88,7 @@ const viteDocsPlugin = (): Plugin => {
 
         // Collect custom paths from navigation
         traverseNavigation(resolvedNavigation, (item) => {
-          if (item.type === "doc" && item.path && item.path !== item.file) {
+          if (item.type === "doc" && item.path !== item.file) {
             // Find the import path for this file
             const fileRoutePath = ensureLeadingSlash(
               item.file.replace(/\.mdx?$/, ""),

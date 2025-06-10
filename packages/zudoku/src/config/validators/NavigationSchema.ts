@@ -24,14 +24,14 @@ type FinalNavigationCategoryLinkDoc = Extract<
 
 export type NavigationDoc = ReplaceFields<
   FinalNavigationDoc,
-  { label: string; categoryLabel?: string } & ResolvedIcon
+  { label: string; categoryLabel?: string; path: string } & ResolvedIcon
 >;
 
 export type NavigationLink = ReplaceFields<InputNavigationLink, ResolvedIcon>;
 
 export type NavigationCategoryLinkDoc = ReplaceFields<
   FinalNavigationCategoryLinkDoc,
-  { label: string } & ResolvedIcon
+  { label: string; path: string } & ResolvedIcon
 >;
 
 export type NavigationCategory = ReplaceFields<
@@ -113,6 +113,7 @@ export class NavigationResolver {
       label,
       icon,
       categoryLabel,
+      path: filePath,
     } satisfies NavigationDoc;
 
     return doc;
@@ -124,7 +125,7 @@ export class NavigationResolver {
     const doc = await this.resolveDoc(file);
 
     return doc
-      ? { type: "doc", file, label: doc.label, icon: doc.icon }
+      ? { type: "doc", file, label: doc.label, icon: doc.icon, path: doc.path }
       : undefined;
   }
 
@@ -136,7 +137,9 @@ export class NavigationResolver {
     }
 
     const doc = await this.resolveDoc(item.file);
-    return doc ? { ...item, label: doc.label, icon: doc.icon } : undefined;
+    return doc
+      ? { ...item, label: doc.label, icon: doc.icon, path: doc.path }
+      : undefined;
   }
 
   private async resolveNavigationItemDoc(
@@ -148,7 +151,7 @@ export class NavigationResolver {
     }
 
     const doc = await this.resolveDoc(item.file, categoryLabel);
-    return doc ? { ...doc, ...item } : undefined;
+    return doc ? { ...doc, ...item, path: item.path ?? doc.path } : undefined;
   }
 
   private async resolveItem(

@@ -87,14 +87,16 @@ export const NavigationItem = ({
           className={({ isActive, isPending }) =>
             navigationListItem({ isActive, isPending })
           }
-          to={joinUrl(item.file)}
+          to={joinUrl(item.path)}
           onClick={onRequestClose}
           end
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <TruncatedLabel label={item.label} className="flex-1" />
+              {item.label && (
+                <TruncatedLabel label={item.label} className="flex-1" />
+              )}
               <NavigationBadge {...item.badge} />
             </>
           ) : (
@@ -121,7 +123,7 @@ export const NavigationItem = ({
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <TruncatedLabel label={item.label} />
+              {item.label && <TruncatedLabel label={item.label} />}
               <NavigationBadge {...item.badge} />
             </>
           ) : (
