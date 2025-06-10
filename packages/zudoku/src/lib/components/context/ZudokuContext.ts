@@ -1,11 +1,12 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
+import { type NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS } from "../cache.js";
-import { traverseSidebar } from "../navigation/utils.js";
+import { traverseNavigation } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
   undefined,
@@ -30,8 +31,22 @@ export const useApiIdentities = () => {
   });
 };
 
+const getItemPath = (item: NavigationItem) => {
+  switch (item.type) {
+    case "doc":
+      return joinUrl(item.path);
+    case "category":
+      return item.link ? joinUrl(item.link.path) : undefined;
+    case "link":
+      return item.to;
+    case "custom-page":
+      return item.path;
+    default:
+      return undefined;
+  }
+};
 export const useCurrentNavigation = () => {
-  const { getPluginSidebar, sidebars, topNavigation, options } = useZudoku();
+  const { getPluginNavigation, navigation, options } = useZudoku();
   const location = useLocation();
   const auth = useAuth();
 
@@ -39,44 +54,24 @@ export const useCurrentNavigation = () => {
     matchPath(route, location.pathname),
   );
 
-  let currentSidebarItem = Object.entries(sidebars).find(([, sidebar]) => {
-    return traverseSidebar(sidebar, (item) => {
-      const itemId =
-        item.type === "doc"
-          ? joinUrl(item.id)
-          : item.type === "category" && item.link
-            ? joinUrl(item.link.id)
-            : undefined;
-
-      if (itemId === location.pathname) {
-        return item;
-      }
-    });
+  const navItem = traverseNavigation(navigation, (item, parentCategories) => {
+    if (getItemPath(item) === location.pathname) {
+      return parentCategories.at(0) ?? item;
+    }
   });
-  const currentTopNavItem =
-    topNavigation.find((t) => t.id === currentSidebarItem?.[0]) ??
-    topNavigation.find((item) => matchPath(item.id, location.pathname));
-
-  if (
-    currentTopNavItem &&
-    !currentSidebarItem &&
-    currentTopNavItem.id in sidebars
-  ) {
-    currentSidebarItem = ["", sidebars[currentTopNavItem.id]!];
-  }
 
   const { data } = useSuspenseQuery({
-    queryFn: () => getPluginSidebar(location.pathname),
-    queryKey: ["plugin-sidebar", location.pathname],
+    queryFn: () => getPluginNavigation(location.pathname),
+    queryKey: ["plugin-navigation", location.pathname],
   });
 
-  const hideSidebar =
+  const hasNavigation =
     auth.isAuthEnabled && !auth.isAuthenticated && isProtectedRoute;
 
   return {
-    sidebar: hideSidebar
+    navigation: hasNavigation
       ? []
-      : [...(currentSidebarItem ? currentSidebarItem[1] : []), ...data],
-    topNavItem: currentTopNavItem,
+      : [...(navItem?.type === "category" ? navItem.items : []), ...data],
+    topNavItem: navItem,
   };
 };

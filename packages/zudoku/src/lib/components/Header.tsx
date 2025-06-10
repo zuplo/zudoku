@@ -25,6 +25,7 @@ import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
+import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
@@ -82,8 +83,9 @@ export const Header = memo(function HeaderInner() {
   return (
     <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
       <Banner />
-      <div className={borderBottom}>
-        <div className="max-w-screen-2xl mx-auto flex relative items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
+      <div className={cn(borderBottom, "relative")}>
+        <PageProgress />
+        <div className="max-w-screen-2xl mx-auto flex items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
@@ -182,7 +184,7 @@ export const Header = memo(function HeaderInner() {
         </div>
       </div>
       <div className={cn("hidden lg:block", borderBottom)}>
-        <div className="max-w-screen-2xl mx-auto border-transparent">
+        <div className="max-w-screen-2xl mx-auto border-transparent relative">
           <Slot.Target name="top-navigation-before" />
           <TopNavigation />
           <Slot.Target name="top-navigation-after" />

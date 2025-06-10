@@ -8,6 +8,8 @@ import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 
+const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
+
 const config: ZudokuConfig = {
   basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
@@ -93,7 +95,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/placeholder.json",
-      path: "/api-placeholder",
+      path: "api-placeholder",
     },
   ],
   slots: {
@@ -120,6 +122,6 @@ const config: ZudokuConfig = {
       </div>
     ),
   },
-};
+} satisfies ZudokuConfig;
 
 export default config;

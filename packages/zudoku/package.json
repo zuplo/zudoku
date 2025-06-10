@@ -166,12 +166,12 @@
     "build": "tsc --project tsconfig.app.json",
     "build:dev": "esbuild './src/**/*.ts' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
     "build:vite": "vite build",
-    "generate:types": "node scripts/generate-types.js",
+    "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
     "clean": "tsc --build --clean",
     "codegen": "graphql-codegen --config ./src/codegen.ts",
-    "test": "vitest run"
+    "test": "vitest run --typecheck"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "12.0.2",
@@ -234,6 +234,7 @@
     "fast-equals": "5.2.2",
     "framer-motion": "^12.12.2",
     "glob": "11.0.2",
+    "glob-parent": "6.0.2",
     "graphql": "16.11.0",
     "graphql-type-json": "0.3.2",
     "graphql-yoga": "5.13.5",
@@ -242,6 +243,7 @@
     "hast-util-to-string": "3.0.1",
     "html-url-attributes": "^3.0.1",
     "http-terminator": "3.2.0",
+    "json-schema-to-typescript-lite": "14.1.0",
     "loglevel": "1.9.2",
     "lru-cache": "11.0.2",
     "lucide-react": "0.488.0",
@@ -285,11 +287,11 @@
     "vaul": "1.1.2",
     "vfile": "6.0.3",
     "vite": "6.3.5",
-    "yaml": "2.7.1",
+    "yaml": "2.8.0",
     "yargs": "17.7.2",
-    "zod": "3.25.51",
-    "zod-validation-error": "3.4.1",
-    "zustand": "5.0.3"
+    "zod": "3.25.56",
+    "zod-to-ts": "1.2.0",
+    "zustand": "5.0.5"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.6",
@@ -299,6 +301,7 @@
     "@testing-library/react": "16.3.0",
     "@types/estree": "1.0.7",
     "@types/express": "5.0.2",
+    "@types/glob-parent": "5.1.3",
     "@types/har-format": "1.2.16",
     "@types/hast": "^3.0.4",
     "@types/json-schema": "7.0.15",
@@ -317,18 +320,18 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "5.14.0",
+    "tsx": "4.19.4",
     "typescript": "5.8.3",
-    "vitest": "3.1.4"
+    "vitest": "3.2.3"
   },
   "peerDependencies": {
-    "react": ">=19",
-    "react-dom": ">=19",
     "@azure/msal-browser": "^4.13.0",
     "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
-    "@supabase/supabase-js": "^2.49.4"
+    "@supabase/supabase-js": "^2.49.4",
+    "react": ">=19",
+    "react-dom": ">=19"
   },
-  "optionalDependencies": {},
   "peerDependenciesMeta": {
     "@azure/msal-browser": {
       "optional": true

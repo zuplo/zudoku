@@ -12,7 +12,7 @@ import type { GraphQLClient } from "../client/GraphQLClient.js";
 import { useCreateQuery } from "../client/useCreateQuery.js";
 import { useOasConfig } from "../context.js";
 import {
-  GetSidebarOperationsQuery,
+  GetNavigationOperationsQuery,
   type OpenApiPluginOptions,
   UNTAGGED_PATH,
 } from "../index.js";
@@ -71,7 +71,7 @@ const NonTagPagesOperationList = ({
   const { type, input } = useOasConfig();
   const { tag: currentTag } = useParams();
   const location = useLocation();
-  const query = useCreateQuery(GetSidebarOperationsQuery, { type, input });
+  const query = useCreateQuery(GetNavigationOperationsQuery, { type, input });
   const {
     data: { schema },
   } = useSuspenseQuery(query);

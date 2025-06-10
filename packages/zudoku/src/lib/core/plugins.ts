@@ -1,7 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactElement } from "react";
 import type { Location, RouteObject } from "react-router";
-import type { Sidebar } from "../../config/validators/SidebarSchema.js";
+import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import type {
@@ -23,7 +23,7 @@ export type { AuthenticationPlugin, RouteObject };
 
 export interface NavigationPlugin {
   getRoutes: () => RouteObject[];
-  getSidebar?: (path: string, context: ZudokuContext) => Promise<Sidebar>;
+  getNavigation?: (path: string, context: ZudokuContext) => Promise<Navigation>;
   getProtectedRoutes?: () => string[];
 }
 

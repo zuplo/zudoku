@@ -15,55 +15,60 @@ const config: ZudokuConfig = {
     },
   },
   basePath: "/docs",
-  topNavigation: [
-    { id: "docs", label: "Documentation" },
-    { id: "api", label: "API Reference" },
-  ],
-  sidebar: {
-    docs: [
-      {
-        type: "category",
-        label: "Getting Started",
-        icon: "sparkles",
-        items: [
-          "/introduction",
-          {
-            type: "link",
-            icon: "folder-cog",
-            badge: {
-              label: "New",
-              color: "purple",
+  navigation: [
+    {
+      type: "category",
+      label: "Documentation",
+      items: [
+        {
+          type: "category",
+          label: "Getting Started",
+          icon: "sparkles",
+          items: [
+            "/introduction",
+            {
+              type: "link",
+              icon: "folder-cog",
+              badge: {
+                label: "New",
+                color: "purple",
+              },
+              label: "API Reference",
+              to: "/api",
             },
-            label: "API Reference",
-            href: "/api",
-          },
-        ],
-      },
-      {
-        type: "category",
-        label: "Useful Links",
-        collapsible: false,
-        icon: "link",
-        items: [
-          {
-            type: "link",
-            label: "Zuplo Docs",
-            href: "https://zuplo.com/docs/dev-portal/introduction",
-          },
-          {
-            type: "link",
-            label: "Developer Portal Docs",
-            href: "https://zuplo.com/docs/dev-portal/introduction",
-          },
-        ],
-      },
-    ],
-  },
+          ],
+        },
+        {
+          type: "category",
+          label: "Useful Links",
+          collapsible: false,
+          icon: "link",
+          items: [
+            {
+              type: "link",
+              label: "Zuplo Docs",
+              to: "https://zuplo.com/docs/dev-portal/introduction",
+            },
+            {
+              type: "link",
+              label: "Developer Portal Docs",
+              to: "https://zuplo.com/docs/dev-portal/introduction",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "link",
+      to: "/api",
+      label: "API Reference",
+    },
+  ],
   redirects: [{ from: "/", to: "/introduction" }],
   apis: {
     type: "file",
     input: "../config/routes.oas.json",
-    navigationId: "api",
+    path: "/api",
   },
   docs: {
     files: "/pages/**/*.mdx",

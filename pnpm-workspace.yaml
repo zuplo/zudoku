@@ -10,6 +10,6 @@ catalog:
   react-dom: 19.1.0
   react-is: 19.1.0
   "@types/react": 19.1.1
-  "@types/react-dom": 19.1.2
+  "@types/react-dom": 19.1.6
   "@types/react-is": 19.0.0
   "@types/node": 22.13.5

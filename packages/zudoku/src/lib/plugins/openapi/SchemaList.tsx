@@ -83,7 +83,7 @@ export function SchemaList() {
               <Heading
                 level={1}
                 id="schemas"
-                registerSidebarAnchor
+                registerNavigationAnchor
                 className="mb-0"
               >
                 Schemas
@@ -129,7 +129,7 @@ export function SchemaList() {
           {schemas.map((schema) => (
             <Collapsible key={schema.name} className="group" defaultOpen>
               <Heading
-                registerSidebarAnchor
+                registerNavigationAnchor
                 level={2}
                 className="flex items-center gap-1 justify-between w-fit"
                 id={slugify(schema.name)}
