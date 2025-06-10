@@ -2,7 +2,6 @@ import { type Plugin, type ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { IconNames } from "../config/validators/icon-types.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
-import { ensureArray } from "../lib/util/ensureArray.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const matchIconAnnotation = /"icon":\s*"(.*?)"/g;
@@ -62,13 +61,7 @@ export const viteNavigationPlugin = (): Plugin => {
       if (id !== resolvedVirtualModuleId) return;
       const config = getCurrentConfig();
 
-      const resolver = new NavigationResolver(
-        config.__meta.rootDir,
-        ensureArray(config.docs?.files ?? []),
-      );
-      const resolvedNavigation = await resolver.resolve(
-        config.navigation ?? [],
-      );
+      const resolvedNavigation = await new NavigationResolver(config).resolve();
 
       const code = JSON.stringify(resolvedNavigation);
       await writePluginDebugCode(

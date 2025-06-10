@@ -2,6 +2,7 @@ import { glob } from "glob";
 import matter from "gray-matter";
 import { type LucideIcon } from "lucide-react";
 import fs from "node:fs/promises";
+import type { ConfigWithMeta } from "../loader.js";
 import type {
   InputNavigationCategory,
   InputNavigationCategoryLinkDoc,
@@ -10,6 +11,7 @@ import type {
   InputNavigationItem,
   InputNavigationLink,
 } from "./InputNavigationSchema.js";
+import { DocsConfigSchema } from "./validate.js";
 
 type ReplaceFields<Base, Overrides> = Omit<Base, keyof Overrides> & Overrides;
 // string icons will be transformed to `LucideIcon` in `vite/plugin-navigation.ts`
@@ -61,20 +63,22 @@ export class NavigationResolver {
   private rootDir: string;
   private globPatterns: string[];
   private globFiles: string[] = [];
+  private items: InputNavigationItem[] = [];
 
-  constructor(rootDir: string, globPatterns: string[]) {
-    this.rootDir = rootDir;
-    this.globPatterns = globPatterns;
+  constructor(config: ConfigWithMeta) {
+    this.rootDir = config.__meta.rootDir;
+    this.globPatterns = DocsConfigSchema.parse(config.docs ?? {}).files;
+    this.items = config.navigation ?? [];
   }
 
-  async resolve(items: InputNavigationItem[]) {
+  async resolve() {
     this.globFiles = await glob(this.globPatterns, {
       root: this.rootDir,
       ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
     });
 
     const resolvedItems = await Promise.all(
-      items.map((item) => this.resolveItem(item)),
+      this.items.map((item) => this.resolveItem(item)),
     );
 
     return resolvedItems.filter(isNavigationItem);

@@ -3,7 +3,7 @@ import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
-  async getIdentities(context: ZudokuContext) {
+  async getIdentities(_context: ZudokuContext) {
     return [
       {
         label: `Unlimited Subscription`,
@@ -221,9 +221,6 @@ const config: ZudokuConfig = {
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],
-  docs: {
-    files: "/pages/**/*.mdx",
-  },
   theme: {
     light: {
       background: "0 0% 100%",

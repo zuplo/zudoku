@@ -6,7 +6,6 @@ import { getCurrentConfig } from "../config/loader.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import { DocsConfigSchema } from "../config/validators/validate.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
-import { ensureArray } from "../lib/util/ensureArray.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { writePluginDebugCode } from "./debug.js";
 
@@ -40,7 +39,7 @@ const viteDocsPlugin = (): Plugin => {
           : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
       ];
 
-      const docsConfig = DocsConfigSchema.parse(config.docs);
+      const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
 
       const globImportBasePath =
         process.env.NODE_ENV === "development" ? (config.basePath ?? "") : "";
@@ -80,11 +79,9 @@ const viteDocsPlugin = (): Plugin => {
 
       // Resolve navigation to get custom paths as in `plugin-navigation.ts`
       if (config.navigation) {
-        const resolver = new NavigationResolver(
-          config.__meta.rootDir,
-          ensureArray(config.docs?.files ?? []),
-        );
-        const resolvedNavigation = await resolver.resolve(config.navigation);
+        const resolvedNavigation = await new NavigationResolver(
+          config,
+        ).resolve();
 
         // Collect custom paths from navigation
         traverseNavigation(resolvedNavigation, (item) => {
