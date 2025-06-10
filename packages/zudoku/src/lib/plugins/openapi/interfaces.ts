@@ -32,7 +32,7 @@ type Content = {
   examples?: Array<Example> | null;
 };
 
-export type transformExamples = (options: {
+export type TransformExamplesFn = (options: {
   content: Content[];
   context: ZudokuContext;
   auth: AuthState;
@@ -42,7 +42,7 @@ export type transformExamples = (options: {
 
 type BaseOasConfig = {
   server?: string;
-  navigationId?: string;
+  path?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
   schemaImports?: SchemaImports;
@@ -52,7 +52,7 @@ type BaseOasConfig = {
     disableSidecar?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
-    transformExamples?: transformExamples;
+    transformExamples?: TransformExamplesFn;
   };
 };
 

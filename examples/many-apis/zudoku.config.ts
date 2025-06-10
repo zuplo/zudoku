@@ -1,4 +1,4 @@
-import type { SidebarEntry, ZudokuConfig } from "zudoku";
+import type { Navigation, ZudokuConfig } from "zudoku";
 import apis from "./apis/_apis.json";
 import navigation from "./apis/_navigation.json";
 
@@ -10,15 +10,14 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
-  topNavigation: [
+  navigation: [
     {
-      id: "overview",
+      type: "category",
       label: "Overview",
+      items: navigation as Navigation,
     },
   ],
-  sidebar: {
-    overview: navigation as SidebarEntry,
-  },
+
   redirects: [{ from: "/", to: "/overview" }],
   apis: apis as ZudokuConfig["apis"],
   defaults: {

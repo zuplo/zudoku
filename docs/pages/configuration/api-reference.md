@@ -17,7 +17,7 @@ const config = {
   apis: {
     type: "file",
     input: "./openapi.json", // Supports JSON and YAML files (ex. openapi.yaml)
-    navigationId: "api",
+    path: "api",
   },
   // ...
 };
@@ -33,7 +33,7 @@ const config = {
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
-    navigationId: "api",
+    path: "api",
   },
   // ...
 };
@@ -58,7 +58,7 @@ const config = {
       "./openapi-v2.json",
       "./openapi-v1.json",
     ],
-    navigationId: "api",
+    path: "api",
   },
 };
 ```
@@ -72,7 +72,7 @@ const config = {
   apis: {
     type: "file",
     input: "./openapi.json",
-    navigationId: "api",
+    path: "api",
     options: {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
@@ -111,7 +111,7 @@ const config = {
   apis: {
     type: "file",
     input: "./openapi.json",
-    navigationId: "api",
+    path: "api",
   },
 };
 ```

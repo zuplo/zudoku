@@ -374,12 +374,12 @@ export type GetServerQueryQuery = {
   };
 };
 
-export type GetSidebarOperationsQueryVariables = Exact<{
+export type GetNavigationOperationsQueryVariables = Exact<{
   input: Scalars["JSON"]["input"];
   type: SchemaType;
 }>;
 
-export type GetSidebarOperationsQuery = {
+export type GetNavigationOperationsQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
@@ -642,8 +642,8 @@ export const GetServerQueryDocument = new TypedDocumentString(`
   GetServerQueryQuery,
   GetServerQueryQueryVariables
 >;
-export const GetSidebarOperationsDocument = new TypedDocumentString(`
-    query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
+export const GetNavigationOperationsDocument = new TypedDocumentString(`
+    query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
     tags {
       slug
@@ -665,6 +665,6 @@ export const GetSidebarOperationsDocument = new TypedDocumentString(`
   }
 }
     `) as unknown as TypedDocumentString<
-  GetSidebarOperationsQuery,
-  GetSidebarOperationsQueryVariables
+  GetNavigationOperationsQuery,
+  GetNavigationOperationsQueryVariables
 >;

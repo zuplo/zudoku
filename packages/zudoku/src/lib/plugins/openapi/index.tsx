@@ -7,16 +7,16 @@ import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { createQuery } from "./client/useCreateQuery.js";
-import type { GetSidebarOperationsQuery as GetSidebarOperationsQueryResult } from "./graphql/graphql.js";
+import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { type OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { createSidebarCategory } from "./util/createSidebarCategory.js";
+import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersions } from "./util/getRoutes.js";
 
-export const GetSidebarOperationsQuery = graphql(`
-  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {
+export const GetNavigationOperationsQuery = graphql(`
+  query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
       tags {
         slug
@@ -40,14 +40,14 @@ export const GetSidebarOperationsQuery = graphql(`
 `);
 
 export type OperationResult =
-  GetSidebarOperationsQueryResult["schema"]["tags"][number]["operations"][number];
+  GetNavigationOperationsQueryResult["schema"]["tags"][number]["operations"][number];
 
 export type OpenApiPluginOptions = OasPluginConfig;
 
 export const UNTAGGED_PATH = "~endpoints";
 
 export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
-  const basePath = joinUrl(config.navigationId ?? "/reference");
+  const basePath = joinUrl(config.path);
   const client = new GraphQLClient(config);
 
   return {
@@ -117,7 +117,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         );
       },
     }),
-    getSidebar: async (path, context) => {
+    getNavigation: async (path, context) => {
       if (!matchPath({ path: basePath, end: false }, path)) {
         return [];
       }
@@ -133,7 +133,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         const { type } = config;
         const input = type === "file" ? config.input[version!] : config.input;
 
-        const query = createQuery(client, GetSidebarOperationsQuery, {
+        const query = createQuery(client, GetNavigationOperationsQuery, {
           type,
           input,
         });
@@ -150,7 +150,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
           const isCollapsible =
             tag.extensions?.["x-zudoku-collapsible"] ?? true;
 
-          return createSidebarCategory({
+          return createNavigationCategory({
             label: tag.name,
             path: categoryPath,
             operations: tag.operations,
@@ -165,7 +165,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
         if (untaggedOperations) {
           categories.push(
-            createSidebarCategory({
+            createNavigationCategory({
               label: "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
               operations: untaggedOperations,
@@ -178,7 +178,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
           categories.push({
             type: "link" as const,
             label: "Schemas",
-            href: joinUrl(basePath, versionParam, "~schemas"),
+            to: joinUrl(basePath, versionParam, "~schemas"),
           });
         }
 

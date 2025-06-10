@@ -241,7 +241,7 @@ export const OperationList = ({
               <Heading
                 level={1}
                 id="description"
-                registerSidebarAnchor
+                registerNavigationAnchor
                 className="mb-0"
               >
                 {schema.tag.name ?? "Other endpoints"}

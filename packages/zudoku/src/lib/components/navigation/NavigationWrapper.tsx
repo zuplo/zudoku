@@ -4,7 +4,7 @@ import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useZudoku } from "../context/ZudokuContext.js";
 import { PoweredByZudoku } from "./PoweredByZudoku.js";
 
-export const SidebarWrapper = ({
+export const NavigationWrapper = ({
   children,
   className,
 }: PropsWithChildren<{
@@ -43,4 +43,4 @@ export const SidebarWrapper = ({
   );
 };
 
-SidebarWrapper.displayName = "SidebarWrapper";
+NavigationWrapper.displayName = "NavigationWrapper";

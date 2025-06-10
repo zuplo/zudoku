@@ -8,19 +8,18 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
-  topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "api", label: "Rick & Morty API" },
+  navigation: [
+    {
+      type: "category",
+      label: "Documentation",
+      items: ["documentation/introduction", "documentation/installation"],
+    },
+    {
+      type: "link",
+      to: "/api",
+      label: "Rick & Morty API",
+    },
   ],
-  sidebar: {
-    documentation: [
-      {
-        type: "category",
-        label: "Get started",
-        items: ["documentation/introduction", "documentation/installation"],
-      },
-    ],
-  },
   protectedRoutes: ["/documentation/installation", "/api/*"],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
@@ -35,12 +34,11 @@ const config: ZudokuConfig = {
   },
   apiKeys: {
     enabled: true,
-    endpoint: "https://zudoku-customer-main-b36fa2f.d2.zuplo.dev",
   },
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
-    navigationId: "api",
+    path: "api",
   },
 };
 

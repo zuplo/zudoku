@@ -22,7 +22,7 @@ export const ColorMapInvert = {
   outline: "",
 };
 
-export const SidebarBadge = ({
+export const NavigationBadge = ({
   color,
   label,
   className,

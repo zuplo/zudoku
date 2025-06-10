@@ -116,11 +116,13 @@ describe("useEvent", () => {
   describe("types", () => {
     const { wrapper } = createTestContext();
 
-    it("infers event type when no callback is provided", () => {
-      const hook = renderHook(() => useEvent("location"), { wrapper });
-      assertType<Parameters<ZudokuEvents["location"]> | undefined>(
-        hook.result.current,
-      );
+    it("infers event type when no callback is provided", async () => {
+      await act(async () => {
+        const hook = renderHook(() => useEvent("location"), { wrapper });
+        assertType<Parameters<ZudokuEvents["location"]> | undefined>(
+          hook.result.current,
+        );
+      });
     });
 
     it("infers string type from pathname callback", () => {

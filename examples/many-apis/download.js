@@ -95,13 +95,13 @@ async function main() {
   const apis = results.map(({ info, localFileName }) => ({
     type: "file",
     input: path.join("apis", localFileName),
-    navigationId: slugify(info.title || "untitled-api"),
+    path: slugify(info.title || "untitled-api"),
   }));
 
   const navigation = results.map(({ info }) => ({
     type: "link",
     label: info.title || "Untitled API",
-    href: slugify(info.title || "untitled-api"),
+    to: slugify(info.title || "untitled-api"),
   }));
 
   fs.writeFileSync(APIS_FILE, JSON.stringify(apis, null, 2), "utf-8");

@@ -19,7 +19,7 @@ type Documents = {
   "\n  query OperationsForTag(\n    $input: JSON!\n    $type: SchemaType!\n    $tag: String\n    $untagged: Boolean\n  ) {\n    schema(input: $input, type: $type) {\n      servers {\n        url\n      }\n      description\n      summary\n      title\n      url\n      version\n      tag(slug: $tag, untagged: $untagged) {\n        name\n        description\n        operations {\n          slug\n          ...OperationsFragment\n        }\n        next {\n          name\n          slug\n        }\n        prev {\n          name\n          slug\n        }\n      }\n    }\n  }\n": typeof types.OperationsForTagDocument;
   "\n  query GetSchemas($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      title\n      description\n      summary\n      components {\n        schemas {\n          name\n          schema\n          extensions\n        }\n      }\n    }\n  }\n": typeof types.GetSchemasDocument;
   "\n  query getServerQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n": typeof types.GetServerQueryDocument;
-  "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n      components {\n        schemas {\n          __typename\n        }\n      }\n    }\n  }\n": typeof types.GetSidebarOperationsDocument;
+  "\n  query GetNavigationOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n      components {\n        schemas {\n          __typename\n        }\n      }\n    }\n  }\n": typeof types.GetNavigationOperationsDocument;
 };
 const documents: Documents = {
   "\n  query ServersQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n":
@@ -34,8 +34,8 @@ const documents: Documents = {
     types.GetSchemasDocument,
   "\n  query getServerQuery($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      url\n      servers {\n        url\n      }\n    }\n  }\n":
     types.GetServerQueryDocument,
-  "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n      components {\n        schemas {\n          __typename\n        }\n      }\n    }\n  }\n":
-    types.GetSidebarOperationsDocument,
+  "\n  query GetNavigationOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n      components {\n        schemas {\n          __typename\n        }\n      }\n    }\n  }\n":
+    types.GetNavigationOperationsDocument,
 };
 
 /**
@@ -78,8 +78,8 @@ export function graphql(
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(
-  source: "\n  query GetSidebarOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n      components {\n        schemas {\n          __typename\n        }\n      }\n    }\n  }\n",
-): typeof import("./graphql.js").GetSidebarOperationsDocument;
+  source: "\n  query GetNavigationOperations($input: JSON!, $type: SchemaType!) {\n    schema(input: $input, type: $type) {\n      tags {\n        slug\n        name\n        extensions\n        operations {\n          summary\n          slug\n          method\n          operationId\n          path\n        }\n      }\n      components {\n        schemas {\n          __typename\n        }\n      }\n    }\n  }\n",
+): typeof import("./graphql.js").GetNavigationOperationsDocument;
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};

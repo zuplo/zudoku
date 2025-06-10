@@ -36,9 +36,10 @@ const config = {
       message: <DemoAnnouncement />,
     },
   },
-  topNavigation: [
+  navigation: [
     {
-      id: "/",
+      type: "link",
+      to: "/",
       label: "API Reference",
     },
   ],
@@ -47,7 +48,7 @@ const config = {
     openApiPlugin({
       type: "url",
       input: apiUrl,
-      navigationId: "/",
+      path: "/",
     }),
   ],
 } satisfies ZudokuConfig;

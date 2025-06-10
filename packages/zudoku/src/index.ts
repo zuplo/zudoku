@@ -1,8 +1,5 @@
 export type { ZudokuBuildConfig, ZudokuConfig } from "./config/config.js";
-export type {
-  SidebarConfig as Sidebar,
-  SidebarEntry,
-} from "./config/validators/InputSidebarSchema.js";
+export type { InputNavigation as Navigation } from "./config/validators/InputNavigationSchema.js";
 export type { SlotType } from "./lib/components/context/SlotProvider.js";
 export { Slot, type CustomSlotNames } from "./lib/components/Slot.js";
 export type { MDXImport } from "./lib/plugins/markdown/index.js";

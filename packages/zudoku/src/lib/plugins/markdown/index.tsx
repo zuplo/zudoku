@@ -1,10 +1,8 @@
 import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import type { MDXProps } from "mdx/types.js";
 import { type JSX } from "react";
-import type { RouteObject } from "react-router";
 import type { ZudokuDocsConfig } from "../../../config/validators/validate.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
-import { DocResolver } from "./resolver.js";
 
 export interface MarkdownPluginOptions extends ZudokuDocsConfig {
   fileImports: Record<string, () => Promise<MDXImport>>;
@@ -30,47 +28,27 @@ export type MDXImport = {
 };
 
 export const markdownPlugin = (
-  options: MarkdownPluginOptions[],
+  options: MarkdownPluginOptions,
 ): ZudokuPlugin => ({
   getRoutes: () => {
-    const routeMap = new Map<string, RouteObject>();
-    options.forEach(({ fileImports, files, defaultOptions }) =>
-      Object.entries(fileImports).flatMap(([file, importPromise]) => {
-        const routePath = DocResolver.resolveRoutePath({
-          filesGlob: files,
-          fsPath: file,
-        });
-
-        if (!routePath) return [];
-
-        if (routeMap.has(routePath)) {
-          // eslint-disable-next-line no-console
-          console.warn(
-            `Duplicate route path found for ${routePath}. Skipping file at '${file}'.`,
-          );
-          return [];
-        }
-
-        const route: RouteObject = {
-          path: routePath,
-          lazy: async () => {
-            const { MdxPage } = await import("./MdxPage.js");
-            const { default: Component, ...props } = await importPromise();
-            return {
-              element: (
-                <MdxPage
-                  file={file}
-                  mdxComponent={Component}
-                  {...props}
-                  defaultOptions={defaultOptions}
-                />
-              ),
-            };
-          },
-        };
-        routeMap.set(routePath, route);
+    return Object.entries(options.fileImports).map(
+      ([routePath, importPromise]) => ({
+        path: routePath,
+        lazy: async () => {
+          const { MdxPage } = await import("./MdxPage.js");
+          const { default: Component, ...props } = await importPromise();
+          return {
+            element: (
+              <MdxPage
+                file={routePath}
+                mdxComponent={Component}
+                {...props}
+                defaultOptions={options.defaultOptions}
+              />
+            ),
+          };
+        },
       }),
     );
-    return [...routeMap.values()];
   },
 });

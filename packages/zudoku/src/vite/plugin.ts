@@ -13,10 +13,10 @@ import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
 import viteMdxPlugin from "./plugin-mdx.js";
+import { viteNavigationPlugin } from "./plugin-navigation.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSearchPlugin } from "./plugin-search.js";
 import { viteShikiRegisterPlugin } from "./plugin-shiki-register.js";
-import { viteSidebarPlugin } from "./plugin-sidebar.js";
 import { viteThemeCss } from "./plugin-theme-css.js";
 
 export default function vitePlugin(): PluginOption {
@@ -31,7 +31,7 @@ export default function vitePlugin(): PluginOption {
     viteAuthPlugin(),
     viteDocsPlugin(),
     viteFrontmatterPlugin(),
-    viteSidebarPlugin(),
+    viteNavigationPlugin(),
     viteApiPlugin(),
     viteSearchPlugin(),
     viteAliasPlugin(),

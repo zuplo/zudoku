@@ -8,13 +8,12 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
-  topNavigation: [{ id: "api", label: "Rick & Morty API" }],
-
+  navigation: [{ label: "Rick & Morty API", type: "link", to: "/api" }],
   redirects: [{ from: "/", to: "/api" }],
   apis: {
     type: "file",
     input: "./openapi.json",
-    navigationId: "api",
+    path: "api",
   },
   docs: {
     files: "/pages/**/*.mdx",
