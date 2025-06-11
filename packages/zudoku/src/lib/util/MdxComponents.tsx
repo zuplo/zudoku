@@ -1,7 +1,7 @@
 import { type MDXComponents } from "mdx/types.js";
 import { CodeBlock } from "zudoku/ui/CodeBlock.js";
 import { AnchorLink } from "../components/AnchorLink.js";
-import { FramedImage } from "../components/FramedImage.js";
+import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { Button } from "../ui/Button.js";
@@ -28,7 +28,7 @@ export const MdxComponents = {
     }
     return <img {...props} className={cn("rounded-lg", props.className)} />;
   },
-  FramedImage,
+  Framed,
   h1: ({ children, id }) => (
     <Heading level={1} id={id}>
       {children}

@@ -112,24 +112,25 @@ The easiest way to customize your theme is by using a Shadcn registry theme. For
 
 1. Visit [tweakcn.com](https://tweakcn.com/) to select a preset or customize your theme visually
 
-   <FramedImage>![](./tweakcn0.png)</FramedImage>
-   <FramedImage>![](./tweakcn1.png)</FramedImage>
+   <Framed align="start">![](./tweakcn0.webp)</Framed>
+   <Framed align="start">![](./tweakcn1.webp)</Framed>
 
 1. Copy the registry URL from the "Copy" section
-   <FramedImage>![](./tweakcn2.png)</FramedImage>
+   <Framed align="start">![](./tweakcn2.webp)</Framed>
 1. Add it to your configuration:
+   ```typescript
+   const config = {
+     theme: {
+       registryUrl: "https://tweakcn.com/r/themes/northern-lights.json",
+     },
+   };
+   ```
+1. The theme will then be automatically imported with all color variables, fonts, and styling configured for you 🚀
+   <Framed align="start">![](./tweakcn3.webp)</Framed>
 
 </Stepper>
 
-```typescript
-const config = {
-  theme: {
-    registryUrl: "https://tweakcn.com/api/registry/theme/xyz123",
-  },
-};
-```
-
-The theme will be automatically imported with all color variables, fonts, and styling configured. You can still override specific values if needed:
+You can still override specific values if needed:
 
 ```typescript
 const config = {
