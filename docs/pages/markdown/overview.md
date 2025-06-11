@@ -48,7 +48,7 @@ description: This page explains how to use Zudoku's markdown features.
 
 ### `category`
 
-Assigns the page to a specific category for organizational purposes.
+Assigns the page to a specific category for organizational purposes. This will be shown above the main heading of the document.
 
 ```md
 ---
