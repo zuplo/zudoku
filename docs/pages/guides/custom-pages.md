@@ -60,7 +60,7 @@ Import the `<MyCustomPage />` component that you created.
 import { MyCustomPage } from "./src/MyCustomPage";
 ```
 
-### Add The navigation entry
+### Add a navigation entry
 
 Add a `custom-page` item to the `navigation` configuration. Each page you want to add to the site must be its own object.
 
