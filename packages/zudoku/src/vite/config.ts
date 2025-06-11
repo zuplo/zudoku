@@ -95,6 +95,7 @@ export async function getViteConfig(
     "yaml",
     "@clerk/clerk-js",
     "@scalar/openapi-parser",
+    "allof-merge",
     ...(config.syntaxHighlighting?.languages ?? defaultLanguages).map(
       (lang) => `@shikijs/langs/${lang}`,
     ),
