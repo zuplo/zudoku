@@ -109,6 +109,7 @@ const config: ZudokuConfig = {
     {
       type: "category",
       label: "Documentation",
+      icon: "book-open",
       items: [
         "documentation",
         {
@@ -129,11 +130,13 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "api-shipments",
+      icon: "ship",
+      to: "/api-shipments/shipment-management",
       label: "Shipments",
     },
     {
       type: "link",
+      icon: "square-library",
       to: "/catalog",
       label: "API Catalog",
     },

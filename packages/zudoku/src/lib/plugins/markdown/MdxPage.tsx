@@ -58,7 +58,10 @@ export const MdxPage = ({
   const pageTitle =
     tableOfContents.find((item) => item.depth === 1)?.value ?? title;
   const hidePager =
-    frontmatter.disablePager ?? defaultOptions?.disablePager ?? false;
+    frontmatter.disable_pager ??
+    frontmatter.disablePager ??
+    defaultOptions?.disablePager ??
+    false;
 
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??

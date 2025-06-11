@@ -57,15 +57,13 @@ Modify your [Zudoku Configuration](../configuration/overview.md) file to include
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
-  topNavigation: [
+  navigation: [
     {
-      id: "overview",
+      type: "category",
       label: "Overview",
+      items: navigation,
     },
   ],
-  sidebar: {
-    overview: navigation,
-  },
   redirects: [{ from: "/", to: "/overview" }],
   apis,
   docs: {

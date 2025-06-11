@@ -6,7 +6,6 @@ import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
-
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 
 const config: ZudokuConfig = {

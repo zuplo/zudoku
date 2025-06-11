@@ -76,7 +76,7 @@ export const TopNavItem = (item: NavigationItem) => {
       to={path}
       className={({ isActive, isPending }) =>
         cx(
-          "block lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
+          "flex items-center gap-2 lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
           isActive || isActiveTopNavItem || isPending
             ? [
                 "text-foreground",
@@ -89,6 +89,7 @@ export const TopNavItem = (item: NavigationItem) => {
         )
       }
     >
+      {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
       {item.label}
     </NavLink>
   );
