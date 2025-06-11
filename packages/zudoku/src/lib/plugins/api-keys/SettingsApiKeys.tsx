@@ -473,7 +473,7 @@ const RevealApiKey = ({
         </div>
       </div>
       <div className="flex justify-end">
-        {isExpired && onDeleteKey && (
+        {expiresOn && onDeleteKey && (
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="ghost" size="icon">

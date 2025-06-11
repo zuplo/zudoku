@@ -27,11 +27,13 @@ const config: ZudokuConfig = {
     },
   ],
   redirects: [{ from: "/", to: "/docs/introduction" }],
-  apis: {
-    type: "file",
-    input: "./apis/openapi.yaml",
-    path: "api",
-  },
+  apis: [
+    {
+      type: "file",
+      input: "./apis/openapi.yaml",
+      path: "api",
+    },
+  ],
   docs: {
     files: "/pages/**/*.{md,mdx}",
   },

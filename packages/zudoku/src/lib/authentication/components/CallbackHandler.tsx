@@ -34,5 +34,5 @@ export function CallbackHandler({
     },
   });
 
-  return <Navigate to={executeCallback.data} />;
+  return <Navigate to={executeCallback.data} replace />;
 }

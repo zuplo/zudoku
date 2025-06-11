@@ -14,7 +14,7 @@ describe("getIssuer", () => {
     };
 
     const result = await getIssuer(config);
-    expect(result).toBe("tolerant-hornet-46.clerk.accounts.dev");
+    expect(result).toBe("https://tolerant-hornet-46.clerk.accounts.dev");
   });
 
   it("should throw error for invalid clerk public key format", async () => {
