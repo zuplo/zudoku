@@ -8,8 +8,6 @@ import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 
-const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
-
 const config: ZudokuConfig = {
   basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
