@@ -78,38 +78,43 @@ For simpler configurations, you can use shorthand notation. Documents can be ref
 
 This is much more concise when you don't need custom labels, icons, or other properties for individual documents.
 
-## Nested navigation
-
-Nested categories inside the `navigation` array form your sidebar automatically.
-
-Example category configuration:
-
-```json
-{
-  "navigation": [
-    {
-      "type": "category",
-      "label": "Zudoku",
-      "items": ["documentation/introduction"]
-    },
-    {
-      "type": "category",
-      "label": "Getting Started",
-      "items": ["documentation/getting-started", "documentation/installation"]
-    }
-  ]
-}
-```
-
-### Navigation Items
+## Navigation Items
 
 Navigation items can be of three types: `category`, `doc`, or `link`.
 
-- `category`: A group of links that can be expanded or collapsed.
-- `doc`: A reference to a document by its `id`.
 - `link`: A direct link to a page or external URL.
+- `category`: A group of links that can be expanded or collapsed.
+- `doc`: A reference to a document by it file path: `file`.
 
-#### `category`
+### `type: link`
+
+`link` is the most basic item, it directly links to a path or URL. Use this for external resources or standalone pages.
+
+```json
+{
+  "type": "link",
+  "label": "Support",
+  "to": "/my/api" // or: https://example.com/my-external-link
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+```ts
+type NavigationLink = {
+  type: "link";
+  label: string;
+  href: string;
+  description?: string;
+  badge?: {
+    label: string;
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+  };
+};
+```
+</details>
+
+### `type: category`
 
 The `category` type groups related items under a collapsible section. The `label` is the displayed text, and the `items` array contains `id`s of documents, links, or other categories.
 
@@ -117,9 +122,9 @@ The `category` type groups related items under a collapsible section. The `label
 {
   "type": "category",
   "label": "Getting Started",
+  "collapsible": true, // optional
+  "collapsed": false, // optional
   "items": [
-    "documentation/getting-started",
-    "documentation/installation",
     {
       "type": "link",
       "label": "Support",
@@ -133,13 +138,12 @@ The `category` type groups related items under a collapsible section. The `label
 <summary>**TypeScript type declaration**</summary>
 
 ```ts
-type SidebarCategory = {
+type NavigationCategory = {
   type: "category";
   label: string;
   items: Array<SidebarDoc | SidebarLink | SidebarCategory>[];
   icon?: string; // Lucide icon name
   link?: string | SidebarLink;
-  description?: string;
   collapsible?: boolean;
   collapsed?: boolean;
 };
@@ -147,7 +151,7 @@ type SidebarCategory = {
 
 </details>
 
-#### `doc`
+### `type: doc`
 
 Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `id` is the file path associated with a markdown file.
 
@@ -159,23 +163,11 @@ Doc is used to reference markdown files. The `label` is the text that will be di
 }
 ```
 
-:::tip
-
-Be sure that the markdown files are indexed in the `docs` configuration:
-
-```json
-{
-  "docs": { "files": "/pages/**/*.{md,mdx}" }
-}
-```
-
-:::
-
 <details>
 <summary>**TypeScript type declaration**</summary>
 
 ```ts
-type SidebarDoc = {
+type NavigationDoc = {
   type: "doc";
   id: string;
   icon?: string;
@@ -189,69 +181,13 @@ type SidebarDoc = {
 
 </details>
 
-#### `link`
+#### Using the shorthand
 
-`link` items point directly to a URL. Use this for external resources or standalone pages.
+As your documentation grows you may want to reference a lot of markdown files.
+This where the shorthand comes in handy. It allows you to reference a markdown file as a single string which points to the file path of the markdown file.
+Zudoku will use the file path to build the URL. You can still control how the file appreas in the navigation by using frontmatter.
 
-```json
-{
-  "type": "link",
-  "label": "Support",
-  "href": "https://support.example.com"
-}
-```
-
-<details>
-<summary>**TypeScript type declaration**</summary>
-
-```ts
-type SidebarLink = {
-  type: "link";
-  label: string;
-  href: string;
-  description?: string;
-  badge?: {
-    label: string;
-    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
-  };
-};
-```
-
-</details>
-
-### Document `id`s
-
-Documents are identified by their `id`s, which are typically derived from the file path relative to the `pages` directory, without the extension. For example, a file located at `./pages/docs/overview.md` would have an `id` of `docs/overview`.
-
-:::tip
-
-Be sure that the markdown files are indexed in the `docs` configuration:
-
-```json
-{
-  "docs": { "files": "/pages/**/*.{md,mdx}" }
-}
-```
-
-:::
-
-For example, you could reference a file located at `./pages/articles/about.md` with an `id` of `articles/about`:
-
-```json
-{
-  "type": "doc",
-  "label": "About",
-  "id": "articles/about"
-}
-```
-
-### Sidebar Selection
-
-Zudoku automatically selects the sidebar based on the first navigation category that contains the current document. If a document is linked from multiple categories, the first matching category is used.
-
-For example:
-
-- If `docs/intro` is referenced in both `sidebar_1` and `sidebar_2`, navigating to `docs/intro` will show the sidebar for `sidebar_1`.
+Learn more in the [markdown documentation](/docs/markdown/overview#navigation_label)
 
 ### Icons
 

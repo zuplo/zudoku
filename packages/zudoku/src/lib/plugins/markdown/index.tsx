@@ -18,6 +18,7 @@ export type Frontmatter = {
   category?: string;
   toc?: boolean;
   disablePager?: boolean;
+  disable_pager?: boolean;
 };
 
 export type MDXImport = {
