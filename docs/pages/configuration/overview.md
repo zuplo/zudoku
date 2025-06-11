@@ -22,7 +22,7 @@ const config: ZudokuConfig = {
       label: "Documentation",
       items: ["introduction", "example"],
     },
-    { type: "link", href: "api", label: "API Reference" },
+    { type: "link", to: "api", label: "API Reference" },
   ],
   redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: {
