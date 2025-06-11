@@ -88,7 +88,7 @@ Defines navigation for both the top bar and the sidebar. Items can be categories
   // ...
   "navigation": [
     { "type": "category", "label": "Docs", "items": ["introduction"] },
-    { "type": "link", "href": "api", "label": "API Reference" }
+    { "type": "link", "to": "api", "label": "API Reference" }
   ]
   // ...
 }
