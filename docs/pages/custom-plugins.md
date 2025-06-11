@@ -81,12 +81,11 @@ Below is a sample of adding the necessary scripts for GTM, but this could apply 
 ```tsx
 import { ZudokuPlugin } from "zudoku";
 
-const navigationPlugin: ZudokuPlugin = {
+const commonPlugin: ZudokuPlugin = {
   getHead: () => {
     return (
-      <>
-        <script>
-          {`
+      <script>
+        {`
     (function (w, d, s, l, i) {
       w[l] = w[l] || [];
       w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
@@ -97,11 +96,7 @@ const navigationPlugin: ZudokuPlugin = {
       j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
       f.parentNode.insertBefore(j, f);
     })(window, document, "script", "dataLayer", "GTM-<YOUR GTM ID HERE>");`}
-        </script>
-        <noscript>
-          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-<YOUR GTM ID HERE>" height="0" width="0" style={{ display: "none", visibility: "hidden" }}></iframe>
-        </noscript>
-      </>
+      </script>
     );
   },
 };
