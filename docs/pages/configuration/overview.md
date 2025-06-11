@@ -8,6 +8,12 @@ You can find the file in the root directory of your project. It will start with 
 
 When you create a project, a default configuration file is generated for you. This file is a good starting point and can be customized to suit your needs.
 
+:::note{title="Security Consideration"}
+
+The Zudoku configuration file runs on both client and server at runtime. Avoid including secrets directly in your config as they may be exposed to the client.
+
+:::
+
 ## Example
 
 Below is an example of the default Zudoku configuration. You can edit this configuration to suit your own needs.
