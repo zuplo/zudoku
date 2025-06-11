@@ -116,7 +116,5 @@ toc: true
 disable_pager: false
 ---
 
-# Advanced Configuration Guide
-
 This page content follows the frontmatter...
 ```
