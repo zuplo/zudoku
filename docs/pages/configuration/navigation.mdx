@@ -17,9 +17,44 @@ The navigation is defined using the `navigation` array in the Zudoku config file
     {
       "type": "category",
       "label": "Documentation",
-      "items": ["documentation/introduction"]
+      "icon": "book",
+      "description": "Complete documentation and guides",
+      "collapsible": true,
+      "collapsed": false,
+      "display": "always",
+      "items": [
+        {
+          "type": "doc",
+          "file": "documentation/introduction",
+          "label": "Introduction",
+          "icon": "file-text",
+          "badge": {
+            "label": "New",
+            "color": "green"
+          },
+          "display": "always"
+        },
+        {
+          "type": "doc",
+          "file": "documentation/getting-started",
+          "path": "/docs/quick-start",
+          "label": "Quick Start",
+          "display": "always"
+        }
+      ]
     },
-    { "type": "link", "href": "api", "label": "API Reference" }
+    {
+      "type": "link",
+      "to": "/api",
+      "label": "API Reference",
+      "icon": "code",
+      "description": "Complete API documentation",
+      "badge": {
+        "label": "v2.0",
+        "color": "blue"
+      },
+      "display": "always"
+    }
   ]
 }
 ```
