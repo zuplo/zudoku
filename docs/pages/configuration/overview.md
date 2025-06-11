@@ -307,9 +307,9 @@ For example, if you wanted to move your navigation configuration to a separate f
 
 ```ts
 // navigation.ts
-import type { NavigationItem } from "zudoku";
+import type { Navigation } from "zudoku";
 
-export const navigation: NavigationItem[] = [
+export const navigation: Navigation = [
   {
     type: "category",
     label: "Documentation",
