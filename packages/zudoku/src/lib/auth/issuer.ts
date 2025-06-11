@@ -17,7 +17,7 @@ export const getIssuer = async (config: ZudokuConfig) => {
       const frontendApi = frontendApiParts.at(0);
       invariant(frontendApi, "Clerk public key is invalid");
 
-      return frontendApi;
+      return `https://${frontendApi}`;
     }
     case "auth0": {
       return `https://${config.authentication.domain}/`;
