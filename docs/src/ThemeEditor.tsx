@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { ClientOnly, useTheme } from "zudoku/components";
-import { DownloadIcon, MoonIcon, RotateCcwIcon, SunIcon } from "zudoku/icons";
+import { ClientOnly, Link, useTheme } from "zudoku/components";
+import {
+  ClipboardPasteIcon,
+  DownloadIcon,
+  MoonIcon,
+  RotateCcwIcon,
+  SunIcon,
+} from "zudoku/icons";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
@@ -21,6 +27,7 @@ import {
 import { Progress } from "zudoku/ui/Progress.js";
 import { Switch } from "zudoku/ui/Switch.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
+import { Textarea } from "zudoku/ui/Textarea.js";
 import { cn } from "zudoku/ui/util.js";
 import { baseColors } from "./baseColors/baseColors.js";
 
@@ -36,6 +43,8 @@ export const ThemeEditor = () => {
   const { resolvedTheme, setTheme } = useTheme();
   const [color, setColor] = useState<string>();
   const [radius, setRadius] = useState<number>();
+  const [customCss, setCustomCss] = useState<string>("");
+  const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
 
   const activeColor = useMemo(() => {
     return baseColors.find((c) => c.name === color);
@@ -43,14 +52,12 @@ export const ThemeEditor = () => {
 
   useEffect(() => {
     if (activeColor) {
-      for (const [key, value] of Object.entries(
-        activeColor.cssVars[resolvedTheme],
-      )) {
+      Object.entries(activeColor.cssVars[resolvedTheme]).forEach(([key]) => {
         document.documentElement.style.setProperty(
           `--${camelToKebabCase(key)}`,
-          value as string,
+          activeColor.cssVars[resolvedTheme][key],
         );
-      }
+      });
     }
 
     if (typeof radius === "number") {
@@ -62,25 +69,29 @@ export const ThemeEditor = () => {
     return () => {
       document.documentElement.style.removeProperty("--radius");
 
-      if (activeColor) {
-        for (const [key, value] of Object.entries(
-          activeColor?.cssVars[resolvedTheme],
-        )) {
-          document.documentElement.style.removeProperty(
-            `--${camelToKebabCase(key)}`,
-          );
-        }
-      }
+      if (!activeColor?.cssVars[resolvedTheme]) return;
+
+      Object.entries(activeColor.cssVars[resolvedTheme]).forEach(([key]) => {
+        document.documentElement.style.removeProperty(
+          `--${camelToKebabCase(key)}`,
+        );
+      });
     };
-  }, [activeColor, resolvedTheme, radius]);
+  }, [activeColor, resolvedTheme, radius, customCss]);
 
   const handleReset = () => {
     setColor(undefined);
     setRadius(undefined);
+    setCustomCss("");
+  };
+
+  const handlePasteTheme = (pastedCss: string) => {
+    setCustomCss(pastedCss);
   };
 
   return (
     <>
+      <style>{customCss}</style>
       <div className="flex gap-2 mt-4">
         <Button size="sm" variant="outline" onClick={handleReset}>
           <RotateCcwIcon size={16} className="me-2" /> Reset Theme
@@ -110,7 +121,7 @@ export const ThemeEditor = () => {
                       Object.entries(activeColor?.cssVars.light ?? {})
                         .concat(
                           typeof radius === "number"
-                            ? [["radius", `${radius}rem`]]
+                            ? [["radius", `${radius}rem` as any]]
                             : [],
                         )
                         .map(([key, value]) => [
@@ -123,7 +134,7 @@ export const ThemeEditor = () => {
                       Object.entries(activeColor?.cssVars.dark ?? {})
                         .concat(
                           typeof radius === "number"
-                            ? [["radius", `${radius}rem`]]
+                            ? [["radius", `${radius}rem` as any]]
                             : [],
                         )
                         .map(([key, value]) => [
@@ -139,6 +150,61 @@ export const ThemeEditor = () => {
             />
           </DialogContent>
         </Dialog>
+        <Dialog open={isPasteDialogOpen} onOpenChange={setIsPasteDialogOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="outline">
+              <ClipboardPasteIcon size={16} className="me-2" />
+              Paste theme
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-[666px]">
+            <DialogHeader>
+              <DialogTitle>Paste Custom CSS</DialogTitle>
+              <DialogDescription>
+                Paste CSS from theme editors like{" "}
+                <a
+                  className="text-primary underline"
+                  href="https://tweakcn.com/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  tweakcn.com
+                </a>{" "}
+                or other shadcn theme generators.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <Textarea
+                placeholder="Paste your CSS here..."
+                className="min-h-[200px] font-mono text-sm"
+                defaultValue={customCss}
+                onChange={(e) => {
+                  const css = e.target.value;
+                  if (css.trim()) {
+                    handlePasteTheme(css);
+                  }
+                }}
+              />
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => {
+                    setCustomCss("");
+                    setIsPasteDialogOpen(false);
+                  }}
+                  variant="outline"
+                >
+                  Clear
+                </Button>
+                <Button onClick={() => setIsPasteDialogOpen(false)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+        <Button size="sm" asChild variant="link">
+          <Link to="/customization/colors-theme">Documentation</Link>
+        </Button>
       </div>
       <div className="border-border border-b border-dashed border-px my-2" />
       <div className="grid grid-cols-[minmax(0,560px)_1fr] gap-2">
