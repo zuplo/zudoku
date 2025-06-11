@@ -5,7 +5,15 @@ sidebar_icon: table
 
 Zudoku is built on top of Vite and uses [their approach](https://vitejs.dev/guide/env-and-mode) for managing environment variables.
 
-In Zudoku, environment variables that are prefixed with `ZUDOKU_PUBLIC_` are available in your application.
+Zudoku exposes environment variables under the `import.meta.env` object as strings automatically.
+
+To prevent accidentally leaking environment variables to the client, only variables prefixed with `ZUDOKU_PUBLIC_` are exposed to your Zudoku-processed code.
+
+:::warning{title="Security Notice"}
+
+Environment variables prefixed with `ZUDOKU_PUBLIC_` will be exposed to the client-side code and visible in the browser. Never use this prefix for sensitive information like API keys, passwords, or other secrets.
+
+:::
 
 ## Local Env Files
 
