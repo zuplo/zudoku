@@ -12,6 +12,7 @@ import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { isHiddenItem } from "./navigation/utils.js";
 import { Search } from "./Search.js";
+import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { PageProgress, TopNavItem } from "./TopNavigation.js";
 
@@ -43,6 +44,9 @@ export const MobileTopNavigation = () => {
             </VisuallyHidden>
             <Search className="flex p-4" />
             <ul className="flex flex-col items-center gap-4 p-4">
+              <li className="empty:hidden">
+                <Slot.Target name="top-navigation-side" />
+              </li>
               <li>
                 <ThemeSwitch />
               </li>
