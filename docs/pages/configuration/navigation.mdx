@@ -18,28 +18,18 @@ The navigation is defined using the `navigation` array in the Zudoku config file
       "type": "category",
       "label": "Documentation",
       "icon": "book",
-      "description": "Complete documentation and guides",
-      "collapsible": true,
-      "collapsed": false,
-      "display": "always",
       "items": [
         {
           "type": "doc",
           "file": "documentation/introduction",
           "label": "Introduction",
-          "icon": "file-text",
-          "badge": {
-            "label": "New",
-            "color": "green"
-          },
-          "display": "always"
+          "icon": "file-text"
         },
         {
           "type": "doc",
           "file": "documentation/getting-started",
           "path": "/docs/quick-start",
-          "label": "Quick Start",
-          "display": "always"
+          "label": "Quick Start"
         }
       ]
     },
@@ -58,6 +48,35 @@ The navigation is defined using the `navigation` array in the Zudoku config file
   ]
 }
 ```
+
+### Using shorthands
+
+For simpler configurations, you can use shorthand notation. Documents can be referenced as strings (using their file path), which is equivalent to `{ "type": "doc", "file": "path" }`:
+
+```json
+{
+  "navigation": [
+    {
+      "type": "category",
+      "label": "Documentation",
+      "icon": "book",
+      "items": [
+        "documentation/introduction",
+        "documentation/getting-started",
+        "documentation/installation"
+      ]
+    },
+    {
+      "type": "link",
+      "to": "/api",
+      "label": "API Reference",
+      "icon": "code"
+    }
+  ]
+}
+```
+
+This is much more concise when you don't need custom labels, icons, or other properties for individual documents.
 
 ### Default document
 
