@@ -1,0 +1,70 @@
+---
+title: Badge
+sidebar_icon: tag
+---
+
+import { Badge } from "zudoku/ui/Badge";
+
+A small badge component used to display status information or labels.
+
+## Props
+
+```ts
+interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "secondary" | "muted" | "destructive" | "outline";
+}
+```
+
+## Variants
+
+### Default
+
+<Badge variant="default">Default</Badge>
+
+```tsx
+<Badge variant="default">Default</Badge>
+```
+
+### Secondary
+
+<Badge variant="secondary">Secondary</Badge>
+
+```tsx
+<Badge variant="secondary">Secondary</Badge>
+```
+
+### Muted
+
+<Badge variant="muted">Muted</Badge>
+
+```tsx
+<Badge variant="muted">Muted</Badge>
+```
+
+### Destructive
+
+<Badge variant="destructive">Destructive</Badge>
+
+```tsx
+<Badge variant="destructive">Destructive</Badge>
+```
+
+### Outline
+
+<Badge variant="outline">Outline</Badge>
+
+```tsx
+<Badge variant="outline">Outline</Badge>
+```
+
+## Usage
+
+Badges are perfect for showing status, categories, or counts:
+
+```tsx
+<div className="flex gap-2">
+  <Badge variant="default">New</Badge>
+  <Badge variant="secondary">Beta</Badge>
+  <Badge variant="destructive">Deprecated</Badge>
+</div>
+```

@@ -1,0 +1,92 @@
+---
+title: Input
+sidebar_icon: type
+---
+
+A styled input component for forms and user input.
+
+## Props
+
+```ts
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+```
+
+## Basic Usage
+
+<Input placeholder="Enter your email" />
+
+```tsx
+<Input placeholder="Enter your email" />
+```
+
+## Input Types
+
+### Text Input
+
+<Input type="text" placeholder="Text input" />
+
+```tsx
+<Input type="text" placeholder="Text input" />
+```
+
+### Email Input
+
+<Input type="email" placeholder="Email input" />
+
+```tsx
+<Input type="email" placeholder="Email input" />
+```
+
+### Password Input
+
+<Input type="password" placeholder="Password input" />
+
+```tsx
+<Input type="password" placeholder="Password input" />
+```
+
+### Number Input
+
+<Input type="number" placeholder="Number input" />
+
+```tsx
+<Input type="number" placeholder="Number input" />
+```
+
+## With Label
+
+<div className="grid w-full max-w-sm items-center gap-1.5">
+  <Label htmlFor="email">Email</Label>
+  <Input type="email" id="email" placeholder="Email" />
+</div>
+
+```tsx
+<div className="grid w-full max-w-sm items-center gap-1.5">
+  <Label htmlFor="email">Email</Label>
+  <Input type="email" id="email" placeholder="Email" />
+</div>
+```
+
+## Disabled State
+
+<Input disabled placeholder="Disabled input" />
+
+```tsx
+<Input disabled placeholder="Disabled input" />
+```
+
+## File Input
+
+<Input type="file" />
+
+```tsx
+<Input type="file" />
+```
+
+## Custom Styling
+
+The Input component accepts all standard input HTML attributes and can be customized with additional className:
+
+```tsx
+<Input className="w-full max-w-xs" placeholder="Custom styled input" />
+```

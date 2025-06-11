@@ -1,0 +1,94 @@
+---
+title: Checkbox
+sidebar_icon: check-square
+---
+
+A checkbox component built on Radix UI primitives for boolean input.
+
+## Props
+
+```ts
+interface CheckboxProps
+  extends React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> {}
+```
+
+## Basic Usage
+
+<Checkbox />
+
+```tsx
+<Checkbox />
+```
+
+## With Label
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label htmlFor="terms">Accept terms and conditions</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label htmlFor="terms">Accept terms and conditions</Label>
+</div>
+```
+
+## Checked State
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms2" defaultChecked />
+  <Label htmlFor="terms2">Accept terms and conditions</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms2" defaultChecked />
+  <Label htmlFor="terms2">Accept terms and conditions</Label>
+</div>
+```
+
+## Disabled State
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms3" disabled />
+  <Label htmlFor="terms3">Accept terms and conditions</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms3" disabled />
+  <Label htmlFor="terms3">Accept terms and conditions</Label>
+</div>
+```
+
+## With Text
+
+<div className="items-top flex space-x-2">
+  <Checkbox id="terms1" />
+  <div className="grid gap-1.5 leading-none">
+    <Label htmlFor="terms1">Accept terms and conditions</Label>
+    <p className="text-sm text-muted-foreground">
+      You agree to our Terms of Service and Privacy Policy.
+    </p>
+  </div>
+</div>
+
+```tsx
+<div className="items-top flex space-x-2">
+  <Checkbox id="terms1" />
+  <div className="grid gap-1.5 leading-none">
+    <Label htmlFor="terms1">Accept terms and conditions</Label>
+    <p className="text-sm text-muted-foreground">
+      You agree to our Terms of Service and Privacy Policy.
+    </p>
+  </div>
+</div>
+```
+
+## Features
+
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Indeterminate State**: Supports indeterminate state for partial selections
+- **Controlled/Uncontrolled**: Can be used with or without state management
+- **Customizable**: Easy to style with className prop
