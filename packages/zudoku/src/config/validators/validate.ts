@@ -20,6 +20,7 @@ import type { transformExamples } from "../../lib/plugins/openapi/interfaces.js"
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
+import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
 import { InputSidebarSchema } from "./InputSidebarSchema.js";
 
 const ThemeSchema = z
@@ -385,14 +386,42 @@ const MetadataSchema = z
   })
   .partial();
 
-const FontConfigSchema = z.object({
-  url: z.string(),
-  fontFamily: z.string(),
-});
+const FontConfigSchema = z.union([
+  z.enum(GOOGLE_FONTS),
+  z.object({
+    url: z.string(),
+    fontFamily: z.string().optional(),
+  }),
+]);
+
+export type FontConfig = z.infer<typeof FontConfigSchema>;
 
 const FontsConfigSchema = z.object({
   sans: FontConfigSchema.optional(),
+  serif: FontConfigSchema.optional(),
   mono: FontConfigSchema.optional(),
+});
+
+const CssObject = z.record(
+  z.string(),
+  z.lazy(() =>
+    z.union([
+      z.string(),
+      z.record(
+        z.string(),
+        z.union([z.string(), z.record(z.string(), z.string())]),
+      ),
+    ]),
+  ),
+);
+
+const ThemeConfigSchema = z.object({
+  registryUrl: z.string().url().optional(),
+  customCss: z.union([z.string(), CssObject]).optional(),
+  light: ThemeSchema.optional(),
+  dark: ThemeSchema.optional(),
+  fonts: FontsConfigSchema.optional(),
+  noDefaultTheme: z.boolean().optional(),
 });
 
 const PageSchema = z
@@ -476,13 +505,7 @@ const BaseConfigSchema = z.object({
   page: PageSchema,
   topNavigation: z.array(TopNavigationItemSchema),
   sidebar: z.record(InputSidebarSchema),
-  theme: z
-    .object({
-      light: ThemeSchema,
-      dark: ThemeSchema,
-      fonts: FontsConfigSchema,
-    })
-    .partial(),
+  theme: ThemeConfigSchema,
   syntaxHighlighting: z
     .object({
       languages: z.array(z.custom<BundledLanguage>()),

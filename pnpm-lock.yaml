@@ -99,13 +99,20 @@ importers:
         version: 5.8.3
 
   docs:
-    devDependencies:
+    dependencies:
       react:
         specifier: 'catalog:'
         version: 19.1.0
       react-dom:
         specifier: 'catalog:'
         version: 19.1.0(react@19.1.0)
+    devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.1.1
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.1.6(@types/react@19.1.1)
       zudoku:
         specifier: workspace:*
         version: link:../packages/zudoku

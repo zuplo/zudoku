@@ -5,10 +5,8 @@ import {
   type RouteObject,
 } from "react-router";
 import config from "virtual:zudoku-config";
-import "virtual:zudoku-theme.css";
 import "vite/modulepreload-polyfill";
 import { Bootstrap } from "zudoku/components";
-import "./main.css";
 import { getRoutesByConfig } from "./main.js";
 
 const routes = getRoutesByConfig(config);

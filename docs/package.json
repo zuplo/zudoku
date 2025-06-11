@@ -8,9 +8,13 @@
     "preview": "zudoku preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
-  "devDependencies": {
+  "dependencies": {
     "react": "catalog:",
-    "react-dom": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "zudoku": "workspace:*"
   },
   "packageManager": "pnpm@10.10.0"
