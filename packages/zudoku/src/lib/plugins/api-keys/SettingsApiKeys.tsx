@@ -304,7 +304,9 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                             <RotateCwIcon
                               size={16}
                               className={
-                                rollKeyMutation.isPending ? "animate-spin" : undefined
+                                rollKeyMutation.isPending
+                                  ? "animate-spin"
+                                  : undefined
                               }
                             />
                             Roll
