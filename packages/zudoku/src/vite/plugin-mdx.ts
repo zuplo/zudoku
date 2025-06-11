@@ -23,7 +23,8 @@ import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 // so rehype-mdx-import-media can pick them up
 const rehypeNormalizeMdxImages = () => (tree: any) => {
   visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
-    if (node.type !== "mdxJsxFlowElement" || node.name !== "img") return;
+    if (node.type !== "mdxJsxFlowElement") return;
+    if (!["img", "video"].includes(node.name)) return;
 
     const hasStringSrc = node.attributes.some(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,7 +37,7 @@ const rehypeNormalizeMdxImages = () => (tree: any) => {
     if (!hasStringSrc) return;
 
     node.type = "element";
-    node.tagName = "img";
+    node.tagName = node.name;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     node.properties = {} as Record<string, any>;
 

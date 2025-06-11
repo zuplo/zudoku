@@ -28,6 +28,9 @@ export const getIssuer = async (config: ZudokuConfig) => {
     case "supabase": {
       return config.authentication.supabaseUrl;
     }
+    case "azureb2c": {
+      return config.authentication.issuer;
+    }
     case undefined: {
       return undefined;
     }

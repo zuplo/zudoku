@@ -47,7 +47,7 @@ export const SchemaView = ({
       <Card className="overflow-hidden">
         {cardHeader}
         <div className="text-sm text-muted-foreground italic p-4">
-          No schema specified
+          No data returned
         </div>
       </Card>
     );

@@ -8,7 +8,6 @@ import viteAuthPlugin from "./plugin-auth.js";
 import viteAliasPlugin from "./plugin-component.js";
 import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
-import { viteTailwindPlugin } from "./plugin-configure-tailwind.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
@@ -17,7 +16,7 @@ import { viteNavigationPlugin } from "./plugin-navigation.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSearchPlugin } from "./plugin-search.js";
 import { viteShikiRegisterPlugin } from "./plugin-shiki-register.js";
-import { viteThemeCss } from "./plugin-theme-css.js";
+import { viteThemePlugin } from "./plugin-theme.js";
 
 export default function vitePlugin(): PluginOption {
   return [
@@ -36,9 +35,8 @@ export default function vitePlugin(): PluginOption {
     viteSearchPlugin(),
     viteAliasPlugin(),
     viteRedirectPlugin(),
-    viteThemeCss(),
-    viteTailwindPlugin(),
     vitePluginSsrCss({ entries: ["zudoku/app/entry.server.tsx"] }),
+    viteThemePlugin(),
     tailwindcss(),
   ];
 }

@@ -25,6 +25,7 @@ import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
+import "./main.css";
 
 await registerShiki(highlighter);
 
