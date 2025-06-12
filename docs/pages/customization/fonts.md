@@ -10,7 +10,7 @@ Zudoku allows you to customize fonts for text (`sans`), serif content (`serif`),
 
 The easiest way to use fonts is with predefined Google Fonts. Simply specify the font name as a string:
 
-```typescript
+```tsx title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {
@@ -36,7 +36,7 @@ The following fonts are available as predefined options:
 
 For more control or to use fonts not in the predefined list, you can specify a custom font URL:
 
-```typescript
+```tsx title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {
@@ -68,7 +68,7 @@ To use local fonts, add them to the `public` folder and create a `fonts.css` fil
 
 Then reference the local CSS file:
 
-```typescript
+```tsx title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {
@@ -85,7 +85,7 @@ const config = {
 
 You can mix predefined fonts with custom fonts:
 
-```typescript
+```tsx title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {

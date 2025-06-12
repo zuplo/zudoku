@@ -326,7 +326,7 @@ export const navigation: Navigation = [
 
 Then you can import the navigation configuration into your main configuration file.
 
-```ts
+```ts title=zudoku.config.ts
 // zudoku.config.ts
 import type { ZudokuConfig } from "zudoku";
 import { navigation } from "./navigation";

@@ -9,7 +9,7 @@ If you're dealing with multiple APIs and multiple OpenAPI files, the API Catalog
 
 The first step to enable the API Catalog, you need to add a `catalogs` object to your Zudoku configuration file.
 
-```js
+```js title=zudoku.config.ts
 const config = {
   // ...
   catalogs: {
@@ -22,7 +22,7 @@ const config = {
 
 You can then add your APIs to the catalog by adding the `categories` property to your API configuration.
 
-```js
+```js title=zudoku.config.ts
 const config = {
   // ...
   apis: [
@@ -57,7 +57,7 @@ const config = {
 
 You can select which APIs are shown in the catalog by using the `items` property. The `items` property is an array of navigation IDs of the APIs you want to show in the catalog.
 
-```js
+```js title=zudoku.config.ts
 const config = {
   // ...
   catalogs: {
@@ -89,7 +89,7 @@ const config = {
 
 You can filter which APIs are shown in the catalog by using the `filterItems` property. The function receives the items and context as arguments.
 
-```js
+```js title=zudoku.config.ts
 const config = {
   // ...
   catalogs: {
