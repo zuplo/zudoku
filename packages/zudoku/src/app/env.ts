@@ -5,7 +5,7 @@ const getZuploBuildConfig = () => {
   if (!process.env.ZUPLO_BUILD_CONFIG) return undefined;
 
   try {
-    const zuploBuildConfig = BuildConfigSchema.safeParse(
+    const zuploBuildConfig = BuildConfigSchema.parse(
       JSON.parse(process.env.ZUPLO_BUILD_CONFIG),
     );
     return zuploBuildConfig;
