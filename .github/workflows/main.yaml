@@ -213,8 +213,3 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
-      - run: gh workflow run zudoku-changelog.yml --repo zuplo/www --ref main
-        # Only for non-prerelease and not patch
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'patch'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
