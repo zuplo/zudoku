@@ -1,7 +1,14 @@
 import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  CopyIcon,
+  ExternalLinkIcon,
+} from "lucide-react";
 import { type PropsWithChildren, useEffect } from "react";
+import { Button } from "zudoku/ui/Button.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
@@ -11,6 +18,14 @@ import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
+import useCopyToClipboard from "../../hooks/useCopyToClipboard.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../../ui/DropdownMenu.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { cn } from "../../util/cn.js";
 import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
@@ -35,6 +50,95 @@ const MarkdownHeadings = {
     </Heading>
   ),
 } satisfies MdxComponentsType;
+
+const CopyPageMenu = ({
+  pageContent,
+  pageTitle,
+  pageUrl,
+}: {
+  pageContent: string;
+  pageTitle: string;
+  pageUrl: string;
+}) => {
+  const text = encodeURIComponent(
+    `Read this page so I can ask questions about it: ${pageUrl}`,
+  );
+  const { copyToClipboard, state } = useCopyToClipboard(
+    `# ${pageTitle}\n\n${pageContent}`,
+  );
+
+  return (
+    <DropdownMenu>
+      <div className="flex items-center mt-6 self-end">
+        <Button
+          variant="outline"
+          size="sm"
+          className="border-r-0 rounded-r-none"
+          onClick={copyToClipboard}
+        >
+          {state === "copied" ? (
+            <CheckIcon className="mr-2 h-4 w-4 text-green-600" />
+          ) : (
+            <CopyIcon size={16} className="mr-2" />
+          )}
+          Copy page
+        </Button>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            className=" rounded-l-none p-0"
+          >
+            <ChevronDownIcon size={16} />
+          </Button>
+        </DropdownMenuTrigger>
+      </div>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onClick={copyToClipboard} className="cursor-pointer">
+          {state === "copied" ? (
+            <CheckIcon className="mr-2 h-4 w-4 text-green-600" />
+          ) : (
+            <CopyIcon className="mr-2 h-4 w-4" />
+          )}
+          <div className="flex flex-col">
+            <span>Copy page</span>
+            <span className="text-xs text-muted-foreground">
+              Copy as Markdown for LLMs
+            </span>
+          </div>
+        </DropdownMenuItem>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuItem
+          onClick={() =>
+            window.open(`https://chat.openai.com/?q=${text}`, "_blank")
+          }
+          className="cursor-pointer"
+        >
+          <div className="mr-2 h-4 w-4 rounded-sm bg-black flex items-center justify-center">
+            <span className="text-white text-xs font-bold">G</span>
+          </div>
+          Open in ChatGPT
+          <ExternalLinkIcon className="ml-auto h-3 w-3" />
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={() =>
+            window.open(`https://claude.ai/chat?q=${text}`, "_blank")
+          }
+          className="cursor-pointer"
+        >
+          <div className="mr-2 h-4 w-4 rounded-sm bg-orange-500 flex items-center justify-center">
+            <span className="text-white text-xs font-bold">A</span>
+          </div>
+          Open in Claude
+          <ExternalLinkIcon className="ml-auto h-3 w-3" />
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
@@ -84,48 +188,55 @@ export const MdxPage = ({
   }, [file]);
 
   return (
-    <div
-      className="grid grid-cols-1 xl:grid-cols-(--sidecar-grid-cols) gap-8 justify-between"
-      data-pagefind-filter="section:markdown"
-      data-pagefind-meta="section:markdown"
-    >
-      <Helmet>
-        <title>{pageTitle}</title>
-        {excerpt && <meta name="description" content={excerpt} />}
-      </Helmet>
+    <>
       <div
-        className={cn(
-          ProseClasses,
-          "max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)",
-        )}
+        className="grid grid-cols-1 xl:grid-cols-(--sidecar-grid-cols) gap-8 justify-between relative"
+        data-pagefind-filter="section:markdown"
+        data-pagefind-meta="section:markdown"
       >
-        {(category || title) && (
-          <header>
-            {category && <CategoryHeading>{category}</CategoryHeading>}
-            {title && (
-              <Heading level={1} id={slugify(title)}>
-                {title}
-              </Heading>
-            )}
-          </header>
-        )}
-        <MdxComponent
-          components={{ ...useMDXComponents(), ...MarkdownHeadings }}
-        />
-        {!hidePager && (
-          <>
-            <hr className="my-10" />
-            <Pagination
-              prev={prev ? { to: prev.id, label: prev.label } : undefined}
-              next={next ? { to: next.id, label: next.label } : undefined}
-              className="mb-4"
-            />
-          </>
-        )}
+        <Helmet>
+          <title>{pageTitle}</title>
+          {excerpt && <meta name="description" content={excerpt} />}
+        </Helmet>
+        <div
+          className={cn(
+            ProseClasses,
+            "max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)",
+          )}
+        >
+          {(category || title) && (
+            <header>
+              {category && <CategoryHeading>{category}</CategoryHeading>}
+              {title && (
+                <Heading level={1} id={slugify(title)}>
+                  {title}
+                </Heading>
+              )}
+            </header>
+          )}
+          <MdxComponent
+            components={{ ...useMDXComponents(), ...MarkdownHeadings }}
+          />
+          {!hidePager && (
+            <>
+              <hr className="my-10" />
+              <Pagination
+                prev={prev ? { to: prev.id, label: prev.label } : undefined}
+                next={next ? { to: next.id, label: next.label } : undefined}
+                className="mb-4"
+              />
+            </>
+          )}
+        </div>
+        <aside className="hidden xl:flex flex-col sticky scrollbar top-8 lg:top-(--header-height) h-[calc(100vh-var(--header-height))] pt-(--padding-content-top) pb-(--padding-content-bottom) overflow-y-auto ps-1 text-sm">
+          {showToc && <Toc entries={tocEntries} />}
+          <CopyPageMenu
+            pageContent={excerpt || ""}
+            pageTitle={pageTitle || ""}
+            pageUrl={typeof window !== "undefined" ? window.location.href : ""}
+          />
+        </aside>
       </div>
-      <div className="hidden xl:block">
-        {showToc && <Toc entries={tocEntries} />}
-      </div>
-    </div>
+    </>
   );
 };
