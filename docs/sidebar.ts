@@ -9,7 +9,7 @@ export const docs: Navigation = [
   {
     type: "category",
     label: "Getting started",
-    icon: "sparkles",
+    icon: "circle-play",
     items: ["introduction", "app-quickstart"],
   },
   {
