@@ -11,7 +11,7 @@ Navigation is now configured through a single `navigation` array. Items at the r
 
 ## Before and After
 
-```ts title="Before"
+```tsx title="Before"
 const config: ZudokuConfig = {
   topNavigation: [
     { id: "docs", label: "Docs" },
@@ -21,11 +21,15 @@ const config: ZudokuConfig = {
     docs: [{ type: "doc", id: "introduction" }],
   },
   customPages: [{ path: "/playground", render: Playground, prose: false }],
-  apis: { type: "file", input: "./openapi.json", navigationId: "api" },
+  apis: {
+    type: "file",
+    input: "./openapi.json",
+    navigationId: "api",
+  },
 };
 ```
 
-```ts title="After"
+```tsx title="After"
 const config: ZudokuConfig = {
   navigation: [
     {
@@ -38,9 +42,19 @@ const config: ZudokuConfig = {
       path: "/playground",
       element: <Playground />,
     },
-    { type: "link", href: "api", label: "API" },
+    {
+      type: "link",
+      to: "api",
+      label: "API",
+    },
   ],
-  apis: { type: "file", input: "./openapi.json", path: "api" },
+  apis: [
+    {
+      path: "/api",
+      type: "file",
+      input: "./openapi.json",
+    },
+  ],
 };
 ```
 
@@ -58,7 +72,7 @@ const config: ZudokuConfig = {
 
 1. **Update plugin configs**
 
-   Replace all uses of `navigationId` with `path` in plugin options like `apis` or `catalogs`.
+   Replace all uses of `navigationId` with `path` in plugin options like `apis` or `catalogs`. Navigation items of type `link` should use the `to` property to reference the path of the API or catalog.
 
 1. **Reference plugin paths in navigation**
 
