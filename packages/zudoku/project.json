@@ -22,11 +22,12 @@
         "commands": [
           "pnpm version prerelease --preid local --git-tag-version=false --commit-hooks=false",
           "pnpm publish --filter zudoku --tag local --registry http://localhost:4873 --no-git-checks"
-        ]
+        ],
+        "parallel": false
       }
     },
     "build": {
-      "dependsOn": ["^build", "generate:icon-types"],
+      "dependsOn": ["^build", "generate:types"],
       "outputs": ["{projectRoot}/dist"],
       "inputs": [
         "{projectRoot}/**/*.ts",
@@ -38,7 +39,7 @@
       "cache": true
     },
     "build:dev": {
-      "dependsOn": ["generate:icon-types"],
+      "dependsOn": ["generate:types"],
       "outputs": ["{projectRoot}/dist"],
       "inputs": [
         "{projectRoot}/**/*.ts",
@@ -77,11 +78,11 @@
     "build:standalone:html": {
       "dependsOn": ["build:standalone:vite"]
     },
-    "generate:icon-types": {
+    "generate:types": {
       "cache": true,
       "inputs": [
         "{projectRoot}/package.json",
-        "{projectRoot}/scripts/generate-icon-types.ts"
+        "{projectRoot}/scripts/generate-types.js"
       ],
       "outputs": ["{projectRoot}/src/config/validators/icon-types.ts"]
     }

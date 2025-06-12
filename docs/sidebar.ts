@@ -1,11 +1,11 @@
-import { type SidebarEntry } from "zudoku";
+import { type Navigation } from "zudoku";
 
 /**
  * NOTE: This file should not import anything except zudoku. We use this file
  * in the build of the zuplo docs site to generate the sidebar there.
  */
 
-export const docs: SidebarEntry = [
+export const docs: Navigation = [
   {
     type: "category",
     label: "Getting started",
@@ -52,6 +52,7 @@ export const docs: SidebarEntry = [
       "guides/static-files",
       "guides/environment-variables",
       "guides/custom-pages",
+      "guides/navigation-migration",
       "guides/using-multiple-apis",
       "guides/managing-api-keys-and-identities",
       "guides/transforming-examples",
@@ -77,7 +78,7 @@ export const docs: SidebarEntry = [
     items: ["custom-plugins", "extending/events"],
   },
 ];
-export const components: SidebarEntry = [
+export const components: Navigation = [
   {
     icon: "component",
     type: "category",

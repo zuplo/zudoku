@@ -58,7 +58,7 @@ export default defineConfig({
         // Optional Modules (i.e. auth providers) are external as we don't
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
-        ...Object.keys(pkgJson?.optionalDependencies ?? {}),
+        ...Object.keys(pkgJson?.["optionalDependencies"] ?? {}),
       ],
       plugins: [visualizer()],
       onwarn(warning, warn) {

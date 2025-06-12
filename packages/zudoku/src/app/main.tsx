@@ -6,11 +6,11 @@ import {
 } from "virtual:zudoku-api-plugins";
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
-import { configuredDocsPlugins } from "virtual:zudoku-docs-plugins";
+import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
+import { configuredNavigation } from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { registerShiki } from "virtual:zudoku-shiki-register";
-import { configuredSidebar } from "virtual:zudoku-sidebar";
 import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
@@ -49,12 +49,11 @@ export const convertZudokuConfigToOptions = (
       title: "%s - Zudoku",
       ...config.metadata,
     },
-    sidebars: configuredSidebar,
-    topNavigation: config.topNavigation,
+    navigation: configuredNavigation,
     mdx: config.mdx,
     plugins: [
       ...(configuredAuthProvider ? [configuredAuthProvider] : []),
-      ...configuredDocsPlugins,
+      ...(configuredDocsPlugin ? [configuredDocsPlugin] : []),
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
       ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
@@ -99,6 +98,8 @@ export const getRoutesByOptions = (
         },
       },
     ]);
+
+  // @TODO Detect conflicts in routes and log warning
 
   return routes;
 };

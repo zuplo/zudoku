@@ -11,15 +11,18 @@ import {
 import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { isHiddenItem } from "./navigation/utils.js";
+import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { PageProgress, TopNavItem } from "./TopNavigation.js";
+import { TopNavItem } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
-  const { topNavigation, options } = useZudoku();
+  const { navigation, options } = useZudoku();
   const { isAuthenticated } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const filteredItems = navigation.filter(isHiddenItem(isAuthenticated));
 
   return (
     <Drawer
@@ -50,15 +53,13 @@ export const MobileTopNavigation = () => {
               <li>
                 <ThemeSwitch />
               </li>
-              {topNavigation
-                .filter(isHiddenItem(isAuthenticated))
-                .map((item) => (
-                  <li key={item.label}>
-                    <button type="button" onClick={() => setDrawerOpen(false)}>
-                      <TopNavItem {...item} />
-                    </button>
-                  </li>
-                ))}
+              {filteredItems.map((item) => (
+                <li key={item.label}>
+                  <button type="button" onClick={() => setDrawerOpen(false)}>
+                    <TopNavItem {...item} />
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
           {options.page?.showPoweredBy !== false && (

@@ -4,17 +4,17 @@ import { ChevronRightIcon } from "lucide-react";
 import { memo, useEffect, useState } from "react";
 import { NavLink, useLocation, useMatch } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
-import type { SidebarItemCategory } from "../../../config/validators/SidebarSchema.js";
+import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { SidebarItem } from "./SidebarItem.js";
+import { NavigationItem } from "./NavigationItem.js";
 import { navigationListItem, useIsCategoryOpen } from "./utils.js";
 
-const SidebarCategoryInner = ({
+const NavigationCategoryInner = ({
   category,
   onRequestClose,
 }: {
-  category: SidebarItemCategory;
+  category: NavigationCategoryType;
   onRequestClose?: () => void;
 }) => {
   const isCategoryOpen = useIsCategoryOpen(category);
@@ -27,11 +27,11 @@ const SidebarCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(category.link?.id ?? "");
+  const isActive = useMatch(category.link?.path ?? "");
 
   useEffect(() => {
-    // this is triggered when an item from the sidebar is clicked
-    // and the sidebar, enclosing this item, is not opened
+    // this is triggered when an item from the navigation is clicked
+    // and the navigation, enclosing this item, is not opened
     if (isCategoryOpen) {
       setOpen(true);
     }
@@ -85,7 +85,7 @@ const SidebarCategoryInner = ({
         {category.link?.type === "doc" ? (
           <NavLink
             to={{
-              pathname: joinUrl(category.link.id),
+              pathname: joinUrl(category.link.path),
               search: location.search,
             }}
             className={styles}
@@ -123,11 +123,13 @@ const SidebarCategoryInner = ({
       >
         <ul className="relative after:absolute after:-start-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
-            <SidebarItem
+            <NavigationItem
               key={
-                ("id" in item ? item.id : "") +
-                ("href" in item ? item.href : "") +
-                item.label
+                item.type +
+                (item.label ?? "") +
+                ("path" in item ? item.path : "") +
+                ("file" in item ? item.file : "") +
+                ("to" in item ? item.to : "")
               }
               onRequestClose={onRequestClose}
               item={item}
@@ -139,6 +141,6 @@ const SidebarCategoryInner = ({
   );
 };
 
-export const SidebarCategory = memo(SidebarCategoryInner, deepEqual);
+export const NavigationCategory = memo(NavigationCategoryInner, deepEqual);
 
-SidebarCategory.displayName = "SidebarCategory";
+NavigationCategory.displayName = "NavigationCategory";

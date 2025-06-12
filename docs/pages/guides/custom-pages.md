@@ -60,9 +60,9 @@ Import the `<MyCustomPage />` component that you created.
 import { MyCustomPage } from "./src/MyCustomPage";
 ```
 
-### Add The `customPages` Config
+### Add a navigation entry
 
-Add the `customPages` option to the configuration. Each page you want to add to the site must be its own object.
+Add a `custom-page` item to the `navigation` configuration. Each page you want to add to the site must be its own object.
 
 The `path` key can be set to whatever you like. This will appear as part of the URL in the address bar of the browser.
 
@@ -71,8 +71,9 @@ The `element` key references the name of the custom page component that you want
 ```typescript
 {
   // ...
-  customPages: [
+  navigation: [
     {
+      type: "custom-page",
       path: "/a-custom-page",
       element: <MyCustomPage />,
     },

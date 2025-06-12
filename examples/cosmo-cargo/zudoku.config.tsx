@@ -3,7 +3,7 @@ import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
-  async getIdentities(context: ZudokuContext) {
+  async getIdentities(_context: ZudokuContext) {
     return [
       {
         label: `Unlimited Subscription`,
@@ -98,33 +98,58 @@ const config: ZudokuConfig = {
       },
     },
   },
+  plugins: [new CosmoCargoApiIdentityPlugin()],
   protectedRoutes: ["/only-members"],
-  topNavigation: [
-    { id: "documentation", label: "Documentation" },
-    { id: "api-shipments", label: "Shipments API" },
-    { id: "catalog", label: "API Catalog" },
+  navigation: [
+    {
+      type: "custom-page",
+      path: "/",
+      element: <Landingpage />,
+    },
+    {
+      type: "category",
+      label: "Documentation",
+      icon: "book-open",
+      items: [
+        "documentation",
+        {
+          type: "category",
+          icon: "telescope",
+          collapsed: false,
+          label: "Space Operations",
+          items: ["shipping-process", "tracking"],
+        },
+        "global",
+        {
+          type: "category",
+          icon: "library-big",
+          label: "Shipping Guides",
+          items: ["interstellar", "intergalactic"],
+        },
+      ],
+    },
+    {
+      type: "link",
+      icon: "ship",
+      to: "/api-shipments/shipment-management",
+      label: "Shipments",
+    },
+    {
+      type: "link",
+      icon: "square-library",
+      to: "/catalog",
+      label: "API Catalog",
+    },
+    {
+      type: "custom-page",
+      path: "/only-members",
+      label: "Only members",
+      display: "auth",
+      element: <div>Only members are allowed in here.</div>,
+    },
   ],
-  sidebar: {
-    documentation: [
-      "documentation",
-      {
-        type: "category",
-        icon: "telescope",
-        collapsed: false,
-        label: "Space Operations",
-        items: ["shipping-process", "tracking"],
-      },
-      "global",
-      {
-        type: "category",
-        icon: "library-big",
-        label: "Shipping Guides",
-        items: ["interstellar", "intergalactic"],
-      },
-    ],
-  },
   catalogs: {
-    navigationId: "catalog",
+    path: "catalog",
     label: "API Catalog",
   },
   authentication: {
@@ -141,16 +166,11 @@ const config: ZudokuConfig = {
   search: {
     type: "pagefind",
   },
-  customPages: [
-    { path: "/", element: <Landingpage /> },
-    { path: "/only-members", element: <div>Only members</div> },
-  ],
-  plugins: [new CosmoCargoApiIdentityPlugin()],
   apis: [
     {
       type: "file",
       input: "./schema/shipments.json",
-      navigationId: "api-shipments",
+      path: "api-shipments",
       categories: [{ label: "General", tags: ["Shipments"] }],
       options: {
         transformExamples: ({ content, auth }) => {
@@ -182,31 +202,28 @@ const config: ZudokuConfig = {
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
-      navigationId: "api-label",
+      path: "/catalog/api-label",
       categories: [{ label: "General", tags: ["Labels"] }],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
-      navigationId: "api-webhooks",
+      path: "/catalog/api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],
     },
     {
       type: "file",
       input: "./schema/interplanetary.json",
-      navigationId: "api-interplanetary",
+      path: "/catalog/api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
-      navigationId: "api-tracking",
+      path: "/catalog/api-tracking",
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
   ],
-  docs: {
-    files: "/pages/**/*.mdx",
-  },
   theme: {
     light: {
       background: "0 0% 100%",

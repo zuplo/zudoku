@@ -15,7 +15,7 @@ const viteCustomPagesPlugin = (): Plugin => {
       if (id === resolvedVirtualModuleId) {
         const config = getCurrentConfig();
 
-        if (!config.customPages || config.__meta.mode === "standalone") {
+        if (config.__meta.mode === "standalone" || !config.navigation) {
           return `export const configuredCustomPagesPlugin = undefined;`;
         }
 
@@ -24,7 +24,7 @@ const viteCustomPagesPlugin = (): Plugin => {
           config.__meta.mode === "internal"
             ? `import { customPagesPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/custom-pages/index.tsx";`
             : `import { customPagesPlugin } from "zudoku/plugins/custom-pages";`,
-          `export const configuredCustomPagesPlugin = customPagesPlugin(config.customPages);`,
+          `export const configuredCustomPagesPlugin = customPagesPlugin(config.navigation);`,
         ];
 
         return code.join("\n");

@@ -8,13 +8,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
-import type { SidebarItem as SidebarItemType } from "../../../config/validators/SidebarSchema.js";
+import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
-import { SidebarBadge } from "./SidebarBadge.js";
-import { SidebarCategory } from "./SidebarCategory.js";
+import { NavigationBadge } from "./NavigationBadge.js";
+import { NavigationCategory } from "./NavigationCategory.js";
 import { navigationListItem } from "./utils.js";
 
 const TruncatedLabel = ({
@@ -65,11 +65,11 @@ const TruncatedLabel = ({
 
 export const DATA_ANCHOR_ATTR = "data-anchor";
 
-export const SidebarItem = ({
+export const NavigationItem = ({
   item,
   onRequestClose,
 }: {
-  item: SidebarItemType;
+  item: NavigationItemType;
   onRequestClose?: () => void;
 }) => {
   const location = useLocation();
@@ -78,23 +78,26 @@ export const SidebarItem = ({
   switch (item.type) {
     case "category":
       return (
-        <SidebarCategory category={item} onRequestClose={onRequestClose} />
+        <NavigationCategory category={item} onRequestClose={onRequestClose} />
       );
     case "doc":
       return (
         <NavLink
+          viewTransition
           className={({ isActive, isPending }) =>
             navigationListItem({ isActive, isPending })
           }
-          to={joinUrl(item.id)}
+          to={joinUrl(item.path)}
           onClick={onRequestClose}
           end
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <TruncatedLabel label={item.label} className="flex-1" />
-              <SidebarBadge {...item.badge} />
+              {item.label && (
+                <TruncatedLabel label={item.label} className="flex-1" />
+              )}
+              <NavigationBadge {...item.badge} />
             </>
           ) : (
             item.label
@@ -102,24 +105,26 @@ export const SidebarItem = ({
         </NavLink>
       );
     case "link":
-      return !item.href.startsWith("http") ? (
+    case "custom-page": {
+      const href = item.type === "link" ? item.to : item.path;
+      return !href.startsWith("http") ? (
         <AnchorLink
           to={{
-            pathname: item.href.split("#")[0],
-            hash: item.href.split("#")[1],
+            pathname: href.split("#")[0],
+            hash: href.split("#")[1],
             search: location.search,
           }}
-          {...{ [DATA_ANCHOR_ATTR]: item.href.split("#")[1] }}
+          {...{ [DATA_ANCHOR_ATTR]: href.split("#")[1] }}
           className={navigationListItem({
-            isActive: item.href === [location.pathname, activeAnchor].join("#"),
+            isActive: href === [location.pathname, activeAnchor].join("#"),
           })}
           onClick={onRequestClose}
         >
           {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
           {item.badge ? (
             <>
-              <TruncatedLabel label={item.label} />
-              <SidebarBadge {...item.badge} />
+              {item.label && <TruncatedLabel label={item.label} />}
+              <NavigationBadge {...item.badge} />
             </>
           ) : (
             <span className="break-all">{item.label}</span>
@@ -128,7 +133,7 @@ export const SidebarItem = ({
       ) : (
         <a
           className={navigationListItem()}
-          href={item.href}
+          href={href}
           target="_blank"
           rel="noopener noreferrer"
           onClick={onRequestClose}
@@ -141,5 +146,6 @@ export const SidebarItem = ({
           </span>
         </a>
       );
+    }
   }
 };

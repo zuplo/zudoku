@@ -7,25 +7,30 @@ const config = {
       width: "130px",
     },
   },
-  topNavigation: [
-    { id: "docs", label: "Documentation" },
-    { id: "api", label: "API Reference" },
+  navigation: [
+    {
+      type: "category",
+      label: "Documentation",
+      items: [
+        {
+          type: "category",
+          label: "Get started",
+          items: ["docs/introduction", "docs/example"],
+        },
+      ],
+    },
+    {
+      type: "link",
+      to: "/api",
+      label: "API Reference",
+    },
   ],
-  sidebar: {
-    docs: [
-      {
-        type: "category",
-        label: "Overview",
-        items: ["docs/introduction", "docs/example"],
-      },
-    ],
-  },
   redirects: [{ from: "/", to: "/docs/introduction" }],
   apis: [
     {
       type: "file",
       input: "./apis/openapi.yaml",
-      navigationId: "api",
+      path: "api",
     },
   ],
   docs: {

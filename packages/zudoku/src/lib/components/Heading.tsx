@@ -46,7 +46,11 @@ export type HeadingProps = HTMLAttributes<HTMLHeadingElement> &
     className?: string;
     id?: string;
     level?: 1 | 2 | 3 | 4 | 5 | 6;
-    registerSidebarAnchor?: boolean;
+    /**
+     * This is to set labels as active when the heading is in the viewport.
+     * It's used in the navigation/toc to highlight the current section.
+     */
+    registerNavigationAnchor?: boolean;
   };
 
 export const Heading = ({
@@ -54,7 +58,7 @@ export const Heading = ({
   children,
   id,
   className,
-  registerSidebarAnchor,
+  registerNavigationAnchor,
 }: HeadingProps) => {
   const Component = getComponent(level ?? 1);
   const { ref } = useRegisterAnchorElement();
@@ -65,7 +69,7 @@ export const Heading = ({
         className: cn(className, "flex items-center gap-[0.33em]"),
         level,
       })}
-      ref={registerSidebarAnchor ? ref : undefined}
+      ref={registerNavigationAnchor ? ref : undefined}
       id={id}
     >
       {children}

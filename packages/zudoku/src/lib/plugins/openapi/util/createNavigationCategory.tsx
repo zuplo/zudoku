@@ -1,8 +1,8 @@
-import type { SidebarItem } from "../../../../config/validators/SidebarSchema.js";
+import type { NavigationItem } from "../../../../config/validators/NavigationSchema.js";
 import type { OperationResult } from "../index.js";
 import { MethodColorMap } from "./methodColorMap.js";
 
-export const createSidebarCategory = ({
+export const createNavigationCategory = ({
   label,
   path,
   operations,
@@ -14,12 +14,13 @@ export const createSidebarCategory = ({
   operations: OperationResult[];
   collapsible?: boolean;
   collapsed?: boolean;
-}): SidebarItem => ({
+}): NavigationItem => ({
   type: "category",
   label,
   link: {
     type: "doc" as const,
-    id: path,
+    path,
+    file: path,
     label,
   },
   collapsible,
@@ -27,7 +28,7 @@ export const createSidebarCategory = ({
   items: operations.map((operation) => ({
     type: "link" as const,
     label: operation.summary ?? operation.path,
-    href: `${path}#${operation.slug}`,
+    to: `${path}#${operation.slug}`,
     badge: {
       label: operation.method,
       color: MethodColorMap[operation.method.toLowerCase()]!,

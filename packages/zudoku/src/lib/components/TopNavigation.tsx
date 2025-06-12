@@ -1,44 +1,19 @@
-import { useNProgress } from "@tanem/react-nprogress";
 import { cx } from "class-variance-authority";
-import { Suspense, useEffect, useState } from "react";
-import { NavLink, useNavigation } from "react-router";
-import type { TopNavigationItem } from "../../config/validators/validate.js";
+import { deepEqual } from "fast-equals";
+import { Suspense } from "react";
+import { NavLink } from "react-router";
+import { type NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { isHiddenItem, traverseSidebar } from "./navigation/utils.js";
+import { isHiddenItem, traverseNavigationItem } from "./navigation/utils.js";
 import { Slot } from "./Slot.js";
 
-export const PageProgress = () => {
-  const navigation = useNavigation();
-  const isNavigating = navigation.state === "loading";
-  // delay the animation to avoid flickering
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsAnimating(isNavigating), 100);
-
-    return () => clearTimeout(timer);
-  }, [isNavigating]);
-
-  const { isFinished, progress } = useNProgress({ isAnimating });
-
-  return (
-    <div
-      className="absolute w-0 left-0 right-0 bottom-[-1px] h-[2px] bg-primary transition-all duration-300 ease-in-out"
-      style={{
-        opacity: isFinished ? 0 : 1,
-        width: isFinished ? 0 : `${progress * 100}%`,
-      }}
-    />
-  );
-};
-
 export const TopNavigation = () => {
-  const { topNavigation } = useZudoku();
+  const { navigation } = useZudoku();
   const { isAuthenticated } = useAuth();
 
-  const filteredItems = topNavigation.filter(isHiddenItem(isAuthenticated));
+  const filteredItems = navigation.filter(isHiddenItem(isAuthenticated));
 
   if (filteredItems.length === 0 || import.meta.env.MODE === "standalone") {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
@@ -50,7 +25,7 @@ export const TopNavigation = () => {
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
             {filteredItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.label + item.type}>
                 <TopNavItem {...item} />
               </li>
             ))}
@@ -58,50 +33,66 @@ export const TopNavigation = () => {
         </nav>
         <Slot.Target name="top-navigation-side" />
       </div>
-      <PageProgress />
+      {/* <PageProgress /> */}
     </Suspense>
   );
 };
 
-export const TopNavItem = ({
-  id,
-  label,
-  default: defaultLink,
-}: TopNavigationItem) => {
-  const { sidebars } = useZudoku();
-  const currentSidebar = sidebars[id];
-  const currentNav = useCurrentNavigation();
-  const isNavigating = Boolean(useNavigation().location);
-  const isActive = currentNav.topNavItem?.id === id && !isNavigating;
+const getPathForItem = (item: NavigationItem): string => {
+  switch (item.type) {
+    case "doc":
+      return joinUrl(item.path);
+    case "link":
+      return item.to;
+    case "category": {
+      if (item.link?.path) {
+        return joinUrl(item.link.path);
+      }
 
-  // TODO: This is a bit of a hack to get the first link in the sidebar
-  // We should really process this when we load the config so we can validate
-  // that the sidebar is actually set. In this case we just fall back to linking
-  // to the id if we can't resolve a sidebar.
-  const first =
-    defaultLink ??
-    (currentSidebar
-      ? traverseSidebar(currentSidebar, (item) => {
-          if (item.type === "doc") return joinUrl(item.id);
-        })
-      : joinUrl(id)) ??
-    joinUrl(id);
+      return (
+        traverseNavigationItem(item, (child) => {
+          if (child.type !== "category") {
+            return getPathForItem(child);
+          }
+        }) ?? ""
+      );
+    }
+    case "custom-page":
+      return item.path;
+  }
+};
+
+export const TopNavItem = (item: NavigationItem) => {
+  const currentNav = useCurrentNavigation();
+  const isActiveTopNavItem = deepEqual(currentNav.topNavItem, item);
+
+  const path = getPathForItem(item);
 
   return (
-    // We don't use isActive here because it has to be inside the sidebar,
-    // the top nav id doesn't necessarily start with the sidebar id
+    // We don't use isActive here because it has to be inside the navigation,
+    // the top nav id doesn't necessarily start with the navigation id
     <NavLink
-      className={({ isPending }) =>
-        cx(
-          "block lg:py-3.5 font-medium -mb-px",
+      viewTransition
+      to={path}
+      className={({ isActive: isActiveNavLink, isPending }) => {
+        const isActive = isActiveNavLink || isActiveTopNavItem;
+        return cx(
+          "flex items-center gap-2 lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
           isActive || isPending
-            ? "border-primary text-foreground"
-            : "border-transparent text-foreground/75 hover:text-foreground hover:border-accent-foreground/25",
-        )
-      }
-      to={first}
+            ? [
+                "text-foreground",
+                // underline with view transition animation
+                "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0",
+                "after:h-0.5 after:bg-primary",
+                isActive && "after:[view-transition-name:top-nav-underline]",
+                isPending && "after:bg-primary/25",
+              ]
+            : "text-foreground/75 hover:text-foreground",
+        );
+      }}
     >
-      {label}
+      {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
+      {item.label}
     </NavLink>
   );
 };

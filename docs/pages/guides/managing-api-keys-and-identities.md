@@ -280,8 +280,9 @@ import { ApiKeyManager } from "./src/ApiKeyManager";
 
 export default {
   // ... other configuration
-  customPages: [
+  navigation: [
     {
+      type: "custom-page",
       path: "/api-keys",
       element: <ApiKeyManager />,
     },

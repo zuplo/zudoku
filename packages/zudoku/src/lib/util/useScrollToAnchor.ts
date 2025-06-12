@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useLocation } from "react-router";
 import { useViewportAnchor } from "../components/context/ViewportAnchorContext.js";
-import { DATA_ANCHOR_ATTR } from "../components/navigation/SidebarItem.js";
+import { DATA_ANCHOR_ATTR } from "../components/navigation/NavigationItem.js";
 import { scrollIntoViewIfNeeded } from "./scrollIntoViewIfNeeded.js";
 
 export const useScrollToHash = () => {
@@ -11,8 +11,8 @@ export const useScrollToHash = () => {
     (hash: string) => {
       const cleanHash = hash.replace(/^#/, "");
 
-      // Operation list items might have subdivisions that the sidebar doesn't show.
-      // The subdivisions are separated by a slash so we need to remove everything before the slash to get the sidebar correct item.
+      // Operation list items might have subdivisions that the navigation doesn't show.
+      // The subdivisions are separated by a slash so we need to remove everything before the slash to get the navigation correct item.
       const linkHash = cleanHash.split("/").at(0)!;
       const element = document.getElementById(decodeURIComponent(cleanHash));
 

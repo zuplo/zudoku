@@ -15,9 +15,9 @@ const config: ZudokuConfig = {
       to: "/documentation/introduction",
     },
   ],
-  topNavigation: [
-    { id: "documentation/introduction", label: "Introduction" },
-    { id: "api", label: "Demo API" },
+  navigation: [
+    "documentation/introduction",
+    { type: "link", to: "api", label: "Demo API" },
   ],
   docs: {
     files: "/pages/**/*.mdx",
@@ -31,7 +31,7 @@ const config: ZudokuConfig = {
   apis: {
     type: "file",
     input: "schema/simple.json",
-    navigationId: "api",
+    path: "api",
   },
 };
 

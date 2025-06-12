@@ -25,12 +25,12 @@ declare global {
 
 const MarkdownHeadings = {
   h2: ({ children, id }) => (
-    <Heading level={2} id={id} registerSidebarAnchor>
+    <Heading level={2} id={id} registerNavigationAnchor>
       {children}
     </Heading>
   ),
   h3: ({ children, id }) => (
-    <Heading level={3} id={id} registerSidebarAnchor>
+    <Heading level={3} id={id} registerNavigationAnchor>
       {children}
     </Heading>
   ),
@@ -58,7 +58,10 @@ export const MdxPage = ({
   const pageTitle =
     tableOfContents.find((item) => item.depth === 1)?.value ?? title;
   const hidePager =
-    frontmatter.disablePager ?? defaultOptions?.disablePager ?? false;
+    frontmatter.disable_pager ??
+    frontmatter.disablePager ??
+    defaultOptions?.disablePager ??
+    false;
 
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??
