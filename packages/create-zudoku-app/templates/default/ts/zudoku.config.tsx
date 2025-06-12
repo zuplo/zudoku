@@ -15,8 +15,35 @@ const config: ZudokuConfig = {
       items: [
         {
           type: "category",
-          label: "Get started",
-          items: ["docs/introduction", "docs/example"],
+          label: "Getting Started",
+          icon: "sparkles",
+          items: [
+            "/introduction",
+            {
+              type: "link",
+              icon: "folder-cog",
+              badge: {
+                label: "New",
+                color: "purple",
+              },
+              label: "API Reference",
+              to: "/api",
+            },
+          ],
+        },
+        {
+          type: "category",
+          label: "Useful Links",
+          collapsible: false,
+          icon: "link",
+          items: [
+            {
+              type: "link",
+              icon: "book",
+              label: "Zudoku Docs",
+              to: "https://zudoku.dev/docs/",
+            },
+          ],
         },
       ],
     },
@@ -31,12 +58,9 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./apis/openapi.yaml",
-      path: "api",
+      path: "/api",
     },
   ],
-  docs: {
-    files: "/pages/**/*.{md,mdx}",
-  },
 };
 
 export default config;

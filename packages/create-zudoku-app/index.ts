@@ -56,7 +56,6 @@ const program = new Command(packageJson.name)
     "--import-alias <prefix/*>",
     'Specify import alias to use (default "@/*").',
   )
-  .option("--empty", "Initialize an empty project.")
   .option(
     "--use-npm",
     "Explicitly tell the CLI to bootstrap the application using npm.",
@@ -295,7 +294,6 @@ async function run(): Promise<void> {
       typescript: opts.typescript,
       eslint: opts.eslint,
       skipInstall: opts.skipInstall,
-      empty: opts.empty,
       zudokuVersion: packageJson.version,
     });
   } catch (reason) {
@@ -322,7 +320,6 @@ async function run(): Promise<void> {
       typescript: opts.typescript,
       eslint: opts.eslint,
       skipInstall: opts.skipInstall,
-      empty: opts.empty,
       zudokuVersion: packageJson.version,
     });
   }

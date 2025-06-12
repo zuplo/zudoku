@@ -32,7 +32,6 @@ export async function createApp({
   typescript,
   eslint,
   skipInstall,
-  empty,
   zudokuVersion,
 }: {
   appPath: string;
@@ -42,12 +41,11 @@ export async function createApp({
   typescript: boolean;
   eslint: boolean;
   skipInstall: boolean;
-  empty: boolean;
   zudokuVersion: string;
 }): Promise<void> {
   let repoInfo: RepoInfo | undefined;
   const mode: TemplateMode = typescript ? "ts" : "js";
-  const template: TemplateType = `default${empty ? "-empty" : ""}`;
+  const template: TemplateType = `default`;
 
   if (example) {
     let repoUrl: URL | undefined;
