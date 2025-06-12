@@ -5,22 +5,6 @@ sidebar_icon: link
 
 A navigation component that provides client-side routing capabilities for internal links and external link handling.
 
-## Props
-
-The Link component extends React Router's Link component with all its standard props.
-
-```ts
-interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  to: string | Partial<Path>;
-  replace?: boolean;
-  state?: any;
-  preventScrollReset?: boolean;
-  relative?: "route" | "path";
-  reloadDocument?: boolean;
-  viewTransition?: boolean;
-}
-```
-
 ## Usage
 
 ### Basic Internal Link
