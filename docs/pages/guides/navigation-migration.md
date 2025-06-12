@@ -1,6 +1,6 @@
 ---
 title: Navigation Migration
-sidebar_icon: arrows-left-right
+navigation_icon: arrow-right-left
 ---
 
 This guide explains how to migrate existing configurations that used `topNavigation`, `sidebar` and `customPages` to the new unified `navigation` configuration introduced in vNEXT.
