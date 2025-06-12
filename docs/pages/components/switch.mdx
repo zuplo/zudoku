@@ -1,0 +1,94 @@
+---
+title: Switch
+sidebar_icon: toggle-left
+---
+
+A switch component built on Radix UI primitives for boolean toggle input.
+
+## Props
+
+```ts
+interface SwitchProps
+  extends React.ComponentPropsWithoutRef<typeof SwitchPrimitives.Root> {}
+```
+
+## Basic Usage
+
+<Switch />
+
+```tsx
+<Switch />
+```
+
+## With Label
+
+<div className="flex items-center space-x-2">
+  <Switch id="airplane-mode" />
+  <Label htmlFor="airplane-mode">Airplane Mode</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Switch id="airplane-mode" />
+  <Label htmlFor="airplane-mode">Airplane Mode</Label>
+</div>
+```
+
+## Checked State
+
+<div className="flex items-center space-x-2">
+  <Switch id="airplane-mode-2" defaultChecked />
+  <Label htmlFor="airplane-mode-2">Airplane Mode</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Switch id="airplane-mode-2" defaultChecked />
+  <Label htmlFor="airplane-mode-2">Airplane Mode</Label>
+</div>
+```
+
+## Disabled State
+
+<div className="flex items-center space-x-2">
+  <Switch id="airplane-mode-3" disabled />
+  <Label htmlFor="airplane-mode-3">Airplane Mode</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Switch id="airplane-mode-3" disabled />
+  <Label htmlFor="airplane-mode-3">Airplane Mode</Label>
+</div>
+```
+
+## With Description
+
+<div className="flex items-center justify-between">
+  <div className="space-y-0.5">
+    <Label htmlFor="marketing-emails">Marketing emails</Label>
+    <div className="text-sm text-muted-foreground">
+      Receive emails about new products, features, and more.
+    </div>
+  </div>
+  <Switch id="marketing-emails" />
+</div>
+
+```tsx
+<div className="flex items-center justify-between">
+  <div className="space-y-0.5">
+    <Label htmlFor="marketing-emails">Marketing emails</Label>
+    <div className="text-sm text-muted-foreground">
+      Receive emails about new products, features, and more.
+    </div>
+  </div>
+  <Switch id="marketing-emails" />
+</div>
+```
+
+## Features
+
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Smooth Animation**: Smooth transition between states
+- **Controlled/Uncontrolled**: Can be used with or without state management
+- **Touch Friendly**: Optimized for touch interactions

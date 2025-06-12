@@ -1,0 +1,139 @@
+---
+title: Alert
+sidebar_icon: triangle-alert
+---
+
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
+import { CheckCircle2, Terminal } from "zudoku/icons";
+
+An alert component for displaying important information to users with different severity levels.
+
+## Components
+
+The Alert component consists of several sub-components:
+
+- `Alert` - The main container
+- `AlertTitle` - Title for the alert
+- `AlertDescription` - Description content for the alert
+
+## Props
+
+```ts
+interface AlertProps extends React.HTMLAttributes<HTMLDivElement> {
+  variant?: "default" | "destructive";
+}
+```
+
+## Default Alert
+
+<Alert className="not-prose">
+  <Terminal className="h-4 w-4" />
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+</Alert>
+
+```tsx title="Alert Example"
+<Alert>
+  <Terminal className="h-4 w-4" />
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+</Alert>
+```
+
+## Destructive Alert
+
+<Alert variant="destructive">
+  <AlertTitle>Error</AlertTitle>
+  <AlertDescription>
+    Your session has expired. Please log in again.
+  </AlertDescription>
+</Alert>
+
+```tsx
+<Alert variant="destructive">
+  <AlertTitle>Error</AlertTitle>
+  <AlertDescription>
+    Your session has expired. Please log in again.
+  </AlertDescription>
+</Alert>
+```
+
+## Without Title
+
+<Alert>
+  <Terminal className="h-4 w-4" />
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+</Alert>
+
+```tsx
+<Alert>
+  <Terminal className="h-4 w-4" />
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+</Alert>
+```
+
+## Without Icon
+
+<Alert>
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+</Alert>
+
+```tsx
+<Alert>
+  <AlertTitle>Heads up!</AlertTitle>
+  <AlertDescription>
+    You can add components and dependencies to your app using the cli.
+  </AlertDescription>
+</Alert>
+```
+
+## Usage Examples
+
+### Success Alert
+
+<Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
+  <CheckCircle2 className="h-4 w-4" />
+  <AlertTitle>Success!</AlertTitle>
+  <AlertDescription>
+    Your changes have been saved successfully.
+  </AlertDescription>
+</Alert>
+
+```tsx
+<Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
+  <CheckCircle2 className="h-4 w-4" />
+  <AlertTitle>Success!</AlertTitle>
+  <AlertDescription>
+    Your changes have been saved successfully.
+  </AlertDescription>
+</Alert>
+```
+
+### Warning Alert
+
+<Alert className="border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400">
+  <AlertTitle>Warning!</AlertTitle>
+  <AlertDescription>
+    This action cannot be undone. Please proceed with caution.
+  </AlertDescription>
+</Alert>
+
+```tsx
+<Alert className="border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400">
+  <AlertTitle>Warning!</AlertTitle>
+  <AlertDescription>
+    This action cannot be undone. Please proceed with caution.
+  </AlertDescription>
+</Alert>
+```

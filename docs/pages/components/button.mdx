@@ -1,0 +1,136 @@
+---
+title: Button
+sidebar_icon: mouse-pointer-click
+---
+
+A flexible button component with multiple variants and sizes for different use cases.
+
+## Props
+
+```ts
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "ghost-destructive"
+    | "link"
+    | "expand";
+  size?: "default" | "sm" | "lg" | "xl" | "icon" | "icon-xs";
+  asChild?: boolean;
+}
+```
+
+## Variants
+
+### Default
+
+<Button variant="default">Default Button</Button>
+
+```tsx
+<Button variant="default">Default Button</Button>
+```
+
+### Destructive
+
+<Button variant="destructive">Delete</Button>
+
+```tsx
+<Button variant="destructive">Delete</Button>
+```
+
+### Outline
+
+<Button variant="outline">Outline Button</Button>
+
+```tsx
+<Button variant="outline">Outline Button</Button>
+```
+
+### Secondary
+
+<Button variant="secondary">Secondary</Button>
+
+```tsx
+<Button variant="secondary">Secondary</Button>
+```
+
+### Ghost
+
+<Button variant="ghost">Ghost Button</Button>
+
+```tsx
+<Button variant="ghost">Ghost Button</Button>
+```
+
+### Link
+
+<Button variant="link">Link Button</Button>
+
+```tsx
+<Button variant="link">Link Button</Button>
+```
+
+## Sizes
+
+### Default Size
+
+<Button size="default">Default Size</Button>
+
+```tsx
+<Button size="default">Default Size</Button>
+```
+
+### Small
+
+<Button size="sm">Small Button</Button>
+
+```tsx
+<Button size="sm">Small Button</Button>
+```
+
+### Large
+
+<Button size="lg">Large Button</Button>
+
+```tsx
+<Button size="lg">Large Button</Button>
+```
+
+### Extra Large
+
+<Button size="xl">Extra Large</Button>
+
+```tsx
+<Button size="xl">Extra Large</Button>
+```
+
+### Icon
+
+<Button size="icon">⚙️</Button>
+
+```tsx
+<Button size="icon">⚙️</Button>
+```
+
+## As Child
+
+Use the `asChild` prop to render the button as a different element while maintaining button styling:
+
+```tsx
+<Button asChild>
+  <a href="/link">Link as Button</a>
+</Button>
+```
+
+## Custom Styling
+
+The Button component accepts all standard button HTML attributes and can be customized with additional className:
+
+```tsx
+<Button className="w-full" variant="outline">
+  Full Width Button
+</Button>
+```

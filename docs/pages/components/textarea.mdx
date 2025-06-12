@@ -1,0 +1,79 @@
+---
+title: Textarea
+sidebar_icon: type
+---
+
+A multiline text input component for forms and user input.
+
+## Props
+
+```ts
+interface TextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+```
+
+## Basic Usage
+
+<Textarea placeholder="Type your message here." />
+
+```tsx
+<Textarea placeholder="Type your message here." />
+```
+
+## With Label
+
+<div className="grid w-full gap-1.5">
+  <Label htmlFor="message">Your message</Label>
+  <Textarea placeholder="Type your message here." id="message" />
+</div>
+
+```tsx
+<div className="grid w-full gap-1.5">
+  <Label htmlFor="message">Your message</Label>
+  <Textarea placeholder="Type your message here." id="message" />
+</div>
+```
+
+## With Text
+
+<div className="grid w-full gap-1.5">
+  <Label htmlFor="message-2">Your message</Label>
+  <Textarea placeholder="Type your message here." id="message-2" />
+  <p className="text-sm text-muted-foreground">
+    Your message will be copied to the support team.
+  </p>
+</div>
+
+```tsx
+<div className="grid w-full gap-1.5">
+  <Label htmlFor="message-2">Your message</Label>
+  <Textarea placeholder="Type your message here." id="message-2" />
+  <p className="text-sm text-muted-foreground">
+    Your message will be copied to the support team.
+  </p>
+</div>
+```
+
+## Disabled State
+
+<Textarea disabled placeholder="Disabled textarea" />
+
+```tsx
+<Textarea disabled placeholder="Disabled textarea" />
+```
+
+## Custom Height
+
+<Textarea className="min-h-[150px]" placeholder="Taller textarea" />
+
+```tsx
+<Textarea className="min-h-[150px]" placeholder="Taller textarea" />
+```
+
+## Custom Styling
+
+The Textarea component accepts all standard textarea HTML attributes and can be customized with additional className:
+
+```tsx
+<Textarea className="resize-none" placeholder="Non-resizable textarea" />
+```
