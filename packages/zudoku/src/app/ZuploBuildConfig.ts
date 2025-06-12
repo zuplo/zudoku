@@ -19,14 +19,14 @@ export const EntitlementsSchema = z.object({
 
 export const BuildConfigSchema = z.object({
   entitlements: EntitlementsSchema,
-  environmentType: z.string(),
+  environmentType: z.string().optional(),
   deploymentName: z.string(),
-  deploymentUrl: z.string(),
-  projectId: z.string(),
-  projectType: z.string(),
-  sourceType: z.string(),
-  accountName: z.string(),
-  projectName: z.string(),
+  deploymentUrl: z.string().optional(),
+  projectId: z.string().optional(),
+  projectType: z.string().optional(),
+  sourceType: z.string().optional(),
+  accountName: z.string().optional(),
+  projectName: z.string().optional(),
 });
 
 export type BuildConfig = z.infer<typeof BuildConfigSchema>;

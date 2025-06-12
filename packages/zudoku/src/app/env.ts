@@ -1,3 +1,4 @@
+import z from "zod";
 import { BuildConfigSchema } from "./ZuploBuildConfig.js";
 
 const getZuploBuildConfig = () => {
@@ -9,6 +10,13 @@ const getZuploBuildConfig = () => {
     );
     return zuploBuildConfig;
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      // eslint-disable-next-line no-console
+      console.error("ZUPLO_BUILD_CONFIG is invalid.");
+      // eslint-disable-next-line no-console
+      console.log(error.errors);
+      return undefined;
+    }
     // eslint-disable-next-line no-console
     console.error(
       "ZUPLO_BUILD_CONFIG is a reserved environment variable and cannot be used for custom configuration. Please remove it from your environment variables.",
