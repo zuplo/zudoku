@@ -74,20 +74,22 @@ export const TopNavItem = (item: NavigationItem) => {
     <NavLink
       viewTransition
       to={path}
-      className={({ isActive, isPending }) =>
-        cx(
+      className={({ isActive: isActiveNavLink, isPending }) => {
+        const isActive = isActiveNavLink || isActiveTopNavItem;
+        return cx(
           "flex items-center gap-2 lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
-          isActive || isActiveTopNavItem || isPending
+          isActive || isPending
             ? [
                 "text-foreground",
                 // underline with view transition animation
                 "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0",
-                "after:h-0.5 after:bg-primary after:[view-transition-name:top-nav-underline]",
+                "after:h-0.5 after:bg-primary",
+                isActive && "after:[view-transition-name:top-nav-underline]",
                 isPending && "after:bg-primary/25",
               ]
             : "text-foreground/75 hover:text-foreground",
-        )
-      }
+        );
+      }}
     >
       {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
       {item.label}
