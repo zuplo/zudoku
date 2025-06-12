@@ -15,27 +15,28 @@ export const docs: Navigation = [
   {
     type: "category",
     label: "Configuration",
-    icon: "cog",
+    icon: "settings",
     link: "configuration/overview",
     items: [
-      "configuration/api-reference",
-      "configuration/api-catalog",
+      "customization/colors-theme",
+      "customization/fonts",
       "configuration/navigation",
       "configuration/search",
       "configuration/page",
       "configuration/footer",
-      "configuration/slots",
-      "configuration/authentication",
-      "configuration/build-configuration",
-      "configuration/sentry",
-      "configuration/vite-config",
     ],
   },
   {
     type: "category",
-    label: "Customization",
-    icon: "palette",
-    items: ["customization/colors-theme", "customization/fonts"],
+    label: "OpenAPI",
+    icon: "globe",
+    items: ["configuration/api-reference", "configuration/api-catalog"],
+  },
+  {
+    type: "category",
+    label: "Authentication",
+    icon: "lock",
+    items: ["configuration/authentication"],
   },
   {
     type: "category",
@@ -43,6 +44,12 @@ export const docs: Navigation = [
     icon: "book-open-text",
     link: "markdown/overview",
     items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
+  },
+  {
+    type: "category",
+    label: "Integrations",
+    icon: "blocks",
+    items: ["configuration/sentry"],
   },
   {
     type: "category",
@@ -75,7 +82,13 @@ export const docs: Navigation = [
     type: "category",
     label: "Extending",
     icon: "blocks",
-    items: ["custom-plugins", "extending/events"],
+    items: [
+      "configuration/build-configuration",
+      "configuration/vite-config",
+      "configuration/slots",
+      "custom-plugins",
+      "extending/events",
+    ],
   },
 ];
 export const components: Navigation = [

@@ -1,6 +1,6 @@
 ---
-title: Authentication
-sidebar_icon: key
+title: Overview
+sidebar_icon: shield-check
 ---
 
 If you use a managed authentication service, such as Auth0, Clerk, or OpenID, you can implement this into your site and allow users to browse and interact with your documentation and API reference in a logged in state.

@@ -90,7 +90,7 @@ export const ThemeEditor = () => {
   };
 
   return (
-    <>
+    <div className="not-prose">
       <style>{customCss}</style>
       <div className="flex gap-2 mt-4">
         <Button size="sm" variant="outline" onClick={handleReset}>
@@ -388,7 +388,7 @@ export const App = () => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 export const ThemeEditorPage = () => {

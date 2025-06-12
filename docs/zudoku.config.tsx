@@ -62,17 +62,20 @@ const config: ZudokuConfig = {
   navigation: [
     {
       type: "category",
+      icon: "book",
       label: "Documentation",
       items: docs,
     },
     {
       type: "category",
       label: "Components",
+      icon: "component",
       items: components,
     },
     {
       type: "custom-page",
       path: "/theme-playground",
+      icon: "palette",
       label: "Themes",
       element: <ThemePlayground />,
     },
