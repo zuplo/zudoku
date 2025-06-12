@@ -102,6 +102,7 @@ const config: ZudokuConfig = {
   topNavigation: [
     { id: "documentation", label: "Documentation" },
     { id: "api-shipments", label: "Shipments API" },
+    { id: "api-upload", label: "Upload API" },
     { id: "catalog", label: "API Catalog" },
   ],
   sidebar: {
@@ -202,6 +203,12 @@ const config: ZudokuConfig = {
       input: "./schema/tracking-v1.json",
       navigationId: "api-tracking",
       categories: [{ label: "General", tags: ["Tracking"] }],
+    },
+    {
+      type: "file",
+      input: "./schema/upload.json",
+      navigationId: "api-upload",
+      categories: [{ label: "General", tags: ["Uploads"] }],
     },
   ],
   docs: {

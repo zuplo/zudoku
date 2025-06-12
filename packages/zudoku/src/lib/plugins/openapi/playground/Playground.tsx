@@ -56,7 +56,14 @@ export type PathParam = {
 };
 
 export type PlaygroundForm = {
+  bodyType: "text" | "multipart/form-data";
   body: string;
+  formData: Array<{
+    key: string;
+    value: string | File | null;
+    type: "text" | "file";
+    contentType: string;
+  }>;
   queryParams: Array<{
     name: string;
     value: string;
@@ -137,7 +144,11 @@ export const Playground = ({
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
+        bodyType: "text",
         body: defaultBody,
+        formData: [
+          { key: "", value: "", type: "text", contentType: "" },
+        ],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -197,12 +208,38 @@ export const Playground = ({
           .map((header) => [header.name, header.value]),
       ]);
 
+      let requestBody: BodyInit | undefined;
+      if (data.bodyType === "multipart/form-data") {
+        const fd = new FormData();
+        data.formData.forEach((part) => {
+          if (!part.key) return;
+          if (part.type === "file") {
+            if (part.value instanceof File) {
+              const blob = part.contentType
+                ? part.value.slice(0, part.value.size, part.contentType)
+                : part.value;
+              fd.append(part.key, blob, part.value.name);
+            }
+          } else {
+            const val = part.value ?? "";
+            if (part.contentType) {
+              fd.append(part.key, new Blob([val], { type: part.contentType }));
+            } else {
+              fd.append(part.key, val as string);
+            }
+          }
+        });
+        requestBody = fd;
+      } else {
+        requestBody = data.body ? data.body : undefined;
+      }
+
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
           method: method.toUpperCase(),
           headers,
-          body: data.body ? data.body : undefined,
+          body: requestBody,
         },
       );
 
@@ -264,7 +301,10 @@ export const Playground = ({
               ["User-Agent", "Zudoku Playground"],
               ...Array.from(request.headers.entries()),
             ],
-            body: data.body ? data.body : undefined,
+            body:
+              data.bodyType === "multipart/form-data"
+                ? "[form-data]"
+                : data.body || undefined,
           },
         } satisfies PlaygroundResult;
       } catch (error) {
