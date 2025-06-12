@@ -296,17 +296,20 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                       <Dialog>
                         <DialogTrigger asChild>
                           <Button
-                            size="icon"
                             title="Roll this key"
                             variant="ghost"
                             disabled={rollKeyMutation.isPending}
-                            className={
-                              rollKeyMutation.isPending
-                                ? "animate-spin"
-                                : undefined
-                            }
+                            className="flex items-center gap-1"
                           >
-                            <RotateCwIcon size={16} />
+                            <RotateCwIcon
+                              size={16}
+                              className={
+                                rollKeyMutation.isPending
+                                  ? "animate-spin"
+                                  : undefined
+                              }
+                            />
+                            Roll
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
