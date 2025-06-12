@@ -65,6 +65,29 @@ export const useCurrentNavigation = () => {
     queryKey: ["plugin-navigation", location.pathname],
   });
 
+  let topNavItem = navItem;
+  if (!navItem && data.length > 0) {
+    // Extract base paths from plugin navigation items
+    const pluginBasePaths = data.flatMap((item) => {
+      return getItemPath(item)?.split("?").at(0)?.split("#").at(0) ?? [];
+    });
+
+    // Find top-level nav item that matches any plugin base path
+    topNavItem = navigation
+      .flatMap((item) => {
+        const itemPath = getItemPath(item);
+        return itemPath ? [{ item, path: itemPath }] : [];
+      })
+      .sort((a, b) => b.path.length - a.path.length)
+      .find(({ path }) => {
+        return pluginBasePaths.some(
+          (basePath) =>
+            matchPath({ path, end: false }, basePath) ??
+            matchPath({ path: basePath, end: false }, path),
+        );
+      })?.item;
+  }
+
   const hasNavigation =
     auth.isAuthEnabled && !auth.isAuthenticated && isProtectedRoute;
 
@@ -72,6 +95,6 @@ export const useCurrentNavigation = () => {
     navigation: hasNavigation
       ? []
       : [...(navItem?.type === "category" ? navItem.items : []), ...data],
-    topNavItem: navItem,
+    topNavItem,
   };
 };
