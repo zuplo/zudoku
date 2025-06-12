@@ -153,6 +153,7 @@ export const PagefindSearch = ({
         </div>
       ) : (
         <ResultList
+          basePath={context.options.basePath}
           searchResults={searchResults ?? []}
           searchTerm={searchTerm}
           onClose={onClose}
