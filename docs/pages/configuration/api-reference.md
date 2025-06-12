@@ -11,7 +11,7 @@ There are multiple ways to reference an API file in the configuration including 
 
 You can reference a local OpenAPI document by setting the `type` to `file` and providing the path to the file.
 
-```ts
+```tsx title=zudoku.config.ts
 const config = {
   // ...
   apis: {
@@ -27,7 +27,7 @@ const config = {
 
 If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document if you want to test and play around):
 
-```js
+```jsx title=zudoku.config.ts
 const config = {
   // ...
   apis: {
@@ -49,7 +49,7 @@ If you are using a URL to reference your OpenAPI document, you may need to ensur
 
 When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API documentation:
 
-```ts
+```tsx title=zudoku.config.ts
 const config = {
   apis: {
     type: "file",
@@ -67,7 +67,7 @@ const config = {
 
 The `options` field allows you to customize the API reference behavior:
 
-```ts
+```tsx title=zudoku.config.ts
 const config = {
   apis: {
     type: "file",
@@ -98,7 +98,7 @@ Available options:
 
 Instead of setting options for each API individually, you can use `defaults.apis` to set global defaults that apply to all APIs:
 
-```ts
+```tsx title=zudoku.config.ts
 const config = {
   defaults: {
     apis: {
