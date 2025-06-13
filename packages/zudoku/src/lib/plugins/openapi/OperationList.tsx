@@ -18,7 +18,7 @@ import {
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown, ProseClasses } from "../../components/Markdown.js";
-import { Pagination } from "../../components/Pagination.js";
+import { Pager } from "../../components/Pager.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { cn } from "../../util/cn.js";
 import { Endpoint } from "./Endpoint.js";
@@ -328,7 +328,7 @@ export const OperationList = ({
             <hr className="my-10" />
           </div>
         ))}
-        <Pagination className="mb-4" {...paginationProps} />
+        <Pager className="mb-4" {...paginationProps} />
       </div>
     </div>
   );

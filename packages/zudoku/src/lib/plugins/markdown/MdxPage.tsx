@@ -5,7 +5,7 @@ import { type PropsWithChildren, useEffect } from "react";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
-import { Pagination } from "../../components/Pagination.js";
+import { Pager } from "../../components/Pager.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
@@ -118,7 +118,7 @@ export const MdxPage = ({
         {!hidePager && (
           <>
             <hr className="my-10" />
-            <Pagination
+            <Pager
               prev={prev ? { to: prev.id, label: prev.label } : undefined}
               next={next ? { to: next.id, label: next.label } : undefined}
               className="mb-4"

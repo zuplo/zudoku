@@ -6,7 +6,7 @@ import {
   ShieldAlertIcon,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { cn } from "../util/cn.js";
+import { cn } from "./util.js";
 
 const stylesMap = {
   note: {
