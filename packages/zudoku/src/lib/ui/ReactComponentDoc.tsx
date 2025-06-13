@@ -1,10 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "./Card.js";
+import { Badge } from "./Badge.js";
+import { Card, CardContent } from "./Card.js";
 
 type ReactComponentDocProps = {
   component: {
@@ -26,19 +21,22 @@ type ReactComponentDocProps = {
 export const ReactComponentDoc = ({ component }: ReactComponentDocProps) => {
   const docgen = component.__docgenInfo;
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{docgen.displayName}</CardTitle>
-        <CardDescription>{docgen.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div>
+    <Card className="not-prose">
+      <CardContent className="mt-6">
+        <div className="flex flex-col gap-2">
           {Object.entries(docgen.props).map(([key, value]) => (
-            <div key={key} className="flex flex-row gap-2">
-              <div className="w-1/2">
-                {key} {value.required && "(required)"}
+            <div key={key} className="flex flex-col gap-2">
+              <div className="">
+                <span className="font-medium text-primary">{key}</span>
+                {value.type.name && (
+                  <Badge className="ml-2 font-mono" variant="muted">
+                    {value.type.name}
+                  </Badge>
+                )}
+                {value.required && (
+                  <Badge className="ml-2 font-mono">required</Badge>
+                )}
               </div>
-              <div className="w-1/2">{JSON.stringify(value.type)}</div>
             </div>
           ))}
         </div>

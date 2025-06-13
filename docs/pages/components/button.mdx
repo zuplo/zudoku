@@ -4,6 +4,7 @@ sidebar_icon: mouse-pointer-click
 ---
 
 import { Button } from "zudoku/ui/Button";
+import { PopcornIcon } from "zudoku/icons";
 
 A flexible button component with multiple variants and sizes for different use cases.
 
@@ -93,10 +94,14 @@ A flexible button component with multiple variants and sizes for different use c
 
 ### Icon
 
-<Button size="icon">⚙️</Button>
+<Button size="icon">
+  <PopcornIcon size={16} />
+</Button>
 
 ```tsx
-<Button size="icon">⚙️</Button>
+<Button size="icon">
+  <PopcornIcon size={16} />
+</Button>
 ```
 
 ## As Child
