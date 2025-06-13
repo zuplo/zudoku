@@ -170,6 +170,7 @@ export const Sidecar = ({
             <SidecarBox.Body className="p-0">
               <CollapsibleCode>
                 <SyntaxHighlight
+                  embedded
                   language={selectedLang}
                   noBackground
                   className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px] p-2"
