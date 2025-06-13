@@ -4,7 +4,6 @@ import { Helmet } from "@zudoku/react-helmet-async";
 import { type PropsWithChildren, useEffect } from "react";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { ProseClasses } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
@@ -58,10 +57,7 @@ export const MdxPage = ({
   const pageTitle =
     tableOfContents.find((item) => item.depth === 1)?.value ?? title;
   const hidePager =
-    frontmatter.disable_pager ??
-    frontmatter.disablePager ??
-    defaultOptions?.disablePager ??
-    false;
+    frontmatter.disablePager ?? defaultOptions?.disablePager ?? false;
 
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??
@@ -98,7 +94,7 @@ export const MdxPage = ({
       </Helmet>
       <div
         className={cn(
-          ProseClasses,
+          // ProseClasses,
           "max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)",
         )}
       >
