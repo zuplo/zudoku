@@ -1,6 +1,5 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Heading } from "../../components/Heading.js";
-import { Card } from "../../ui/Card.js";
 import type { ParameterGroup } from "./OperationListItem.js";
 import {
   ParameterListItem,
@@ -23,7 +22,7 @@ export const ParameterList = ({
       {summary && <VisuallyHidden>{summary} &rsaquo; </VisuallyHidden>}
       {group === "header" ? "Headers" : `${group} Parameters`}
     </Heading>
-    <Card>
+    <div className="rounded-md border shadow-xs dark:shadow-none">
       <ul className="list-none m-0 px-0 divide-y ">
         {parameters
           .sort((a, b) => (a.required === b.required ? 0 : a.required ? -1 : 1))
@@ -36,6 +35,6 @@ export const ParameterList = ({
             />
           ))}
       </ul>
-    </Card>
+    </div>
   </>
 );

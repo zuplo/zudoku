@@ -1,7 +1,7 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
-import { cn } from "../util/cn.js";
+import { cn } from "./util.js";
 
 export type CodeBlockProps = {
   className?: string;
