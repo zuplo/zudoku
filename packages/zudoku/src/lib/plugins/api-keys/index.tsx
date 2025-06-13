@@ -122,7 +122,8 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
         data: [
           {
             id: string;
-            label: string;
+            label?: string;
+            subject?: string;
             apiKeys: {
               data: ApiKey[];
             };
@@ -132,7 +133,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
 
       return data.data.map((consumer) => ({
         id: consumer.id,
-        label: consumer.label || "API Key",
+        label: consumer.label ?? consumer.subject ?? "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
       }));
@@ -174,7 +175,7 @@ export const apiKeyPlugin = (
             return request;
           },
           id: consumer.id,
-          label: consumer.description ?? consumer.id,
+          label: consumer.label,
         }));
       } catch {
         return [];
