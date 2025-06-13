@@ -51,7 +51,7 @@ export const CodeBlock = ({
             aria-label="Copy code"
             title="Copy code"
             className={cn(
-              "cursor:pointer border-l h-full active:shadow-none active:inset-shadow-xs hover:inset-shadow-xs flex items-center gap-2 px-4 outline-border text-sm hover:bg-black/5 transition-all",
+              "cursor-pointer border-l h-full active:shadow-none active:inset-shadow-xs hover:inset-shadow-xs flex items-center gap-2 px-4 outline-border text-sm hover:bg-black/5 transition-all",
             )}
             disabled={isCopied}
             onClick={() => {
