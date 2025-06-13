@@ -6,6 +6,7 @@ import {
 import { AnimatePresence } from "framer-motion";
 import {
   CheckIcon,
+  CircleSlashIcon,
   CopyIcon,
   EyeIcon,
   EyeOffIcon,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { Link } from "react-router";
+import { Alert, AlertTitle } from "zudoku/ui/Alert.js";
 import { Card, CardHeader } from "zudoku/ui/Card.js";
 import {
   Dialog,
@@ -173,7 +175,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   };
 
   return (
-    <div className="max-w-screen-lg h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
+    <div className="max-w-screen-md h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
       <Slot.Target name="api-keys-list-page" />
 
       <div className="flex justify-between pb-3">
@@ -187,9 +189,26 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       <p>Create, manage, and monitor your API keys</p>
 
       <Slot.Target name="api-keys-list-page-before-keys" />
-
       <div className="h-8"></div>
-      <div className="grid grid-cols-8">
+      {rollKeyMutation.isError && (
+        <Alert variant="destructive" className="mb-4">
+          <CircleSlashIcon size={16} />
+          <AlertTitle>{rollKeyMutation.error.message}</AlertTitle>
+        </Alert>
+      )}
+      {updateConsumerMutation.isError && (
+        <Alert variant="destructive" className="mb-4">
+          <CircleSlashIcon size={16} />
+          <AlertTitle>{updateConsumerMutation.error.message}</AlertTitle>
+        </Alert>
+      )}
+      {deleteKeyMutation.isError && (
+        <Alert variant="destructive" className="mb-4">
+          <CircleSlashIcon size={16} />
+          <AlertTitle>{deleteKeyMutation.error.message}</AlertTitle>
+        </Alert>
+      )}
+      <div className="">
         {data.length === 0 ? (
           <div className="flex col-span-full flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
             <p className="text-center">
