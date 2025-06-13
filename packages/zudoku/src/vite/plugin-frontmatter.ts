@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { reload } from "./plugin-config-reload.js";
+import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 // This plugin is responsible to restart the dev server when the frontmatter changed inside a markdown file.
 export const viteFrontmatterPlugin = (): Plugin => ({
@@ -35,6 +36,7 @@ export const viteFrontmatterPlugin = (): Plugin => ({
 
         if (prevFm && JSON.stringify(prevFm) !== JSON.stringify(fm.data)) {
           frontmatterMap.set(filePath, fm.data);
+          invalidateNavigation(server);
           reload(server);
         }
       }

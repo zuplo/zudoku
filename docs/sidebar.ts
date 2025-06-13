@@ -43,7 +43,12 @@ export const docs: Navigation = [
     label: "Markdown",
     icon: "book-open-text",
     link: "markdown/overview",
-    items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
+    items: [
+      "markdown/frontmatter",
+      "markdown/mdx",
+      "markdown/admonitions",
+      "markdown/code-blocks",
+    ],
   },
   {
     type: "category",
