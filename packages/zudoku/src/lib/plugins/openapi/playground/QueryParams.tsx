@@ -4,7 +4,6 @@ import {
   useFieldArray,
   useFormContext,
 } from "react-hook-form";
-import { Card } from "zudoku/ui/Card.js";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Input } from "../../../ui/Input.js";
@@ -28,101 +27,99 @@ export const QueryParams = ({
   const requiredFields = queryParams.map((param) => Boolean(param.isRequired));
 
   return (
-    <Card className="rounded-lg overflow-hidden">
-      <div className="w-full ">
-        <ParamsGrid>
-          {fields.map((field, i) => {
-            const currentParam = queryParams.find(
-              (param) => param.name === form.watch(`queryParams.${i}.name`),
-            );
-            return (
-              <ParamsGridItem key={field.id}>
-                <div key={field.id} className="flex items-center gap-2">
-                  <Controller
-                    control={control}
-                    name={`queryParams.${i}.active`}
-                    render={({ field }) => (
-                      <Checkbox
-                        id={`queryParams.${i}.active`}
-                        className="me-2"
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
+    <div className="overflow-hidden w-full">
+      <ParamsGrid>
+        {fields.map((field, i) => {
+          const currentParam = queryParams.find(
+            (param) => param.name === form.watch(`queryParams.${i}.name`),
+          );
+          return (
+            <ParamsGridItem key={field.id}>
+              <div key={field.id} className="flex items-center gap-2">
+                <Controller
+                  control={control}
+                  name={`queryParams.${i}.active`}
+                  render={({ field }) => (
+                    <Checkbox
+                      id={`queryParams.${i}.active`}
+                      className="me-2"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  render={({ field }) =>
+                    !requiredFields[i] ? (
+                      <Autocomplete
+                        value={field.value}
+                        options={queryParams.map((param) => param.name)}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                        className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                       />
-                    )}
-                  />
-                  <Controller
-                    control={control}
-                    render={({ field }) =>
-                      !requiredFields[i] ? (
-                        <Autocomplete
-                          value={field.value}
-                          options={queryParams.map((param) => param.name)}
-                          onChange={(e) => {
-                            field.onChange(e);
-                          }}
-                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                        />
-                      ) : (
-                        <InlineInput asChild>
-                          <label
-                            className="flex items-center cursor-pointer gap-1"
-                            htmlFor={`queryParams.${i}.active`}
-                            title={
-                              requiredFields[i] ? "Required field" : undefined
-                            }
-                          >
-                            {field.value}
-                            {requiredFields[i] && <sup>&nbsp;*</sup>}
-                          </label>
-                        </InlineInput>
-                      )
-                    }
-                    name={`queryParams.${i}.name`}
-                  />
-                </div>
-                <div className="flex justify-between items-center">
-                  <Controller
-                    control={control}
-                    render={({ field }) => {
-                      const hasEnum =
-                        currentParam?.enum && currentParam.enum.length > 0;
+                    ) : (
+                      <InlineInput asChild>
+                        <label
+                          className="flex items-center cursor-pointer gap-1"
+                          htmlFor={`queryParams.${i}.active`}
+                          title={
+                            requiredFields[i] ? "Required field" : undefined
+                          }
+                        >
+                          {field.value}
+                          {requiredFields[i] && <sup>&nbsp;*</sup>}
+                        </label>
+                      </InlineInput>
+                    )
+                  }
+                  name={`queryParams.${i}.name`}
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                <Controller
+                  control={control}
+                  render={({ field }) => {
+                    const hasEnum =
+                      currentParam?.enum && currentParam.enum.length > 0;
 
-                      if (!hasEnum) {
-                        return (
-                          <Input
-                            {...field}
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                              if (e.target.value.length > 0) {
-                                form.setValue(`queryParams.${i}.active`, true);
-                              }
-                            }}
-                            placeholder="Enter value"
-                            className="w-full border-0 shadow-none focus-visible:ring-0 text-xs font-mono"
-                          />
-                        );
-                      }
-
+                    if (!hasEnum) {
                       return (
-                        <Autocomplete
-                          value={field.value}
-                          options={currentParam.enum ?? []}
+                        <Input
+                          {...field}
                           onChange={(e) => {
-                            field.onChange(e);
-                            form.setValue(`queryParams.${i}.active`, true);
+                            field.onChange(e.target.value);
+                            if (e.target.value.length > 0) {
+                              form.setValue(`queryParams.${i}.active`, true);
+                            }
                           }}
-                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                          placeholder="Enter value"
+                          className="w-full border-0 shadow-none focus-visible:ring-0 text-xs font-mono"
                         />
                       );
-                    }}
-                    name={`queryParams.${i}.value`}
-                  />
-                </div>
-              </ParamsGridItem>
-            );
-          })}
-        </ParamsGrid>
-      </div>
-    </Card>
+                    }
+
+                    return (
+                      <Autocomplete
+                        value={field.value}
+                        options={currentParam.enum ?? []}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          form.setValue(`queryParams.${i}.active`, true);
+                        }}
+                        className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                      />
+                    );
+                  }}
+                  name={`queryParams.${i}.value`}
+                />
+              </div>
+            </ParamsGridItem>
+          );
+        })}
+      </ParamsGrid>
+    </div>
   );
 };

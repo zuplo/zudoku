@@ -1,4 +1,3 @@
-import { Card } from "zudoku/ui/Card.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import { type ApiIdentity } from "../../../core/ZudokuContext.js";
@@ -13,7 +12,7 @@ const IdentitySelector = ({
   setValue: (value: string) => void;
   value?: string;
 }) => (
-  <Card className="w-full overflow-hidden rounded-lg">
+  <div className="w-full overflow-hidden">
     <RadioGroup
       onValueChange={(value) => setValue(value)}
       value={value}
@@ -37,7 +36,7 @@ const IdentitySelector = ({
         ))}
       </div>
     </RadioGroup>
-  </Card>
+  </div>
 );
 
 export default IdentitySelector;

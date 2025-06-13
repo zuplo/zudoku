@@ -1,8 +1,10 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
+import { CornerDownLeftIcon, LockIcon, Unlink2Icon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
+import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import {
   Select,
   SelectContent,
@@ -17,6 +19,10 @@ import { ColorizedParam } from "../ColorizedParam.js";
 import { type Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
 import BodyPanel from "./BodyPanel.js";
+import {
+  CollapsibleHeader,
+  CollapsibleHeaderTrigger,
+} from "./CollapisbleHeader.js";
 import { createUrl } from "./createUrl.js";
 import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
@@ -428,31 +434,48 @@ export const Playground = ({
               </Button>
             </div>
           </div>
-          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
+          <div className="after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
             {identities.data?.length !== 0 && (
               <div className="flex flex-col gap-2">
                 <div className="flex flex-col gap-2">
-                  <span className="font-semibold">Authentication</span>
-                  <IdentitySelector
-                    value={formState.identity}
-                    identities={identities.data ?? []}
-                    setValue={(value) => setValue("identity", value)}
-                  />
+                  <Collapsible defaultOpen>
+                    <CollapsibleHeaderTrigger>
+                      <LockIcon size={16} />
+                      <CollapsibleHeader>Authentication</CollapsibleHeader>
+                    </CollapsibleHeaderTrigger>
+                    <CollapsibleContent>
+                      <IdentitySelector
+                        value={formState.identity}
+                        identities={identities.data ?? []}
+                        setValue={(value) => setValue("identity", value)}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               </div>
             )}
 
             {pathParams.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="font-semibold">Path Parameters</span>
-                <PathParams url={url} control={control} />
-              </div>
+              <Collapsible defaultOpen>
+                <CollapsibleHeaderTrigger className="border-t">
+                  <Unlink2Icon size={16} />
+                  <CollapsibleHeader>Path Parameters</CollapsibleHeader>
+                </CollapsibleHeaderTrigger>
+                <CollapsibleContent>
+                  <PathParams url={url} control={control} />
+                </CollapsibleContent>
+              </Collapsible>
             )}
 
-            <div className="flex flex-col gap-2">
-              <span className="font-semibold">Query Parameters</span>
-              <QueryParams control={control} queryParams={queryParams} />
-            </div>
+            <Collapsible defaultOpen>
+              <CollapsibleHeaderTrigger>
+                <CornerDownLeftIcon size={16} />
+                <CollapsibleHeader>Query Parameters</CollapsibleHeader>
+              </CollapsibleHeaderTrigger>
+              <CollapsibleContent>
+                <QueryParams control={control} queryParams={queryParams} />
+              </CollapsibleContent>
+            </Collapsible>
 
             <Headers control={control} headers={headers} />
             {isBodySupported && <BodyPanel examples={examples} />}
@@ -460,9 +483,6 @@ export const Playground = ({
           <div className="w-px bg-muted-foreground/20" />
           <ResultPanel
             queryMutation={queryMutation}
-            showPathParamsWarning={formState.pathParams.some(
-              (p) => p.value === "",
-            )}
             showLongRunningWarning={showLongRunningWarning}
             onCancel={() => {
               abortControllerRef.current?.abort(

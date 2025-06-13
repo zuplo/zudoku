@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
+  CornerDownLeftIcon,
   CornerDownRightIcon,
   DownloadIcon,
   PlusCircleIcon,
@@ -19,6 +20,10 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
+import {
+  CollapsibleHeader,
+  CollapsibleHeaderTrigger,
+} from "../CollapisbleHeader.js";
 import { convertToTypes } from "./convertToTypes.js";
 import { Highlight } from "./Highlight.js";
 
@@ -108,6 +113,7 @@ export const ResponseTab = ({
   headers,
   status,
   time,
+  request,
   size,
   url,
   isBinary = false,
@@ -118,6 +124,12 @@ export const ResponseTab = ({
   headers: Array<[string, string]>;
   status: number;
   time: number;
+  request: {
+    method: string;
+    url: string;
+    headers: Array<[string, string]>;
+    body?: string;
+  };
   size: number;
   url: string;
   isBinary?: boolean;
@@ -156,7 +168,7 @@ export const ResponseTab = ({
 
   return (
     <div className="overflow-y-auto h-[80vh]">
-      <div className="flex h-10 text-xs gap-4 rounded-md px-4 items-center justify-between font-mono">
+      <div className="flex h-10 text-xs gap-4 rounded-md px-4 items-center justify-between font-mono border-b">
         <div className="flex items-center gap-2">
           <ResponseCodeCircle status={status} /> {status} -{" "}
           {statusCodeMap[status] ?? ""}
@@ -175,10 +187,32 @@ export const ResponseTab = ({
       </div>
 
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex items-center gap-4 group bg-muted w-full h-10 px-4">
+        <CollapsibleHeaderTrigger>
+          <CornerDownLeftIcon size={16} />
+          <CollapsibleHeader>Header Request</CollapsibleHeader>
+        </CollapsibleHeaderTrigger>
+        <CollapsibleContent>
+          <div className="grid grid-cols-2 gap-x-6 text-sm">
+            {request.headers
+              .slice(0, MAX_HEADERS_TO_SHOW)
+              .map(([key, value]) => (
+                <div
+                  key={key}
+                  className="grid-cols-subgrid grid border-b col-span-full px-4 h-10 items-center"
+                >
+                  <div className="">{key}</div>
+                  <div className="break-all line-clamp-1">{value}</div>
+                </div>
+              ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <Collapsible defaultOpen>
+        <CollapsibleHeaderTrigger>
           <CornerDownRightIcon size={16} />
-          <span className="font-semibold">Header Response</span>
-        </CollapsibleTrigger>
+          <CollapsibleHeader>Header Response</CollapsibleHeader>
+        </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-2 gap-x-6 text-sm">
             {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (

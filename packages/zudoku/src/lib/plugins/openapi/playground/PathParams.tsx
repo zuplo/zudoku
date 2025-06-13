@@ -1,5 +1,4 @@
 import { type Control, Controller, useFieldArray } from "react-hook-form";
-import { Card } from "zudoku/ui/Card.js";
 import { Input } from "../../../ui/Input.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
@@ -22,7 +21,7 @@ export const PathParams = ({
   );
 
   return (
-    <Card className="rounded-lg overflow-hidden">
+    <div className="overflow-hidden">
       <ParamsGrid>
         {sortedFields.map((field, i) => (
           <ParamsGridItem key={field.id}>
@@ -57,6 +56,6 @@ export const PathParams = ({
           </ParamsGridItem>
         ))}
       </ParamsGrid>
-    </Card>
+    </div>
   );
 };
