@@ -22,7 +22,7 @@ export const CodeBlock = ({
   title = "Code",
   language,
   showCopy = "hover",
-  showLanguageIndicator = true,
+  showLanguageIndicator = false,
   showLineNumbers,
   ...props
 }: CodeBlockProps) => {
@@ -34,24 +34,24 @@ export const CodeBlock = ({
   return (
     <div
       className={cn(
-        "border code-block-wrapper relative group bg-muted/50 rounded-md",
+        "border code-block-wrapper relative group bg-muted/50 rounded-md overflow-hidden",
         showLineNumbers && "line-numbers",
       )}
     >
       <div className="border-b flex items-center h-10 font-sans bg-black/2">
-        <div className="flex-1 text-sm w-full px-4">{title}</div>
-        {showLanguageIndicator && (
-          <div className={cn("text-sm transition px-4 text-muted-foreground")}>
-            {language}
-          </div>
-        )}{" "}
+        <div className="flex-1 text-sm w-full px-4">
+          {title}
+          {showLanguageIndicator && (
+            <span className="text-muted-foreground ml-2">({language})</span>
+          )}
+        </div>{" "}
         {showCopy !== "never" && (
           <button
             type="button"
             aria-label="Copy code"
             title="Copy code"
             className={cn(
-              "cursor-pointer border-l h-full active:shadow-none active:inset-shadow-xs hover:inset-shadow-xs flex items-center gap-2 px-4 outline-border text-sm hover:bg-black/5 transition-all",
+              "cursor:pointer h-full hover:border-l-border active:shadow-none active:inset-shadow-xs hover:inset-shadow-xs flex items-center gap-2 px-4 outline-border text-sm hover:bg-black/5 transition-all",
             )}
             disabled={isCopied}
             onClick={() => {
@@ -72,7 +72,6 @@ export const CodeBlock = ({
             ) : (
               <CopyIcon size={14} />
             )}
-            Copy
           </button>
         )}
       </div>
