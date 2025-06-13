@@ -19,7 +19,7 @@ export type CodeBlockProps = {
 
 export const CodeBlock = ({
   children,
-  title,
+  title = "Code",
   language,
   showCopy = "hover",
   showLanguageIndicator = true,
