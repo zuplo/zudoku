@@ -23,6 +23,9 @@
   hr {
     @apply border-border;
   }
+  code {
+    font-weight: 400;
+  }
   code::before {
     content: none;
   }
