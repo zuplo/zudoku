@@ -10,7 +10,7 @@ import {
   EyeIcon,
   EyeOffIcon,
   PencilLineIcon,
-  RotateCwIcon,
+  RefreshCwIcon,
   TrashIcon,
   XIcon,
 } from "lucide-react";
@@ -278,18 +278,19 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                   <div className="flex justify-end">
                     {service.updateConsumer && (
                       <Button
-                        size="icon"
                         variant="ghost"
                         onClick={() =>
                           handleStartEdit(consumers.id, consumers.label)
                         }
                         className={cn(
+                          "flex gap-2",
                           editingConsumerId === consumers.id &&
                             "opacity-0! pointer-events-none",
                         )}
                         disabled={editingConsumerId === consumers.id}
                       >
                         <PencilLineIcon size={16} />
+                        Edit label
                       </Button>
                     )}
                     {service.rollKey && (
@@ -299,9 +300,9 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                             title="Roll this key"
                             variant="ghost"
                             disabled={rollKeyMutation.isPending}
-                            className="flex items-center gap-1"
+                            className="flex items-center gap-2"
                           >
-                            <RotateCwIcon
+                            <RefreshCwIcon
                               size={16}
                               className={
                                 rollKeyMutation.isPending
@@ -309,7 +310,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                                   : undefined
                               }
                             />
-                            Roll
+                            Roll key
                           </Button>
                         </DialogTrigger>
                         <DialogContent>

@@ -1,5 +1,5 @@
 ---
-title: App Quickstart
+title: Quickstart
 description: Get started with Zudoku by creating a new Zudoku app using the `create-zudoku-app` tool.
 sidebar_icon: app-window-mac
 ---
@@ -12,24 +12,21 @@ The recommended way to get started with Zudoku is to use the `create-zudoku-app`
 
 # Getting Started
 
-1. Create a new Zudoku app by running:
+<Stepper>
 
-```bash
-npm create zudoku-app@latest
-```
+1. **Create a new Zudoku app by running:**
 
-2. Open the project in your code editor and replace the example OpenAPI file at `/apis/openapi.yaml` with your own OpenAPI schema.
+   ```bash
+   npm create zudoku-app@latest
+   ```
 
-:::tip
+1. **Run `npm install`**
+1. **Start the development server:**
 
-You can use `openapi.json` instead of YAML. Just update the file path in `zudoku.config.ts`.
+   ```bash
+   npm run dev
+   ```
 
-:::
+   Your Zudoku site is now running locally! Next, commit your changes and [deploy the site](./deployment.md) to your preferred hosting provider.
 
-3. Start the development server:
-
-```bash
-npm run dev
-```
-
-Your Zudoku site is now running locally! Next, commit your changes and [deploy the site](./deployment.md) to your preferred hosting provider.
+</Stepper>
