@@ -220,7 +220,6 @@ Zudoku also supports:
 - Task lists with checkboxes
 - Emoji support :tada:
 - Automatic link detection
-- Math expressions (LaTeX)
 
 ### Task Lists
 
@@ -238,18 +237,6 @@ Zudoku also supports:
 - [ ] Another task
 
 </details>
-
-### Math
-
-Inline math: `$E = mc^2$` becomes $E = mc^2$
-
-Block math:
-
-```md
-$$
-\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
-$$
-```
 
 ### Collapsible Sections
 
