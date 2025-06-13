@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRightIcon, DownloadIcon } from "lucide-react";
-import { Fragment, useState } from "react";
+import {
+  CornerDownRightIcon,
+  DownloadIcon,
+  PlusCircleIcon,
+} from "lucide-react";
+import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
-import { Callout } from "zudoku/ui/Callout.js";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,10 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { Card } from "../../../../ui/Card.js";
-import { SyntaxHighlight } from "../../../../ui/SyntaxHighlight.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
 import { convertToTypes } from "./convertToTypes.js";
+import { Highlight } from "./Highlight.js";
 
 const statusCodeMap: Record<number, string> = {
   200: "OK",
@@ -86,7 +88,20 @@ const sortHeadersByRelevance = (
   });
 };
 
-const SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD = 64_000;
+const MAX_HEADERS_TO_SHOW = 3;
+
+const ResponseCodeCircle = ({ status }: { status: number }) => {
+  switch (Number(status.toString().slice(0, 1))) {
+    case 2:
+      return <div className="w-2 h-2 rounded-full bg-green-500" />;
+    case 4:
+      return <div className="w-2 h-2 rounded-full bg-yellow-400" />;
+    case 5:
+      return <div className="w-2 h-2 rounded-full bg-red-500" />;
+    default:
+      return <div className="w-2 h-2 rounded-full bg-gray-500" />;
+  }
+};
 
 export const ResponseTab = ({
   body = "",
@@ -138,36 +153,64 @@ export const ResponseTab = ({
   };
 
   const sortedHeaders = sortHeadersByRelevance([...headers]);
-  const shouldDisableHighlighting = size > SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD;
 
   return (
-    <div className="flex flex-col gap-2 h-full overflow-auto max-h-[calc(100vh-220px)] ">
+    <div className="overflow-y-auto h-[80vh]">
+      <div className="flex h-10 text-xs gap-4 rounded-md px-4 items-center justify-between font-mono">
+        <div className="flex items-center gap-2">
+          <ResponseCodeCircle status={status} /> {status} -{" "}
+          {statusCodeMap[status] ?? ""}
+        </div>
+        <div className="flex gap-2">
+          <div>
+            <span className="text-muted-foreground">Time</span>{" "}
+            {time.toFixed(0)}
+            ms
+          </div>
+          <div>
+            <span className="text-muted-foreground">Size</span>{" "}
+            {humanFileSize(size)}
+          </div>
+        </div>
+      </div>
+
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex items-center gap-2 hover:text-primary group">
-          <ChevronRightIcon className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
-          <span className="font-semibold">Headers</span>
+        <CollapsibleTrigger className="flex items-center gap-4 group bg-muted w-full h-10 px-4">
+          <CornerDownRightIcon size={16} />
+          <span className="font-semibold">Header Response</span>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="grid grid-cols-[auto,1fr] gap-x-8 gap-y-1 ps-1.5 pt-2 font-mono text-xs">
-            {sortedHeaders.slice(0, 5).map(([key, value]) => (
-              <Fragment key={key}>
-                <div className="text-primary whitespace-pre">{key}</div>
-                <div className="break-all">{value}</div>
-              </Fragment>
+          <div className="grid grid-cols-2 gap-x-6 text-sm">
+            {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
+              <div
+                key={key}
+                className="grid-cols-subgrid grid border-b col-span-full px-4 h-10 items-center"
+              >
+                <div className="">{key}</div>
+                <div className="break-all line-clamp-1">{value}</div>
+              </div>
             ))}
-            {sortedHeaders.length > 5 && (
-              <Collapsible className="col-span-full grid-cols-subgrid grid">
-                <CollapsibleTrigger className="col-span-2 text-xs text-muted-foreground hover:text-primary flex items-center gap-1 py-1">
-                  <ChevronRightIcon className="h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
-                  Show {sortedHeaders.length - 5} more headers
+            {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
+              <Collapsible className="col-span-full grid-cols-subgrid grid group">
+                <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
+                  <span>
+                    Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more
+                    headers
+                  </span>
+                  <PlusCircleIcon size={12} className="text-muted-foreground" />
                 </CollapsibleTrigger>
-                <CollapsibleContent className="col-span-full grid grid-cols-subgrid gap-x-8 gap-y-1 ">
-                  {sortedHeaders.slice(5).map(([key, value]) => (
-                    <Fragment key={key}>
-                      <div className="text-primary whitespace-pre">{key}</div>
-                      <div className="break-all">{value}</div>
-                    </Fragment>
-                  ))}
+                <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
+                  {sortedHeaders
+                    .slice(MAX_HEADERS_TO_SHOW)
+                    .map(([key, value]) => (
+                      <div
+                        key={key}
+                        className="grid-cols-subgrid grid border-b col-span-full px-4 h-10 items-center"
+                      >
+                        <div className="">{key}</div>
+                        <div className="break-all line-clamp-1">{value}</div>
+                      </div>
+                    ))}
                 </CollapsibleContent>
               </Collapsible>
             )}
@@ -175,7 +218,26 @@ export const ResponseTab = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <Card className="shadow-none">
+      <div className="flex gap-2 justify-between items-center border-b h-10">
+        {jsonContent && !isBinary && (
+          <div className="px-2">
+            <Select
+              value={view}
+              onValueChange={(value) => setView(value as "formatted" | "raw")}
+            >
+              <SelectTrigger className="min-w-32 border-none h-8">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="formatted">Formatted</SelectItem>
+                <SelectItem value="raw">Raw</SelectItem>
+                <SelectItem value="types">Types</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+      <div>
         {isBinary ? (
           <div className="p-4 text-center">
             <div className="flex flex-col items-center gap-4">
@@ -195,14 +257,8 @@ export const ResponseTab = ({
             </div>
           </div>
         ) : (
-          <>
-            {shouldDisableHighlighting && (
-              <Callout type="info" className="my-0 p-2">
-                Code highlight is disabled for responses larger than{" "}
-                {humanFileSize(SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD)}
-              </Callout>
-            )}
-            <SyntaxHighlight
+          <div className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]">
+            <Highlight
               language={
                 view === "types"
                   ? "typescript"
@@ -212,10 +268,6 @@ export const ResponseTab = ({
                       : detectedLanguage
                     : "json"
               }
-              showCopy="always"
-              disabled={shouldDisableHighlighting}
-              noBackground
-              className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]"
               code={
                 (view === "raw"
                   ? body
@@ -224,39 +276,6 @@ export const ResponseTab = ({
                     : beautifiedBody) ?? ""
               }
             />
-          </>
-        )}
-      </Card>
-      <div className="flex gap-2 justify-between items-center">
-        <div className="flex text-xs gap-5 border bg-muted rounded-md p-2 items-center h-8 font-mono">
-          <div>
-            <span className="text-muted-foreground">Status</span> {status}{" "}
-            {statusCodeMap[status] ?? ""}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Time</span>{" "}
-            {time.toFixed(0)}ms
-          </div>
-          <div>
-            <span className="text-muted-foreground">Size</span>{" "}
-            {humanFileSize(size)}
-          </div>
-        </div>
-        {jsonContent && !isBinary && (
-          <div>
-            <Select
-              value={view}
-              onValueChange={(value) => setView(value as "formatted" | "raw")}
-            >
-              <SelectTrigger className="min-w-32">
-                <SelectValue placeholder="View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="formatted">Formatted</SelectItem>
-                <SelectItem value="raw">Raw</SelectItem>
-                <SelectItem value="types">Types</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         )}
       </div>

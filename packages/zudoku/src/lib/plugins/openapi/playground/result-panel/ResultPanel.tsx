@@ -8,15 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "../../../../ui/Card.js";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../../../ui/Tabs.js";
 import { cn } from "../../../../util/cn.js";
 import { type PlaygroundResult } from "../Playground.js";
-import { RequestTab } from "./RequestTab.js";
 import { ResponseTab } from "./ResponseTab.js";
 
 export const ResultPanel = ({
@@ -32,7 +25,7 @@ export const ResultPanel = ({
 }) => {
   const status = ((queryMutation.data?.status ?? 0) / 100).toFixed(0);
   return (
-    <div className="min-w-0 p-4 py-4 bg-muted/50">
+    <div className="min-w-0">
       {queryMutation.error ? (
         <div className="flex flex-col gap-2">
           {showPathParamsWarning && (
@@ -54,41 +47,20 @@ export const ResultPanel = ({
           </Card>
         </div>
       ) : queryMutation.data ? (
-        <Tabs defaultValue="response">
-          <TabsList>
-            <TabsTrigger value="request">Request</TabsTrigger>
-            <TabsTrigger value="response">
-              Response
-              <span
-                className={cn(
-                  "text-xs font-mono ms-1",
-                  status === "2" && "text-green-500",
-                  status === "3" && "text-blue-500",
-                  status === "4" && "text-yellow-500",
-                  status === "5" && "text-red-500",
-                )}
-              >
-                ({queryMutation.data.status})
-              </span>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="request">
-            <RequestTab {...queryMutation.data.request} />
-          </TabsContent>
-          <TabsContent value="response">
-            <ResponseTab
-              status={queryMutation.data.status}
-              time={queryMutation.data.time}
-              size={queryMutation.data.size}
-              headers={queryMutation.data.headers}
-              body={queryMutation.data.body}
-              url={queryMutation.data.request.url}
-              isBinary={queryMutation.data.isBinary}
-              fileName={queryMutation.data.fileName}
-              blob={queryMutation.data.blob}
-            />
-          </TabsContent>
-        </Tabs>
+        <div>
+          {/* <RequestTab {...queryMutation.data.request} /> */}
+          <ResponseTab
+            status={queryMutation.data.status}
+            time={queryMutation.data.time}
+            size={queryMutation.data.size}
+            headers={queryMutation.data.headers}
+            body={queryMutation.data.body}
+            url={queryMutation.data.request.url}
+            isBinary={queryMutation.data.isBinary}
+            fileName={queryMutation.data.fileName}
+            blob={queryMutation.data.blob}
+          />
+        </div>
       ) : (
         <div className="grid place-items-center h-full">
           {queryMutation.isPending ? (
