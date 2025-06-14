@@ -149,10 +149,17 @@ export class AzureB2CAuthPlugin
     }
   }
 
-  signRequest = async (request: Request): Promise<Request> => {
+  signRequest = async (): Promise<{
+    headers?: Record<string, string>;
+    body?: string;
+    queryParams?: Record<string, string>;
+  }> => {
     const accessToken = await this.getAccessToken();
-    request.headers.set("Authorization", `Bearer ${accessToken}`);
-    return request;
+    return {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
   };
 
   signOut = async () => {
