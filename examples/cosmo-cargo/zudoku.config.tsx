@@ -207,6 +207,12 @@ const config: ZudokuConfig = {
     },
     {
       type: "file",
+      input: ["./schema/tailscale.yml"],
+      path: "/catalog/api-tailscale",
+      categories: [{ label: "General", tags: ["Tailscale"] }],
+    },
+    {
+      type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],

@@ -1,4 +1,4 @@
-import { PersonStandingIcon } from "lucide-react";
+import { FileInput } from "lucide-react";
 import { useFormContext } from "react-hook-form";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
@@ -19,7 +19,7 @@ export const BodyPanel = ({ examples }: { examples?: Content }) => {
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <PersonStandingIcon size={22} />
+        <FileInput size={22} />
         <CollapsibleHeader>Body</CollapsibleHeader>
         {examples && examples.length > 0 && (
           <ExamplesDropdown

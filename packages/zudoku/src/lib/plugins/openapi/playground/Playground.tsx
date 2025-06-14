@@ -1,6 +1,6 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { CornerDownLeftIcon, LockIcon, Unlink2Icon } from "lucide-react";
+import { CircleHelpIcon, LockIcon, Unlink2Icon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
@@ -469,7 +469,7 @@ export const Playground = ({
 
             <Collapsible defaultOpen>
               <CollapsibleHeaderTrigger>
-                <CornerDownLeftIcon size={16} />
+                <CircleHelpIcon size={16} />
                 <CollapsibleHeader>Query Parameters</CollapsibleHeader>
               </CollapsibleHeaderTrigger>
               <CollapsibleContent>

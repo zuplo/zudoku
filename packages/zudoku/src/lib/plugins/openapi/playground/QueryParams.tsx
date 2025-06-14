@@ -35,7 +35,7 @@ export const QueryParams = ({
           );
           return (
             <ParamsGridItem key={field.id}>
-              <div key={field.id} className="flex items-center gap-2">
+              <div key={field.id} className="flex items-center">
                 <Controller
                   control={control}
                   name={`queryParams.${i}.active`}
