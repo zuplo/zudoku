@@ -1,0 +1,350 @@
+---
+title: ServerError
+sidebar_icon: server-crash
+---
+
+A component for handling and displaying server-side errors in a user-friendly manner.
+
+## Usage
+
+The ServerError component is used to display server-related errors that occur during server-side rendering or API calls.
+
+```tsx
+import { ServerError } from "zudoku";
+
+export function ErrorPage() {
+  return <ServerError error={serverError} />;
+}
+```
+
+## Features
+
+- **Server Error Handling**: Specifically designed for server-side error scenarios
+- **User-Friendly Display**: Presents technical errors in an accessible way
+- **Error Context**: Provides relevant information about the server error
+- **Graceful Degradation**: Maintains app functionality despite server issues
+
+## Error Scenarios
+
+### Server-Side Rendering Errors
+
+When SSR fails during page generation:
+
+```tsx
+// In a server-side route handler
+export async function loader() {
+  try {
+    const data = await fetchServerData();
+    return data;
+  } catch (error) {
+    // ServerError handles this type of failure
+    throw new ServerError("Failed to load server data", { cause: error });
+  }
+}
+```
+
+### API Integration Failures
+
+When backend services are unavailable:
+
+```tsx
+// API call that might fail
+async function fetchData() {
+  try {
+    const response = await fetch("/api/data");
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+    return response.json();
+  } catch (error) {
+    // Display ServerError component
+    return <ServerError error={error} />;
+  }
+}
+```
+
+### Database Connection Issues
+
+When database operations fail:
+
+```tsx
+// Database operation error handling
+export async function databaseLoader() {
+  try {
+    const result = await db.query("SELECT * FROM documents");
+    return result;
+  } catch (dbError) {
+    console.error("Database error:", dbError);
+    throw new ServerError("Database connection failed", {
+      cause: dbError,
+      retryable: true,
+    });
+  }
+}
+```
+
+## Integration Patterns
+
+### With Error Boundaries
+
+```tsx
+import { ServerError } from "zudoku";
+import { ErrorBoundary } from "react-error-boundary";
+
+function App() {
+  return (
+    <ErrorBoundary
+      FallbackComponent={({ error }) => {
+        if (error.name === "ServerError") {
+          return <ServerError error={error} />;
+        }
+        return <div>Something went wrong</div>;
+      }}
+    >
+      <MyApp />
+    </ErrorBoundary>
+  );
+}
+```
+
+### With Route Error Handling
+
+```tsx
+import { createBrowserRouter } from "react-router";
+import { ServerError, RouterError } from "zudoku";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    errorElement: ({ error }) => {
+      if (error.type === "server") {
+        return <ServerError error={error} />;
+      }
+      return <RouterError error={error} />;
+    },
+  },
+]);
+```
+
+### With Retry Logic
+
+```tsx
+function ServerErrorWithRetry({ error, onRetry }) {
+  return (
+    <div>
+      <ServerError error={error} />
+      {error.retryable && (
+        <div className="mt-4">
+          <Button onClick={onRetry} variant="outline">
+            Try Again
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## Error Types
+
+### Service Unavailable
+
+```tsx
+// When external services are down
+function handleServiceError() {
+  throw new ServerError("External service temporarily unavailable", {
+    statusCode: 503,
+    retryAfter: 300, // seconds
+  });
+}
+```
+
+### Configuration Errors
+
+```tsx
+// When server configuration is invalid
+function validateConfig(config) {
+  if (!config.apiKey) {
+    throw new ServerError("Missing API configuration", {
+      statusCode: 500,
+      suggestion: "Check your environment variables",
+    });
+  }
+}
+```
+
+### Authentication Service Errors
+
+```tsx
+// When auth providers fail
+async function authenticateUser(token) {
+  try {
+    return await authProvider.verify(token);
+  } catch (authError) {
+    throw new ServerError("Authentication service error", {
+      cause: authError,
+      statusCode: 503,
+    });
+  }
+}
+```
+
+## Custom Error Pages
+
+### Development vs Production
+
+```tsx
+function CustomServerError({ error }) {
+  const isDevelopment = process.env.NODE_ENV === "development";
+
+  return (
+    <div>
+      <ServerError error={error} />
+      {isDevelopment && (
+        <details className="mt-4">
+          <summary>Debug Information</summary>
+          <pre className="text-xs bg-gray-100 p-2 rounded">{error.stack}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
+```
+
+### With User Actions
+
+```tsx
+function ActionableServerError({ error }) {
+  return (
+    <div>
+      <ServerError error={error} />
+      <div className="mt-6 space-x-2">
+        <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+        <Button variant="outline" asChild>
+          <Link to="/">Go Home</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/support">Contact Support</Link>
+        </Button>
+      </div>
+    </div>
+  );
+}
+```
+
+## Error Monitoring
+
+### Logging Server Errors
+
+```tsx
+function ServerErrorWithLogging({ error }) {
+  useEffect(() => {
+    // Log to error monitoring service
+    logger.error("Server error occurred", {
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+    });
+  }, [error]);
+
+  return <ServerError error={error} />;
+}
+```
+
+### Error Analytics
+
+```tsx
+function ServerErrorWithAnalytics({ error }) {
+  useEffect(() => {
+    // Track error in analytics
+    analytics.track("server_error", {
+      error_type: error.type,
+      error_code: error.statusCode,
+      page: window.location.pathname,
+      timestamp: Date.now(),
+    });
+  }, [error]);
+
+  return <ServerError error={error} />;
+}
+```
+
+## Best Practices
+
+### Graceful Degradation
+
+```tsx
+function RobustComponent() {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchData()
+      .then(setData)
+      .catch((err) => {
+        if (err.type === "server") {
+          setError(err);
+        }
+      });
+  }, []);
+
+  if (error) {
+    return <ServerError error={error} />;
+  }
+
+  return data ? <DataDisplay data={data} /> : <Spinner />;
+}
+```
+
+### Error Recovery
+
+```tsx
+function RecoverableServerError({ error, children }) {
+  const [retryCount, setRetryCount] = useState(0);
+  const [isRetrying, setIsRetrying] = useState(false);
+
+  const handleRetry = async () => {
+    if (retryCount < 3) {
+      setIsRetrying(true);
+      setRetryCount((prev) => prev + 1);
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 1000 * retryCount));
+        window.location.reload();
+      } catch {
+        setIsRetrying(false);
+      }
+    }
+  };
+
+  return (
+    <div>
+      <ServerError error={error} />
+      {error.retryable && retryCount < 3 && (
+        <Button onClick={handleRetry} disabled={isRetrying} className="mt-4">
+          {isRetrying
+            ? "Retrying..."
+            : `Retry (${3 - retryCount} attempts left)`}
+        </Button>
+      )}
+    </div>
+  );
+}
+```
+
+## Notes
+
+:::tip
+Use ServerError for any errors that originate from server-side operations, API calls, or infrastructure issues.
+:::
+
+:::info
+The ServerError component provides a consistent way to handle server failures while maintaining a good user experience.
+:::
+
+:::caution
+Always log server errors to monitoring services to track and resolve issues quickly in production environments.
+:::

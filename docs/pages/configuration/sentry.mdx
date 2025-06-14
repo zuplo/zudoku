@@ -8,22 +8,24 @@ Sentry is a popular error tracking tool that helps you monitor and fix crashes i
 
 ## Enable Sentry
 
+<Stepper>
 1. To enable it you have to first install the optional dependency `@sentry/react`.
 
-```bash
-npm install --save @sentry/react
-```
+    ```bash
+    npm install --save @sentry/react
+    ```
 
-2. And then set the `SENTRY_DSN` environment variable in your Zudoku project.
+1. And then set the `SENTRY_DSN` environment variable in your Zudoku project.
 
-```bash
+   ```bash
+   SENTRY_DSN=https://your-sentry-dsn
+   ```
 
-SENTRY_DSN=https://your-sentry-dsn
-```
+</Stepper>
 
 ## Release management
 
-However this does not handle release management for you. For that you can [create a custom `vite.config.ts`](./vite-config) and use the `@sentry/vite-plugin` plugin.
+While Zudoku will automatically enable Sentry when it detects the environment variable, it does not handle release management for you. For that you can [create a custom `vite.config.ts`](./vite-config) and use the `@sentry/vite-plugin` plugin.
 
 ```ts
 import { sentryVitePlugin } from "@sentry/vite-plugin";
