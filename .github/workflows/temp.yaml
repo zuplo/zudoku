@@ -24,9 +24,9 @@ jobs:
           app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
           private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
           repositories: |
-            zuplo/docs
-            zuplo/core
-            zuplo/www
+            docs
+            core
+            www
 
       - uses: actions/checkout@v4
         with:
