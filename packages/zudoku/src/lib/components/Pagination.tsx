@@ -22,6 +22,7 @@ export const Pagination = ({
         prev ? "justify-between" : "justify-end",
         className,
       )}
+      data-pagefind-ignore="all"
     >
       {prev && (
         <Button variant="ghost" asChild>
