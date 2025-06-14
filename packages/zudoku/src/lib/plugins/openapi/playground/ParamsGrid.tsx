@@ -7,7 +7,7 @@ const ParamsGrid = createVariantComponent(
 
 export const ParamsGridItem = createVariantComponent(
   "div",
-  "group hover:bg-accent px-4 py-1 grid col-span-full grid-cols-subgrid",
+  "group hover:bg-accent px-4 py-1 grid col-span-full grid-cols-subgrid border-b",
 );
 
 export default ParamsGrid;
