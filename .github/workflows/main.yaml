@@ -208,6 +208,11 @@ jobs:
         with:
           app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
           private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: |
+            docs
+            core
+            www
 
       # Trigger updates of internal projects using Zudoku
       - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
