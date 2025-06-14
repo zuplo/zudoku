@@ -222,6 +222,6 @@ jobs:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - run: gh workflow run zudoku-changelog.yml --repo zuplo/www --ref main
         # Only for non-prerelease and not patch
-        if: github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'patch'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'patch' && github.event.inputs.releaseType != 'prerelease'
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
