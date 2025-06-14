@@ -233,10 +233,13 @@ export class OpenIDAuthenticationProvider
     }
   }
 
-  signRequest = async (request: Request): Promise<Request> => {
+  signRequest = async () => {
     const accessToken = await this.getAccessToken();
-    request.headers.set("Authorization", `Bearer ${accessToken}`);
-    return request;
+    return {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
   };
 
   signOut = async () => {

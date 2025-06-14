@@ -83,10 +83,17 @@ class SupabaseAuthenticationProvider
     return data.session.access_token;
   }
 
-  async signRequest(request: Request): Promise<Request> {
+  async signRequest(request: Request): Promise<{
+    headers?: Record<string, string>;
+    body?: string;
+    queryParams?: Record<string, string>;
+  }> {
     const accessToken = await this.getAccessToken();
-    request.headers.set("Authorization", `Bearer ${accessToken}`);
-    return request;
+    return {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    };
   }
 
   signUp = async ({ redirectTo }: { redirectTo?: string }) => {
