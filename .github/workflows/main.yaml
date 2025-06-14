@@ -202,19 +202,26 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
 
+      - name: Generate a token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
+
       # Trigger updates of internal projects using Zudoku
       - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - run: gh workflow run zudoku-changelog.yml --repo zuplo/www --ref main
         # Only for non-prerelease and not patch
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'patch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
