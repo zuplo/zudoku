@@ -1,94 +1,47 @@
 import { type UseMutationResult } from "@tanstack/react-query";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Spinner } from "../../../../components/Spinner.js";
 import { Button } from "../../../../ui/Button.js";
-import { Callout } from "../../../../ui/Callout.js";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../../ui/Card.js";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../../../../ui/Tabs.js";
 import { cn } from "../../../../util/cn.js";
 import { type PlaygroundResult } from "../Playground.js";
-import { RequestTab } from "./RequestTab.js";
 import { ResponseTab } from "./ResponseTab.js";
 
 export const ResultPanel = ({
   queryMutation,
-  showPathParamsWarning,
   showLongRunningWarning,
   onCancel,
 }: {
   queryMutation: UseMutationResult<PlaygroundResult, Error, any>;
-  showPathParamsWarning: boolean;
   showLongRunningWarning?: boolean;
   onCancel?: () => void;
 }) => {
-  const status = ((queryMutation.data?.status ?? 0) / 100).toFixed(0);
   return (
-    <div className="min-w-0 p-4 py-4 bg-muted/50">
+    <div className="min-w-0 flex flex-col items-center justify-center">
       {queryMutation.error ? (
-        <div className="flex flex-col gap-2">
-          {showPathParamsWarning && (
-            <Callout type="caution">
-              Some path parameters are missing values. Please fill them in to
-              ensure the request is sent correctly.
-            </Callout>
-          )}
-          <Card>
-            <CardHeader>
-              <CardTitle>Request failed</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <div className="max-w-2/3">
+          <Alert>
+            <AlertTitle>Request failed</AlertTitle>
+            <AlertDescription>
               Error:{" "}
               {queryMutation.error.message ||
                 String(queryMutation.error) ||
                 "Unexpected error"}
-            </CardContent>
-          </Card>
+            </AlertDescription>
+          </Alert>
         </div>
       ) : queryMutation.data ? (
-        <Tabs defaultValue="response">
-          <TabsList>
-            <TabsTrigger value="request">Request</TabsTrigger>
-            <TabsTrigger value="response">
-              Response
-              <span
-                className={cn(
-                  "text-xs font-mono ms-1",
-                  status === "2" && "text-green-500",
-                  status === "3" && "text-blue-500",
-                  status === "4" && "text-yellow-500",
-                  status === "5" && "text-red-500",
-                )}
-              >
-                ({queryMutation.data.status})
-              </span>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="request">
-            <RequestTab {...queryMutation.data.request} />
-          </TabsContent>
-          <TabsContent value="response">
-            <ResponseTab
-              status={queryMutation.data.status}
-              time={queryMutation.data.time}
-              size={queryMutation.data.size}
-              headers={queryMutation.data.headers}
-              body={queryMutation.data.body}
-              url={queryMutation.data.request.url}
-              isBinary={queryMutation.data.isBinary}
-              fileName={queryMutation.data.fileName}
-              blob={queryMutation.data.blob}
-            />
-          </TabsContent>
-        </Tabs>
+        <ResponseTab
+          request={queryMutation.data.request}
+          status={queryMutation.data.status}
+          time={queryMutation.data.time}
+          size={queryMutation.data.size}
+          headers={queryMutation.data.headers}
+          body={queryMutation.data.body}
+          url={queryMutation.data.request.url}
+          isBinary={queryMutation.data.isBinary}
+          fileName={queryMutation.data.fileName}
+          blob={queryMutation.data.blob}
+        />
       ) : (
         <div className="grid place-items-center h-full">
           {queryMutation.isPending ? (
