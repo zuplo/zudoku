@@ -41,7 +41,7 @@ export const CodeBlock = ({
       <div className="border-b flex items-center h-10 font-sans bg-black/2">
         <div className="flex-1 text-sm w-full px-4">
           {title}
-          {showLanguageIndicator && (
+          {showLanguageIndicator && language && (
             <span className="text-muted-foreground ml-2">({language})</span>
           )}
         </div>{" "}

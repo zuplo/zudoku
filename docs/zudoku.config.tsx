@@ -42,6 +42,13 @@ const config: ZudokuConfig = {
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",
+    defaultOptions: {
+      showLastModified: true,
+      suggestEdit: {
+        text: "Edit this page",
+        url: "https://github.com/zuplo/zudoku/edit/main/docs/{filePath}",
+      },
+    },
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",

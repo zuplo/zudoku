@@ -230,6 +230,13 @@ export const DocsConfigSchema = z.object({
     .object({
       toc: z.boolean(),
       disablePager: z.boolean(),
+      showLastModified: z.boolean(),
+      suggestEdit: z
+        .object({
+          url: z.string(),
+          text: z.string().optional(),
+        })
+        .optional(),
     })
     .partial()
     .optional(),

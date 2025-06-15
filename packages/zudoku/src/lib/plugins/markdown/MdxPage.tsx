@@ -1,7 +1,9 @@
 import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
+import { EditIcon } from "lucide-react";
 import { type PropsWithChildren, useEffect } from "react";
+import { Button } from "zudoku/ui/Button.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { ProseClasses } from "../../components/Markdown.js";
@@ -38,14 +40,13 @@ const MarkdownHeadings = {
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
-  file,
   frontmatter = {},
   defaultOptions,
+  __filepath,
   tableOfContents,
   excerpt,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
-    file: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
   }
@@ -63,6 +64,22 @@ export const MdxPage = ({
     defaultOptions?.disablePager ??
     false;
 
+  const showLastModified =
+    frontmatter.showLastModified ?? defaultOptions?.showLastModified ?? true;
+
+  const lastModifiedDate = frontmatter.lastModifiedTime
+    ? new Date(frontmatter.lastModifiedTime)
+    : null;
+
+  const editConfig =
+    frontmatter.suggestEdit !== false &&
+    (frontmatter.suggestEdit ?? defaultOptions?.suggestEdit);
+
+  const editUrl = editConfig
+    ? editConfig.url.replaceAll("{filePath}", __filepath)
+    : null;
+  const editText = editConfig ? editConfig.text || "Edit this page" : null;
+
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??
     // if `title` is provided by frontmatter it does not appear in the table of contents
@@ -75,7 +92,7 @@ export const MdxPage = ({
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
       window.__getReactRefreshIgnoredExports = ({ id }) => {
-        if (!id.endsWith(file)) return;
+        if (!id.endsWith(__filepath)) return;
 
         return ["frontmatter", "tableOfContents"];
       };
@@ -84,7 +101,7 @@ export const MdxPage = ({
         window.__getReactRefreshIgnoredExports = undefined;
       };
     }
-  }, [file]);
+  }, [__filepath]);
 
   return (
     <div
@@ -115,13 +132,53 @@ export const MdxPage = ({
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}
         />
+        <div className="h-16" />
+        {(showLastModified && lastModifiedDate) || editUrl ? (
+          <div className="flex justify-between text-xs text-muted-foreground ">
+            <div />
+            <div className="flex items-center gap-2">
+              <div>
+                {editUrl && (
+                  <Button asChild variant="ghost" size="sm">
+                    <a
+                      href={editUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1"
+                    >
+                      <EditIcon size={12} />
+                      {editText}
+                    </a>
+                  </Button>
+                )}
+              </div>
+              <div>
+                {showLastModified && lastModifiedDate && (
+                  <div
+                    title={lastModifiedDate.toLocaleString(undefined, {
+                      dateStyle: "full",
+                      timeStyle: "medium",
+                    })}
+                  >
+                    Last modified on{" "}
+                    <time dateTime={lastModifiedDate.toISOString()}>
+                      {lastModifiedDate.toLocaleDateString(undefined, {
+                        dateStyle: "long",
+                      })}
+                    </time>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
         {!hidePager && (
           <>
-            <hr className="my-10" />
+            <div className="h-px bg-border mt-2 mb-6" />
             <Pagination
               prev={prev ? { to: prev.id, label: prev.label } : undefined}
               next={next ? { to: next.id, label: next.label } : undefined}
-              className="mb-4"
+              className="mb-10"
             />
           </>
         )}

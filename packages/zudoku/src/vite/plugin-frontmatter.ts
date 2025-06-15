@@ -29,12 +29,14 @@ export const viteFrontmatterPlugin = (): Plugin => ({
       ),
     );
 
-    server.watcher.on("change", async (filePath) => {
+    server.watcher.on("all", async (event, filePath) => {
+      if (event !== "change" && event !== "add") return;
+
       if (/\.mdx?$/.test(filePath)) {
         const fm = matter(await readFile(filePath, "utf-8"));
         const prevFm = frontmatterMap.get(filePath);
 
-        if (prevFm && JSON.stringify(prevFm) !== JSON.stringify(fm.data)) {
+        if (!prevFm || JSON.stringify(prevFm) !== JSON.stringify(fm.data)) {
           frontmatterMap.set(filePath, fm.data);
           invalidateNavigation(server);
           reload(server);

@@ -14,9 +14,12 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
+import type { VFile } from "vfile";
 import { type Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
+import { remarkLastModified } from "./mdx/remark-last-modified.js";
+import { exportMdxjsConst } from "./mdx/utils.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
@@ -77,6 +80,13 @@ const remarkLinkRewritePlugin =
     });
   };
 
+const remarkInjectFilepath =
+  (rootDir: string) => (tree: Root, vfile: VFile) => {
+    tree.children.unshift(
+      exportMdxjsConst("__filepath", path.relative(rootDir, vfile.path)),
+    );
+  };
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const rehypeExcerptWithMdxExport = () => (tree: any) => {
   let excerpt: string | undefined;
@@ -90,39 +100,7 @@ const rehypeExcerptWithMdxExport = () => (tree: any) => {
 
   if (!excerpt) return;
 
-  // Inject the excerpt as a named export into the MDX AST
-  // Injection code taken from @stefanprobst/rehype-extract-toc/mdx
-  tree.children.unshift({
-    type: "mdxjsEsm",
-    data: {
-      estree: {
-        type: "Program",
-        sourceType: "module",
-        body: [
-          {
-            type: "ExportNamedDeclaration",
-            source: null,
-            specifiers: [],
-            declaration: {
-              type: "VariableDeclaration",
-              kind: "const",
-              declarations: [
-                {
-                  type: "VariableDeclarator",
-                  id: { name: "excerpt", type: "Identifier" },
-                  init: {
-                    type: "Literal",
-                    value: excerpt,
-                    raw: JSON.stringify(excerpt),
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  });
+  tree.children.unshift(exportMdxjsConst("excerpt", excerpt));
 };
 
 const viteMdxPlugin = (): Plugin => {
@@ -140,9 +118,14 @@ const viteMdxPlugin = (): Plugin => {
       format: "mdx",
       remarkPlugins: [
         remarkStaticGeneration,
+        [remarkInjectFilepath, config.__meta.rootDir],
         remarkComment,
         remarkGfm,
         remarkFrontmatter,
+        // ---  important:
+        // this must be sandwiched between remarkFrontmatter and remarkMdxFrontmatter
+        remarkLastModified,
+        // ---
         remarkMdxFrontmatter,
         remarkDirective,
         remarkDirectiveRehype,
