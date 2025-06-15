@@ -126,7 +126,7 @@ export const MdxPage = ({
           </>
         )}
       </div>
-      <div className="hidden xl:block">
+      <div className="hidden xl:block" data-pagefind-ignore="all">
         {showToc && <Toc entries={tocEntries} />}
       </div>
     </div>
