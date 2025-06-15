@@ -198,14 +198,12 @@ export class ZudokuContext {
     }
 
     return new Request(newUrl.toString(), {
-      method: request.method,
+      ...request,
       headers: {
         ...request.headers,
         ...headers,
       },
       body: body ?? request.body,
-      mode: request.mode,
-      credentials: request.credentials,
     });
   };
 }
