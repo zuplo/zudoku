@@ -5,7 +5,11 @@ export interface AuthenticationPlugin {
   // @deprecated use signRequest instead
   getAccessToken(): Promise<string>;
   onPageLoad?(): void;
-  signRequest(request: Request): Promise<Request>;
+  signRequest(request: Request): Promise<{
+    headers?: Record<string, string>;
+    body?: string;
+    queryParams?: Record<string, string>;
+  }>;
 }
 
 export interface AuthenticationProviderInitializer<TConfig> {

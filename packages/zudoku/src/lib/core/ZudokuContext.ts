@@ -187,6 +187,23 @@ export class ZudokuContext {
       throw new Error("No authentication provider configured");
     }
 
-    return await this.authentication.signRequest(request);
+    const { headers, body, queryParams } =
+      await this.authentication.signRequest(request);
+
+    const newUrl = new URL(request.url);
+    if (queryParams) {
+      Object.entries(queryParams).forEach(([key, value]) => {
+        newUrl.searchParams.set(key, value);
+      });
+    }
+
+    return new Request(newUrl.toString(), {
+      ...request,
+      headers: {
+        ...request.headers,
+        ...headers,
+      },
+      body: body ?? request.body,
+    });
   };
 }
