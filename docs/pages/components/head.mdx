@@ -1,0 +1,190 @@
+---
+title: Head
+sidebar_icon: circle-fading-plus
+---
+
+The Head component (alias for Helmet) allows you to manage document head elements like title, meta tags, and links from anywhere in your component tree.
+
+## Props
+
+The Head component accepts any valid HTML head elements as children.
+
+## Usage
+
+### Basic Title
+
+```tsx
+<Head>
+  <title>My Page Title</title>
+</Head>
+```
+
+### Meta Tags
+
+```tsx
+<Head>
+  <title>About Us - My Company</title>
+  <meta
+    name="description"
+    content="Learn more about our company and mission."
+  />
+  <meta name="keywords" content="company, about, mission" />
+</Head>
+```
+
+### Social Media Meta Tags
+
+```tsx
+<Head>
+  <title>My Blog Post</title>
+  <meta property="og:title" content="My Blog Post" />
+  <meta property="og:description" content="An interesting blog post about..." />
+  <meta property="og:image" content="https://example.com/image.jpg" />
+  <meta property="og:url" content="https://example.com/blog/my-post" />
+  <meta name="twitter:card" content="summary_large_image" />
+</Head>
+```
+
+### Custom Links
+
+```tsx
+<Head>
+  <link rel="canonical" href="https://example.com/canonical-url" />
+  <link rel="alternate" hreflang="es" href="https://example.com/es" />
+</Head>
+```
+
+### Favicon
+
+```tsx
+<Head>
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16" />
+</Head>
+```
+
+## Advanced Usage
+
+### Dynamic Title with Template
+
+```tsx
+function MyPage() {
+  return (
+    <>
+      <Head>
+        <title>Contact Us</title>
+      </Head>
+      <h1>Contact Us</h1>
+      {/* Page content */}
+    </>
+  );
+}
+```
+
+### Multiple Head Tags
+
+```tsx
+<Head>
+  <title>Product Page - {productName}</title>
+  <meta name="description" content={productDescription} />
+  <meta property="og:title" content={productName} />
+  <meta property="og:description" content={productDescription} />
+  <meta property="og:image" content={productImage} />
+  <link rel="canonical" href={`https://example.com/products/${productSlug}`} />
+</Head>
+```
+
+### Conditional Meta Tags
+
+```tsx
+function ProductPage({ product }) {
+  return (
+    <>
+      <Head>
+        <title>{product.name} - Our Store</title>
+        <meta name="description" content={product.description} />
+        {product.inStock && (
+          <meta property="product:availability" content="in stock" />
+        )}
+        {product.price && (
+          <meta property="product:price:amount" content={product.price} />
+        )}
+      </Head>
+      {/* Component content */}
+    </>
+  );
+}
+```
+
+## Features
+
+- **Server-Side Rendering**: Works with SSR to set proper head tags
+- **Dynamic Updates**: Head tags update when component props change
+- **Multiple Components**: Head tags from multiple components are merged
+- **Override Behavior**: Later Head components can override earlier ones
+- **Template Support**: Zudoku's Layout automatically provides title templates
+
+## Common Use Cases
+
+### SEO Optimization
+
+```tsx
+<Head>
+  <title>{pageTitle}</title>
+  <meta name="description" content={pageDescription} />
+  <meta name="keywords" content={pageKeywords} />
+  <link rel="canonical" href={canonicalUrl} />
+</Head>
+```
+
+### Social Sharing
+
+```tsx
+<Head>
+  <meta property="og:title" content={shareTitle} />
+  <meta property="og:description" content={shareDescription} />
+  <meta property="og:image" content={shareImage} />
+  <meta property="og:url" content={shareUrl} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@yourhandle" />
+</Head>
+```
+
+### Structured Data
+
+```tsx
+<Head>
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: articleTitle,
+      author: articleAuthor,
+      datePublished: publishDate,
+    })}
+  </script>
+</Head>
+```
+
+## Integration with Zudoku
+
+The Layout component automatically provides:
+
+- Title templates based on your Zudoku meta configuration
+- Canonical URLs when `canonicalUrlOrigin` is configured
+- Description meta tags from page meta
+- Favicon links from meta configuration
+
+## Notes
+
+:::tip
+The Head component is an alias for the Helmet component from React Helmet Async. You can use either `<Head>` or `<Helmet>` - they're identical.
+:::
+
+:::info
+Head tags are merged across components, so you can set some meta tags globally and override specific ones in individual pages.
+:::
+
+:::caution
+Remember that Head tags need to be valid HTML head elements. Invalid elements will be ignored or may cause issues.
+:::
