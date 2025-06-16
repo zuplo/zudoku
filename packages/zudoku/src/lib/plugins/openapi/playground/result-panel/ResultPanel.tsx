@@ -1,9 +1,11 @@
 import { type UseMutationResult } from "@tanstack/react-query";
+import { UnplugIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Spinner } from "../../../../components/Spinner.js";
 import { Button } from "../../../../ui/Button.js";
 import { cn } from "../../../../util/cn.js";
 import { type PlaygroundResult } from "../Playground.js";
+import ResponseStatusBar from "./ResponseStatusBar.js";
 import { ResponseTab } from "./ResponseTab.js";
 
 export const ResultPanel = ({
@@ -16,13 +18,20 @@ export const ResultPanel = ({
   onCancel?: () => void;
 }) => {
   return (
-    <div className="min-w-0 flex flex-col items-center justify-center overflow-x-hidden">
+    <div className="overflow-y-auto h-[80vh] bg-muted/50">
+      {(queryMutation.isPending || queryMutation.data) && (
+        <ResponseStatusBar
+          status={queryMutation.data?.status}
+          time={queryMutation.data?.time}
+          size={queryMutation.data?.size}
+        />
+      )}
       {queryMutation.error ? (
-        <div className="max-w-2/3">
+        <div className="max-w-2/3 mx-auto mt-20">
           <Alert>
+            <UnplugIcon size={24} strokeWidth={1.5} className="me-5" />
             <AlertTitle>Request failed</AlertTitle>
             <AlertDescription>
-              Error:{" "}
               {queryMutation.error.message ||
                 String(queryMutation.error) ||
                 "Unexpected error"}
@@ -42,35 +51,35 @@ export const ResultPanel = ({
           fileName={queryMutation.data.fileName}
           blob={queryMutation.data.blob}
         />
-      ) : (
+      ) : queryMutation.isPending ? (
         <div className="grid place-items-center h-full">
-          {queryMutation.isPending ? (
-            <div className="flex flex-col gap-2 items-center mt-20">
-              <Spinner size={20} />
-              <div
-                className={cn(
-                  "opacity-0 pointer-events-none transition-opacity h-20 text-sm text-muted-foreground duration-300 flex flex-col gap-2 items-center",
-                  showLongRunningWarning && "opacity-100 pointer-events-auto",
-                )}
+          <div className="flex flex-col gap-2 items-center mt-20">
+            <Spinner size={20} />
+            <div
+              className={cn(
+                "opacity-0 pointer-events-none transition-opacity h-20 text-sm text-muted-foreground duration-300 flex flex-col gap-2 items-center",
+                showLongRunningWarning && "opacity-100 pointer-events-auto",
+              )}
+            >
+              Looks like the request is taking longer than expected.
+              <Button
+                type="button"
+                onClick={onCancel}
+                size="sm"
+                className="w-fit"
+                variant="outline"
               >
-                Looks like the request is taking longer than expected.
-                <Button
-                  type="button"
-                  onClick={onCancel}
-                  size="sm"
-                  className="w-fit"
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-              </div>
+                Cancel
+              </Button>
             </div>
-          ) : (
-            <span className="text-[16px] font-semibold text-muted-foreground">
-              Send a request first to see the response here
-            </span>
-          )}
+          </div>
         </div>
+      ) : (
+        <>
+          <span className="text-[16px] font-semibold text-muted-foreground">
+            Send a request first to see the response here
+          </span>
+        </>
       )}
     </div>
   );

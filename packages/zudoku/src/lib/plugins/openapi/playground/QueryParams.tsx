@@ -1,4 +1,5 @@
-import { PlusCircleIcon, Unlink2Icon } from "lucide-react";
+import { PlusCircleIcon, Unlink2Icon, XIcon } from "lucide-react";
+import { useEffect } from "react";
 import {
   type Control,
   Controller,
@@ -25,12 +26,20 @@ export const QueryParams = ({
   control: Control<PlaygroundForm>;
   schemaQueryParams: QueryParam[];
 }) => {
-  const { fields } = useFieldArray<PlaygroundForm, "queryParams">({
+  const { fields, remove, append } = useFieldArray<
+    PlaygroundForm,
+    "queryParams"
+  >({
     control,
     name: "queryParams",
   });
   const { setValue, getValues, watch } = useFormContext<PlaygroundForm>();
   const watchedQueryParams = watch("queryParams");
+  useEffect(() => {
+    if (watchedQueryParams.length === 0) {
+      append({ name: "", value: "", active: false }, { shouldFocus: true });
+    }
+  }, [watchedQueryParams, append]);
 
   const requiredFields = schemaQueryParams.map((param) =>
     Boolean(param.isRequired),
@@ -142,6 +151,15 @@ export const QueryParams = ({
                       }}
                       name={`queryParams.${i}.value`}
                     />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="text-muted-foreground opacity-0 group-hover:opacity-100 rounded-full w-8 h-7"
+                      onClick={() => remove(i)}
+                      type="button"
+                    >
+                      <XIcon size={16} />
+                    </Button>
                   </div>
                 </ParamsGridItem>
               );

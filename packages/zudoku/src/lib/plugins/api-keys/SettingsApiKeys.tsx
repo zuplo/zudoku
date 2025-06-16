@@ -3,7 +3,6 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AnimatePresence } from "framer-motion";
 import {
   CheckIcon,
   CopyIcon,
@@ -14,6 +13,7 @@ import {
   TrashIcon,
   XIcon,
 } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import React, { useState } from "react";
 import { Link } from "react-router";
 import { Card, CardHeader } from "zudoku/ui/Card.js";

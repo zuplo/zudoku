@@ -7,7 +7,7 @@ export const UrlQueryParams = () => {
   const queryParams = watch("queryParams");
 
   const urlQueryParams = queryParams
-    .filter((p) => p.active)
+    .filter((p) => p.active && p.name)
     .map((p, i, arr) => (
       <Fragment key={p.name}>
         {p.name}={encodeURIComponent(p.value).replaceAll("%20", "+")}
