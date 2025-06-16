@@ -14,6 +14,7 @@ import {
 } from "zudoku/ui/Select.js";
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
+import { useHotkey } from "../../../hooks/useHotkey.js";
 import { useLatest } from "../../../util/useLatest.js";
 import { type Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
@@ -140,6 +141,11 @@ export const Playground = ({
   const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const { label: hotkeyLabel } = useHotkey("meta+enter", () => {
+    formRef.current?.requestSubmit();
+  });
 
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
@@ -353,6 +359,7 @@ export const Playground = ({
     >
       <TooltipProvider delayDuration={150}>
         <form
+          ref={formRef}
           onSubmit={handleSubmit((data) => {
             if (identities.data?.length === 0 || data.identity) {
               queryMutation.mutate(data);
@@ -406,15 +413,18 @@ export const Playground = ({
 
                 <Button
                   type="submit"
-                  disabled={identities.isLoading || form.formState.isLoading}
-                  variant={form.formState.isLoading ? "outline" : "default"}
-                  onClick={() => {
-                    if (form.formState.isLoading) {
-                      abortControllerRef.current?.abort();
+                  variant={queryMutation.isPending ? "destructive" : "default"}
+                  onClick={(e) => {
+                    if (queryMutation.isPending) {
+                      abortControllerRef.current?.abort(
+                        "Request cancelled by user",
+                      );
+                      e.preventDefault();
                     }
                   }}
+                  className="w-18"
                 >
-                  {form.formState.isLoading ? "Cancel" : "Send"}
+                  {queryMutation.isPending ? "Cancel" : "Send"}
                 </Button>
               </div>
             </div>
@@ -466,6 +476,17 @@ export const Playground = ({
             <ResultPanel
               queryMutation={queryMutation}
               showLongRunningWarning={showLongRunningWarning}
+              tip={
+                <div className="text-xs  w-full">
+                  <span className="text-muted-foreground">
+                    Hit{" "}
+                    <span className="text-foreground border rounded p-px capitalize">
+                      {hotkeyLabel.join(" + ")}
+                    </span>{" "}
+                    to send request
+                  </span>
+                </div>
+              }
               onCancel={() => {
                 abortControllerRef.current?.abort(
                   "Request cancelled by the user",
