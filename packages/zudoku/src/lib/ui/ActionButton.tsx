@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
-import { Button, type ButtonProps } from "zudoku/ui/Button.js";
 import { Spinner } from "../components/Spinner.js";
-import { cn } from "../util/cn.js";
+import { Button, type ButtonProps } from "./Button.js";
+import { cn } from "./util.js";
 
 type ActionButtonProps = ButtonProps & { isPending?: boolean };
 

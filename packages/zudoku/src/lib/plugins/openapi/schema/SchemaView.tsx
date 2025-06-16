@@ -1,7 +1,6 @@
 import { InfoIcon } from "lucide-react";
 import { Markdown, ProseClasses } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { Card } from "../../../ui/Card.js";
 import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
@@ -23,14 +22,14 @@ const renderMarkdown = (content?: string) =>
   );
 
 const renderBasicSchema = (schema: SchemaObject) => (
-  <Card className="p-4 space-y-2">
+  <div className="p-4 space-y-2">
     <span className="text-sm text-muted-foreground">
       <ParamInfos schema={schema} />
     </span>
     {schema.enum && <EnumValues values={schema.enum} />}
     {renderMarkdown(schema.description)}
     <SchemaExampleAndDefault schema={schema} />
-  </Card>
+  </div>
 );
 
 export const SchemaView = ({
@@ -44,12 +43,12 @@ export const SchemaView = ({
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
-      <Card className="overflow-hidden">
+      <div className="overflow-hidden">
         {cardHeader}
         <div className="text-sm text-muted-foreground italic p-4">
           No data returned
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -105,7 +104,7 @@ export const SchemaView = ({
       ) : null;
 
     return (
-      <Card className="divide-y overflow-hidden">
+      <div className="divide-y overflow-hidden rounded-md border shadow-xs dark:shadow-none">
         {cardHeader}
         {groupNames.map(
           (group) =>
@@ -124,7 +123,7 @@ export const SchemaView = ({
             ),
         )}
         {additionalProperties}
-      </Card>
+      </div>
     );
   }
 
