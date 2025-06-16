@@ -20,19 +20,17 @@ const IdentitySelector = ({
       className="gap-0"
       disabled={identities?.length === 0}
     >
-      <div className="divide-y">
-        {[{ id: NO_IDENTITY, label: "None" }, ...(identities ?? [])].map(
-          (identity) => (
-            <Label
-              key={identity.id}
-              className="h-10 items-center flex gap-4 p-4 cursor-pointer hover:bg-accent"
-            >
-              <RadioGroupItem value={identity.id} id={identity.id} />
-              <span>{identity.label}</span>
-            </Label>
-          ),
-        )}
-      </div>
+      {[{ id: NO_IDENTITY, label: "None" }, ...(identities ?? [])].map(
+        (identity) => (
+          <Label
+            key={identity.id}
+            className="h-10 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75"
+          >
+            <RadioGroupItem value={identity.id} id={identity.id} />
+            <span>{identity.label}</span>
+          </Label>
+        ),
+      )}
     </RadioGroup>
   </div>
 );

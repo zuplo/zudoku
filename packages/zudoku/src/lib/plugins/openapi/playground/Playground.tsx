@@ -20,6 +20,8 @@ import {
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { useHotkey } from "../../../hooks/useHotkey.js";
+import { cn } from "../../../util/cn.js";
+import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
 import { type Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
@@ -473,7 +475,7 @@ export const Playground = ({
                           Authentication
                         </CollapsibleHeader>
                       </CollapsibleHeaderTrigger>
-                      <CollapsibleContent>
+                      <CollapsibleContent className="CollapsibleContent">
                         <IdentitySelector
                           value={identity}
                           identities={identities.data ?? []}
@@ -491,7 +493,7 @@ export const Playground = ({
                     <ShapesIcon size={16} />
                     <CollapsibleHeader>Path Parameters</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
-                  <CollapsibleContent>
+                  <CollapsibleContent className="CollapsibleContent">
                     <PathParams url={url} control={control} />
                   </CollapsibleContent>
                 </Collapsible>
@@ -511,13 +513,13 @@ export const Playground = ({
               queryMutation={queryMutation}
               showLongRunningWarning={showLongRunningWarning}
               tip={
-                <div className="text-xs  w-full">
+                <div className="text-xs w-full">
                   <span className="text-muted-foreground">
-                    Hit{" "}
-                    <span className="text-foreground border rounded p-px capitalize">
+                    Press{" "}
+                    <kbd className="text-foreground border rounded p-px capitalize">
                       {hotkeyLabel.join(" + ")}
-                    </span>{" "}
-                    to send request
+                    </kbd>{" "}
+                    to send a request
                   </span>
                 </div>
               }

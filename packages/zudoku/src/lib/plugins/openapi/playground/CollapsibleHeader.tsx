@@ -19,12 +19,12 @@ export const CollapsibleHeaderTrigger = ({
       {children}
       <CollapsibleTrigger
         className={cn(
-          "flex items-center gap-4 group bg-muted w-full p-2 hover:bg-black/5 rounded-md",
+          "flex items-center gap-4 group bg-muted w-full p-2 hover:bg-accent hover:brightness-95 rounded-md",
           className,
         )}
       >
         <ChevronUpIcon
-          className="group-data-[state=open]:rotate-180 flex-shrink-0"
+          className="group-data-[state=open]:rotate-180 transition-transform flex-shrink-0"
           size={16}
         />
       </CollapsibleTrigger>

@@ -127,12 +127,12 @@ export const Headers = ({
           type="button"
           size="sm"
           variant="ghost"
-          className="hover:bg-black/5 flex gap-2"
+          className="hover:bg-accent hover:brightness-95 flex gap-2"
         >
           Add header <PlusCircleIcon size={16} />
         </Button>
       </CollapsibleHeaderTrigger>
-      <CollapsibleContent>
+      <CollapsibleContent className="CollapsibleContent">
         <div className="flex flex-col gap-2">
           <div className="overflow-hidden">
             <ParamsGrid>
@@ -148,9 +148,9 @@ export const Headers = ({
                         <Input
                           value={field.name}
                           disabled
-                          className="w-full border-0 shadow-none text-xs focus-visible:ring-0 font-mono"
+                          className="w-full border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono"
                         />
-                        <div className="px-3">{field.value}</div>
+                        <div>{field.value}</div>
                       </ParamsGridItem>
                     </TooltipTrigger>
                     <TooltipContent
@@ -223,7 +223,7 @@ export const Headers = ({
                         <Autocomplete
                           {...field}
                           placeholder="Name"
-                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                          className="border-0 p-0 m-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                           options={[...missingHeaders, ...headerOptions]}
                           onEnterPress={() => handleHeaderEnter(i)}
                           onChange={(e) => {
@@ -249,7 +249,7 @@ export const Headers = ({
                             return (
                               <Input
                                 placeholder="Value"
-                                className="w-full border-0 shadow-none text-xs focus-visible:ring-0 font-mono"
+                                className="w-full truncate border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono"
                                 autoComplete="off"
                                 {...field}
                                 ref={(el) => {
@@ -276,15 +276,15 @@ export const Headers = ({
                                 field.onChange(e);
                                 setValue(`headers.${i}.active`, true);
                               }}
-                              className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                              className="border-0 p-0 m-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                             />
                           );
                         }}
                       />
                       <Button
-                        size="icon"
+                        size="icon-xs"
                         variant="ghost"
-                        className="text-muted-foreground opacity-0 group-hover:opacity-100 rounded-full w-8 h-7"
+                        className="text-muted-foreground opacity-0 group-hover:brightness-95 group-hover:opacity-100"
                         onClick={() => remove(i)}
                         type="button"
                       >

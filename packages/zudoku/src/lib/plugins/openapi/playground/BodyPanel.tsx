@@ -42,7 +42,7 @@ export const BodyPanel = ({ examples }: { examples?: Content }) => {
         <Textarea
           {...register("body")}
           className={cn(
-            "w-full bg-muted/40 p-2 h-64 font-mono md:text-xs border-none rounded-none ",
+            "w-full p-2 h-64 font-mono md:text-xs border-none rounded-none focus-visible:ring-0",
           )}
           placeholder="Your body here..."
         />

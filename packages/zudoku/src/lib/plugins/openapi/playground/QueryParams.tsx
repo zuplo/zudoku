@@ -60,12 +60,12 @@ export const QueryParams = ({
           type="button"
           size="sm"
           variant="ghost"
-          className="hover:bg-black/5 flex gap-2"
+          className="hover:bg-accent hover:brightness-95 flex gap-2"
         >
           Add parameter <PlusCircleIcon size={16} />
         </Button>
       </CollapsibleHeaderTrigger>
-      <CollapsibleContent>
+      <CollapsibleContent className="CollapsibleContent">
         <div className="overflow-hidden w-full">
           <ParamsGrid>
             {fields.map((field, i) => {
@@ -95,7 +95,7 @@ export const QueryParams = ({
                           onChange={(e) => {
                             field.onChange(e);
                           }}
-                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                          className="border-0 p-0 m-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                         />
                       ) : (
                         <InlineInput asChild>
@@ -132,7 +132,7 @@ export const QueryParams = ({
                                 }
                               }}
                               placeholder="Enter value"
-                              className="w-full border-0 shadow-none focus-visible:ring-0 text-xs font-mono"
+                              className="w-full border-0 p-0 m-0 shadow-none focus-visible:ring-0 text-xs font-mono"
                             />
                           );
                         }
@@ -152,9 +152,9 @@ export const QueryParams = ({
                       name={`queryParams.${i}.value`}
                     />
                     <Button
-                      size="icon"
+                      size="icon-xs"
                       variant="ghost"
-                      className="text-muted-foreground opacity-0 group-hover:opacity-100 rounded-full w-8 h-7"
+                      className="text-muted-foreground opacity-0 group-hover:brightness-95 group-hover:opacity-100"
                       onClick={() => remove(i)}
                       type="button"
                     >

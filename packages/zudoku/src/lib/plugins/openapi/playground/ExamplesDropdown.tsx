@@ -21,7 +21,11 @@ const ExamplesDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="hover:bg-black/5">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="hover:bg-accent hover:brightness-95"
+        >
           Use Example <PlusCircleIcon size={16} className="ml-2" />
         </Button>
       </DropdownMenuTrigger>

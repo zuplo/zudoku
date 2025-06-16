@@ -48,7 +48,7 @@ export const PathParams = ({
                     {...field}
                     required
                     placeholder="Enter value"
-                    className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                    className="w-full truncate border-0 p-0 m-0 shadow-none text-xs font-mono focus-visible:ring-0"
                   />
                 )}
               />
