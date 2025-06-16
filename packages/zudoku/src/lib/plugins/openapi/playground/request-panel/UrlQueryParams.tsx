@@ -4,7 +4,7 @@ import { type PlaygroundForm } from "../Playground.js";
 
 export const UrlQueryParams = () => {
   const { watch } = useFormContext<PlaygroundForm>();
-  const [queryParams] = watch(["queryParams"]);
+  const queryParams = watch("queryParams");
 
   const urlQueryParams = queryParams
     .filter((p) => p.active)
@@ -16,5 +16,10 @@ export const UrlQueryParams = () => {
       </Fragment>
     ));
 
-  return urlQueryParams.length > 0 ? `?${urlQueryParams}` : urlQueryParams;
+  return (
+    <>
+      {urlQueryParams.length > 0 ? `?` : ""}
+      {urlQueryParams}
+    </>
+  );
 };

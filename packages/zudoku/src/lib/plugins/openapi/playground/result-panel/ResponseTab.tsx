@@ -189,7 +189,9 @@ export const ResponseTab = ({
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
           <CornerDownLeftIcon size={16} />
-          <CollapsibleHeader>Header Request</CollapsibleHeader>
+          <CollapsibleHeader className="col-span-2">
+            Header Request
+          </CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-2 gap-x-6 text-sm">
@@ -211,7 +213,9 @@ export const ResponseTab = ({
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
           <CornerDownRightIcon size={16} />
-          <CollapsibleHeader>Header Response</CollapsibleHeader>
+          <CollapsibleHeader className="col-span-2">
+            Header Response
+          </CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-2 gap-x-6 text-sm">
@@ -291,7 +295,7 @@ export const ResponseTab = ({
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]">
+          <div className="overflow-auto max-w-full p-4 text-xs max-h-[calc(83.333vh-180px)]">
             <Highlight
               language={
                 view === "types"
