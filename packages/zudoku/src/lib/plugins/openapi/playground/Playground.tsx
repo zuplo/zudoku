@@ -1,6 +1,11 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { IdCardLanyardIcon, ShapesIcon } from "lucide-react";
+import {
+  CheckIcon,
+  CopyIcon,
+  IdCardLanyardIcon,
+  ShapesIcon,
+} from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
@@ -352,6 +357,7 @@ export const Playground = ({
   const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
     method.toUpperCase(),
   );
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
 
   return (
     <FormProvider
@@ -408,6 +414,34 @@ export const Playground = ({
                         width: isFinished ? 0 : `${progress * 100}%`,
                       }}
                     />
+                  </div>
+                  <div className="px-1">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        copyToClipboard(
+                          createUrl(
+                            server ?? selectedServer,
+                            url,
+                            form.getValues(),
+                          ).toString(),
+                        );
+                      }}
+                      variant="ghost"
+                      size="icon-xs"
+                      className={cn(
+                        "hover:opacity-100 transition",
+                        isCopied
+                          ? "text-emerald-600 opacity-100"
+                          : "opacity-50",
+                      )}
+                    >
+                      {isCopied ? (
+                        <CheckIcon className="text-green-500" size={14} />
+                      ) : (
+                        <CopyIcon size={14} />
+                      )}
+                    </Button>
                   </div>
                 </div>
 

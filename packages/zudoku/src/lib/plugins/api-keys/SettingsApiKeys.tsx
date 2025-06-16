@@ -32,6 +32,7 @@ import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
+import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import { type ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
@@ -401,7 +402,7 @@ const RevealApiKey = ({
   className?: string;
 }) => {
   const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
 
   const { key, createdOn, expiresOn } = apiKey;
   const isExpired = expiresOn && new Date(expiresOn) < new Date();
@@ -443,15 +444,10 @@ const RevealApiKey = ({
           </Button>
           <Button
             variant="ghost"
-            onClick={() => {
-              void navigator.clipboard.writeText(key).then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              });
-            }}
+            onClick={() => copyToClipboard(key)}
             size="icon"
           >
-            {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+            {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
           </Button>
         </div>
         <div className="flex gap-1 mt-0.5 text-nowrap">
