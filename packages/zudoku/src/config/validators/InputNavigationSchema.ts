@@ -53,6 +53,7 @@ const InputNavigationCustomPageSchema = z.object({
   path: z.string(),
   label: z.string().optional(),
   element: z.any(),
+  prose: z.boolean(),
   icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
