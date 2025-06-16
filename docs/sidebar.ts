@@ -28,9 +28,9 @@ export const docs: Navigation = [
   },
   {
     type: "category",
-    label: "Writing documentation",
+    label: "Writing",
     icon: "book-open-text",
-    link: "writing-documentation",
+    link: "writing",
     items: [
       "markdown/overview",
       "markdown/frontmatter",
