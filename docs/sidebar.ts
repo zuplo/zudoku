@@ -28,6 +28,19 @@ export const docs: Navigation = [
   },
   {
     type: "category",
+    label: "Writing",
+    icon: "book-open-text",
+    link: "writing",
+    items: [
+      "markdown/overview",
+      "markdown/frontmatter",
+      "markdown/mdx",
+      "markdown/admonitions",
+      "markdown/code-blocks",
+    ],
+  },
+  {
+    type: "category",
     label: "OpenAPI",
     icon: "globe",
     items: ["configuration/api-reference", "configuration/api-catalog"],
@@ -37,18 +50,6 @@ export const docs: Navigation = [
     label: "Authentication",
     icon: "lock",
     items: ["configuration/authentication"],
-  },
-  {
-    type: "category",
-    label: "Markdown",
-    icon: "book-open-text",
-    link: "markdown/overview",
-    items: [
-      "markdown/frontmatter",
-      "markdown/mdx",
-      "markdown/admonitions",
-      "markdown/code-blocks",
-    ],
   },
   {
     type: "category",

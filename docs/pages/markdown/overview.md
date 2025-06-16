@@ -1,5 +1,6 @@
 ---
 title: Markdown
+navigation_icon: align-left
 ---
 
 Zudoku supports [GitHub Flavored Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) (GFM) with additional features for creating rich documentation.
