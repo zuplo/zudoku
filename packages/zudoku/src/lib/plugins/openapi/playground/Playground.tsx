@@ -1,6 +1,6 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { BracesIcon, LockIcon, PlusIcon, Unlink2Icon } from "lucide-react";
+import { LockIcon, Unlink2Icon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
@@ -451,27 +451,11 @@ export const Playground = ({
                 </Collapsible>
               )}
 
-              <Collapsible defaultOpen>
-                <CollapsibleHeaderTrigger>
-                  <BracesIcon size={16} />
-                  <CollapsibleHeader>Query Parameters</CollapsibleHeader>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    className="hover:bg-black/5 flex gap-2"
-                  >
-                    Add parameter <PlusIcon size={16} />
-                  </Button>
-                </CollapsibleHeaderTrigger>
-                <CollapsibleContent>
-                  <QueryParams control={control} queryParams={queryParams} />
-                </CollapsibleContent>
-              </Collapsible>
+              <QueryParams control={control} schemaQueryParams={queryParams} />
 
               <Headers
                 control={control}
-                headers={headers}
+                schemaHeaders={headers}
                 lockedHeaders={authorizationFields?.headers}
               />
               {isBodySupported && <BodyPanel examples={examples} />}

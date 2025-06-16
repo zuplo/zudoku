@@ -57,11 +57,11 @@ const headerOptions = Object.freeze([
 
 export const Headers = ({
   control,
-  headers: schemaHeaders,
+  schemaHeaders,
   lockedHeaders,
 }: {
   control: Control<PlaygroundForm>;
-  headers: Header[];
+  schemaHeaders: Header[];
   lockedHeaders?: string[];
 }) => {
   const { fields, append, remove } = useFieldArray<PlaygroundForm, "headers">({
@@ -145,8 +145,12 @@ export const Headers = ({
                         className="opacity-50 cursor-not-allowed font-mono text-xs"
                       >
                         <LockIcon size={16} />
-                        <div className="px-3">{field.name}</div>
-                        <div className="px-3 ">{field.value}</div>
+                        <Input
+                          value={field.name}
+                          disabled
+                          className="w-full border-0 shadow-none text-xs focus-visible:ring-0 font-mono"
+                        />
+                        <div className="px-3">{field.value}</div>
                       </ParamsGridItem>
                     </TooltipTrigger>
                     <TooltipContent
