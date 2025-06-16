@@ -14,6 +14,7 @@ export const ResultPanel = ({
   onCancel,
   tip,
 }: {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   queryMutation: UseMutationResult<PlaygroundResult, Error, any>;
   showLongRunningWarning?: boolean;
   onCancel?: () => void;
@@ -43,12 +44,9 @@ export const ResultPanel = ({
       ) : queryMutation.data ? (
         <ResponseTab
           request={queryMutation.data.request}
-          status={queryMutation.data.status}
-          time={queryMutation.data.time}
           size={queryMutation.data.size}
           headers={queryMutation.data.headers}
           body={queryMutation.data.body}
-          url={queryMutation.data.request.url}
           isBinary={queryMutation.data.isBinary}
           fileName={queryMutation.data.fileName}
           blob={queryMutation.data.blob}

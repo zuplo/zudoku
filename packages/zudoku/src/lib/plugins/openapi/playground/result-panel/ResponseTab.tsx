@@ -27,19 +27,6 @@ import {
 import { convertToTypes } from "./convertToTypes.js";
 import { Highlight } from "./Highlight.js";
 
-const statusCodeMap: Record<number, string> = {
-  200: "OK",
-  201: "Created",
-  202: "Accepted",
-  204: "No Content",
-  400: "Bad Request",
-  401: "Unauthorized",
-  403: "Forbidden",
-  404: "Not Found",
-  405: "Method Not Allowed",
-  500: "Internal Server Error",
-};
-
 const mimeTypeToLanguage = (mimeType: string) => {
   const mimeTypeMapping = {
     "application/json": "json",
@@ -58,7 +45,7 @@ const mimeTypeToLanguage = (mimeType: string) => {
 
 const detectLanguage = (headers: Array<[string, string]>) => {
   const contentType =
-    headers.find(([key, value]) => key === "Content-Type")?.[1] || "";
+    headers.find(([key]) => key.toLowerCase() === "content-type")?.[1] || "";
   return mimeTypeToLanguage(contentType);
 };
 
@@ -98,19 +85,14 @@ const MAX_HEADERS_TO_SHOW = 3;
 export const ResponseTab = ({
   body = "",
   headers,
-  status,
-  time,
   request,
   size,
-  url,
   isBinary = false,
   fileName,
   blob,
 }: {
   body?: string;
   headers: Array<[string, string]>;
-  status: number;
-  time: number;
   request: {
     method: string;
     url: string;
@@ -118,7 +100,6 @@ export const ResponseTab = ({
     body?: string;
   };
   size: number;
-  url: string;
   isBinary?: boolean;
   fileName?: string;
   blob?: Blob;
@@ -153,6 +134,9 @@ export const ResponseTab = ({
 
   const sortedHeaders = sortHeadersByRelevance([...headers]);
 
+  const headerStyle =
+    "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs";
+
   return (
     <>
       <Collapsible defaultOpen>
@@ -167,10 +151,7 @@ export const ResponseTab = ({
             {request.headers
               .slice(0, MAX_HEADERS_TO_SHOW)
               .map(([key, value]) => (
-                <div
-                  key={key}
-                  className="grid-cols-subgrid grid border-b col-span-full px-4 py-2 items-center"
-                >
+                <div key={key} className={headerStyle}>
                   <div className="">{key}</div>
                   <div className="break-all">{value}</div>
                 </div>
@@ -189,10 +170,7 @@ export const ResponseTab = ({
         <CollapsibleContent>
           <div className="grid grid-cols-2 gap-x-6 text-sm">
             {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
-              <div
-                key={key}
-                className="grid-cols-subgrid grid border-b col-span-full px-4 h-10 items-center"
-              >
+              <div key={key} className={headerStyle}>
                 <div className="">{key}</div>
                 <div className="break-all line-clamp-1">{value}</div>
               </div>
@@ -210,10 +188,7 @@ export const ResponseTab = ({
                   {sortedHeaders
                     .slice(MAX_HEADERS_TO_SHOW)
                     .map(([key, value]) => (
-                      <div
-                        key={key}
-                        className="grid-cols-subgrid grid border-b col-span-full px-4 items-center"
-                      >
+                      <div key={key} className={headerStyle}>
                         <div className="">{key}</div>
                         <div className="break-all ">{value}</div>
                       </div>

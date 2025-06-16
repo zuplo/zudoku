@@ -81,7 +81,7 @@ export const ResponseStatusBar = ({
     <div className="flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
       <div className="flex items-center gap-2">
         <ResponseCodeCircle status={status} /> {status ?? "Sending Request..."}
-        {status ? ` - ${statusCodeMap[status]}` : ""}
+        {status ? ` ${statusCodeMap[status]}` : ""}
       </div>
       <div className="flex gap-2">
         <div>
