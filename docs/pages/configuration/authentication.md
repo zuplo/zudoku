@@ -42,7 +42,7 @@ After logging in, users will be automatically redirected back to the protected r
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, and any OpenID provider that supports the OpenID Connect protocol.
+Zudoku supports Clerk, Auth0, Supabase, Azure B2C, and any OpenID provider that supports the OpenID Connect protocol.
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -112,6 +112,31 @@ When configuring your OpenID provider, you will need to set the following:
 - Add your site hostname (your-site.com) to the list of allowed CORS origins.
 
 By default, the scopes "openid", "profile", and "email" are requested. You can customize these by providing your own array of scopes.
+
+### Supabase
+
+To use Supabase as your authentication provider, supply your project's URL, API key, and the OAuth provider to use.
+
+```typescript
+{
+  // ...
+  authentication: {
+    type: "supabase",
+    provider: "github",
+    supabaseUrl: "https://your-project.supabase.co",
+    supabaseKey: "<your-supabase-key>",
+    basePath: "/",
+    redirectToAfterSignUp: "/",
+    redirectToAfterSignIn: "/",
+    redirectToAfterSignOut: "/",
+  },
+  // ...
+}
+```
+
+The `provider` option can be any of Supabase Auth's supported providers, such as `apple`, `azure`, `bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`, `keycloak`, `linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`, `twitter`, `workos`, `zoom`, or `fly`.
+
+The optional `basePath` sets the default redirect root. You can override each flow using the individual redirect options.
 
 ### Azure B2C
 

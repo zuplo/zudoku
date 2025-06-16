@@ -5,6 +5,12 @@ sidebar_icon: rectangle-horizontal
 
 In addition to the basic Markdown syntax, we have a special admonitions syntax by wrapping text with a set of 3 colons, followed by a label denoting its type.
 
+:::note
+
+Admonitions are also commonly referred to as "Callouts". For programmatic usage, see the [Callout component](/components/callout).
+
+:::
+
 Example:
 
 ```markdown

@@ -56,7 +56,8 @@ const config: ZudokuConfig = {
   },
   redirects: [
     { from: "/", to: "/introduction" },
-    { from: "/getting-started", to: "/app-quickstart" },
+    { from: "/getting-started", to: "/quickstart" },
+    { from: "/app-quickstart", to: "/quickstart" },
     { from: "/components", to: "/components/callout" },
   ],
   navigation: [
