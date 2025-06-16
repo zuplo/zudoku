@@ -13,6 +13,9 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
           return request;
         },
+        authorizationFields: {
+          headers: ["Authorization"],
+        },
       },
     ] satisfies ApiIdentity[];
   }

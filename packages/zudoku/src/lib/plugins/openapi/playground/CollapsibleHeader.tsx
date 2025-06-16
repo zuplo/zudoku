@@ -10,18 +10,25 @@ export const CollapsibleHeaderTrigger = ({
   className?: string;
 }) => {
   return (
-    <CollapsibleTrigger
+    <div
       className={cn(
-        "flex items-center gap-4 group bg-muted w-full h-10 px-4 border-b",
+        "grid grid-cols-[max-content_1fr_min-content_max-content] items-center gap-4 group bg-muted w-full h-10 ps-4 pe-2 border-b",
         className,
       )}
     >
       {children}
-      <ChevronUpIcon
-        className="group-data-[state=open]:rotate-180 flex-shrink-0"
-        size={16}
-      />
-    </CollapsibleTrigger>
+      <CollapsibleTrigger
+        className={cn(
+          "flex items-center gap-4 group bg-muted w-full p-2 hover:bg-black/5 rounded-md",
+          className,
+        )}
+      >
+        <ChevronUpIcon
+          className="group-data-[state=open]:rotate-180 flex-shrink-0"
+          size={16}
+        />
+      </CollapsibleTrigger>
+    </div>
   );
 };
 

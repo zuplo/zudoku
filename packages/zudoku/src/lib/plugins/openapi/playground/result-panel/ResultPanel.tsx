@@ -16,7 +16,7 @@ export const ResultPanel = ({
   onCancel?: () => void;
 }) => {
   return (
-    <div className="min-w-0 flex flex-col items-center justify-center">
+    <div className="min-w-0 flex flex-col items-center justify-center  overflow-x-hidden">
       {queryMutation.error ? (
         <div className="max-w-2/3">
           <Alert>

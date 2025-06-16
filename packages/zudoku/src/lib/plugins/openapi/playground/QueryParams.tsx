@@ -35,49 +35,44 @@ export const QueryParams = ({
           );
           return (
             <ParamsGridItem key={field.id}>
-              <div key={field.id} className="flex items-center">
-                <Controller
-                  control={control}
-                  name={`queryParams.${i}.active`}
-                  render={({ field }) => (
-                    <Checkbox
-                      id={`queryParams.${i}.active`}
-                      className="me-2"
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+              <Controller
+                control={control}
+                name={`queryParams.${i}.active`}
+                render={({ field }) => (
+                  <Checkbox
+                    id={`queryParams.${i}.active`}
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                render={({ field }) =>
+                  !requiredFields[i] ? (
+                    <Autocomplete
+                      value={field.value}
+                      options={queryParams.map((param) => param.name)}
+                      onChange={(e) => {
+                        field.onChange(e);
+                      }}
+                      className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
                     />
-                  )}
-                />
-                <Controller
-                  control={control}
-                  render={({ field }) =>
-                    !requiredFields[i] ? (
-                      <Autocomplete
-                        value={field.value}
-                        options={queryParams.map((param) => param.name)}
-                        onChange={(e) => {
-                          field.onChange(e);
-                        }}
-                        className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                      />
-                    ) : (
-                      <InlineInput asChild>
-                        <label
-                          className="flex items-center cursor-pointer gap-1"
-                          htmlFor={`queryParams.${i}.active`}
-                          title={
-                            requiredFields[i] ? "Required field" : undefined
-                          }
-                        >
-                          {field.value}
-                          {requiredFields[i] && <sup>&nbsp;*</sup>}
-                        </label>
-                      </InlineInput>
-                    )
-                  }
-                  name={`queryParams.${i}.name`}
-                />
-              </div>
+                  ) : (
+                    <InlineInput asChild>
+                      <label
+                        className="flex items-center cursor-pointer gap-1"
+                        htmlFor={`queryParams.${i}.active`}
+                        title={requiredFields[i] ? "Required field" : undefined}
+                      >
+                        {field.value}
+                        {requiredFields[i] && <sup>&nbsp;*</sup>}
+                      </label>
+                    </InlineInput>
+                  )
+                }
+                name={`queryParams.${i}.name`}
+              />
               <div className="flex justify-between items-center">
                 <Controller
                   control={control}

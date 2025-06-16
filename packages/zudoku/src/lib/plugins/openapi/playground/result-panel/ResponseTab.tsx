@@ -23,7 +23,7 @@ import { humanFileSize } from "../../../../util/humanFileSize.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
-} from "../CollapisbleHeader.js";
+} from "../CollapsibleHeader.js";
 import { convertToTypes } from "./convertToTypes.js";
 import { Highlight } from "./Highlight.js";
 
@@ -168,7 +168,7 @@ export const ResponseTab = ({
 
   return (
     <div className="overflow-y-auto h-[80vh]">
-      <div className="flex h-10 text-xs gap-4 rounded-md px-4 items-center justify-between font-mono border-b">
+      <div className="flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
         <div className="flex items-center gap-2">
           <ResponseCodeCircle status={status} /> {status} -{" "}
           {statusCodeMap[status] ?? ""}

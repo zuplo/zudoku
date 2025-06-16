@@ -7,7 +7,7 @@ import { type Content } from "../SidecarExamples.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
-} from "./CollapisbleHeader.js";
+} from "./CollapsibleHeader.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { type PlaygroundForm } from "./Playground.js";
 
@@ -19,7 +19,7 @@ export const BodyPanel = ({ examples }: { examples?: Content }) => {
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <FileInput size={22} />
+        <FileInput size={16} />
         <CollapsibleHeader>Body</CollapsibleHeader>
         {examples && examples.length > 0 && (
           <ExamplesDropdown
@@ -42,8 +42,9 @@ export const BodyPanel = ({ examples }: { examples?: Content }) => {
         <Textarea
           {...register("body")}
           className={cn(
-            "w-full bg-muted/40 p-2 h-64 font-mono text-[13px] border-none rounded-none ",
+            "w-full bg-muted/40 p-2 h-64 font-mono md:text-xs border-none rounded-none ",
           )}
+          placeholder="Your body here..."
         />
       </CollapsibleContent>
     </Collapsible>

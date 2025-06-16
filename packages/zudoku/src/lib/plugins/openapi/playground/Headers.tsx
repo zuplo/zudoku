@@ -1,4 +1,10 @@
-import { CodeIcon, PlusCircleIcon, XIcon } from "lucide-react";
+import {
+  CircleAlertIcon,
+  CodeIcon,
+  LockIcon,
+  PlusCircleIcon,
+  XIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import {
   type Control,
@@ -8,13 +14,15 @@ import {
 } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
+import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Button } from "../../../ui/Button.js";
 import { Input } from "../../../ui/Input.js";
+import { cn } from "../../../util/cn.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
-} from "./CollapisbleHeader.js";
+} from "./CollapsibleHeader.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
 import { type Header, type PlaygroundForm } from "./Playground.js";
 
@@ -50,22 +58,28 @@ const headerOptions = Object.freeze([
 export const Headers = ({
   control,
   headers: schemaHeaders,
+  lockedHeaders,
 }: {
   control: Control<PlaygroundForm>;
   headers: Header[];
+  lockedHeaders?: string[];
 }) => {
   const { fields, append, remove } = useFieldArray<PlaygroundForm, "headers">({
     control,
     name: "headers",
   });
-  const { setValue, watch } = useFormContext<PlaygroundForm>();
+  const { setValue, watch, formState } = useFormContext<PlaygroundForm>();
   const valueRefs = useRef<Array<HTMLInputElement | null>>([]);
   const nameRefs = useRef<Array<HTMLInputElement | null>>([]);
   const watchedHeaders = watch("headers");
 
-  const addNewHeader = useCallback(() => {
-    append({ name: "", value: "", active: false });
-  }, [append]);
+  const addNewHeader = useCallback(
+    (e?: React.MouseEvent<HTMLButtonElement>) => {
+      e?.stopPropagation();
+      append({ name: "", value: "", active: false }, { shouldFocus: true });
+    },
+    [append],
+  );
 
   useEffect(() => {
     if (watchedHeaders.length === 0) {
@@ -86,10 +100,27 @@ export const Headers = ({
     .filter((h) => !watchedHeaders.some((f) => f.name === h.name))
     .map(({ name }) => name);
 
+  const hiddenHeadersIndex = fields.flatMap((f, index) => {
+    const keep = !lockedHeaders
+      ?.map((h) => h.toLowerCase())
+      .includes(f.name.toLowerCase());
+
+    return keep ? [] : [index];
+  });
+
+  const lockedHeaderFields =
+    lockedHeaders?.map((h) => ({
+      name: h,
+      id: `locked-${h}`,
+      value: "••••••••••",
+      active: true,
+      locked: true,
+    })) ?? [];
+
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <CodeIcon size={20} />
+        <CodeIcon size={16} />
         <CollapsibleHeader>Headers</CollapsibleHeader>
         <Button
           onClick={addNewHeader}
@@ -105,47 +136,102 @@ export const Headers = ({
         <div className="flex flex-col gap-2">
           <div className="overflow-hidden">
             <ParamsGrid>
+              {lockedHeaderFields.map((field) => {
+                return (
+                  <Tooltip key={field.id}>
+                    <TooltipTrigger asChild>
+                      <ParamsGridItem
+                        key={field.id}
+                        className="opacity-50 cursor-not-allowed font-mono text-xs"
+                      >
+                        <LockIcon size={16} />
+                        <div className="px-3">{field.name}</div>
+                        <div className="px-3 ">{field.value}</div>
+                      </ParamsGridItem>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      alignOffset={10}
+                      side="bottom"
+                      align="start"
+                    >
+                      <p>This header is set by the selected authentication.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
               {fields.map((field, i) => {
                 const currentHeader = schemaHeaders.find(
                   (h) => h.name === watch(`headers.${i}.name`),
                 );
                 return (
-                  <ParamsGridItem key={field.id}>
-                    <div className="flex items-center gap-2">
-                      <Controller
-                        control={control}
-                        name={`headers.${i}.active`}
-                        render={({ field }) => (
+                  <ParamsGridItem
+                    key={field.id}
+                    className={cn(
+                      hiddenHeadersIndex.includes(i) && "text-amber-600",
+                      hiddenHeadersIndex.includes(i) &&
+                        !formState.dirtyFields.headers?.[i]?.value &&
+                        "hidden",
+                    )}
+                  >
+                    <Controller
+                      control={control}
+                      name={`headers.${i}.active`}
+                      render={({ field }) => (
+                        <>
                           <Checkbox
                             id={`headers.${i}.active`}
+                            className={cn(
+                              hiddenHeadersIndex.includes(i) && "hidden",
+                            )}
                             checked={field.value}
                             onCheckedChange={(checked) => {
                               field.onChange(checked);
                             }}
                           />
-                        )}
-                      />
-                      <Controller
-                        control={control}
-                        name={`headers.${i}.name`}
-                        render={({ field }) => (
-                          <Autocomplete
-                            {...field}
-                            placeholder="Name"
-                            className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                            options={[...missingHeaders, ...headerOptions]}
-                            onEnterPress={() => handleHeaderEnter(i)}
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setValue(`headers.${i}.active`, true);
-                            }}
-                            ref={(el) => {
-                              nameRefs.current[i] = el;
-                            }}
-                          />
-                        )}
-                      />
-                    </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <CircleAlertIcon
+                                className={cn(
+                                  "text-amber-600",
+                                  !hiddenHeadersIndex.includes(i) && "hidden",
+                                )}
+                                size={16}
+                              />
+                            </TooltipTrigger>
+                            <TooltipContent
+                              alignOffset={10}
+                              side="bottom"
+                              align="start"
+                            >
+                              <p>
+                                This header will be overwritten by the selected
+                                authentication.
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
+                    />
+                    <Controller
+                      control={control}
+                      name={`headers.${i}.name`}
+                      render={({ field }) => (
+                        <Autocomplete
+                          {...field}
+                          placeholder="Name"
+                          className="border-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
+                          options={[...missingHeaders, ...headerOptions]}
+                          onEnterPress={() => handleHeaderEnter(i)}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setValue(`headers.${i}.active`, true);
+                          }}
+                          ref={(el) => {
+                            nameRefs.current[i] = el;
+                          }}
+                        />
+                      )}
+                    />
                     <div className="flex items-center gap-2">
                       <Controller
                         control={control}
@@ -159,7 +245,8 @@ export const Headers = ({
                             return (
                               <Input
                                 placeholder="Value"
-                                className="w-full border-0 shadow-none text-xs font-mono focus-visible:ring-0"
+                                className="w-full border-0 shadow-none text-xs focus-visible:ring-0 font-mono"
+                                autoComplete="off"
                                 {...field}
                                 ref={(el) => {
                                   valueRefs.current[i] = el;
@@ -172,7 +259,6 @@ export const Headers = ({
                                     handleValueEnter(i);
                                   }
                                 }}
-                                autoComplete="off"
                               />
                             );
                           }
