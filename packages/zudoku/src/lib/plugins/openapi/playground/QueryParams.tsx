@@ -1,4 +1,4 @@
-import { BracesIcon, PlusCircleIcon } from "lucide-react";
+import { PlusCircleIcon, Unlink2Icon } from "lucide-react";
 import {
   type Control,
   Controller,
@@ -39,7 +39,7 @@ export const QueryParams = ({
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <BracesIcon size={16} />
+        <Unlink2Icon size={16} />
         <CollapsibleHeader>Query Parameters</CollapsibleHeader>
         <Button
           onClick={() => {

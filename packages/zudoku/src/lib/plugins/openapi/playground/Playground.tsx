@@ -1,6 +1,6 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { LockIcon, Unlink2Icon } from "lucide-react";
+import { IdCardLanyardIcon, ShapesIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
@@ -424,8 +424,10 @@ export const Playground = ({
                   <div className="flex flex-col gap-2">
                     <Collapsible defaultOpen>
                       <CollapsibleHeaderTrigger>
-                        <LockIcon size={16} />
-                        <CollapsibleHeader>Authentication</CollapsibleHeader>
+                        <IdCardLanyardIcon size={16} />
+                        <CollapsibleHeader className="col-span-2">
+                          Authentication
+                        </CollapsibleHeader>
                       </CollapsibleHeaderTrigger>
                       <CollapsibleContent>
                         <IdentitySelector
@@ -442,7 +444,7 @@ export const Playground = ({
               {pathParams.length > 0 && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger className="border-t">
-                    <Unlink2Icon size={16} />
+                    <ShapesIcon size={16} />
                     <CollapsibleHeader>Path Parameters</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent>

@@ -1,8 +1,8 @@
 import {
   CircleAlertIcon,
-  CodeIcon,
   LockIcon,
   PlusCircleIcon,
+  TableOfContentsIcon,
   XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
@@ -120,7 +120,7 @@ export const Headers = ({
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <CodeIcon size={16} />
+        <TableOfContentsIcon size={16} />
         <CollapsibleHeader>Headers</CollapsibleHeader>
         <Button
           onClick={addNewHeader}
@@ -164,8 +164,8 @@ export const Headers = ({
                 );
               })}
               {fields.map((field, i) => {
-                const currentHeader = schemaHeaders.find(
-                  (h) => h.name === watch(`headers.${i}.name`),
+                const currentSchemaHeader = schemaHeaders.find(
+                  (h) => h.name === watchedHeaders.at(i)?.name,
                 );
                 return (
                   <ParamsGridItem
@@ -242,8 +242,8 @@ export const Headers = ({
                         name={`headers.${i}.value`}
                         render={({ field }) => {
                           const hasEnum =
-                            currentHeader?.enum &&
-                            currentHeader.enum.length > 0;
+                            currentSchemaHeader?.enum &&
+                            currentSchemaHeader.enum.length > 0;
 
                           if (!hasEnum) {
                             return (
@@ -271,7 +271,7 @@ export const Headers = ({
                             <Autocomplete
                               shouldFilter={false}
                               value={field.value}
-                              options={currentHeader.enum ?? []}
+                              options={currentSchemaHeader.enum ?? []}
                               onChange={(e) => {
                                 field.onChange(e);
                                 setValue(`headers.${i}.active`, true);
