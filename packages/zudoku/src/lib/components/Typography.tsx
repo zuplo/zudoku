@@ -1,5 +1,7 @@
 import { cn } from "../util/cn.js";
-import { ProseClasses } from "./Markdown.js";
+
+// other styles are defined in main.css .prose
+export const ProseClasses = "prose dark:prose-invert prose-neutral";
 
 export const Typography = ({
   children,

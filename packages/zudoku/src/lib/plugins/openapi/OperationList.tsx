@@ -17,10 +17,9 @@ import {
 } from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown, ProseClasses } from "../../components/Markdown.js";
+import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
-import { cn } from "../../util/cn.js";
 import { Endpoint } from "./Endpoint.js";
 import { OperationListItem } from "./OperationListItem.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -291,14 +290,9 @@ export const OperationList = ({
           </div>
           {schema.description && (
             <CollapsibleContent className="CollapsibleContent">
-              <div
-                className={cn(
-                  ProseClasses,
-                  "pt-4 max-w-full prose-img:max-w-prose",
-                )}
-              >
+              <div className="mt-4 max-w-full border rounded-sm bg-muted/25">
                 <Markdown
-                  className="border rounded-sm bg-muted/25 border-border px-2.5 md:px-4"
+                  className="max-w-full prose-img:max-w-prose border-border p-3 lg:p-5"
                   content={schema.description}
                 />
               </div>
@@ -306,14 +300,10 @@ export const OperationList = ({
           )}
         </Collapsible>
         {tagDescription && (
-          <div
-            className={cn(
-              ProseClasses,
-              "my-4 max-w-full prose-img:max-w-prose",
-            )}
-          >
-            <Markdown content={tagDescription} />
-          </div>
+          <Markdown
+            className="my-4 max-w-full prose-img:max-w-prose"
+            content={tagDescription}
+          />
         )}
       </div>
       <hr />

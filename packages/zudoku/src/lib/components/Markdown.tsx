@@ -3,14 +3,11 @@ import { MarkdownHooks, type Components } from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { createConfiguredShikiRehypePlugins } from "../shiki.js";
-import { cn } from "../util/cn.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import { useZudoku } from "./context/ZudokuContext.js";
+import { Typography } from "./Typography.js";
 
 const remarkPlugins = [remarkGfm];
-
-// other styles are defined in main.css .prose
-export const ProseClasses = "prose dark:prose-invert prose-neutral";
 
 export const Markdown = memo(
   ({
@@ -37,7 +34,7 @@ export const Markdown = memo(
     );
 
     return (
-      <div className={cn(ProseClasses, className)}>
+      <Typography className={className}>
         <MarkdownHooks
           remarkPlugins={remarkPlugins}
           rehypePlugins={rehypePlugins}
@@ -45,7 +42,7 @@ export const Markdown = memo(
         >
           {content}
         </MarkdownHooks>
-      </div>
+      </Typography>
     );
   },
 );

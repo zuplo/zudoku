@@ -1,8 +1,8 @@
 import { InfoIcon } from "lucide-react";
-import { Markdown, ProseClasses } from "../../../components/Markdown.js";
+import { Markdown } from "../../../components/Markdown.js";
+import { Typography } from "../../../components/Typography.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Card } from "../../../ui/Card.js";
-import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
@@ -17,7 +17,7 @@ import { hasLogicalGroupings, isBasicType } from "./utils.js";
 const renderMarkdown = (content?: string) =>
   content && (
     <Markdown
-      className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
+      className="text-sm leading-normal line-clamp-4"
       content={content}
     />
   );
@@ -86,12 +86,7 @@ export const SchemaView = ({
       typeof schema.additionalProperties === "object" ? (
         <SchemaView schema={schema.additionalProperties} />
       ) : schema.additionalProperties === true ? (
-        <div
-          className={cn(
-            ProseClasses,
-            "text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1",
-          )}
-        >
+        <Typography className="text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1">
           <span>Additional properties are allowed</span>
           <a
             className="p-0.5 -m-0.5"
@@ -101,7 +96,7 @@ export const SchemaView = ({
           >
             <InfoIcon size={14} />
           </a>
-        </div>
+        </Typography>
       ) : null;
 
     return (
