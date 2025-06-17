@@ -516,7 +516,7 @@ export const Playground = ({
                 <div className="text-xs w-full">
                   <span className="text-muted-foreground">
                     Press{" "}
-                    <kbd className="text-foreground border rounded p-px capitalize">
+                    <kbd className="text-foreground border rounded m-0.5 px-1 py-0.5 capitalize">
                       {hotkeyLabel.join(" + ")}
                     </kbd>{" "}
                     to send a request
