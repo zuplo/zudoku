@@ -32,4 +32,4 @@ Zudoku comes with a flexible setup that allows you to customize it to your heart
 
 The recommended way to get started is:
 
-- **[Custom App (Recommended)](./app-quickstart.md)**: Create a new React app using `create-zudoku-app` and customize it to your heart's content. This is the most flexible option and allows you to take full advantage of the Zudoku framework. [Open Quickstart](./app-quickstart.md)
+- **[Custom App (Recommended)](./app-quickstart.md)**: Create a new React app using `create-zudoku` and customize it to your heart's content. This is the most flexible option and allows you to take full advantage of the Zudoku framework. [Open Quickstart](./app-quickstart.md)
