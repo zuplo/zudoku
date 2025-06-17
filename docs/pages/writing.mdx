@@ -1,0 +1,68 @@
+---
+title: Writing
+sidebar_icon: book-open-text
+---
+
+Get started with creating rich documentation in Zudoku using Markdown and MDX. This guide covers the essentials to help you begin documenting your project.
+
+## Quick Start
+
+1. **Create a markdown file** in your `pages` directory
+2. **Add frontmatter** with title and metadata
+3. **Configure navigation** to make it discoverable
+4. **Write content** using Markdown or MDX
+
+### Basic Document Structure
+
+```md
+---
+title: My Document
+sidebar_icon: file-text
+---
+
+Your content goes here using standard Markdown syntax.
+```
+
+## Adding to Navigation
+
+To make your documentation discoverable, add it to the navigation configuration. Documents are referenced by their file path:
+
+```ts title="zudoku.config.ts"
+const config = {
+  navigation: [
+    {
+      type: "doc",
+      file: "my-document",
+      label: "My Document",
+    },
+  ],
+};
+```
+
+Learn more about configuring navigation at [Navigation → Documents](/configuration/navigation#type-doc).
+
+## File Organization
+
+Organize your documentation files in logical directories:
+
+```
+pages/
+├── getting-started/
+│   ├── installation.md
+│   └── quick-start.md
+├── guides/
+│   ├── authentication.md
+│   └── deployment.md
+└── api/
+    └── reference.md
+```
+
+## What's Next?
+
+Explore the detailed guides to enhance your documentation:
+
+- **[Markdown Overview](/markdown/overview)** - Complete markdown syntax reference
+- **[Frontmatter](/markdown/frontmatter)** - Document metadata and configuration
+- **[MDX](/markdown/mdx)** - Interactive components in markdown
+- **[Admonitions](/markdown/admonitions)** - Callouts and alerts
+- **[Code Blocks](/markdown/code-blocks)** - Syntax highlighting and features

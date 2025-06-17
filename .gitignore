@@ -62,7 +62,7 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
-
+.github/instructions/nx.instructions.md
 
 gha-creds-*.json
 
@@ -72,3 +72,4 @@ gha-creds-*.json
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+

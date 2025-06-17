@@ -14,18 +14,16 @@ export type CodeBlockProps = {
   children?: ReactNode;
   code?: ReactNode;
   showCopy?: "hover" | "always" | "never";
-  showCopyText?: boolean;
   disabled?: boolean;
   showLineNumbers?: boolean;
 };
 
 export const CodeBlock = ({
   children,
-  title,
+  title = "Code",
   language,
   showCopy = "hover",
-  showCopyText,
-  showLanguageIndicator = true,
+  showLanguageIndicator = false,
   showLineNumbers,
   ...props
 }: CodeBlockProps) => {
@@ -37,15 +35,47 @@ export const CodeBlock = ({
   return (
     <div
       className={cn(
-        "code-block-wrapper relative group bg-muted/50 rounded-md",
+        "border code-block-wrapper relative group bg-muted/50 rounded-md overflow-hidden",
         showLineNumbers && "line-numbers",
       )}
     >
-      {title && (
-        <div className="text-xs text-muted-foreground top-2 font-mono border-b w-full py-2 px-4 ">
+      <div className="border-b flex items-center h-10 font-sans bg-black/2">
+        <div className="flex-1 text-sm w-full px-4">
           {title}
-        </div>
-      )}
+          {showLanguageIndicator && language && (
+            <span className="text-muted-foreground ml-2">({language})</span>
+          )}
+        </div>{" "}
+        {showCopy !== "never" && (
+          <button
+            type="button"
+            aria-label="Copy code"
+            title="Copy code"
+            className={cn(
+              "cursor:pointer h-full hover:border-l-border active:shadow-none active:inset-shadow-xs hover:inset-shadow-xs flex items-center gap-2 px-4 outline-border text-sm hover:bg-black/5 transition-all",
+            )}
+            disabled={isCopied}
+            onClick={() => {
+              if (!ref.current?.textContent) return;
+
+              setIsCopied(true);
+              void navigator.clipboard.writeText(ref.current.textContent);
+              setTimeout(() => setIsCopied(false), 2000);
+            }}
+          >
+            {isCopied ? (
+              <CheckIcon
+                className="text-emerald-600"
+                size={14}
+                strokeWidth={2.5}
+                absoluteStrokeWidth
+              />
+            ) : (
+              <CopyIcon size={14} />
+            )}
+          </button>
+        )}
+      </div>
       <div
         className={cn(
           "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
@@ -55,39 +85,6 @@ export const CodeBlock = ({
       >
         {children}
       </div>
-      {showLanguageIndicator && (
-        <span
-          className={cn(
-            "absolute top-1.5 end-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
-            title && "top-12",
-            showCopy === "always" && "hidden",
-          )}
-        >
-          {language}
-        </span>
-      )}
-      {showCopy !== "never" && (
-        <button
-          type="button"
-          aria-label="Copy code"
-          title="Copy code"
-          className={cn(
-            "absolute top-2 end-2 p-2 transition hover:shadow-xs active:shadow-none active:inset-shadow-xs hover:outline outline-border rounded-md text-sm text-muted-foreground",
-            title && "top-10",
-            showCopy === "hover" && "opacity-0 group-hover:opacity-100",
-            showCopyText && "flex gap-2 items-center font-medium",
-          )}
-          disabled={isCopied}
-          onClick={() => copyToClipboard(ref.current?.textContent ?? "")}
-        >
-          {isCopied ? (
-            <CheckIcon className="text-emerald-600" size={16} />
-          ) : (
-            <CopyIcon size={16} />
-          )}
-          {showCopyText && "Copy"}
-        </button>
-      )}
     </div>
   );
 };

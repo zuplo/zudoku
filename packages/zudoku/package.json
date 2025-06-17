@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.48.1",
+  "version": "0.51.0",
   "type": "module",
   "homepage": "https://zudoku.dev",
   "repository": {
@@ -233,7 +233,7 @@
     "express": "5.1.0",
     "fast-equals": "5.2.2",
     "framer-motion": "^12.12.2",
-    "glob": "11.0.2",
+    "glob": "11.0.3",
     "glob-parent": "6.0.2",
     "graphql": "16.11.0",
     "graphql-type-json": "0.3.2",
