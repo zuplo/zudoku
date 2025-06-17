@@ -9,11 +9,11 @@ export const SchemaExampleAndDefault = ({
   const example = schema.examples?.at(0);
   const defaultValue = schema.default;
 
-  if (!example && !defaultValue) return null;
+  if (example === undefined && defaultValue === undefined) return null;
 
   return (
     <div className="flex flex-col gap-1 text-xs">
-      {example && (
+      {example !== undefined && (
         <div>
           <span className="text-muted-foreground">Example: </span>
           <SelectOnClick className="border rounded-sm px-1 font-mono">
@@ -23,7 +23,7 @@ export const SchemaExampleAndDefault = ({
           </SelectOnClick>
         </div>
       )}
-      {defaultValue && (
+      {defaultValue !== undefined && (
         <div>
           <span className="text-muted-foreground">Default: </span>
           <SelectOnClick className="border rounded-sm px-1 font-mono">
