@@ -19,7 +19,10 @@ export const NavigationWrapper = ({
   }, []);
 
   return (
-    <div className="grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
+    <div
+      className="grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r"
+      data-pagefind-ignore="all"
+    >
       <nav
         ref={navRef}
         className={cn(

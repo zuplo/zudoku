@@ -81,7 +81,10 @@ export const Header = memo(function HeaderInner() {
   const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
 
   return (
-    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
+    <header
+      className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full"
+      data-pagefind-ignore="all"
+    >
       <Banner />
       <div className={cn(borderBottom, "relative")}>
         <PageProgress />
