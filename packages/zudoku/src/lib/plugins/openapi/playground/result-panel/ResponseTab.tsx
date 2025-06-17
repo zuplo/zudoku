@@ -1,8 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRightIcon, DownloadIcon } from "lucide-react";
-import { Fragment, useState } from "react";
+import {
+  CornerDownLeftIcon,
+  CornerDownRightIcon,
+  DownloadIcon,
+  PlusCircleIcon,
+} from "lucide-react";
+import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
-import { Callout } from "zudoku/ui/Callout.js";
 import {
   Collapsible,
   CollapsibleContent,
@@ -15,23 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { Card } from "../../../../ui/Card.js";
-import { SyntaxHighlight } from "../../../../ui/SyntaxHighlight.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
+import {
+  CollapsibleHeader,
+  CollapsibleHeaderTrigger,
+} from "../CollapsibleHeader.js";
 import { convertToTypes } from "./convertToTypes.js";
-
-const statusCodeMap: Record<number, string> = {
-  200: "OK",
-  201: "Created",
-  202: "Accepted",
-  204: "No Content",
-  400: "Bad Request",
-  401: "Unauthorized",
-  403: "Forbidden",
-  404: "Not Found",
-  405: "Method Not Allowed",
-  500: "Internal Server Error",
-};
+import { Highlight } from "./Highlight.js";
 
 const mimeTypeToLanguage = (mimeType: string) => {
   const mimeTypeMapping = {
@@ -51,7 +45,7 @@ const mimeTypeToLanguage = (mimeType: string) => {
 
 const detectLanguage = (headers: Array<[string, string]>) => {
   const contentType =
-    headers.find(([key, value]) => key === "Content-Type")?.[1] || "";
+    headers.find(([key]) => key.toLowerCase() === "content-type")?.[1] || "";
   return mimeTypeToLanguage(contentType);
 };
 
@@ -86,25 +80,26 @@ const sortHeadersByRelevance = (
   });
 };
 
-const SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD = 64_000;
+const MAX_HEADERS_TO_SHOW = 3;
 
 export const ResponseTab = ({
   body = "",
   headers,
-  status,
-  time,
+  request,
   size,
-  url,
   isBinary = false,
   fileName,
   blob,
 }: {
   body?: string;
   headers: Array<[string, string]>;
-  status: number;
-  time: number;
+  request: {
+    method: string;
+    url: string;
+    headers: Array<[string, string]>;
+    body?: string;
+  };
   size: number;
-  url: string;
   isBinary?: boolean;
   fileName?: string;
   blob?: Blob;
@@ -138,36 +133,66 @@ export const ResponseTab = ({
   };
 
   const sortedHeaders = sortHeadersByRelevance([...headers]);
-  const shouldDisableHighlighting = size > SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD;
+
+  const headerStyle =
+    "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs";
 
   return (
-    <div className="flex flex-col gap-2 h-full overflow-auto max-h-[calc(100vh-220px)] ">
+    <>
       <Collapsible defaultOpen>
-        <CollapsibleTrigger className="flex items-center gap-2 hover:text-primary group">
-          <ChevronRightIcon className="h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
-          <span className="font-semibold">Headers</span>
-        </CollapsibleTrigger>
+        <CollapsibleHeaderTrigger>
+          <CornerDownLeftIcon size={16} />
+          <CollapsibleHeader className="col-span-2">
+            Header Request
+          </CollapsibleHeader>
+        </CollapsibleHeaderTrigger>
         <CollapsibleContent>
-          <div className="grid grid-cols-[auto,1fr] gap-x-8 gap-y-1 ps-1.5 pt-2 font-mono text-xs">
-            {sortedHeaders.slice(0, 5).map(([key, value]) => (
-              <Fragment key={key}>
-                <div className="text-primary whitespace-pre">{key}</div>
-                <div className="break-all">{value}</div>
-              </Fragment>
+          <div className="grid grid-cols-2 gap-x-6 text-sm">
+            {request.headers
+              .slice(0, MAX_HEADERS_TO_SHOW)
+              .map(([key, value]) => (
+                <div key={key} className={headerStyle}>
+                  <div className="">{key}</div>
+                  <div className="break-all">{value}</div>
+                </div>
+              ))}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <Collapsible defaultOpen>
+        <CollapsibleHeaderTrigger>
+          <CornerDownRightIcon size={16} />
+          <CollapsibleHeader className="col-span-2">
+            Header Response
+          </CollapsibleHeader>
+        </CollapsibleHeaderTrigger>
+        <CollapsibleContent>
+          <div className="grid grid-cols-2 gap-x-6 text-sm">
+            {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
+              <div key={key} className={headerStyle}>
+                <div className="">{key}</div>
+                <div className="break-all line-clamp-1">{value}</div>
+              </div>
             ))}
-            {sortedHeaders.length > 5 && (
-              <Collapsible className="col-span-full grid-cols-subgrid grid">
-                <CollapsibleTrigger className="col-span-2 text-xs text-muted-foreground hover:text-primary flex items-center gap-1 py-1">
-                  <ChevronRightIcon className="h-3 w-3 transition-transform duration-200 group-data-[state=open]:rotate-[90deg]" />
-                  Show {sortedHeaders.length - 5} more headers
+            {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
+              <Collapsible className="col-span-full grid-cols-subgrid grid group">
+                <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
+                  <span>
+                    Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more
+                    headers
+                  </span>
+                  <PlusCircleIcon size={12} className="text-muted-foreground" />
                 </CollapsibleTrigger>
-                <CollapsibleContent className="col-span-full grid grid-cols-subgrid gap-x-8 gap-y-1 ">
-                  {sortedHeaders.slice(5).map(([key, value]) => (
-                    <Fragment key={key}>
-                      <div className="text-primary whitespace-pre">{key}</div>
-                      <div className="break-all">{value}</div>
-                    </Fragment>
-                  ))}
+                <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
+                  {sortedHeaders
+                    .slice(MAX_HEADERS_TO_SHOW)
+                    .map(([key, value]) => (
+                      <div key={key} className={headerStyle}>
+                        <div className="">{key}</div>
+                        <div className="break-all ">{value}</div>
+                      </div>
+                    ))}
                 </CollapsibleContent>
               </Collapsible>
             )}
@@ -175,7 +200,26 @@ export const ResponseTab = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <Card className="shadow-none">
+      <div className="flex gap-2 justify-between items-center border-b h-10">
+        {jsonContent && !isBinary && (
+          <div className="px-2">
+            <Select
+              value={view}
+              onValueChange={(value) => setView(value as "formatted" | "raw")}
+            >
+              <SelectTrigger className="min-w-32 border-none h-8">
+                <SelectValue placeholder="View" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="formatted">Formatted</SelectItem>
+                <SelectItem value="raw">Raw</SelectItem>
+                <SelectItem value="types">Types</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </div>
+      <div>
         {isBinary ? (
           <div className="p-4 text-center">
             <div className="flex flex-col items-center gap-4">
@@ -195,14 +239,8 @@ export const ResponseTab = ({
             </div>
           </div>
         ) : (
-          <>
-            {shouldDisableHighlighting && (
-              <Callout type="info" className="my-0 p-2">
-                Code highlight is disabled for responses larger than{" "}
-                {humanFileSize(SYNTAX_HIGHLIGHT_MAX_SIZE_THRESHOLD)}
-              </Callout>
-            )}
-            <SyntaxHighlight
+          <div className="overflow-auto max-w-full p-4 text-xs max-h-[calc(83.333vh-180px)]">
+            <Highlight
               language={
                 view === "types"
                   ? "typescript"
@@ -212,10 +250,6 @@ export const ResponseTab = ({
                       : detectedLanguage
                     : "json"
               }
-              showCopy="always"
-              disabled={shouldDisableHighlighting}
-              noBackground
-              className="overflow-x-auto p-4 text-xs max-h-[calc(83.333vh-180px)]"
               code={
                 (view === "raw"
                   ? body
@@ -224,42 +258,9 @@ export const ResponseTab = ({
                     : beautifiedBody) ?? ""
               }
             />
-          </>
-        )}
-      </Card>
-      <div className="flex gap-2 justify-between items-center">
-        <div className="flex text-xs gap-5 border bg-muted rounded-md p-2 items-center h-8 font-mono">
-          <div>
-            <span className="text-muted-foreground">Status</span> {status}{" "}
-            {statusCodeMap[status] ?? ""}
-          </div>
-          <div>
-            <span className="text-muted-foreground">Time</span>{" "}
-            {time.toFixed(0)}ms
-          </div>
-          <div>
-            <span className="text-muted-foreground">Size</span>{" "}
-            {humanFileSize(size)}
-          </div>
-        </div>
-        {jsonContent && !isBinary && (
-          <div>
-            <Select
-              value={view}
-              onValueChange={(value) => setView(value as "formatted" | "raw")}
-            >
-              <SelectTrigger className="min-w-32">
-                <SelectValue placeholder="View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="formatted">Formatted</SelectItem>
-                <SelectItem value="raw">Raw</SelectItem>
-                <SelectItem value="types">Types</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         )}
       </div>
-    </div>
+    </>
   );
 };

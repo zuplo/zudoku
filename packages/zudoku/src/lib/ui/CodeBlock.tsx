@@ -1,7 +1,8 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { cn } from "../util/cn.js";
+import { useCopyToClipboard } from "../util/useCopyToClipboard.js";
 
 export type CodeBlockProps = {
   className?: string;
@@ -26,7 +27,7 @@ export const CodeBlock = ({
   showLineNumbers,
   ...props
 }: CodeBlockProps) => {
-  const [isCopied, setIsCopied] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
   const ref = useRef<HTMLDivElement>(null);
 
   if (!children) return null;
@@ -57,9 +58,7 @@ export const CodeBlock = ({
             onClick={() => {
               if (!ref.current?.textContent) return;
 
-              setIsCopied(true);
-              void navigator.clipboard.writeText(ref.current.textContent);
-              setTimeout(() => setIsCopied(false), 2000);
+              copyToClipboard(ref.current.textContent);
             }}
           >
             {isCopied ? (
