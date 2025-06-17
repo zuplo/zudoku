@@ -1,4 +1,4 @@
-import { Button, Head, Link, useAuth } from "zudoku/components";
+import { Button, Head, Link, Typography, useAuth } from "zudoku/components";
 
 export const Landingpage = () => {
   const { isAuthenticated } = useAuth();
@@ -16,30 +16,32 @@ export const Landingpage = () => {
               whole universe
             </span>
           </h1>
-          <p>
-            {isAuthenticated ? (
-              <Link to="/api-shipments">Get started</Link>
-            ) : (
-              <Link to="/signup">Sign up for a Cosmo Cargo account</Link>
-            )}{" "}
-            and get access to our comprehensive shipping API. Create and manage
-            shipments, track packages in real-time, and integrate with multiple
-            carriers through a single, powerful interface.{" "}
-            <Link to="/documentation">Read our documentation</Link> to learn
-            more.
-          </p>
-          <p>
-            Whether you're shipping across town or across galaxies, our platform
-            provides the tools you need to deliver with confidence. From
-            automated label generation to real-time tracking and interplanetary
-            logistics, we've got your shipping needs covered.
-          </p>
-          <p>
-            Join thousands of businesses who trust Cosmo Cargo for their
-            shipping operations. Our API supports everything from small local
-            deliveries to complex intergalactic supply chains.
-          </p>
-          <div className="flex gap-4 items-center">
+          <Typography className="max-w-full">
+            <p>
+              {isAuthenticated ? (
+                <Link to="/api-shipments">Get started</Link>
+              ) : (
+                <Link to="/signup">Sign up for a Cosmo Cargo account</Link>
+              )}{" "}
+              and get access to our comprehensive shipping API. Create and
+              manage shipments, track packages in real-time, and integrate with
+              multiple carriers through a single, powerful interface.{" "}
+              <Link to="/documentation">Read our documentation</Link> to learn
+              more.
+            </p>
+            <p>
+              Whether you're shipping across town or across galaxies, our
+              platform provides the tools you need to deliver with confidence.
+              From automated label generation to real-time tracking and
+              interplanetary logistics, we've got your shipping needs covered.
+            </p>
+            <p>
+              Join thousands of businesses who trust Cosmo Cargo for their
+              shipping operations. Our API supports everything from small local
+              deliveries to complex intergalactic supply chains.
+            </p>
+          </Typography>
+          <div className="flex gap-4 items-center mt-6">
             <Button variant="outline" size="xl" asChild>
               <a
                 href="https://zudoku.dev"
