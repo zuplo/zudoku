@@ -58,9 +58,7 @@ export const CodeBlock = ({
             onClick={() => {
               if (!ref.current?.textContent) return;
 
-              setIsCopied(true);
-              void navigator.clipboard.writeText(ref.current.textContent);
-              setTimeout(() => setIsCopied(false), 2000);
+              copyToClipboard(ref.current.textContent);
             }}
           >
             {isCopied ? (
