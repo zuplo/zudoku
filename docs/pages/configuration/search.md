@@ -14,12 +14,6 @@ We currently support two search providers:
 
 [Pagefind](https://pagefind.app/) is a lightweight, static search library that can be used to add search to your Zudoku site without any external services.
 
-:::caution{icon=""}
-
-While functional for production use, the Pagefind integration is still work in progress and will be improved in future releases and become the default search provider.
-
-:::
-
 To enable pagefind search, configure the `search` option in your configuration:
 
 ```typescript
