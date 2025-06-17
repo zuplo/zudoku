@@ -410,7 +410,7 @@ export const Playground = ({
                       <UrlQueryParams />
                     </div>
                     <div
-                      className="h-[1px] bg-primary absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
+                      className="h-full bg-primary/25 absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
                       style={{
                         opacity: isFinished ? 0 : 1,
                         width: isFinished ? 0 : `${progress * 100}%`,
