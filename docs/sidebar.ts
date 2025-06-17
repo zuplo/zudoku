@@ -103,6 +103,7 @@ export const components: Navigation = [
     type: "category",
     label: "Components",
     items: [
+      "components/typography",
       "components/callout",
       "components/icons",
       "components/slot",

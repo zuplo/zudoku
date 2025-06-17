@@ -4,8 +4,9 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 export const isBasicType = (
   type: unknown,
 ): type is "string" | "number" | "boolean" | "integer" | "null" =>
-  typeof type === "string" &&
-  ["string", "number", "boolean", "integer", "null"].includes(type);
+  (typeof type === "string" &&
+    ["string", "number", "boolean", "integer", "null"].includes(type)) ||
+  (Array.isArray(type) && type.every(isBasicType));
 
 export const isArrayType = (value: SchemaObject) =>
   value.type === "array" ||

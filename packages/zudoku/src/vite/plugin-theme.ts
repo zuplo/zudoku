@@ -245,34 +245,37 @@ export const viteThemePlugin = (): Plugin => {
         themeCss.push(`.dark {\n${generateCss(themeConfig.dark)}\n}`);
       }
 
-      if (userFonts.sans.fontFamily) {
-        themeCss.push(
-          `:root {\n  --font-sans: ${userFonts.sans.fontFamily};\n}`,
+      // Add default font imports for missing fonts
+      if (!userFonts.sans.fontFamily) {
+        fontImports.push(`@import url('${getGoogleFontUrl("Geist")}');`);
+      }
+      if (!userFonts.serif.fontFamily) {
+        fontImports.push(
+          `@import url('${getGoogleFontUrl("Playfair Display")}');`,
         );
       }
-      if (userFonts.serif.fontFamily) {
-        themeCss.push(
-          `:root {\n  --font-serif: ${userFonts.serif.fontFamily};\n}`,
-        );
-      }
-      if (userFonts.mono.fontFamily) {
-        themeCss.push(
-          `:root {\n  --font-mono: ${userFonts.mono.fontFamily};\n}`,
-        );
+      if (!userFonts.mono.fontFamily) {
+        fontImports.push(`@import url('${getGoogleFontUrl("Geist Mono")}');`);
       }
 
-      if (fontImports.length === 0) {
-        fontImports.push(
-          `@import url('${getGoogleFontUrl("Geist")}');`,
-          `@import url('${getGoogleFontUrl("Geist Mono")}');`,
-        );
-        themeCss.push(
-          ":root {",
-          "  --font-sans: Geist, sans-serif;",
-          '  --font-mono: "Geist Mono", monospace;',
-          "}",
-        );
+      // Set font families with defaults for undefined ones
+      const fontFamilies = {
+        sans: userFonts.sans.fontFamily || "Geist, sans-serif",
+        serif: userFonts.serif.fontFamily,
+        mono: userFonts.mono.fontFamily || '"Geist Mono", monospace',
+      };
+
+      // Generate CSS for all font families
+      const rootVars = [
+        `  --font-sans: ${fontFamilies.sans};`,
+        `  --font-mono: ${fontFamilies.mono};`,
+      ];
+
+      if (fontFamilies.serif) {
+        rootVars.push(`  --font-serif: ${fontFamilies.serif};`);
       }
+
+      themeCss.push(":root {", ...rootVars, "}");
 
       return [...fontImports, ...themeCss].join("\n");
     },

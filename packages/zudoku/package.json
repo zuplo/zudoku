@@ -296,7 +296,7 @@
   },
   "devDependencies": {
     "@graphql-codegen/cli": "5.0.7",
-    "@graphql-codegen/client-preset": "4.8.0",
+    "@graphql-codegen/client-preset": "4.8.2",
     "@testing-library/dom": "10.4.0",
     "@testing-library/jest-dom": "6.6.3",
     "@testing-library/react": "16.3.0",

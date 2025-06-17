@@ -7,7 +7,7 @@ import { parse, stringify } from "yaml";
 
 const gitTime = (path: string) => {
   try {
-    const iso = execSync(`git log -1 --pretty=format:%cI -- "${path}"`, {
+    const iso = execSync(`git log -1 --pretty=format:%aI -- "${path}"`, {
       encoding: "utf8",
     }).trim();
     return iso ? new Date(iso) : undefined;
