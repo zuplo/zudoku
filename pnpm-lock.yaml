@@ -725,8 +725,8 @@ importers:
         specifier: 5.0.7
         version: 5.0.7(@types/node@22.13.5)(enquirer@2.4.1)(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)(typescript@5.8.3)
       '@graphql-codegen/client-preset':
-        specifier: 4.8.0
-        version: 4.8.0(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)
+        specifier: 4.8.2
+        version: 4.8.2(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)
       '@testing-library/dom':
         specifier: 10.4.0
         version: 10.4.0
@@ -908,10 +908,6 @@ packages:
     resolution: {integrity: sha512-m9M5hoFoxhe/HlXNVa4qBHekrX60CVPkWzsjhKQGuzw/OPOmurosKRPDIMn8fug/E1hHI5v33DvT1LVJfItjcg==}
     engines: {node: '>=0.8.0'}
 
-  '@babel/code-frame@7.26.2':
-    resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/code-frame@7.27.1':
     resolution: {integrity: sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg==}
     engines: {node: '>=6.9.0'}
@@ -993,10 +989,6 @@ packages:
     resolution: {integrity: sha512-URMGH08NzYFhubNSGJrpUEphGKQwMQYBySzat5cAByY1/YgIRkULnIy3tAMeszlL/so2HbeilYloUmSpd7GdVw==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/helper-plugin-utils@7.26.5':
-    resolution: {integrity: sha512-RS+jZcRdZdRFzMyr+wcsaqOmld1/EqTghfaBGQQd/WnRdzdlvSZ//kF7U8VQTxf1ynZ4cjUcYgjVGx13ewNPMg==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/helper-plugin-utils@7.27.1':
     resolution: {integrity: sha512-1gn1Up5YXka3YYAHGKpbideQ5Yjf1tDa9qYcgysz+cNCXukyLl6DjPXhD3VRwSb8c0J9tA4b2+rHEZtc6R0tlw==}
     engines: {node: '>=6.9.0'}
@@ -1044,11 +1036,6 @@ packages:
   '@babel/helpers@7.27.6':
     resolution: {integrity: sha512-muE8Tt8M22638HU31A3CgfSUciwz1fhATfoVai05aPXGor//CdWDCbnlY1yvBPo07njuVOCNGCSp/GTt12lIug==}
     engines: {node: '>=6.9.0'}
-
-  '@babel/parser@7.27.0':
-    resolution: {integrity: sha512-iaepho73/2Pz7w2eMS0Q5f83+0RKI7i4xmiYeBmDzfRVbQtTOG7Ts0S4HzJVsTMGI9keU8rNfuZr8DKfSt7Yyg==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
 
   '@babel/parser@7.27.2':
     resolution: {integrity: sha512-QYLs8299NA7WM/bZAdp+CviYYkVoYXlDW2rzliy3chxd1PQjej7JORuMJDJXJUb9g0TT+B99EwaVLKmX+sPXWw==}
@@ -1492,8 +1479,8 @@ packages:
     resolution: {integrity: sha512-7EYtGezsdiDMyY80+65EzwiGmcJqpmcZCojSXaRgdrBaGtWTgDZKq69cPIVped6MkIM78cTQ2GOiEYjwOlG4xw==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/template@7.27.0':
-    resolution: {integrity: sha512-2ncevenBqXI6qRMukPlXwHKHchC7RyMuu4xv5JBXRfOGVcTy1mXCD12qrp7Jsoxll1EV3+9sE4GugBVRjT2jFA==}
+  '@babel/runtime@7.27.6':
+    resolution: {integrity: sha512-vbavdySgbTTrmFE+EsiqUTzlOr5bzlnJtUv9PynGCAKvfQqjIXbvFdumPM/GxMDfyuGMJaJAU6TO4zc1Jf1i8Q==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.27.2':
@@ -1841,13 +1828,6 @@ packages:
       '@parcel/watcher':
         optional: true
 
-  '@graphql-codegen/client-preset@4.8.0':
-    resolution: {integrity: sha512-IVtTl7GsPMbQihk5+l5fDYksnPPOoC52sKxzquyIyuecZLEB7W3nNLV29r6+y+tjXTRPA774FR7CHGA2adzhjw==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-      graphql-sock: ^1.0.0
-
   '@graphql-codegen/client-preset@4.8.2':
     resolution: {integrity: sha512-YoH2obkNLorgT7bs5cbveg6A1fM4ZW5AE/CWLaSzViMTAXk51q0z/5+sTrDW2Ft6Or3mTxFLEByCgXhPgAj2Lw==}
     engines: {node: '>=16'}
@@ -1869,12 +1849,6 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
 
-  '@graphql-codegen/plugin-helpers@5.1.0':
-    resolution: {integrity: sha512-Y7cwEAkprbTKzVIe436TIw4w03jorsMruvCvu0HJkavaKMQbWY+lQ1RIuROgszDbxAyM35twB5/sUvYG5oW+yg==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-
   '@graphql-codegen/plugin-helpers@5.1.1':
     resolution: {integrity: sha512-28GHODK2HY1NhdyRcPP3sCz0Kqxyfiz7boIZ8qIxFYmpLYnlDgiYok5fhFLVSZihyOpCs4Fa37gVHf/Q4I2FEg==}
     engines: {node: '>=16'}
@@ -1891,13 +1865,6 @@ packages:
     engines: {node: '>=16'}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-
-  '@graphql-codegen/typescript-operations@4.6.0':
-    resolution: {integrity: sha512-/EltSdE/uPoEAblRTVLABVDhsrE//Kl3pCflyG1PWl4gWL9/OzQXYGjo6TF6bPMVn/QBWoO0FeboWf+bk84SXA==}
-    engines: {node: '>=16'}
-    peerDependencies:
-      graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-      graphql-sock: ^1.0.0
 
   '@graphql-codegen/typescript-operations@4.6.1':
     resolution: {integrity: sha512-k92laxhih7s0WZ8j5WMIbgKwhe64C0As6x+PdcvgZFMudDJ7rPJ/hFqJ9DCRxNjXoHmSjnr6VUuQZq4lT1RzCA==}
@@ -9064,7 +9031,7 @@ snapshots:
     dependencies:
       '@babel/generator': 7.27.5
       '@babel/parser': 7.27.5
-      '@babel/runtime': 7.27.3
+      '@babel/runtime': 7.27.6
       chalk: 4.1.2
       fb-watchman: 2.0.2
       graphql: 16.11.0
@@ -9081,12 +9048,6 @@ snapshots:
       '@azure/msal-common': 15.7.0
 
   '@azure/msal-common@15.7.0': {}
-
-  '@babel/code-frame@7.26.2':
-    dependencies:
-      '@babel/helper-validator-identifier': 7.27.1
-      js-tokens: 4.0.0
-      picocolors: 1.1.1
 
   '@babel/code-frame@7.27.1':
     dependencies:
@@ -9261,8 +9222,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.27.6
 
-  '@babel/helper-plugin-utils@7.26.5': {}
-
   '@babel/helper-plugin-utils@7.27.1': {}
 
   '@babel/helper-remap-async-to-generator@7.27.1(@babel/core@7.27.3)':
@@ -9317,10 +9276,6 @@ snapshots:
   '@babel/helpers@7.27.6':
     dependencies:
       '@babel/template': 7.27.2
-      '@babel/types': 7.27.6
-
-  '@babel/parser@7.27.0':
-    dependencies:
       '@babel/types': 7.27.6
 
   '@babel/parser@7.27.2':
@@ -9870,11 +9825,7 @@ snapshots:
 
   '@babel/runtime@7.27.3': {}
 
-  '@babel/template@7.27.0':
-    dependencies:
-      '@babel/code-frame': 7.26.2
-      '@babel/parser': 7.27.0
-      '@babel/types': 7.27.6
+  '@babel/runtime@7.27.6': {}
 
   '@babel/template@7.27.2':
     dependencies:
@@ -9886,7 +9837,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.27.1
       '@babel/generator': 7.27.5
-      '@babel/parser': 7.27.5
+      '@babel/parser': 7.27.2
       '@babel/template': 7.27.2
       '@babel/types': 7.27.6
       debug: 4.4.1
@@ -10278,26 +10229,6 @@ snapshots:
       - uWebSockets.js
       - utf-8-validate
 
-  '@graphql-codegen/client-preset@4.8.0(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)':
-    dependencies:
-      '@babel/helper-plugin-utils': 7.26.5
-      '@babel/template': 7.27.0
-      '@graphql-codegen/add': 5.0.3(graphql@16.11.0)
-      '@graphql-codegen/gql-tag-operations': 4.0.17(graphql@16.11.0)
-      '@graphql-codegen/plugin-helpers': 5.1.0(graphql@16.11.0)
-      '@graphql-codegen/typed-document-node': 5.1.1(graphql@16.11.0)
-      '@graphql-codegen/typescript': 4.1.6(graphql@16.11.0)
-      '@graphql-codegen/typescript-operations': 4.6.0(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)
-      '@graphql-codegen/visitor-plugin-common': 5.8.0(graphql@16.11.0)
-      '@graphql-tools/documents': 1.0.1(graphql@16.11.0)
-      '@graphql-tools/utils': 10.8.6(graphql@16.11.0)
-      '@graphql-typed-document-node/core': 3.2.0(graphql@16.11.0)
-      graphql: 16.11.0
-      graphql-sock: 1.0.1(graphql@16.11.0)
-      tslib: 2.6.3
-    transitivePeerDependencies:
-      - encoding
-
   '@graphql-codegen/client-preset@4.8.2(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)':
     dependencies:
       '@babel/helper-plugin-utils': 7.27.1
@@ -10338,16 +10269,6 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@graphql-codegen/plugin-helpers@5.1.0(graphql@16.11.0)':
-    dependencies:
-      '@graphql-tools/utils': 10.8.6(graphql@16.11.0)
-      change-case-all: 1.0.15
-      common-tags: 1.8.2
-      graphql: 16.11.0
-      import-from: 4.0.0
-      lodash: 4.17.21
-      tslib: 2.6.3
-
   '@graphql-codegen/plugin-helpers@5.1.1(graphql@16.11.0)':
     dependencies:
       '@graphql-tools/utils': 10.8.6(graphql@16.11.0)
@@ -10372,18 +10293,6 @@ snapshots:
       auto-bind: 4.0.0
       change-case-all: 1.0.15
       graphql: 16.11.0
-      tslib: 2.6.3
-    transitivePeerDependencies:
-      - encoding
-
-  '@graphql-codegen/typescript-operations@4.6.0(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)':
-    dependencies:
-      '@graphql-codegen/plugin-helpers': 5.1.1(graphql@16.11.0)
-      '@graphql-codegen/typescript': 4.1.6(graphql@16.11.0)
-      '@graphql-codegen/visitor-plugin-common': 5.8.0(graphql@16.11.0)
-      auto-bind: 4.0.0
-      graphql: 16.11.0
-      graphql-sock: 1.0.1(graphql@16.11.0)
       tslib: 2.6.3
     transitivePeerDependencies:
       - encoding
@@ -10693,7 +10602,7 @@ snapshots:
       cross-inspect: 1.0.1
       dset: 3.1.4
       graphql: 16.11.0
-      tslib: 2.8.1
+      tslib: 2.6.3
 
   '@graphql-tools/wrap@10.1.0(graphql@16.11.0)':
     dependencies:
@@ -12658,7 +12567,7 @@ snapshots:
 
   '@types/babel__template@7.4.4':
     dependencies:
-      '@babel/parser': 7.27.5
+      '@babel/parser': 7.27.2
       '@babel/types': 7.27.6
 
   '@types/babel__traverse@7.20.6':
@@ -15161,6 +15070,7 @@ snapshots:
   graphql-sock@1.0.1(graphql@16.11.0):
     dependencies:
       graphql: 16.11.0
+    optional: true
 
   graphql-tag@2.12.6(graphql@16.11.0):
     dependencies:
@@ -17691,7 +17601,7 @@ snapshots:
 
   relay-runtime@12.0.0:
     dependencies:
-      '@babel/runtime': 7.27.3
+      '@babel/runtime': 7.27.6
       fbjs: 3.0.5
       invariant: 2.2.4
     transitivePeerDependencies:
