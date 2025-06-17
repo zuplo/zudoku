@@ -34,7 +34,7 @@ export const EmbeddedCodeBlock = ({
   return (
     <div
       className={cn(
-        "code-block-wrapper relative group bg-muted/50 rounded-md",
+        "code-block-wrapper relative group bg-muted/50",
         showLineNumbers && "line-numbers",
       )}
     >

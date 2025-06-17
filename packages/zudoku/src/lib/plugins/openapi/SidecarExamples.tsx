@@ -101,6 +101,7 @@ export const SidecarExamples = ({
         ) : (
           <CollapsibleCode>
             <SyntaxHighlight
+              embedded
               language={language}
               noBackground
               className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px] p-2"
