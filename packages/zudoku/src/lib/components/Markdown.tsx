@@ -3,6 +3,7 @@ import { MarkdownHooks, type Components } from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { createConfiguredShikiRehypePlugins } from "../shiki.js";
+import { cn } from "../util/cn.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
@@ -36,7 +37,7 @@ export const Markdown = memo(
     );
 
     return (
-      <div className={className}>
+      <div className={cn(ProseClasses, className)}>
         <MarkdownHooks
           remarkPlugins={remarkPlugins}
           rehypePlugins={rehypePlugins}
