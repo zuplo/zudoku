@@ -116,7 +116,7 @@ export const SchemaPropertyItem = ({
         </div>
         {schema.description && (
           <Markdown
-            className="text-sm leading-normal line-clamp-4"
+            className="text-sm leading-normal"
             content={schema.description}
           />
         )}
