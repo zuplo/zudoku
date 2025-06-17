@@ -1,10 +1,10 @@
 ---
 title: Quickstart
-description: Get started with Zudoku by creating a new Zudoku app using the `create-zudoku-app` tool.
+description: Get started with Zudoku by creating a new Zudoku app using the `create-zudoku` tool.
 sidebar_icon: app-window-mac
 ---
 
-The recommended way to get started with Zudoku is to use the `create-zudoku-app` CLI tool. This tool will scaffold a new Zudoku site for you to customize and build upon.
+The recommended way to get started with Zudoku is to use the `create-zudoku` CLI tool. This tool will scaffold a new Zudoku site for you to customize and build upon.
 
 ## Prerequisites
 
@@ -17,7 +17,7 @@ The recommended way to get started with Zudoku is to use the `create-zudoku-app`
 1. **Create a new Zudoku app by running:**
 
    ```bash
-   npm create zudoku-app@latest
+   npm create zudoku@latest
    ```
 
 1. Change into your just created directory with `cd zudoku-app{:sh}`

@@ -1,6 +1,6 @@
 # Zudoku App
 
-This Zudoku app that was created with [`create-zudoku-app`](https://zudoku.dev/docs).
+This Zudoku app that was created with [`create-zudoku`](https://zudoku.dev/docs).
 
 ## Getting Started
 

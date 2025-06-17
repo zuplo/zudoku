@@ -1,5 +1,5 @@
 {
-  "name": "create-zudoku-app",
+  "name": "create-zudoku",
   "$schema": "../../node_modules/nx/schemas/nx-schema.json",
   "targets": {
     "build": {

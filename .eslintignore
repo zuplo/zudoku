@@ -2,5 +2,5 @@ node_modules
 dist/
 packages/zudoku/lib/
 .nx/
-packages/create-zudoku-app/templates
+packages/create-zudoku/templates
 packages/zudoku/src/shiki/

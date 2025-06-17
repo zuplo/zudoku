@@ -44,7 +44,7 @@ const program = new Command(packageJson.name)
   .version(
     packageJson.version,
     "-v, --version",
-    "Output the current version of create-zudoku-app.",
+    "Output the current version of create-zudoku.",
   )
   .argument("[directory]")
   .usage("[directory] [options]")
@@ -74,7 +74,7 @@ const program = new Command(packageJson.name)
   )
   .option(
     "--reset, --reset-preferences",
-    "Reset the preferences saved for create-zudoku-app.",
+    "Reset the preferences saved for create-zudoku.",
   )
   .option(
     "--skip-install",
@@ -125,7 +125,7 @@ const packageManager: PackageManager = opts.useNpm
         : getPkgManager();
 
 async function run(): Promise<void> {
-  const conf = new Conf({ projectName: "create-zudoku-app" });
+  const conf = new Conf({ projectName: "create-zudoku" });
 
   if (opts.resetPreferences) {
     const { resetPreferences } = await prompts({
@@ -337,9 +337,9 @@ async function notifyUpdate(): Promise<void> {
         pnpm: "pnpm add -g",
         bun: "bun add -g",
       };
-      const updateMessage = `${global[packageManager]} create-zudoku-app`;
+      const updateMessage = `${global[packageManager]} create-zudoku`;
       console.log(
-        yellow(bold("A new version of `create-zudoku-app` is available!")) +
+        yellow(bold("A new version of `create-zudoku` is available!")) +
           "\n" +
           "You can update by running: " +
           cyan(updateMessage) +

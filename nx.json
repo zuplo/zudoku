@@ -38,7 +38,7 @@
     "packageManager": "pnpm"
   },
   "release": {
-    "projects": ["zudoku", "create-zudoku-app"],
+    "projects": ["zudoku", "create-zudoku"],
     "releaseTagPattern": "v{version}",
     "versionPlans": true,
     "version": {
