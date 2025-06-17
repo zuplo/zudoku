@@ -6,15 +6,14 @@ import { type PropsWithChildren, useEffect } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { ProseClasses } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
+import { Typography } from "../../components/Typography.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
-import { cn } from "../../util/cn.js";
 import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
 
 declare global {
@@ -113,12 +112,7 @@ export const MdxPage = ({
         <title>{pageTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
       </Helmet>
-      <div
-        className={cn(
-          ProseClasses,
-          "max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)",
-        )}
-      >
+      <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
         {(category || title) && (
           <header>
             {category && <CategoryHeading>{category}</CategoryHeading>}
@@ -182,7 +176,7 @@ export const MdxPage = ({
             />
           </>
         )}
-      </div>
+      </Typography>
       <div className="hidden xl:block">
         {showToc && <Toc entries={tocEntries} />}
       </div>

@@ -2,10 +2,9 @@ import * as Collapsible from "@radix-ui/react-collapsible";
 import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useCallback, useState } from "react";
 import { InlineCode } from "../../../components/InlineCode.js";
-import { Markdown, ProseClasses } from "../../../components/Markdown.js";
+import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
-import { cn } from "../../../util/cn.js";
 import { objectEntries } from "../../../util/objectEntries.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
@@ -117,7 +116,7 @@ export const SchemaPropertyItem = ({
         </div>
         {schema.description && (
           <Markdown
-            className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
+            className="text-sm leading-normal line-clamp-4"
             content={schema.description}
           />
         )}
