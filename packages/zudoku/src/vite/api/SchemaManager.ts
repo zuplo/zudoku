@@ -99,7 +99,9 @@ export class SchemaManager {
     }
 
     const parser = new $RefParser();
-    const schema = await parser.bundle(filePath);
+    const schema = await parser.bundle(filePath, {
+      dereference: { preservedProperties: ["description", "summary"] },
+    });
 
     parser.$refs.paths().forEach((file) => this.trackedFiles.add(file));
 
@@ -110,7 +112,9 @@ export class SchemaManager {
           schema: await schema,
           file: filePath,
           dereference: (schema) =>
-            new $RefParser<OpenAPIDocument>().dereference(schema),
+            new $RefParser<OpenAPIDocument>().dereference(schema, {
+              dereference: { preservedProperties: ["description", "summary"] },
+            }),
         }),
       Promise.resolve(validatedSchema),
     );

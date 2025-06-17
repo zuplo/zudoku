@@ -75,6 +75,12 @@ export const ParameterListItem = ({
           className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
         />
       )}
+      {paramSchema.description && (
+        <Markdown
+          content={paramSchema.description}
+          className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
+        />
+      )}
       {paramSchema.type === "array" && paramSchema.items.enum ? (
         <EnumValues values={paramSchema.items.enum} />
       ) : (
