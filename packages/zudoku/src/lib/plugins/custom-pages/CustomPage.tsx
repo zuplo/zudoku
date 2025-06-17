@@ -7,7 +7,7 @@ import type { CustomPageConfig } from "./index.js";
 export const CustomPage = ({
   element,
   render,
-  prose = true,
+  prose = false,
 }: Omit<CustomPageConfig, "path">) => {
   const exposedProps = useExposedProps();
   const content = render ? React.createElement(render, exposedProps) : element;
