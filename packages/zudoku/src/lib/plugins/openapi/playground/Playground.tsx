@@ -466,32 +466,30 @@ export const Playground = ({
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
               {identities.data?.length !== 0 && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex flex-col gap-2">
-                    <Collapsible defaultOpen>
-                      <CollapsibleHeaderTrigger>
-                        <IdCardLanyardIcon size={16} />
-                        <CollapsibleHeader className="col-span-2">
-                          Authentication
-                        </CollapsibleHeader>
-                      </CollapsibleHeaderTrigger>
-                      <CollapsibleContent className="CollapsibleContent">
-                        <IdentitySelector
-                          value={identity}
-                          identities={identities.data ?? []}
-                          setValue={(value) => setValue("identity", value)}
-                        />
-                      </CollapsibleContent>
-                    </Collapsible>
-                  </div>
-                </div>
+                <Collapsible defaultOpen>
+                  <CollapsibleHeaderTrigger>
+                    <IdCardLanyardIcon size={16} />
+                    <CollapsibleHeader className="col-span-2">
+                      Authentication
+                    </CollapsibleHeader>
+                  </CollapsibleHeaderTrigger>
+                  <CollapsibleContent className="CollapsibleContent">
+                    <IdentitySelector
+                      value={identity}
+                      identities={identities.data ?? []}
+                      setValue={(value) => setValue("identity", value)}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
               )}
 
               {pathParams.length > 0 && (
                 <Collapsible defaultOpen>
-                  <CollapsibleHeaderTrigger className="border-t">
+                  <CollapsibleHeaderTrigger>
                     <ShapesIcon size={16} />
-                    <CollapsibleHeader>Path Parameters</CollapsibleHeader>
+                    <CollapsibleHeader className="col-span-2">
+                      Path Parameters
+                    </CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <PathParams url={url} control={control} />

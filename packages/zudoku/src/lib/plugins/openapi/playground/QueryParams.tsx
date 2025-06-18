@@ -90,6 +90,7 @@ export const QueryParams = ({
                     render={({ field }) =>
                       !requiredFields[i] ? (
                         <Autocomplete
+                          placeholder="Name"
                           value={field.value}
                           options={schemaQueryParams.map((param) => param.name)}
                           onChange={(e) => {
@@ -131,7 +132,7 @@ export const QueryParams = ({
                                   setValue(`queryParams.${i}.active`, true);
                                 }
                               }}
-                              placeholder="Enter value"
+                              placeholder="Value"
                               className="w-full border-0 p-0 m-0 shadow-none focus-visible:ring-0 text-xs font-mono"
                             />
                           );
