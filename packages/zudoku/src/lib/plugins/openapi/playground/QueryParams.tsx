@@ -133,6 +133,7 @@ export const QueryParams = ({
                                 }
                               }}
                               placeholder="Value"
+                              aria-label="Query parameter value"
                               className="w-full border-0 p-0 m-0 shadow-none focus-visible:ring-0 text-xs font-mono"
                             />
                           );
