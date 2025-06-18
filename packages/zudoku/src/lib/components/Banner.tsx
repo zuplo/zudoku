@@ -12,7 +12,7 @@ const COLOR_MAP = {
 } as const;
 
 export const Banner = () => {
-  const { page } = useZudoku();
+  const { site: page } = useZudoku();
   const [isBannerOpen, setIsBannerOpen] = useState(true);
 
   if (!page?.banner || !isBannerOpen) {

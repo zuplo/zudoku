@@ -102,7 +102,7 @@ export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public navigation: Navigation;
   public meta: ZudokuContextOptions["metadata"];
-  public page: ZudokuContextOptions["site"];
+  public site: ZudokuContextOptions["site"];
   public readonly authentication?: ZudokuContextOptions["authentication"];
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
@@ -123,7 +123,7 @@ export class ZudokuContext {
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.meta = options.metadata;
-    this.page = options.site;
+    this.site = options.site;
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 

@@ -26,7 +26,7 @@ const SocialIcon = ({
 const isExternalUrl = (href: string) => /^https?:/.test(href);
 
 export const Footer = () => {
-  const { page } = useZudoku();
+  const { site: page } = useZudoku();
   const footer = page?.footer;
 
   if (!footer) return null;
