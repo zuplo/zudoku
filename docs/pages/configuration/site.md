@@ -1,19 +1,19 @@
 ---
-sidebar_label: Page
+sidebar_label: Branding & Layout
 sidebar_icon: layout-dashboard
 ---
 
-# Page Configuration
+# Branding & Layout
 
 The page configuration allows you to customize the main aspects of your Zudoku site's appearance and behavior.
 
-## Basic Configuration
+## Branding
 
 Configure the page settings in your `zudoku.config.tsx` file under the `page` property:
 
 ```tsx
 const config: ZudokuConfig = {
-  page: {
+  site: {
     title: "My API Documentation",
     logo: {
       src: {
@@ -44,7 +44,7 @@ site: {
 Configure the site's logo with different versions for light and dark themes:
 
 ```tsx
-page: {
+site: {
   logo: {
     src: {
       light: "/light-logo.png",
@@ -56,12 +56,14 @@ page: {
 }
 ```
 
+## Layout
+
 ### Banner
 
 Add a banner message to the top of the page:
 
 ```tsx
-page: {
+site: {
   banner: {
     message: "Welcome to our beta documentation!",
     color: "info", // "note" | "tip" | "info" | "caution" | "danger" or custom

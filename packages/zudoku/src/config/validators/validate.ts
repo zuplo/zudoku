@@ -491,7 +491,6 @@ const BaseConfigSchema = z.object({
       ca: z.string().optional(),
     })
     .optional(),
-  page: SiteSchema,
   site: SiteSchema,
   navigation: InputNavigationSchema,
   theme: ThemeConfigSchema,

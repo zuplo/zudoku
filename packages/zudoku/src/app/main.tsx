@@ -37,11 +37,11 @@ export const convertZudokuConfigToOptions = (
     canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
     site: {
-      ...config.page,
+      ...config.site,
       showPoweredBy:
         ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
-        config.page?.showPoweredBy,
-      logo: config.page?.logo,
+        config.site?.showPoweredBy,
+      logo: config.site?.logo,
     },
     slots: config.slots,
     metadata: {
