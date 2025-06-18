@@ -11,19 +11,18 @@ import {
 import ExamplesDropdown from "./ExamplesDropdown.js";
 import { type PlaygroundForm } from "./Playground.js";
 
-export const BodyPanel = ({ examples }: { examples?: Content }) => {
+export const BodyPanel = ({ content }: { content?: Content }) => {
   const { register, setValue, watch } = useFormContext<PlaygroundForm>();
-
+  const examples = (content ?? []).flatMap((e) => e.examples);
   const headers = watch("headers");
-
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
         <FileInput size={16} />
         <CollapsibleHeader>Body</CollapsibleHeader>
-        {examples && examples.length > 0 && (
+        {content && examples.length > 0 ? (
           <ExamplesDropdown
-            examples={examples}
+            examples={content}
             onSelect={(example, mediaType) => {
               setValue("body", JSON.stringify(example.value, null, 2));
               setValue("headers", [
@@ -36,6 +35,8 @@ export const BodyPanel = ({ examples }: { examples?: Content }) => {
               ]);
             }}
           />
+        ) : (
+          <div />
         )}
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="flex flex-col gap-2 ">

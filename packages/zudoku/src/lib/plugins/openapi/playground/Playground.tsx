@@ -504,7 +504,7 @@ export const Playground = ({
                 schemaHeaders={headers}
                 lockedHeaders={authorizationFields?.headers}
               />
-              {isBodySupported && <BodyPanel examples={examples} />}
+              {isBodySupported && <BodyPanel content={examples} />}
             </div>
             <div className="w-full bg-muted-foreground/20" />
             <ResultPanel

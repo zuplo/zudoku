@@ -86,7 +86,7 @@ export const ResponseStatusBar = ({
       <div className="flex gap-2">
         <div>
           <span className="text-muted-foreground">Size</span>{" "}
-          <span className="inline-block text-end w-[5ch]">
+          <span className="inline-block text-end min-w-[5ch]">
             {size ? humanFileSize(size) : "- B"}
           </span>
         </div>
