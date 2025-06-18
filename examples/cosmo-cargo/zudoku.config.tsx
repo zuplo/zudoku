@@ -25,7 +25,7 @@ const config: ZudokuConfig = {
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
-  page: {
+  site: {
     title: "Cosmo Cargo Inc.",
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },

@@ -1,6 +1,6 @@
 /** @type {import('zudoku').ZudokuConfig} */
 const config = {
-  page: {
+  site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
