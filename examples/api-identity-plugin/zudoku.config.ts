@@ -19,7 +19,7 @@ const config: ZudokuConfig = {
     {
       type: "category",
       label: "Documentation",
-      items: ["documentation/introduction", "documentation/installation"],
+      items: ["documentation/introduction"],
     },
     {
       type: "link",
