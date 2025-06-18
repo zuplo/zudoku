@@ -156,7 +156,7 @@ export class DevServer {
         const { config } = await loadZudokuConfig(configEnv, this.options.dir);
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
-          dir: config.page?.dir,
+          dir: config.site?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 

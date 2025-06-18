@@ -36,12 +36,12 @@ export const convertZudokuConfigToOptions = (
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
-    page: {
-      ...config.page,
+    site: {
+      ...config.site,
       showPoweredBy:
         ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
-        config.page?.showPoweredBy,
-      logo: config.page?.logo,
+        config.site?.showPoweredBy,
+      logo: config.site?.logo,
     },
     slots: config.slots,
     metadata: {

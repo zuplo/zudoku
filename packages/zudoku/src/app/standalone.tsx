@@ -13,14 +13,14 @@ if (!root) {
 }
 
 const apiUrl = root.getAttribute("data-api-url");
-const pageTitle = document.getElementsByTagName("title")[0]!.innerText;
+const title = document.getElementsByTagName("title")[0]!.innerText;
 const logoUrl = root.getAttribute("data-logo-url");
 
 // IMPORTANT: This component must not contain tailwind classes
 // This directory is not processed by the tailwind plugin
 
 const config = {
-  page: {
+  site: {
     logo: logoUrl
       ? {
           src: {
@@ -29,7 +29,7 @@ const config = {
           },
         }
       : undefined,
-    pageTitle,
+    title,
   },
   navigation: [
     {

@@ -1,8 +1,8 @@
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
-  page: {
-    pageTitle: "My Developer Portal",
+  site: {
+    title: "My Developer Portal",
     banner: {
       message: (
         <div className="w-full text-center">
