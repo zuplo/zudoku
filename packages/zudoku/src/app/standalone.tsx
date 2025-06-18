@@ -20,7 +20,7 @@ const logoUrl = root.getAttribute("data-logo-url");
 // This directory is not processed by the tailwind plugin
 
 const config = {
-  page: {
+  site: {
     logo: logoUrl
       ? {
           src: {
