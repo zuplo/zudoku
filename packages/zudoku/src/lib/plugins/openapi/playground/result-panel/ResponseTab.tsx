@@ -85,8 +85,10 @@ const MAX_HEADERS_TO_SHOW = 3;
 
 const Row = createVariantComponent(
   "div",
-  "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs min-h-10 items-center",
+  "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs",
 );
+
+const RowContent = createVariantComponent("div", "py-1 break-all");
 
 export const ResponseTab = ({
   body = "",
@@ -155,8 +157,8 @@ export const ResponseTab = ({
               .slice(0, MAX_HEADERS_TO_SHOW)
               .map(([key, value]) => (
                 <Row key={key}>
-                  <div className="">{key}</div>
-                  <div className="break-all">{value}</div>
+                  <RowContent>{key}</RowContent>
+                  <RowContent>{value}</RowContent>
                 </Row>
               ))}
           </div>
@@ -174,8 +176,8 @@ export const ResponseTab = ({
           <div className="grid grid-cols-2 gap-x-6 text-sm">
             {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
               <Row key={key}>
-                <div className="">{key}</div>
-                <div className="break-all line-clamp-1">{value}</div>
+                <RowContent>{key}</RowContent>
+                <RowContent>{value}</RowContent>
               </Row>
             ))}
             {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
@@ -192,8 +194,8 @@ export const ResponseTab = ({
                     .slice(MAX_HEADERS_TO_SHOW)
                     .map(([key, value]) => (
                       <Row key={key}>
-                        <div className="">{key}</div>
-                        <div className="break-all ">{value}</div>
+                        <RowContent>{key}</RowContent>
+                        <RowContent>{value}</RowContent>
                       </Row>
                     ))}
                 </CollapsibleContent>
