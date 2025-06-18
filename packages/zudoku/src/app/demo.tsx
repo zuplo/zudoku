@@ -30,8 +30,8 @@ if (!root) {
 // This directory is not processed by the tailwind plugin
 
 const config = {
-  page: {
-    pageTitle: "",
+  site: {
+    title: "",
     banner: {
       message: <DemoAnnouncement />,
     },

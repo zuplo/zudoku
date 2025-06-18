@@ -410,9 +410,9 @@ const ThemeConfigSchema = z.object({
   noDefaultTheme: z.boolean().optional(),
 });
 
-const PageSchema = z
+const SiteSchema = z
   .object({
-    pageTitle: z.string(),
+    title: z.string(),
     logoUrl: z.string(),
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
@@ -491,7 +491,8 @@ const BaseConfigSchema = z.object({
       ca: z.string().optional(),
     })
     .optional(),
-  page: PageSchema,
+  page: SiteSchema,
+  site: SiteSchema,
   navigation: InputNavigationSchema,
   theme: ThemeConfigSchema,
   syntaxHighlighting: z

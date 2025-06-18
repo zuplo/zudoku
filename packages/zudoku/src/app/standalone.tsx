@@ -13,7 +13,7 @@ if (!root) {
 }
 
 const apiUrl = root.getAttribute("data-api-url");
-const pageTitle = document.getElementsByTagName("title")[0]!.innerText;
+const title = document.getElementsByTagName("title")[0]!.innerText;
 const logoUrl = root.getAttribute("data-logo-url");
 
 // IMPORTANT: This component must not contain tailwind classes
@@ -29,7 +29,7 @@ const config = {
           },
         }
       : undefined,
-    pageTitle,
+    title,
   },
   navigation: [
     {

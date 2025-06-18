@@ -78,8 +78,8 @@ Controls global page attributes across the site, including logos and the site ti
 ```json
 {
   // ...
-  "page": {
-    "pageTitle": "Our Documentation",
+  "site": {
+    "title": "Our Documentation",
     "logo": {
       "src": {
         "light": "/logos/zudoku-light.svg",

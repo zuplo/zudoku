@@ -93,23 +93,21 @@ export const Header = memo(function HeaderInner() {
                   <>
                     <img
                       src={logoLightSrc}
-                      alt={page.logo.alt ?? page.pageTitle}
+                      alt={page.logo.alt ?? page.title}
                       style={{ width: page.logo.width }}
                       className="max-h-(--top-header-height) dark:hidden"
                       loading="lazy"
                     />
                     <img
                       src={logoDarkSrc}
-                      alt={page.logo.alt ?? page.pageTitle}
+                      alt={page.logo.alt ?? page.title}
                       style={{ width: page.logo.width }}
                       className="max-h-(--top-header-height) hidden dark:block"
                       loading="lazy"
                     />
                   </>
                 )}
-                <span className="font-semibold text-2xl">
-                  {page?.pageTitle}
-                </span>
+                <span className="font-semibold text-2xl">{page?.title}</span>
               </div>
             </Link>
           </div>

@@ -55,7 +55,7 @@ export const MdxPage = ({
   const title = frontmatter.title;
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
-  const pageTitle =
+  const siteTitle =
     tableOfContents.find((item) => item.depth === 1)?.value ?? title;
   const hidePager =
     frontmatter.disable_pager ??
@@ -109,7 +109,7 @@ export const MdxPage = ({
       data-pagefind-meta="section:markdown"
     >
       <Helmet>
-        <title>{pageTitle}</title>
+        <title>{siteTitle}</title>
         {excerpt && <meta name="description" content={excerpt} />}
       </Helmet>
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">

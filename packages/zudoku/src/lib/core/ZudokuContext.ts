@@ -54,10 +54,10 @@ type Metadata = Partial<{
   publisher: string;
 }>;
 
-type Page = Partial<{
+type Site = Partial<{
   dir?: "ltr" | "rtl";
   showPoweredBy?: boolean;
-  pageTitle?: string;
+  title?: string;
   logo?: {
     src: {
       light: string;
@@ -78,7 +78,7 @@ export type ZudokuContextOptions = {
   basePath?: string;
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
-  page?: Page;
+  site?: Site;
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
   plugins?: ZudokuPlugin[];
@@ -102,7 +102,7 @@ export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public navigation: Navigation;
   public meta: ZudokuContextOptions["metadata"];
-  public page: ZudokuContextOptions["page"];
+  public page: ZudokuContextOptions["site"];
   public readonly authentication?: ZudokuContextOptions["authentication"];
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
@@ -123,7 +123,7 @@ export class ZudokuContext {
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.meta = options.metadata;
-    this.page = options.page;
+    this.page = options.site;
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 

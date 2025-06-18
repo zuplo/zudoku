@@ -26,7 +26,7 @@ export const MobileTopNavigation = () => {
 
   return (
     <Drawer
-      direction={options.page?.dir === "rtl" ? "left" : "right"}
+      direction={options.site?.dir === "rtl" ? "left" : "right"}
       open={drawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
@@ -62,7 +62,7 @@ export const MobileTopNavigation = () => {
               ))}
             </ul>
           </div>
-          {options.page?.showPoweredBy !== false && (
+          {options.site?.showPoweredBy !== false && (
             <PoweredByZudoku className="grow-0 justify-center gap-1" />
           )}
         </div>

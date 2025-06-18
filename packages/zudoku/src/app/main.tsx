@@ -36,7 +36,7 @@ export const convertZudokuConfigToOptions = (
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
-    page: {
+    site: {
       ...config.page,
       showPoweredBy:
         ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??

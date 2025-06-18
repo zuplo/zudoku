@@ -26,6 +26,7 @@ const config: ZudokuConfig = {
     title: "Cosmo Cargo Inc.",
   },
   page: {
+    title: "Cosmo Cargo Inc.",
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       width: 130,

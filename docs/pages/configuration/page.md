@@ -14,7 +14,7 @@ Configure the page settings in your `zudoku.config.tsx` file under the `page` pr
 ```tsx
 const config: ZudokuConfig = {
   page: {
-    pageTitle: "My API Documentation",
+    title: "My API Documentation",
     logo: {
       src: {
         light: "/path/to/light-logo.png",
@@ -29,13 +29,13 @@ const config: ZudokuConfig = {
 
 ## Available Options
 
-### Page Title
+### Title
 
 Set the title of your site next to the logo in the header:
 
 ```tsx
-page: {
-  pageTitle: "My API Documentation";
+site: {
+  title: "My API Documentation";
 }
 ```
 
@@ -79,8 +79,8 @@ The footer configuration has its own dedicated section. See the [Footer Configur
 Here's a comprehensive example showing all available page configuration options:
 
 ```tsx
-page: {
-  pageTitle: "My API Documentation",
+site: {
+  title: "My API Documentation",
   logo: {
     src: {
       light: "/images/logo-light.svg",
