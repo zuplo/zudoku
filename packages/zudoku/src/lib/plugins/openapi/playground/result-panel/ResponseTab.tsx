@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import createVariantComponent from "../../../../util/createVariantComponent.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
 import {
   CollapsibleHeader,
@@ -82,6 +83,13 @@ const sortHeadersByRelevance = (
 
 const MAX_HEADERS_TO_SHOW = 3;
 
+const Row = createVariantComponent(
+  "div",
+  "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs",
+);
+
+const RowContent = createVariantComponent("div", "py-1 break-all");
+
 export const ResponseTab = ({
   body = "",
   headers,
@@ -134,14 +142,11 @@ export const ResponseTab = ({
 
   const sortedHeaders = sortHeadersByRelevance([...headers]);
 
-  const headerStyle =
-    "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs";
-
   return (
     <>
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownLeftIcon size={16} />
+          <CornerDownRightIcon size={16} />
           <CollapsibleHeader className="col-span-2">
             Header Request
           </CollapsibleHeader>
@@ -151,10 +156,10 @@ export const ResponseTab = ({
             {request.headers
               .slice(0, MAX_HEADERS_TO_SHOW)
               .map(([key, value]) => (
-                <div key={key} className={headerStyle}>
-                  <div className="">{key}</div>
-                  <div className="break-all">{value}</div>
-                </div>
+                <Row key={key}>
+                  <RowContent>{key}</RowContent>
+                  <RowContent>{value}</RowContent>
+                </Row>
               ))}
           </div>
         </CollapsibleContent>
@@ -162,7 +167,7 @@ export const ResponseTab = ({
 
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownRightIcon size={16} />
+          <CornerDownLeftIcon size={16} />
           <CollapsibleHeader className="col-span-2">
             Header Response
           </CollapsibleHeader>
@@ -170,10 +175,10 @@ export const ResponseTab = ({
         <CollapsibleContent>
           <div className="grid grid-cols-2 gap-x-6 text-sm">
             {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
-              <div key={key} className={headerStyle}>
-                <div className="">{key}</div>
-                <div className="break-all line-clamp-1">{value}</div>
-              </div>
+              <Row key={key}>
+                <RowContent>{key}</RowContent>
+                <RowContent>{value}</RowContent>
+              </Row>
             ))}
             {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
               <Collapsible className="col-span-full grid-cols-subgrid grid group">
@@ -188,10 +193,10 @@ export const ResponseTab = ({
                   {sortedHeaders
                     .slice(MAX_HEADERS_TO_SHOW)
                     .map(([key, value]) => (
-                      <div key={key} className={headerStyle}>
-                        <div className="">{key}</div>
-                        <div className="break-all ">{value}</div>
-                      </div>
+                      <Row key={key}>
+                        <RowContent>{key}</RowContent>
+                        <RowContent>{value}</RowContent>
+                      </Row>
                     ))}
                 </CollapsibleContent>
               </Collapsible>
