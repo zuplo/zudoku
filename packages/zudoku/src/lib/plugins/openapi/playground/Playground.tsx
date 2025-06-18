@@ -397,72 +397,61 @@ export const Playground = ({
           />
 
           <div className="grid grid-cols-[1fr_1px_1fr] text-sm">
-            <div className="col-span-3 p-4 border-b">
-              <div className="flex gap-2 items-stretch">
-                <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
-                  <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
-                    {method.toUpperCase()}
-                  </div>
-                  <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
-                    <div className="h-full py-1.5">
-                      {serverSelect}
-                      <UrlPath url={url} />
-                      <UrlQueryParams />
-                    </div>
-                    <div
-                      className="h-full bg-primary/25 absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
-                      style={{
-                        opacity: isFinished ? 0 : 1,
-                        width: isFinished ? 0 : `${progress * 100}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="px-1">
-                    <Button
-                      type="button"
-                      onClick={() => {
-                        copyToClipboard(
-                          createUrl(
-                            server ?? selectedServer,
-                            url,
-                            form.getValues(),
-                          ).toString(),
-                        );
-                      }}
-                      variant="ghost"
-                      size="icon-xs"
-                      className={cn(
-                        "hover:opacity-100 transition",
-                        isCopied
-                          ? "text-emerald-600 opacity-100"
-                          : "opacity-50",
-                      )}
-                    >
-                      {isCopied ? (
-                        <CheckIcon className="text-green-500" size={14} />
-                      ) : (
-                        <CopyIcon size={14} />
-                      )}
-                    </Button>
+            <div className="col-span-3 p-4 border-b flex gap-2 items-stretch">
+              <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
+                <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
+                  {method.toUpperCase()}
+                </div>
+                <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
+                  <div className="h-full py-1.5">
+                    {serverSelect}
+                    <UrlPath url={url} />
+                    <UrlQueryParams />
                   </div>
                 </div>
-
-                <Button
-                  type="submit"
-                  variant={queryMutation.isPending ? "destructive" : "default"}
-                  onClick={(e) => {
-                    if (queryMutation.isPending) {
-                      abortControllerRef.current?.abort(
-                        "Request cancelled by user",
+                <div className="px-1">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      copyToClipboard(
+                        createUrl(
+                          server ?? selectedServer,
+                          url,
+                          form.getValues(),
+                        ).toString(),
                       );
-                      e.preventDefault();
-                    }
-                  }}
-                  className="w-18"
-                >
-                  {queryMutation.isPending ? "Cancel" : "Send"}
-                </Button>
+                    }}
+                    variant="ghost"
+                    size="icon-xs"
+                    className={cn(
+                      "hover:opacity-100 transition",
+                      isCopied ? "text-emerald-600 opacity-100" : "opacity-50",
+                    )}
+                  >
+                    {isCopied ? (
+                      <CheckIcon className="text-green-500" size={14} />
+                    ) : (
+                      <CopyIcon size={14} />
+                    )}
+                  </Button>
+                </div>
               </div>
+
+              <Button
+                type="submit"
+                variant={queryMutation.isPending ? "destructive" : "default"}
+                onClick={(e) => {
+                  if (queryMutation.isPending) {
+                    abortControllerRef.current?.abort(
+                      "Request cancelled by user",
+                    );
+                    e.preventDefault();
+                  }
+                }}
+                className="w-18"
+              >
+                {queryMutation.isPending ? "Cancel" : "Send"}
+              </Button>
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
               {identities.data?.length !== 0 && (
@@ -510,6 +499,8 @@ export const Playground = ({
             <ResultPanel
               queryMutation={queryMutation}
               showLongRunningWarning={showLongRunningWarning}
+              isFinished={isFinished}
+              progress={progress}
               tip={
                 <div className="text-xs w-full">
                   <span className="text-muted-foreground">

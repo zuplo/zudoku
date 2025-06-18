@@ -144,7 +144,7 @@ export const ResponseTab = ({
     <>
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownLeftIcon size={16} />
+          <CornerDownRightIcon size={16} />
           <CollapsibleHeader className="col-span-2">
             Header Request
           </CollapsibleHeader>
@@ -155,7 +155,7 @@ export const ResponseTab = ({
               .slice(0, MAX_HEADERS_TO_SHOW)
               .map(([key, value]) => (
                 <Row key={key}>
-                  <div className="">{key} lol</div>
+                  <div className="">{key}</div>
                   <div className="break-all">{value}</div>
                 </Row>
               ))}
@@ -165,7 +165,7 @@ export const ResponseTab = ({
 
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownRightIcon size={16} />
+          <CornerDownLeftIcon size={16} />
           <CollapsibleHeader className="col-span-2">
             Header Response
           </CollapsibleHeader>

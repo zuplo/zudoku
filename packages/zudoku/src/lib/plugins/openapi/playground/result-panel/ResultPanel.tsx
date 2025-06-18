@@ -13,11 +13,15 @@ export const ResultPanel = ({
   showLongRunningWarning,
   onCancel,
   tip,
+  isFinished,
+  progress,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   queryMutation: UseMutationResult<PlaygroundResult, Error, any>;
   showLongRunningWarning?: boolean;
   onCancel?: () => void;
+  isFinished: boolean;
+  progress: number;
   tip?: React.ReactNode;
 }) => {
   return (
@@ -27,6 +31,8 @@ export const ResultPanel = ({
           status={queryMutation.data?.status}
           time={queryMutation.data?.time}
           size={queryMutation.data?.size}
+          isFinished={isFinished}
+          progress={progress}
         />
       )}
       {queryMutation.error ? (

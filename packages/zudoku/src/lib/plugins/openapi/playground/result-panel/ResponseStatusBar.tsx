@@ -59,10 +59,14 @@ export const ResponseStatusBar = ({
   status,
   time,
   size,
+  isFinished,
+  progress,
 }: {
   status?: number;
   time?: number;
   size?: number;
+  isFinished: boolean;
+  progress: number;
 }) => {
   const statusCodeMap: Record<number, string> = {
     200: "OK",
@@ -78,7 +82,7 @@ export const ResponseStatusBar = ({
   };
 
   return (
-    <div className="flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
+    <div className="relative flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
       <div className="flex items-center gap-2">
         <ResponseCodeCircle status={status} /> {status ?? "Sending Request..."}
         {status ? ` ${statusCodeMap[status]}` : ""}
@@ -97,6 +101,13 @@ export const ResponseStatusBar = ({
           ms
         </div>
       </div>
+      <div
+        className="h-full bg-neutral-500/10 absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
+        style={{
+          opacity: isFinished ? 0 : 1,
+          width: isFinished ? 0 : `${progress * 100}%`,
+        }}
+      />
     </div>
   );
 };
