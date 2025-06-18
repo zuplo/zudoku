@@ -102,7 +102,7 @@ export const ResponseStatusBar = ({
         </div>
       </div>
       <div
-        className="h-full bg-neutral-500/10 absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
+        className="h-full bg-neutral-500/10 absolute left-0 -bottom-0 z-10 transition-all duration-200 ease-in-out"
         style={{
           opacity: isFinished ? 0 : 1,
           width: isFinished ? 0 : `${progress * 100}%`,
