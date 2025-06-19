@@ -53,10 +53,11 @@ export const MdxPage = ({
   const categoryTitle = useCurrentItem()?.categoryLabel;
 
   const title = frontmatter.title;
+  const description = frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
   const pageTitle =
-    tableOfContents.find((item) => item.depth === 1)?.value ?? title;
+    title ?? tableOfContents.find((item) => item.depth === 1)?.value;
   const hidePager =
     frontmatter.disable_pager ??
     frontmatter.disablePager ??
@@ -110,7 +111,7 @@ export const MdxPage = ({
     >
       <Helmet>
         <title>{pageTitle}</title>
-        {excerpt && <meta name="description" content={excerpt} />}
+        {description && <meta name="description" content={description} />}
       </Helmet>
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
         {(category || title) && (
