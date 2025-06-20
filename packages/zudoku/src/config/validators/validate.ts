@@ -286,9 +286,11 @@ const SearchSchema = z
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
-    clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
-      typeof val === "string" ? /^pk_(test|live)_\w+$/.test(val) : false,
-    ),
+    clerkPubKey: z
+      .custom<`pk_test_${string}` | `pk_live_${string}`>()
+      .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
+        message: "Clerk public key invalid, must start with pk_test or pk_live",
+      }),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),

@@ -29,6 +29,27 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it("should validate clerk public key format correctly", () => {
+    process.env.NODE_ENV = "production";
+
+    const configWithValidAuth0 = {
+      authentication: {
+        type: "clerk" as const,
+        clerkPubKey: "kik",
+      },
+    };
+
+    expect(() =>
+      validateConfig(configWithValidAuth0),
+    ).toThrowErrorMatchingInlineSnapshot(`
+      [Error: Whoops, looks like there's an issue with your config:
+      ✖ Clerk public key invalid, must start with pk_test or pk_live
+        → at authentication.clerkPubKey]
+    `);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
   it("should validate openid issuer format correctly", () => {
     const configWithValidAuth0 = {
       authentication: {
@@ -118,8 +139,14 @@ describe("validateConfig", () => {
       },
     };
 
-    expect(() => validateConfig(configWithInvalidAuth0Domain)).toThrow(
-      "Zudoku config validation failed",
+    expect(() =>
+      validateConfig(configWithInvalidAuth0Domain),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: Whoops, looks like there's an issue with your config:
+      ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
+        → at authentication.domain]
+    `,
     );
   });
 
@@ -134,8 +161,14 @@ describe("validateConfig", () => {
       },
     };
 
-    expect(() => validateConfig(configWithInvalidAuth0Domain)).toThrow(
-      "Zudoku config validation failed",
+    expect(() =>
+      validateConfig(configWithInvalidAuth0Domain),
+    ).toThrowErrorMatchingInlineSnapshot(
+      `
+      [Error: Whoops, looks like there's an issue with your config:
+      ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
+        → at authentication.domain]
+    `,
     );
   });
 
