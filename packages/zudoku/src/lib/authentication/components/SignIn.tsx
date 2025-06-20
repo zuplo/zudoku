@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Link, useSearchParams } from "react-router";
-import { Button } from "zudoku/ui/Button.js";
+import { useSearchParams } from "react-router";
+import { Spinner } from "zudoku/components";
 import {
   Card,
   CardContent,
@@ -16,6 +16,7 @@ export const SignIn = () => {
   useEffect(() => {
     void context.authentication?.signIn({
       redirectTo: search.get("redirect") ?? undefined,
+      replace: true,
     });
   }, [context.authentication, search]);
 
@@ -30,16 +31,8 @@ export const SignIn = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-2 justify-center">
-            <Button
-              onClick={() => context.authentication?.signIn()}
-              variant="default"
-            >
-              Login
-            </Button>
-            <Button variant="link" className="text-muted-foreground" asChild>
-              <Link to="/">Go home</Link>
-            </Button>
+          <div className="flex items-center text-sm font-medium gap-2">
+            <Spinner /> Redirecting...
           </div>
         </CardContent>
       </Card>

@@ -166,7 +166,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         if (untaggedOperations) {
           categories.push(
             createNavigationCategory({
-              label: "Other endpoints",
+              label: categories.length === 0 ? "Endpoints" : "Other endpoints",
               path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
               operations: untaggedOperations,
               collapsed: !config.options?.expandAllTags,

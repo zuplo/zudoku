@@ -18,8 +18,10 @@ import {
   isAuthenticationPlugin,
   isEventConsumerPlugin,
   isNavigationPlugin,
+  isProfileMenuPlugin,
   type NavigationPlugin,
   needsInitialization,
+  ProfileNavigationItem,
   type ZudokuPlugin,
 } from "./plugins.js";
 
@@ -182,6 +184,16 @@ export class ZudokuContext {
     return navigations.flatMap((nav) => nav ?? []);
   };
 
+  getProfileMenuItems = () => {
+    const accountItems = this.plugins
+      .filter((p) => isProfileMenuPlugin(p))
+      .flatMap((p) => p.getProfileMenuItems(this))
+      .sort(sortByCategory(["top", "middle", "bottom"]))
+      .sort((i) => i.weight ?? 0);
+
+    return accountItems;
+  };
+
   signRequest = async (request: Request) => {
     if (!this.authentication) {
       throw new Error("No authentication provider configured");
@@ -190,3 +202,12 @@ export class ZudokuContext {
     return await this.authentication.signRequest(request);
   };
 }
+
+const sortByCategory =
+  (categories: string[]) =>
+  (a: ProfileNavigationItem, b: ProfileNavigationItem) => {
+    const aIndex = categories.indexOf(a.category ?? "middle");
+    const bIndex = categories.indexOf(b.category ?? "middle");
+
+    return aIndex - bIndex;
+  };

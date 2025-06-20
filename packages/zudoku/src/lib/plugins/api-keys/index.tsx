@@ -154,7 +154,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
 
       return data.data.map((consumer) => ({
         id: consumer.id,
-        label: consumer.label ?? consumer.subject ?? "API Key",
+        label: consumer.label || consumer.subject || "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
       }));
