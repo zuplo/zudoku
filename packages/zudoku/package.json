@@ -258,7 +258,7 @@
     "picocolors": "1.1.1",
     "piscina": "5.0.0",
     "posthog-node": "4.17.1",
-    "react-error-boundary": "5.0.0",
+    "react-error-boundary": "6.0.0",
     "react-hook-form": "7.57.0",
     "react-is": "catalog:",
     "react-markdown": "10.1.0",
