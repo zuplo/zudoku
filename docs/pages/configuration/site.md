@@ -1,6 +1,7 @@
 ---
 sidebar_label: Branding & Layout
 sidebar_icon: layout-dashboard
+description: Customize your Zudoku site's branding, logo, banner, and layout options with detailed configuration examples and guidance.
 ---
 
 # Branding & Layout
