@@ -4,12 +4,15 @@ import { validateConfig } from "./validate.js";
 const mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
 
 describe("validateConfig", () => {
+  const originalNodeEnv = process.env.NODE_ENV;
+
   afterEach(() => {
     mockConsoleLog.mockClear();
   });
 
   afterAll(() => {
     mockConsoleLog.mockRestore();
+    process.env.NODE_ENV = originalNodeEnv;
   });
 
   it("should validate auth0 domain format correctly", () => {
@@ -68,7 +71,9 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
-  it("should reject auth0 domain with protocol", () => {
+  it("should reject auth0 domain with protocol in development mode", () => {
+    process.env.NODE_ENV = "development";
+
     const configWithInvalidAuth0Domain = {
       authentication: {
         type: "auth0" as const,
@@ -84,7 +89,9 @@ describe("validateConfig", () => {
     );
   });
 
-  it("should reject auth0 domain that ends with a slash", () => {
+  it("should reject auth0 domain that ends with a slash in development mode", () => {
+    process.env.NODE_ENV = "development";
+
     const configWithInvalidAuth0Domain = {
       authentication: {
         type: "auth0" as const,
@@ -93,6 +100,57 @@ describe("validateConfig", () => {
       },
     };
 
+    validateConfig(configWithInvalidAuth0Domain);
+
+    expect(mockConsoleLog).toHaveBeenCalledWith(
+      expect.stringContaining("Domain must be a host only"),
+    );
+  });
+
+  it("should throw error for invalid auth0 domain in production mode", () => {
+    process.env.NODE_ENV = "production";
+
+    const configWithInvalidAuth0Domain = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "https://example.auth0.com",
+      },
+    };
+
+    expect(() => validateConfig(configWithInvalidAuth0Domain)).toThrow(
+      "Zudoku config validation failed",
+    );
+  });
+
+  it("should throw error for invalid auth0 domain ending with slash in production mode", () => {
+    process.env.NODE_ENV = "production";
+
+    const configWithInvalidAuth0Domain = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com/",
+      },
+    };
+
+    expect(() => validateConfig(configWithInvalidAuth0Domain)).toThrow(
+      "Zudoku config validation failed",
+    );
+  });
+
+  it("should handle undefined NODE_ENV gracefully", () => {
+    delete process.env.NODE_ENV;
+
+    const configWithInvalidAuth0Domain = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "https://example.auth0.com",
+      },
+    };
+
+    // Should log warnings when NODE_ENV is undefined (development-like behavior)
     validateConfig(configWithInvalidAuth0Domain);
 
     expect(mockConsoleLog).toHaveBeenCalledWith(

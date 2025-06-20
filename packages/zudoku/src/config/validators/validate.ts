@@ -537,10 +537,18 @@ export type ZudokuConfig = Omit<BaseZudokuConfig, "navigation"> & {
   navigation?: z.infer<typeof InputNavigationSchema>;
 };
 
-export function validateConfig(config: unknown) {
+export function validateConfig(config: unknown, configPath?: string) {
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
+    // In production (build mode), throw an error to fail the build
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        `Whoops, looks like there's an issue with your ${configPath ?? "config"}:\n${z.prettifyError(validationResult.error)}`,
+      );
+    }
+
+    // In development mode, log warnings but don't fail
     // eslint-disable-next-line no-console
     console.log(colors.yellow("Validation errors:"));
     // eslint-disable-next-line no-console
