@@ -43,7 +43,13 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
     writeRedirects,
   });
 
-  const sharedOpts = { template, request, routes, basePath };
+  const sharedOpts = {
+    template,
+    request,
+    routes,
+    basePath,
+    i18n: config.i18n,
+  };
   const isProtectedRoute = config.protectedRoutes?.some((route) =>
     matchPath(route, urlPath),
   );

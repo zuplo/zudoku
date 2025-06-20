@@ -78,5 +78,9 @@
       "format:ci"
     ]
   },
-  "packageManager": "pnpm@10.10.0"
+  "packageManager": "pnpm@10.10.0",
+  "dependencies": {
+    "i18next": "^25.2.1",
+    "react-i18next": "^10.13.2"
+  }
 }

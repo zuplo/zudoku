@@ -1,5 +1,6 @@
 import { SearchIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { isSearchPlugin } from "../core/plugins.js";
 import { detectOS } from "../util/detectOS.js";
 import { ClientOnly } from "./ClientOnly.js";
@@ -8,6 +9,7 @@ import { useZudoku } from "./context/ZudokuContext.js";
 export const Search = ({ className }: { className?: string }) => {
   const ctx = useZudoku();
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const onClose = useCallback(() => setIsOpen(false), []);
 
@@ -45,7 +47,7 @@ export const Search = ({ className }: { className?: string }) => {
       >
         <div className="flex items-center gap-2 grow">
           <SearchIcon size={14} />
-          Search
+          {t("search")}
         </div>
         <ClientOnly>
           <KbdShortcut />

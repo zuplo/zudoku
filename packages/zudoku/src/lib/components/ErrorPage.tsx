@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { CategoryHeading } from "./CategoryHeading.js";
 import { Heading } from "./Heading.js";
 import { Typography } from "./Typography.js";
 
 export const ErrorPage = ({
-  title = "An error occurred",
+  title,
   message,
   category,
 }: {
@@ -12,14 +13,13 @@ export const ErrorPage = ({
   message?: ReactNode;
   category?: ReactNode;
 }) => {
+  const { t } = useTranslation();
   return (
     <Typography className={"h-full pt-(--padding-content-top)"}>
       {category && <CategoryHeading>{category}</CategoryHeading>}
-      {title && (
-        <Heading level={1} className="flex gap-3.5 items-center">
-          {title}
-        </Heading>
-      )}
+      <Heading level={1} className="flex gap-3.5 items-center">
+        {title ?? t("errorOccurred")}
+      </Heading>
       <p>{message}</p>
     </Typography>
   );

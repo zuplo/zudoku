@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { I18nextProvider } from "react-i18next";
 import { Outlet, useLocation, useNavigation } from "react-router";
 import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
 import {
@@ -18,6 +19,7 @@ import {
   type ZudokuContextOptions,
 } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
+import { createI18n } from "../i18n.js";
 import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import "../util/requestIdleCallbackPolyfill.js";
@@ -64,6 +66,11 @@ const ZudokoInner = memo(
     );
     const navigation = useNavigation();
     const queryClient = useQueryClient();
+    const i18n = useMemo(
+      () =>
+        createI18n(props.i18n?.resources ?? {}, props.i18n?.defaultLanguage),
+      [props.i18n],
+    );
 
     useEffect(() => {
       if (didNavigate) {
@@ -86,18 +93,20 @@ const ZudokoInner = memo(
         {heads}
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
-            <RouterEventsEmitter />
-            <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
-              <MDXProvider components={mdxComponents}>
-                <ThemeProvider attribute="class" disableTransitionOnChange>
-                  <ComponentsProvider value={components}>
-                    <ViewportAnchorProvider>
-                      {children ?? <Outlet />}
-                    </ViewportAnchorProvider>
-                  </ComponentsProvider>
-                </ThemeProvider>
-              </MDXProvider>
-            </SlotProvider>
+            <I18nextProvider i18n={i18n}>
+              <RouterEventsEmitter />
+              <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
+                <MDXProvider components={mdxComponents}>
+                  <ThemeProvider attribute="class" disableTransitionOnChange>
+                    <ComponentsProvider value={components}>
+                      <ViewportAnchorProvider>
+                        {children ?? <Outlet />}
+                      </ViewportAnchorProvider>
+                    </ComponentsProvider>
+                  </ThemeProvider>
+                </MDXProvider>
+              </SlotProvider>
+            </I18nextProvider>
           </ZudokuProvider>
         </StaggeredRenderContext.Provider>
       </>

@@ -1,6 +1,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "zudoku/ui/Button.js";
 import { Callout } from "zudoku/ui/Callout.js";
 import {
@@ -83,6 +84,8 @@ export const PagefindSearch = ({
   const [searchTerm, setSearchTerm] = useState("");
   const auth = useAuthState();
   const context = useZudoku();
+  const { t } = useTranslation();
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: searchResults } = useQuery({
@@ -112,7 +115,7 @@ export const PagefindSearch = ({
       </VisuallyHidden>
       <CommandInput
         ref={inputRef}
-        placeholder="Search..."
+        placeholder={t("search") + "..."}
         value={searchTerm}
         onValueChange={setSearchTerm}
         disabled={isError}
@@ -120,7 +123,7 @@ export const PagefindSearch = ({
       <CommandEmpty>
         {searchTerm ? (
           <div className="flex flex-col items-center">
-            No results found.
+            {t("noResults", "No results found.")}
             <Button
               variant="link"
               onClick={() => {
@@ -128,27 +131,26 @@ export const PagefindSearch = ({
                 inputRef.current?.focus();
               }}
             >
-              Clear search
+              {t("clearSearch", "Clear search")}
             </Button>
           </div>
         ) : (
-          "Start typing to search"
+          <>{t("startTyping", "Start typing to search")}</>
         )}
       </CommandEmpty>
       {isError ? (
         <div className="p-4 text-sm">
           {error.message === "NOT_BUILT_YET" ? (
             <Callout type="info">
-              Search is currently not available in development mode by default.
+              {t("searchDevInfo")}
               <br />
-              To still use search in development, run <code>
-                zudoku build
-              </code>{" "}
-              and copy the <code>dist/pagefind</code> directory to your{" "}
-              <code>public</code> directory.
+              {t("searchDevInstruction")} <code>zudoku build</code>{" "}
+              {t("searchDevInstruction2")} <code>dist/pagefind</code>{" "}
+              {t("searchDevInstruction3")} <code>public</code>{" "}
+              {t("searchDevInstruction4")}
             </Callout>
           ) : (
-            "An error occurred while loading search."
+            t("searchLoadError")
           )}
         </div>
       ) : (

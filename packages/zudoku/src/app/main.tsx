@@ -24,6 +24,8 @@ import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { highlighter } from "../lib/shiki.js";
+import de from "../lib/translations/de.json";
+import en from "../lib/translations/en.json";
 import { ZuploEnv } from "./env.js";
 import "./main.css";
 
@@ -65,6 +67,10 @@ export const convertZudokuConfigToOptions = (
     syntaxHighlighting: {
       highlighter,
       themes: config.syntaxHighlighting?.themes,
+    },
+    i18n: {
+      defaultLanguage: config.i18n?.defaultLanguage ?? "en",
+      resources: { en, de, ...(config.i18n?.resources ?? {}) },
     },
   };
 };

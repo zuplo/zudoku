@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ErrorPage } from "./ErrorPage.js";
 
 type StatusPageProps = {
@@ -79,13 +80,12 @@ const getDefaultContent = (
 };
 
 export const StatusPage = ({ statusCode, message }: StatusPageProps) => {
+  const { t } = useTranslation();
   const defaultContent = getDefaultContent(statusCode);
+  const title = t(`${statusCode}title`, defaultContent.title);
+  const msg = t(`${statusCode}message`, defaultContent.message);
 
   return (
-    <ErrorPage
-      title={defaultContent.title}
-      message={message ?? defaultContent.message}
-      category={statusCode}
-    />
+    <ErrorPage title={title} message={message ?? msg} category={statusCode} />
   );
 };
