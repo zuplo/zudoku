@@ -6,6 +6,8 @@ import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
 import build from "./cmds/build.js";
 import dev from "./cmds/dev.js";
+import fillExamples from "./cmds/fill-examples.js";
+import generateExamples from "./cmds/generate-examples.js";
 import preview from "./cmds/preview.js";
 import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
@@ -59,6 +61,8 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
     })
     .command(build)
     .command(dev)
+    .command(fillExamples)
+    .command(generateExamples)
     .command(preview)
     .demandCommand()
     .strictCommands()
