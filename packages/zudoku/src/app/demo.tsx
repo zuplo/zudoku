@@ -12,6 +12,8 @@ import { getRoutesByConfig } from "./main.js";
 const apiUrl = new URL(window.location.href).searchParams.get("api-url");
 const logoUrl = new URL(window.location.href).searchParams.get("logo-url");
 const logoWidth = new URL(window.location.href).searchParams.get("logo-width");
+const title =
+  new URL(window.location.href).searchParams.get("title") ?? "Zudoku Demo";
 
 if (!apiUrl) {
   throw new Error(
@@ -33,7 +35,7 @@ if (!root) {
 
 const config: ZudokuConfig = {
   site: {
-    title: "",
+    title,
     banner: {
       message: <DemoAnnouncement />,
     },
