@@ -90,21 +90,20 @@ export const MobileTopNavigation = () => {
                   </button>
                 </li>
               ))}
-              {isAuthEnabled && isAuthenticated && (
+              {isAuthEnabled && isAuthenticated && accountItems.length > 0 && (
                 <ClientOnly
                   fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
                 >
-                  {Object.values(getProfileMenuItems()).length > 0 &&
-                    accountItems.map((i) => (
-                      <li key={i.label}>
-                        <TopNavLink
-                          to={i.path ?? ""}
-                          onClick={() => setDrawerOpen(false)}
-                        >
-                          {i.label}
-                        </TopNavLink>
-                      </li>
-                    ))}
+                  {accountItems.map((i) => (
+                    <li key={i.label}>
+                      <TopNavLink
+                        to={i.path ?? ""}
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        {i.label}
+                      </TopNavLink>
+                    </li>
+                  ))}
                 </ClientOnly>
               )}
               <li>
