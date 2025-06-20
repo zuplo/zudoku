@@ -85,7 +85,6 @@ export const PagefindSearch = ({
   const auth = useAuthState();
   const context = useZudoku();
   const { t } = useTranslation();
-  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { data: searchResults } = useQuery({
