@@ -1,6 +1,7 @@
 ---
 sidebar_icon: scissors-line-dashed
 title: Frontmatter
+description: Learn how to use YAML frontmatter in Zudoku markdown files to customize page titles, descriptions, navigation, and other document properties.
 ---
 
 Frontmatter is metadata written in [YAML](https://yaml.org/) format at the beginning of markdown files, enclosed between triple dashes (`---`). It allows you to configure various aspects of your pages without affecting the visible content.

@@ -1,6 +1,7 @@
 ---
 title: Markdown
 navigation_icon: align-left
+description: Comprehensive guide to using Markdown and MDX in Zudoku, including formatting, frontmatter, syntax highlighting, tables, lists, task lists, collapsible sections, and advanced documentation features.
 ---
 
 Zudoku supports [GitHub Flavored Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) (GFM) with additional features for creating rich documentation.
