@@ -60,7 +60,7 @@ async function loadZudokuConfigWithMeta(
 
   const config = module.default;
 
-  validateConfig(config);
+  validateConfig(config, configPath);
 
   const configWithMetadata: ConfigWithMeta = {
     ...config,
@@ -180,16 +180,12 @@ export async function loadZudokuConfig(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    logger.error(colors.red(`Error loading Zudoku config:\n${errorMessage}`), {
-      timestamp: true,
-    });
-
     if (config) {
       // return the last valid config if it exists
       return { config, envPrefix, publicEnv };
     }
 
-    throw new Error("Failed to load Zudoku config");
+    throw new Error(errorMessage, { cause: error });
   } finally {
     await updateModifiedTimes();
   }

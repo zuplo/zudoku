@@ -26,6 +26,12 @@ export function validateBuildConfig(config: unknown) {
   const validationResult = BuildConfigSchema.safeParse(config);
 
   if (!validationResult.success) {
+    // In production (build mode), throw an error to fail the build
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(z.prettifyError(validationResult.error));
+    }
+
+    // In development mode, log warnings but don't fail
     // eslint-disable-next-line no-console
     console.warn("Build config validation errors:");
     // eslint-disable-next-line no-console
