@@ -13,6 +13,7 @@ import {
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/components";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
+import { createI18n } from "../lib/i18n.js";
 import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
@@ -24,6 +25,7 @@ export const render = async ({
   routes,
   basePath,
   bypassProtection,
+  i18n: i18nConfig,
 }: {
   template: string;
   request: express.Request | Request;
@@ -31,6 +33,10 @@ export const render = async ({
   routes: RouteObject[];
   basePath?: string;
   bypassProtection?: boolean;
+  i18n?: {
+    defaultLanguage?: string;
+    resources: Record<string, Record<string, string>>;
+  };
 }) => {
   const { query, dataRoutes } = createStaticHandler(routes, {
     basename: basePath,
@@ -66,6 +72,10 @@ export const render = async ({
 
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
+  const i18n = createI18n(
+    i18nConfig?.resources ?? {},
+    i18nConfig?.defaultLanguage,
+  );
 
   const App = (
     <BootstrapStatic
@@ -74,6 +84,7 @@ export const render = async ({
       queryClient={queryClient}
       helmetContext={helmetContext}
       bypassProtection={bypassProtection}
+      i18n={i18n}
     />
   );
 

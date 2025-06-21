@@ -491,6 +491,12 @@ const BaseConfigSchema = z.object({
       ca: z.string().optional(),
     })
     .optional(),
+  i18n: z
+    .object({
+      defaultLanguage: z.string().optional(),
+      resources: z.record(z.string(), z.record(z.string(), z.string())),
+    })
+    .optional(),
   site: SiteSchema,
   navigation: InputNavigationSchema,
   theme: ThemeConfigSchema,

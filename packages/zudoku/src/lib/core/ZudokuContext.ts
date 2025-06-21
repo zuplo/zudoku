@@ -21,7 +21,7 @@ import {
   isProfileMenuPlugin,
   type NavigationPlugin,
   needsInitialization,
-  ProfileNavigationItem,
+  type ProfileNavigationItem,
   type ZudokuPlugin,
 } from "./plugins.js";
 
@@ -97,6 +97,10 @@ export type ZudokuContextOptions = {
   syntaxHighlighting?: {
     highlighter: HighlighterCore;
     themes?: { light: BundledTheme; dark: BundledTheme };
+  };
+  i18n?: {
+    defaultLanguage?: string;
+    resources: Record<string, Record<string, string>>;
   };
 };
 

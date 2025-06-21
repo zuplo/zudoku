@@ -7,9 +7,14 @@ import {
 import config from "virtual:zudoku-config";
 import "vite/modulepreload-polyfill";
 import { Bootstrap } from "zudoku/components";
+import { createI18n } from "../lib/i18n.js";
 import { getRoutesByConfig } from "./main.js";
 
 const routes = getRoutesByConfig(config);
+const i18n = createI18n(
+  config.i18n?.resources ?? {},
+  config.i18n?.defaultLanguage,
+);
 const root = document.getElementById("root")!;
 
 declare global {
@@ -95,7 +100,7 @@ function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
-  createRoot(root).render(<Bootstrap router={router} />);
+  createRoot(root).render(<Bootstrap router={router} i18n={i18n} />);
 }
 
 async function hydrate(routes: RouteObject[]) {
@@ -103,8 +108,7 @@ async function hydrate(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
-
-  hydrateRoot(root, <Bootstrap hydrate router={router} />);
+  hydrateRoot(root, <Bootstrap hydrate router={router} i18n={i18n} />);
 }
 
 // This is a workaround to avoid version skewing
