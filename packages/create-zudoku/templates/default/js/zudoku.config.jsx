@@ -1,7 +1,6 @@
-import type { ZudokuConfig } from "zudoku";
-
-const config: ZudokuConfig = {
-  page: {
+/** @type {import('zudoku').ZudokuConfig} */
+const config = {
+  site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",

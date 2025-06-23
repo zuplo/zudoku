@@ -2,7 +2,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown, ProseClasses } from "../../components/Markdown.js";
+import { Markdown } from "../../components/Markdown.js";
 import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
@@ -82,7 +82,7 @@ export const OperationListItem = ({
         >
           {operation.description && (
             <Markdown
-              className={`${ProseClasses} max-w-full prose-img:max-w-prose`}
+              className="max-w-full prose-img:max-w-prose"
               content={operation.description}
             />
           )}

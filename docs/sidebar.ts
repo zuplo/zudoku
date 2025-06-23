@@ -10,7 +10,7 @@ export const docs: Navigation = [
     type: "category",
     label: "Getting started",
     icon: "circle-play",
-    items: ["introduction", "app-quickstart"],
+    items: ["introduction", "quickstart"],
   },
   {
     type: "category",
@@ -22,8 +22,21 @@ export const docs: Navigation = [
       "customization/fonts",
       "configuration/navigation",
       "configuration/search",
-      "configuration/page",
+      "configuration/site",
       "configuration/footer",
+    ],
+  },
+  {
+    type: "category",
+    label: "Writing",
+    icon: "book-open-text",
+    link: "writing",
+    items: [
+      "markdown/overview",
+      "markdown/frontmatter",
+      "markdown/mdx",
+      "markdown/admonitions",
+      "markdown/code-blocks",
     ],
   },
   {
@@ -37,13 +50,6 @@ export const docs: Navigation = [
     label: "Authentication",
     icon: "lock",
     items: ["configuration/authentication"],
-  },
-  {
-    type: "category",
-    label: "Markdown",
-    icon: "book-open-text",
-    link: "markdown/overview",
-    items: ["markdown/mdx", "markdown/admonitions", "markdown/code-blocks"],
   },
   {
     type: "category",
@@ -97,6 +103,7 @@ export const components: Navigation = [
     type: "category",
     label: "Components",
     items: [
+      "components/typography",
       "components/callout",
       "components/icons",
       "components/slot",

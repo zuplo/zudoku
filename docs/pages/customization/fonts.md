@@ -2,6 +2,7 @@
 sidebar_icon: baseline
 title: Font & Typography
 sidebar_label: Font & Typography
+description: Learn how to customize fonts and typography in Zudoku using predefined Google Fonts, custom font URLs, or local fonts for sans, serif, and monospace text.
 ---
 
 Zudoku allows you to customize fonts for text (`sans`), serif content (`serif`), and code (`mono`). You can use predefined Google Fonts, external sources, or local fonts.

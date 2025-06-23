@@ -60,22 +60,22 @@ export const Header = memo(function HeaderInner() {
   const auth = useAuth();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
-  const { page, plugins, options } = context;
+  const { site, plugins, options } = context;
 
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
     .flatMap((p) => p.getProfileMenuItems(context))
     .sort((i) => i.weight ?? 0);
 
-  const logoLightSrc = page?.logo
-    ? /https?:\/\//.test(page.logo.src.light)
-      ? page.logo.src.light
-      : joinUrl(options.basePath, page.logo.src.light)
+  const logoLightSrc = site?.logo
+    ? /https?:\/\//.test(site.logo.src.light)
+      ? site.logo.src.light
+      : joinUrl(options.basePath, site.logo.src.light)
     : undefined;
-  const logoDarkSrc = page?.logo
-    ? /https?:\/\//.test(page.logo.src.dark)
-      ? page.logo.src.dark
-      : joinUrl(options.basePath, page.logo.src.dark)
+  const logoDarkSrc = site?.logo
+    ? /https?:\/\//.test(site.logo.src.dark)
+      ? site.logo.src.dark
+      : joinUrl(options.basePath, site.logo.src.dark)
     : undefined;
 
   const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
@@ -92,27 +92,25 @@ export const Header = memo(function HeaderInner() {
           <div className="flex">
             <Link to="/">
               <div className="flex items-center gap-3.5">
-                {page?.logo && (
+                {site?.logo && (
                   <>
                     <img
                       src={logoLightSrc}
-                      alt={page.logo.alt ?? page.pageTitle}
-                      style={{ width: page.logo.width }}
+                      alt={site.logo.alt ?? site.title}
+                      style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) dark:hidden"
                       loading="lazy"
                     />
                     <img
                       src={logoDarkSrc}
-                      alt={page.logo.alt ?? page.pageTitle}
-                      style={{ width: page.logo.width }}
+                      alt={site.logo.alt ?? site.title}
+                      style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) hidden dark:block"
                       loading="lazy"
                     />
                   </>
                 )}
-                <span className="font-semibold text-2xl">
-                  {page?.pageTitle}
-                </span>
+                <span className="font-semibold text-2xl">{site?.title}</span>
               </div>
             </Link>
           </div>

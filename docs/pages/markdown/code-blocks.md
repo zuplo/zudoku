@@ -1,6 +1,7 @@
 ---
 title: Code Blocks
 sidebar_icon: braces
+description: Learn how to use code blocks, syntax highlighting, and advanced features like line highlighting and ANSI output in Zudoku Markdown with Shiki.
 ---
 
 Zudoku supports code blocks in Markdown using the [Shiki](https://shiki.style/) syntax highlighting library.

@@ -1,6 +1,7 @@
 ---
 title: Static Files
 sidebar_icon: folder-open
+description: Learn how to serve and reference static files like images and PDFs in your Zudoku documentation using the public directory.
 ---
 
 Zudoku makes it easy to serve static files like images, PDFs, or any other assets alongside your documentation. Any files placed in the `public` directory will be served at the root path `/` during dev, and copied to the root of the dist directory as-is.

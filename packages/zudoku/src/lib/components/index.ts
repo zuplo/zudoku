@@ -23,6 +23,7 @@ import { Layout as LayoutImport } from "./Layout.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
 import { StatusPage as StatusPageImport } from "./StatusPage.js";
+import { Typography as TypographyImport } from "./Typography.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
 
 export const Layout = /*@__PURE__*/ LayoutImport;
@@ -41,6 +42,7 @@ export const Button = /*@__PURE__*/ ButtonImport;
 export const Link = /*@__PURE__*/ LinkImport;
 export const BuildCheck = /*@__PURE__*/ BuildCheckImport;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
+export const Typography = /*@__PURE__*/ TypographyImport;
 
 /** @deprecated Import from `zudoku/hooks` instead */
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;

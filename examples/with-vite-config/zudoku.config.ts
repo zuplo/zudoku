@@ -1,7 +1,7 @@
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
-  page: {
+  site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
@@ -25,9 +25,6 @@ const config: ZudokuConfig = {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
     path: "api",
-  },
-  docs: {
-    files: "/pages/**/*.mdx",
   },
 };
 

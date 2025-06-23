@@ -16,7 +16,7 @@ export const Main = ({ children }: PropsWithChildren) => {
 
   return (
     <Drawer
-      direction={options.page?.dir === "rtl" ? "right" : "left"}
+      direction={options.site?.dir === "rtl" ? "right" : "left"}
       open={isDrawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >

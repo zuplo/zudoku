@@ -60,7 +60,7 @@ export async function runBuild(options: { dir: string }) {
     const html = getBuildHtml({
       jsEntry: joinUrl(viteClientConfig.base, jsEntry),
       cssEntries: cssEntries.map((css) => joinUrl(viteClientConfig.base, css)),
-      dir: config.page?.dir,
+      dir: config.site?.dir,
     });
 
     const serverConfigFilename = findOutputPathOfServerConfig(serverResult);

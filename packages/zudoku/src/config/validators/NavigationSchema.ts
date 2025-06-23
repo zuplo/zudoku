@@ -95,7 +95,7 @@ export class NavigationResolver {
 
     if (!foundMatches) {
       throw new Error(
-        `File not found for document '${filePath}'. Check your navigation configuration.`,
+        `File not found for document '${filePath}'. Navigation items of type 'doc' must point to a valid .md or .mdx file. Do you mean 'link' or 'custom-page'? Check navigation configuration documentation for more information: https://zudoku.dev/docs/configuration/navigation`,
       );
     }
 

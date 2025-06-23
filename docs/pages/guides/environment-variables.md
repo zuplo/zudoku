@@ -28,7 +28,7 @@ ZUDOKU_PUBLIC_PAGE_TITLE=My Page Title
 You can access this variable in your application like this:
 
 ```ts
-const pageTitle = import.meta.env.ZUDOKU_PUBLIC_PAGE_TITLE;
+const title = import.meta.env.ZUDOKU_PUBLIC_PAGE_TITLE;
 ```
 
 ## Configuration Files

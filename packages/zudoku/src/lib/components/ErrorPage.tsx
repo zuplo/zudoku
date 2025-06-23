@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { CategoryHeading } from "./CategoryHeading.js";
 import { Heading } from "./Heading.js";
-import { ProseClasses } from "./Markdown.js";
+import { Typography } from "./Typography.js";
 
 export const ErrorPage = ({
   title = "An error occurred",
@@ -13,7 +13,7 @@ export const ErrorPage = ({
   category?: ReactNode;
 }) => {
   return (
-    <div className={ProseClasses + " h-full pt-(--padding-content-top)"}>
+    <Typography className={"h-full pt-(--padding-content-top)"}>
       {category && <CategoryHeading>{category}</CategoryHeading>}
       {title && (
         <Heading level={1} className="flex gap-3.5 items-center">
@@ -21,6 +21,6 @@ export const ErrorPage = ({
         </Heading>
       )}
       <p>{message}</p>
-    </div>
+    </Typography>
   );
 };

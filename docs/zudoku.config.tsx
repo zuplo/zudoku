@@ -11,7 +11,7 @@ const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 const config: ZudokuConfig = {
   basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
-  page: {
+  site: {
     showPoweredBy: true,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
@@ -42,6 +42,13 @@ const config: ZudokuConfig = {
   },
   docs: {
     files: "/pages/**/*.{md,mdx}",
+    defaultOptions: {
+      showLastModified: true,
+      suggestEdit: {
+        text: "Edit this page",
+        url: "https://github.com/zuplo/zudoku/edit/main/docs/{filePath}",
+      },
+    },
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",
@@ -51,7 +58,8 @@ const config: ZudokuConfig = {
   },
   redirects: [
     { from: "/", to: "/introduction" },
-    { from: "/getting-started", to: "/app-quickstart" },
+    { from: "/getting-started", to: "/quickstart" },
+    { from: "/app-quickstart", to: "/quickstart" },
     { from: "/components", to: "/components/callout" },
   ],
   navigation: [

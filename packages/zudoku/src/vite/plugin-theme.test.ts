@@ -99,7 +99,7 @@ describe("plugin-theme", () => {
       expect(result).toContain('--font-mono: "Geist Mono", monospace');
     });
 
-    it("should handle mixed font configurations", async () => {
+    it("should handle mixed font configurations with defaults for missing fonts", async () => {
       const { getCurrentConfig } = await import("../config/loader.js");
 
       vi.mocked(getCurrentConfig).mockReturnValue({
@@ -120,8 +120,37 @@ describe("plugin-theme", () => {
       expect(result).toContain(
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap')",
       );
+      expect(result).toContain(
+        "@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap')",
+      );
       expect(result).toContain("--font-sans: Inter");
       expect(result).toContain("--font-serif: CustomSerif");
+      expect(result).toContain('--font-mono: "Geist Mono", monospace');
+    });
+
+    it("should provide mono default when only sans is configured", async () => {
+      const { getCurrentConfig } = await import("../config/loader.js");
+
+      vi.mocked(getCurrentConfig).mockReturnValue({
+        theme: {
+          fonts: {
+            sans: {
+              fontFamily: "Solis, sans-serif",
+              url: "/fonts/fonts.css",
+            },
+          },
+        },
+      } as ConfigWithMeta);
+
+      const plugin = viteThemePlugin();
+      const result = await callPluginLoad(plugin, resolvedVirtualModuleId);
+
+      expect(result).toContain("@import url('/fonts/fonts.css')");
+      expect(result).toContain(
+        "@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap')",
+      );
+      expect(result).toContain("--font-sans: Solis, sans-serif");
+      expect(result).toContain('--font-mono: "Geist Mono", monospace');
     });
   });
 

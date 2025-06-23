@@ -56,6 +56,24 @@ export interface ApiConsumer {
   key?: ApiKey;
 }
 
+const parseJsonSafe = async (response: Response) => {
+  try {
+    return await response.json();
+  } catch {
+    return;
+  }
+};
+
+const throwIfProblemJson = async (response: Response) => {
+  const contentType = response.headers.get("content-type");
+  if (!response.ok && contentType?.includes("application/problem+json")) {
+    const data = await parseJsonSafe(response);
+    if (data.type && data.title) {
+      throw new Error(data.detail ?? data.title);
+    }
+  }
+};
+
 const createDefaultHandler = (deploymentName: string): ApiKeyService => {
   return {
     deleteKey: async (consumerId, keyId, context) => {
@@ -67,8 +85,8 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
         },
       );
       await context.signRequest(request);
-
       const response = await fetch(request);
+      await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
     updateConsumer: async (consumer, context) => {
@@ -89,6 +107,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
           ),
         ),
       );
+      await throwIfProblemJson(response);
       invariant(response.ok, "Failed to update API key description");
     },
     rollKey: async (consumerId, context) => {
@@ -107,6 +126,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
           ),
         ),
       );
+      await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
     getConsumers: async (context) => {
@@ -116,13 +136,15 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
       await context.signRequest(request);
 
       const keys = await fetch(request);
+      await throwIfProblemJson(keys);
       invariant(keys.ok, "Failed to fetch API keys");
 
       const data = (await keys.json()) as {
         data: [
           {
             id: string;
-            label: string;
+            label?: string;
+            subject?: string;
             apiKeys: {
               data: ApiKey[];
             };
@@ -132,7 +154,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
 
       return data.data.map((consumer) => ({
         id: consumer.id,
-        label: consumer.label || "API Key",
+        label: consumer.label || consumer.subject || "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
       }));
@@ -174,7 +196,7 @@ export const apiKeyPlugin = (
             return request;
           },
           id: consumer.id,
-          label: consumer.description ?? consumer.id,
+          label: consumer.label,
         }));
       } catch {
         return [];

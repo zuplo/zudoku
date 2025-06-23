@@ -1,9 +1,16 @@
 ---
 title: Admonitions
 sidebar_icon: rectangle-horizontal
+description: Learn how to use admonitions (callouts) in Markdown, including syntax, types, titles, and formatting tips for compatibility with Prettier.
 ---
 
 In addition to the basic Markdown syntax, we have a special admonitions syntax by wrapping text with a set of 3 colons, followed by a label denoting its type.
+
+:::note
+
+Admonitions are also commonly referred to as "Callouts". For programmatic usage, see the [Callout component](/components/callout).
+
+:::
 
 Example:
 

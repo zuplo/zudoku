@@ -26,7 +26,7 @@ const AutocompletePopover = ({
   options,
   onChange,
   className,
-  placeholder = "Enter value",
+  placeholder = "Value",
   onEnterPress,
   ref,
 }: AutocompleteProps) => {
@@ -39,6 +39,7 @@ const AutocompletePopover = ({
     <Popover open={open}>
       <PopoverAnchor>
         <CommandInlineInput
+          autoComplete="off"
           ref={(el) => {
             inputRef.current = el;
             if (typeof ref === "function") {

@@ -1,6 +1,6 @@
 {
-  "name": "create-zudoku-app",
-  "version": "0.48.1",
+  "name": "create-zudoku",
+  "version": "0.53.2",
   "keywords": [
     "react",
     "zudoku"
@@ -9,12 +9,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/zuplo/zudoku",
-    "directory": "packages/create-zudoku-app"
+    "directory": "packages/create-zudoku"
   },
   "author": "Zuplo <support@zuplo.com>",
   "license": "MIT",
   "bin": {
-    "create-zudoku-app": "./dist/index.js"
+    "create-zudoku": "./dist/index.js"
   },
   "files": [
     "dist"

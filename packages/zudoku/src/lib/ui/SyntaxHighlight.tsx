@@ -3,12 +3,16 @@ import { useZudoku } from "../components/context/ZudokuContext.js";
 import { highlight } from "../shiki.js";
 import invariant from "../util/invariant.js";
 import { CodeBlock, type CodeBlockProps } from "./CodeBlock.js";
+import { EmbeddedCodeBlock } from "./EmbeddedCodeBlock.js";
 
 type SyntaxHighlightProps = CodeBlockProps &
-  ({ code: string; children?: never } | { code?: never; children: string });
+  (
+    | { code: string; embedded?: boolean; children?: never }
+    | { code?: never; children: string; embedded?: boolean }
+  );
 
 export const SyntaxHighlight = memo(
-  ({ code, children, ...props }: SyntaxHighlightProps) => {
+  ({ code, children, embedded, ...props }: SyntaxHighlightProps) => {
     const { syntaxHighlighting } = useZudoku().options;
 
     invariant(syntaxHighlighting?.highlighter, "Highlighter not found");
@@ -20,7 +24,11 @@ export const SyntaxHighlight = memo(
       syntaxHighlighting.themes,
     );
 
-    return <CodeBlock {...props}>{highlightedCode}</CodeBlock>;
+    return embedded ? (
+      <EmbeddedCodeBlock {...props}>{highlightedCode}</EmbeddedCodeBlock>
+    ) : (
+      <CodeBlock {...props}>{highlightedCode}</CodeBlock>
+    );
   },
 );
 

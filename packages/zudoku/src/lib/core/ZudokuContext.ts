@@ -18,8 +18,10 @@ import {
   isAuthenticationPlugin,
   isEventConsumerPlugin,
   isNavigationPlugin,
+  isProfileMenuPlugin,
   type NavigationPlugin,
   needsInitialization,
+  type ProfileNavigationItem,
   type ZudokuPlugin,
 } from "./plugins.js";
 
@@ -54,10 +56,10 @@ type Metadata = Partial<{
   publisher: string;
 }>;
 
-type Page = Partial<{
+type Site = Partial<{
   dir?: "ltr" | "rtl";
   showPoweredBy?: boolean;
-  pageTitle?: string;
+  title?: string;
   logo?: {
     src: {
       light: string;
@@ -78,7 +80,7 @@ export type ZudokuContextOptions = {
   basePath?: string;
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
-  page?: Page;
+  site?: Site;
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
   plugins?: ZudokuPlugin[];
@@ -102,7 +104,7 @@ export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public navigation: Navigation;
   public meta: ZudokuContextOptions["metadata"];
-  public page: ZudokuContextOptions["page"];
+  public site: ZudokuContextOptions["site"];
   public readonly authentication?: ZudokuContextOptions["authentication"];
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
@@ -123,7 +125,7 @@ export class ZudokuContext {
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.meta = options.metadata;
-    this.page = options.page;
+    this.site = options.site;
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 
@@ -182,6 +184,16 @@ export class ZudokuContext {
     return navigations.flatMap((nav) => nav ?? []);
   };
 
+  getProfileMenuItems = () => {
+    const accountItems = this.plugins
+      .filter((p) => isProfileMenuPlugin(p))
+      .flatMap((p) => p.getProfileMenuItems(this))
+      .sort(sortByCategory(["top", "middle", "bottom"]))
+      .sort((i) => i.weight ?? 0);
+
+    return accountItems;
+  };
+
   signRequest = async (request: Request) => {
     if (!this.authentication) {
       throw new Error("No authentication provider configured");
@@ -190,3 +202,12 @@ export class ZudokuContext {
     return await this.authentication.signRequest(request);
   };
 }
+
+const sortByCategory =
+  (categories: string[]) =>
+  (a: ProfileNavigationItem, b: ProfileNavigationItem) => {
+    const aIndex = categories.indexOf(a.category ?? "middle");
+    const bIndex = categories.indexOf(b.category ?? "middle");
+
+    return aIndex - bIndex;
+  };

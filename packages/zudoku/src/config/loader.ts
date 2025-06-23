@@ -60,7 +60,7 @@ async function loadZudokuConfigWithMeta(
 
   const config = module.default;
 
-  validateConfig(config);
+  validateConfig(config, configPath);
 
   const configWithMetadata: ConfigWithMeta = {
     ...config,
@@ -94,7 +94,7 @@ export function findOutputPathOfServerConfig(
 }
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {
-  const envPrefix = ["ZUPLO_", "ZUDOKU_PUBLIC_"];
+  const envPrefix = ["ZUPLO_PUBLIC_", "ZUDOKU_PUBLIC_"];
   const localEnv = viteLoadEnv(configEnv.mode, rootDir, envPrefix);
 
   process.env = { ...localEnv, ...process.env };
@@ -180,16 +180,12 @@ export async function loadZudokuConfig(
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
 
-    logger.error(colors.red(`Error loading Zudoku config:\n${errorMessage}`), {
-      timestamp: true,
-    });
-
     if (config) {
       // return the last valid config if it exists
       return { config, envPrefix, publicEnv };
     }
 
-    throw new Error("Failed to load Zudoku config");
+    throw new Error(errorMessage, { cause: error });
   } finally {
     await updateModifiedTimes();
   }

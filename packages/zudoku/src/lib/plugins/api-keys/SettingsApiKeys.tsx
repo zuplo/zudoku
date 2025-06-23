@@ -3,9 +3,9 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
-import { AnimatePresence } from "framer-motion";
 import {
   CheckIcon,
+  CircleSlashIcon,
   CopyIcon,
   EyeIcon,
   EyeOffIcon,
@@ -14,8 +14,10 @@ import {
   TrashIcon,
   XIcon,
 } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import React, { useState } from "react";
 import { Link } from "react-router";
+import { Alert, AlertTitle } from "zudoku/ui/Alert.js";
 import { Card, CardHeader } from "zudoku/ui/Card.js";
 import {
   Dialog,
@@ -32,6 +34,7 @@ import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
+import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import { type ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
@@ -173,7 +176,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   };
 
   return (
-    <div className="max-w-screen-lg h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
+    <div className="max-w-screen-md h-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
       <Slot.Target name="api-keys-list-page" />
 
       <div className="flex justify-between pb-3">
@@ -187,9 +190,26 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       <p>Create, manage, and monitor your API keys</p>
 
       <Slot.Target name="api-keys-list-page-before-keys" />
-
       <div className="h-8"></div>
-      <div className="grid grid-cols-8">
+      {rollKeyMutation.isError && (
+        <Alert variant="destructive" className="mb-4">
+          <CircleSlashIcon size={16} />
+          <AlertTitle>{rollKeyMutation.error.message}</AlertTitle>
+        </Alert>
+      )}
+      {updateConsumerMutation.isError && (
+        <Alert variant="destructive" className="mb-4">
+          <CircleSlashIcon size={16} />
+          <AlertTitle>{updateConsumerMutation.error.message}</AlertTitle>
+        </Alert>
+      )}
+      {deleteKeyMutation.isError && (
+        <Alert variant="destructive" className="mb-4">
+          <CircleSlashIcon size={16} />
+          <AlertTitle>{deleteKeyMutation.error.message}</AlertTitle>
+        </Alert>
+      )}
+      <div className="">
         {data.length === 0 ? (
           <div className="flex col-span-full flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
             <p className="text-center">
@@ -206,8 +226,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
         ) : (
           <ul
             className={cn(
-              "grid grid-cols-1 divide-y divide-border col-span-6",
-              "lg:grid-cols-[1fr_min-content]",
+              "grid grid-cols-[1fr_min-content] divide-y divide-border col-span-6",
             )}
           >
             {data.map((consumers) => (
@@ -290,7 +309,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                         disabled={editingConsumerId === consumers.id}
                       >
                         <PencilLineIcon size={16} />
-                        Edit label
+                        <span className="hidden md:block">Edit label</span>
                       </Button>
                     )}
                     {service.rollKey && (
@@ -310,7 +329,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                                   : undefined
                               }
                             />
-                            Roll key
+                            <span className="hidden md:block">Roll key</span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -401,7 +420,7 @@ const RevealApiKey = ({
   className?: string;
 }) => {
   const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
 
   const { key, createdOn, expiresOn } = apiKey;
   const isExpired = expiresOn && new Date(expiresOn) < new Date();
@@ -416,21 +435,26 @@ const RevealApiKey = ({
   return (
     <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
       <div className="flex flex-col gap-1">
-        <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
-          <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
+        <div className="flex gap-2 items-center text-sm border rounded-md w-full max-w-fit px-1">
+          <div className="font-mono w-full h-9 items-center flex px-2 text-xs gap-2">
             <div
               className={cn(
                 "rounded-full w-2 h-2 bg-emerald-400 mr-2",
                 (expiresSoon || isExpired) && "bg-neutral-200",
               )}
             ></div>
-            <span>
-              <span className={revealed ? "" : "opacity-20"}>
+            <span className="w-full truncate">
+              <div
+                className={cn(
+                  "w-40 inline-block md:w-full truncate",
+                  revealed ? "" : "opacity-20",
+                )}
+              >
                 {revealed
                   ? key.slice(0, -5)
                   : "**** ".repeat(key.slice(0, -5).length / 5) +
                     "*".repeat(key.slice(0, -5).length % 5)}
-              </span>
+              </div>
               <span>{key.slice(-5)}</span>
             </span>
           </div>
@@ -443,15 +467,10 @@ const RevealApiKey = ({
           </Button>
           <Button
             variant="ghost"
-            onClick={() => {
-              void navigator.clipboard.writeText(key).then(() => {
-                setCopied(true);
-                setTimeout(() => setCopied(false), 2000);
-              });
-            }}
+            onClick={() => copyToClipboard(key)}
             size="icon"
           >
-            {copied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+            {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
           </Button>
         </div>
         <div className="flex gap-1 mt-0.5 text-nowrap">
