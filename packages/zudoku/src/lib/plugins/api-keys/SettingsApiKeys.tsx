@@ -226,8 +226,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
         ) : (
           <ul
             className={cn(
-              "grid grid-cols-1 divide-y divide-border col-span-6",
-              "lg:grid-cols-[1fr_min-content]",
+              "grid grid-cols-[1fr_min-content] divide-y divide-border col-span-6",
             )}
           >
             {data.map((consumers) => (
@@ -310,7 +309,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                         disabled={editingConsumerId === consumers.id}
                       >
                         <PencilLineIcon size={16} />
-                        Edit label
+                        <span className="hidden md:block">Edit label</span>
                       </Button>
                     )}
                     {service.rollKey && (
@@ -330,7 +329,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                                   : undefined
                               }
                             />
-                            Roll key
+                            <span className="hidden md:block">Roll key</span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -436,21 +435,26 @@ const RevealApiKey = ({
   return (
     <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
       <div className="flex flex-col gap-1">
-        <div className="flex gap-2 items-center text-sm border rounded-md w-fit px-1">
-          <div className="font-mono truncate h-9 items-center flex px-2 text-xs gap-2">
+        <div className="flex gap-2 items-center text-sm border rounded-md w-full max-w-fit px-1">
+          <div className="font-mono w-full h-9 items-center flex px-2 text-xs gap-2">
             <div
               className={cn(
                 "rounded-full w-2 h-2 bg-emerald-400 mr-2",
                 (expiresSoon || isExpired) && "bg-neutral-200",
               )}
             ></div>
-            <span>
-              <span className={revealed ? "" : "opacity-20"}>
+            <span className="w-full truncate">
+              <div
+                className={cn(
+                  "w-40 inline-block md:w-full truncate",
+                  revealed ? "" : "opacity-20",
+                )}
+              >
                 {revealed
                   ? key.slice(0, -5)
                   : "**** ".repeat(key.slice(0, -5).length / 5) +
                     "*".repeat(key.slice(0, -5).length % 5)}
-              </span>
+              </div>
               <span>{key.slice(-5)}</span>
             </span>
           </div>
