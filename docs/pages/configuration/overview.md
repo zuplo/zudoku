@@ -1,6 +1,7 @@
 ---
 title: Configuration File
 sidebar_icon: file-json-2
+description: Learn how to configure your Zudoku documentation site using the configuration file. Covers file formats, options, examples, and best practices.
 ---
 
 Zudoku uses a single file for configuration. It controls the structure, metadata, style, plugins, and routing for your documentation.

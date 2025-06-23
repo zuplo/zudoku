@@ -1,6 +1,7 @@
 ---
 title: Search
 sidebar_icon: search-code
+description: Learn how to configure and customize search functionality in Zudoku, including setup instructions for Pagefind and Inkeep providers, result transformation, and ranking options.
 ---
 
 Zudoku offers search functionality that enhances user experience by enabling content discovery across your site. When configured, a search bar will appear in the header, allowing users to quickly find relevant information on any page.
