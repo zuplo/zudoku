@@ -616,8 +616,8 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       posthog-node:
-        specifier: 4.17.1
-        version: 4.17.1
+        specifier: 5.1.1
+        version: 5.1.1
       react-error-boundary:
         specifier: 6.0.0
         version: 6.0.0(react@19.1.0)
@@ -7586,9 +7586,9 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  posthog-node@4.17.1:
-    resolution: {integrity: sha512-cVlQPOwOPjakUnrueKRCQe1m2Ku+XzKaOos7Tn/zDZkkZFeBT/byP7tbNf7LiwhaBRWFBRowZZb/MsTtSRaorg==}
-    engines: {node: '>=15.0.0'}
+  posthog-node@5.1.1:
+    resolution: {integrity: sha512-6VISkNdxO24ehXiDA4dugyCSIV7lpGVaEu5kn/dlAj+SJ1lgcDru9PQ8p/+GSXsXVxohd1t7kHL2JKc9NoGb0w==}
+    engines: {node: '>=20'}
 
   preact@10.26.1:
     resolution: {integrity: sha512-K5aMG0NdGHZ8yV1GfGtGA4JwnWxe/HIDzyr9svdo2DeokLUJ/+W8MpeuPrfOytu5rHHgYQrvGxUoW83sapJZnw==}
@@ -17252,11 +17252,7 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  posthog-node@4.17.1:
-    dependencies:
-      axios: 1.9.0
-    transitivePeerDependencies:
-      - debug
+  posthog-node@5.1.1: {}
 
   preact@10.26.1: {}
 
