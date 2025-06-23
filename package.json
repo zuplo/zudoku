@@ -30,14 +30,14 @@
     "pnpm": ">=10"
   },
   "devDependencies": {
-    "@nx/eslint": "21.1.2",
+    "@nx/eslint": "21.2.1",
     "@nx/vite": "21.1.2",
     "@nx/web": "21.1.2",
-    "@typescript-eslint/eslint-plugin": "8.33.1",
-    "@typescript-eslint/parser": "8.33.1",
+    "@typescript-eslint/eslint-plugin": "8.34.1",
+    "@typescript-eslint/parser": "8.34.1",
     "eslint": "8.57.0",
     "eslint-config-prettier": "10.1.5",
-    "eslint-plugin-import": "2.31.0",
+    "eslint-plugin-import": "2.32.0",
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.20",
