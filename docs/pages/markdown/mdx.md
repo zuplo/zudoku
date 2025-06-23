@@ -1,6 +1,7 @@
 ---
 title: MDX
 sidebar_icon: notebook-pen
+description: Learn how to use MDX in Zudoku to create rich documentation pages with markdown and custom React components.
 ---
 
 Zudoku supports MDX files for creating rich content pages. MDX is a markdown format that allows you to include JSX components in your markdown files.

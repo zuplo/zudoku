@@ -22,7 +22,7 @@ export const docs: Navigation = [
       "customization/fonts",
       "configuration/navigation",
       "configuration/search",
-      "configuration/page",
+      "configuration/site",
       "configuration/footer",
     ],
   },

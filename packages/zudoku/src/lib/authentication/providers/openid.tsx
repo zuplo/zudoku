@@ -113,25 +113,41 @@ export class OpenIDAuthenticationProvider
     });
   }
 
-  async signUp({ redirectTo }: { redirectTo?: string } = {}) {
+  async signUp({
+    redirectTo,
+    replace = false,
+  }: {
+    redirectTo?: string;
+    replace?: boolean;
+  } = {}) {
     return this.authorize({
       redirectTo: this.redirectToAfterSignUp ?? redirectTo ?? "/",
+      replace,
       isSignUp: true,
     });
   }
 
-  async signIn({ redirectTo }: { redirectTo?: string } = {}) {
+  async signIn({
+    redirectTo,
+    replace = false,
+  }: {
+    redirectTo?: string;
+    replace?: boolean;
+  } = {}) {
     return this.authorize({
       redirectTo: this.redirectToAfterSignIn ?? redirectTo ?? "/",
+      replace,
     });
   }
 
   private async authorize({
     redirectTo,
     isSignUp = false,
+    replace = false,
   }: {
     redirectTo: string;
     isSignUp?: boolean;
+    replace?: boolean;
   }): Promise<void> {
     const code_challenge_method = "S256";
     const authorizationServer = await this.getAuthServer();
@@ -187,8 +203,11 @@ export class OpenIDAuthenticationProvider
     sessionStorage.setItem(STATE_KEY, state);
     authorizationUrl.searchParams.set("state", state);
 
-    // now redirect the user to authorizationUrl.href
-    location.href = authorizationUrl.href;
+    if (replace) {
+      location.replace(authorizationUrl.href);
+    } else {
+      location.href = authorizationUrl.href;
+    }
   }
 
   async getAccessToken(): Promise<string> {

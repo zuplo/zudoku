@@ -26,7 +26,7 @@ const AutocompletePopover = ({
   options,
   onChange,
   className,
-  placeholder = "Enter value",
+  placeholder = "Value",
   onEnterPress,
   ref,
 }: AutocompleteProps) => {

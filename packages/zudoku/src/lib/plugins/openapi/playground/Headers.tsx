@@ -142,7 +142,7 @@ export const Headers = ({
                     <TooltipTrigger asChild>
                       <ParamsGridItem
                         key={field.id}
-                        className="opacity-50 cursor-not-allowed font-mono text-xs"
+                        className="opacity-50 cursor-not-allowed font-mono text-xs min-h-10"
                       >
                         <LockIcon size={16} />
                         <Input

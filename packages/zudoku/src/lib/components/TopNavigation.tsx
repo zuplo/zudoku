@@ -1,7 +1,7 @@
 import { cx } from "class-variance-authority";
 import { deepEqual } from "fast-equals";
 import { Suspense } from "react";
-import { NavLink } from "react-router";
+import { NavLink, type NavLinkProps } from "react-router";
 import { type NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
@@ -62,6 +62,41 @@ const getPathForItem = (item: NavigationItem): string => {
   }
 };
 
+export const TopNavLink = ({
+  isActive,
+  children,
+  ...props
+}: {
+  isActive?: boolean;
+  children: React.ReactNode;
+} & NavLinkProps) => {
+  return (
+    <NavLink
+      viewTransition
+      className={({ isActive: isActiveNavLink, isPending }) => {
+        const isActiveReal = isActiveNavLink || isActive;
+        return cx(
+          "flex items-center gap-2 lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
+          isActiveReal || isPending
+            ? [
+                "text-foreground",
+                // underline with view transition animation
+                "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0",
+                "after:h-0.5 after:bg-primary",
+                isActiveReal &&
+                  "after:[view-transition-name:top-nav-underline]",
+                isPending && "after:bg-primary/25",
+              ]
+            : "text-foreground/75 hover:text-foreground",
+        );
+      }}
+      {...props}
+    >
+      {children}
+    </NavLink>
+  );
+};
+
 export const TopNavItem = (item: NavigationItem) => {
   const currentNav = useCurrentNavigation();
   const isActiveTopNavItem = deepEqual(currentNav.topNavItem, item);
@@ -71,28 +106,9 @@ export const TopNavItem = (item: NavigationItem) => {
   return (
     // We don't use isActive here because it has to be inside the navigation,
     // the top nav id doesn't necessarily start with the navigation id
-    <NavLink
-      viewTransition
-      to={path}
-      className={({ isActive: isActiveNavLink, isPending }) => {
-        const isActive = isActiveNavLink || isActiveTopNavItem;
-        return cx(
-          "flex items-center gap-2 lg:py-3.5 font-medium -mb-px transition duration-150 delay-75 relative",
-          isActive || isPending
-            ? [
-                "text-foreground",
-                // underline with view transition animation
-                "after:content-[''] after:absolute after:bottom-0 after:left-0 after:right-0",
-                "after:h-0.5 after:bg-primary",
-                isActive && "after:[view-transition-name:top-nav-underline]",
-                isPending && "after:bg-primary/25",
-              ]
-            : "text-foreground/75 hover:text-foreground",
-        );
-      }}
-    >
+    <TopNavLink to={path} isActive={isActiveTopNavItem}>
       {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
       {item.label}
-    </NavLink>
+    </TopNavLink>
   );
 };

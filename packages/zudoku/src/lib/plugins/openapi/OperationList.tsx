@@ -243,7 +243,7 @@ export const OperationList = ({
                 registerNavigationAnchor
                 className="mb-0"
               >
-                {schema.tag.name ?? "Other endpoints"}
+                {schema.tag.name ?? "Documentation"}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ms-1.5">
                     {" "}

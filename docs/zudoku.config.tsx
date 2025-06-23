@@ -11,7 +11,7 @@ const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 const config: ZudokuConfig = {
   basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
-  page: {
+  site: {
     showPoweredBy: true,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
