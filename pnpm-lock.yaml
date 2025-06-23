@@ -482,7 +482,7 @@ importers:
         version: 2.50.0
       '@tailwindcss/typography':
         specifier: 0.5.16
-        version: 0.5.16(tailwindcss@4.1.7)
+        version: 0.5.16(tailwindcss@4.1.10)
       '@tailwindcss/vite':
         specifier: 4.1.7
         version: 4.1.7(vite@6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0))
@@ -688,8 +688,8 @@ importers:
         specifier: 3.3.0
         version: 3.3.0
       tailwindcss:
-        specifier: 4.1.7
-        version: 4.1.7
+        specifier: 4.1.10
+        version: 4.1.10
       ulidx:
         specifier: 2.4.1
         version: 2.4.1
@@ -870,8 +870,8 @@ importers:
         specifier: 3.5.0
         version: 3.5.0
       tailwindcss:
-        specifier: 4.0.0
-        version: 4.0.0
+        specifier: 4.1.10
+        version: 4.1.10
       typescript:
         specifier: 5.7.2
         version: 5.7.2
@@ -8398,9 +8398,6 @@ packages:
   tailwind-merge@3.3.0:
     resolution: {integrity: sha512-fyW/pEfcQSiigd5SNn0nApUOxx0zB/dm6UDU/rEwc2c3sX2smWUNbapHv+QRqLGVp9GWX3THIa7MUGPo+YkDzQ==}
 
-  tailwindcss@4.0.0:
-    resolution: {integrity: sha512-ULRPI3A+e39T7pSaf1xoi58AqqJxVCLg8F/uM5A3FadUbnyDTgltVnXJvdkTjwCOGA6NazqHVcwPJC5h2vRYVQ==}
-
   tailwindcss@4.1.10:
     resolution: {integrity: sha512-P3nr6WkvKV/ONsTzj6Gb57sWPMX29EPNPopo7+FcpkQaNsrNpZ1pv8QmrYI2RqEKD7mlGqLnGovlcYnBK0IqUA==}
 
@@ -12487,13 +12484,13 @@ snapshots:
       postcss: 8.5.4
       tailwindcss: 4.1.10
 
-  '@tailwindcss/typography@0.5.16(tailwindcss@4.1.7)':
+  '@tailwindcss/typography@0.5.16(tailwindcss@4.1.10)':
     dependencies:
       lodash.castarray: 4.4.0
       lodash.isplainobject: 4.0.6
       lodash.merge: 4.6.2
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.1.7
+      tailwindcss: 4.1.10
 
   '@tailwindcss/vite@4.1.7(vite@6.3.5(@types/node@22.13.5)(jiti@2.4.2)(lightningcss@1.30.1)(tsx@4.19.4)(yaml@2.8.0))':
     dependencies:
@@ -18305,8 +18302,6 @@ snapshots:
   tabbable@6.2.0: {}
 
   tailwind-merge@3.3.0: {}
-
-  tailwindcss@4.0.0: {}
 
   tailwindcss@4.1.10: {}
 
