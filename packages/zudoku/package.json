@@ -281,7 +281,7 @@
     "spin-delay": "2.0.1",
     "strip-ansi": "7.1.0",
     "tailwind-merge": "3.3.0",
-    "tailwindcss": "4.1.7",
+    "tailwindcss": "4.1.10",
     "ulidx": "2.4.1",
     "unified": "^11.0.5",
     "unist-util-visit": "5.0.0",
