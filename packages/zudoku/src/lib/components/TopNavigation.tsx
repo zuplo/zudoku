@@ -1,7 +1,7 @@
 import { cx } from "class-variance-authority";
 import { deepEqual } from "fast-equals";
 import { Suspense } from "react";
-import { NavLink, NavLinkProps } from "react-router";
+import { NavLink, type NavLinkProps } from "react-router";
 import { type NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";

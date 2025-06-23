@@ -21,7 +21,7 @@ import {
   isProfileMenuPlugin,
   type NavigationPlugin,
   needsInitialization,
-  ProfileNavigationItem,
+  type ProfileNavigationItem,
   type ZudokuPlugin,
 } from "./plugins.js";
 
