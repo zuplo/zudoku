@@ -37,7 +37,7 @@ Set the title of your site next to the logo in the header:
 ```tsx title=zudoku.config.tsx
 {
   site: {
-    title: "My API Documentation";
+    title: "My API Documentation",
   }
 }
 ```
