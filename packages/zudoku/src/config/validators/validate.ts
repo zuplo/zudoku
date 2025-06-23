@@ -286,9 +286,11 @@ const SearchSchema = z
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
-    clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
-      typeof val === "string" ? /^pk_(test|live)_\w+$/.test(val) : false,
-    ),
+    clerkPubKey: z
+      .custom<`pk_test_${string}` | `pk_live_${string}`>()
+      .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
+        message: "Clerk public key invalid, must start with pk_test or pk_live",
+      }),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -537,10 +539,18 @@ export type ZudokuConfig = Omit<BaseZudokuConfig, "navigation"> & {
   navigation?: z.infer<typeof InputNavigationSchema>;
 };
 
-export function validateConfig(config: unknown) {
+export function validateConfig(config: unknown, configPath?: string) {
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
+    // In production (build mode), throw an error to fail the build
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        `Whoops, looks like there's an issue with your ${configPath ?? "config"}:\n${z.prettifyError(validationResult.error)}`,
+      );
+    }
+
+    // In development mode, log warnings but don't fail
     // eslint-disable-next-line no-console
     console.log(colors.yellow("Validation errors:"));
     // eslint-disable-next-line no-console
