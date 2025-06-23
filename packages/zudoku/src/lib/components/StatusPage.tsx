@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { ErrorPage } from "./ErrorPage.js";
 
 type StatusPageProps = {
@@ -8,78 +9,75 @@ type StatusPageProps = {
 
 const getDefaultContent = (
   statusCode: number,
+  t: (key: string) => string,
 ): { title: string; message: string } => {
   switch (statusCode) {
     case 400:
       return {
-        title: "Bad Request",
-        message:
-          "The request could not be understood by the server due to malformed syntax.",
+        title: t("statusPage.400.title"),
+        message: t("statusPage.400.message"),
       };
     case 403:
       return {
-        title: "Forbidden",
-        message: "You don't have permission to access this resource.",
+        title: t("statusPage.403.title"),
+        message: t("statusPage.403.message"),
       };
     case 404:
       return {
-        title: "Not Found",
-        message: "The requested resource could not be found.",
+        title: t("statusPage.404.title"),
+        message: t("statusPage.404.message"),
       };
     case 405:
       return {
-        title: "Method Not Allowed",
-        message:
-          "The request method is not supported for the requested resource.",
+        title: t("statusPage.405.title"),
+        message: t("statusPage.405.message"),
       };
     case 414:
       return {
-        title: "Request URI Too Large",
-        message: "The request URI is too large.",
+        title: t("statusPage.414.title"),
+        message: t("statusPage.414.message"),
       };
     case 416:
       return {
-        title: "Range Not Satisfiable",
-        message: "The server cannot satisfy the request range.",
+        title: t("statusPage.416.title"),
+        message: t("statusPage.416.message"),
       };
     case 500:
       return {
-        title: "Internal Server Error",
-        message: "An unexpected error occurred while processing your request.",
+        title: t("statusPage.500.title"),
+        message: t("statusPage.500.message"),
       };
     case 501:
       return {
-        title: "Not Implemented",
-        message:
-          "The server does not support the functionality required to fulfill the request.",
+        title: t("statusPage.501.title"),
+        message: t("statusPage.501.message"),
       };
     case 502:
       return {
-        title: "Bad Gateway",
-        message:
-          "The server received an invalid response from the upstream server.",
+        title: t("statusPage.502.title"),
+        message: t("statusPage.502.message"),
       };
     case 503:
       return {
-        title: "Service Unavailable",
-        message: "The server is temporarily unable to handle the request.",
+        title: t("statusPage.503.title"),
+        message: t("statusPage.503.message"),
       };
     case 504:
       return {
-        title: "Gateway Timeout",
-        message:
-          "The server did not receive a timely response from the upstream server.",
+        title: t("statusPage.504.title"),
+        message: t("statusPage.504.message"),
       };
     default:
       return {
-        title: "An error occurred",
-        message: "Something went wrong while processing your request.",
+        title: t("statusPage.default.title"),
+        message: t("statusPage.default.message"),
       };
   }
 };
 
 export const StatusPage = ({ statusCode, message }: StatusPageProps) => {
-  const defaultContent = getDefaultContent(statusCode);
+  const { t } = useTranslation("common");
+  const defaultContent = getDefaultContent(statusCode, t);
 
   return (
     <ErrorPage

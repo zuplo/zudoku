@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CircleFadingArrowUpIcon, LoaderCircleIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { z } from "zod/v4";
 import { Button } from "../ui/Button.js";
 
@@ -16,6 +17,7 @@ export const BuildCheck = ({
   buildId?: string;
   endpoint?: string;
 }) => {
+  const { t } = useTranslation("common");
   const buildStatusQuery = useQuery({
     queryKey: ["zuplo-build-check", buildId, endpoint],
     refetchInterval: 3000,
@@ -26,7 +28,7 @@ export const BuildCheck = ({
     queryFn: () =>
       fetch(endpoint, { signal: AbortSignal.timeout(2000) })
         .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch build status");
+          if (!res.ok) throw new Error(t("component.buildCheck.fetchError"));
           return res.json();
         })
         .then((data) => BuildStatusSchema.parse(data)),
@@ -47,18 +49,20 @@ export const BuildCheck = ({
       {isCompleted ? (
         <div className="flex flex-row items-center gap-2">
           <CircleFadingArrowUpIcon size={16} />
-          <span className="text-sm">New version available</span>
+          <span className="text-sm">
+            {t("component.buildCheck.newVersion")}
+          </span>
         </div>
       ) : (
         <div className="flex flex-row items-center gap-2">
           <LoaderCircleIcon size={16} className="animate-spin" />
-          <span className="text-sm">Building new version...</span>
+          <span className="text-sm">{t("component.buildCheck.building")}</span>
         </div>
       )}
       <span className="text-xs">
         {!isCompleted
-          ? "A new version of the developer portal will be available soon."
-          : "To see the new version, reload the page now."}
+          ? t("component.buildCheck.soon")
+          : t("component.buildCheck.reload")}
       </span>
       <Button
         variant="outline"
@@ -68,7 +72,7 @@ export const BuildCheck = ({
           window.location.reload();
         }}
       >
-        Reload
+        {t("component.buildCheck.reloadButton")}
       </Button>
     </div>
   );

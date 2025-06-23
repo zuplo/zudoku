@@ -1,0 +1,75 @@
+{
+  "component": {
+    "errorPage": {
+      "title": "An error occurred"
+    },
+    "developerHint": {
+      "title": "Developer hint",
+      "note": "Note: This hint is only shown in development mode."
+    },
+    "buildCheck": {
+      "fetchError": "Failed to fetch build status",
+      "newVersion": "New version available",
+      "building": "Building new version...",
+      "soon": "A new version of the developer portal will be available soon.",
+      "reload": "To see the new version, reload the page now.",
+      "reloadButton": "Reload"
+    },
+    "autocomplete": {
+      "placeholder": "Value"
+    },
+    "responseContent": {
+      "selectType": "Select a type"
+    }
+  },
+  "statusPage": {
+    "400": {
+      "title": "Bad Request",
+      "message": "The request could not be understood by the server due to malformed syntax."
+    },
+    "403": {
+      "title": "Forbidden",
+      "message": "You don't have permission to access this resource."
+    },
+    "404": {
+      "title": "Not Found",
+      "message": "The requested resource could not be found."
+    },
+    "405": {
+      "title": "Method Not Allowed",
+      "message": "The request method is not supported for the requested resource."
+    },
+    "414": {
+      "title": "Request URI Too Large",
+      "message": "The request URI is too large."
+    },
+    "416": {
+      "title": "Range Not Satisfiable",
+      "message": "The server cannot satisfy the request range."
+    },
+    "500": {
+      "title": "Internal Server Error",
+      "message": "An unexpected error occurred while processing your request."
+    },
+    "501": {
+      "title": "Not Implemented",
+      "message": "The server does not support the functionality required to fulfill the request."
+    },
+    "502": {
+      "title": "Bad Gateway",
+      "message": "The server received an invalid response from the upstream server."
+    },
+    "503": {
+      "title": "Service Unavailable",
+      "message": "The server is temporarily unable to handle the request."
+    },
+    "504": {
+      "title": "Gateway Timeout",
+      "message": "The server did not receive a timely response from the upstream server."
+    },
+    "default": {
+      "title": "An error occurred",
+      "message": "Something went wrong while processing your request."
+    }
+  }
+}

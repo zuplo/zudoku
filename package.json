@@ -13,6 +13,7 @@
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
     "local": "cp .env.example .env",
+    "i18n:extract": "echo 'extracting translations'",
     "build:clean": "tsc --build --clean",
     "reset": "nx reset && npm run build:clean",
     "clean": "git clean -Xfde !.env"

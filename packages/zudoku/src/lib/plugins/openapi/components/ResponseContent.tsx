@@ -1,5 +1,6 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Markdown } from "zudoku/components";
 import {
   Select,
@@ -27,6 +28,7 @@ export const ResponseContent = ({
   selectedResponse?: string;
   onSelectResponse?: (value: string) => void;
 }) => {
+  const { t } = useTranslation("common");
   const [selectedMediaType, setSelectedMediaType] = useState(
     responses[0]?.content?.[0]?.mediaType ?? "",
   );
@@ -57,7 +59,9 @@ export const ResponseContent = ({
             onValueChange={setSelectedMediaType}
           >
             <SelectTrigger className="h-8 mt-0 max-w-48 text-xs truncate">
-              <SelectValue placeholder="Select a type" />
+              <SelectValue
+                placeholder={t("component.responseContent.selectType")}
+              />
             </SelectTrigger>
             <SelectContent>
               {currentResponse.content.map((c) => (

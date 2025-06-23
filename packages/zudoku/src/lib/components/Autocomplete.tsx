@@ -1,6 +1,7 @@
 import { PopoverAnchor } from "@radix-ui/react-popover";
 import { useCommandState } from "cmdk";
 import { useRef, useState, type KeyboardEvent, type Ref } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Command,
   CommandInlineInput,
@@ -26,10 +27,13 @@ const AutocompletePopover = ({
   options,
   onChange,
   className,
-  placeholder = "Value",
+  placeholder,
   onEnterPress,
   ref,
 }: AutocompleteProps) => {
+  const { t } = useTranslation("common");
+  const effectivePlaceholder =
+    placeholder ?? t("component.autocomplete.placeholder");
   const [open, setOpen] = useState(false);
   const [dontClose, setDontClose] = useState(false);
   const count = useCommandState((state) => state.filtered.count);
@@ -49,7 +53,7 @@ const AutocompletePopover = ({
             }
           }}
           value={value}
-          placeholder={placeholder}
+          placeholder={effectivePlaceholder}
           className={cn("h-9 bg-transparent", className)}
           onFocus={() => setOpen(true)}
           onBlur={() => {

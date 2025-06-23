@@ -27,7 +27,7 @@ module.exports = {
       version: "detect",
     },
   },
-  plugins: ["@typescript-eslint", "react-refresh"],
+  plugins: ["@typescript-eslint", "react-refresh", "i18next"],
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -131,6 +131,7 @@ module.exports = {
             ],
           },
         ],
+        "i18next/no-literal-string": ["error", { markupOnly: true }],
       },
     },
     {

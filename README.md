@@ -112,6 +112,24 @@ We hope that if you use it, you’ll think fondly of Zuplo, and one day, when yo
 
 Zudoku will always be open-source. It will always be free.
 
+## Internationalization
+
+Zudoku uses [react-i18next](https://react.i18next.com/) for translations.
+
+### Adding a new language
+
+1. Create a new directory `packages/zudoku/<lang>` and add a `common.json` file.
+2. Run `npm run i18n:extract` to regenerate locale files.
+3. Provide translations in the new JSON file.
+
+### Extracting strings
+
+Run `npm run lint` to verify no untranslated literals remain. The `i18next/no-literal-string` rule ensures all user facing text is wrapped with `t()`.
+
+### Running translation checks
+
+Use `pnpm --filter zudoku test` to run unit tests which mount the application for each locale.
+
 ## License
 
 Zudoku is licensed under MIT. See the full [license](LICENSE.md).
