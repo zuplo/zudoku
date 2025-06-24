@@ -7,6 +7,7 @@ import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
 import PreviewBanner from "./src/PreviewBanner";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
+const FullPageTest = lazy(() => import("./src/FullPageTest.js"));
 
 const config: ZudokuConfig = {
   basePath: "/docs",
@@ -81,6 +82,13 @@ const config: ZudokuConfig = {
       icon: "palette",
       label: "Themes",
       element: <ThemePlayground />,
+    },
+    {
+      type: "custom-page",
+      path: "/landingpage",
+      display: "hide",
+      element: <FullPageTest />,
+      fullPage: true,
     },
   ],
   plugins: [
