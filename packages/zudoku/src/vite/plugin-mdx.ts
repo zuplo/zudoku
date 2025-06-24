@@ -92,7 +92,7 @@ const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
   let excerpt: string | undefined;
 
   visit(tree, "element", (node, _index, parent) => {
-    if (node.tagName !== "p" && parent?.type !== "root") return;
+    if (node.tagName !== "p" || parent?.type !== "root") return;
 
     excerpt = hastToString(node);
     return EXIT;
