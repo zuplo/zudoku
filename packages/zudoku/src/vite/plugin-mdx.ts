@@ -2,6 +2,7 @@ import rehypeMetaAsAttributes from "@lekoarts/rehype-meta-as-attributes";
 import mdx from "@mdx-js/rollup";
 import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
+import type { Root as HastRoot } from "hast";
 import { toString as hastToString } from "hast-util-to-string";
 import type { Root } from "mdast";
 import path from "node:path";
@@ -87,12 +88,11 @@ const remarkInjectFilepath =
     );
   };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rehypeExcerptWithMdxExport = () => (tree: any) => {
+const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
   let excerpt: string | undefined;
 
-  visit(tree, "element", (node) => {
-    if (node.tagName !== "p") return;
+  visit(tree, "element", (node, _index, parent) => {
+    if (node.tagName !== "p" && parent?.type !== "root") return;
 
     excerpt = hastToString(node);
     return EXIT;
