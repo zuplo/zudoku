@@ -54,12 +54,7 @@ const config: ZudokuConfig = {
     siteUrl: "https://zudoku.dev",
   },
   search: {
-    type: "inkeep",
-    apiKey: "2c941c4469ab259f1ba676d2b6ee595559230399ad90a074",
-    integrationId: "cm4sn77nj00h4jvirrkbe01d1",
-    organizationId: "org_dDOlt2uJlMWM8oIS",
-    primaryBrandColor: "#ff00bd",
-    organizationDisplayName: "Zudoku",
+    type: "pagefind",
   },
   redirects: [
     { from: "/", to: "/introduction" },

@@ -34,7 +34,6 @@ export const Banner = () => {
         "relative text-primary-foreground text-sm font-medium px-4 py-2 flex gap-2 items-center lg:h-(--banner-height)",
         mappedColor,
       )}
-      data-pagefind-ignore="all"
       style={style}
     >
       <div className="w-full">{page.banner.message}</div>
