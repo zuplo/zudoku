@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { ErrorPage } from "./ErrorPage.js";
+import { NotFoundPage } from "./NotFoundPage.js";
 
 type StatusPageProps = {
   statusCode: number;
@@ -79,6 +80,10 @@ const getDefaultContent = (
 };
 
 export const StatusPage = ({ statusCode, message }: StatusPageProps) => {
+  if (statusCode === 404) {
+    return <NotFoundPage />;
+  }
+
   const defaultContent = getDefaultContent(statusCode);
 
   return (
