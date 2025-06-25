@@ -83,6 +83,19 @@ export async function runBuild(options: { dir: string }) {
         await writeFile(indexHtml, html, "utf-8");
       }
 
+      // find 400.html, 404.html, 500.html
+      const statusPages = results.flatMap((r) =>
+        /400|404|500\.html$/.test(r.outputPath) ? r.outputPath : [],
+      );
+
+      // move status pages to root path (i.e. without base path)
+      for (const statusPage of statusPages) {
+        await rename(
+          statusPage,
+          path.join(options.dir, DIST_DIR, path.basename(statusPage)),
+        );
+      }
+
       // Delete the server build output directory because we don't need it anymore
       await rm(viteServerConfig.build.outDir, { recursive: true, force: true });
 
@@ -104,7 +117,7 @@ export async function runBuild(options: { dir: string }) {
 
       if (ZuploEnv.isZuplo && issuer) {
         await writeFile(
-          path.join(options.dir, "dist/.output/zuplo.json"),
+          path.join(options.dir, DIST_DIR, ".output/zuplo.json"),
           JSON.stringify({ issuer }, null, 2),
           "utf-8",
         );
