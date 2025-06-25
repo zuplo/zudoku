@@ -1,18 +1,27 @@
 ---
 sidebar_icon: paintbrush
 title: Colors & Theme
-description: Customize your Zudoku site's colors and theme with flexible options, including light/dark modes, custom CSS, and shadcn registry integration.
+description:
+  Customize your Zudoku site's colors and theme with flexible options, including
+  light/dark modes, custom CSS, and shadcn registry integration.
 ---
 
-Zudoku provides flexible theming options allowing you to customize colors, import themes from [shadcn registries](https://ui.shadcn.com/docs/registry), and add custom CSS. You can create cohesive light and dark mode experiences that match your brand.
+Zudoku provides flexible theming options allowing you to customize colors,
+import themes from [shadcn registries](https://ui.shadcn.com/docs/registry), and
+add custom CSS. You can create cohesive light and dark mode experiences that
+match your brand.
 
 :::tip
 
-Try out the interactive [Theme Playground](/theme-playground) to experiment with colors and see real-time previews of your theme changes.
+Try out the interactive [Theme Playground](/theme-playground) to experiment with
+colors and see real-time previews of your theme changes.
 
 :::
 
-The theme system is built on [shadcn/ui theming](https://ui.shadcn.com/docs/theming) and [Tailwind v4](https://tailwindcss.com), giving us a great foundation to build upon:
+The theme system is built on
+[shadcn/ui theming](https://ui.shadcn.com/docs/theming) and
+[Tailwind v4](https://tailwindcss.com), giving us a great foundation to build
+upon:
 
 - **CSS variables** match `shadcn/ui` conventions
 - **Tailwind v4** CSS variable system for modern styling
@@ -21,7 +30,10 @@ The theme system is built on [shadcn/ui theming](https://ui.shadcn.com/docs/them
 
 ## Custom Colors
 
-You can manually define colors for both light and dark modes, either by extending the [default theme](#default-theme) or creating a completely custom theme. Colors can be specified as hex values, RGB, HSL, OKLCH, etc. - basically anything that is supported by [Tailwind CSS](https://tailwindcss.com):
+You can manually define colors for both light and dark modes, either by
+extending the [default theme](#default-theme) or creating a completely custom
+theme. Colors can be specified as hex values, RGB, HSL, OKLCH, etc. - basically
+anything that is supported by [Tailwind CSS](https://tailwindcss.com):
 
 ```tsx title=zudoku.config.ts
 const config = {
@@ -101,19 +113,23 @@ const config = {
 
 :::note
 
-While shadcn/ui defines additional theme variables, Zudoku currently uses only these core variables.
+While shadcn/ui defines additional theme variables, Zudoku currently uses only
+these core variables.
 
 :::
 
 ## shadcn Registry Integration
 
-The easiest way to customize your theme is by using a Shadcn registry theme. For example you can use the great [tweakcn](https://tweakcn.com/) visual theme editor.
+The easiest way to customize your theme is by using a Shadcn registry theme. For
+example you can use the great [tweakcn](https://tweakcn.com/) visual theme
+editor.
 
 ### Using tweakcn Themes
 
 <Stepper>
 
-1. Visit [tweakcn.com](https://tweakcn.com/) to select a preset or customize your theme visually
+1. Visit [tweakcn.com](https://tweakcn.com/) to select a preset or customize
+   your theme visually
 
    <Framed align="start">![](./tweakcn0.webp)</Framed>
    <Framed align="start">![](./tweakcn1.webp)</Framed>
@@ -130,7 +146,8 @@ The easiest way to customize your theme is by using a Shadcn registry theme. For
      },
    };
    ```
-1. The theme will then be automatically imported with all color variables, fonts, and styling configured for you 🚀
+1. The theme will then be automatically imported with all color variables,
+   fonts, and styling configured for you 🚀
 
    <Framed align="start">![](./tweakcn3.webp)</Framed>
 
@@ -153,7 +170,8 @@ const config = {
 };
 ```
 
-Alternatively, you can copy the CSS code and paste it into your `customCss` configuration:
+Alternatively, you can copy the CSS code and paste it into your `customCss`
+configuration:
 
 ```tsx title=zudoku.config.ts
 const config = {
@@ -167,7 +185,8 @@ const config = {
 
 ## Custom CSS
 
-For advanced styling, you can add custom CSS either as a string or structured object:
+For advanced styling, you can add custom CSS either as a string or structured
+object:
 
 :::note
 
@@ -205,7 +224,10 @@ const config = {
 
 ## Default Theme
 
-Zudoku comes with a built-in default theme based on [shadcn/ui zinc base colors](https://ui.shadcn.com/docs/theming#zinc). If you want to start completely from scratch without any default styling, you can disable the default theme:
+Zudoku comes with a built-in default theme based on
+[shadcn/ui zinc base colors](https://ui.shadcn.com/docs/theming#zinc). If you
+want to start completely from scratch without any default styling, you can
+disable the default theme:
 
 ```tsx title=zudoku.config.ts
 const config = {
@@ -216,8 +238,9 @@ const config = {
 };
 ```
 
-When `noDefaultTheme` is set to `true`, no default colors or styling will be applied, giving you complete control over your theme.
-Changing this requires to restart the development server.
+When `noDefaultTheme` is set to `true`, no default colors or styling will be
+applied, giving you complete control over your theme. Changing this requires to
+restart the development server.
 
 ## Complete Example
 
@@ -258,4 +281,5 @@ const config = {
 };
 ```
 
-This configuration imports a base theme, customizes colors for both light and dark modes, sets fonts, and adds custom component styling.
+This configuration imports a base theme, customizes colors for both light and
+dark modes, sets fonts, and adds custom component styling.
