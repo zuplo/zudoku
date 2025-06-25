@@ -10,7 +10,6 @@ const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 const FullPageTest = lazy(() => import("./src/FullPageTest.js"));
 
 const config: ZudokuConfig = {
-  basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
   site: {
     showPoweredBy: true,
@@ -42,7 +41,6 @@ const config: ZudokuConfig = {
     favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
   },
   docs: {
-    files: "/pages/**/*.{md,mdx}",
     defaultOptions: {
       showLastModified: true,
       suggestEdit: {
@@ -58,9 +56,9 @@ const config: ZudokuConfig = {
     type: "pagefind",
   },
   redirects: [
-    { from: "/", to: "/introduction" },
-    { from: "/getting-started", to: "/quickstart" },
-    { from: "/app-quickstart", to: "/quickstart" },
+    { from: "/docs", to: "/docs/introduction" },
+    { from: "/getting-started", to: "/docs/quickstart" },
+    { from: "/app-quickstart", to: "/docs/quickstart" },
     { from: "/components", to: "/components/callout" },
   ],
   navigation: [
@@ -85,7 +83,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "custom-page",
-      path: "/landingpage",
+      path: "/",
       display: "hide",
       element: <FullPageTest />,
       fullPage: true,
