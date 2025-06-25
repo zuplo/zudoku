@@ -1,102 +1,98 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import type {
+  InkeepBaseSettings,
+  InkeepComponentInstance,
+  InkeepJS,
+  InkeepSettings,
+} from "@inkeep/cxkit-types";
+import { useEffect, useMemo, useState } from "react";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
-import { aiChatSettings, baseSettings } from "./inkeep.js";
-
-interface PluginInkeepBaseSettings {
-  apiKey?: string;
-  integrationId: string;
-  organizationId: string;
-  organizationDisplayName?: string;
-  primaryBrandColor: string;
-}
-
-interface InkeepEmbedConfig {
-  componentType: string;
-  targetElement: HTMLElement;
-  properties: unknown;
-}
-
-interface InkeepWidget {
-  render: (config: InkeepEmbedConfig & { isOpen: boolean }) => void;
-}
+import {
+  aiChatSettings,
+  baseSettings,
+  modalSettings,
+  searchSettings,
+} from "./inkeep.js";
 
 declare global {
-  let Inkeep: () => {
-    embed: (config: InkeepEmbedConfig) => InkeepWidget;
-  };
+  interface Window {
+    Inkeep: InkeepJS | undefined;
+  }
 }
 
 const InkeepSearch = ({
-  prefilledQuery,
   isOpen,
   onClose,
   settings,
 }: {
   isOpen: boolean;
   onClose: () => void;
-  prefilledQuery?: string | null;
-  settings: PluginInkeepBaseSettings;
+  settings: InkeepBaseSettings;
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const widgetRef = useRef<InkeepWidget | null>(null);
-  const [isInkeepAvailable, setIsInkeepAvailable] = useState(
-    typeof Inkeep !== "undefined",
-  );
-
-  const config: InkeepEmbedConfig = useMemo(
+  const config = useMemo<InkeepSettings>(
     () => ({
-      componentType: "CustomTrigger",
-      targetElement: ref.current!,
-      properties: {
-        isOpen,
-        onClose,
-        onOpen: undefined,
-        baseSettings: { ...baseSettings, ...settings },
-        searchSettings: {
-          prefilledQuery: prefilledQuery || undefined,
+      baseSettings: {
+        ...baseSettings,
+        ...settings,
+        colorMode: {
+          sync: {
+            target: "html",
+            attributes: ["class"],
+            isDarkMode: (attrs) => attrs["class"]?.includes("dark") ?? false,
+          },
         },
-        aiChatSettings,
       },
+      modalSettings: {
+        ...modalSettings,
+        onOpenChange: (newOpen: boolean) => {
+          if (!newOpen) onClose();
+        },
+      },
+      searchSettings,
+      aiChatSettings,
     }),
-    [isOpen, onClose, prefilledQuery, settings, ref],
+    [onClose, settings],
+  );
+  const [searchInstance, setSearchInstance] = useState<
+    InkeepComponentInstance | undefined
+  >(
+    typeof window !== "undefined" && window.Inkeep?.ModalSearchAndChat
+      ? window.Inkeep.ModalSearchAndChat(config)!
+      : undefined,
   );
 
   useEffect(() => {
-    if (isInkeepAvailable) return;
+    if (searchInstance) return;
 
     const checkInkeep = setInterval(() => {
-      if (typeof Inkeep !== "undefined") {
-        setIsInkeepAvailable(true);
+      if (typeof window !== "undefined" && window.Inkeep?.ModalSearchAndChat) {
+        const inkeep = window.Inkeep.ModalSearchAndChat(config)!;
+        setSearchInstance(inkeep);
         clearInterval(checkInkeep);
       }
     }, 100);
 
     return () => clearInterval(checkInkeep);
-  }, [isInkeepAvailable]);
+  }, [config, searchInstance]);
 
   useEffect(() => {
-    if (!isInkeepAvailable || widgetRef.current) return;
+    if (!searchInstance) return;
 
-    widgetRef.current = Inkeep().embed(config);
-  }, [config, isInkeepAvailable]);
+    searchInstance.update({ modalSettings: { isOpen } });
+  }, [isOpen, searchInstance]);
 
-  useEffect(() => {
-    widgetRef.current?.render({ ...config, isOpen });
-  }, [config, isOpen]);
-
-  return <div ref={ref} />;
+  return null;
 };
 
 export const inkeepSearchPlugin = (
-  settings: PluginInkeepBaseSettings,
+  settings: InkeepBaseSettings,
 ): ZudokuPlugin => {
   return {
     getHead: () => {
       return (
         <script
           type="module"
-          src="https://unpkg.com/@inkeep/uikit-js@0.3.19/dist/embed.js"
+          src="https://cdn.jsdelivr.net/npm/@inkeep/cxkit-js@0.5.90/+esm"
           defer
         />
       );

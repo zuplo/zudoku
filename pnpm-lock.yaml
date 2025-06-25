@@ -730,6 +730,9 @@ importers:
       '@graphql-codegen/client-preset':
         specifier: 4.8.2
         version: 4.8.2(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)
+      '@inkeep/cxkit-types':
+        specifier: 0.5.90
+        version: 0.5.90
       '@testing-library/dom':
         specifier: 10.4.0
         version: 10.4.0
@@ -2173,6 +2176,9 @@ packages:
     engines: {node: ^18.17.0 || ^20.3.0 || >=21.0.0}
     cpu: [x64]
     os: [win32]
+
+  '@inkeep/cxkit-types@0.5.90':
+    resolution: {integrity: sha512-6h1M5E1BR5aGeSOEa+Iw8VrvWH8en/pOclBZ5CeWH8KzXh59nVaUxOIKpCZFfLCkv4fJiyoVNIlkYAspcYIrBA==}
 
   '@isaacs/balanced-match@4.0.1':
     resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
@@ -10672,6 +10678,8 @@ snapshots:
 
   '@img/sharp-win32-x64@0.34.1':
     optional: true
+
+  '@inkeep/cxkit-types@0.5.90': {}
 
   '@isaacs/balanced-match@4.0.1': {}
 
