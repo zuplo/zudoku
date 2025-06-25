@@ -20,12 +20,12 @@ const apis = [
   {
     type: "file",
     input: "apis/my-first-api.json",
-    path: "my-first-api",
+    path: "/my-first-api",
   },
   {
     type: "file",
     input: "apis/my-second-api.json",
-    path: "my-second-api",
+    path: "/my-second-api",
   },
 ] as const;
 ```
@@ -39,12 +39,12 @@ const navigation = [
   {
     type: "link",
     label: "My First API",
-    to: "my-first-api",
+    to: "/my-first-api",
   },
   {
     type: "link",
     label: "My Second API",
-    to: "my-second-api",
+    to: "/my-second-api",
   },
 ] as const;
 ```
