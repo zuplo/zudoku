@@ -265,8 +265,8 @@ const FullPageTest = () => {
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/2.svg" alt="cli" className="w-16 h-16" />
                 <BoxLongshadow className="w-full relative p-5">
-                  <div className="rounded-full border border-black px-8 py-3 top-0 transform -translate-y-1/2 right-3 flex items-center gap-2 absolute bg-white">
-                    <FolderOpenIcon strokeWidth={1} /> MyZudokuProject
+                  <div className="rounded-full border border-black px-7 py-3 top-0 transform -translate-y-1/2 right-3 flex items-center gap-3 absolute bg-white">
+                    <FolderOpenIcon strokeWidth={1.25} /> MyZudokuProject
                   </div>
                   <img src="/filetree.svg" alt="tree" />
                   <BoxLongshadow className="absolute -bottom-4 left-62 bg-[#FFEB79] flex items-center justify-center ">
@@ -275,11 +275,7 @@ const FullPageTest = () => {
                       className="m-2"
                       size={36}
                     />
-                    <img
-                      src="/cursor.svg"
-                      alt="zap"
-                      className="absolute -bottom-4 -right-6 z-10 h-10 w-10"
-                    />
+                    <Cursor className="absolute -bottom-6 -right-6 z-10 h-11 w-11" />
                   </BoxLongshadow>
                 </BoxLongshadow>
                 <div>
@@ -308,7 +304,7 @@ const FullPageTest = () => {
                     <div className="h-7 w-7 rounded-sm bg-[#FEA9FC]"></div>
                     <div className="h-7 w-7 rounded-sm bg-[#8D83FF]"></div>
                     <div className="h-7 w-7 rounded-sm bg-[#FFEB79]"></div>
-                    <Cursor className="h-10 w-10 absolute -bottom-3 -right-3" />
+                    <Cursor className="h-11 w-11 absolute -bottom-5 -right-5" />
                   </BoxLongshadow>
                 </BoxLongshadow>
                 <div>
