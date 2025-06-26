@@ -745,7 +745,7 @@ const FullPageTest = () => {
           </div>
         </div>
 
-        <div className="flex max-w-screen-lg mx-auto my-10 items-center gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-w-screen-lg mx-auto my-10 items-center gap-4">
           <h3 className="font-bold text-5xl capitalize">
             Join our open
             <br />
@@ -753,16 +753,16 @@ const FullPageTest = () => {
             <br />
             of developers
           </h3>
-          <div className="flex-1 flex justify-end items-end gap-2">
+          <div className="flex-1 flex flex-col items-start lg:flex-row lg:justify-end md:items-end gap-2">
             <a
               href="https://discord.gg/zudoku"
-              className="font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full"
+              className="font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full text-nowrap"
             >
               Join our Discord
             </a>
             <a
               href="https://github.com/zuplo/zudoku"
-              className="font-medium text-lg px-6 py-2 rounded-full overflow-hidden  border border-[#7362EF]"
+              className="font-medium text-lg px-6 py-2 rounded-full border border-[#7362EF] text-nowrap"
             >
               Star on GitHub
             </a>
