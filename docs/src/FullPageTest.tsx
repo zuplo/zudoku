@@ -9,6 +9,7 @@ import {
   GaugeCircleIcon,
   GlobeIcon,
   LayoutGridIcon,
+  LibraryBigIcon,
   LockIcon,
   MoonStarIcon,
   PlayCircleIcon,
@@ -333,7 +334,26 @@ const FullPageTest = () => {
         <div className="grid grid-cols-12 gap-5 max-w-screen-lg w-full">
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-5">
             <BentoImage>
-              <BoxLongshadow className="w-full h-full" />
+              <BoxLongshadow className="w-full h-[120%] flex flex-col">
+                <div className="flex items-center gap-2 p-5 py-4 font-medium text-lg border-b border-[black] z-10 mb-2 relative">
+                  <LibraryBigIcon size={20} strokeWidth={1.5} /> API Catalog
+                  <div className="h-1 bg-black w-37 absolute -bottom-0.5 left-0" />
+                </div>
+                <div className="h-full flex gap-10 items-center justify-center">
+                  <div className="flex flex-col gap-2">
+                    <BoxLongshadow className="p-6 bg-[#F2F4FF] flex items-center justify-center">
+                      <img src="/package.svg" alt="Package" />
+                    </BoxLongshadow>{" "}
+                    Tracking API
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <BoxLongshadow className="p-6 bg-[#F2F4FF] flex items-center justify-center">
+                      <img src="/label.svg" alt="Label" />
+                    </BoxLongshadow>
+                    Label API
+                  </div>
+                </div>
+              </BoxLongshadow>
             </BentoImage>
             <BentoDescription
               title="API Catalog"
