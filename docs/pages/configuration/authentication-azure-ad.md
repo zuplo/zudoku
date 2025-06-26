@@ -40,11 +40,10 @@ Azure Active Directory (now Microsoft Entra ID) provides enterprise-grade authen
    - Go to **Authentication** in the left menu
    - Under **Single-page application**, add redirect URIs:
      - Production: `https://your-site.com/oauth/callback`
-     - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
      - Local Development: `http://localhost:3000/oauth/callback`
    - Under **Implicit grant and hybrid flows**:
-     - Enable **ID tokens**
      - Enable **Access tokens**
+     - Enable **ID tokens**
    - Configure **Supported account types** if needed
    - Save your changes
 

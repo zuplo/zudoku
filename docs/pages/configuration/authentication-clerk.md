@@ -44,17 +44,6 @@ If you don't have a Clerk account, you can sign up for a [free Clerk account](ht
    };
    ```
 
-3. **Configure Redirect URLs (Optional)**
-
-   If you need custom redirect behavior, configure the allowed redirect URLs in Clerk:
-
-   - Go to **Paths** in your Clerk dashboard
-   - Add your production, preview, and local development URLs to the allowed redirect URLs
-   - Common patterns:
-     - Production: `https://your-site.com/oauth/callback`
-     - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
-     - Local Development: `http://localhost:3000/oauth/callback`
-
 </Stepper>
 
 ## Configuration Options

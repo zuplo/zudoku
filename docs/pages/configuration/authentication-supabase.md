@@ -18,7 +18,7 @@ You'll need a Supabase project. If you don't have one, [create a free Supabase p
 
    In your [Supabase Dashboard](https://supabase.com/dashboard):
 
-   - Navigate to **Authentication** → **Providers**
+   - Navigate to **Authentication** → **Sign In / Providers**
    - Enable your preferred authentication provider (GitHub, Google, Azure, etc.)
    - Configure the provider settings:
      - **Redirect URL**: `https://your-project.supabase.co/auth/v1/callback`

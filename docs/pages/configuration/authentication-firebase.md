@@ -29,7 +29,7 @@ Firebase Authentication provides a comprehensive identity solution from Google, 
 
    In your Firebase project:
 
-   - Navigate to **Authentication** in the left sidebar
+   - Navigate to All products then **Authentication** in the left sidebar
    - Click **Get started**
    - Go to the **Sign-in method** tab
    - Enable your preferred authentication providers:
@@ -52,8 +52,8 @@ Firebase Authentication provides a comprehensive identity solution from Google, 
    - Go to **Settings** → **Authorized domains**
    - Add your domains:
      - Production: `your-site.com`
-     - Preview: `*.your-domain.com`
-     - Development: `localhost`
+     - Local Development: `localhost`
+     - Preview environments: Each domain separately (Firebase doesn't support wildcards)
 
    Firebase automatically handles the OAuth redirect URLs for you.
 
