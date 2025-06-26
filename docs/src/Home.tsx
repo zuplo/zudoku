@@ -1,5 +1,5 @@
 import { Button, Head, Link, Typography } from "zudoku/components";
-import Hello from "./hello.svg";
+import Hello from "./Hello.svg";
 
 export const Home = () => {
   return (
