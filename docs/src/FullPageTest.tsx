@@ -177,7 +177,7 @@ const Link = ({
 const FullPageTest = () => {
   return (
     <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25">
-      <div className="flex items-center justify-between w-full max-w-screen-xl">
+      <div className="flex items-center justify-between w-full max-w-screen-xl px-10">
         <Zudoku />
         <ul className="flex items-center gap-6">
           <li>
