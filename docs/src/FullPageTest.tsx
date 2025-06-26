@@ -25,6 +25,7 @@ import { cn } from "zudoku/ui/util.js";
 import Cursor from "./components/Cursor";
 import Zudoku from "./components/Zudoku";
 import ZudokuLogo from "./components/ZudokuLogo";
+import DiscordIcon from "./DiscordIcon";
 import GithubIcon from "./GithubIcon";
 
 const Hero = () => {
@@ -135,7 +136,7 @@ const AuthCard = ({
   return (
     <Box
       className={cn(
-        "rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5",
+        "rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex-shrink-0",
         className,
       )}
     >
@@ -152,16 +153,61 @@ const BentoDescription = ({
   description: string;
 }) => {
   return (
-    <div className="border-t border-[black] flex flex-col gap-3 p-8">
+    <div className="border-t border-[black] flex flex-col gap-1.5 p-8">
       <h3 className="text-2xl font-semibold">{title}</h3>
       <p className="text-muted-foreground text-xl">{description}</p>
     </div>
   );
 };
 
+const Link = ({
+  children,
+  href,
+}: {
+  children: React.ReactNode;
+  href: string;
+}) => {
+  return (
+    <a href={href} className="hover:underline decoration-4 underline-offset-4">
+      {children}
+    </a>
+  );
+};
+
 const FullPageTest = () => {
   return (
     <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25">
+      <div className="flex items-center justify-between w-full max-w-screen-xl">
+        <Zudoku />
+        <ul className="flex items-center gap-6">
+          <li>
+            <Link href="/docs">Documentation</Link>
+          </li>
+          <li>
+            <Link href="/docs">Services</Link>
+          </li>
+          <li>
+            <Link href="/docs">Community</Link>
+          </li>
+          <li>
+            <Link href="/docs">FAQ’s</Link>
+          </li>
+        </ul>
+        <div className="flex items-center gap-2">
+          <a
+            href="https://discord.gg/zudoku"
+            className="flex items-center gap-2 rounded-full border border-[black] p-2 hover:bg-black hover:text-white group"
+          >
+            <DiscordIcon className="w-5 h-5 group-hover:fill-white" />
+          </a>
+          <a
+            href="https://github.com/zuplo/zudoku"
+            className="flex text-sm items-center px-2 gap-2 rounded-full border border-[black] p-2 hover:bg-[#F0F1F4]"
+          >
+            Star us on <GithubIcon className="w-5 h-5" />
+          </a>
+        </div>
+      </div>
       <div className="w-full flex flex-col items-center overflow-hidden relative">
         <div
           className="w-full h-full absolute -z-10 -top-20"
@@ -211,14 +257,14 @@ const FullPageTest = () => {
       <div className="w-full">
         <div className="border-t border-[black] w-full flex justify-center">
           <div className="grid grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
-            <div className="lg:col-span-2 p-10 border-l border-[black]">
+            <div className="lg:col-span-2 p-10 border-l border-r border-[black]">
               <h2 className="text-3xl font-semibold">Get Started</h2>
               <p>
                 Get your docs running extremely fast in three steps you can get
                 your api running
               </p>
             </div>
-            <div className=" border-l border-r border-[black] flex items-end">
+            <div className="lg:border-r border-[black] flex items-end">
               <div className="capitalize mt-auto h-1/2 border-t w-full border-[black] flex items-end justify-end">
                 <a
                   href="/docs"
@@ -261,7 +307,7 @@ const FullPageTest = () => {
                 </div>
               </div>
             </div>
-            <div className="border-b border-[black] lg:border-b-0">
+            <div className="border-b lg:border-r border-[black] lg:border-b-0">
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/2.svg" alt="cli" className="w-16 h-16" />
                 <BoxLongshadow className="w-full relative p-5">
@@ -287,7 +333,7 @@ const FullPageTest = () => {
                 </div>
               </div>
             </div>
-            <div className="border-l border-r border-[black]">
+            <div className="border-r border-[black]">
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/3.svg" alt="cli" className="w-16 h-16" />
                 <BoxLongshadow className="w-full relative flex flex-col">
@@ -396,17 +442,17 @@ const FullPageTest = () => {
                 <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
                   <LockIcon size={18} />
                   <div className="flex-1">Authentication</div>
-                  <SquareCheckIcon size={18} fill="#B4B9C9" />
+                  <SquareCheckIcon size={22} fill="#F0F1F4" strokeWidth={1.5} />
                 </Box>
                 <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
                   <BracesIcon size={18} />
                   <div className="flex-1">Parameters</div>
-                  <SquareCheckIcon size={18} fill="#B4B9C9" />
+                  <SquareCheckIcon size={22} fill="#F0F1F4" strokeWidth={1.5} />
                 </Box>
                 <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
                   <FileJson size={18} />
                   <div className="flex-1">Body</div>
-                  <SquareCheckIcon size={18} fill="#B4B9C9" />
+                  <SquareCheckIcon size={22} fill="#F0F1F4" strokeWidth={1.5} />
                 </Box>
                 <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 relative items-center justify-center">
                   <div className="text-[#FF02BD] font-bold">GET</div>
