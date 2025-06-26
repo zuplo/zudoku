@@ -5,7 +5,7 @@ import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
-import PreviewBanner from "./src/PreviewBanner";
+import { Home } from "./src/Home";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 const FullPageTest = lazy(() => import("./src/FullPageTest.js"));
 
@@ -18,19 +18,21 @@ const config: ZudokuConfig = {
       alt: "Zudoku",
       width: 130,
     },
-    banner: {
-      message: <PreviewBanner />,
-      dismissible: true,
-    },
+    // banner: {
+    //   message: <PreviewBanner />,
+    //   dismissible: true,
+    // },
   },
   theme: {
     light: {
-      primary: "#3b82f6",
+      // primary: "#3b82f6",
+      primary: "#000000",
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#3b82f6",
-      primaryForeground: "#FFFFFF",
+      // primary: "#3b82f6",
+      primary: "#FFFFFF",
+      primaryForeground: "#000000",
     },
   },
   mdx: {
@@ -56,28 +58,31 @@ const config: ZudokuConfig = {
     type: "pagefind",
   },
   redirects: [
-    { from: "/docs", to: "/docs/introduction" },
+    { from: "/docs", to: "/docs/quickstart" },
     { from: "/getting-started", to: "/docs/quickstart" },
     { from: "/app-quickstart", to: "/docs/quickstart" },
     { from: "/components", to: "/components/callout" },
   ],
   navigation: [
     {
+      type: "custom-page",
+      path: "/hello",
+      label: "Home",
+      element: <Home />,
+    },
+    {
       type: "category",
-      icon: "book",
       label: "Documentation",
       items: docs,
     },
     {
       type: "category",
       label: "Components",
-      icon: "component",
       items: components,
     },
     {
       type: "custom-page",
       path: "/theme-playground",
-      icon: "palette",
       label: "Themes",
       element: <ThemePlayground />,
     },

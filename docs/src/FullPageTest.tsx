@@ -1,15 +1,18 @@
 import {
   ArrowRightIcon,
+  ArrowUpRightIcon,
   BracesIcon,
   CopyCheckIcon,
   CopyIcon,
   FileJson,
+  FolderOpenIcon,
   GaugeCircleIcon,
   GlobeIcon,
   LayoutGridIcon,
   LockIcon,
   MoonStarIcon,
   PlayCircleIcon,
+  SettingsIcon,
   SquareCheckIcon,
   SunIcon,
   TimerIcon,
@@ -18,6 +21,10 @@ import {
   ZapIcon,
 } from "zudoku/icons";
 import { cn } from "zudoku/ui/util.js";
+import Cursor from "./components/Cursor";
+import Zudoku from "./components/Zudoku";
+import ZudokuLogo from "./components/ZudokuLogo";
+import GithubIcon from "./GithubIcon";
 
 const Hero = () => {
   return (
@@ -153,7 +160,7 @@ const BentoDescription = ({
 
 const FullPageTest = () => {
   return (
-    <div className="flex flex-col w-full items-center mx-auto pt-10 gap-10">
+    <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25">
       <div className="w-full flex flex-col items-center overflow-hidden relative">
         <div
           className="w-full h-full absolute -z-10 -top-20"
@@ -164,14 +171,14 @@ const FullPageTest = () => {
           }}
         />
         <Hero />
-        <div className="w-full relative max-w-screen-xl mt-20">
-          <div className="border rounded-full border-[black] absolute -top-10 left-10 bg-white p-1.5 flex">
+        <div className="px-10 w-full relative max-w-screen-xl mt-20">
+          <div className="border rounded-full border-[black] absolute -top-8 left-15 bg-white p-1.5 flex z-10">
             <div className="rounded-full p-3 px-8 bg-black text-white">
               Developer Portal
             </div>
             <div className="rounded-full p-3 px-8">API Reference</div>
           </div>
-          <div className="border rounded-full border-[px-8] absolute -top-10 right-10 bg-white p-1.5 flex border-[black] gap-2">
+          <div className="border rounded-full border-[px-8] absolute -top-8 right-15 bg-white p-1.5 flex border-[black] gap-2 z-10">
             <div className="rounded-full p-3  bg-[#FFEB79] text-black border-[black] border">
               <SunIcon />
             </div>
@@ -179,10 +186,13 @@ const FullPageTest = () => {
               <MoonStarIcon />
             </div>
           </div>
-          <div className="w-full rounded-3xl h-[600px] bg-black flex flex-col items-center mx-auto"></div>
+          <iframe
+            src="/hello"
+            className="w-full border border-[black] rounded-3xl h-[600px] bg-black items-center mx-auto overflow-hidden "
+          ></iframe>
         </div>
       </div>
-      <div className="mt-16">
+      <div className="mb-10 px-10">
         <div className="text-center font-bold text-4xl capitalize">
           Built with a{" "}
           <span className="bg-gradient-to-br from-[#B6A0FB] via-[#7362EF] to-[#D2C6FF] bg-clip-text text-transparent">
@@ -197,7 +207,7 @@ const FullPageTest = () => {
           <img src="/tech/radix.svg" alt="stack" />
         </div>
       </div>
-      <div className="w-full ">
+      <div className="w-full">
         <div className="border-t border-[black] w-full flex justify-center">
           <div className="grid grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
             <div className="lg:col-span-2 p-10 border-l border-[black]">
@@ -207,15 +217,22 @@ const FullPageTest = () => {
                 your api running
               </p>
             </div>
-            <div className="capitalize border-l border-r border-[black]">
-              Check our Docs
+            <div className=" border-l border-r border-[black] flex items-end">
+              <div className="capitalize mt-auto h-1/2 border-t w-full border-[black] flex items-end justify-end">
+                <a
+                  href="/docs"
+                  className="text-2xl font-semibold p-3 px-10 inline-flex items-center gap-2 hover:underline decoration-4 underline-offset-4"
+                >
+                  Check our Docs <ArrowUpRightIcon size={32} strokeWidth={1} />
+                </a>
+              </div>
             </div>
           </div>
         </div>
         <div className="border-t border-b border-[black] w-full flex justify-center mb-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
             <div className="border-r border-l border-[black] border-b lg:border-b-0">
-              <div className="flex flex-col gap-8 p-10">
+              <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/1.svg" alt="cli" className="w-16 h-16" />
                 <BoxLongshadow className="w-full">
                   <div className="font-mono font-medium text-center gap-2 relative border-b border-[black] h-12 flex items-center justify-center">
@@ -244,205 +261,254 @@ const FullPageTest = () => {
               </div>
             </div>
             <div className="border-b border-[black] lg:border-b-0">
-              <div className="flex flex-col gap-4 p-10">
+              <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/2.svg" alt="cli" className="w-16 h-16" />
-                <BoxLongshadow className="w-full h-16" />
-                <h3 className="text-2xl font-semibold">Add your OpenAPI</h3>
-                <p className="text-muted-foreground">npm run zudoku install</p>
+                <BoxLongshadow className="w-full relative p-5">
+                  <div className="rounded-full border border-black px-8 py-3 top-0 transform -translate-y-1/2 right-3 flex items-center gap-2 absolute bg-white">
+                    <FolderOpenIcon strokeWidth={1} /> MyZudokuProject
+                  </div>
+                  <img src="/filetree.svg" alt="tree" />
+                  <BoxLongshadow className="absolute -bottom-4 left-62 bg-[#FFEB79] flex items-center justify-center ">
+                    <SettingsIcon
+                      strokeWidth={1.75}
+                      className="m-2"
+                      size={36}
+                    />
+                    <img
+                      src="/cursor.svg"
+                      alt="zap"
+                      className="absolute -bottom-4 -right-6 z-10 h-10 w-10"
+                    />
+                  </BoxLongshadow>
+                </BoxLongshadow>
+                <div>
+                  <h3 className="text-2xl font-semibold">Add your OpenAPI</h3>
+                  <p className="text-muted-foreground">
+                    if you have openapi add the schema to the project and edit
+                    it on the zudoku config
+                  </p>
+                </div>
               </div>
             </div>
             <div className="border-l border-r border-[black]">
-              <div className="flex flex-col gap-2 p-10">
+              <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/3.svg" alt="cli" className="w-16 h-16" />
-                <BoxLongshadow className="w-full h-16" />
-                <h3 className="text-2xl font-semibold">Start Customizing!</h3>
-                <p className="text-muted-foreground">npm run zudoku install</p>
+                <BoxLongshadow className="w-full relative flex flex-col">
+                  <div className="p-4 py-2 border-b border-[black]">
+                    <ZudokuLogo className="w-8 h-8" />
+                  </div>
+                  <ul className="flex gap-x-4 p-4 items-center h-full">
+                    <li>Docs</li>
+                    <li>Components</li>
+                    <li>Themes</li>
+                  </ul>
+                  <BoxLongshadow className="p-2 gap-1 grid grid-cols-2 grid-rows-2 absolute right-5 -bottom-9">
+                    <div className="h-7 w-7 rounded-sm bg-[#201E3A]"></div>
+                    <div className="h-7 w-7 rounded-sm bg-[#FEA9FC]"></div>
+                    <div className="h-7 w-7 rounded-sm bg-[#8D83FF]"></div>
+                    <div className="h-7 w-7 rounded-sm bg-[#FFEB79]"></div>
+                    <Cursor className="h-10 w-10 absolute -bottom-3 -right-3" />
+                  </BoxLongshadow>
+                </BoxLongshadow>
+                <div>
+                  <h3 className="text-2xl font-semibold">Start Customizing!</h3>
+                  <p className="text-muted-foreground">
+                    Our themes allow you to set up your docs according to all
+                    your brand needs
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <PoweredByYou />
-      <h3 className="text-center text-5xl font-bold capitalize">
-        Packed with powerful
-        <br />
-        features
-      </h3>
+      <div className="px-10 w-full flex flex-col items-center">
+        <PoweredByYou />
+        <h3 className="text-center text-[54px] font-bold capitalize mb-20 mt-5">
+          Packed with powerful
+          <br />
+          features
+        </h3>
 
-      <div className="grid grid-cols-12 gap-5 max-w-screen-lg w-full">
-        <BentoBox className="col-span-full md:col-span-6 lg:col-span-5">
-          <BentoImage>
-            <BoxLongshadow className="w-full h-full" />
-          </BentoImage>
-          <BentoDescription
-            title="API Catalog"
-            description="Auto-generate docs from OpenAPI v2/v3 schemas—single or multi-API."
-          />
-        </BentoBox>
-        <BentoBox className="col-span-full md:col-span-6 lg:col-span-7">
-          <BentoImage className="flex items-center justify-center">
-            <div className="flex w-full justify-around">
-              <AuthCard className="bg-[#B6A0FB] rotate-14">
-                <img src="/auth/clerk.svg" alt="Clerk" className="w-12 h-12" />
-              </AuthCard>
-              <AuthCard className="bg-[#FF02BD] -rotate-10">
-                <img
-                  src="/auth/firebase.svg"
-                  alt="Firebase"
-                  className="w-12 h-12"
-                />
-              </AuthCard>
-              <AuthCard className="bg-[#FEA9FC] rotate-10">
-                <img src="/auth/yo.svg" alt="Yoga" className="w-12 h-12" />
-              </AuthCard>
-              <AuthCard className="bg-[#5A4FC0] -rotate-14">
-                <img
-                  src="/auth/supabase.svg"
-                  alt="Supabase"
-                  className="w-12 h-12"
-                />
-              </AuthCard>
-            </div>
-          </BentoImage>
-          <BentoDescription
-            title="Auth Ready"
-            description="Built-in authentication and authorization support for OAuth2, JWT, and more."
-          />
-        </BentoBox>
-        <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
-          <BentoImage className="font-mono">
-            <div className="grid grid-cols-[min-content_1fr_min-content] gap-2 ">
-              <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
-                <LockIcon size={18} />
-                <div className="flex-1">Authentication</div>
-                <SquareCheckIcon size={18} fill="#B4B9C9" />
-              </Box>
-              <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
-                <BracesIcon size={18} />
-                <div className="flex-1">Parameters</div>
-                <SquareCheckIcon size={18} fill="#B4B9C9" />
-              </Box>
-              <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
-                <FileJson size={18} />
-                <div className="flex-1">Body</div>
-                <SquareCheckIcon size={18} fill="#B4B9C9" />
-              </Box>
-              <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 relative items-center justify-center">
-                <div className="text-[#FF02BD] font-bold">GET</div>
-                <div className="flex-1 col-span-2 text-[#B4B9C9] truncate">
-                  https://myapi.example.com
+        <div className="grid grid-cols-12 gap-5 max-w-screen-lg w-full">
+          <BentoBox className="col-span-full md:col-span-6 lg:col-span-5">
+            <BentoImage>
+              <BoxLongshadow className="w-full h-full" />
+            </BentoImage>
+            <BentoDescription
+              title="API Catalog"
+              description="Auto-generate docs from OpenAPI v2/v3 schemas—single or multi-API."
+            />
+          </BentoBox>
+          <BentoBox className="col-span-full md:col-span-6 lg:col-span-7">
+            <BentoImage className="flex items-center justify-center">
+              <div className="flex w-full justify-around">
+                <AuthCard className="bg-[#B6A0FB] rotate-14">
+                  <img
+                    src="/auth/clerk.svg"
+                    alt="Clerk"
+                    className="w-12 h-12"
+                  />
+                </AuthCard>
+                <AuthCard className="bg-[#FF02BD] -rotate-10">
+                  <img
+                    src="/auth/firebase.svg"
+                    alt="Firebase"
+                    className="w-12 h-12"
+                  />
+                </AuthCard>
+                <AuthCard className="bg-[#FEA9FC] rotate-10">
+                  <img src="/auth/yo.svg" alt="Yoga" className="w-12 h-12" />
+                </AuthCard>
+                <AuthCard className="bg-[#5A4FC0] -rotate-14">
+                  <img
+                    src="/auth/supabase.svg"
+                    alt="Supabase"
+                    className="w-12 h-12"
+                  />
+                </AuthCard>
+              </div>
+            </BentoImage>
+            <BentoDescription
+              title="Auth Ready"
+              description="Built-in authentication and authorization support for OAuth2, JWT, and more."
+            />
+          </BentoBox>
+          <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
+            <BentoImage className="font-mono">
+              <div className="grid grid-cols-[min-content_1fr_min-content] gap-2 ">
+                <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
+                  <LockIcon size={18} />
+                  <div className="flex-1">Authentication</div>
+                  <SquareCheckIcon size={18} fill="#B4B9C9" />
+                </Box>
+                <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
+                  <BracesIcon size={18} />
+                  <div className="flex-1">Parameters</div>
+                  <SquareCheckIcon size={18} fill="#B4B9C9" />
+                </Box>
+                <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
+                  <FileJson size={18} />
+                  <div className="flex-1">Body</div>
+                  <SquareCheckIcon size={18} fill="#B4B9C9" />
+                </Box>
+                <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 relative items-center justify-center">
+                  <div className="text-[#FF02BD] font-bold">GET</div>
+                  <div className="flex-1 col-span-2 text-[#B4B9C9] truncate">
+                    https://myapi.example.com
+                  </div>
+                  <BoxLongshadow className="absolute -bottom-2.5 -right-2.5 p-2 bg-[#F2F4FF] flex items-center gap-2 px-3">
+                    Send
+                    <PlayCircleIcon size={24} strokeWidth={1.5} fill="#FFF" />
+                  </BoxLongshadow>
+                </Box>
+              </div>
+            </BentoImage>
+            <BentoDescription
+              title="Interactive Playground"
+              description="Test endpoints live, with support for API keys and auth"
+            />
+          </BentoBox>
+          <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
+            <BentoImage className="flex items-center justify-center">
+              <div className="flex flex-col">
+                <img src="/search/search.svg" alt="Search" />
+                <div className="relative h-20 flex -top-5 items-center justify-end">
+                  <div className="flex-shrink-0 w-full h-1"></div>
+                  <img src="/search/cmd.svg" alt="CMD Key" className="flex-2" />
+                  <img src="/search/k.svg" alt="K Key" className="flex-2" />
                 </div>
-                <BoxLongshadow className="absolute -bottom-2.5 -right-2.5 p-2 bg-[#F2F4FF] flex items-center gap-2 px-3">
-                  Send
-                  <PlayCircleIcon size={24} strokeWidth={1.5} fill="#FFF" />
-                </BoxLongshadow>
+              </div>
+            </BentoImage>
+            <BentoDescription
+              title="Built-in Search"
+              description="Instant, intelligent search powered by Inkeep."
+            />
+          </BentoBox>
+          <BentoBox className="col-span-full lg:col-span-4">
+            <BentoImage className="flex flex-col items-center justify-center relative">
+              <div className="absolute top-0 left-0 w-full h-full">
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute -top-[5%] left-[2%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[5%] left-[20%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[1%] left-[50%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[8%] left-[75%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[15%] left-[95%]"
+                />
+                {/* Next Row */}
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[45%] -left-[5%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[45%] left-[20%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[41%] left-[50%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[52%] left-[70%]"
+                />
+                <img
+                  src="/zap.svg"
+                  alt="Zap Zap!"
+                  className="absolute top-[45%] left-[90%]"
+                />
+              </div>{" "}
+              <Box className="w-full z-10">
+                <div className="flex items-center gap-2 p-5 text-lg border-b border-[black] z-10">
+                  <GlobeIcon size={20} strokeWidth={1.5} />
+                  https://myapidocs.com
+                </div>
+                <div className="flex flex-col gap-2 p-5 pb-10">
+                  <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
+                  <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
+                  <div className="bg-[#9095B4]/20 h-5 w-1/2 rounded-sm" />
+                </div>
               </Box>
-            </div>
-          </BentoImage>
-          <BentoDescription
-            title="Interactive Playground"
-            description="Test endpoints live, with support for API keys and auth"
-          />
-        </BentoBox>
-        <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
-          <BentoImage className="flex items-center justify-center">
-            <div className="flex flex-col">
-              <img src="/search/search.svg" alt="Search" />
-              <div className="relative h-20 flex -top-5 items-center justify-end">
-                <div className="flex-shrink-0 w-full h-1"></div>
-                <img src="/search/cmd.svg" alt="CMD Key" className="flex-2" />
-                <img src="/search/k.svg" alt="K Key" className="flex-2" />
+              <div className="flex gap-4 transform -translate-y-5 -translate-x-5 justify-end z-20">
+                <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
+                  <GaugeCircleIcon size={22} strokeWidth={1.5} />
+                </BoxLongshadow>
+                <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
+                  <ZapIcon size={22} strokeWidth={1.5} />
+                </BoxLongshadow>
+                <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
+                  <TimerIcon size={22} strokeWidth={1.5} />
+                </BoxLongshadow>
               </div>
-            </div>
-          </BentoImage>
-          <BentoDescription
-            title="Built-in Search"
-            description="Instant, intelligent search powered by Inkeep."
-          />
-        </BentoBox>
-        <BentoBox className="col-span-full lg:col-span-4">
-          <BentoImage className="flex flex-col items-center justify-center relative">
-            <div className="absolute top-0 left-0 w-full h-full">
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute -top-[5%] left-[2%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[5%] left-[20%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[1%] left-[50%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[8%] left-[75%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[15%] left-[95%]"
-              />
-              {/* Next Row */}
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[45%] -left-[5%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[45%] left-[20%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[41%] left-[50%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[52%] left-[70%]"
-              />
-              <img
-                src="/zap.svg"
-                alt="Zap Zap!"
-                className="absolute top-[45%] left-[90%]"
-              />
-            </div>{" "}
-            <Box className="w-full z-10">
-              <div className="flex items-center gap-2 p-5 text-lg border-b border-[black] z-10">
-                <GlobeIcon size={20} strokeWidth={1.5} />
-                https://myapidocs.com
-              </div>
-              <div className="flex flex-col gap-2 p-5 pb-10">
-                <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
-                <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
-                <div className="bg-[#9095B4]/20 h-5 w-1/2 rounded-sm" />
-              </div>
-            </Box>
-            <div className="flex gap-4 transform -translate-y-5 -translate-x-5 justify-end z-20">
-              <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-                <GaugeCircleIcon size={22} strokeWidth={1.5} />
-              </BoxLongshadow>
-              <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-                <ZapIcon size={22} strokeWidth={1.5} />
-              </BoxLongshadow>
-              <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-                <TimerIcon size={22} strokeWidth={1.5} />
-              </BoxLongshadow>
-            </div>
-          </BentoImage>
-          <BentoDescription
-            title="Static Site Generation"
-            description="Ship your docs as fast, SEO-friendly static pages."
-          />
-        </BentoBox>
+            </BentoImage>
+            <BentoDescription
+              title="Static Site Generation"
+              description="Ship your docs as fast, SEO-friendly static pages."
+            />
+          </BentoBox>
+        </div>
       </div>
       <div className="mt-16 w-full max-w-screen-lg flex flex-col items-center gap-16">
         <div className="text-center font-semibold text-5xl capitalize">
@@ -477,7 +543,7 @@ const FullPageTest = () => {
           />
         </a>
       </div>
-      <div className="w-full bg-black rounded-3xl p-10 text-white">
+      <div className="px-10 w-full bg-black rounded-3xl p-10 text-white">
         <div className="max-w-screen-lg mx-auto flex flex-col items-center">
           <div className="rounded-full drop-shadow border border-[#8D83FF] p-1 px-3 my-10">
             Use Cases
@@ -604,6 +670,74 @@ const FullPageTest = () => {
               />
             </BentoBox>
           </div>
+          <div className="flex gap-4 my-10">
+            <a
+              href="https://zudoku.dev/docs/quickstart"
+              className="text-xl font-medium rounded-full bg-white text-black px-10 py-4 flex items-center gap-2 w-fit self-center group"
+            >
+              Explore the Docs
+            </a>
+            <div className="text-xl font-medium border border-white rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group">
+              npm create zudoku@latest
+            </div>
+          </div>
+        </div>
+
+        <div className="flex max-w-screen-lg mx-auto my-10 items-center gap-4">
+          <h3 className="font-bold text-5xl capitalize">
+            Join our open
+            <br />
+            community
+            <br />
+            of developers
+          </h3>
+          <div className="flex-1 flex justify-end items-end gap-2">
+            <a
+              href="https://discord.gg/zudoku"
+              className="font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full"
+            >
+              Join our Discord
+            </a>
+            <a
+              href="https://github.com/zuplo/zudoku"
+              className="font-medium text-lg px-6 py-2 rounded-full overflow-hidden  border border-[#7362EF]"
+            >
+              Star on GitHub
+            </a>
+          </div>
+        </div>
+      </div>
+      <div className="px-10 grid grid-cols-2 w-full max-w-screen-lg mb-30 mt-10">
+        <div className="flex flex-col gap-10">
+          <Zudoku />
+          <h2 className="capitalize font-medium text-3xl">
+            Zudoku is free, open-source,
+            <br />
+            and ready to power your docs.
+          </h2>
+        </div>
+        <div className="flex flex-col gap-1 items-end justify-end">
+          <div>
+            <GithubIcon />
+          </div>
+          <a
+            href=""
+            className="hover:underline decoration-2 underline-offset-4"
+          >
+            View on GitHub
+          </a>
+          <a
+            href=""
+            className="hover:underline decoration-2 underline-offset-4"
+          >
+            See Live Example
+          </a>
+          <a
+            href=""
+            className="hover:underline decoration-2 underline-offset-4"
+          >
+            Documentation
+          </a>
         </div>
       </div>
     </div>
