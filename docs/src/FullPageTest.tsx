@@ -3,162 +3,32 @@ import {
   ArrowUpRightIcon,
   BracesIcon,
   CopyCheckIcon,
-  CopyIcon,
   FileJson,
-  FolderOpenIcon,
   GaugeCircleIcon,
   GlobeIcon,
   LayoutGridIcon,
   LibraryBigIcon,
   LockIcon,
-  MoonStarIcon,
   PlayCircleIcon,
-  SettingsIcon,
   SquareCheckIcon,
-  SunIcon,
   TimerIcon,
   TriangleAlertIcon,
   UnplugIcon,
   ZapIcon,
 } from "zudoku/icons";
-import { cn } from "zudoku/ui/util.js";
+import { BentoBox, BentoDescription, BentoImage } from "./components/Bento";
+import BentoAddOpenAPI from "./components/BentoAddOpenAPI";
+import { BentoAuthReady } from "./components/BentoAuthReady";
+import { BentoInstall } from "./components/BentoInstall";
+import { Box } from "./components/Box";
+import { BoxLongshadow } from "./components/BoxLongshadow";
 import Cursor from "./components/Cursor";
+import PoweredByYou from "./components/PoweredByYou";
+import { Preview } from "./components/Preview";
 import Zudoku from "./components/Zudoku";
 import ZudokuLogo from "./components/ZudokuLogo";
 import DiscordIcon from "./DiscordIcon";
 import GithubIcon from "./GithubIcon";
-
-const Hero = () => {
-  return (
-    <div className="max-w-screen-sm flex flex-col items-center gap-10">
-      <PoweredByYou />
-      <h1 className="text-7xl font-bold text-center leading-tight">
-        You API Deserves
-        <br />
-        <span className="bg-gradient-to-br from-[#B6A0FB] via-[#7362EF] to-[#D2C6FF] bg-clip-text text-transparent">
-          Better Docs.
-        </span>
-      </h1>
-      <p className="text-center text-2xl">
-        Create clean, consistent API docs with Zudoku — open source, extensible,
-        and developer-first
-      </p>
-    </div>
-  );
-};
-
-const Box = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <div className={cn("border border-[black] rounded-md bg-white", className)}>
-      {children}
-    </div>
-  );
-};
-
-const PoweredByYou = () => {
-  return (
-    <div className="bg-white drop-shadow-md rounded-full inline-block px-4 py-2 border border-[#8D83FF]">
-      Powered by You
-    </div>
-  );
-};
-
-const BoxLongshadow = ({
-  children,
-  className,
-  shadowLength = "medium",
-}: {
-  children?: React.ReactNode;
-  className?: string;
-  shadowLength?: "medium" | "large";
-}) => {
-  return (
-    <Box
-      className={cn(
-        shadowLength === "medium" && "shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
-        shadowLength === "large" && "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
-        className,
-      )}
-    >
-      {children}
-    </Box>
-  );
-};
-
-const BentoBox = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <Box className={cn("overflow-hidden text-black", className)}>
-      {children}
-    </Box>
-  );
-};
-
-const BentoImage = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <div
-      className={cn("h-[330px] overflow-hidden p-8", className)}
-      style={{
-        background: `url('/grid.svg')`,
-        backgroundPosition: "top center",
-        backgroundRepeat: "repeat-x",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
-
-const AuthCard = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <Box
-      className={cn(
-        "rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-5 flex-shrink-0",
-        className,
-      )}
-    >
-      {children}
-    </Box>
-  );
-};
-
-const BentoDescription = ({
-  title,
-  description,
-}: {
-  title: string;
-  description: string;
-}) => {
-  return (
-    <div className="border-t border-[black] flex flex-col gap-1.5 p-8">
-      <h3 className="text-2xl font-semibold">{title}</h3>
-      <p className="text-muted-foreground text-xl">{description}</p>
-    </div>
-  );
-};
 
 const Link = ({
   children,
@@ -208,37 +78,7 @@ const FullPageTest = () => {
           </a>
         </div>
       </div>
-      <div className="w-full flex flex-col items-center overflow-hidden relative">
-        <div
-          className="w-full h-full absolute -z-10 -top-20"
-          style={{
-            background: `url('/background.svg')`,
-            backgroundPosition: "top center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        <Hero />
-        <div className="px-10 w-full relative max-w-screen-xl mt-20">
-          <div className="border rounded-full border-[black] absolute -top-8 left-15 bg-white p-1.5 flex z-10">
-            <div className="rounded-full p-3 px-8 bg-black text-white">
-              Developer Portal
-            </div>
-            <div className="rounded-full p-3 px-8">API Reference</div>
-          </div>
-          <div className="border rounded-full border-[px-8] absolute -top-8 right-15 bg-white p-1.5 flex border-[black] gap-2 z-10">
-            <div className="rounded-full p-3  bg-[#FFEB79] text-black border-[black] border">
-              <SunIcon />
-            </div>
-            <div className="rounded-full p-3 ">
-              <MoonStarIcon />
-            </div>
-          </div>
-          <iframe
-            src="/hello"
-            className="w-full border border-[black] rounded-3xl h-[600px] bg-black items-center mx-auto overflow-hidden "
-          ></iframe>
-        </div>
-      </div>
+      <Preview />
       <div className="mb-10 px-10">
         <div className="text-center font-bold text-4xl capitalize">
           Built with a{" "}
@@ -281,22 +121,7 @@ const FullPageTest = () => {
             <div className="border-r border-l border-[black] border-b lg:border-b-0">
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/1.svg" alt="cli" className="w-16 h-16" />
-                <BoxLongshadow className="w-full">
-                  <div className="font-mono font-medium text-center gap-2 relative border-b border-[black] h-12 flex items-center justify-center">
-                    <div className="flex items-center gap-2 absolute left-4 top-5">
-                      <div className="w-2.5 h-2.5 bg-neutral-200 rounded-full" />
-                      <div className="w-2.5 h-2.5 bg-neutral-200 rounded-full" />
-                    </div>
-                    terminal
-                  </div>
-                  <div className="flex justify-between items-center p-5">
-                    <div className="font-mono font-medium">
-                      npm <span className="text-[#E379E0]">create</span>
-                      zudoku@latest
-                    </div>
-                    <CopyIcon className="w-5 h-5" />
-                  </div>
-                </BoxLongshadow>
+                <BentoInstall />
                 <div className="flex flex-col gap-2">
                   <h3 className="text-2xl font-semibold">
                     Install on your CLI
@@ -310,20 +135,7 @@ const FullPageTest = () => {
             <div className="border-b lg:border-r border-[black] lg:border-b-0">
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/2.svg" alt="cli" className="w-16 h-16" />
-                <BoxLongshadow className="w-full relative p-5">
-                  <div className="rounded-full border border-black px-7 py-3 top-0 transform -translate-y-1/2 right-3 flex items-center gap-3 absolute bg-white">
-                    <FolderOpenIcon strokeWidth={1.25} /> MyZudokuProject
-                  </div>
-                  <img src="/filetree.svg" alt="tree" />
-                  <BoxLongshadow className="absolute -bottom-4 left-62 bg-[#FFEB79] flex items-center justify-center ">
-                    <SettingsIcon
-                      strokeWidth={1.75}
-                      className="m-2"
-                      size={36}
-                    />
-                    <Cursor className="absolute -bottom-6 -right-6 z-10 h-11 w-11" />
-                  </BoxLongshadow>
-                </BoxLongshadow>
+                <BentoAddOpenAPI />
                 <div>
                   <h3 className="text-2xl font-semibold">Add your OpenAPI</h3>
                   <p className="text-muted-foreground">
@@ -402,40 +214,7 @@ const FullPageTest = () => {
               description="Auto-generate docs from OpenAPI v2/v3 schemas—single or multi-API."
             />
           </BentoBox>
-          <BentoBox className="col-span-full md:col-span-6 lg:col-span-7">
-            <BentoImage className="flex items-center justify-center">
-              <div className="flex w-full justify-around">
-                <AuthCard className="bg-[#B6A0FB] rotate-14">
-                  <img
-                    src="/auth/clerk.svg"
-                    alt="Clerk"
-                    className="w-12 h-12"
-                  />
-                </AuthCard>
-                <AuthCard className="bg-[#FF02BD] -rotate-10">
-                  <img
-                    src="/auth/firebase.svg"
-                    alt="Firebase"
-                    className="w-12 h-12"
-                  />
-                </AuthCard>
-                <AuthCard className="bg-[#FEA9FC] rotate-10">
-                  <img src="/auth/yo.svg" alt="Yoga" className="w-12 h-12" />
-                </AuthCard>
-                <AuthCard className="bg-[#5A4FC0] -rotate-14">
-                  <img
-                    src="/auth/supabase.svg"
-                    alt="Supabase"
-                    className="w-12 h-12"
-                  />
-                </AuthCard>
-              </div>
-            </BentoImage>
-            <BentoDescription
-              title="Auth Ready"
-              description="Built-in authentication and authorization support for OAuth2, JWT, and more."
-            />
-          </BentoBox>
+          <BentoAuthReady />
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
             <BentoImage className="font-mono">
               <div className="grid grid-cols-[min-content_1fr_min-content] gap-2 ">

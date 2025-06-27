@@ -9,6 +9,7 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
+    "motion": "12.18.1",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
