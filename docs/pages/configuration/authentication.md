@@ -9,37 +9,6 @@ If you use a managed authentication service, such as Auth0, Clerk, or OpenID, yo
 
 To implement the authentication option for your site, add the `authentication` property to the [Zudoku Configuration](./overview.md) file. The configuration is slightly different depending on the authentication provider you use.
 
-## Protected Routes
-
-You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property takes an array of path patterns that match the routes you want to protect. When a user tries to access a protected route without being authenticated, they will be redirected to the login page.
-
-```typescript
-{
-  // ...
-  protectedRoutes: [
-    "/admin/*",     // Protect all routes under /admin
-    "/settings",    // Protect the settings page
-    "/api/*",       // Protect all API-related routes
-    "/private/:id"  // Protect dynamic routes with parameters
-  ],
-  // ...
-}
-```
-
-The path patterns follow React Router's syntax:
-
-- `:param` matches a URL segment up to the next `/`, `?`, or `#`
-- `*` matches zero or more characters up to the next `/`, `?`, or `#`
-- `/*` matches all characters after the pattern
-
-For example:
-
-- `/users/:id` matches `/users/123` or `/users/abc`
-- `/docs/*` matches `/docs/getting-started` or `/docs/api/reference`
-- `/settings` matches only the exact path `/settings`
-
-After logging in, users will be automatically redirected back to the protected route they were trying to access.
-
 ## Authentication Providers
 
 Zudoku supports Clerk, Auth0, Supabase, Azure B2C, and any OpenID provider that supports the OpenID Connect protocol.
@@ -52,7 +21,7 @@ For Auth0, you will need the `clientId` associated with the domain you are using
 
 You can find this in the Auth0 dashboard under [Application Settings](https://auth0.com/docs/get-started/applications/application-settings).
 
-```json5
+```typescript
 {
   // ...
   authentication: {
@@ -125,7 +94,6 @@ To use Supabase as your authentication provider, supply your project's URL, API 
     provider: "github",
     supabaseUrl: "https://your-project.supabase.co",
     supabaseKey: "<your-supabase-key>",
-    basePath: "/",
     redirectToAfterSignUp: "/",
     redirectToAfterSignIn: "/",
     redirectToAfterSignOut: "/",
@@ -135,8 +103,6 @@ To use Supabase as your authentication provider, supply your project's URL, API 
 ```
 
 The `provider` option can be any of Supabase Auth's supported providers, such as `apple`, `azure`, `bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`, `keycloak`, `linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`, `twitter`, `workos`, `zoom`, or `fly`.
-
-The optional `basePath` sets the default redirect root. You can override each flow using the individual redirect options.
 
 ### Azure B2C
 
@@ -176,3 +142,34 @@ After the user authenticates, the user profile is loaded via the provider's [Use
 - `email_verified` - Whether the user's email address has been verified
 
 If the provider does not return a field, it will be left blank.
+
+## Protected Routes
+
+You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property takes an array of path patterns that match the routes you want to protect. When a user tries to access a protected route without being authenticated, they will be redirected to the login page.
+
+```typescript
+{
+  // ...
+  protectedRoutes: [
+    "/admin/*",     // Protect all routes under /admin
+    "/settings",    // Protect the settings page
+    "/api/*",       // Protect all API-related routes
+    "/private/:id"  // Protect dynamic routes with parameters
+  ],
+  // ...
+}
+```
+
+The path patterns follow React Router's syntax:
+
+- `:param` matches a URL segment up to the next `/`, `?`, or `#`
+- `*` matches zero or more characters up to the next `/`, `?`, or `#`
+- `/*` matches all characters after the pattern
+
+For example:
+
+- `/users/:id` matches `/users/123` or `/users/abc`
+- `/docs/*` matches `/docs/getting-started` or `/docs/api/reference`
+- `/settings` matches only the exact path `/settings`
+
+After logging in, users will be automatically redirected back to the protected route they were trying to access.
