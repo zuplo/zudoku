@@ -69,13 +69,35 @@ For more information about how Pagefind's ranking system works and how to custom
 
 ## Inkeep
 
+[Inkeep](https://inkeep.com/) is an AI-powered search and chat platform that can index your documentation and provide intelligent search capabilities to your users.
+
+### Setting up Inkeep Integration
+
+Before you can use Inkeep search in your Zudoku site, you need to set up an Inkeep integration and have your site indexed. Here's how to get started:
+
+#### 1. Create an Inkeep Account
+
+1. Go to [Inkeep](https://inkeep.com/) and sign up for an account
+2. Navigate to the [Inkeep Portal](https://portal.inkeep.com/)
+
+#### 2. Set up Site Indexing
+
+1. In the Inkeep Portal, create a new project or integration
+2. Configure your site URL so Inkeep can crawl and index your documentation
+3. Ensure your Zudoku site is deployed and publicly accessible for indexing
+4. Wait for Inkeep to crawl and index your site content (this may take some time)
+
+#### 3. Get Your Integration Credentials
+
 To add Inkeep search to your site you will need to copy some variables from your [Inkeep account setting](https://portal.inkeep.com/):
 
 - API Key
 - Integration ID
 - Organization ID
 
-With these you can then configure the `search` option in [Zudoku Configuration](./overview.md):
+#### 4. Configure Zudoku
+
+Once you have your credentials and your site is indexed, you can configure the `search` option in your [Zudoku Configuration](./overview.md):
 
 ```typescript
 {
