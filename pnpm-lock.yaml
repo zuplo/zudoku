@@ -613,8 +613,8 @@ importers:
         specifier: 1.1.1
         version: 1.1.1
       piscina:
-        specifier: 5.0.0
-        version: 5.0.0
+        specifier: 5.1.1
+        version: 5.1.1
       posthog-node:
         specifier: 4.17.1
         version: 4.17.1
@@ -7544,9 +7544,9 @@ packages:
     engines: {node: '>=0.10'}
     hasBin: true
 
-  piscina@5.0.0:
-    resolution: {integrity: sha512-R+arufwL7sZvGjAhSMK3TfH55YdGOqhpKXkcwQJr432AAnJX/xxX19PA4QisrmJ+BTTfZVggaz6HexbkQq1l1Q==}
-    engines: {node: '>=18.x'}
+  piscina@5.1.1:
+    resolution: {integrity: sha512-9rPDIPsCwOivatEZGM8+apgM7AiTDLSnpwMmLaSmdm2PeND8bFJzZLZZxyrJjLH8Xx/MpKoVaKf+vZOWALNHbw==}
+    engines: {node: '>=20.x'}
 
   portfinder@1.0.37:
     resolution: {integrity: sha512-yuGIEjDAYnnOex9ddMnKZEMFE0CcGo6zbfzDklkmT1m5z734ss6JMzN9rNB3+RR7iS+F10D4/BVIaXOyh8PQKw==}
@@ -17212,7 +17212,7 @@ snapshots:
 
   pidtree@0.6.0: {}
 
-  piscina@5.0.0:
+  piscina@5.1.1:
     optionalDependencies:
       '@napi-rs/nice': 1.0.1
 
