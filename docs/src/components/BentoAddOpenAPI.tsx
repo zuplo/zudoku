@@ -81,12 +81,10 @@ export const BentoAddOpenAPI = () => {
           )}
           size={36}
         />
-        <Cursor
-          ref={ref}
-          className={cn(
-            "absolute -bottom-6 -right-6 z-10 h-11 w-11",
-            "opacity-0",
-          )}
+        <SmoothCursor
+          rest={!isHovered}
+          initialPosition={position}
+          className="z-10 h-11 w-11"
         />
       </BoxLongshadow>
     </BoxLongshadow>
