@@ -4,29 +4,26 @@ import {
   BracesIcon,
   CopyCheckIcon,
   FileJson,
-  GaugeCircleIcon,
-  GlobeIcon,
   LayoutGridIcon,
   LibraryBigIcon,
   LockIcon,
   PlayCircleIcon,
   SquareCheckIcon,
-  TimerIcon,
   TriangleAlertIcon,
   UnplugIcon,
-  ZapIcon,
 } from "zudoku/icons";
 import { BentoBox, BentoDescription, BentoImage } from "./components/Bento";
 import BentoAddOpenAPI from "./components/BentoAddOpenAPI";
 import { BentoAuthReady } from "./components/BentoAuthReady";
 import { BentoInstall } from "./components/BentoInstall";
+import { BentoStaticSite } from "./components/BentoStaticSite";
 import { Box } from "./components/Box";
 import { BoxLongshadow } from "./components/BoxLongshadow";
-import Cursor from "./components/Cursor";
 import PoweredByYou from "./components/PoweredByYou";
 import { Preview } from "./components/Preview";
+import { SparklesText } from "./components/Sparkles";
+import { StartCustomizing } from "./components/StartCustomizing";
 import Zudoku from "./components/Zudoku";
-import ZudokuLogo from "./components/ZudokuLogo";
 import DiscordIcon from "./DiscordIcon";
 import GithubIcon from "./GithubIcon";
 
@@ -46,7 +43,19 @@ const Link = ({
 
 const FullPageTest = () => {
   return (
-    <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25">
+    <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25 z-1">
+      <style>
+        {`
+          @keyframes remove-scale {
+            from {
+              transform: scale(0.90);
+            }
+            to {
+              transform: scale(1);
+            }
+          }
+        `}
+      </style>
       <div className="flex items-center justify-between w-full max-w-screen-xl px-10">
         <Zudoku />
         <ul className="flex items-center gap-6">
@@ -60,7 +69,7 @@ const FullPageTest = () => {
             <Link href="/docs">Community</Link>
           </li>
           <li>
-            <Link href="/docs">FAQ’s</Link>
+            <Link href="/docs">FAQ's</Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">
@@ -139,41 +148,13 @@ const FullPageTest = () => {
                 <div>
                   <h3 className="text-2xl font-semibold">Add your OpenAPI</h3>
                   <p className="text-muted-foreground">
-                    if you have openapi add the schema to the project and edit
+                    if you have OpenAPI add the schema to the project and edit
                     it on the zudoku config
                   </p>
                 </div>
               </div>
             </div>
-            <div className="border-r border-[black]">
-              <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
-                <img src="/3.svg" alt="cli" className="w-16 h-16" />
-                <BoxLongshadow className="w-full relative flex flex-col">
-                  <div className="p-4 py-2 border-b border-[black]">
-                    <ZudokuLogo className="w-8 h-8" />
-                  </div>
-                  <ul className="flex gap-x-4 p-4 items-center h-full">
-                    <li>Docs</li>
-                    <li>Components</li>
-                    <li>Themes</li>
-                  </ul>
-                  <BoxLongshadow className="p-2 gap-1 grid grid-cols-2 grid-rows-2 absolute right-5 -bottom-9">
-                    <div className="h-7 w-7 rounded-sm bg-[#201E3A]"></div>
-                    <div className="h-7 w-7 rounded-sm bg-[#FEA9FC]"></div>
-                    <div className="h-7 w-7 rounded-sm bg-[#8D83FF]"></div>
-                    <div className="h-7 w-7 rounded-sm bg-[#FFEB79]"></div>
-                    <Cursor className="h-11 w-11 absolute -bottom-5 -right-5" />
-                  </BoxLongshadow>
-                </BoxLongshadow>
-                <div>
-                  <h3 className="text-2xl font-semibold">Start Customizing!</h3>
-                  <p className="text-muted-foreground">
-                    Our themes allow you to set up your docs according to all
-                    your brand needs
-                  </p>
-                </div>
-              </div>
-            </div>
+            <StartCustomizing />
           </div>
         </div>
       </div>
@@ -216,7 +197,7 @@ const FullPageTest = () => {
           </BentoBox>
           <BentoAuthReady />
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
-            <BentoImage className="font-mono">
+            <BentoImage className="font-mono group">
               <div className="grid grid-cols-[min-content_1fr_min-content] gap-2 ">
                 <Box className="grid col-span-full grid-cols-subgrid gap-4 px-4 py-4 items-center">
                   <LockIcon size={18} />
@@ -238,9 +219,13 @@ const FullPageTest = () => {
                   <div className="flex-1 col-span-2 text-[#B4B9C9] truncate">
                     https://myapi.example.com
                   </div>
-                  <BoxLongshadow className="absolute -bottom-2.5 -right-2.5 p-2 bg-[#F2F4FF] flex items-center gap-2 px-3">
-                    Send
-                    <PlayCircleIcon size={24} strokeWidth={1.5} fill="#FFF" />
+                  <BoxLongshadow className="absolute -bottom-2.5 -right-2.5 p-2 bg-[#F2F4FF] flex items-center gap-2 px-3 group-hover:-translate-x-1 group-hover:-translate-y-1 transition-all group-hover:rotate-2 group-hover:scale-105 group-hover:bg-black group-hover:text-white duration-300 ease-in-out">
+                    <SparklesText>Send</SparklesText>
+                    <PlayCircleIcon
+                      size={24}
+                      strokeWidth={1.5}
+                      className="group-hover:fill-black fill-white transition-all duration-300 ease-in-out"
+                    />
                   </BoxLongshadow>
                 </Box>
               </div>
@@ -251,13 +236,25 @@ const FullPageTest = () => {
             />
           </BentoBox>
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
-            <BentoImage className="flex items-center justify-center">
-              <div className="flex flex-col">
-                <img src="/search/search.svg" alt="Search" />
-                <div className="relative h-20 flex -top-5 items-center justify-end">
+            <BentoImage className="flex items-center justify-center group">
+              <div className="flex flex-col transform translate-y-3.5">
+                <img
+                  src="/search/search.svg"
+                  alt="Search"
+                  className="scale-90 group-hover:scale-100 transition-all duration-300 ease-in-out"
+                />
+                <div className="relative h-20 flex -top-5 items-center justify-end scale-80 group-hover:scale-100 group-hover:translate-x-1 group-hover:translate-y-1 transition-all duration-300 ease-in-out">
                   <div className="flex-shrink-0 w-full h-1"></div>
-                  <img src="/search/cmd.svg" alt="CMD Key" className="flex-2" />
-                  <img src="/search/k.svg" alt="K Key" className="flex-2" />
+                  <img
+                    src="/search/cmd.svg"
+                    alt="CMD Key"
+                    className="flex-2 group-hover:-rotate-10 transition-all duration-300 ease-in-out"
+                  />
+                  <img
+                    src="/search/k.svg"
+                    alt="K Key"
+                    className="flex-2 group-hover:rotate-10 transition-all group-hover:-translate-x-3 duration-300 ease-in-out"
+                  />
                 </div>
               </div>
             </BentoImage>
@@ -266,89 +263,7 @@ const FullPageTest = () => {
               description="Instant, intelligent search powered by Inkeep."
             />
           </BentoBox>
-          <BentoBox className="col-span-full lg:col-span-4">
-            <BentoImage className="flex flex-col items-center justify-center relative">
-              <div className="absolute top-0 left-0 w-full h-full">
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute -top-[5%] left-[2%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[5%] left-[20%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[1%] left-[50%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[8%] left-[75%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[15%] left-[95%]"
-                />
-                {/* Next Row */}
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[45%] -left-[5%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[45%] left-[20%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[41%] left-[50%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[52%] left-[70%]"
-                />
-                <img
-                  src="/zap.svg"
-                  alt="Zap Zap!"
-                  className="absolute top-[45%] left-[90%]"
-                />
-              </div>{" "}
-              <Box className="w-full z-10">
-                <div className="flex items-center gap-2 p-5 text-lg border-b border-[black] z-10">
-                  <GlobeIcon size={20} strokeWidth={1.5} />
-                  https://myapidocs.com
-                </div>
-                <div className="flex flex-col gap-2 p-5 pb-10">
-                  <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
-                  <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
-                  <div className="bg-[#9095B4]/20 h-5 w-1/2 rounded-sm" />
-                </div>
-              </Box>
-              <div className="flex gap-4 transform -translate-y-5 -translate-x-5 justify-end z-20">
-                <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-                  <GaugeCircleIcon size={22} strokeWidth={1.5} />
-                </BoxLongshadow>
-                <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-                  <ZapIcon size={22} strokeWidth={1.5} />
-                </BoxLongshadow>
-                <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-                  <TimerIcon size={22} strokeWidth={1.5} />
-                </BoxLongshadow>
-              </div>
-            </BentoImage>
-            <BentoDescription
-              title="Static Site Generation"
-              description="Ship your docs as fast, SEO-friendly static pages."
-            />
-          </BentoBox>
+          <BentoStaticSite />
         </div>
       </div>
       <div className="mt-16 w-full max-w-screen-lg flex flex-col items-center gap-16">
@@ -384,7 +299,14 @@ const FullPageTest = () => {
           />
         </a>
       </div>
-      <div className="px-10 w-full bg-black rounded-3xl p-10 text-white">
+      <div
+        className="px-10 w-full bg-black rounded-3xl p-10 text-white shadow-[0px_-2px_16px_-4px_rgba(0,_0,_0,_0.5)]"
+        style={{
+          animation: "remove-scale 1s cubic-bezier(0, 0.93, 1, 0.61) forwards",
+          animationTimeline: "view()",
+          animationRange: "entry 0% cover 15%",
+        }}
+      >
         <div className="max-w-screen-lg mx-auto flex flex-col items-center">
           <div className="rounded-full drop-shadow border border-[#8D83FF] p-1 px-3 my-10">
             Use Cases
@@ -507,7 +429,7 @@ const FullPageTest = () => {
               </BentoImage>
               <BentoDescription
                 title="Ready to use Components"
-                description="Integrates easily witheasy extensible with own plugins community and core plugins"
+                description="Integrates easily with easy extensible with own plugins community and core plugins"
               />
             </BentoBox>
           </div>

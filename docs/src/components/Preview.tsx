@@ -66,9 +66,9 @@ export const Preview = () => {
         <div className="w-full border border-[black] rounded-3xl h-[600px] bg-black items-center mx-auto overflow-hidden">
           <iframe
             src={
-              import.meta.env.MODE !== "development"
-                ? `/${activeTab === "developer-portal" ? "hello" : "api-placeholder"}`
-                : `https://docs.zudoku.dev/${activeTab === "developer-portal" ? "hello" : "api-placeholder"}`
+              import.meta.env.DEV
+                ? ``
+                : `/${activeTab === "developer-portal" ? "hello" : "api-placeholder"}`
             }
             className="w-full h-full"
           ></iframe>
