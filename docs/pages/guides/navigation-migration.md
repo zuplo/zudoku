@@ -44,7 +44,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "api",
+      to: "/api",
       label: "API",
     },
   ],
