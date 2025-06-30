@@ -220,6 +220,8 @@ export const OperationList = ({
       : undefined,
   };
 
+  const helmetTitle = [schema.tag.name, title].filter(Boolean).join(" - ");
+
   return (
     <div
       className="pt-(--padding-content-top)"
@@ -227,7 +229,7 @@ export const OperationList = ({
       data-pagefind-meta="section:openapi"
     >
       <Helmet>
-        <title>{[schema.tag.name, title].filter(Boolean).join(" - ")}</title>
+        {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (
           <meta name="description" content={metaDescription} />
         )}
