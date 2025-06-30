@@ -219,8 +219,13 @@ const FullPageTest = () => {
                   <div className="flex-1 col-span-2 text-[#B4B9C9] truncate">
                     https://myapi.example.com
                   </div>
-                  <BoxLongshadow className="absolute -bottom-2.5 -right-2.5 p-2 bg-[#F2F4FF] flex items-center gap-2 px-3 group-hover:-translate-x-1 group-hover:-translate-y-1 transition-all group-hover:rotate-2 group-hover:scale-105 group-hover:bg-black group-hover:text-white duration-300 ease-in-out">
-                    <SparklesText>Send</SparklesText>
+                  <BoxLongshadow className="absolute -bottom-2.5 -right-2.5 p-2 bg-[#F2F4FF] flex items-center gap-2 px-3 group-hover:-translate-x-1 group-hover:-translate-y-1 transition-all group-hover:rotate-2 group-hover:scale-105 group-hover:bg-black group-hover:text-white duration-300 ease-in-out font-bold">
+                    <span className="inline-block group-hover:opacity-0 top-0 left-0">
+                      Send
+                    </span>
+                    <SparklesText className="absolute left-3 inline-block opacity-0 group-hover:opacity-100 transition-all duration-300 ease-in-out">
+                      Send
+                    </SparklesText>
                     <PlayCircleIcon
                       size={24}
                       strokeWidth={1.5}

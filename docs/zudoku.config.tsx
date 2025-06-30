@@ -25,34 +25,22 @@ const config: ZudokuConfig = {
   },
   theme: {
     customCss: `
-    {
-.animate-aurora {
---animate-aurora: aurora 8s ease-in-out infinite alternate;
-}
 
-@keyframes aurora {
-  0% {
-    background-position: 0% 50%;
-    transform: rotate(-5deg) scale(0.9);
+@theme inline {
+  --animate-shiny-text: shiny-text 8s infinite;
+ 
+  @keyframes shiny-text {
+    0%,
+    90%,
+    100% {
+      background-position: calc(-100% - var(--shiny-width)) 0;
+    }
+    30%,
+    60% {
+      background-position: calc(100% + var(--shiny-width)) 0;
+    }
   }
-  25% {
-    background-position: 50% 100%;
-    transform: rotate(5deg) scale(1.1);
-  }
-  50% {
-    background-position: 100% 50%;
-    transform: rotate(-3deg) scale(0.95);
-  }
-  75% {
-    background-position: 50% 0%;
-    transform: rotate(3deg) scale(1.05);
-  }
-  100% {
-    background-position: 0% 50%;
-    transform: rotate(-5deg) scale(0.9);
-  }
-}
-  }`,
+}`,
     light: {
       // primary: "#3b82f6",
       primary: "#000000",
