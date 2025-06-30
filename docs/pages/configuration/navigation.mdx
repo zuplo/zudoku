@@ -190,23 +190,17 @@ Learn more in the [Markdown documentation](/markdown/overview)
 
 The `path` property allows you to customize the URL path for a document. By default, Zudoku uses the file path to generate the URL, but you can override this behavior by specifying a custom path.
 
-````json
-
 ### `type: custom-page`
 
 Custom pages allow you to create standalone pages that are not tied to a Markdown document. This is useful for creating landing pages, dashboards, or any other custom content.
 
-```jsx
+```tsx
 {
   type: "custom-page",
   path: "/a-custom-page",
   element: <MyCustomPage />,
 }
-````
-
-#### Path
-
-The `path` property allows you to customize the URL path for a document. By default, Zudoku uses the file path to generate the URL, but you can override this behavior by specifying a custom path.
+```
 
 ## Icons
 
