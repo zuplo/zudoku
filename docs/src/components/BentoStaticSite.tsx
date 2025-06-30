@@ -6,58 +6,58 @@ import { BoxLongshadow } from "./BoxLongshadow";
 export const BentoStaticSite = () => {
   return (
     <BentoBox className="col-span-full lg:col-span-4">
-      <BentoImage className="flex flex-col items-center justify-center relative">
+      <BentoImage className="flex flex-col items-center justify-center relative group">
         <div className="absolute top-0 left-0 w-full h-full">
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute -top-[5%] left-[2%]"
+            className="absolute -top-[5%] left-[2%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[5%] left-[20%]"
+            className="absolute top-[5%] left-[20%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[1%] left-[50%]"
+            className="absolute top-[1%] left-[50%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[8%] left-[75%]"
+            className="absolute top-[8%] left-[75%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[15%] left-[95%]"
+            className="absolute top-[15%] left-[95%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           {/* Next Row */}
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[45%] -left-[5%]"
+            className="absolute top-[45%] -left-[5%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[45%] left-[20%]"
+            className="absolute top-[45%] left-[20%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[41%] left-[50%]"
+            className="absolute top-[41%] left-[50%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[52%] left-[70%]"
+            className="absolute top-[52%] left-[70%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
           <img
             src="/zap.svg"
             alt="Zap Zap!"
-            className="absolute top-[45%] left-[90%]"
+            className="absolute top-[45%] left-[90%] group-hover:scale-25 transition-all duration-300 ease-in-out"
           />
         </div>{" "}
         <Box className="w-full z-10">
@@ -66,17 +66,20 @@ export const BentoStaticSite = () => {
             https://myapidocs.com
           </div>
           <div className="flex flex-col gap-2 p-5 pb-10">
-            <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
-            <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm" />
-            <div className="bg-[#9095B4]/20 h-5 w-1/2 rounded-sm" />
+            <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm group-hover:animate-pulse group-hover:w-10/12 duration-300 ease-in-out" />
+            <div className="bg-[#9095B4]/20 h-5 w-full rounded-sm group-hover:animate-pulse group-hover:w-8/12 duration-300 ease-in-out" />
+            <div className="bg-[#9095B4]/20 h-5 w-1/2 rounded-sm group-hover:animate-pulse group-hover:w-9/12 duration-300 ease-in-out" />
           </div>
         </Box>
         <div className="flex gap-4 transform -translate-y-5 -translate-x-5 justify-end z-20">
           <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
             <GaugeCircleIcon size={22} strokeWidth={1.5} />
           </BoxLongshadow>
-          <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
+          <BoxLongshadow className="relative rounded-full p-2.5 flex items-center justify-center">
             <ZapIcon size={22} strokeWidth={1.5} />
+            <div className="rotate-180 absolute bottom-2.5 overflow-hidden h-0 group-hover:h-full transition-all duration-800 ease-in-out">
+              <ZapIcon size={22} strokeWidth={1.5} className="fill-[#FFEB79]" />
+            </div>
           </BoxLongshadow>
           <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
             <TimerIcon size={22} strokeWidth={1.5} />
