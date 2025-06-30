@@ -324,19 +324,16 @@ The hook provides:
 ### Best Practices for Custom Interfaces
 
 1. **Error Handling**:
-
    - Add proper error handling for API operations
    - Show loading states during async operations
    - Provide clear feedback for successful/failed operations
 
 2. **User Experience**:
-
    - Add confirmation dialogs for destructive actions
    - Show success/error notifications
    - Implement proper form validation
 
 3. **Security**:
-
    - Don't store API keys in local storage
    - Implement proper access controls
    - Consider adding copy-to-clipboard functionality
