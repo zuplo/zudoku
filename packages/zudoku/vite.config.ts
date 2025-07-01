@@ -11,6 +11,7 @@ const entries: Record<string, string> = {
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
   "auth-azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
+  "auth-supabase": "./src/lib/authentication/providers/supabase.tsx",
   plugins: "./src/lib/core/plugins.ts",
   hooks: "./src/lib/hooks/index.ts",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
@@ -59,6 +60,8 @@ export default defineConfig({
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
         ...Object.keys(pkgJson?.["optionalDependencies"] ?? {}),
+        // Peer dependencies should also be external
+        ...Object.keys(pkgJson?.["peerDependencies"] ?? {}),
       ],
       plugins: [visualizer()],
       onwarn(warning, warn) {
