@@ -44,7 +44,11 @@ const generateRegistryCss = (cssVars: Record<string, string>) =>
     .map(([key, value]) => `  --${key}: ${value};`)
     .join("\n");
 
-const processRegistryCustomCss = (css: RegistryItemCss): string => {
+const processCustomCss = (css: string | RegistryItemCss): string => {
+  if (typeof css === "string") {
+    return css;
+  }
+
   const processStyles = (
     styles: RegistryItemCss | string,
     indent = "",
@@ -166,7 +170,7 @@ export const viteThemePlugin = (): Plugin => {
 
           // Process custom CSS from registry
           if (Object.keys(css).length > 0) {
-            themeCss.push(processRegistryCustomCss(css));
+            themeCss.push(processCustomCss(css));
           }
 
           // Merge registry variables with user overrides
@@ -318,11 +322,7 @@ export const viteThemePlugin = (): Plugin => {
 
       const customCss = config.theme?.customCss;
       if (customCss) {
-        if (typeof customCss === "string") {
-          code.push(customCss);
-        } else {
-          code.push(processRegistryCustomCss(customCss));
-        }
+        code.push(processCustomCss(customCss));
       }
 
       const defaultThemeImport = config.theme?.noDefaultTheme
