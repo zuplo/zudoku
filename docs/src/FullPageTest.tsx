@@ -63,10 +63,10 @@ const FullPageTest = () => {
             <Link href="/docs">Documentation</Link>
           </li>
           <li>
-            <Link href="/docs">Features</Link>
+            <Link href="/components/typography">Components</Link>
           </li>
           <li>
-            <Link href="/docs">Community</Link>
+            <Link href="/theme-playground">Themes</Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">
