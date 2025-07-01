@@ -22,6 +22,7 @@ const config = {
         dark: "/path/to/dark-logo.png",
       },
       alt: "Company Logo",
+      href: "/",
     },
     // Other options...
   },
@@ -56,6 +57,7 @@ Configure the site's logo with different versions for light and dark themes:
       },
       alt: "Company Logo",
       width: "120px" // optional width
+      href: "/"
     }
   }
 }
@@ -101,7 +103,8 @@ Here's a comprehensive example showing all available page configuration options:
         dark: "/images/logo-dark.svg"
       },
       alt: "Company Logo",
-      width: "100px"
+      width: "100px",
+      href: "/"
     },
     banner: {
       message: "Welcome to our documentation!",

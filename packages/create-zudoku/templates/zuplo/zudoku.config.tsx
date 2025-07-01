@@ -14,6 +14,7 @@ const config: ZudokuConfig = {
         dark: "/logodark.svg",
       },
       alt: "My Developer Portal",
+      href: "/",
     },
   },
   navigation: [
