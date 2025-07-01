@@ -159,13 +159,21 @@ describe("plugin-theme", () => {
       const { getCurrentConfig } = await import("../config/loader.js");
 
       vi.mocked(getCurrentConfig).mockReturnValue({
+        __meta: {
+          rootDir: "/test",
+          dependencies: [],
+        },
         theme: {
           customCss: ".custom { color: red; }",
         },
-      } as ConfigWithMeta);
+      } as unknown as ConfigWithMeta);
 
       const plugin = viteThemePlugin();
-      const result = await callPluginLoad(plugin, resolvedVirtualModuleId);
+      const result = await callPluginTransform(
+        plugin,
+        "/* @vite-plugin-inject main */",
+        "/test/src/app/main.css",
+      );
 
       expect(result).toContain(".custom { color: red; }");
     });
@@ -174,6 +182,10 @@ describe("plugin-theme", () => {
       const { getCurrentConfig } = await import("../config/loader.js");
 
       vi.mocked(getCurrentConfig).mockReturnValue({
+        __meta: {
+          rootDir: "/test",
+          dependencies: [],
+        },
         theme: {
           customCss: {
             ".custom": {
@@ -185,7 +197,11 @@ describe("plugin-theme", () => {
       } as unknown as ConfigWithMeta);
 
       const plugin = viteThemePlugin();
-      const result = await callPluginLoad(plugin, resolvedVirtualModuleId);
+      const result = await callPluginTransform(
+        plugin,
+        "/* @vite-plugin-inject main */",
+        "/test/src/app/main.css",
+      );
 
       expect(result).toContain(".custom {");
       expect(result).toContain("color: red;");
@@ -376,14 +392,34 @@ describe("plugin-theme", () => {
       expect(result).toContain(
         "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');",
       );
-      expect(result).toContain(".base {");
-      expect(result).toContain("--root: 1;");
 
       // Verify overrides work - should contain config values, not registry values
       expect(result).toContain("--accent: #c0ffee;"); // Light override
       expect(result).toContain("--accent: #c1ffee;"); // Dark override
       expect(result).not.toContain("--accent: 210 40% 98%;"); // Registry light value
       expect(result).not.toContain("--accent: 215 28% 17%;"); // Registry dark value
+
+      // Test custom CSS in transform hook
+      vi.mocked(getCurrentConfig).mockReturnValue({
+        __meta: {
+          rootDir: "/test",
+          dependencies: [],
+        },
+        theme: {
+          customCss: {
+            ".base": { "--root": "1" },
+          },
+        },
+      } as unknown as ConfigWithMeta);
+
+      const transformResult = await callPluginTransform(
+        plugin,
+        "/* @vite-plugin-inject main */",
+        "/test/src/app/main.css",
+      );
+
+      expect(transformResult).toContain(".base {");
+      expect(transformResult).toContain("--root: 1;");
     });
   });
 });
