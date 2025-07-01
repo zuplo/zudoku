@@ -150,14 +150,6 @@ export const viteThemePlugin = (): Plugin => {
           .map((font) => `@import url('${font.url}');`),
       );
 
-      if (themeConfig.customCss) {
-        if (typeof themeConfig.customCss === "string") {
-          themeCss.push(themeConfig.customCss);
-        } else {
-          themeCss.push(processRegistryCustomCss(themeConfig.customCss));
-        }
-      }
-
       if (themeConfig.registryUrl) {
         try {
           const registryItem = await fetchShadcnRegistryItem(
@@ -323,6 +315,15 @@ export const viteThemePlugin = (): Plugin => {
       );
 
       code.push("}");
+
+      const customCss = config.theme?.customCss;
+      if (customCss) {
+        if (typeof customCss === "string") {
+          code.push(customCss);
+        } else {
+          code.push(processRegistryCustomCss(customCss));
+        }
+      }
 
       const defaultThemeImport = config.theme?.noDefaultTheme
         ? ""
