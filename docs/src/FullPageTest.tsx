@@ -35,7 +35,7 @@ const Link = ({
   href: string;
 }) => {
   return (
-    <a href={href} className="hover:underline decoration-4 underline-offset-4">
+    <a href={href} className="hover:underline decoration-2 underline-offset-4">
       {children}
     </a>
   );
@@ -63,13 +63,10 @@ const FullPageTest = () => {
             <Link href="/docs">Documentation</Link>
           </li>
           <li>
-            <Link href="/docs">Services</Link>
+            <Link href="/docs">Features</Link>
           </li>
           <li>
             <Link href="/docs">Community</Link>
-          </li>
-          <li>
-            <Link href="/docs">FAQ's</Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">
@@ -81,9 +78,9 @@ const FullPageTest = () => {
           </a>
           <a
             href="https://github.com/zuplo/zudoku"
-            className="flex text-sm items-center px-2 gap-2 rounded-full border border-[black] p-2 hover:bg-[#F0F1F4]"
+            className="flex text-sm items-center px-3 gap-2 rounded-full border border-[black]  p-2 hover:bg-black hover:text-white group"
           >
-            Star us on <GithubIcon className="w-5 h-5" />
+            Star us on <GithubIcon className="w-5 h-5 group-hover:fill-white" />
           </a>
         </div>
       </div>
@@ -95,13 +92,76 @@ const FullPageTest = () => {
             modern stack
           </span>
         </div>
-        <div className="flex gap-20 mt-12">
-          <img src="/tech/radix.svg" alt="stack" />
-          <img src="/tech/react.svg" alt="stack" />
-          <img src="/tech/typescript.svg" alt="stack" />
-          <img src="/tech/vite.svg" alt="stack" />
-          <img src="/tech/radix.svg" alt="stack" />
-        </div>
+        <ul className="flex items-center gap-20 mt-14 overflow-x-auto">
+          {[
+            {
+              href: "https://react.dev/",
+              src: "/tech/react.svg",
+              alt: "React",
+              height: 55,
+            },
+            {
+              href: "https://vitejs.dev/",
+              src: "/tech/vite.svg",
+              alt: "Vite",
+              height: 55,
+            },
+            {
+              href: "https://tailwindcss.com/",
+              src: "/tech/tailwind.svg",
+              alt: "Tailwind CSS",
+              height: 35,
+            },
+            {
+              href: "https://radix-ui.com/",
+              src: "/tech/radix.svg",
+              alt: "Radix UI",
+              height: 45,
+            },
+            {
+              href: "https://typescriptlang.org/",
+              src: "/tech/typescript.svg",
+              alt: "TypeScript",
+              height: 45,
+            },
+          ].map((tech) => (
+            <li
+              key={tech.href}
+              className="shrink-0 scale-95 opacity-60 saturate-25 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
+            >
+              <a href={tech.href} target="_blank" rel="noreferrer">
+                <img
+                  src={tech.src}
+                  alt={tech.alt}
+                  style={{ height: tech.height }}
+                />
+              </a>
+            </li>
+          ))}
+          {/* <a
+            href="https://tailwindcss.com/"
+            target="_blank"
+            rel="noreferrer"
+            className="shrink-0scale-95 grayscale-70 hover:grayscale-0 hover:scale-100 transition ease-in-out"
+          >
+            <img
+              src="/tech/tailwind.svg"
+              className="max-w-[240px]"
+              alt="Tailwind CSS"
+            />
+          </a>
+          <a
+            href="https://react.dev/"
+            target="_blank"
+            rel="noreferrer"
+            className="scale-95 grayscale-70 hover:grayscale-0 hover:scale-100 transition ease-in-out"
+          >
+            <img src="/tech/react.svg" alt="React" />
+          </a>
+          <img src="/tech/typescript.svg" alt="TypeScript" />
+          <img src="/tech/vite.svg" alt="Vite" />
+          <img src="/tech/radix.svg" alt="Radix UI" /> */}
+        </ul>
       </div>
       <div className="w-full">
         <div className="border-t border-[black] w-full flex justify-center">
