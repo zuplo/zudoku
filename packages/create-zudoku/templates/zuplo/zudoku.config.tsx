@@ -10,10 +10,9 @@ const config: ZudokuConfig = {
     pageTitle: "My Developer Portal",
     logo: {
       src: {
-        light: "/logolight.svg",
-        dark: "/logodark.svg",
+        light: "https://cdn.zuplo.com/assets/my-dev-portal-light.svg",
+        dark: "https://cdn.zuplo.com/assets/my-dev-portal-dark.svg",
       },
-      alt: "My Developer Portal",
     },
   },
   navigation: [

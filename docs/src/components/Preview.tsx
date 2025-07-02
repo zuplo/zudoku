@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cn } from "zudoku";
 import { MoonStarIcon, SunIcon } from "zudoku/icons";
 import PoweredByYou from "./PoweredByYou";
 
@@ -37,41 +38,43 @@ export const Preview = () => {
       />
       <Hero />
       <div className="px-10 w-full relative max-w-screen-xl mt-20">
-        <div className="border rounded-full border-[black] absolute -top-8 left-15 bg-white p-1.5 flex z-10">
-          <button
-            type="button"
-            className={`rounded-full p-3 px-8 ${
-              activeTab === "developer-portal" ? "bg-black text-white" : ""
-            }`}
-            onClick={() => setActiveTab("developer-portal")}
-          >
-            Developer Portal
-          </button>
-          <button
-            type="button"
-            className={`rounded-full p-3 px-8 ${activeTab === "api-reference" ? "bg-black text-white" : ""}`}
-            onClick={() => setActiveTab("api-reference")}
-          >
-            API Reference
-          </button>
-        </div>
-        <div className="border rounded-full border-[px-8] absolute -top-8 right-15 bg-white p-1.5 flex border-[black] gap-2 z-10">
-          <div className="rounded-full p-3  bg-[#FFEB79] text-black border-[black] border">
-            <SunIcon />
+        <div className="relative w-fit mx-auto">
+          <div className="border rounded-full border-[black] absolute -top-8 left-5 bg-white p-1.5 flex z-10">
+            <button
+              type="button"
+              className={`rounded-full p-3 px-8 ${
+                activeTab === "developer-portal" ? "bg-black text-white" : ""
+              }`}
+              onClick={() => setActiveTab("developer-portal")}
+            >
+              Developer Portal
+            </button>
+            <button
+              type="button"
+              className={`rounded-full p-3 px-8 ${activeTab === "api-reference" ? "bg-black text-white" : ""}`}
+              onClick={() => setActiveTab("api-reference")}
+            >
+              API Reference
+            </button>
           </div>
-          <div className="rounded-full p-3 ">
-            <MoonStarIcon />
+          <div className="border rounded-full border-[px-8] absolute -top-8 right-5 bg-white p-1.5 flex border-[black] gap-2 z-10">
+            <div className="rounded-full p-3  bg-[#FFEB79] text-black border-[black] border">
+              <SunIcon />
+            </div>
+            <div className="rounded-full p-3 ">
+              <MoonStarIcon />
+            </div>
           </div>
-        </div>
-        <div className="w-full border border-[black] rounded-3xl h-[600px] bg-black items-center mx-auto overflow-hidden">
-          <iframe
-            src={
-              import.meta.env.DEV
-                ? ``
-                : `/${activeTab === "developer-portal" ? "hello" : "api-placeholder"}`
-            }
-            className="w-full h-full"
-          ></iframe>
+          <img
+            src={`/light-portal.png`}
+            loading="lazy"
+            className={cn(activeTab === "api-reference" ? "hidden" : "")}
+          />
+          <img
+            src={`/light-api.png`}
+            loading="lazy"
+            className={cn(activeTab === "developer-portal" ? "hidden" : "")}
+          />
         </div>
       </div>
     </div>

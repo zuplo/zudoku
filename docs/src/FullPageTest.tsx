@@ -127,7 +127,7 @@ const FullPageTest = () => {
           ].map((tech) => (
             <li
               key={tech.href}
-              className="shrink-0 scale-95 opacity-60 saturate-25 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
+              className="shrink-0 scale-95 opacity-60 saturate-0 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
             >
               <a href={tech.href} target="_blank" rel="noreferrer">
                 <img
@@ -549,19 +549,19 @@ const FullPageTest = () => {
             <GithubIcon />
           </div>
           <a
-            href=""
+            href="https://github.com/zuplo/zudoku"
             className="hover:underline decoration-2 underline-offset-4"
           >
             View on GitHub
           </a>
           <a
-            href=""
+            href="https://cosmocargo.dev"
             className="hover:underline decoration-2 underline-offset-4"
           >
             See Live Example
           </a>
           <a
-            href=""
+            href="https://zudoku.dev/docs"
             className="hover:underline decoration-2 underline-offset-4"
           >
             Documentation
