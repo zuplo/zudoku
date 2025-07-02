@@ -7,7 +7,7 @@ import type { ZudokuConfig } from "zudoku";
  */
 const config: ZudokuConfig = {
   site: {
-    pageTitle: "My Developer Portal",
+    title: "My Developer Portal",
     logo: {
       src: {
         light: "https://cdn.zuplo.com/assets/my-dev-portal-light.svg",
