@@ -126,6 +126,7 @@ const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
   alt: z.string().optional(),
   width: z.string().or(z.number()).optional(),
+  href: z.string().optional(),
 });
 
 export const FooterSocialIcons = [
