@@ -7,7 +7,6 @@ const BadgeSchema = z.object({
   label: z.string(),
   // prettier-ignore
   color: z.enum(["green", "blue", "yellow", "red", "purple", "indigo", "gray", "outline"]),
-  invert: z.boolean().optional(),
 });
 
 const InputNavigationCategoryLinkDocSchema = z.union([
@@ -43,7 +42,6 @@ const InputNavigationLinkSchema = z.object({
   to: z.string(),
   label: z.string(),
   icon: IconSchema.optional(),
-  description: z.string().optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
 });
@@ -63,7 +61,6 @@ const BaseInputNavigationCategorySchema = z.object({
   type: z.literal("category"),
   icon: IconSchema.optional(),
   label: z.string(),
-  description: z.string().optional(),
   collapsible: z.boolean().optional(),
   collapsed: z.boolean().optional(),
   link: InputNavigationCategoryLinkDocSchema.optional(),

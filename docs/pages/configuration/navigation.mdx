@@ -76,13 +76,15 @@ Navigation items can be of these types: `category`, `doc`, `link`, or `custom-pa
 ```ts
 type NavigationLink = {
   type: "link";
-  label: string;
   to: string;
+  label: string;
+  icon?: string; // Lucide icon name
   description?: string;
   badge?: {
     label: string;
-    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
+  display?: "auth" | "anon" | "always" | "hide";
 };
 ```
 </details>
@@ -113,12 +115,15 @@ The `category` type groups related items under a collapsible section. The `label
 ```ts
 type NavigationCategory = {
   type: "category";
-  label: string;
-  items: Array<SidebarDoc | SidebarLink | SidebarCategory>[];
   icon?: string; // Lucide icon name
-  link?: string | SidebarLink;
+  items: Array<
+    NavigationDoc | NavigationLink | NavigationCategory | NavigationCustomPage
+  >;
+  label: string;
   collapsible?: boolean;
   collapsed?: boolean;
+  link?: string | { type: "doc"; file: string; label?: string };
+  display?: "auth" | "anon" | "always" | "hide";
 };
 ```
 
@@ -126,7 +131,7 @@ type NavigationCategory = {
 
 ### `type: doc`
 
-Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `id` is the file path associated with a markdown file.
+Doc is used to reference markdown files. The `label` is the text that will be displayed, and the `file` is the file path associated with a markdown file.
 
 ```json
 {
@@ -148,8 +153,17 @@ type NavigationDoc = {
   label?: string;
   badge?: {
     label: string;
-    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray";
+    color:
+      | "green"
+      | "blue"
+      | "yellow"
+      | "red"
+      | "purple"
+      | "indigo"
+      | "gray"
+      | "outline";
   };
+  display?: "auth" | "anon" | "always" | "hide";
 };
 ```
 
@@ -199,6 +213,69 @@ Custom pages allow you to create standalone pages that are not tied to a Markdow
   type: "custom-page",
   path: "/a-custom-page",
   element: <MyCustomPage />,
+  display: "always"
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationCustomPage = {
+  type: "custom-page";
+  path: string;
+  label?: string;
+  element: any;
+  icon?: string; // Lucide icon name
+  badge?: {
+    label: string;
+    color:
+      | "green"
+      | "blue"
+      | "yellow"
+      | "red"
+      | "purple"
+      | "indigo"
+      | "gray"
+      | "outline";
+    invert?: boolean;
+  };
+  display?: "auth" | "anon" | "always" | "hide";
+};
+```
+
+</details>
+
+## Display Control
+
+All navigation items support a `display` property that controls when the item should be visible:
+
+- `"always"` (default): Always visible
+- `"auth"`: Only visible when user is authenticated
+- `"anon"`: Only visible when user is not authenticated
+- `"hide"`: Never visible (useful for temporarily hiding items)
+
+```json
+{
+  "type": "link",
+  "label": "Admin Panel",
+  "to": "/admin",
+  "display": "auth"
+}
+```
+
+## Badges
+
+Navigation items can display badges with labels and colors. Badges support an optional `invert` property for styling:
+
+```json
+{
+  "type": "doc",
+  "file": "api/v2",
+  "badge": {
+    "label": "Beta",
+    "color": "yellow"
+  }
 }
 ```
 
