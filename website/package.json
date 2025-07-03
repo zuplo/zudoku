@@ -30,7 +30,7 @@
     "eslint-config-next": "15.3.4",
     "postcss": "8.5.6",
     "shiki": "3.7.0",
-    "tailwindcss": "4.1.10",
+    "tailwindcss": "4.1.11",
     "typescript": "5.8.3"
   }
 }
