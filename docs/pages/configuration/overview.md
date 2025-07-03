@@ -86,7 +86,7 @@ Controls global page attributes across the site, including logos and the site ti
         "light": "/logos/zudoku-light.svg",
         "dark": "/logos/zudoku-dark.svg"
       },
-      "width": "99px",
+      "width": "99px"
     }
   }
   // ...
