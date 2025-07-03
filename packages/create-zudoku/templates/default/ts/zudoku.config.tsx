@@ -6,7 +6,6 @@ const config: ZudokuConfig = {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
       width: "130px",
-      href: "/",
     },
   },
   navigation: [

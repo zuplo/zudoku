@@ -57,7 +57,6 @@ Configure the site's logo with different versions for light and dark themes:
       },
       alt: "Company Logo",
       width: "120px" // optional width
-      href: "/"
     }
   }
 }
@@ -104,7 +103,6 @@ Here's a comprehensive example showing all available page configuration options:
       },
       alt: "Company Logo",
       width: "100px",
-      href: "/"
     },
     banner: {
       message: "Welcome to our documentation!",
