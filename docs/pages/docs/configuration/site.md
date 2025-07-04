@@ -22,6 +22,7 @@ const config = {
         dark: "/path/to/dark-logo.png",
       },
       alt: "Company Logo",
+      href: "/",
     },
     // Other options...
   },
@@ -101,7 +102,7 @@ Here's a comprehensive example showing all available page configuration options:
         dark: "/images/logo-dark.svg"
       },
       alt: "Company Logo",
-      width: "100px"
+      width: "100px",
     },
     banner: {
       message: "Welcome to our documentation!",

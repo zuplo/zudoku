@@ -90,7 +90,7 @@ export const Header = memo(function HeaderInner() {
         <PageProgress />
         <div className="max-w-screen-2xl mx-auto flex items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
           <div className="flex">
-            <Link to="/">
+            <Link to={site?.logo?.href ?? "/"}>
               <div className="flex items-center gap-3.5">
                 {site?.logo ? (
                   <>

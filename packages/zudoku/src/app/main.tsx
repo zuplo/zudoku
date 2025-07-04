@@ -82,22 +82,13 @@ export const getRoutesByOptions = (
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
     .concat(
       enableStatusPages
-        ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
-            (statusCode) => ({
-              path: `/${statusCode}`,
-              element: <StatusPage statusCode={statusCode} />,
-            }),
-          )
+        ? [400, 404, 500].map((statusCode) => ({
+            path: `/${statusCode}`,
+            element: <StatusPage statusCode={statusCode} />,
+          }))
         : [],
     )
-    .concat([
-      {
-        path: "*",
-        loader: () => {
-          throw new Response("Not Found", { status: 404 });
-        },
-      },
-    ]);
+    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }]);
 
   // @TODO Detect conflicts in routes and log warning
 
@@ -125,6 +116,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
           <Outlet />
         </Zudoku>
       ),
+      hydrateFallbackElement: <div>Loading...</div>,
       children: [
         {
           element: <RouteGuard />,
