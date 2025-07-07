@@ -1,7 +1,10 @@
 import path from "node:path";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import type { FontConfig } from "../config/validators/validate.js";
+import type {
+  FontConfig,
+  ZudokuConfig,
+} from "../config/validators/validate.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 import {
   fetchShadcnRegistryItem,
@@ -118,6 +121,83 @@ const processFontConfig = (fontConfig?: FontConfig) => {
   };
 };
 
+const processFonts = async (themeConfig: ZudokuConfig["theme"]) => {
+  const imports: string[] = [];
+  const families = {
+    sans: "Geist, sans-serif",
+    serif: undefined as string | undefined,
+    mono: '"Geist Mono", monospace',
+  };
+
+  // Process user fonts
+  const userFonts = {
+    sans: processFontConfig(themeConfig?.fonts?.sans),
+    serif: processFontConfig(themeConfig?.fonts?.serif),
+    mono: processFontConfig(themeConfig?.fonts?.mono),
+  };
+
+  // Add user font imports
+  for (const font of Object.values(userFonts)) {
+    if (font.url) {
+      imports.push(font.url);
+    }
+  }
+
+  // Process registry fonts if available
+  let registryFonts = {
+    sans: undefined as string | undefined,
+    serif: undefined as string | undefined,
+    mono: undefined as string | undefined,
+  };
+
+  if (themeConfig?.registryUrl) {
+    try {
+      const registryItem = await fetchShadcnRegistryItem(
+        themeConfig.registryUrl,
+      );
+      const { cssVars = {} } = registryItem;
+      const { theme: regThemeVars = {}, light: regLightVars = {} } = cssVars;
+
+      registryFonts = {
+        sans: regLightVars["font-sans"] ?? regThemeVars["font-sans"],
+        serif: regLightVars["font-serif"] ?? regThemeVars["font-serif"],
+        mono: regLightVars["font-mono"] ?? regThemeVars["font-mono"],
+      };
+
+      // Add registry font imports
+      for (const font of Object.values(registryFonts)) {
+        if (font) {
+          imports.push(...processFont(font));
+        }
+      }
+    } catch (error) {
+      // Registry fonts failed to load, continue with user fonts and defaults
+    }
+  }
+
+  // Determine final font families with priority: user > registry > defaults
+  families.sans =
+    userFonts.sans.fontFamily || registryFonts.sans || "Geist, sans-serif";
+  families.serif = userFonts.serif.fontFamily || registryFonts.serif;
+  families.mono =
+    userFonts.mono.fontFamily ||
+    registryFonts.mono ||
+    '"Geist Mono", monospace';
+
+  // Add default font imports if no user or registry fonts
+  if (!userFonts.sans.fontFamily && !registryFonts.sans) {
+    imports.push(getGoogleFontUrl("Geist"));
+  }
+  if (!userFonts.serif.fontFamily && !registryFonts.serif) {
+    imports.push(getGoogleFontUrl("Playfair Display"));
+  }
+  if (!userFonts.mono.fontFamily && !registryFonts.mono) {
+    imports.push(getGoogleFontUrl("Geist Mono"));
+  }
+
+  return { imports, families };
+};
+
 export const virtualModuleId = "virtual:zudoku-theme.css";
 export const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
@@ -140,20 +220,16 @@ export const viteThemePlugin = (): Plugin => {
 
       const themeConfig = config.theme ?? {};
       const themeCss: string[] = [];
-      const fontImports: string[] = [];
 
-      const userFonts = {
-        sans: processFontConfig(themeConfig.fonts?.sans),
-        serif: processFontConfig(themeConfig.fonts?.serif),
-        mono: processFontConfig(themeConfig.fonts?.mono),
-      };
+      // Consolidate all font processing
+      const fonts = await processFonts(themeConfig);
 
-      fontImports.push(
-        ...Object.values(userFonts)
-          .filter((font) => font.url)
-          .map((font) => `@import url('${font.url}');`),
-      );
+      // Add all font imports at once
+      if (fonts.imports.length > 0) {
+        themeCss.push(...fonts.imports.map((url) => `@import url('${url}');`));
+      }
 
+      // Handle registry theme variables
       if (themeConfig.registryUrl) {
         try {
           const registryItem = await fetchShadcnRegistryItem(
@@ -162,11 +238,7 @@ export const viteThemePlugin = (): Plugin => {
 
           // Extract theme variables from registry
           const { cssVars = {}, css = {} } = registryItem;
-          const {
-            theme: regThemeVars = {},
-            light: regLightVars = {},
-            dark: regDarkVars = {},
-          } = cssVars;
+          const { light: regLightVars = {}, dark: regDarkVars = {} } = cssVars;
 
           // Process custom CSS from registry
           if (Object.keys(css).length > 0) {
@@ -201,18 +273,6 @@ export const viteThemePlugin = (): Plugin => {
             themeCss.push(`.dark {\n${generateRegistryCss(darkVars)}\n}`);
           }
 
-          const themeFonts = {
-            sans: lightVars["font-sans"] ?? regThemeVars["font-sans"],
-            serif: lightVars["font-serif"] ?? regThemeVars["font-serif"],
-            mono: lightVars["font-mono"] ?? regThemeVars["font-mono"],
-          };
-
-          fontImports.push(
-            ...Object.values(themeFonts)
-              .flatMap((font) => (font ? processFont(font) : []))
-              .map((family) => `@import url('${family}');`),
-          );
-
           if (lightVars["letter-spacing"] !== "0em") {
             themeCss.push(
               "@theme inline {",
@@ -241,39 +301,19 @@ export const viteThemePlugin = (): Plugin => {
         themeCss.push(`.dark {\n${generateCss(themeConfig.dark)}\n}`);
       }
 
-      // Add default font imports for missing fonts
-      if (!userFonts.sans.fontFamily) {
-        fontImports.push(`@import url('${getGoogleFontUrl("Geist")}');`);
-      }
-      if (!userFonts.serif.fontFamily) {
-        fontImports.push(
-          `@import url('${getGoogleFontUrl("Playfair Display")}');`,
-        );
-      }
-      if (!userFonts.mono.fontFamily) {
-        fontImports.push(`@import url('${getGoogleFontUrl("Geist Mono")}');`);
-      }
-
-      // Set font families with defaults for undefined ones
-      const fontFamilies = {
-        sans: userFonts.sans.fontFamily || "Geist, sans-serif",
-        serif: userFonts.serif.fontFamily,
-        mono: userFonts.mono.fontFamily || '"Geist Mono", monospace',
-      };
-
-      // Generate CSS for all font families
+      // Add font family CSS variables
       const rootVars = [
-        `  --font-sans: ${fontFamilies.sans};`,
-        `  --font-mono: ${fontFamilies.mono};`,
+        `  --font-sans: ${fonts.families.sans};`,
+        `  --font-mono: ${fonts.families.mono};`,
       ];
 
-      if (fontFamilies.serif) {
-        rootVars.push(`  --font-serif: ${fontFamilies.serif};`);
+      if (fonts.families.serif) {
+        rootVars.push(`  --font-serif: ${fonts.families.serif};`);
       }
 
       themeCss.push(":root {", ...rootVars, "}");
 
-      return [...fontImports, ...themeCss].join("\n");
+      return themeCss.join("\n");
     },
 
     // Handle static theme content in main.css
