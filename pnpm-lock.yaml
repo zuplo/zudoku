@@ -451,8 +451,8 @@ importers:
         specifier: 1.2.3
         version: 1.2.3(@types/react-dom@19.1.6(@types/react@19.1.8))(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@scalar/openapi-parser':
-        specifier: 0.10.17
-        version: 0.10.17
+        specifier: 0.18.0
+        version: 0.18.0
       '@sentry/node':
         specifier: 9.26.0
         version: 9.26.0
@@ -3489,9 +3489,9 @@ packages:
   '@rushstack/eslint-patch@1.12.0':
     resolution: {integrity: sha512-5EwMtOqvJMMa3HbmxLlF74e+3/HhwBTMcvt3nqVJgGCozO6hzIPOBlwm8mGVNR9SN2IJpxSnlxczyDjcn7qIyw==}
 
-  '@scalar/openapi-parser@0.10.17':
-    resolution: {integrity: sha512-SO+vw+kv8xEROJ527KpiT5ccAVQZuE6n8G4qTN6b72QVT0URHoLwr8uHQQnEGlyA0QhAx7En+lKD1Hy39xZ9oQ==}
-    engines: {node: '>=18'}
+  '@scalar/openapi-parser@0.18.0':
+    resolution: {integrity: sha512-qAWEfJR5f/LwSFULFeSkD56LHgU9ovyj+e1uqy9XaW9Hb9P0ewIGKi+Gd4wTyxfFkdPLXTFYXApjviP6jV+new==}
+    engines: {node: '>=20'}
 
   '@sentry-internal/browser-utils@9.30.0':
     resolution: {integrity: sha512-e6ZlN8oWheCB0YJSGlBNUlh6UPnY5Ecj1P+/cgeKBhNm7c3bIx4J50485hB8LQsu+b7Q11L2o/wucZ//Pb6FCg==}
@@ -11915,7 +11915,7 @@ snapshots:
 
   '@rushstack/eslint-patch@1.12.0': {}
 
-  '@scalar/openapi-parser@0.10.17':
+  '@scalar/openapi-parser@0.18.0':
     dependencies:
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)
