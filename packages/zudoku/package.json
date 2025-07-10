@@ -213,7 +213,7 @@
     "@sindresorhus/slugify": "2.2.1",
     "@stefanprobst/rehype-extract-toc": "3.0.0",
     "@tailwindcss/typography": "0.5.16",
-    "@tailwindcss/vite": "4.1.7",
+    "@tailwindcss/vite": "4.1.11",
     "@tanem/react-nprogress": "5.0.55",
     "@tanstack/react-query": "5.81.5",
     "@types/react": "catalog:",
