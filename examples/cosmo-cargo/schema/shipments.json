@@ -2757,14 +2757,15 @@
         "operationId": "getRouteEstimate",
         "parameters": [
           {
-            "name": "originFacilityId",
+            "name": "serviceLevel",
             "in": "path",
             "required": true,
             "schema": {
+              "default": "STANDARD",
               "type": "string",
-              "example": "LAX1"
+              "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
             },
-            "description": "ID of the origin facility"
+            "description": "Service level for the route"
           },
           {
             "name": "destinationFacilityId",
@@ -2777,15 +2778,14 @@
             "description": "ID of the destination facility"
           },
           {
-            "name": "serviceLevel",
+            "name": "originFacilityId",
             "in": "path",
             "required": true,
             "schema": {
-              "default": "STANDARD",
               "type": "string",
-              "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
+              "example": "LAX1"
             },
-            "description": "Service level for the route"
+            "description": "ID of the origin facility"
           }
         ],
         "responses": {

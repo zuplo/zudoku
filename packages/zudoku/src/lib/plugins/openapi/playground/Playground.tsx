@@ -154,6 +154,12 @@ export const Playground = ({
     formRef.current?.requestSubmit();
   });
 
+  const pathParamOrder =
+    url.match(/\{([^}]+)\}/g)?.map((match) => match.slice(1, -1)) ?? [];
+  const sortedPathParams = [...pathParams].sort(
+    (a, b) => pathParamOrder.indexOf(a.name) - pathParamOrder.indexOf(b.name),
+  );
+
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
       defaultValues: {
@@ -174,7 +180,7 @@ export const Playground = ({
                   enum: [],
                 },
               ],
-        pathParams: pathParams.map((param) => ({
+        pathParams: sortedPathParams.map((param) => ({
           name: param.name,
           value: param.defaultValue ?? "",
         })),
@@ -472,7 +478,7 @@ export const Playground = ({
                 </Collapsible>
               )}
 
-              {pathParams.length > 0 && (
+              {sortedPathParams.length > 0 && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <ShapesIcon size={16} />

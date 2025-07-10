@@ -39,7 +39,7 @@ export const PathParams = ({
               )}
             />
 
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center col-span-2">
               <Controller
                 control={control}
                 name={`pathParams.${i}.value`}
