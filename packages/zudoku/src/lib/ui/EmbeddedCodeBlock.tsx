@@ -40,7 +40,7 @@ export const EmbeddedCodeBlock = ({
     >
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
+          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar [&>pre]:p-4",
           props.className,
         )}
         ref={ref}
