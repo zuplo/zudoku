@@ -76,7 +76,7 @@ export const CodeBlock = ({
       </div>
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
+          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar [&>code]:p-4",
           props.className,
         )}
         ref={ref}

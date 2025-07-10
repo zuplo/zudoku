@@ -104,7 +104,7 @@ export const SidecarExamples = ({
               embedded
               language={language}
               noBackground
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px] p-2"
+              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
               code={formattedExample}
             />
           </CollapsibleCode>
