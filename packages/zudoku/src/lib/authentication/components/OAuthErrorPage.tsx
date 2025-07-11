@@ -80,7 +80,7 @@ export function OAuthErrorPage({ error }: { error: any }) {
   }
 
   const oauthError = error.error;
-  const type = oauthError.type;
+  const type = oauthError.error;
 
   const details = errorDetailsMap[type] ?? errorDetailsMap.unknown_error;
 

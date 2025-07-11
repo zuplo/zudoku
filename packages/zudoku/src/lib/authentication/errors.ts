@@ -1,20 +1,13 @@
+import type { OAuth2Error } from "oauth4webapi";
+import { ZudokuError, type ZudokuErrorOptions } from "../util/invariant.js";
+
 export class AuthorizationError extends Error {}
 
-export type OAuthError = {
-  readonly type: OAuthErrorType | ({} & string);
-  readonly error_description?: string;
-  readonly error_uri?: string;
-  readonly algs?: string;
-  readonly scope?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly [parameter: string]: any | undefined;
-};
-
-export class OAuthAuthorizationError extends AuthorizationError {
+export class OAuthAuthorizationError extends ZudokuError {
   constructor(
     message: string,
-    public error: OAuthError,
-    options?: ErrorOptions,
+    public error: OAuth2Error,
+    options?: ZudokuErrorOptions,
   ) {
     super(message, options);
   }

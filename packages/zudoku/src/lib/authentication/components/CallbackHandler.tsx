@@ -3,7 +3,7 @@ import { Navigate } from "react-router";
 import { useZudoku } from "zudoku/components";
 import { joinUrl } from "../../util/joinUrl.js";
 import { normalizeRedirectUrl } from "../../util/url.js";
-import { OAuthAuthorizationError, OAuthErrorType } from "../errors.js";
+import { OAuthAuthorizationError, type OAuthErrorType } from "../errors.js";
 
 export function CallbackHandler({
   handleCallback,
@@ -25,7 +25,7 @@ export function CallbackHandler({
         throw new OAuthAuthorizationError(
           `OAuth error '${errorParam}': ${errorDescription}`,
           {
-            type: errorParam as OAuthErrorType,
+            error: errorParam as OAuthErrorType,
             error_description: errorDescription,
             error_uri: errorUri,
           },
