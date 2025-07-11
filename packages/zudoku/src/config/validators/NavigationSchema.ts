@@ -88,9 +88,10 @@ export class NavigationResolver {
     filePath: string,
     categoryLabel?: string,
   ): Promise<NavigationDoc | undefined> {
+    const fileNoExt = filePath.replace(/\.mdx?$/, "");
     const foundMatches = this.globFiles.find(
       (file) =>
-        file.endsWith(`${filePath}.md`) || file.endsWith(`${filePath}.mdx`),
+        file.endsWith(`${fileNoExt}.md`) || file.endsWith(`${fileNoExt}.mdx`),
     );
 
     if (!foundMatches) {
@@ -117,7 +118,7 @@ export class NavigationResolver {
       label,
       icon,
       categoryLabel,
-      path: filePath,
+      path: fileNoExt,
     } satisfies NavigationDoc;
 
     return doc;
