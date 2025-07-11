@@ -192,6 +192,16 @@ export class DevServer {
 
     this.terminator = createHttpTerminator({ server });
 
+    // Manually set resolved URLs on the Vite server since we're managing the HTTP server
+    if (this.options.open) {
+      const url = `${this.protocol}://localhost:${this.resolvedPort}`;
+      vite.resolvedUrls = {
+        local: [`${url}${vite.config.base || "/"}`],
+        network: [],
+      };
+      vite.openBrowser();
+    }
+
     return { vite, express: app };
   }
 
