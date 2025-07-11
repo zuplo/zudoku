@@ -1,9 +1,9 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Navigate } from "react-router";
 import { useZudoku } from "zudoku/components";
-import { ZudokuError } from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { normalizeRedirectUrl } from "../../util/url.js";
+import { OAuthAuthorizationError, OAuthErrorType } from "../errors.js";
 
 export function CallbackHandler({
   handleCallback,
@@ -15,22 +15,29 @@ export function CallbackHandler({
     retry: false,
     queryKey: ["oauth-callback"],
     queryFn: async () => {
-      try {
-        return joinUrl(
-          normalizeRedirectUrl(
-            await handleCallback(),
-            window.location.origin,
-            options.basePath,
-          ),
+      const url = new URL(window.location.href);
+
+      const errorParam = url.searchParams.get("error");
+      const errorDescription =
+        url.searchParams.get("error_description") ?? undefined;
+      const errorUri = url.searchParams.get("error_uri") ?? undefined;
+      if (errorParam) {
+        throw new OAuthAuthorizationError(
+          `OAuth error '${errorParam}': ${errorDescription}`,
+          {
+            type: errorParam as OAuthErrorType,
+            error_description: errorDescription,
+            error_uri: errorUri,
+          },
         );
-      } catch (error) {
-        throw new ZudokuError("Could not validate user", {
-          cause: error,
-          title: "Authentication Error",
-          developerHint:
-            "Check the configuration of your authorization provider and ensure all settings such as the callback URL are configured correctly.",
-        });
       }
+      return joinUrl(
+        normalizeRedirectUrl(
+          await handleCallback(),
+          window.location.origin,
+          options.basePath,
+        ),
+      );
     },
   });
 
