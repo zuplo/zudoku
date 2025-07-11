@@ -66,7 +66,7 @@ export const Heading = ({
   return (
     <Component
       className={heading({
-        className: cn(className, "flex items-center gap-[0.33em]"),
+        className: cn("flex items-center gap-[0.33em]", className),
         level,
       })}
       ref={registerNavigationAnchor ? ref : undefined}

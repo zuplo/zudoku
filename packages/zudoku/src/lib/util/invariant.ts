@@ -18,17 +18,19 @@ export default function invariant(
   throw new ZudokuError(provided ?? "Invariant failed");
 }
 
+export type ZudokuErrorOptions = {
+  developerHint?: string;
+  title?: string;
+  cause?: Error;
+};
+
 export class ZudokuError extends Error {
   public developerHint: string | undefined;
   public title: string | undefined;
 
   constructor(
     message: string,
-    {
-      developerHint,
-      title,
-      cause,
-    }: { developerHint?: string; title?: string; cause?: Error } = {},
+    { developerHint, title, cause }: ZudokuErrorOptions = {},
   ) {
     super(message, { cause });
     this.name = "ZudokuError";

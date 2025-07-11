@@ -1,5 +1,6 @@
 import logger from "loglevel";
 import * as oauth from "oauth4webapi";
+import { ErrorBoundary } from "react-error-boundary";
 import { type OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -9,6 +10,7 @@ import {
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
+import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { useAuthState, type UserProfile } from "../state.js";
 
@@ -442,7 +444,11 @@ export class OpenIDAuthenticationProvider
         path: OPENID_CALLBACK_PATH,
         element: (
           <ClientOnly>
-            <CallbackHandler handleCallback={this.handleCallback} />
+            <ErrorBoundary
+              fallbackRender={({ error }) => <OAuthErrorPage error={error} />}
+            >
+              <CallbackHandler handleCallback={this.handleCallback} />
+            </ErrorBoundary>
           </ClientOnly>
         ),
       },
