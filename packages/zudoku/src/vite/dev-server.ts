@@ -82,7 +82,6 @@ export class DevServer {
 
     viteConfig.server = {
       ...viteConfig.server,
-      open: this.options.open,
       hmr: { server },
     };
 
