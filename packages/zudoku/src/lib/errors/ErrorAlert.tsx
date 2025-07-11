@@ -23,13 +23,11 @@ export function ErrorAlert({ error }: { error: unknown }) {
       Error: {message}
       {hint && <DeveloperHint className="mb-4">{hint}</DeveloperHint>}
       {stringError && (
-        <div>
-          <SyntaxHighlight
-            className="max-h-[400px] border mt-2"
-            language="js"
-            code={stringError}
-          />
-        </div>
+        <SyntaxHighlight
+          className="max-h-[400px] [&>pre]:p-4"
+          language="js"
+          code={stringError}
+        />
       )}
     </Typography>
   );

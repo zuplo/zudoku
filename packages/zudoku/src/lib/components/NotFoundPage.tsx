@@ -18,9 +18,10 @@ export const NotFoundPage = () => {
       <DeveloperHint>
         Start by adding a file at{" "}
         <code>
-          {"{PROJECT_ROOT}"}/{params["*"]}.mdx
+          {"{DOCUCMENT_ROOT}"}/{params["*"]}.mdx
         </code>{" "}
-        and add some content to make this error go away.
+        and add some content to make this error go away. By default{" "}
+        <code>DOCUMENT_ROOT</code> is the `pages` directory.
       </DeveloperHint>
       <p>
         It seems that the page you are looking for does not exist or may have
