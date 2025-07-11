@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { MarkdownHooks, type Components } from "react-markdown";
+import ReactMarkdown, { type Components } from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 import { createConfiguredShikiRehypePlugins } from "../shiki.js";
@@ -35,13 +35,13 @@ export const Markdown = memo(
 
     return (
       <Typography className={className}>
-        <MarkdownHooks
+        <ReactMarkdown
           remarkPlugins={remarkPlugins}
           rehypePlugins={rehypePlugins}
           components={mdComponents}
         >
           {content}
-        </MarkdownHooks>
+        </ReactMarkdown>
       </Typography>
     );
   },
