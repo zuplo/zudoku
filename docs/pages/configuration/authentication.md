@@ -107,7 +107,7 @@ For authentication services that support OpenID, you will need to supply an `cli
 When configuring your OpenID provider, you will need to set the following:
 
 - Callback or Redirect URI to `https://your-site.com/oauth/callback`.
-- If your provider supports wildcard callback urls, we recommend configuring your development identity provider to allow the a wildcard callback like `https://*.zuplo.app/oauth/callback` to allow for testing each environment.
+- If your provider supports wildcard callback urls, we recommend configuring your development identity provider to allow the a wildcard callback like `https://*.zuplo.site/oauth/callback` to allow for testing each environment.
 - For local development set the callback url to `http://localhost:3000/oauth/callback`.
 - Add your site hostname (your-site.com) to the list of allowed CORS origins.
 
