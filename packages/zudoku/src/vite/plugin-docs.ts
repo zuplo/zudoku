@@ -86,18 +86,26 @@ const viteDocsPlugin = (): Plugin => {
 
         // Collect only files that are referenced in navigation
         traverseNavigation(resolvedNavigation, (item) => {
-          if (item.type === "doc") {
-            const fileRoutePath = ensureLeadingSlash(
-              item.file.replace(/\.mdx?$/, ""),
-            );
-            const importPath = allGlobbedFiles[fileRoutePath];
-            if (importPath) {
-              const finalPath = item.path
-                ? ensureLeadingSlash(item.path)
-                : fileRoutePath;
-              navigationFileImports[finalPath] = importPath;
-            }
-          }
+          const doc =
+            item.type === "doc"
+              ? { file: item.file, path: item.path }
+              : item.type === "category" && item.link
+                ? { file: item.link.file, path: item.link.path }
+                : undefined;
+
+          if (!doc) return;
+
+          const fileRoutePath = ensureLeadingSlash(
+            doc.file.replace(/\.mdx?$/, ""),
+          );
+          const importPath = allGlobbedFiles[fileRoutePath];
+          if (!importPath) return;
+
+          const finalPath = doc.path
+            ? ensureLeadingSlash(doc.path)
+            : fileRoutePath;
+
+          navigationFileImports[finalPath] = importPath;
         });
       }
 
