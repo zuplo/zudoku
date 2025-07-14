@@ -19,7 +19,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
             <Spinner />
           </div>
         )}
-        {isPending ? <div className="invisible">{children}</div> : children}
+        <span className={cn("block", isPending && "invisible")}>{children}</span>
       </Button>
     );
   },
