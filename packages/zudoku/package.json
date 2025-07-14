@@ -246,7 +246,7 @@
     "json-schema-to-typescript-lite": "14.1.0",
     "loglevel": "1.9.2",
     "lru-cache": "11.0.2",
-    "lucide-react": "0.515.0",
+    "lucide-react": "0.525.0",
     "minimatch": "10.0.1",
     "motion": "12.18.1",
     "nanoevents": "^9.1.0",
