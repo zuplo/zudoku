@@ -218,7 +218,7 @@
     "@tanstack/react-query": "5.81.5",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "4.4.1",
+    "@vitejs/plugin-react": "4.6.0",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
     "allof-merge": "0.6.6",
