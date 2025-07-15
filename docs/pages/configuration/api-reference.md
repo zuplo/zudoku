@@ -161,6 +161,19 @@ Example:
 }
 ```
 
+### Tag Groups
+
+Use `x-tagGroups` at the root of your OpenAPI document to group tags together in the navigation:
+
+```yaml
+x-tagGroups:
+  - name: Shipment
+    tags:
+      - Packages
+      - Parcels
+      - Letters
+```
+
 ## Metadata
 
 Your API reference page metadata is sourced directly from your OpenAPI spec. The [`info`](https://spec.openapis.org/oas/v3.1.0#info-object) object is used set the corresponding tags in the page's `head`.
