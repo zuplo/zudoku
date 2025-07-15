@@ -2,7 +2,6 @@ import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
 import { type NavigationItem } from "../../../config/validators/NavigationSchema.js";
-import { useAuth } from "../../authentication/hook.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS } from "../cache.js";
@@ -46,13 +45,8 @@ const getItemPath = (item: NavigationItem) => {
   }
 };
 export const useCurrentNavigation = () => {
-  const { getPluginNavigation, navigation, options } = useZudoku();
+  const { getPluginNavigation, navigation } = useZudoku();
   const location = useLocation();
-  const auth = useAuth();
-
-  const isProtectedRoute = options.protectedRoutes?.some((route) =>
-    matchPath(route, location.pathname),
-  );
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
     if (getItemPath(item) === location.pathname) {
@@ -88,13 +82,11 @@ export const useCurrentNavigation = () => {
       })?.item;
   }
 
-  const hasNavigation =
-    auth.isAuthEnabled && !auth.isAuthenticated && isProtectedRoute;
-
   return {
-    navigation: hasNavigation
-      ? []
-      : [...(navItem?.type === "category" ? navItem.items : []), ...data],
+    navigation: [
+      ...(navItem?.type === "category" ? navItem.items : []),
+      ...data,
+    ],
     topNavItem,
   };
 };
