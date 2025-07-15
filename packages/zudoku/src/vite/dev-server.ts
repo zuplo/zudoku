@@ -192,7 +192,7 @@ export class DevServer {
     this.terminator = createHttpTerminator({ server });
 
     // Manually set resolved URLs on the Vite server since we're managing the HTTP server
-    if (this.options.open) {
+    if (this.options.open || process.env.ZUDOKU_OPEN_BROWSER) {
       const url = `${this.protocol}://localhost:${this.resolvedPort}`;
       vite.resolvedUrls = {
         local: [`${url}${vite.config.base || "/"}`],

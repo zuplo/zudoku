@@ -16,6 +16,7 @@ import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
 import { InputNavigationSchema } from "./InputNavigationSchema.js";
+import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
 
 const ThemeSchema = z
   .object({
@@ -482,7 +483,7 @@ const BaseConfigSchema = z.object({
     remarkPlugins?: Options["remarkPlugins"];
     rehypePlugins?: Options["rehypePlugins"];
   }>(),
-  protectedRoutes: z.array(z.string()).optional(),
+  protectedRoutes: ProtectedRoutesSchema,
   basePath: z.string().optional(),
   canonicalUrlOrigin: z.string().optional(),
   cdnUrl: CdnUrlSchema.optional(),

@@ -11,7 +11,11 @@ To implement the authentication option for your site, add the `authentication` p
 
 ## Protected Routes
 
-You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property takes an array of path patterns that match the routes you want to protect. When a user tries to access a protected route without being authenticated, they will be redirected to the login page.
+You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property supports two formats: a simple array of path patterns, or an advanced object format with custom authorization logic.
+
+### Array Format
+
+The simplest way to protect routes is to provide an array of path patterns. Users must be authenticated to access these routes.
 
 ```typescript
 {
@@ -26,7 +30,40 @@ You can protect specific routes in your documentation by adding the `protectedRo
 }
 ```
 
-The path patterns follow React Router's syntax:
+### Advanced Object Format
+
+For more complex authorization logic, you can provide a record mapping route patterns to custom callback functions:
+
+```typescript
+{
+  // ...
+  protectedRoutes: {
+    // Only allow authenticated users with admin role
+    "/admin/*": ({ auth, context }) =>
+      auth.isAuthenticated && auth.user?.role === "admin",
+
+    // Check if user has enterprise access
+    "/api/enterprise/*": ({ auth, context }) =>
+      auth.isAuthenticated && auth.user?.subscription === "enterprise",
+
+    // Allow access to beta features based on user attributes
+    "/beta/*": ({ auth, context }) =>
+      auth.isAuthenticated && auth.user?.betaAccess === true,
+  },
+  // ...
+}
+```
+
+The callback function receives an object with:
+
+- `auth`: The current authentication state including `isAuthenticated`, `user` data, and more
+- `context`: The Zudoku context providing access to configuration and utilities
+
+The callback must return a boolean indicating whether the user should have access to the route.
+
+### Path Patterns
+
+The path patterns follow the same syntax as [React Router](https://reactrouter.com):
 
 - `:param` matches a URL segment up to the next `/`, `?`, or `#`
 - `*` matches zero or more characters up to the next `/`, `?`, or `#`

@@ -1,7 +1,8 @@
 import path from "node:path";
 import Piscina from "piscina";
 import { matchPath } from "react-router";
-import { type ZudokuConfig } from "../../config/validators/validate.js";
+import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
+import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
 import { InMemoryResponse } from "./InMemoryResponse.js";
@@ -44,9 +45,13 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   });
 
   const sharedOpts = { template, request, routes, basePath };
-  const isProtectedRoute = config.protectedRoutes?.some((route) =>
-    matchPath(route, urlPath),
-  );
+
+  const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
+  const isProtectedRoute = protectedRoutes
+    ? Object.keys(protectedRoutes).some((route) =>
+        matchPath({ path: route, end: true }, urlPath),
+      )
+    : false;
 
   let html: string;
 
