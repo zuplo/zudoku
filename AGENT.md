@@ -26,6 +26,7 @@
 - **State**: Zustand for global state, React Query for server state
 - **Files**: ESLint + Prettier, TypeScript strict mode, no console/debugger in production
 - Prefer types over interfaces
+- Prefer immutable function stlye, using functions like `map` and `flatMap` to construct new data
 
 ## Plugin Architecture
 - Plugins live in packages/zudoku/lib/plugins/
