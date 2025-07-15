@@ -20,12 +20,15 @@ import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavItem, TopNavLink } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
-  const { navigation, options, getProfileMenuItems } = useZudoku();
-  const { isAuthenticated, profile, isAuthEnabled, login } = useAuth();
+  const context = useZudoku();
+  const authState = useAuth();
+
+  const { navigation, options, getProfileMenuItems } = context;
+  const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const accountItems = getProfileMenuItems();
-  const filteredItems = navigation.filter(isHiddenItem(isAuthenticated));
+  const filteredItems = navigation.filter(isHiddenItem(authState, context));
 
   return (
     <Drawer

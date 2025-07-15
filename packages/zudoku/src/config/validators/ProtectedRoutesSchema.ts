@@ -1,8 +1,8 @@
 import { z } from "zod/v4";
-import type { AuthState } from "../../lib/authentication/state.js";
+import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 
-type CallbackContext = { auth: AuthState; context: ZudokuContext };
+type CallbackContext = { auth: UseAuthReturn; context: ZudokuContext };
 type ProtectedRouteCallback = (c: CallbackContext) => boolean;
 export type ProtectedRoutesInput = z.input<typeof ProtectedRoutesSchema>;
 export type ProtectedRoutes = z.output<typeof ProtectedRoutesSchema>;

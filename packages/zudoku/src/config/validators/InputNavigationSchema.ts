@@ -1,4 +1,6 @@
 import { z } from "zod/v4";
+import type { UseAuthReturn } from "../../lib/authentication/hook.js";
+import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import { IconNames } from "./icon-types.js";
 
 const IconSchema = z.enum(IconNames);
@@ -19,7 +21,12 @@ const InputNavigationCategoryLinkDocSchema = z.union([
 ]);
 
 export const DisplaySchema = z
-  .enum(["auth", "anon", "always", "hide"])
+  .union([
+    z.enum(["auth", "anon", "always", "hide"]),
+    z.custom<
+      (params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean
+    >((val) => typeof val === "function"),
+  ])
   .default("always")
   .optional();
 
