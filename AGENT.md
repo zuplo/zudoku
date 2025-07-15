@@ -22,8 +22,10 @@
 - **Imports**: Use `.js` extensions for relative imports, type imports inline: `import { type Foo }`
 - **Errors**: Extend `ZudokuError` for custom errors
 - **Components**: PascalCase for components/classes, no `I` prefix for interfaces
+- **Components**: Use anonymous functions to define components
 - **State**: Zustand for global state, React Query for server state
 - **Files**: ESLint + Prettier, TypeScript strict mode, no console/debugger in production
+- Prefer types over interfaces
 
 ## Plugin Architecture
 - Plugins live in packages/zudoku/lib/plugins/
