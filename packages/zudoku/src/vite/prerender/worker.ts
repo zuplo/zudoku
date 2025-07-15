@@ -48,7 +48,9 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
 
   const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
   const isProtectedRoute = protectedRoutes
-    ? Object.keys(protectedRoutes).some((route) => matchPath(route, urlPath))
+    ? Object.keys(protectedRoutes).some((route) =>
+        matchPath({ path: route, end: true }, urlPath),
+      )
     : false;
 
   let html: string;

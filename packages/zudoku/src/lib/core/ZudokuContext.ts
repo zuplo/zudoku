@@ -6,7 +6,7 @@ import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod/v4";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import {
-  type ProtectedRoutes,
+  type ProtectedRoutesInput,
   ProtectedRoutesSchema,
 } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { FooterSchema } from "../../config/validators/validate.js";
@@ -98,7 +98,7 @@ export type ZudokuContextOptions = {
     components?: MdxComponentsType;
   };
   overrides?: ComponentsContextType;
-  protectedRoutes?: ProtectedRoutes;
+  protectedRoutes?: ProtectedRoutesInput;
   syntaxHighlighting?: {
     highlighter: HighlighterCore;
     themes?: { light: BundledTheme; dark: BundledTheme };
@@ -118,20 +118,18 @@ export class ZudokuContext {
 
   constructor(options: ZudokuContextOptions, queryClient: QueryClient) {
     const pluginProtectedRoutes = Object.fromEntries(
-      options.plugins?.flatMap((plugin) => {
-        const routes = isNavigationPlugin(plugin)
-          ? plugin.getProtectedRoutes?.()
-          : undefined;
+      (options.plugins ?? []).flatMap((plugin) => {
+        if (!isNavigationPlugin(plugin)) return [];
+        const routes = plugin.getProtectedRoutes?.();
+        if (!routes) return [];
 
-        return routes
-          ? Object.entries(ProtectedRoutesSchema.parse(routes) ?? {})
-          : [];
-      }) ?? [],
+        return Object.entries(ProtectedRoutesSchema.parse(routes) ?? {});
+      }),
     );
 
     const protectedRoutes = {
       ...pluginProtectedRoutes,
-      ...options.protectedRoutes,
+      ...ProtectedRoutesSchema.parse(options.protectedRoutes),
     };
 
     this.queryClient = queryClient;

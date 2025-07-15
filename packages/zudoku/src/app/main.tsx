@@ -21,7 +21,6 @@ import {
   Zudoku,
 } from "zudoku/components";
 import type { ZudokuConfig } from "../config/config.js";
-import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import { highlighter } from "../lib/shiki.js";
@@ -36,7 +35,7 @@ export const convertZudokuConfigToOptions = (
   return {
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
-    protectedRoutes: ProtectedRoutesSchema.parse(config.protectedRoutes),
+    protectedRoutes: config.protectedRoutes,
     site: {
       ...config.site,
       showPoweredBy:
