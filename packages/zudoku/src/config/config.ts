@@ -17,6 +17,7 @@ type RedirectOptions = {
 export type ClerkAuthenticationConfig = {
   type: "clerk";
   clerkPubKey: `pk_test_${string}` | `pk_live_${string}`;
+  jwtTemplateName?: string;
 } & RedirectOptions;
 
 export type OpenIDAuthenticationConfig = {

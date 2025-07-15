@@ -118,7 +118,9 @@ For Clerk you will need the publishable key for your application. You can find t
   // ...
   authentication: {
     type: "clerk",
-    clerkPubKey: "<your-clerk-publishable-key>"
+    clerkPubKey: "<your-clerk-publishable-key>",
+    // Optional. See: https://clerk.com/docs/backend-requests/jwt-templates
+    jwtTemplateName: "dev-portal",
   },
   // ...
 }
