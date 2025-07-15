@@ -10,6 +10,12 @@
       "url": "https://developers.sh.example.com"
     }
   },
+  "x-tagGroups": [
+    {
+      "name": "Shipment",
+      "tags": ["Shipment Management", "Tracking & Notifications"]
+    }
+  ],
   "tags": [
     {
       "name": "Shipment Management",

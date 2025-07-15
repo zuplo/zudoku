@@ -383,6 +383,7 @@ export type GetNavigationOperationsQuery = {
   __typename?: "Query";
   schema: {
     __typename?: "Schema";
+    extensions?: any | null;
     tags: Array<{
       __typename?: "SchemaTag";
       slug?: string | null;
@@ -645,6 +646,7 @@ export const GetServerQueryDocument = new TypedDocumentString(`
 export const GetNavigationOperationsDocument = new TypedDocumentString(`
     query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
+    extensions
     tags {
       slug
       name
