@@ -24,14 +24,18 @@ export const RouteGuard = () => {
   const location = useLocation();
   const latestPath = useLatest(location.pathname);
   const shouldBypass = use(BypassProtectedRoutesContext);
+  const { protectedRoutes } = zudoku.options;
 
-  const { protectedRoutes = [] } = zudoku.options;
+  const authCheckFn =
+    !shouldBypass && protectedRoutes
+      ? Object.entries(protectedRoutes).find(([path]) =>
+          matchPath({ path, end: true }, location.pathname),
+        )?.[1]
+      : undefined;
 
-  const isProtected =
-    !shouldBypass &&
-    protectedRoutes.some((path) =>
-      matchPath({ path, end: true }, location.pathname),
-    );
+  const isProtectedRoute = authCheckFn !== undefined;
+  const needsToSignIn =
+    isProtectedRoute && !authCheckFn({ auth, context: zudoku });
 
   useQuery({
     queryKey: ["login-redirect"],
@@ -42,14 +46,10 @@ export const RouteGuard = () => {
       });
       return true;
     },
-    enabled:
-      typeof window !== "undefined" &&
-      isProtected &&
-      !auth.isPending &&
-      !auth.isAuthenticated,
+    enabled: typeof window !== "undefined" && needsToSignIn && !auth.isPending,
   });
 
-  if (isProtected && !auth.isAuthenticated) {
+  if (needsToSignIn) {
     return (
       <Dialog
         open={true}
@@ -71,7 +71,7 @@ export const RouteGuard = () => {
     );
   }
 
-  if (isProtected && !auth.isAuthEnabled) {
+  if (isProtectedRoute && !auth.isAuthEnabled) {
     throw new ZudokuError("Authentication is not enabled", {
       title: "Authentication is not enabled",
       developerHint:
