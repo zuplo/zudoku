@@ -6,7 +6,7 @@
 - **Lint**: `pnpm lint` (fix) or `pnpm lint:ci` (check only)
 - **Format**: `pnpm format` (fix) or `pnpm format:ci` (check)
 - **Test**: `vitest run --typecheck` or for single test: `vitest run path/to/test.spec.ts`
-- **Dev**: `nx run cosmocargo:dev` or from examples: `pnpm dev`
+- **Dev**: `nx run cosmo-cargo:dev` or from examples: `pnpm dev`
 
 ## Architecture
 
@@ -24,3 +24,7 @@
 - **Components**: PascalCase for components/classes, no `I` prefix for interfaces
 - **State**: Zustand for global state, React Query for server state
 - **Files**: ESLint + Prettier, TypeScript strict mode, no console/debugger in production
+
+## Plugin Architecture
+- Plugins live in packages/zudoku/lib/plugins/
+- Plugins can use things from core, but core should not directly refernce plugins 
