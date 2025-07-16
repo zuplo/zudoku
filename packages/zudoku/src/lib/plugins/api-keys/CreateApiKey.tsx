@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { DialogClose, DialogFooter } from "zudoku/ui/Dialog.js";
 import {
   Select,
@@ -33,6 +34,7 @@ export const CreateApiKey = ({
       expiresOn: "30",
     },
   });
+
   const createKeyMutation = useMutation({
     mutationFn: ({ description, expiresOn }: CreateApiKey) => {
       if (!service.createKey) {
@@ -43,7 +45,10 @@ export const CreateApiKey = ({
         expiresOn !== "never" ? addDaysToDate(Number(expiresOn)) : undefined;
 
       return service.createKey(
-        { description: description || "Secret Key", expiresOn: expiresOnDate },
+        {
+          description: description || "Secret Key",
+          expiresOn: expiresOnDate,
+        },
         context,
       );
     },
@@ -68,6 +73,12 @@ export const CreateApiKey = ({
         ),
       )}
     >
+      {createKeyMutation.error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{createKeyMutation.error.message}</AlertDescription>
+        </Alert>
+      )}
       <div className="flex gap-2 flex-col text-sm font-medium">
         Name
         <Input {...form.register("description")} />

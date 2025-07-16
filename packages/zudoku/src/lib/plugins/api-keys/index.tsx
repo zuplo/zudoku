@@ -27,7 +27,7 @@ export type ApiKeyService = {
   ) => Promise<void>;
   getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
   createKey?: (
-    apiKey: { description: string; expiresOn?: string },
+    apiKey: { description: string; expiresOn?: string; expiresValue?: string },
     context: ZudokuContext,
   ) => Promise<void>;
 };
@@ -74,7 +74,10 @@ const throwIfProblemJson = async (response: Response) => {
   }
 };
 
-const createDefaultHandler = (deploymentName: string): ApiKeyService => {
+const createDefaultHandler = (
+  deploymentName: string,
+  options: ApiKeyPluginOptions,
+): ApiKeyService => {
   return {
     deleteKey: async (consumerId, keyId, context) => {
       const request = new Request(
@@ -159,6 +162,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
         key: consumer.apiKeys.data.at(0),
       }));
     },
+    ...options,
   };
 };
 
@@ -170,7 +174,7 @@ export const apiKeyPlugin = (
 ): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
   const service: ApiKeyService =
     "deploymentName" in options
-      ? createDefaultHandler(options.deploymentName)
+      ? createDefaultHandler(options.deploymentName, options)
       : options;
 
   return {
@@ -203,7 +207,6 @@ export const apiKeyPlugin = (
       }
     },
     getRoutes: (): RouteObject[] => {
-      // TODO: Make lazy
       return [
         {
           element: <ProtectedRoute />,
@@ -213,10 +216,6 @@ export const apiKeyPlugin = (
               path: "/settings/api-keys",
               element: <SettingsApiKeys service={service} />,
             },
-            // {
-            //   path: "/settings/api-keys/new",
-            //   element: <CreateApiKey service={service} />,
-            // },
           ],
         },
       ];
