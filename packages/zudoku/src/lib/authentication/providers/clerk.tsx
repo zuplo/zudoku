@@ -15,6 +15,7 @@ const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
 > = ({
   clerkPubKey,
+  jwtTemplateName,
   redirectToAfterSignOut = "/",
   redirectToAfterSignUp,
   redirectToAfterSignIn,
@@ -61,7 +62,9 @@ const clerkAuth: AuthenticationProviderInitializer<
     if (!clerkApi?.session) {
       throw new Error("No session available");
     }
-    const response = await clerkApi.session.getToken();
+    const response = await clerkApi.session.getToken({
+      template: jwtTemplateName,
+    });
     if (!response) {
       throw new Error("Could not get access token from Clerk");
     }

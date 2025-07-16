@@ -295,6 +295,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
       .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
         message: "Clerk public key invalid, must start with pk_test or pk_live",
       }),
+    jwtTemplateName: z.string().optional().default("dev-portal"),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
