@@ -7,23 +7,16 @@
     "build": "nx run-many -t=build -p zudoku config",
     "lint": "eslint --cache --fix .",
     "lint:ci": "eslint .",
+    "lint:md": "node ./scripts/check-admonitions.mjs",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
-    "prepare": "husky",
+    "prepare": "lefthook install",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
     "local": "cp .env.example .env",
     "build:clean": "tsc --build --clean",
     "reset": "nx reset && npm run build:clean",
     "clean": "git clean -Xfde !.env"
-  },
-  "lint-staged": {
-    "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
-      "prettier --write"
-    ],
-    "**/*.{ts,tsx,js,jsx,mjs}": [
-      "eslint --cache --fix"
-    ]
   },
   "engines": {
     "node": ">=20.19.0 <21.0.0 || >=22.7.0",
@@ -41,8 +34,7 @@
     "eslint-plugin-react": "7.37.5",
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "0.4.20",
-    "husky": "9.1.7",
-    "lint-staged": "16.1.0",
+    "lefthook": "^1.12.2",
     "nx": "21.2.2",
     "prettier": "3.6.2",
     "prettier-plugin-organize-imports": "4.1.0",
@@ -74,6 +66,7 @@
     "includedScripts": [
       "lint",
       "lint:ci",
+      "lint:md",
       "format",
       "format:ci"
     ]

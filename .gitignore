@@ -50,6 +50,7 @@ yarn-error.log
 testem.log
 /typings
 *.tsbuildinfo
+.husky/
 
 # System Files
 .DS_Store

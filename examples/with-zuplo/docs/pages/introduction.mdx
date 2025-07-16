@@ -14,25 +14,38 @@ category: ""
 
 Welcome to your new developer portal that makes sense. 🎉
 
-This is your new developer portal, built with ["Zudoku by Zuplo"](https://github.com/zuplo/zudoku) and designed to elevate your API documentation experience. We've streamlined the setup process so you can focus on what matters most: creating exceptional developer experiences.
+This is your new developer portal, built with
+["Zudoku by Zuplo"](https://github.com/zuplo/zudoku) and designed to elevate
+your API documentation experience. We've streamlined the setup process so you
+can focus on what matters most: creating exceptional developer experiences.
 
-Think of this as your API's professional showcase—presenting your endpoints and documentation in the best possible light. Whether you're launching innovative new features or improving existing services, this portal provides the foundation for clear, accessible, and engaging developer documentation.
+Think of this as your API's professional showcase—presenting your endpoints and
+documentation in the best possible light. Whether you're launching innovative
+new features or improving existing services, this portal provides the foundation
+for clear, accessible, and engaging developer documentation.
 
-Let's explore what we've configured for you and how you can customize it to perfectly match your needs.
+Let's explore what we've configured for you and how you can customize it to
+perfectly match your needs.
 
 ## Let's Review Your Configuration
 
-The developer portal is configured in the `zudoku.config.tsx` file. We've created a starter configuration to get you up and running quickly.
-Let's walk you through everything we've set up so you know how to customize it:
+The developer portal is configured in the `zudoku.config.tsx` file. We've
+created a starter configuration to get you up and running quickly. Let's walk
+you through everything we've set up so you know how to customize it:
 
 <Stepper>
 
 1. **Change the Basics**
 
-   First, you may want to change the title and banner we've put in place. These are part of the `page` section in your configuration.
+   First, you may want to change the title and banner we've put in place. These
+   are part of the `page` section in your configuration.
 
    :::tip
-   **Have a company logo?** Learn how you can [add your logo](https://zuplo.com/docs/dev-portal/zudoku/configuration/page#logo) in our documentation.
+
+   **Have a company logo?** Learn how you can
+   [add your logo](https://zuplo.com/docs/dev-portal/zudoku/configuration/page#logo)
+   in our documentation.
+
    :::
 
    ```jsx
@@ -55,8 +68,9 @@ Let's walk you through everything we've set up so you know how to customize it:
 
 1. **API Reference**
 
-   Your [API Reference](/api) is generated from your Zuplo OpenAPI file in `../routes.oas.json`—you can add other APIs whenever you need them.
-   Improve your documentation by adding more details to the OpenAPI file.
+   Your [API Reference](/api) is generated from your Zuplo OpenAPI file in
+   `../routes.oas.json`—you can add other APIs whenever you need them. Improve
+   your documentation by adding more details to the OpenAPI file.
 
    ```json
    {
@@ -71,10 +85,17 @@ Let's walk you through everything we've set up so you know how to customize it:
 
 1. **Authentication & Login**
 
-   We've configured your project to use [Auth0](https://auth0.com) as an authentication provider with our demo account. We support many authentication providers—check the [documentation on how to configure](https://zuplo.com/docs/dev-portal/zudoku/configuration/authentication#authentication-providers) each one.
+   We've configured your project to use [Auth0](https://auth0.com) as an
+   authentication provider with our demo account. We support many authentication
+   providers—check the
+   [documentation on how to configure](https://zuplo.com/docs/dev-portal/zudoku/configuration/authentication#authentication-providers)
+   each one.
 
    :::caution
-   You must change the authentication provider before taking this to **production**. Using our demo provider is not secure for production use.
+
+   You must change the authentication provider before taking this to
+   **production**. Using our demo provider is not secure for production use.
+
    :::
 
    ```json
@@ -91,8 +112,10 @@ Let's walk you through everything we've set up so you know how to customize it:
 
 1. **API Keys**
 
-   We've enabled API Keys on your developer portal. This connects to the API Key Service in Zuplo.
-   To add API Keys for your users, create a consumer with the matching email address in **Services => API Key Service** in Zuplo, or [create a Consumer using the Zuplo API](https://zuplo.com/docs/api/api-keys-consumers#creates-a-consumer).
+   We've enabled API Keys on your developer portal. This connects to the API Key
+   Service in Zuplo. To add API Keys for your users, create a consumer with the
+   matching email address in **Services => API Key Service** in Zuplo, or
+   [create a Consumer using the Zuplo API](https://zuplo.com/docs/api/api-keys-consumers#creates-a-consumer).
 
    ```json
    {
@@ -107,7 +130,9 @@ Let's walk you through everything we've set up so you know how to customize it:
 
 ## Make It Yours
 
-You can customize the look and feel of your documentation site by modifying the `theme` section in `zudoku.config.tsx`. Why not try changing the primary color of your site?
+You can customize the look and feel of your documentation site by modifying the
+`theme` section in `zudoku.config.tsx`. Why not try changing the primary color
+of your site?
 
 ```json
 {
@@ -126,4 +151,7 @@ You can customize the look and feel of your documentation site by modifying the 
 }
 ```
 
-We have extensive customization options available. From colors to fonts and borders, find the [full list of options](https://zuplo.com/docs/dev-portal/zudoku/customization/colors-theme) in our documentation.
+We have extensive customization options available. From colors to fonts and
+borders, find the
+[full list of options](https://zuplo.com/docs/dev-portal/zudoku/customization/colors-theme)
+in our documentation.
