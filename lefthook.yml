@@ -1,0 +1,17 @@
+# This is the lefthook configuration that replaces husky + lint-staged
+
+pre-commit:
+  parallel: true
+  commands:
+    prettier:
+      glob: "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}"
+      run: |
+        npx prettier --write {staged_files}
+        git add {staged_files}
+      stage_fixed: true
+    eslint:
+      glob: "**/*.{ts,tsx,js,jsx,mjs}"
+      run: |
+        npx eslint --cache --fix {staged_files}
+        git add {staged_files}
+      stage_fixed: true
