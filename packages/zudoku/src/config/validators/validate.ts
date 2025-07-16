@@ -251,7 +251,9 @@ const Redirect = z.object({
 
 const SearchSchema = z
   .discriminatedUnion("type", [
-    z.object({
+    // looseObject to allow additional properties so the
+    // user can set other inkeep settings
+    z.looseObject({
       type: z.literal("inkeep"),
       apiKey: z.string(),
       integrationId: z.string(),
