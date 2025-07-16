@@ -49,7 +49,14 @@ export const docs: Navigation = [
     type: "category",
     label: "Authentication",
     icon: "lock",
-    items: ["configuration/authentication"],
+    items: [
+      "configuration/authentication",
+      "configuration/authentication-auth0",
+      "configuration/authentication-clerk",
+      "configuration/authentication-azure-ad",
+      "configuration/authentication-pingfederate",
+      "configuration/authentication-supabase",
+    ],
   },
   {
     type: "category",
