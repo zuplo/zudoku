@@ -48,7 +48,6 @@ export const CreateApiKey = ({
         {
           description: description || "Secret Key",
           expiresOn: expiresOnDate,
-          expiresValue: expiresOnDate,
         },
         context,
       );
