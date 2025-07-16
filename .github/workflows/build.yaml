@@ -39,7 +39,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: nx run-many -t lint:ci format:ci build:ci test
+      - run: nx run-many -t lint:ci format:ci build:ci test lint:md
 
       - name: Get Variables
         id: vars
