@@ -144,6 +144,7 @@ const config: ZudokuConfig = {
             {
               type: "doc",
               file: "premium-fleet",
+              path: "premium-fleet-services",
               label: "Premium Fleet Services",
               icon: "trophy",
             },
