@@ -228,6 +228,13 @@ export const DocsConfigSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .transform((val) => (typeof val === "string" ? [val] : val))
     .default([DEFAULT_DOCS_FILES]),
+  serveAllFiles: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      "When true, all files matching the glob patterns will be served, not just those referenced in navigation",
+    ),
   defaultOptions: z
     .object({
       toc: z.boolean(),

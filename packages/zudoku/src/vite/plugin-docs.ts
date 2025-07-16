@@ -109,9 +109,13 @@ const viteDocsPlugin = (): Plugin => {
         });
       }
 
+      const filesToServe = docsConfig.serveAllFiles
+        ? allGlobbedFiles
+        : navigationFileImports;
+
       code.push(
         `const fileImports = {`,
-        ...Object.entries(navigationFileImports).map(
+        ...Object.entries(filesToServe).map(
           ([routePath, importPath]) =>
             `  "${routePath}": () => import("${importPath}"),`,
         ),
