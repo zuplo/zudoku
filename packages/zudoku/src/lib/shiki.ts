@@ -43,6 +43,8 @@ export const defaultHighlightOptions = {
     dark: "github-dark",
   },
   defaultColor: false,
+  defaultLanguage: "text",
+  fallbackLanguage: "text",
   inline: "tailing-curly-colon",
   addLanguageClass: true,
   transformers: [transformerMetaHighlight(), transformerMetaWordHighlight()],
