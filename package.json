@@ -7,6 +7,7 @@
     "build": "nx run-many -t=build -p zudoku config",
     "lint": "eslint --cache --fix .",
     "lint:ci": "eslint .",
+    "lint:md": "node ./scripts/check-admonitions.mjs",
     "format": "prettier --write .",
     "format:ci": "prettier --check .",
     "prepare": "lefthook install",
@@ -65,6 +66,7 @@
     "includedScripts": [
       "lint",
       "lint:ci",
+      "lint:md",
       "format",
       "format:ci"
     ]
