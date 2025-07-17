@@ -1,4 +1,4 @@
-import { type Plugin, type ResolvedConfig } from "vite";
+import type { Plugin, ResolvedConfig } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteConfigPlugin = (): Plugin => {
@@ -35,7 +35,10 @@ const viteConfigPlugin = (): Plugin => {
             return "undefined";
           }
 
-          const value = viteConfig.define?.[envVar];
+          const value =
+            viteConfig.define?.[`process.env.${envVar}`] ??
+            viteConfig.define?.[`import.meta.env.${envVar}`];
+
           if (value === undefined) {
             viteConfig.logger.warn(
               `Warning: process.env.${envVar} is not defined.`,

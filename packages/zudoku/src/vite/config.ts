@@ -112,6 +112,14 @@ export async function getViteConfig(
     ).map((theme) => `@shikijs/themes/${theme}`),
   ].map((dep) => `zudoku > ${dep}`);
 
+  // We define public env vars as `process.env` vars because Vite only exposes them as `import.meta.env` vars
+  const publicVarsProcessEnvDefine = Object.fromEntries(
+    Object.entries(publicEnv).map(([key, value]) => [
+      `process.env.${key}`,
+      value,
+    ]),
+  );
+
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -137,7 +145,7 @@ export async function getViteConfig(
         "ZUPLO_ENVIRONMENT_TYPE",
         "ZUPLO_SERVER_URL",
       ]),
-      ...publicEnv,
+      ...publicVarsProcessEnvDefine,
     },
     ssr: {
       target: "node",
