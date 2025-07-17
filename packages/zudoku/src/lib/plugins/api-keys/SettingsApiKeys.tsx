@@ -183,9 +183,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       <Slot.Target name="api-keys-list-page" />
 
       <div className="flex justify-between pb-3">
-        <h1 className="font-medium text-2xl">
-          API Keys {typeof service.createKey}
-        </h1>
+        <h1 className="font-medium text-2xl">API Keys</h1>
 
         {service.createKey && (
           <Dialog
