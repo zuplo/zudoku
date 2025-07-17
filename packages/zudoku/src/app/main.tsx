@@ -1,4 +1,4 @@
-import { type RouteObject } from "react-router";
+import type { RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -107,11 +107,8 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
       element: (
         <Zudoku {...options}>
           <BuildCheck
-            buildId={
-              import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID
-                ? import.meta.env.ZUPLO_BUILD_ID
-                : undefined
-            }
+            buildId={import.meta.env.ZUPLO_BUILD_ID}
+            environmentType={import.meta.env.ZUPLO_ENVIRONMENT_TYPE}
           />
           <Layout />
         </Zudoku>
