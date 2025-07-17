@@ -1,5 +1,6 @@
 import { KeyRoundIcon } from "lucide-react";
 import { type RouteObject } from "react-router";
+import { UseAuthReturn } from "../../authentication/hook.js";
 import { type ZudokuContext } from "../../core/ZudokuContext.js";
 import {
   type ApiIdentityPlugin,
@@ -26,10 +27,15 @@ export type ApiKeyService = {
     context: ZudokuContext,
   ) => Promise<void>;
   getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
-  createKey?: (
-    apiKey: { description: string; expiresOn?: string; expiresValue?: string },
-    context: ZudokuContext,
-  ) => Promise<void>;
+  createKey?: ({
+    apiKey,
+    context,
+    auth,
+  }: {
+    apiKey: { description: string; expiresOn?: string };
+    context: ZudokuContext;
+    auth: UseAuthReturn;
+  }) => Promise<void>;
 };
 
 export type ApiKeyPluginOptions =
