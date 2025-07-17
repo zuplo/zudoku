@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { useAuth } from "../../hooks/index.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { type ApiKeyService } from "./index.js";
@@ -34,6 +35,7 @@ export const CreateApiKey = ({
       expiresOn: "30",
     },
   });
+  const auth = useAuth();
 
   const createKeyMutation = useMutation({
     mutationFn: ({ description, expiresOn }: CreateApiKey) => {
@@ -44,13 +46,14 @@ export const CreateApiKey = ({
       const expiresOnDate =
         expiresOn !== "never" ? addDaysToDate(Number(expiresOn)) : undefined;
 
-      return service.createKey(
-        {
+      return service.createKey({
+        apiKey: {
           description: description || "Secret Key",
           expiresOn: expiresOnDate,
         },
         context,
-      );
+        auth,
+      });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["api-keys"] });

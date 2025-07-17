@@ -4,6 +4,7 @@ import type { ComponentType, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
 import { z } from "zod/v4";
+import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
@@ -115,10 +116,15 @@ const ApiKeysSchema = z.object({
     .optional(),
   createKey: z
     .custom<
-      (
-        apiKey: { description: string; expiresOn?: string },
-        context: ZudokuContext,
-      ) => Promise<void>
+      ({
+        apiKey,
+        context,
+        auth,
+      }: {
+        apiKey: { description: string; expiresOn?: string };
+        context: ZudokuContext;
+        auth: UseAuthReturn;
+      }) => Promise<void>
     >((val) => typeof val === "function")
     .optional(),
 });
