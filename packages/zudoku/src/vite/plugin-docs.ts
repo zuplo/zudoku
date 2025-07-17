@@ -44,8 +44,7 @@ const viteDocsPlugin = (): Plugin => {
       const globImportBasePath =
         process.env.NODE_ENV === "development" ? (config.basePath ?? "") : "";
 
-      const allGlobbedFiles: Record<string, string> = {};
-      const navigationFileImports: Record<string, string> = {};
+      const globbedDocuments: Record<string, string> = {};
 
       for (const globPattern of docsConfig.files) {
         // This is a workaround for a bug(?) in Vite where `import.meta.glob` failed us:
@@ -74,7 +73,7 @@ const viteDocsPlugin = (): Plugin => {
           const importPath = ensureLeadingSlash(
             path.posix.join(globImportBasePath, file),
           );
-          allGlobbedFiles[routePath] = importPath;
+          globbedDocuments[routePath] = importPath;
         }
       }
 
@@ -84,7 +83,6 @@ const viteDocsPlugin = (): Plugin => {
           config,
         ).resolve();
 
-        // Collect only files that are referenced in navigation
         traverseNavigation(resolvedNavigation, (item) => {
           const doc =
             item.type === "doc"
@@ -93,25 +91,24 @@ const viteDocsPlugin = (): Plugin => {
                 ? { file: item.link.file, path: item.link.path }
                 : undefined;
 
-          if (!doc) return;
+          // Only continue if the doc has a custom path
+          if (!doc || doc.path === doc.file) return;
 
           const fileRoutePath = ensureLeadingSlash(
             doc.file.replace(/\.mdx?$/, ""),
           );
-          const importPath = allGlobbedFiles[fileRoutePath];
+          const importPath = globbedDocuments[fileRoutePath];
           if (!importPath) return;
 
-          const finalPath = doc.path
-            ? ensureLeadingSlash(doc.path)
-            : fileRoutePath;
-
-          navigationFileImports[finalPath] = importPath;
+          const customPath = ensureLeadingSlash(doc.path);
+          globbedDocuments[customPath] = importPath;
+          delete globbedDocuments[fileRoutePath];
         });
       }
 
       code.push(
         `const fileImports = {`,
-        ...Object.entries(navigationFileImports).map(
+        ...Object.entries(globbedDocuments).map(
           ([routePath, importPath]) =>
             `  "${routePath}": () => import("${importPath}"),`,
         ),

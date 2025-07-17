@@ -166,14 +166,10 @@
     @apply bg-(--highlighted-bg) relative;
   }
 
-  .shiki .line.highlighted:before {
-    position: absolute;
-    inset-inline-start: 0;
-    inset-block-start: 0;
-    inset-block-end: 0;
-    border-left: 2px solid
+  .shiki .line.highlighted::after {
+    @apply absolute left-0 top-0 bottom-0 right-auto translate-x-full content-[''];
+    border-left: 3px solid
       hsl(from var(--highlighted-bg) h s calc(l + 4 * var(--dark)));
-    content: "";
   }
 
   .shiki .highlighted-word {
