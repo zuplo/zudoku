@@ -14,6 +14,7 @@ export const BoxLongshadow = ({
   return (
     <Box
       className={cn(
+        "overflow-hidden",
         shadowLength === "medium" && "shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]",
         shadowLength === "large" && "shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
         className,
@@ -24,3 +25,5 @@ export const BoxLongshadow = ({
     </Box>
   );
 };
+
+export default BoxLongshadow;

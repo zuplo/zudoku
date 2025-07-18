@@ -4,23 +4,25 @@ description: Zudoku (pronounced "zoo-doh-koo") is an open-source, highly customi
 sidebar_icon: book-check
 ---
 
-import { ShadowCard, CardTitle, CardDescription } from '../../src/ShadowCard.tsx';
+import BoxLongshadow from '../../src/components/BoxLongshadow.tsx'
 
-import { BoxlongShadow } from '../../src/components/BoxLongshadow.tsx'
+import { CardTitle,CardHeader, CardDescription } from "zudoku/ui/Card"
 
 <div className="grid grid-cols-2 grid-rows-2 gap-10">
-<BoxlongShadow>
+<BoxLongshadow>
+<CardHeader>
 <CardTitle>Quickstart</CardTitle>
+</CardHeader>
 <CardDescription>Learn how to install Zudoku, configure your first project, and generate your first docs.</CardDescription>
-</BoxlongShadow>
+</BoxLongshadow>
 
-<ShadowCard>
+<BoxLongshadow>
 ok
-</ShadowCard>
+</BoxLongshadow>
 
-<ShadowCard>
+<BoxLongshadow>
 ok
-</ShadowCard>
+</BoxLongshadow>
 </div>
 Zudoku (pronounced "zoo-doh-koo") is an open-source, highly customizable API documentation framework for building quality developer experiences using MDX and OpenAPI.
 
