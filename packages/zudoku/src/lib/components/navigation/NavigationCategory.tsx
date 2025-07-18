@@ -46,7 +46,7 @@ const NavigationCategoryInner = ({
       }}
       variant="ghost"
       size="icon"
-      className="size-6 hover:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l-5))] hover:dark:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l+5))]"
+      className="size-6 hover:bg-[hsl(from_var(--accent)_h_s_calc(l+6*var(--dark)))]"
     >
       <ChevronRightIcon
         size={16}
