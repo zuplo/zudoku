@@ -9,13 +9,15 @@ import {
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
+import { useAuth } from "../../authentication/hook.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
+import { useZudoku } from "../context/ZudokuContext.js";
 import { NavigationBadge } from "./NavigationBadge.js";
 import { NavigationCategory } from "./NavigationCategory.js";
-import { navigationListItem } from "./utils.js";
+import { isHiddenItem, navigationListItem } from "./utils.js";
 
 const TruncatedLabel = ({
   label,
@@ -74,6 +76,12 @@ export const NavigationItem = ({
 }) => {
   const location = useLocation();
   const { activeAnchor } = useViewportAnchor();
+  const auth = useAuth();
+  const context = useZudoku();
+
+  if (!isHiddenItem(auth, context)(item)) {
+    return null;
+  }
 
   switch (item.type) {
     case "category":

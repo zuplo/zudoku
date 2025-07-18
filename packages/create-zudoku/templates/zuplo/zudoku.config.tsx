@@ -15,6 +15,10 @@ const config: ZudokuConfig = {
       },
     },
   },
+  metadata: {
+    title: "Developer Portal",
+    description: "Developer Portal",
+  },
   navigation: [
     {
       type: "category",

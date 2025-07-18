@@ -1,6 +1,8 @@
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { useAuthState } from "./state.js";
 
+export type UseAuthReturn = ReturnType<typeof useAuth>;
+
 export const useAuth = () => {
   const { authentication } = useZudoku();
   const authState = useAuthState();

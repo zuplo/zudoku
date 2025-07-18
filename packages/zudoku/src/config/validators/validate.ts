@@ -4,6 +4,7 @@ import type { ComponentType, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
 import { z } from "zod/v4";
+import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
@@ -16,6 +17,7 @@ import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
 import { InputNavigationSchema } from "./InputNavigationSchema.js";
+import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
 
 const ThemeSchema = z
   .object({
@@ -114,10 +116,15 @@ const ApiKeysSchema = z.object({
     .optional(),
   createKey: z
     .custom<
-      (
-        apiKey: { description: string; expiresOn?: string },
-        context: ZudokuContext,
-      ) => Promise<void>
+      ({
+        apiKey,
+        context,
+        auth,
+      }: {
+        apiKey: { description: string; expiresOn?: string };
+        context: ZudokuContext;
+        auth: UseAuthReturn;
+      }) => Promise<void>
     >((val) => typeof val === "function")
     .optional(),
 });
@@ -250,7 +257,9 @@ const Redirect = z.object({
 
 const SearchSchema = z
   .discriminatedUnion("type", [
-    z.object({
+    // looseObject to allow additional properties so the
+    // user can set other inkeep settings
+    z.looseObject({
       type: z.literal("inkeep"),
       apiKey: z.string(),
       integrationId: z.string(),
@@ -292,6 +301,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
       .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
         message: "Clerk public key invalid, must start with pk_test or pk_live",
       }),
+    jwtTemplateName: z.string().optional().default("dev-portal"),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -482,7 +492,7 @@ const BaseConfigSchema = z.object({
     remarkPlugins?: Options["remarkPlugins"];
     rehypePlugins?: Options["rehypePlugins"];
   }>(),
-  protectedRoutes: z.array(z.string()).optional(),
+  protectedRoutes: ProtectedRoutesSchema,
   basePath: z.string().optional(),
   canonicalUrlOrigin: z.string().optional(),
   cdnUrl: CdnUrlSchema.optional(),

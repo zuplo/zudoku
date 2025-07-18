@@ -18,12 +18,41 @@ export type CodeBlockProps = {
   showLineNumbers?: boolean;
 };
 
+const IconToLanguageMap: Record<string, RegExp> = {
+  typescript: /(tsx?|typescript)/,
+  javascript: /(jsx?|javascript)/,
+  markdown: /(md|markdown)/,
+  mdx: /(mdx)/,
+  json: /(json)/,
+  yaml: /(yaml)/,
+  toml: /(toml)/,
+  bash: /(shell|bash|sh|zsh)/,
+  python: /(py|python)/,
+  dotnet: /(cs|csharp|vb)/,
+  rust: /(rs|rust)/,
+  ruby: /(rb|ruby)/,
+  php: /php/,
+  html: /html?/,
+  css: /css/,
+};
+
+const getIconUrl = (language?: string) => {
+  if (!language) return undefined;
+
+  const icon = Object.entries(IconToLanguageMap).find(([_, regex]) =>
+    regex.test(language),
+  );
+  return icon
+    ? `https://cdn.simpleicons.org/${icon[0]}/000/fff?viewbox=auto`
+    : undefined;
+};
+
 export const CodeBlock = ({
   children,
   title = "Code",
   language,
   showCopy = "hover",
-  showLanguageIndicator = false,
+  showLanguageIndicator,
   showLineNumbers,
   ...props
 }: CodeBlockProps) => {
@@ -31,6 +60,8 @@ export const CodeBlock = ({
   const ref = useRef<HTMLDivElement>(null);
 
   if (!children) return null;
+
+  const iconUrl = showLanguageIndicator ? getIconUrl(language) : undefined;
 
   return (
     <div
@@ -40,11 +71,9 @@ export const CodeBlock = ({
       )}
     >
       <div className="border-b flex items-center h-10 font-sans bg-black/2">
-        <div className="flex-1 text-sm w-full px-4">
+        <div className="flex items-center gap-2 flex-1 text-sm w-full px-3">
+          {iconUrl && <img src={iconUrl} className="h-3 max-w-4" />}
           {title}
-          {showLanguageIndicator && language && (
-            <span className="text-muted-foreground ml-2">({language})</span>
-          )}
         </div>{" "}
         {showCopy !== "never" && (
           <button
@@ -52,7 +81,8 @@ export const CodeBlock = ({
             aria-label="Copy code"
             title="Copy code"
             className={cn(
-              "cursor:pointer h-full hover:border-l-border active:shadow-none active:inset-shadow-xs hover:inset-shadow-xs flex items-center gap-2 px-4 outline-border text-sm hover:bg-black/5 transition-all",
+              "transition px-2 py-2 mx-1 rounded-sm",
+              !isCopied && "hover:bg-accent hover:brightness-95",
             )}
             disabled={isCopied}
             onClick={() => {
@@ -62,12 +92,7 @@ export const CodeBlock = ({
             }}
           >
             {isCopied ? (
-              <CheckIcon
-                className="text-emerald-600"
-                size={14}
-                strokeWidth={2.5}
-                absoluteStrokeWidth
-              />
+              <CheckIcon className="text-emerald-600" size={14} />
             ) : (
               <CopyIcon size={14} />
             )}
@@ -76,7 +101,7 @@ export const CodeBlock = ({
       </div>
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
+          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar [&>code]:p-3 [&>code]:py-2",
           props.className,
         )}
         ref={ref}

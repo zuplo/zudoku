@@ -102,6 +102,38 @@ const commonPlugin: ZudokuPlugin = {
 };
 ```
 
+#### Tracking `page_view` Events
+
+Zudoku is a single page application so typical `page_view` events are not captured by most analytics scripts or tag managers. Instead, you must listen to the `location` [event](./extending/events.md) with a plugin and log navigation changes in code.
+
+```tsx
+import { ZudokuPlugin, ZudokuEvents } from "zudoku";
+
+const navigationLoggerPlugin: ZudokuPlugin = {
+  events: {
+    location: ({ from, to }) => {
+      if (!from) return;
+      window.dataLayer.push({
+        event: "page_view",
+        page_path: to.pathname,
+        page_title: document.title,
+        page_location: window.location.href,
+      });
+    },
+  },
+};
+```
+
+If you are using TypeScript, you will also need to add the following type declaration to the file this plugin is declared
+
+```ts
+declare global {
+  interface Window {
+    dataLayer: Record<string, any>[];
+  }
+}
+```
+
 ### Navigation Plugin
 
 ```tsx

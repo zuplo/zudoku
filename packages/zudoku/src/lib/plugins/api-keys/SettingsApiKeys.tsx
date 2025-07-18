@@ -35,6 +35,7 @@ import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
+import { CreateApiKey } from "./CreateApiKey.js";
 import { type ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
@@ -49,6 +50,8 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
     queryKey: ["api-keys"],
     retry: false,
   });
+
+  const [isCreateApiKeyOpen, setIsCreateApiKeyOpen] = useState(false);
 
   const deleteKeyMutation = useMutation({
     mutationFn: ({
@@ -181,10 +184,25 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       <div className="flex justify-between pb-3">
         <h1 className="font-medium text-2xl">API Keys</h1>
+
         {service.createKey && (
-          <Button asChild>
-            <Link to="/settings/api-keys/new">Create API Key</Link>
-          </Button>
+          <Dialog
+            open={isCreateApiKeyOpen}
+            onOpenChange={setIsCreateApiKeyOpen}
+          >
+            <DialogTrigger asChild>
+              <Button variant="outline">Create API Key</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create API Key</DialogTitle>
+              </DialogHeader>
+              <CreateApiKey
+                service={service}
+                onOpenChange={setIsCreateApiKeyOpen}
+              />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
       <p>Create, manage, and monitor your API keys</p>

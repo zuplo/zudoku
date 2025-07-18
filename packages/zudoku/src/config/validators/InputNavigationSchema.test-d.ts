@@ -26,7 +26,6 @@ describe("InputNavigationSchema types", () => {
       label: "External Link",
       to: "https://example.com",
       icon: "external-link",
-      description: "Link description",
       badge: { label: "External", color: "blue" },
       display: "auth",
     } satisfies InputNavigationItem;

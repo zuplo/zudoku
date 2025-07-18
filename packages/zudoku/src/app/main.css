@@ -121,6 +121,10 @@
   .shiki {
     counter-reset: line;
     @apply leading-normal;
+    background-color: var(--shiki-light-bg) !important;
+  }
+  .dark .shiki {
+    background-color: var(--shiki-dark-bg) !important;
   }
   .code-block .shiki {
     @apply grid grid-rows-1;
@@ -149,17 +153,30 @@
     @apply tabular-nums inline-flex items-baseline justify-end me-4 w-3 text-muted-foreground/25;
   }
 
-  .shiki.not-inline .line {
+  .light .shiki.not-inline .line {
     @apply block -mx-4 px-4 w-[calc(100%+2rem)];
-    --highlighted-bg: hsl(
-      from var(--muted) h s calc(l + 4 * var(--dark)) / 50%
-    );
+    --highlighted-bg: hsl(from var(--shiki-light-bg) h s calc(l - 6));
   }
+  .dark .shiki.not-inline .line {
+    @apply block -mx-4 px-4 w-[calc(100%+2rem)];
+    --highlighted-bg: hsl(from var(--shiki-dark-bg) h s calc(l + 10));
+  }
+
   .shiki .line.highlighted {
-    @apply bg-(--highlighted-bg);
+    @apply bg-(--highlighted-bg) relative;
+  }
+
+  .shiki .line.highlighted::after {
+    @apply absolute left-0 top-0 bottom-0 right-auto translate-x-full content-[''];
+    border-left: 3px solid
+      hsl(from var(--highlighted-bg) h s calc(l + 4 * var(--dark)));
   }
 
   .shiki .highlighted-word {
+    --highlighted-bg: hsl(
+      from var(--muted) h s calc(l + 4 * var(--dark)) / 50%
+    );
+
     @apply bg-(--highlighted-bg) px-0.5 rounded;
     box-shadow: 0 0 0 4px var(--highlighted-bg);
   }

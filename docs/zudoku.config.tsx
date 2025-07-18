@@ -79,6 +79,7 @@ const config: ZudokuConfig = {
     { from: "/getting-started", to: "/docs/quickstart" },
     { from: "/app-quickstart", to: "/docs/quickstart" },
     { from: "/components", to: "/components/callout" },
+    { from: "/configuration/page", to: "/configuration/site" },
   ],
   navigation: [
     {

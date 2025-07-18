@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { DialogClose, DialogFooter } from "zudoku/ui/Dialog.js";
 import {
   Select,
@@ -12,6 +13,7 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { useAuth } from "../../hooks/index.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { type ApiKeyService } from "./index.js";
@@ -33,6 +35,8 @@ export const CreateApiKey = ({
       expiresOn: "30",
     },
   });
+  const auth = useAuth();
+
   const createKeyMutation = useMutation({
     mutationFn: ({ description, expiresOn }: CreateApiKey) => {
       if (!service.createKey) {
@@ -42,10 +46,14 @@ export const CreateApiKey = ({
       const expiresOnDate =
         expiresOn !== "never" ? addDaysToDate(Number(expiresOn)) : undefined;
 
-      return service.createKey(
-        { description: description || "Secret Key", expiresOn: expiresOnDate },
+      return service.createKey({
+        apiKey: {
+          description: description || "Secret Key",
+          expiresOn: expiresOnDate,
+        },
         context,
-      );
+        auth,
+      });
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["api-keys"] });
@@ -68,6 +76,12 @@ export const CreateApiKey = ({
         ),
       )}
     >
+      {createKeyMutation.error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{createKeyMutation.error.message}</AlertDescription>
+        </Alert>
+      )}
       <div className="flex gap-2 flex-col text-sm font-medium">
         Name
         <Input {...form.register("description")} />

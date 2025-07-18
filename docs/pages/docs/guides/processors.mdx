@@ -4,15 +4,21 @@ sidebar_icon: cpu
 
 # Schema Processors
 
-Schema processors are functions that transform your OpenAPI schemas before they are used in the documentation. They are defined in your `zudoku.build.ts` file and can be used to modify schemas in various ways.
+Schema processors are functions that transform your OpenAPI schemas before they
+are used in the documentation. They are defined in your `zudoku.build.ts` file
+and can be used to modify schemas in various ways.
 
 :::tip
-For information on how to configure processors in your project, see the [Build Configuration](../configuration/build-configuration) guide.
+
+For information on how to configure processors in your project, see the
+[Build Configuration](../configuration/build-configuration) guide.
+
 :::
 
 ## Built-in Processors
 
-Zudoku provides several built-in processors that you can use to transform your schemas:
+Zudoku provides several built-in processors that you can use to transform your
+schemas:
 
 ### `removeExtensions`
 
@@ -102,13 +108,16 @@ export default buildConfig;
 
 :::info
 
-If you are missing a processor that you think should be built-in, please don't hesitate to [open an issue on GitHub](https://github.com/zuplo/zudoku/issues/new).
+If you are missing a processor that you think should be built-in, please don't
+hesitate to
+[open an issue on GitHub](https://github.com/zuplo/zudoku/issues/new).
 
 :::
 
 ## Custom Processors
 
-You can also create your own processors. Here's a simple example that adds a description to all operations:
+You can also create your own processors. Here's a simple example that adds a
+description to all operations:
 
 ```ts
 import type { ZudokuBuildConfig } from "zudoku";
@@ -156,7 +165,11 @@ export default buildConfig;
 
 ## Best Practices
 
-- **Handle missing properties**: Check for the existence of properties before accessing them
-- **Return the schema**: Always return the transformed schema, even if no changes were made
-- **Use async/await**: Processors can be async functions, which is useful for more complex transformations
-- **Chain processors**: Processors are executed in order, so you can chain multiple transformations
+- **Handle missing properties**: Check for the existence of properties before
+  accessing them
+- **Return the schema**: Always return the transformed schema, even if no
+  changes were made
+- **Use async/await**: Processors can be async functions, which is useful for
+  more complex transformations
+- **Chain processors**: Processors are executed in order, so you can chain
+  multiple transformations

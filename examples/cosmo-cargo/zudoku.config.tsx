@@ -129,6 +129,27 @@ const config: ZudokuConfig = {
           label: "Shipping Guides",
           items: ["interstellar", "intergalactic"],
         },
+        {
+          type: "category",
+          icon: "shield",
+          label: "Premium Guides",
+          display: "auth",
+          items: [
+            {
+              type: "doc",
+              file: "member-benefits",
+              label: "Member Benefits",
+              icon: "user-plus",
+            },
+            {
+              type: "doc",
+              file: "premium-fleet",
+              path: "premium-fleet-services",
+              label: "Premium Fleet Services",
+              icon: "trophy",
+            },
+          ],
+        },
       ],
     },
     {

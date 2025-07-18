@@ -4,6 +4,8 @@ import type {
   NavigationCategory,
   NavigationItem,
 } from "../../../config/validators/NavigationSchema.js";
+import type { UseAuthReturn } from "../../authentication/hook.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
 
@@ -133,14 +135,18 @@ export const navigationListItem = cva(
 );
 
 export const isHiddenItem =
-  (isAuthenticated?: boolean) =>
+  (auth: UseAuthReturn, context: ZudokuContext) =>
   (item: NavigationItem): boolean => {
+    if (typeof item.display === "function") {
+      return item.display({ context, auth });
+    }
+
     if (item.display === "hide") return false;
     if (!item.label) return false;
 
     return (
-      (item.display === "auth" && isAuthenticated) ||
-      (item.display === "anon" && !isAuthenticated) ||
+      (item.display === "auth" && auth.isAuthenticated) ||
+      (item.display === "anon" && !auth.isAuthenticated) ||
       !item.display ||
       item.display === "always"
     );

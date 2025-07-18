@@ -1,6 +1,7 @@
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
 import { type ReactNode } from "react";
 import { matchPath } from "react-router";
+import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { type ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
@@ -18,6 +19,7 @@ import { getRoutes, getVersions } from "./util/getRoutes.js";
 export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
+      extensions
       tags {
         slug
         name
@@ -139,25 +141,73 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         });
         const data = await context.queryClient.ensureQueryData(query);
 
-        const categories = data.schema.tags.flatMap((tag) => {
-          if (!tag.name || tag.operations.length === 0) return [];
+        const tagCategories = new Map(
+          data.schema.tags
+            .filter((tag) => tag.name && tag.operations.length > 0)
+            .map((tag) => {
+              if (!tag.name) {
+                throw new Error(`Tag ${tag.slug} has no name`);
+              }
 
-          const categoryPath = joinUrl(basePath, versionParam, tag.slug);
+              const categoryPath = joinUrl(basePath, versionParam, tag.slug);
 
-          const isCollapsed =
-            tag.extensions?.["x-zudoku-collapsed"] ??
-            !config.options?.expandAllTags;
-          const isCollapsible =
-            tag.extensions?.["x-zudoku-collapsible"] ?? true;
+              const isCollapsed =
+                tag.extensions?.["x-zudoku-collapsed"] ??
+                !config.options?.expandAllTags;
+              const isCollapsible =
+                tag.extensions?.["x-zudoku-collapsible"] ?? true;
 
-          return createNavigationCategory({
-            label: tag.name,
-            path: categoryPath,
-            operations: tag.operations,
-            collapsed: isCollapsed,
-            collapsible: isCollapsible,
-          });
-        });
+              return [
+                tag.name,
+                createNavigationCategory({
+                  label: tag.name,
+                  path: categoryPath,
+                  operations: tag.operations,
+                  collapsed: isCollapsed,
+                  collapsible: isCollapsible,
+                }),
+              ];
+            }),
+        );
+
+        const tagGroups =
+          (data.schema.extensions?.["x-tagGroups"] as
+            | { name: string; tags: string[] }[]
+            | undefined) ?? [];
+
+        const groupedTags = new Set(
+          tagGroups.flatMap((group) =>
+            group.tags.filter((name) => tagCategories.has(name)),
+          ),
+        );
+
+        const groupedCategories: NavigationItem[] = tagGroups.flatMap(
+          (group) => {
+            const items = group.tags
+              .map((name) => tagCategories.get(name))
+              .filter(Boolean) as NavigationItem[];
+
+            if (items.length === 0) {
+              return [];
+            }
+            return [
+              {
+                type: "category",
+                label: group.name,
+                items,
+                collapsible: true,
+                collapsed: !config.options?.expandAllTags,
+              },
+            ];
+          },
+        );
+
+        const categories: NavigationItem[] = [
+          ...groupedCategories,
+          ...Array.from(tagCategories.entries())
+            .filter(([name]) => !groupedTags.has(name))
+            .map(([, cat]) => cat),
+        ];
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,

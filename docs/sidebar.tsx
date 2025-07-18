@@ -28,10 +28,10 @@ export const docs: Navigation = [
     link: "configuration/overview",
     items: [
       "docs/customization/colors-theme",
-      "docs/customization/fonts",
+      "docs/configuration/docs",
       "docs/configuration/navigation",
-      "docs/configuration/search",
       "docs/configuration/site",
+      "docs/configuration/search",
       "docs/configuration/footer",
     ],
   },
@@ -61,7 +61,14 @@ export const docs: Navigation = [
     type: "category",
     label: "Authentication",
     icon: "lock",
-    items: ["docs/configuration/authentication"],
+    items: [
+      "docs/configuration/authentication",
+      "docs/configuration/authentication-auth0",
+      "docs/configuration/authentication-clerk",
+      "docs/configuration/authentication-azure-ad",
+      "docs/configuration/authentication-pingfederate",
+      "docs/configuration/authentication-supabase",
+    ],
   },
   {
     type: "category",
