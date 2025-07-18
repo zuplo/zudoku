@@ -39,7 +39,7 @@ const getItemPath = (item: NavigationItem) => {
     case "link":
       return item.to;
     case "custom-page":
-      return item.path;
+      return joinUrl(item.path);
     default:
       return undefined;
   }

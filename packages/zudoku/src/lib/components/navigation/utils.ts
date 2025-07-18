@@ -58,18 +58,18 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
   const location = useLocation();
 
   return traverseNavigationItem(category, (item) => {
-    if (item.type === "category" && item.link) {
-      const categoryLinkPath = joinUrl(item.link.path);
-      if (categoryLinkPath === location.pathname) {
-        return true;
-      }
-    }
-
-    if (item.type === "doc") {
-      const docPath = joinUrl(item.path);
-      if (docPath === location.pathname) {
-        return true;
-      }
+    switch (item.type) {
+      case "category":
+        if (!item.link) {
+          return undefined;
+        }
+        return joinUrl(item.link.path) === location.pathname ? true : undefined;
+      case "custom-page":
+      case "doc":
+        return joinUrl(item.path) === location.pathname ? true : undefined;
+      case "link":
+      default:
+        return undefined;
     }
   });
 };
