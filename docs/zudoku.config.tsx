@@ -22,18 +22,15 @@ const config: ZudokuConfig = {
   theme: {
     customCss: `
 
-@theme inline {
-  --animate-shiny-text: shiny-text 8s infinite;
- 
-  @keyframes shiny-text {
+@theme {
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  @keyframes wiggle {
     0%,
-    90%,
     100% {
-      background-position: calc(-100% - var(--shiny-width)) 0;
+      transform: rotate(-3deg);
     }
-    30%,
-    60% {
-      background-position: calc(100% + var(--shiny-width)) 0;
+    50% {
+      transform: rotate(3deg);
     }
   }
 }`,

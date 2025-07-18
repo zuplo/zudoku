@@ -73,7 +73,11 @@ export const BentoStaticSite = () => {
         </Box>
         <div className="flex gap-4 transform -translate-y-5 -translate-x-5 justify-end z-20">
           <BoxLongshadow className="rounded-full p-2.5 flex items-center justify-center">
-            <GaugeCircleIcon size={22} strokeWidth={1.5} />
+            <GaugeCircleIcon
+              size={22}
+              strokeWidth={1.5}
+              className="group-hover:rotate-60 group-hover:scale-110 group-hover:color-red-300 transition-all duration-300 ease-in-out"
+            />
           </BoxLongshadow>
           <BoxLongshadow className="relative rounded-full p-2.5 flex items-center justify-center">
             <ZapIcon size={22} strokeWidth={1.5} />

@@ -14,7 +14,7 @@ export const StartCustomizing = () => {
         <img src="/lsd.svg" alt="cli" className="w-16 h-16" />
         <BoxLongshadow
           className={cn(
-            "w-full relative flex flex-col transition-colors duration-1500 ease-in-out",
+            "w-full relative flex flex-col transition-colors duration-1500 ease-in-ou overflow-visible",
             selectedColor && `bg-[${selectedColor}]`,
             selectedText === "light" && `text-[#FFFFFF]`,
             selectedText === "dark" && `text-[#000000]`,
@@ -30,7 +30,7 @@ export const StartCustomizing = () => {
           </ul>
           <BoxLongshadow
             className={cn(
-              "p-2 gap-1 grid grid-cols-2 grid-rows-2 absolute right-5 -bottom-9 group",
+              "p-2 gap-1 grid grid-cols-2 grid-rows-2 absolute right-5 -bottom-9 group overflow-visible",
             )}
           >
             <button
@@ -53,7 +53,7 @@ export const StartCustomizing = () => {
               type="button"
               className="h-7 w-7 rounded-sm bg-[#FFEB79] hover:scale-110 transition-all duration-300"
             ></button>
-            <Cursor className="h-11 w-11 absolute -bottom-5 -right-5 group-hover:scale-0 transition-all duration-300 ease-in-out " />
+            <Cursor className="h-11 w-11 absolute -bottom-5 -right-5 group-hover:scale-0 transition-all group-hover:translate-x-1/2 duration-150 ease-in-out " />
           </BoxLongshadow>
         </BoxLongshadow>
         <div>

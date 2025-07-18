@@ -29,7 +29,7 @@ export const Preview = () => {
   return (
     <div className="w-full flex flex-col items-center overflow-hidden relative">
       <div
-        className="w-full h-full absolute -z-10"
+        className="w-full h-[calc(100%-10vh)] absolute -z-10"
         style={{
           background: `url('/background.svg')`,
           backgroundPosition: "top center",
@@ -37,7 +37,7 @@ export const Preview = () => {
         }}
       />
       <Hero />
-      <div className="px-10 w-full relative max-w-screen-xl mt-20">
+      <div className="px-10 w-full relative max-w-screen-xl mt-20  ">
         <div className="relative w-fit mx-auto">
           <div className="border rounded-full border-[black] absolute -top-8 left-5 bg-white p-1.5 flex z-10">
             <button
@@ -57,23 +57,61 @@ export const Preview = () => {
               API Reference
             </button>
           </div>
-          <div className="border rounded-full border-[px-8] absolute -top-8 right-5 bg-white p-1.5 flex border-[black] gap-2 z-10">
-            <div className="rounded-full p-3  bg-[#FFEB79] text-black border-[black] border">
+          <b className="bottom-3 md:bottom-auto border rounded-full border-[px-8] absolute md:-top-8 right-5 bg-white p-1.5 flex border-[black] gap-2 z-10">
+            <button
+              type="button"
+              className={cn(
+                "rounded-full p-3  text-black border-[transparent] border",
+                theme === "light" && "bg-[#FFEB79] border-[black]",
+              )}
+              onClick={() =>
+                setTheme((theme) => (theme === "light" ? "dark" : "light"))
+              }
+            >
               <SunIcon />
-            </div>
-            <div className="rounded-full p-3 ">
+            </button>
+            <button
+              type="button"
+              className={cn(
+                "rounded-full p-3 ",
+                theme === "dark" && "bg-black text-white",
+              )}
+              onClick={() =>
+                setTheme((theme) => (theme === "dark" ? "light" : "dark"))
+              }
+            >
               <MoonStarIcon />
-            </div>
-          </div>
+            </button>
+          </b>
           <img
             src={`/light-portal.png`}
-            loading="lazy"
-            className={cn(activeTab === "api-reference" ? "hidden" : "")}
+            className={cn(
+              activeTab === "developer-portal" && theme === "light"
+                ? ""
+                : "hidden",
+            )}
           />
           <img
             src={`/light-api.png`}
-            loading="lazy"
-            className={cn(activeTab === "developer-portal" ? "hidden" : "")}
+            className={cn(
+              activeTab === "api-reference" && theme === "light"
+                ? ""
+                : "hidden",
+            )}
+          />
+          <img
+            src={`/dark-portal.png`}
+            className={cn(
+              activeTab === "developer-portal" && theme === "dark"
+                ? ""
+                : "hidden",
+            )}
+          />
+          <img
+            src={`/dark-api.png`}
+            className={cn(
+              activeTab === "api-reference" && theme === "dark" ? "" : "hidden",
+            )}
           />
         </div>
       </div>

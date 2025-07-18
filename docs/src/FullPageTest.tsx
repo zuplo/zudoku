@@ -16,6 +16,7 @@ import { BentoBox, BentoDescription, BentoImage } from "./components/Bento";
 import BentoAddOpenAPI from "./components/BentoAddOpenAPI";
 import { BentoAuthReady } from "./components/BentoAuthReady";
 import { BentoInstall } from "./components/BentoInstall";
+import BentoInternalTools from "./components/BentoInternalTools";
 import { BentoStaticSite } from "./components/BentoStaticSite";
 import { Box } from "./components/Box";
 import { BoxLongshadow } from "./components/BoxLongshadow";
@@ -56,9 +57,9 @@ const FullPageTest = () => {
           }
         `}
       </style>
-      <div className="flex items-center justify-between w-full max-w-screen-xl px-10">
+      <div className="flex flex-col gap-6 md:flex-row items-center justify-between w-full max-w-screen-xl px-10">
         <Zudoku />
-        <ul className="flex items-center gap-6">
+        <ul className="flex items-center gap-6 ">
           <li>
             <Link href="/docs">Documentation</Link>
           </li>
@@ -138,34 +139,11 @@ const FullPageTest = () => {
               </a>
             </li>
           ))}
-          {/* <a
-            href="https://tailwindcss.com/"
-            target="_blank"
-            rel="noreferrer"
-            className="shrink-0scale-95 grayscale-70 hover:grayscale-0 hover:scale-100 transition ease-in-out"
-          >
-            <img
-              src="/tech/tailwind.svg"
-              className="max-w-[240px]"
-              alt="Tailwind CSS"
-            />
-          </a>
-          <a
-            href="https://react.dev/"
-            target="_blank"
-            rel="noreferrer"
-            className="scale-95 grayscale-70 hover:grayscale-0 hover:scale-100 transition ease-in-out"
-          >
-            <img src="/tech/react.svg" alt="React" />
-          </a>
-          <img src="/tech/typescript.svg" alt="TypeScript" />
-          <img src="/tech/vite.svg" alt="Vite" />
-          <img src="/tech/radix.svg" alt="Radix UI" /> */}
         </ul>
       </div>
       <div className="w-full">
         <div className="border-t border-[black] w-full flex justify-center">
-          <div className="grid grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
             <div className="lg:col-span-2 p-10 border-l border-r border-[black]">
               <h2 className="text-3xl font-semibold">Get Started</h2>
               <p>
@@ -174,7 +152,7 @@ const FullPageTest = () => {
               </p>
             </div>
             <div className="lg:border-r border-[black] flex items-end">
-              <div className="capitalize mt-auto h-1/2 border-t w-full border-[black] flex items-end justify-end">
+              <div className="h-full capitalize mt-auto border-l md:border-l-0 border-r md:border-r-0 md:h-1/2 border-t w-full border-[black] flex items-end justify-end">
                 <a
                   href="/docs"
                   className="text-2xl font-semibold p-3 px-10 inline-flex items-center gap-2 hover:underline decoration-4 underline-offset-4"
@@ -396,7 +374,7 @@ const FullPageTest = () => {
                 description="Integrates easily witheasy extensible with own plugins community and core plugins"
               />
             </BentoBox>
-            <BentoBox className="col-span-6 lg:col-span-5">
+            <BentoBox className="col-span-12 md:col-span-6 lg:col-span-5">
               <BentoImage>
                 <BoxLongshadow
                   shadowLength="large"
@@ -434,15 +412,7 @@ const FullPageTest = () => {
               />
             </BentoBox>
 
-            <BentoBox className="col-span-6 lg:col-span-5">
-              <BentoImage className="flex items-center justify-center">
-                <BoxLongshadow className="w-full h-full bg-[#F2F4FF]"></BoxLongshadow>
-              </BentoImage>
-              <BentoDescription
-                title="Internal Tools"
-                description="Document internal APIs for faster dev workflows"
-              />
-            </BentoBox>
+            <BentoInternalTools />
             <BentoBox className="col-span-full lg:col-span-7">
               <BentoImage className="flex items-center justify-center w-full">
                 <div className="grid grid-cols-12 gap-4 w-full">
@@ -498,14 +468,14 @@ const FullPageTest = () => {
               />
             </BentoBox>
           </div>
-          <div className="flex gap-4 my-10">
+          <div className="flex flex-col md:flex-row gap-4 my-10">
             <a
               href="https://zudoku.dev/docs/quickstart"
-              className="text-xl font-medium rounded-full bg-white text-black px-10 py-4 flex items-center gap-2 w-fit self-center group"
+              className="text-xl font-medium rounded-full bg-white text-black px-10 py-4 flex items-center gap-2 w-full md:w-fit self-center group"
             >
               Explore the Docs
             </a>
-            <div className="text-xl font-medium border border-white rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group">
+            <div className="md:text-xl font-mono font-medium border border-white rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group">
               npm create zudoku@latest
             </div>
           </div>
@@ -522,20 +492,20 @@ const FullPageTest = () => {
           <div className="flex-1 flex flex-col items-start lg:flex-row lg:justify-end md:items-end gap-2">
             <a
               href="https://discord.gg/zudoku"
-              className="font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full text-nowrap"
+              className="w-full md:w-fit font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full text-nowrap"
             >
               Join our Discord
             </a>
             <a
               href="https://github.com/zuplo/zudoku"
-              className="font-medium text-lg px-6 py-2 rounded-full border border-[#7362EF] text-nowrap"
+              className="w-full md:w-fit font-medium text-lg px-6 py-2 rounded-full border border-[#7362EF] text-nowrap"
             >
               Star on GitHub
             </a>
           </div>
         </div>
       </div>
-      <div className="px-10 grid grid-cols-2 w-full max-w-screen-lg mb-30 mt-10">
+      <div className="px-10 grid grid-cols-1 md:grid-cols-2 w-full max-w-screen-lg mb-30 mt-10">
         <div className="flex flex-col gap-10">
           <Zudoku />
           <h2 className="capitalize font-medium text-3xl">
@@ -544,10 +514,7 @@ const FullPageTest = () => {
             and ready to power your docs.
           </h2>
         </div>
-        <div className="flex flex-col gap-1 items-end justify-end">
-          <div>
-            <GithubIcon />
-          </div>
+        <div className="flex flex-col gap-1 md:items-end md:justify-end mt-20 md:mt-0">
           <a
             href="https://github.com/zuplo/zudoku"
             className="hover:underline decoration-2 underline-offset-4"
