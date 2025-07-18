@@ -18,10 +18,6 @@ const config: ZudokuConfig = {
       alt: "Zudoku",
       width: 130,
     },
-    // banner: {
-    //   message: <PreviewBanner />,
-    //   dismissible: true,
-    // },
   },
   theme: {
     customCss: `
