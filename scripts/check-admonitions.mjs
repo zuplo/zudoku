@@ -37,7 +37,7 @@ const globPatterns =
     ? args
     : ["docs/pages/**/*.{md,mdx}", "examples/**/pages/**/*.{md,mdx}"];
 
-const IGNORE_FILES = ["docs/pages/markdown/admonitions.md"];
+const IGNORE_FILES = ["docs/pages/docs/markdown/admonitions.mdx"];
 
 let totalIssues = 0;
 const issues = [];
@@ -188,6 +188,7 @@ function main() {
     const relativePath = relative(process.cwd(), file);
 
     // Skip the admonitions documentation file
+    console.log(relativePath);
     if (IGNORE_FILES.includes(relativePath)) {
       continue;
     }
