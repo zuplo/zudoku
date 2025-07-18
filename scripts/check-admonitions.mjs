@@ -188,7 +188,6 @@ function main() {
     const relativePath = relative(process.cwd(), file);
 
     // Skip the admonitions documentation file
-    console.log(relativePath);
     if (IGNORE_FILES.includes(relativePath)) {
       continue;
     }
