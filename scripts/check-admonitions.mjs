@@ -37,7 +37,7 @@ const globPatterns =
     ? args
     : ["docs/pages/**/*.{md,mdx}", "examples/**/pages/**/*.{md,mdx}"];
 
-const IGNORE_FILES = ["docs/pages/docs/markdown/admonitions.mdx"];
+const IGNORE_FILES = ["docs/pages/docs/markdown/admonitions.md"];
 
 let totalIssues = 0;
 const issues = [];
