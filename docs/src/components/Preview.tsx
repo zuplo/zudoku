@@ -29,7 +29,7 @@ export const Preview = () => {
   return (
     <div className="w-full flex flex-col items-center overflow-hidden relative">
       <div
-        className="w-full h-full absolute -z-10 -top-20"
+        className="w-full h-full absolute -z-10"
         style={{
           background: `url('/background.svg')`,
           backgroundPosition: "top center",
