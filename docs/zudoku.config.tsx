@@ -5,11 +5,11 @@ import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
-import PreviewBanner from "./src/PreviewBanner";
+import { Home } from "./src/Home";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
+const FullPageTest = lazy(() => import("./src/FullPageTest.js"));
 
 const config: ZudokuConfig = {
-  basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
   site: {
     showPoweredBy: true,
@@ -18,19 +18,31 @@ const config: ZudokuConfig = {
       alt: "Zudoku",
       width: 130,
     },
-    banner: {
-      message: <PreviewBanner />,
-      dismissible: true,
-    },
   },
   theme: {
+    customCss: `
+
+@theme {
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+}`,
     light: {
-      primary: "#3b82f6",
+      // primary: "#3b82f6",
+      primary: "#000000",
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#3b82f6",
-      primaryForeground: "#FFFFFF",
+      // primary: "#3b82f6",
+      primary: "#FFFFFF",
+      primaryForeground: "#000000",
     },
   },
   mdx: {
@@ -41,7 +53,6 @@ const config: ZudokuConfig = {
     favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
   },
   docs: {
-    files: "/pages/**/*.{md,mdx}",
     defaultOptions: {
       showLastModified: true,
       suggestEdit: {
@@ -57,31 +68,41 @@ const config: ZudokuConfig = {
     type: "pagefind",
   },
   redirects: [
-    { from: "/", to: "/introduction" },
-    { from: "/getting-started", to: "/quickstart" },
-    { from: "/app-quickstart", to: "/quickstart" },
+    { from: "/docs", to: "/docs/quickstart" },
+    { from: "/getting-started", to: "/docs/quickstart" },
+    { from: "/app-quickstart", to: "/docs/quickstart" },
     { from: "/components", to: "/components/callout" },
     { from: "/configuration/page", to: "/configuration/site" },
   ],
   navigation: [
     {
+      type: "custom-page",
+      path: "/hello",
+      label: "Home",
+      element: <Home />,
+    },
+    {
       type: "category",
-      icon: "book",
       label: "Documentation",
       items: docs,
     },
     {
       type: "category",
       label: "Components",
-      icon: "component",
       items: components,
     },
     {
       type: "custom-page",
       path: "/theme-playground",
-      icon: "palette",
       label: "Themes",
       element: <ThemePlayground />,
+    },
+    {
+      type: "custom-page",
+      path: "/",
+      display: "hide",
+      element: <FullPageTest />,
+      fullPage: true,
     },
   ],
   plugins: [

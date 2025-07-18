@@ -1,7 +1,7 @@
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import * as React from "react";
 
-import { XIcon } from "lucide-react";
+import { CircleIcon, XIcon } from "lucide-react";
 import { cn } from "../util/cn.js";
 
 const Dialog = DialogPrimitive.Root;
@@ -45,8 +45,17 @@ const DialogContent = React.forwardRef<
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close className="absolute left-1 top-1 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-          <XIcon className="h-3 w-3" strokeWidth={2} />
+        <DialogPrimitive.Close className="absolute p-3 group -left-1.5 -top-1.5 rounded-xs opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-hidden focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+          <CircleIcon
+            className="h-2 w-2 transition-all border border-transparent  group-hover:border-white/20 rounded-full group-hover:scale-180 group-hover:text-red-400"
+            strokeWidth={2}
+            fill="currentColor"
+          />
+          <XIcon
+            className="h-2 w-2 absolute top-3 left-3 text-transparent group-hover:text-red-800 transition-colors"
+            strokeWidth={2}
+            fill="currentColor"
+          />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       )}
