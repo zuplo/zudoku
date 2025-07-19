@@ -24,7 +24,7 @@ If you don't have a Clerk account, you can sign up for a [free Clerk account](ht
 
 2. **Create a Clerk JWT Template**
   You need to create a JWT Template so your JWTs include name, email & email_verified information.
-  - Click **JWT templates** in the [Clerk Dashboard](https://dashboard.clerk.com/) menu
+  - Navigate to  **JWT templates** in the [Clerk Dashboard](https://dashboard.clerk.com/)
   - Create a new template by clicking **Add new template**
   - Pick a name for the template
   - Add the following claims
