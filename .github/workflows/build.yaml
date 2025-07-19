@@ -99,7 +99,7 @@ jobs:
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --fallback-extensions html --cache --config docs/lychee.yaml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
+          args: --fallback-extensions html --cache --config ./docs/lychee.toml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
       - name: Save lychee cache
         if: always()
         uses: actions/cache/save@v4
