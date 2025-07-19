@@ -86,4 +86,4 @@ If you don't have a Clerk account, you can sign up for a [free Clerk account](ht
 
 - Explore [Clerk's documentation](https://clerk.com/docs) for advanced features
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation
-- Configure [user roles and permissions](https://clerk.com/docs/users/roles-permissions) in Clerk
+- Configure [user roles and permissions](https://clerk.com/docs/organizations/roles-permissions) in Clerk

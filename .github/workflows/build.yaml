@@ -62,3 +62,47 @@ jobs:
       - name: Has Stats
         run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
         id: stats-file
+
+  check-links:
+    name: Check Links
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm install nx --global
+
+      - run: nx run docs:build
+
+      - name: Restore lychee cache
+        id: cache-lychee
+        uses: actions/cache/restore@v4
+        with:
+          path: docs/.lycheecache
+          key: lychee-cache-${{ hashFiles('docs/.lycheecache') }}
+          restore-keys: |
+            lychee-cache-
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --fallback-extensions html --root-dir $PWD/docs/dist --include-fragments ./docs/dist
+      - name: Save lychee cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: docs/.lycheecache
+          key: lychee-cache-${{ hashFiles('docs/.lycheecache') }}
