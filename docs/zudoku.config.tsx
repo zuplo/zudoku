@@ -93,7 +93,7 @@ const config: ZudokuConfig = {
     },
     {
       type: "custom-page",
-      path: "/theme-playground",
+      path: "/docs/theme-playground",
       label: "Themes",
       element: <ThemePlayground />,
     },
@@ -114,7 +114,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/placeholder.json",
-      path: "api-placeholder",
+      path: "/docs/api-placeholder",
     },
   ],
   slots: {

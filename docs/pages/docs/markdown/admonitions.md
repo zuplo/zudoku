@@ -8,7 +8,7 @@ In addition to the basic Markdown syntax, we have a special admonitions syntax b
 
 :::note
 
-Admonitions are also commonly referred to as "Callouts". For programmatic usage, see the [Callout component](/components/callout).
+Admonitions are also commonly referred to as "Callouts". For programmatic usage, see the [Callout component](/docs/components/callout).
 
 :::
 

@@ -25,7 +25,7 @@ export const docs: Navigation = [
     type: "category",
     label: "Configuration",
     icon: "settings",
-    link: "configuration/overview",
+    link: "docs/configuration/overview",
     items: [
       "docs/customization/colors-theme",
       "docs/configuration/docs",
@@ -39,7 +39,7 @@ export const docs: Navigation = [
     type: "category",
     label: "Writing",
     icon: "book-open-text",
-    link: "writing",
+    link: "docs/writing",
     items: [
       "docs/markdown/overview",
       "docs/markdown/frontmatter",
@@ -95,7 +95,7 @@ export const docs: Navigation = [
     type: "category",
     label: "Deployment",
     icon: "cloud-upload",
-    link: "deployment",
+    link: "docs/deployment",
     items: [
       "docs/deploy/cloudflare-pages",
       "docs/deploy/github-pages",

@@ -64,7 +64,7 @@ Configure the site's logo with different versions for light and dark themes:
 
 #### Colors & Theme
 
-We allow you to fully customize all colors, borders, etc - read more about it in [Colors & Themes](/customization/colors-theme)
+We allow you to fully customize all colors, borders, etc - read more about it in [Colors & Themes](/docs/customization/colors-theme)
 
 ## Layout
 

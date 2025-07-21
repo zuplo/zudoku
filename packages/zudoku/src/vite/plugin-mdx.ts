@@ -66,7 +66,7 @@ const remarkLinkRewritePlugin =
       if (!node.url) return;
 
       const base = path.join(basePath);
-      if (node.url.startsWith(base)) {
+      if (basePath && node.url.startsWith(base)) {
         node.url = node.url.slice(base.length);
       } else if (
         !node.url.startsWith("http") &&
