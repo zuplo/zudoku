@@ -1,0 +1,43 @@
+# Lychee configuration for Zuplo docs
+
+# Cache settings
+cache = true
+max_cache_age = "1d"
+
+# Network settings
+max_concurrency = 10
+timeout = 20
+max_retries = 2
+retry_wait_time = 2
+
+
+# Exclude private IPs
+exclude_all_private = true
+
+# Accept these status codes as valid
+accept = [200, 201, 202, 203, 204, 301, 302, 303, 307, 308, 429]
+
+# Exclude patterns
+exclude = [    
+  "github.com/zuplo/zudoku/edit/(.*)",
+  "github.com/zuplo/zudoku/issues",
+  "github.com/zuplo/zudoku",
+  "https://zudoku.dev/docs/400",
+  "https://zudoku.dev/docs/404",
+  "https://zudoku.dev/docs/500",
+  "stackoverflow.com",
+  "dashboard.clerk.com",
+  "openid.net",
+
+  "https://portal.azure.com/",
+
+
+  # This seems to have been replaced by alert, but we still export it
+  "https://ui.shadcn.com/docs/components/callout"
+
+]
+
+# Headers to send with requests
+[headers]
+user_agent = "Mozilla/5.0 (compatible; lychee/0.19.1)"
+accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"

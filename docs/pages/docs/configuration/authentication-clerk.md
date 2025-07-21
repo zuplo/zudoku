@@ -22,11 +22,28 @@ If you don't have a Clerk account, you can sign up for a [free Clerk account](ht
    - Select your preferred authentication methods (email, social providers, etc.)
    - Click **Create Application**
 
-2. **Configure Zudoku**
+2. **Create a Clerk JWT Template** You need to create a JWT Template so your JWTs include name, email and email_verified information.
+
+- Navigate to **JWT templates** in the [Clerk Dashboard](https://dashboard.clerk.com/)
+- Create a new template by clicking **Add new template**
+- Pick a name for the template
+- Add the following claims
+  ```json
+  {
+    "name": "{{user.full_name}}",
+    "email": "{{user.primary_email_address}}",
+    "email_verified": "{{user.email_verified}}"
+  }
+  ```
+- Save
+
+3. **Configure Zudoku**
 
    Get your publishable key from the Clerk dashboard:
    - Navigate to **API Keys** in your Clerk dashboard
    - Copy the **Publishable key**
+
+   Use the JWT template name defined in the previous section
 
    Add the Clerk configuration to your [Zudoku configuration file](./overview.md):
 
@@ -37,12 +54,13 @@ If you don't have a Clerk account, you can sign up for a [free Clerk account](ht
      authentication: {
        type: "clerk",
        clerkPubKey: "<your-clerk-publishable-key>",
+       jwtTemplateName: "<your-clerk-jwt-template-name>",
      },
      // ... other configuration
    };
    ```
 
-3. **Configure Redirect URLs (Optional)**
+4. **Configure Redirect URLs (Optional)**
 
    If you need custom redirect behavior, configure the allowed redirect URLs in Clerk:
    - Go to **Paths** in your Clerk dashboard
@@ -53,19 +71,6 @@ If you don't have a Clerk account, you can sign up for a [free Clerk account](ht
      - Local Development: `http://localhost:3000/oauth/callback`
 
 </Stepper>
-
-## Configuration Options
-
-### Basic Configuration
-
-The minimal configuration requires only your Clerk publishable key:
-
-```typescript
-authentication: {
-  type: "clerk",
-  clerkPubKey: "pk_live_xxxxxxxxxxxxx"
-}
-```
 
 ## Troubleshooting
 
@@ -81,4 +86,4 @@ authentication: {
 
 - Explore [Clerk's documentation](https://clerk.com/docs) for advanced features
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation
-- Configure [user roles and permissions](https://clerk.com/docs/users/roles-permissions) in Clerk
+- Configure [user roles and permissions](https://clerk.com/docs/organizations/roles-permissions) in Clerk

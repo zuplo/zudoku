@@ -114,7 +114,7 @@ export const NavigationItem = ({
       );
     case "link":
     case "custom-page": {
-      const href = item.type === "link" ? item.to : item.path;
+      const href = item.type === "link" ? item.to : joinUrl(item.path);
       return !href.startsWith("http") ? (
         <AnchorLink
           to={{
@@ -124,7 +124,9 @@ export const NavigationItem = ({
           }}
           {...{ [DATA_ANCHOR_ATTR]: href.split("#")[1] }}
           className={navigationListItem({
-            isActive: href === [location.pathname, activeAnchor].join("#"),
+            isActive:
+              href ===
+              [location.pathname, activeAnchor].filter(Boolean).join("#"),
           })}
           onClick={onRequestClose}
         >
