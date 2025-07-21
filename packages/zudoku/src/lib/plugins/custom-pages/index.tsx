@@ -21,7 +21,7 @@ export const customPagesPlugin = (
           path: item.path,
           element: item.element,
           handle: {
-            fullPage: item.fullPage ?? false,
+            layout: item.layout ?? "default",
           },
         });
       }

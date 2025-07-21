@@ -42,7 +42,7 @@ const Link = ({
   );
 };
 
-const FullPageTest = () => {
+const LandingPage = () => {
   return (
     <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25 z-1">
       <style>
@@ -64,7 +64,7 @@ const FullPageTest = () => {
             <Link href="/docs">Documentation</Link>
           </li>
           <li>
-            <Link href="/components/typography">Components</Link>
+            <Link href="/docs/components/typography">Components</Link>
           </li>
           <li>
             <Link href="/theme-playground">Themes</Link>
@@ -381,12 +381,12 @@ const FullPageTest = () => {
                   className="w-11/12 h-[120%] bg-[#F2F4FF] p-6 relative"
                 >
                   <code className="font-mono whitespace-pre-wrap leading-loose text-[#9095B4]">
-                    {`# Welcome 
-**API** docs rule 
---- 
-## Getting Started 
-- Edit the markdowne bar 
-- See it live 
+                    {`# Welcome
+**API** docs rule
+---
+## Getting Started
+- Edit the markdowne bar
+- See it live
 ---`}
                   </code>
                   <div className=" flex-col absolute top-5 -right-8 bg-white p-4 rounded-lg border border-[black] flex  gap-2">
@@ -539,4 +539,4 @@ const FullPageTest = () => {
   );
 };
 
-export default FullPageTest;
+export default LandingPage;

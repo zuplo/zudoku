@@ -5,9 +5,8 @@ import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
 import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
-import { Home } from "./src/Home";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
-const FullPageTest = lazy(() => import("./src/FullPageTest.js"));
+const LandingPage = lazy(() => import("./src/LandingPage"));
 
 const config: ZudokuConfig = {
   canonicalUrlOrigin: "https://zudoku.dev",
@@ -77,9 +76,10 @@ const config: ZudokuConfig = {
   navigation: [
     {
       type: "custom-page",
-      path: "/hello",
-      label: "Home",
-      element: <Home />,
+      path: "/",
+      display: "hide",
+      element: <LandingPage />,
+      layout: "none",
     },
     {
       type: "category",
@@ -96,13 +96,6 @@ const config: ZudokuConfig = {
       path: "/theme-playground",
       label: "Themes",
       element: <ThemePlayground />,
-    },
-    {
-      type: "custom-page",
-      path: "/",
-      display: "hide",
-      element: <FullPageTest />,
-      fullPage: true,
     },
   ],
   plugins: [

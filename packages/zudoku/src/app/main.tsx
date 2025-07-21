@@ -119,7 +119,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
           element: <RouteGuard />,
           errorElement: <RouterError />,
           children: routes.map((r) =>
-            r.handle?.fullPage ? r : wrapWithLayout(r),
+            r.handle?.layout === "none" ? r : wrapWithLayout(r),
           ),
         },
       ],
