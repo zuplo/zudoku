@@ -67,7 +67,7 @@ const LandingPage = () => {
             <Link href="/docs/components/typography">Components</Link>
           </li>
           <li>
-            <Link href="/theme-playground">Themes</Link>
+            <Link href="/docs/theme-playground">Themes</Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">

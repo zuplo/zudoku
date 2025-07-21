@@ -1,5 +1,4 @@
 import { type Navigation } from "zudoku";
-import { Introduction } from "./src/Introduction";
 
 /**
  * NOTE: This file should not import anything except zudoku. We use this file
@@ -7,20 +6,20 @@ import { Introduction } from "./src/Introduction";
  */
 
 export const docs: Navigation = [
-  {
-    type: "category",
-    label: "Getting started",
-    icon: "circle-play",
-    items: [
-      {
-        type: "custom-page",
-        path: "docs/introduction",
-        label: "Introduction",
-        element: <Introduction />,
-      },
-      "docs/quickstart",
-    ],
-  },
+  "docs/quickstart",
+  // {
+  //   type: "category",
+  //   label: "Getting started",
+  //   icon: "circle-play",
+  //   items: [
+  //     {
+  //       type: "custom-page",
+  //       path: "docs/introduction",
+  //       label: "Introduction",
+  //       element: <Introduction />,
+  //     },
+  //   ],
+  // },
   {
     type: "category",
     label: "Configuration",
