@@ -15,12 +15,18 @@ export const StartCustomizing = () => {
         <BoxLongshadow
           className={cn(
             "w-full relative flex flex-col transition-colors duration-1500 ease-in-ou overflow-visible",
-            selectedColor && `bg-[${selectedColor}]`,
-            selectedText === "light" && `text-[#FFFFFF]`,
-            selectedText === "dark" && `text-[#000000]`,
+            selectedText === "light" ? "text-white" : "text-black",
           )}
+          style={{
+            backgroundColor: selectedColor,
+          }}
         >
-          <div className="p-4 py-2 border-b border-[black]">
+          <div
+            className={cn(
+              "p-4 py-2 border-b transition-colors duration-1500 ease-in-out",
+              selectedText !== "light" ? "border-black" : "border-white",
+            )}
+          >
             <ZudokuLogo className="w-8 h-8" />
           </div>
           <ul className="flex gap-x-4 p-4 items-center h-full">

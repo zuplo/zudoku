@@ -1,3 +1,4 @@
+import { Head } from "zudoku/components";
 import {
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -12,6 +13,10 @@ import {
   TriangleAlertIcon,
   UnplugIcon,
 } from "zudoku/icons";
+import {
+  AnimatedLabelIcon,
+  AnimatedPackageIcon,
+} from "./components/AnimatedIcons";
 import { BentoBox, BentoDescription, BentoImage } from "./components/Bento";
 import BentoAddOpenAPI from "./components/BentoAddOpenAPI";
 import { BentoAuthReady } from "./components/BentoAuthReady";
@@ -27,6 +32,7 @@ import { StartCustomizing } from "./components/StartCustomizing";
 import Zudoku from "./components/Zudoku";
 import DiscordIcon from "./DiscordIcon";
 import GithubIcon from "./GithubIcon";
+import "./LandingPage.css";
 
 const Link = ({
   children,
@@ -42,21 +48,45 @@ const Link = ({
   );
 };
 
+const TechStack = [
+  {
+    href: "https://react.dev/",
+    src: "/tech/react.svg",
+    alt: "React",
+    height: 55,
+  },
+  {
+    href: "https://vitejs.dev/",
+    src: "/tech/vite.svg",
+    alt: "Vite",
+    height: 55,
+  },
+  {
+    href: "https://tailwindcss.com/",
+    src: "/tech/tailwind.svg",
+    alt: "Tailwind CSS",
+    height: 35,
+  },
+  {
+    href: "https://radix-ui.com/",
+    src: "/tech/radix.svg",
+    alt: "Radix UI",
+    height: 45,
+  },
+  {
+    href: "https://typescriptlang.org/",
+    src: "/tech/typescript.svg",
+    alt: "TypeScript",
+    height: 45,
+  },
+];
+
 const LandingPage = () => {
   return (
     <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25 z-1">
-      <style>
-        {`
-          @keyframes remove-scale {
-            from {
-              transform: scale(0.90);
-            }
-            to {
-              transform: scale(1);
-            }
-          }
-        `}
-      </style>
+      <Head>
+        <title>Zudoku</title>
+      </Head>
       <div className="flex flex-col gap-6 md:flex-row items-center justify-between w-full max-w-screen-xl px-10">
         <Zudoku />
         <ul className="flex items-center gap-6 ">
@@ -94,38 +124,7 @@ const LandingPage = () => {
           </span>
         </div>
         <ul className="flex items-center gap-20 mt-14 overflow-x-auto">
-          {[
-            {
-              href: "https://react.dev/",
-              src: "/tech/react.svg",
-              alt: "React",
-              height: 55,
-            },
-            {
-              href: "https://vitejs.dev/",
-              src: "/tech/vite.svg",
-              alt: "Vite",
-              height: 55,
-            },
-            {
-              href: "https://tailwindcss.com/",
-              src: "/tech/tailwind.svg",
-              alt: "Tailwind CSS",
-              height: 35,
-            },
-            {
-              href: "https://radix-ui.com/",
-              src: "/tech/radix.svg",
-              alt: "Radix UI",
-              height: 45,
-            },
-            {
-              href: "https://typescriptlang.org/",
-              src: "/tech/typescript.svg",
-              alt: "TypeScript",
-              height: 45,
-            },
-          ].map((tech) => (
+          {TechStack.map((tech) => (
             <li
               key={tech.href}
               className="shrink-0 scale-95 opacity-60 saturate-0 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
@@ -214,14 +213,14 @@ const LandingPage = () => {
                 </div>
                 <div className="h-full flex gap-10 items-center justify-center">
                   <div className="flex flex-col gap-2">
-                    <BoxLongshadow className="p-6 bg-[#F2F4FF] flex items-center justify-center">
-                      <img src="/package.svg" alt="Package" />
+                    <BoxLongshadow className="p-6 bg-[#F2F4FF] flex items-center justify-center text-black">
+                      <AnimatedPackageIcon delay={0.2} />
                     </BoxLongshadow>{" "}
                     Tracking API
                   </div>
                   <div className="flex flex-col gap-2">
-                    <BoxLongshadow className="p-6 bg-[#F2F4FF] flex items-center justify-center">
-                      <img src="/label.svg" alt="Label" />
+                    <BoxLongshadow className="p-6 bg-[#F2F4FF] flex items-center justify-center text-black">
+                      <AnimatedLabelIcon delay={0.5} />
                     </BoxLongshadow>
                     Label API
                   </div>
@@ -421,12 +420,13 @@ const LandingPage = () => {
                   </BoxLongshadow>
                   <BoxLongshadow className="h-20 col-span-9 sm:col-span-10 flex items-center justify-center">
                     <span className="font-mono">
-                      {"<"}
+                      &lt;
                       <span className="text-[#FF02BD]">
                         OpenPlaygroundButton
-                      </span>{" "}
-                      <span className="hidden sm:inline">{"{...props} "}</span>
-                      <span className="">{" />"}</span>
+                      </span>
+                      &nbsp;
+                      <span className="hidden sm:inline">{"{...props}"}</span>
+                      <span className="">&nbsp;/&gt;</span>
                     </span>
                   </BoxLongshadow>
                   <BoxLongshadow className="h-20 col-span-8 flex items-center justify-center p-4">

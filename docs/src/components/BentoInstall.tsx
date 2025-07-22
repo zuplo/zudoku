@@ -1,20 +1,33 @@
 import { useState } from "react";
 import { cn } from "zudoku";
-import { CopyIcon } from "zudoku/icons";
+import { CheckIcon, CopyIcon } from "zudoku/icons";
 import { BoxLongshadow } from "./BoxLongshadow";
 import { TypingAnimation } from "./Terminal";
 
+const useCopyToClipboard = (text: string, timeout = 2000) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const copyToClipboard = () => {
+    void navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => {
+      setIsCopied(false);
+    }, timeout);
+  };
+
+  return [isCopied, copyToClipboard] as const;
+};
+
 export const BentoInstall = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard(
+    "npm create zudoku@latest",
+  );
   return (
     <BoxLongshadow
       className="w-full"
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="font-mono font-medium text-center gap-2 relative border-b border-[black] h-12 flex items-center justify-center">
         <div className="flex items-center gap-2 absolute left-4 top-5">
@@ -44,7 +57,17 @@ export const BentoInstall = () => {
           )}
           &nbsp;
         </div>
-        <CopyIcon className="w-5 h-5" />
+        <button
+          type="button"
+          onClick={copyToClipboard}
+          className={cn("transition hover:-rotate-8", isCopied && "!rotate-0")}
+        >
+          {isCopied ? (
+            <CheckIcon size={20} className="text-green-600" strokeWidth={5} />
+          ) : (
+            <CopyIcon size={20} />
+          )}
+        </button>
       </div>
     </BoxLongshadow>
   );

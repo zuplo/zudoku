@@ -1,4 +1,4 @@
-import { motion, MotionProps } from "motion/react";
+import { motion, type MotionProps } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "zudoku";
 
@@ -35,7 +35,6 @@ interface TypingAnimationProps extends MotionProps {
 
 export const TypingAnimation = ({
   children,
-  className,
   duration = 60,
   delay = 0,
   as: Component = "span",
@@ -84,8 +83,3 @@ export const TypingAnimation = ({
     </MotionComponent>
   );
 };
-
-interface TerminalProps {
-  children: React.ReactNode;
-  className?: string;
-}
