@@ -6,7 +6,7 @@ const Hero = () => {
   return (
     <div className="max-w-screen-sm flex flex-col items-center gap-6">
       <h1 className="text-7xl font-bold text-center leading-tight">
-        You API Deserves
+        Your API Deserves
         <br />
         <span className="bg-gradient-to-br from-[#B6A0FB] via-[#7362EF] to-[#D2C6FF] bg-clip-text text-transparent">
           Better Docs.
