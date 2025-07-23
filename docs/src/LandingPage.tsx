@@ -49,10 +49,22 @@ const Link = ({
 
 const TechStack = [
   {
+    href: "https://tailwindcss.com/",
+    src: "/tech/tailwind.svg",
+    alt: "Tailwind CSS",
+    height: 35,
+  },
+  {
     href: "https://react.dev/",
     src: "/tech/react.svg",
     alt: "React",
     height: 55,
+  },
+  {
+    href: "https://typescriptlang.org/",
+    src: "/tech/typescript.svg",
+    alt: "TypeScript",
+    height: 45,
   },
   {
     href: "https://vitejs.dev/",
@@ -61,21 +73,9 @@ const TechStack = [
     height: 55,
   },
   {
-    href: "https://tailwindcss.com/",
-    src: "/tech/tailwind.svg",
-    alt: "Tailwind CSS",
-    height: 35,
-  },
-  {
     href: "https://radix-ui.com/",
     src: "/tech/radix.svg",
     alt: "Radix UI",
-    height: 45,
-  },
-  {
-    href: "https://typescriptlang.org/",
-    src: "/tech/typescript.svg",
-    alt: "TypeScript",
     height: 45,
   },
 ];
@@ -124,18 +124,18 @@ const LandingPage = () => {
         </div>
       </div>
       <Preview />
-      <div className="mb-10 px-10">
-        <div className="text-center font-bold text-4xl capitalize">
+      <div className="px-10">
+        <div className="text-center font-bold text-3xl capitalize">
           Built with a{" "}
           <span className="bg-gradient-to-br from-[#B6A0FB] via-[#7362EF] to-[#D2C6FF] bg-clip-text text-transparent">
             modern stack
           </span>
         </div>
-        <ul className="flex items-center gap-20 mt-14 overflow-x-auto">
+        <ul className="flex flex-col gap-10 items-center md:flex-row md:gap-20 mt-14 overflow-x-auto">
           {TechStack.map((tech) => (
             <li
               key={tech.href}
-              className="shrink-0 scale-95 opacity-60 saturate-0 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
+              className="shrink-0 scale-95 opacity-100 saturate-0 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
             >
               <a href={tech.href} target="_blank" rel="noreferrer">
                 <img
@@ -147,6 +147,19 @@ const LandingPage = () => {
             </li>
           ))}
         </ul>
+        <div className="flex justify-center mt-16">
+          <a
+            href="https://cosmocargo.dev/"
+            className="group md:text-xl font-medium border rounded-full border-[#8D83FF] bg-white text-black px-8 py-3 flex items-center gap-2 w-fit self-center group "
+          >
+            Check Our Live Demo
+            <ArrowRightIcon
+              size={20}
+              strokeWidth={2.5}
+              className="group-hover:translate-x-1 transition-all duration-300"
+            />
+          </a>
+        </div>
       </div>
       <div className="w-full">
         <div className="border-t border-black w-full flex justify-center">
@@ -359,7 +372,7 @@ const LandingPage = () => {
       >
         <div className="max-w-screen-lg mx-auto flex flex-col items-center">
           <div className="rounded-full drop-shadow border border-[#8D83FF] p-1 px-3 my-10">
-            Use Cases
+            Designed to Scale
           </div>
           <h3 className="text-5xl font-semibold text-center mb-30">
             Supercharge your Docs

@@ -11,7 +11,7 @@ export const TechStack = () => {
       <div className="max-w-xl mx-auto px-4  md:px-8 flex flex-row">
         <div className="max-w-xl space-y-3 mt-8">
           <h3 className="text-[#ff00bd] font-semibold">
-            Build with Tools You Love
+            Built with Tools You Love
           </h3>
           <p className="text-3xl font-semibold sm:text-4xl">
             Modern tech stack
