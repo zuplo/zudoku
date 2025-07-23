@@ -15,6 +15,7 @@ import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
   Layout,
+  Meta,
   RouteGuard,
   RouterError,
   StatusPage,
@@ -116,7 +117,11 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
       hydrateFallbackElement: <div>Loading...</div>,
       children: [
         {
-          element: <RouteGuard />,
+          element: (
+            <Meta>
+              <RouteGuard />
+            </Meta>
+          ),
           errorElement: <RouterError />,
           children: routes.map((r) =>
             r.handle?.layout === "none" ? r : wrapWithLayout(r),

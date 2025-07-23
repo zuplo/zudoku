@@ -1,4 +1,3 @@
-import { Head } from "zudoku/components";
 import {
   ArrowRightIcon,
   ArrowUpRightIcon,
@@ -84,9 +83,6 @@ const TechStack = [
 const LandingPage = () => {
   return (
     <div className="dark:bg-white dark:text-black flex flex-col w-full items-center mx-auto pt-10 gap-25 z-1">
-      <Head>
-        <title>Zudoku</title>
-      </Head>
       <div className="flex flex-col gap-6 md:flex-row items-center justify-between w-full max-w-screen-xl px-10">
         <Zudoku />
         <ul className="flex items-center gap-6 ">

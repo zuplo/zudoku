@@ -21,6 +21,7 @@ import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
 import { Layout as LayoutImport } from "./Layout.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
+import { Meta as MetaImport } from "./Meta.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
 import { StatusPage as StatusPageImport } from "./StatusPage.js";
 import { Typography as TypographyImport } from "./Typography.js";
@@ -43,6 +44,7 @@ export const Link = /*@__PURE__*/ LinkImport;
 export const BuildCheck = /*@__PURE__*/ BuildCheckImport;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 export const Typography = /*@__PURE__*/ TypographyImport;
+export const Meta = /*@__PURE__*/ MetaImport;
 
 /** @deprecated Import from `zudoku/hooks` instead */
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;

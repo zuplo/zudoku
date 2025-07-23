@@ -43,6 +43,7 @@ const config: ZudokuConfig = {
   },
   metadata: {
     title: "%s | Zudoku",
+    defaultTitle: "Zudoku",
     favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
   },
   docs: {
