@@ -3,7 +3,6 @@ import type { ZudokuConfig } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
-import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 const LandingPage = lazy(() => import("./src/LandingPage"));
@@ -43,9 +42,6 @@ const config: ZudokuConfig = {
       primary: "#FFFFFF",
       primaryForeground: "#000000",
     },
-  },
-  mdx: {
-    components: { DocusaurusDocsLicense },
   },
   metadata: {
     title: "%s | Zudoku",
