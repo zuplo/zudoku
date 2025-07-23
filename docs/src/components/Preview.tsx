@@ -1,10 +1,24 @@
-import { useReducer } from "react";
+import { useMemo, useReducer } from "react";
 import { cn } from "zudoku";
 import { MoonStarIcon, SunIcon } from "zudoku/icons";
+import PoweredByYou from "./PoweredByYou";
+
+const tags = [
+  "Built for Impact",
+  "Crafted with Care",
+  "Made to Move",
+  "Fast by Default",
+];
 
 const Hero = () => {
+  const dailyRandomTag = useMemo(
+    () => tags[new Date().getDate() % tags.length],
+    [],
+  );
+
   return (
-    <div className="max-w-screen-sm flex flex-col items-center gap-6">
+    <div className="max-w-screen-md flex flex-col items-center gap-6">
+      <PoweredByYou>{dailyRandomTag}</PoweredByYou>
       <h1 className="text-7xl font-bold text-center leading-tight">
         Your API Deserves
         <br />
@@ -92,16 +106,6 @@ export const Preview = () => {
             </div>
           </button>
           <div className="relative group">
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 scale-80 group-hover:scale-100 ease-[cubic-bezier(.47,.08,.2,2.18)] transition duration-400 flex items-center justify-center p-12">
-              <a
-                href="http://cosmocargo.dev"
-                target="_blank"
-                rel="noreferrer"
-                className="text-white text-xl bg-primary border border-black px-6 py-3 rounded-full font-bold hover:scale-105 hover:drop-shadow-lg transition"
-              >
-                See Live Example
-              </a>
-            </div>
             <img
               src="/preview/light-portal.svg"
               className={cn(

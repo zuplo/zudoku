@@ -36,12 +36,18 @@ import "./LandingPage.css";
 const Link = ({
   children,
   href,
+  target,
 }: {
   children: React.ReactNode;
   href: string;
+  target?: string;
 }) => {
   return (
-    <a href={href} className="hover:underline decoration-2 underline-offset-4">
+    <a
+      href={href}
+      target={target}
+      className="hover:underline decoration-2 underline-offset-4"
+    >
       {children}
     </a>
   );
@@ -49,10 +55,22 @@ const Link = ({
 
 const TechStack = [
   {
+    href: "https://tailwindcss.com/",
+    src: "/tech/tailwind.svg",
+    alt: "Tailwind CSS",
+    height: 35,
+  },
+  {
     href: "https://react.dev/",
     src: "/tech/react.svg",
     alt: "React",
     height: 55,
+  },
+  {
+    href: "https://typescriptlang.org/",
+    src: "/tech/typescript.svg",
+    alt: "TypeScript",
+    height: 45,
   },
   {
     href: "https://vitejs.dev/",
@@ -61,21 +79,9 @@ const TechStack = [
     height: 55,
   },
   {
-    href: "https://tailwindcss.com/",
-    src: "/tech/tailwind.svg",
-    alt: "Tailwind CSS",
-    height: 35,
-  },
-  {
     href: "https://radix-ui.com/",
     src: "/tech/radix.svg",
     alt: "Radix UI",
-    height: 45,
-  },
-  {
-    href: "https://typescriptlang.org/",
-    src: "/tech/typescript.svg",
-    alt: "TypeScript",
     height: 45,
   },
 ];
@@ -87,13 +93,19 @@ const LandingPage = () => {
         <Zudoku />
         <ul className="flex items-center gap-6 ">
           <li>
-            <Link href="/docs">Documentation</Link>
+            <Link href="/docs" target="_blank">
+              Documentation
+            </Link>
           </li>
           <li>
-            <Link href="/docs/components/typography">Components</Link>
+            <Link href="/docs/components/typography" target="_blank">
+              Components
+            </Link>
           </li>
           <li>
-            <Link href="/docs/theme-playground">Themes</Link>
+            <Link href="/docs/theme-playground" target="_blank">
+              Themes
+            </Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">
@@ -124,18 +136,18 @@ const LandingPage = () => {
         </div>
       </div>
       <Preview />
-      <div className="mb-10 px-10">
-        <div className="text-center font-bold text-4xl capitalize">
+      <div className="px-10">
+        <div className="text-center font-bold text-3xl capitalize">
           Built with a{" "}
           <span className="bg-gradient-to-br from-[#B6A0FB] via-[#7362EF] to-[#D2C6FF] bg-clip-text text-transparent">
             modern stack
           </span>
         </div>
-        <ul className="flex items-center gap-20 mt-14 overflow-x-auto">
+        <ul className="flex flex-col gap-10 items-center md:flex-row md:gap-20 mt-14 overflow-x-auto">
           {TechStack.map((tech) => (
             <li
               key={tech.href}
-              className="shrink-0 scale-95 opacity-60 saturate-0 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
+              className="shrink-0 scale-95 opacity-100 saturate-0 hover:saturate-100 hover:opacity-100 hover:scale-100 transition-all ease-in-out"
             >
               <a href={tech.href} target="_blank" rel="noreferrer">
                 <img
@@ -147,6 +159,19 @@ const LandingPage = () => {
             </li>
           ))}
         </ul>
+        <div className="flex justify-center mt-16">
+          <a
+            href="https://cosmocargo.dev/"
+            className="group md:text-xl font-medium border rounded-full border-[#8D83FF] bg-white text-black px-8 py-3 flex items-center gap-2 w-fit self-center group "
+          >
+            Check Our Live Demo
+            <ArrowRightIcon
+              size={20}
+              strokeWidth={2.5}
+              className="group-hover:translate-x-1 transition-all duration-300"
+            />
+          </a>
+        </div>
       </div>
       <div className="w-full">
         <div className="border-t border-black w-full flex justify-center">
@@ -154,8 +179,8 @@ const LandingPage = () => {
             <div className="lg:col-span-2 p-10 xl:border-l md:border-r border-black">
               <h2 className="text-3xl font-semibold">Get Started</h2>
               <p>
-                Get your docs running extremely fast in three steps you can get
-                your api running
+                Three quick steps will take you from zero to powerful API docs
+                in minutes.
               </p>
             </div>
             <div className="xl:border-r border-black flex items-end">
@@ -193,8 +218,8 @@ const LandingPage = () => {
                 <div>
                   <h3 className="text-2xl font-semibold">Add your OpenAPI</h3>
                   <p className="text-muted-foreground">
-                    if you have OpenAPI add the schema to the project and edit
-                    it on the zudoku config
+                    Bring your OpenAPI schema into the project and add it to the
+                    Zudoku config.
                   </p>
                 </div>
               </div>
@@ -282,7 +307,7 @@ const LandingPage = () => {
             </BentoImage>
             <BentoDescription
               title="Interactive Playground"
-              description="Test endpoints live, with support for API keys and auth"
+              description="Test endpoints live, with support for API keys and auth."
             />
           </BentoBox>
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
@@ -310,7 +335,7 @@ const LandingPage = () => {
             </BentoImage>
             <BentoDescription
               title="Built-in Search"
-              description="Instant, intelligent search powered by Inkeep."
+              description="Instant, intelligent search powered by Pagefind, Inkeep, etc."
             />
           </BentoBox>
           <BentoStaticSite />
@@ -340,7 +365,7 @@ const LandingPage = () => {
 
         <a
           href="https://zudoku.dev/docs"
-          className="hover:drop-shadow transition-all duration-300 text-2xl font-semibold rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group"
+          className="hover:drop-shadow transition-all duration-300 text-xl rounded-full bg-black text-white px-8 py-3 flex items-center gap-2 w-fit self-center group"
         >
           Learn More{" "}
           <ArrowRightIcon
@@ -359,7 +384,7 @@ const LandingPage = () => {
       >
         <div className="max-w-screen-lg mx-auto flex flex-col items-center">
           <div className="rounded-full drop-shadow border border-[#8D83FF] p-1 px-3 my-10">
-            Use Cases
+            Designed to Scale
           </div>
           <h3 className="text-5xl font-semibold text-center mb-30">
             Supercharge your Docs
@@ -378,7 +403,7 @@ const LandingPage = () => {
               </BentoImage>
               <BentoDescription
                 title="Supercharged Plugins"
-                description="Integrates easily witheasy extensible with own plugins community and core plugins"
+                description="Easy integration with existing plugins (both community and core) and easy extensibility for creating your own."
               />
             </BentoBox>
             <BentoBox className="col-span-12 md:col-span-6 lg:col-span-5">
@@ -472,24 +497,24 @@ const LandingPage = () => {
               </BentoImage>
               <BentoDescription
                 title="Ready to use Components"
-                description="Integrates easily with easy extensible with own plugins community and core plugins"
+                description="Create the developer experience you've always dreamed of with a full suite of reusable components (or create your own)."
               />
             </BentoBox>
           </div>
           <div className="flex flex-col md:flex-row gap-4 my-10">
             <a
               href="https://zudoku.dev/docs/quickstart"
-              className="text-xl font-medium rounded-full bg-white justify-center text-black px-10 py-4 flex items-center gap-2 w-full md:w-fit self-center group"
+              className="text-lg font-medium rounded-full bg-white justify-center text-black px-8 py-3 flex items-center gap-2 w-full md:w-fit self-center group"
             >
               Explore the Docs
             </a>
-            <div className="md:text-xl font-mono font-medium border border-white rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group">
+            <div className="md:text-lg font-mono font-medium border border-white rounded-full bg-black text-white px-8 py-3 flex items-center gap-2 w-fit self-center group">
               npm create zudoku@latest
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 max-w-screen-lg mx-auto my-10 items-center gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-w-screen-lg mx-auto my-25 items-end gap-4">
           <h3 className="font-bold text-5xl capitalize">
             Join our open
             <br />
