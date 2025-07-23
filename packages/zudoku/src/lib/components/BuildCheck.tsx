@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CircleFadingArrowUpIcon, LoaderCircleIcon } from "lucide-react";
+import { useEffect } from "react";
 import { z } from "zod/v4";
 import { Button } from "../ui/Button.js";
 
@@ -31,6 +32,15 @@ export const BuildCheck = ({
         })
         .then((data) => BuildStatusSchema.parse(data)),
   });
+
+  useEffect(() => {
+    if (
+      buildStatusQuery.data?.status === "success" &&
+      buildStatusQuery.data.buildId
+    ) {
+      document.cookie = `zuplo-build=${buildStatusQuery.data.buildId}; path=/; max-age=300; secure; SameSite=None`;
+    }
+  }, [buildStatusQuery.data]);
 
   if (
     buildStatusQuery.isError ||
