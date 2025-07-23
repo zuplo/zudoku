@@ -372,6 +372,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
 const MetadataSchema = z
   .object({
     title: z.string(),
+    defaultTitle: z.string().optional(),
     description: z.string(),
     logo: z.string(),
     favicon: z.string(),

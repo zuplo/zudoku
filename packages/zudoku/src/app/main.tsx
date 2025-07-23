@@ -1,4 +1,4 @@
-import type { RouteObject } from "react-router";
+import { Outlet, type RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -15,6 +15,7 @@ import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
   Layout,
+  Meta,
   RouteGuard,
   RouterError,
   StatusPage,
@@ -110,17 +111,30 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
             buildId={import.meta.env.ZUPLO_BUILD_ID}
             environmentType={import.meta.env.ZUPLO_ENVIRONMENT_TYPE}
           />
-          <Layout />
+          <Outlet />
         </Zudoku>
       ),
       hydrateFallbackElement: <div>Loading...</div>,
       children: [
         {
-          element: <RouteGuard />,
+          element: (
+            <Meta>
+              <RouteGuard />
+            </Meta>
+          ),
           errorElement: <RouterError />,
-          children: routes,
+          children: routes.map((r) =>
+            r.handle?.layout === "none" ? r : wrapWithLayout(r),
+          ),
         },
       ],
     },
   ];
+};
+
+const wrapWithLayout = (route: RouteObject) => {
+  return {
+    element: <Layout />,
+    children: [route],
+  };
 };

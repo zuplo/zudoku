@@ -3,13 +3,11 @@ import type { ZudokuConfig } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
-import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
-import PreviewBanner from "./src/PreviewBanner";
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
+const LandingPage = lazy(() => import("./src/LandingPage"));
 
 const config: ZudokuConfig = {
-  basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
   site: {
     showPoweredBy: true,
@@ -18,30 +16,37 @@ const config: ZudokuConfig = {
       alt: "Zudoku",
       width: 130,
     },
-    banner: {
-      message: <PreviewBanner />,
-      dismissible: true,
-    },
   },
   theme: {
+    customCss: `
+
+@theme {
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+}`,
     light: {
-      primary: "#3b82f6",
+      primary: "#7362ef",
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#3b82f6",
-      primaryForeground: "#FFFFFF",
+      primary: "#7362ef",
+      primaryForeground: "#000000",
     },
-  },
-  mdx: {
-    components: { DocusaurusDocsLicense },
   },
   metadata: {
     title: "%s | Zudoku",
+    defaultTitle: "Zudoku",
     favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
   },
   docs: {
-    files: "/pages/**/*.{md,mdx}",
     defaultOptions: {
       showLastModified: true,
       suggestEdit: {
@@ -57,29 +62,33 @@ const config: ZudokuConfig = {
     type: "pagefind",
   },
   redirects: [
-    { from: "/", to: "/introduction" },
-    { from: "/getting-started", to: "/quickstart" },
-    { from: "/app-quickstart", to: "/quickstart" },
+    { from: "/docs", to: "/docs/quickstart" },
+    { from: "/getting-started", to: "/docs/quickstart" },
+    { from: "/app-quickstart", to: "/docs/quickstart" },
     { from: "/components", to: "/components/callout" },
     { from: "/configuration/page", to: "/configuration/site" },
   ],
   navigation: [
     {
+      type: "custom-page",
+      path: "/",
+      display: "hide",
+      element: <LandingPage />,
+      layout: "none",
+    },
+    {
       type: "category",
-      icon: "book",
       label: "Documentation",
       items: docs,
     },
     {
       type: "category",
       label: "Components",
-      icon: "component",
       items: components,
     },
     {
       type: "custom-page",
-      path: "/theme-playground",
-      icon: "palette",
+      path: "/docs/theme-playground",
       label: "Themes",
       element: <ThemePlayground />,
     },
@@ -100,7 +109,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/placeholder.json",
-      path: "api-placeholder",
+      path: "/docs/api-placeholder",
     },
   ],
   slots: {

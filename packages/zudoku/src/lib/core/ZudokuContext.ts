@@ -48,6 +48,7 @@ export type ApiKeyCache = "api-keys";
 
 type Metadata = Partial<{
   title: string;
+  defaultTitle?: string;
   description: string;
   logo: string;
   favicon: string;

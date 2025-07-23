@@ -10,6 +10,8 @@
     "check:links": "lychee --cache --config ./docs/lychee.yaml --fallback-extensions html --root-dir $PWD/dist --include-fragments ./dist"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "motion": "12.18.1",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

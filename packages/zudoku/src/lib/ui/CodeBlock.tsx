@@ -28,7 +28,7 @@ const IconToLanguageMap: Record<string, RegExp> = {
   toml: /toml/,
   gnubash: /(shell|bash|sh|zsh)/,
   python: /(py|python)/,
-  dotnet: /(cs|csharp|vb)/,
+  dotnet: /(^cs$|csharp|vb)/,
   rust: /(rs|rust)/,
   ruby: /(rb|ruby)/,
   php: /php/,
@@ -101,7 +101,7 @@ export const CodeBlock = ({
       </div>
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar [&>code]:p-3 [&>code]:py-2",
+          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar [&_code]:p-3 [&_code]:py-2",
           props.className,
         )}
         ref={ref}

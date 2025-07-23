@@ -25,16 +25,18 @@ exclude = [
   "https://zudoku.dev/docs/400",
   "https://zudoku.dev/docs/404",
   "https://zudoku.dev/docs/500",
+  "https://zudoku.dev/400",
+  "https://zudoku.dev/404",
+  "https://zudoku.dev/500",
   "stackoverflow.com",
   "dashboard.clerk.com",
   "openid.net",
 
   "https://portal.azure.com/",
 
-
-  # This seems to have been replaced by alert, but we still export it
-  "https://ui.shadcn.com/docs/components/callout"
-
+  # For some reason we see these false negatives:
+  # > Network error: error sending request for url (https://shiki.style/themes) Maybe a certificate error?
+  "https://shiki.style/",
 ]
 
 # Headers to send with requests

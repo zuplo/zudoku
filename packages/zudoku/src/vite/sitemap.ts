@@ -4,7 +4,7 @@ import path from "path";
 import colors from "picocolors";
 import { SitemapStream } from "sitemap";
 import type { ZudokuSiteMapConfig } from "../config/validators/validate.js";
-import { joinPath } from "../lib/util/joinPath.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 
 export async function generateSitemap({
   outputUrls,
@@ -58,14 +58,17 @@ export async function generateSitemap({
       : config.exclude) ?? [];
 
   for (const url of outputUrls) {
-    if (!exclude.includes(url) && !url.includes("*")) {
-      sitemap.write({
-        url: new URL(joinPath(basePath, url), config.siteUrl).toString(),
-        lastmod,
-        changefreq: config.changefreq ?? "daily",
-        priority: config.priority ?? 0.7,
-      });
-    }
+    const shouldExclude =
+      exclude.includes(url) || url.includes("*") || /(400|404|500)$/.test(url);
+
+    if (shouldExclude) continue;
+
+    sitemap.write({
+      url: new URL(joinUrl(basePath, url), config.siteUrl).toString(),
+      lastmod,
+      changefreq: config.changefreq ?? "daily",
+      priority: config.priority ?? 0.7,
+    });
   }
 
   sitemap.end();

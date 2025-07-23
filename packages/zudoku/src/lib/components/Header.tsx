@@ -92,7 +92,7 @@ export const Header = memo(function HeaderInner() {
           <div className="flex">
             <Link to={site?.logo?.href ?? "/"}>
               <div className="flex items-center gap-3.5">
-                {site?.logo && (
+                {site?.logo ? (
                   <>
                     <img
                       src={logoLightSrc}
@@ -109,8 +109,9 @@ export const Header = memo(function HeaderInner() {
                       loading="lazy"
                     />
                   </>
+                ) : (
+                  <span className="font-semibold text-2xl">{site?.title}</span>
                 )}
-                <span className="font-semibold text-2xl">{site?.title}</span>
               </div>
             </Link>
           </div>

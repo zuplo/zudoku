@@ -20,6 +20,9 @@ export const customPagesPlugin = (
         customPages.push({
           path: item.path,
           element: item.element,
+          handle: {
+            layout: item.layout ?? "default",
+          },
         });
       }
     });
