@@ -11,12 +11,14 @@ const tags = [
 ];
 
 const Hero = () => {
-  const tag = useMemo(() => {
-    return tags.at(Math.floor(Math.random() * tags.length));
-  }, []);
+  const dailyRandomTag = useMemo(
+    () => tags[new Date().getDate() % tags.length],
+    [],
+  );
+
   return (
     <div className="max-w-screen-md flex flex-col items-center gap-6">
-      <PoweredByYou>{tag}</PoweredByYou>
+      <PoweredByYou>{dailyRandomTag}</PoweredByYou>
       <h1 className="text-7xl font-bold text-center leading-tight">
         Your API Deserves
         <br />
