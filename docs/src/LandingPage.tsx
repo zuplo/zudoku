@@ -167,8 +167,8 @@ const LandingPage = () => {
             <div className="lg:col-span-2 p-10 xl:border-l md:border-r border-black">
               <h2 className="text-3xl font-semibold">Get Started</h2>
               <p>
-                Get your docs running extremely fast in three steps you can get
-                your api running
+                Three quick steps will take you from zero to powerful API docs
+                in minutes.
               </p>
             </div>
             <div className="xl:border-r border-black flex items-end">
@@ -206,8 +206,8 @@ const LandingPage = () => {
                 <div>
                   <h3 className="text-2xl font-semibold">Add your OpenAPI</h3>
                   <p className="text-muted-foreground">
-                    if you have OpenAPI add the schema to the project and edit
-                    it on the zudoku config
+                    Bring your OpenAPI schema into the project and add it to the
+                    Zudoku config.
                   </p>
                 </div>
               </div>
@@ -295,7 +295,7 @@ const LandingPage = () => {
             </BentoImage>
             <BentoDescription
               title="Interactive Playground"
-              description="Test endpoints live, with support for API keys and auth"
+              description="Test endpoints live, with support for API keys and auth."
             />
           </BentoBox>
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-4">
@@ -323,7 +323,7 @@ const LandingPage = () => {
             </BentoImage>
             <BentoDescription
               title="Built-in Search"
-              description="Instant, intelligent search powered by Inkeep."
+              description="Instant, intelligent search powered by Pagefind, Inkeep, etc."
             />
           </BentoBox>
           <BentoStaticSite />
@@ -391,7 +391,7 @@ const LandingPage = () => {
               </BentoImage>
               <BentoDescription
                 title="Supercharged Plugins"
-                description="Integrates easily witheasy extensible with own plugins community and core plugins"
+                description="Easy integration with existing plugins (both community and core) and easy extensibility for creating your own."
               />
             </BentoBox>
             <BentoBox className="col-span-12 md:col-span-6 lg:col-span-5">
@@ -485,7 +485,7 @@ const LandingPage = () => {
               </BentoImage>
               <BentoDescription
                 title="Ready to use Components"
-                description="Integrates easily with easy extensible with own plugins community and core plugins"
+                description="ICreate the developer experience you've always dreamed of with a full suite of reusable components (or create your own)."
               />
             </BentoBox>
           </div>

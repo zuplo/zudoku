@@ -65,8 +65,8 @@ export const StartCustomizing = () => {
         <div>
           <h3 className="text-2xl font-semibold">Start Customizing</h3>
           <p className="text-muted-foreground">
-            Our themes allow you to set up your docs according to all your brand
-            needs
+            Use Zudoku's flexible customization features to add your own brand
+            and style.
           </p>
         </div>
       </div>
