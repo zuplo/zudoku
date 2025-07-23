@@ -42,6 +42,10 @@ export const BuildCheck = ({
 
   const isCompleted = buildStatusQuery.data.status === "success";
 
+  if (isCompleted) {
+    document.cookie = `zuplo-build=${buildStatusQuery.data.buildId}; path=/; max-age=300; secure; SameSite=None`;
+  }
+
   return (
     <div className="fixed flex flex-col gap-3 p-4 rounded-xl w-96 border z-20 bg-background left-0 right-0 top-4 mx-auto shadow-lg">
       {isCompleted ? (
