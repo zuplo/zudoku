@@ -4,8 +4,6 @@ import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import type { Root as HastRoot } from "hast";
 import { toString as hastToString } from "hast-util-to-string";
-import type { Root } from "mdast";
-import path from "node:path";
 import rehypeMdxImportMedia from "rehype-mdx-import-media";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
@@ -15,14 +13,15 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
-import type { VFile } from "vfile";
 import { type Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
+import { remarkInjectFilepath } from "./mdx/remark-inject-filepath.js";
 import { remarkLastModified } from "./mdx/remark-last-modified.js";
+import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
 import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
+import { remarkStaticGeneration } from "./mdx/remark-static-generation.js";
 import { exportMdxjsConst } from "./mdx/utils.js";
-import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
 // so rehype-mdx-import-media can pick them up
@@ -59,35 +58,6 @@ const rehypeNormalizeMdxImages = () => (tree: any) => {
     delete node.position;
   });
 };
-
-const remarkLinkRewritePlugin =
-  (basePath = "") =>
-  (tree: Root) => {
-    visit(tree, "link", (node) => {
-      if (!node.url) return;
-
-      const base = path.join(basePath);
-      if (basePath && node.url.startsWith(base)) {
-        node.url = node.url.slice(base.length);
-      } else if (
-        !node.url.startsWith("http") &&
-        !node.url.startsWith("mailto:") &&
-        !node.url.startsWith("/") &&
-        !node.url.startsWith("#")
-      ) {
-        node.url = path.join("../", node.url);
-      }
-
-      node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
-    });
-  };
-
-const remarkInjectFilepath =
-  (rootDir: string) => (tree: Root, vfile: VFile) => {
-    tree.children.unshift(
-      exportMdxjsConst("__filepath", path.relative(rootDir, vfile.path)),
-    );
-  };
 
 const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
   let excerpt: string | undefined;
@@ -130,7 +100,7 @@ const viteMdxPlugin = (): Plugin => {
         remarkMdxFrontmatter,
         remarkDirective,
         remarkDirectiveRehype,
-        [remarkLinkRewritePlugin, config.basePath],
+        [remarkLinkRewrite, config.basePath],
         [remarkNormalizeImageUrl, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
       ],
