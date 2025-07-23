@@ -20,6 +20,7 @@ import { type Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
 import { remarkLastModified } from "./mdx/remark-last-modified.js";
+import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
 import { exportMdxjsConst } from "./mdx/utils.js";
 import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
 
@@ -130,6 +131,7 @@ const viteMdxPlugin = (): Plugin => {
         remarkDirective,
         remarkDirectiveRehype,
         [remarkLinkRewritePlugin, config.basePath],
+        [remarkNormalizeImageUrl, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
       ],
       rehypePlugins: [
