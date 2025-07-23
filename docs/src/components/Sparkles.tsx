@@ -1,5 +1,10 @@
 import { motion } from "motion/react";
-import { CSSProperties, ReactElement, useEffect, useState } from "react";
+import {
+  type CSSProperties,
+  type ReactElement,
+  useEffect,
+  useState,
+} from "react";
 import { cn } from "zudoku";
 
 interface Sparkle {
@@ -59,7 +64,7 @@ interface SparklesTextProps {
    * @description
    * The content to be displayed
    * */
-  children: React.ReactNode;
+  children?: React.ReactNode;
 
   /**
    * @default 10

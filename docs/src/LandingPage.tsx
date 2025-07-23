@@ -103,15 +103,27 @@ const LandingPage = () => {
         <div className="flex items-center gap-2">
           <a
             href="https://discord.gg/zudoku"
-            className="flex items-center gap-2 rounded-full border border-[black] p-2 hover:bg-black hover:text-white group"
+            className="gap-2 rounded-full p-2 hover:bg-accent transition"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Discord"
+            title="Get help on Discord"
           >
-            <DiscordIcon className="w-5 h-5 group-hover:fill-white" />
+            <DiscordIcon className="w-5 h-5 " />
           </a>
           <a
             href="https://github.com/zuplo/zudoku"
-            className="flex text-sm items-center px-3 gap-2 rounded-full border border-[black]  p-2 hover:bg-black hover:text-white group"
+            className="gap-2 rounded-full p-2 hover:bg-accent transition relative group"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="GitHub"
+            title="Star us on GitHub"
           >
-            Star us on <GithubIcon className="w-5 h-5 group-hover:fill-white" />
+            <SparklesText
+              sparklesCount={2}
+              className="absolute inset-0 bottom-1/2 left-1/2 group-hover:opacity-100 opacity-0"
+            />
+            <GithubIcon className="w-5 h-5" />
           </a>
         </div>
       </div>
@@ -141,17 +153,17 @@ const LandingPage = () => {
         </ul>
       </div>
       <div className="w-full">
-        <div className="border-t border-[black] w-full flex justify-center">
+        <div className="border-t border-black w-full flex justify-center">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
-            <div className="lg:col-span-2 p-10 border-l border-r border-[black]">
+            <div className="lg:col-span-2 p-10 xl:border-l md:border-r border-black">
               <h2 className="text-3xl font-semibold">Get Started</h2>
               <p>
                 Get your docs running extremely fast in three steps you can get
                 your api running
               </p>
             </div>
-            <div className="lg:border-r border-[black] flex items-end">
-              <div className="h-full capitalize mt-auto border-l md:border-l-0 border-r md:border-r-0 md:h-1/2 border-t w-full border-[black] flex items-end justify-end">
+            <div className="xl:border-r border-black flex items-end">
+              <div className="h-full capitalize mt-auto md:border-l-0 md:border-r-0 md:h-1/2 border-t w-full border-black flex items-end md:justify-end">
                 <a
                   href="/docs"
                   className="text-2xl font-semibold p-3 px-10 inline-flex items-center gap-2 hover:underline decoration-4 underline-offset-4"
@@ -162,9 +174,9 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-        <div className="border-t border-b border-[black] w-full flex justify-center mb-10">
+        <div className="border-t border-b border-black w-full flex justify-center mb-10">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-screen-xl w-full">
-            <div className="border-r border-l border-[black] border-b lg:border-b-0">
+            <div className="xl:border-l md:border-r border-black border-b lg:border-b-0">
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/1.svg" alt="cli" className="w-16 h-16" />
                 <BentoInstall />
@@ -178,7 +190,7 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-            <div className="border-b lg:border-r border-[black] lg:border-b-0">
+            <div className="border-b lg:border-r border-black lg:border-b-0">
               <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
                 <img src="/2.svg" alt="cli" className="w-16 h-16" />
                 <BentoAddOpenAPI />
@@ -207,7 +219,7 @@ const LandingPage = () => {
           <BentoBox className="col-span-full md:col-span-6 lg:col-span-5">
             <BentoImage>
               <BoxLongshadow className="w-full h-[120%] flex flex-col">
-                <div className="flex items-center gap-2 p-5 py-4 font-medium text-lg border-b border-[black] z-10 mb-2 relative">
+                <div className="flex items-center gap-2 p-5 py-4 font-medium text-lg border-b border-black z-10 mb-2 relative">
                   <LibraryBigIcon size={20} strokeWidth={1.5} /> API Catalog
                   <div className="h-1 bg-black w-37 absolute -bottom-0.5 left-0" />
                 </div>
@@ -388,7 +400,7 @@ const LandingPage = () => {
 - See it live
 ---`}
                   </code>
-                  <div className=" flex-col absolute top-5 -right-8 bg-white p-4 rounded-lg border border-[black] flex  gap-2">
+                  <div className=" flex-col absolute top-5 -right-8 bg-white p-4 rounded-lg border border-black flex  gap-2">
                     <span className="text-2xl font-bold">Welcome</span>
                     <span>API docs are what we love.</span>
                     <hr className="bg-neutral-300 h-[2px]" />
@@ -430,19 +442,19 @@ const LandingPage = () => {
                     </span>
                   </BoxLongshadow>
                   <BoxLongshadow className="h-20 col-span-8 flex items-center justify-center p-4">
-                    <div className="rounded-full h-10 w-10 border border-[black] font-bold flex-shrink-0 flex items-center justify-center">
+                    <div className="rounded-full h-10 w-10 border border-black font-bold flex-shrink-0 flex items-center justify-center">
                       1
                     </div>
                     <div className="h-[1px] w-full bg-black" />
-                    <div className="rounded-full h-10 w-10 border border-[black] font-bold flex-shrink-0 flex items-center justify-center">
+                    <div className="rounded-full h-10 w-10 border border-black font-bold flex-shrink-0 flex items-center justify-center">
                       2
                     </div>
                     <div className="h-[1px] w-full bg-black" />
-                    <div className="rounded-full h-10 w-10 border border-[black] font-bold flex-shrink-0 flex items-center justify-center">
+                    <div className="rounded-full h-10 w-10 border border-black font-bold flex-shrink-0 flex items-center justify-center">
                       3
                     </div>
                     <div className="h-[1px] w-full bg-black" />
-                    <div className="rounded-full h-10 w-10 border border-[black] font-bold flex-shrink-0 flex items-center justify-center">
+                    <div className="rounded-full h-10 w-10 border border-black font-bold flex-shrink-0 flex items-center justify-center">
                       4
                     </div>
                   </BoxLongshadow>
@@ -471,7 +483,7 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row gap-4 my-10">
             <a
               href="https://zudoku.dev/docs/quickstart"
-              className="text-xl font-medium rounded-full bg-white text-black px-10 py-4 flex items-center gap-2 w-full md:w-fit self-center group"
+              className="text-xl font-medium rounded-full bg-white justify-center text-black px-10 py-4 flex items-center gap-2 w-full md:w-fit self-center group"
             >
               Explore the Docs
             </a>
@@ -489,7 +501,7 @@ const LandingPage = () => {
             <br />
             of developers
           </h3>
-          <div className="flex-1 flex flex-col items-start lg:flex-row lg:justify-end md:items-end gap-2">
+          <div className="flex-1 flex flex-col items-start md:flex-row my-10 lg:my-0 lg:justify-end md:items-end gap-4">
             <a
               href="https://discord.gg/zudoku"
               className="w-full md:w-fit font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full text-nowrap"
@@ -498,9 +510,9 @@ const LandingPage = () => {
             </a>
             <a
               href="https://github.com/zuplo/zudoku"
-              className="w-full md:w-fit font-medium text-lg px-6 py-2 rounded-full border border-[#7362EF] text-nowrap"
+              className="w-full md:w-fit font-medium text-lg px-6 py-2 rounded-full border border-[#7362EF] text-nowrap relative"
             >
-              Star on GitHub
+              <SparklesText sparklesCount={4}>Star on GitHub</SparklesText>
             </a>
           </div>
         </div>

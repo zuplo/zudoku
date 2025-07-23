@@ -9,7 +9,7 @@ export const StartCustomizing = () => {
     [string, "light" | "dark"]
   >([null, null]);
   return (
-    <div className="border-r border-[black]">
+    <div className="xl:border-r border-black">
       <div className="grid grid-rows-[50px_120px_100px] gap-10 p-10">
         <img src="/lsd.svg" alt="cli" className="w-16 h-16" />
         <BoxLongshadow

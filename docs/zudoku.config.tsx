@@ -33,13 +33,11 @@ const config: ZudokuConfig = {
   }
 }`,
     light: {
-      // primary: "#3b82f6",
-      primary: "#000000",
+      primary: "#7362ef",
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      // primary: "#3b82f6",
-      primary: "#FFFFFF",
+      primary: "#7362ef",
       primaryForeground: "#000000",
     },
   },
