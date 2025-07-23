@@ -36,12 +36,18 @@ import "./LandingPage.css";
 const Link = ({
   children,
   href,
+  target,
 }: {
   children: React.ReactNode;
   href: string;
+  target?: string;
 }) => {
   return (
-    <a href={href} className="hover:underline decoration-2 underline-offset-4">
+    <a
+      href={href}
+      target={target}
+      className="hover:underline decoration-2 underline-offset-4"
+    >
       {children}
     </a>
   );
@@ -87,13 +93,19 @@ const LandingPage = () => {
         <Zudoku />
         <ul className="flex items-center gap-6 ">
           <li>
-            <Link href="/docs">Documentation</Link>
+            <Link href="/docs" target="_blank">
+              Documentation
+            </Link>
           </li>
           <li>
-            <Link href="/docs/components/typography">Components</Link>
+            <Link href="/docs/components/typography" target="_blank">
+              Components
+            </Link>
           </li>
           <li>
-            <Link href="/docs/theme-playground">Themes</Link>
+            <Link href="/docs/theme-playground" target="_blank">
+              Themes
+            </Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">
@@ -353,7 +365,7 @@ const LandingPage = () => {
 
         <a
           href="https://zudoku.dev/docs"
-          className="hover:drop-shadow transition-all duration-300 text-2xl font-semibold rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group"
+          className="hover:drop-shadow transition-all duration-300 text-xl rounded-full bg-black text-white px-8 py-3 flex items-center gap-2 w-fit self-center group"
         >
           Learn More{" "}
           <ArrowRightIcon
@@ -492,17 +504,17 @@ const LandingPage = () => {
           <div className="flex flex-col md:flex-row gap-4 my-10">
             <a
               href="https://zudoku.dev/docs/quickstart"
-              className="text-xl font-medium rounded-full bg-white justify-center text-black px-10 py-4 flex items-center gap-2 w-full md:w-fit self-center group"
+              className="text-lg font-medium rounded-full bg-white justify-center text-black px-8 py-3 flex items-center gap-2 w-full md:w-fit self-center group"
             >
               Explore the Docs
             </a>
-            <div className="md:text-xl font-mono font-medium border border-white rounded-full bg-black text-white px-10 py-4 flex items-center gap-2 w-fit self-center group">
+            <div className="md:text-lg font-mono font-medium border border-white rounded-full bg-black text-white px-8 py-3 flex items-center gap-2 w-fit self-center group">
               npm create zudoku@latest
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 max-w-screen-lg mx-auto my-10 items-center gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 max-w-screen-lg mx-auto my-25 items-end gap-4">
           <h3 className="font-bold text-5xl capitalize">
             Join our open
             <br />
