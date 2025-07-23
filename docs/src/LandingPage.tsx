@@ -497,7 +497,7 @@ const LandingPage = () => {
               </BentoImage>
               <BentoDescription
                 title="Ready to use Components"
-                description="ICreate the developer experience you've always dreamed of with a full suite of reusable components (or create your own)."
+                description="Create the developer experience you've always dreamed of with a full suite of reusable components (or create your own)."
               />
             </BentoBox>
           </div>
