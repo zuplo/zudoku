@@ -34,7 +34,10 @@ export const BuildCheck = ({
   });
 
   useEffect(() => {
-    if (buildStatusQuery.data?.status === "success") {
+    if (
+      buildStatusQuery.data?.status === "success" &&
+      buildStatusQuery.data.buildId
+    ) {
       document.cookie = `zuplo-build=${buildStatusQuery.data.buildId}; path=/; max-age=300; secure; SameSite=None`;
     }
   }, [buildStatusQuery.data]);
