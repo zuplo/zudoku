@@ -11,6 +11,7 @@
   },
   "files.associations": {
     "nx.json": "jsonc",
-    "project.json": "jsonc"
+    "project.json": "jsonc",
+    "*.mdx": "markdown"
   }
 }
