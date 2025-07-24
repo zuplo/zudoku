@@ -232,7 +232,7 @@
     "estree-util-value-to-estree": "3.4.0",
     "express": "5.1.0",
     "fast-equals": "5.2.2",
-    "framer-motion": "^12.12.2",
+    "framer-motion": "^12.23.7",
     "glob": "11.0.3",
     "glob-parent": "6.0.2",
     "graphql": "16.11.0",
