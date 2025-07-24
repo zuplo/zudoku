@@ -134,7 +134,7 @@ export const navigationListItem = cva(
   },
 );
 
-export const isHiddenItem =
+export const shouldShowItem =
   (auth: UseAuthReturn, context: ZudokuContext) =>
   (item: NavigationItem): boolean => {
     if (typeof item.display === "function") {

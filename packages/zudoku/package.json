@@ -253,6 +253,7 @@
     "hast-util-to-string": "3.0.1",
     "html-url-attributes": "^3.0.1",
     "http-terminator": "3.2.0",
+    "javascript-stringify": "2.1.0",
     "json-schema-to-typescript-lite": "14.1.0",
     "loglevel": "1.9.2",
     "lru-cache": "11.1.0",

@@ -12,7 +12,7 @@ import {
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
-import { isHiddenItem } from "./navigation/utils.js";
+import { shouldShowItem } from "./navigation/utils.js";
 import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
@@ -28,7 +28,7 @@ export const MobileTopNavigation = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const accountItems = getProfileMenuItems();
-  const filteredItems = navigation.filter(isHiddenItem(authState, context));
+  const filteredItems = navigation.filter(shouldShowItem(authState, context));
 
   return (
     <Drawer
