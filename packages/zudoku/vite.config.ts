@@ -14,6 +14,8 @@ const entries: Record<string, string> = {
   "auth-supabase": "./src/lib/authentication/providers/supabase.tsx",
   plugins: "./src/lib/core/plugins.ts",
   hooks: "./src/lib/hooks/index.ts",
+  router: "./src/lib/core/router.ts",
+  __internal: "./src/lib/core/__internal.tsx",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",

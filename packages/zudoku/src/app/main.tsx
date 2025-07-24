@@ -1,4 +1,4 @@
-import { Outlet, type RouteObject } from "react-router";
+import type { RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -19,8 +19,9 @@ import {
   RouteGuard,
   RouterError,
   StatusPage,
-  Zudoku,
-} from "zudoku/components";
+} from "zudoku/__internal";
+import { Zudoku } from "zudoku/components";
+import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
