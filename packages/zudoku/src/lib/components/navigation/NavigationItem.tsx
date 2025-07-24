@@ -17,7 +17,7 @@ import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { useZudoku } from "../context/ZudokuContext.js";
 import { NavigationBadge } from "./NavigationBadge.js";
 import { NavigationCategory } from "./NavigationCategory.js";
-import { isHiddenItem, navigationListItem } from "./utils.js";
+import { navigationListItem, shouldShowItem } from "./utils.js";
 
 const TruncatedLabel = ({
   label,
@@ -79,7 +79,7 @@ export const NavigationItem = ({
   const auth = useAuth();
   const context = useZudoku();
 
-  if (!isHiddenItem(auth, context)(item)) {
+  if (!shouldShowItem(auth, context)(item)) {
     return null;
   }
 

@@ -6,14 +6,14 @@ import { type NavigationItem } from "../../config/validators/NavigationSchema.js
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { isHiddenItem, traverseNavigationItem } from "./navigation/utils.js";
+import { shouldShowItem, traverseNavigationItem } from "./navigation/utils.js";
 import { Slot } from "./Slot.js";
 
 export const TopNavigation = () => {
   const context = useZudoku();
   const { navigation } = context;
   const auth = useAuth();
-  const filteredItems = navigation.filter(isHiddenItem(auth, context));
+  const filteredItems = navigation.filter(shouldShowItem(auth, context));
 
   if (filteredItems.length === 0 || import.meta.env.MODE === "standalone") {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
