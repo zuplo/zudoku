@@ -5,9 +5,9 @@ import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod/v4";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
-import {
-  type ProtectedRoutesInput,
-  ProtectedRoutesSchema,
+import type {
+  CallbackContext,
+  ProtectedRoutesInput,
 } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { FooterSchema } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
@@ -106,6 +106,23 @@ export type ZudokuContextOptions = {
   };
 };
 
+export const transformProtectedRoutes = (
+  val: ProtectedRoutesInput,
+): Record<string, (c: CallbackContext) => boolean> | undefined => {
+  if (!val) return undefined;
+
+  if (Array.isArray(val)) {
+    return Object.fromEntries(
+      val.map((route) => [
+        route,
+        (c: CallbackContext) => c.auth.isAuthenticated,
+      ]),
+    );
+  }
+
+  return val;
+};
+
 export class ZudokuContext {
   public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   public navigation: Navigation;
@@ -124,13 +141,13 @@ export class ZudokuContext {
         const routes = plugin.getProtectedRoutes?.();
         if (!routes) return [];
 
-        return Object.entries(ProtectedRoutesSchema.parse(routes) ?? {});
+        return Object.entries(transformProtectedRoutes(routes) ?? {});
       }),
     );
 
     const protectedRoutes = {
       ...pluginProtectedRoutes,
-      ...ProtectedRoutesSchema.parse(options.protectedRoutes),
+      ...transformProtectedRoutes(options.protectedRoutes),
     };
 
     this.queryClient = queryClient;

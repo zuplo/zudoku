@@ -41,6 +41,7 @@
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
     "./components": "./src/lib/components/index.ts",
+    "./__internal": "./src/lib/core/__internal.tsx",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
     "./tailwind": "./src/app/tailwind.ts",
@@ -132,6 +133,10 @@
       "./components": {
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
+      },
+      "./__internal": {
+        "import": "./lib/zudoku.__internal.js",
+        "types": "./dist/lib/__internal.d.ts"
       },
       "./processors/*": {
         "import": "./lib/processors/*.js",

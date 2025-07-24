@@ -11,7 +11,7 @@ import {
   type RouteObject,
 } from "react-router";
 import "vite/modulepreload-polyfill";
-import { BootstrapStatic, ServerError } from "zudoku/components";
+import { BootstrapStatic, ServerError } from "zudoku/__internal";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import { getRoutesByConfig } from "./main.js";

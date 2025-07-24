@@ -1,13 +1,14 @@
 import { z } from "zod/v4";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
+import { transformProtectedRoutes } from "../../lib/core/ZudokuContext.js";
 
-type CallbackContext = { auth: UseAuthReturn; context: ZudokuContext };
+export type CallbackContext = { auth: UseAuthReturn; context: ZudokuContext };
 type ProtectedRouteCallback = (c: CallbackContext) => boolean;
-export type ProtectedRoutesInput = z.input<typeof ProtectedRoutesSchema>;
-export type ProtectedRoutes = z.output<typeof ProtectedRoutesSchema>;
+export type ProtectedRoutesInput = z.input<typeof ProtectedRoutesInputSchema>;
+export type ProtectedRoutes = z.output<typeof ProtectedRoutesInputSchema>;
 
-export const ProtectedRoutesSchema = z
+export const ProtectedRoutesInputSchema = z
   .union([
     z.string().array(),
     z.record(
@@ -15,18 +16,8 @@ export const ProtectedRoutesSchema = z
       z.custom<ProtectedRouteCallback>((val) => typeof val === "function"),
     ),
   ])
-  .optional()
-  .transform((val) => {
-    if (!val) return undefined;
+  .optional();
 
-    if (Array.isArray(val)) {
-      return Object.fromEntries(
-        val.map((route) => [
-          route,
-          (c: CallbackContext) => c.auth.isAuthenticated,
-        ]),
-      );
-    }
-
-    return val;
-  });
+export const ProtectedRoutesSchema = ProtectedRoutesInputSchema.transform(
+  transformProtectedRoutes,
+);
