@@ -18,8 +18,6 @@ import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
 import { RouteGuard as RouteGuardImport } from "./RouteGuard.js";
 
-import { Outlet as OutletImport } from "react-router";
-
 export const Layout = LayoutImport;
 export const RouterError = RouterErrorImport;
 export const ServerError = ServerErrorImport;
@@ -30,5 +28,3 @@ export const Head = Helmet;
 export const StatusPage = StatusPageImport;
 export const BuildCheck = BuildCheckImport;
 export const Meta = MetaImport;
-
-export const Outlet = OutletImport;
