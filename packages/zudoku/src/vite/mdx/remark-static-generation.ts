@@ -1,10 +1,10 @@
-import { type ImportDeclaration, Program } from "estree";
+import type { ImportDeclaration, Program } from "estree";
 import { valueToEstree } from "estree-util-value-to-estree";
-import { Root } from "mdast";
+import type { Root } from "mdast";
 import type { MdxjsEsm } from "mdast-util-mdx";
 import vm, { type Context as VmContext } from "node:vm";
 import { SKIP, visit } from "unist-util-visit";
-import { VFile } from "vfile";
+import type { VFile } from "vfile";
 
 const FUNCTION_NAME = "generateStaticData";
 const VARIABLE_NAME = "STATIC_DATA";
