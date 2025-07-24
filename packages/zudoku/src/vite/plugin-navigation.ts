@@ -35,23 +35,25 @@ export const viteNavigationPlugin = (): Plugin => {
       const resolvedNavigation = await new NavigationResolver(config).resolve();
 
       const collectedIcons = new Set<string>();
+      let hasMissingIcon = false;
 
       // This stringifies functions and takes care of the icon replacement
       const code = stringify(
         resolvedNavigation,
         (value, _indent, next, key) => {
           if (key === "icon" && typeof value === "string") {
-            const iconName = value;
-            if (!IconNames.includes(iconName as IconNames)) {
+            const iconName = toPascalCase(value);
+
+            if (!IconNames.includes(value as IconNames)) {
               // eslint-disable-next-line no-console
               console.warn(
-                `Icon ${iconName} not found, see: https://lucide.dev/icons/`,
+                `Icon "${value}" not found, see: https://lucide.dev/icons/`,
               );
-              collectedIcons.add("MissingIcon as " + toPascalCase(iconName));
-              return `MissingIcon as ${toPascalCase(iconName)}`;
+              hasMissingIcon = true;
+              return "MissingIcon";
             } else {
-              collectedIcons.add(toPascalCase(iconName));
-              return toPascalCase(iconName);
+              collectedIcons.add(iconName);
+              return iconName;
             }
           }
           return next(value);
@@ -67,6 +69,10 @@ export const viteNavigationPlugin = (): Plugin => {
         code,
         "js",
       );
+
+      if (hasMissingIcon) {
+        collectedIcons.add("MissingIcon");
+      }
 
       const importStatement =
         collectedIcons.size > 0
