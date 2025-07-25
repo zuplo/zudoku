@@ -54,6 +54,29 @@ jobs:
       - name: Build Cosmo Cargo example
         run: nx run cosmo-cargo:build
 
+      - name: Smoke Test
+        run: |
+          echo "Testing built files in examples/cosmo-cargo/dist"
+
+          # Check if index.html exists
+          if [ ! -f "examples/cosmo-cargo/dist/index.html" ]; then
+            echo "::error::index.html not found in build output"
+            exit 1
+          fi
+
+          # Check for expected content in index.html
+          if ! grep -q "Cosmo Cargo" examples/cosmo-cargo/dist/index.html; then
+            echo "::error::Could not find 'Cosmo Cargo' in index.html"
+            echo "index.html content preview:"
+            head -n 20 examples/cosmo-cargo/dist/index.html
+            exit 1
+          fi
+
+          # Check if main JS bundle exists
+          if ! ls examples/cosmo-cargo/dist/assets/*.js > /dev/null 2>&1; then
+            echo "::error::No JavaScript bundles found in assets directory"
+            exit 1
+          fi
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
