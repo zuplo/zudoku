@@ -160,7 +160,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
               return [
                 tag.name,
                 createNavigationCategory({
-                  label: tag.name,
+                  label: tag.extensions?.["x-displayName"] ?? tag.name,
                   path: categoryPath,
                   operations: tag.operations,
                   collapsed: isCollapsed,
