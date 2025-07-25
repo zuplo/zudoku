@@ -73,10 +73,16 @@ jobs:
           fi
 
           # Check if main JS bundle exists
-          if ! ls examples/cosmo-cargo/dist/assets/*.js > /dev/null 2>&1; then
+          if [ ! -d "examples/cosmo-cargo/dist/assets" ]; then
+            echo "::error::Assets directory not found in build output"
+            exit 1
+          fi
+
+          if ! find examples/cosmo-cargo/dist/assets -name '*.js' -type f | grep -q .; then
             echo "::error::No JavaScript bundles found in assets directory"
             exit 1
           fi
+          echo "✅ Smoke test passed - build output contains expected files and content"
       - name: Deploy to Cloudflare Pages
         id: deploy
         uses: cloudflare/wrangler-action@v3
