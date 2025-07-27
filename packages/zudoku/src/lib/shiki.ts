@@ -106,14 +106,14 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
   });
 };
 
-export const createConfiguredShikiRehypePlugins = (themes?: ThemesRecord) => [
+export const createConfiguredShikiRehypePlugins = (
+  themes: ThemesRecord = defaultHighlightOptions.themes,
+  highlighterInstance: HighlighterCore = highlighter,
+) => [
   [
     rehypeShikiFromHighlighter,
-    highlighter,
-    {
-      ...defaultHighlightOptions,
-      themes: themes ?? defaultHighlightOptions.themes,
-    },
+    highlighterInstance,
+    { ...defaultHighlightOptions, themes },
   ] satisfies Pluggable,
   rehypeCodeBlockPlugin,
 ];
