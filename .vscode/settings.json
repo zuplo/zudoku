@@ -9,6 +9,20 @@
   "explorer.fileNesting.patterns": {
     "package.json": "pnpm-workspace.yaml, pnpm-lock.yaml"
   },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
+  "[mdx]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true
+  },
   "files.associations": {
     "nx.json": "jsonc",
     "project.json": "jsonc",

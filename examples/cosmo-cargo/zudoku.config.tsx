@@ -1,5 +1,9 @@
-import type { ZudokuConfig, ZudokuContext } from "zudoku";
-import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
+import type {
+  ApiIdentity,
+  ApiIdentityPlugin,
+  ZudokuConfig,
+  ZudokuContext,
+} from "zudoku";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {

@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
+// biome-ignore-all lint/style/noNonNullAssertion: Allow it
 import { assertType, describe, expectTypeOf, it } from "vitest";
 import type {
   InputNavigation,

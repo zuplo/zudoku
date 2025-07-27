@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
-
-import { readFileSync } from "fs";
-import { globSync } from "node:fs";
-import path, { relative } from "path";
+// biome-ignore-all lint/suspicious/noConsole: Console is used for logging
+import { globSync, readFileSync } from "node:fs";
+import path, { relative } from "node:path";
 
 const ADMONITION_TYPES = ["note", "tip", "warning", "caution", "danger"];
 
@@ -19,10 +17,10 @@ Check markdown files for properly formatted admonitions.
 Examples:
   # Check default directories
   node check-admonitions.mjs
-  
+
   # Check specific directories
   node check-admonitions.mjs "docs/**/*.mdx" "examples/**/*.md"
-  
+
   # Check all markdown files
   node check-admonitions.mjs "**/*.{md,mdx}"
 

@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: Console is used for logging
 import spawn from "cross-spawn";
 import { yellow } from "picocolors";
 import type { PackageManager } from "./get-pkg-manager";

@@ -1,4 +1,4 @@
-import { type MDXComponents } from "mdx/types.js";
+import type { MDXComponents } from "mdx/types.js";
 import { CodeBlock } from "zudoku/ui/CodeBlock.js";
 import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
@@ -16,6 +16,7 @@ export const MdxComponents = {
   img: ({ node, ...props }) => {
     if (/\.(mp4|webm|mov|avi)$/.test(props.src ?? "")) {
       return (
+        // biome-ignore lint/a11y/useMediaCaption: No in control of the caption here
         <video
           src={props.src}
           controls
@@ -26,7 +27,13 @@ export const MdxComponents = {
         />
       );
     }
-    return <img {...props} className={cn("rounded-lg", props.className)} />;
+    return (
+      <img
+        alt={props.alt}
+        {...props}
+        className={cn("rounded-lg", props.className)}
+      />
+    );
   },
   Framed,
   h1: ({ children, id }) => (

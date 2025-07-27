@@ -1,5 +1,5 @@
-import type { Root } from "mdast";
 import path from "node:path";
+import type { Root } from "mdast";
 import { visit } from "unist-util-visit";
 
 export const remarkLinkRewrite =

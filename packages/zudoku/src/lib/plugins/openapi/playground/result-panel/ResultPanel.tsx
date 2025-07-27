@@ -1,10 +1,10 @@
-import { type UseMutationResult } from "@tanstack/react-query";
+import type { UseMutationResult } from "@tanstack/react-query";
 import { SendIcon, UnplugIcon } from "lucide-react";
 import { Spinner } from "zudoku/components";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "../../../../ui/Button.js";
 import { cn } from "../../../../util/cn.js";
-import { type PlaygroundResult } from "../Playground.js";
+import type { PlaygroundResult } from "../Playground.js";
 import ResponseStatusBar from "./ResponseStatusBar.js";
 import { ResponseTab } from "./ResponseTab.js";
 
@@ -16,7 +16,7 @@ export const ResultPanel = ({
   isFinished,
   progress,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   queryMutation: UseMutationResult<PlaygroundResult, Error, any>;
   showLongRunningWarning?: boolean;
   onCancel?: () => void;

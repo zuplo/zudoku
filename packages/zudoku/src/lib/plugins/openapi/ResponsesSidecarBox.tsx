@@ -1,8 +1,8 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { cn } from "../../util/cn.js";
+import type { ResponseItem } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
-import type { ResponseItem } from "./graphql/graphql.js";
 
 export const ResponsesSidecarBox = ({
   responses,

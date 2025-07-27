@@ -1,6 +1,6 @@
+import fs from "node:fs/promises";
 import type { CodegenConfig } from "@graphql-codegen/cli";
 import { printSchema } from "graphql";
-import fs from "node:fs/promises";
 import { schema } from "./lib/oas/graphql/index.js";
 
 async function fixImports(filePath: string) {
@@ -29,7 +29,7 @@ const config: CodegenConfig = {
   schema: printSchema(schema),
   documents: ["src/lib/plugins/openapi/**/*.tsx"],
   generates: {
-    ["./src/lib/plugins/openapi/graphql/"]: {
+    "./src/lib/plugins/openapi/graphql/": {
       preset: "client",
       config: {
         documentMode: "string",

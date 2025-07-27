@@ -54,9 +54,9 @@ export const Endpoint = () => {
 
   const { servers } = result.data.schema;
 
-  if (servers.length === 0) return null;
+  const firstServer = servers.at(0);
 
-  const firstServer = servers.at(0)!;
+  if (!firstServer) return null;
 
   if (servers.length === 1) {
     return (

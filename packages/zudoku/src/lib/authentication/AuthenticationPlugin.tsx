@@ -1,8 +1,8 @@
 import { LogOutIcon } from "lucide-react";
-import {
-  type CommonPlugin,
-  type NavigationPlugin,
-  type ProfileMenuPlugin,
+import type {
+  CommonPlugin,
+  NavigationPlugin,
+  ProfileMenuPlugin,
 } from "../core/plugins.js";
 import { SignIn } from "./components/SignIn.js";
 import { SignOut } from "./components/SignOut.js";

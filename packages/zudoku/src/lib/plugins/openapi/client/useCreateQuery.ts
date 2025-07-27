@@ -8,8 +8,9 @@ type NoExtraProps<T, U extends T = T> = U & {
   [K in Exclude<keyof U, keyof T>]?: never;
 };
 
-type VarArgs<TVariables> =
-  TVariables extends Record<string, never> ? [] : [NoExtraProps<TVariables>];
+type VarArgs<TVariables> = TVariables extends Record<string, never>
+  ? []
+  : [NoExtraProps<TVariables>];
 
 export const createQuery = <TResult, TVariables>(
   client: GraphQLClient,

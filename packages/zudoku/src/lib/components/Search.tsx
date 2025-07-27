@@ -28,7 +28,7 @@ export const Search = ({ className }: { className?: string }) => {
     return () => {
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [isOpen, setIsOpen]);
+  }, [isOpen]);
 
   const searchPlugin = ctx.plugins.find(isSearchPlugin);
 

@@ -17,7 +17,7 @@ import {
 } from "./CollapsibleHeader.js";
 import { InlineInput } from "./InlineInput.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
-import { type PlaygroundForm, type QueryParam } from "./Playground.js";
+import type { PlaygroundForm, QueryParam } from "./Playground.js";
 
 export const QueryParams = ({
   control,

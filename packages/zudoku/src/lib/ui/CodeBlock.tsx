@@ -72,7 +72,9 @@ export const CodeBlock = ({
     >
       <div className="border-b flex items-center h-10 font-sans bg-black/2">
         <div className="flex items-center gap-2 flex-1 text-sm w-full px-3">
-          {iconUrl && <img src={iconUrl} className="h-3 max-w-4" />}
+          {iconUrl && (
+            <img src={iconUrl} className="h-3 max-w-4" alt={language} />
+          )}
           {title}
         </div>{" "}
         {showCopy !== "never" && (

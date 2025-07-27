@@ -6,9 +6,8 @@ import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
 import { InMemoryResponse } from "./InMemoryResponse.js";
-import { type WorkerResult } from "./prerender.js";
+import type { WorkerResult } from "./prerender.js";
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type EntryServer = typeof import("../../app/entry.server.js");
 
 export type StaticWorkerData = {

@@ -1,4 +1,4 @@
-import { type ZudokuConfig } from "zudoku";
+import type { ZudokuConfig } from "zudoku";
 import { MyApiKeyService } from "./src/MyApiKeyService";
 
 const config: ZudokuConfig = {

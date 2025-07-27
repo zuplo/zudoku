@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { RouteObject } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { traverseNavigation } from "../../components/navigation/utils.js";

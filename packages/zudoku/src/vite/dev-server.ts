@@ -1,9 +1,9 @@
-import express, { type Express } from "express";
-import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import fs from "node:fs/promises";
 import http, { type Server } from "node:http";
 import https from "node:https";
 import path from "node:path";
+import express, { type Express } from "express";
+import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
   isRunnableDevEnvironment,
@@ -26,7 +26,6 @@ import { getDevHtml } from "./html.js";
 
 const DEFAULT_DEV_PORT = 3000;
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type EntryServerImport = typeof import("../app/entry.server.js");
 
 export class DevServer {

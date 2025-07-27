@@ -5,7 +5,7 @@ const baseDir = path.resolve(path.dirname(import.meta.filename), "..");
 const args = process.argv.slice(2);
 const isWatch = process.env.ZUDOKU_INTERNAL_CLI === "watch";
 
-// eslint-disable-next-line no-console
+// biome-ignore lint/suspicious/noConsole: Logging allowed here
 console.log(
   `>> Running \`tsx${isWatch ? " watch" : ""} src/cli/cli.ts\` for development...`,
 );

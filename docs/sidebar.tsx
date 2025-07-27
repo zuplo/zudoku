@@ -1,4 +1,4 @@
-import { type Navigation } from "zudoku";
+import type { Navigation } from "zudoku";
 
 /**
  * NOTE: This file should not import anything except zudoku. We use this file

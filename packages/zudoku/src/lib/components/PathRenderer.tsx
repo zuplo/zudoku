@@ -22,7 +22,7 @@ export const PathRenderer = ({
     matches.forEach((match) => {
       const [originalValue, name] = match;
       if (!name) return;
-      const startIndex = match.index!;
+      const startIndex = match.index;
 
       if (startIndex > lastIndex) {
         elements.push(
@@ -50,7 +50,7 @@ export const PathRenderer = ({
     }
 
     return (
-      // eslint-disable-next-line react/no-array-index-key
+      // biome-ignore lint/suspicious/noArrayIndexKey: index should be stable
       <Fragment key={`${part}-${i}`}>
         {elements}
         {i < arr.length - 1 && "/"}

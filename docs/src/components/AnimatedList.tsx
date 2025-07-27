@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import React, {
-  ComponentPropsWithoutRef,
+  type ComponentPropsWithoutRef,
   useEffect,
   useMemo,
   useState,

@@ -7,7 +7,7 @@ const IconSchema = z.enum(IconNames);
 
 const BadgeSchema = z.object({
   label: z.string(),
-  // prettier-ignore
+  // biome-ignore format: for readability
   color: z.enum(["green", "blue", "yellow", "red", "purple", "indigo", "gray", "outline"]),
   invert: z.boolean().optional(),
   className: z.string().optional(),

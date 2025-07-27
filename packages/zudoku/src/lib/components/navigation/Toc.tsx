@@ -1,11 +1,11 @@
 import type { TocEntry } from "@stefanprobst/rehype-extract-toc";
 import { ListTreeIcon } from "lucide-react";
 import {
+  type CSSProperties,
+  type PropsWithChildren,
   useEffect,
   useRef,
   useState,
-  type CSSProperties,
-  type PropsWithChildren,
 } from "react";
 import { cn } from "../../util/cn.js";
 import { AnchorLink } from "../AnchorLink.js";

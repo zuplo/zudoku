@@ -1,10 +1,12 @@
 import fs from "node:fs/promises";
-import path from "path";
+import path from "node:path";
 import type { PrerenderResponse } from "./PrerenderResponse.js";
 
 export class FileWritingResponse implements PrerenderResponse {
   private resolve = () => {};
-  private resolved = new Promise<void>((res) => (this.resolve = res));
+  private resolved = new Promise<void>((res) => {
+    this.resolve = res;
+  });
   private dontSave = false;
 
   public buffer = "";

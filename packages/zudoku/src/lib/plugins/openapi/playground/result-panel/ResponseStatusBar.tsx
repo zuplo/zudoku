@@ -31,9 +31,11 @@ const RealTimeCounter = () => {
   }, []);
 
   useLayoutEffect(() => {
+    const currentSpanRef = spanRef.current;
+    if (!currentSpanRef) return;
+
     // Create a text node and attach it to the span
     const textNode = document.createTextNode("0");
-    const currentSpanRef = spanRef.current!;
 
     currentSpanRef.appendChild(textNode);
     textRef.current = textNode;

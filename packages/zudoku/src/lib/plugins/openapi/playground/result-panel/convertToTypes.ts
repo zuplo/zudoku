@@ -17,7 +17,7 @@ function inferType(value: JsonValue): string {
   return typeof value;
 }
 
-export function generateInterface(obj: JsonObject, indentation = ""): string {
+export function generateInterface(obj: JsonObject, _indentation = ""): string {
   const lines: string[] = ["{"];
 
   for (const [key, value] of Object.entries(obj)) {

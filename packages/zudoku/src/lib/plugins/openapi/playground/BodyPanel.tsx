@@ -3,13 +3,13 @@ import { useFormContext } from "react-hook-form";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
 import { cn } from "../../../util/cn.js";
-import { type Content } from "../SidecarExamples.js";
+import type { Content } from "../SidecarExamples.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
-import { type PlaygroundForm } from "./Playground.js";
+import type { PlaygroundForm } from "./Playground.js";
 
 export const BodyPanel = ({ content }: { content?: Content }) => {
   const { register, setValue, watch } = useFormContext<PlaygroundForm>();

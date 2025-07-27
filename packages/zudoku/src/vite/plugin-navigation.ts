@@ -1,5 +1,5 @@
 import { stringify } from "javascript-stringify";
-import { type Plugin, type ViteDevServer } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { IconNames } from "../config/validators/icon-types.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
@@ -10,7 +10,7 @@ const toPascalCase = (str: string) =>
   str.replace(/(^\w|-\w)/g, (match) => match.replace("-", "").toUpperCase());
 
 const virtualModuleId = "virtual:zudoku-navigation";
-export const resolvedVirtualModuleId = "\0" + virtualModuleId;
+export const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
 export const invalidate = (server: ViteDevServer) => {
   const navigationModule =
@@ -45,7 +45,7 @@ export const viteNavigationPlugin = (): Plugin => {
             const iconName = toPascalCase(value);
 
             if (!IconNames.includes(value as IconNames)) {
-              // eslint-disable-next-line no-console
+              // biome-ignore lint/suspicious/noConsole: Logging allowed here
               console.warn(
                 `Icon "${value}" not found, see: https://lucide.dev/icons/`,
               );

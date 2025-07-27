@@ -1,5 +1,5 @@
-import type { Root } from "mdast";
 import { stat } from "node:fs/promises";
+import type { Root } from "mdast";
 import { visit } from "unist-util-visit";
 import type { VFile } from "vfile";
 import { parse, stringify } from "yaml";
@@ -25,7 +25,6 @@ export const remarkLastModified = () => {
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!hasYaml) {
       tree.children.unshift({
         type: "yaml",

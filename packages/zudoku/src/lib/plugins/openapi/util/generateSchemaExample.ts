@@ -1,10 +1,10 @@
-import { type SchemaObject } from "../../../oas/graphql/index.js";
+import type { SchemaObject } from "../../../oas/graphql/index.js";
 import { isCircularRef } from "../schema/utils.js";
 
 export const generateSchemaExample = (
   schema?: SchemaObject,
   name?: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
 ): any => {
   if (!schema || isCircularRef(schema)) {
     return null;
@@ -36,6 +36,7 @@ export const generateSchemaExample = (
 
   // For object schemas with properties
   if (schema.type === "object" && schema.properties) {
+    // biome-ignore lint/suspicious/noExplicitAny: Allow any type
     const example: Record<string, any> = {};
 
     for (const [key, propSchema] of Object.entries(schema.properties)) {
@@ -53,7 +54,6 @@ export const generateSchemaExample = (
         generateSchemaExample(itemSchema as SchemaObject),
       );
     }
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- OpenAPI schemas don't always adhere to spec
     if (schema.items) {
       return [generateSchemaExample(schema.items as SchemaObject)];
     }
@@ -116,7 +116,6 @@ export const generateSchemaExample = (
       return null;
     case "object":
       return {};
-    case undefined:
     default:
       return {};
   }

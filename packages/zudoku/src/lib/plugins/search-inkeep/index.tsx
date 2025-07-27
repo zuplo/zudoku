@@ -38,7 +38,7 @@ const InkeepSearch = ({
           sync: {
             target: "html",
             attributes: ["class"],
-            isDarkMode: (attrs) => attrs["class"]?.includes("dark") ?? false,
+            isDarkMode: (attrs) => attrs.class?.includes("dark") ?? false,
           },
         },
       },
@@ -57,7 +57,7 @@ const InkeepSearch = ({
     InkeepComponentInstance | undefined
   >(
     typeof window !== "undefined" && window.Inkeep?.ModalSearchAndChat
-      ? window.Inkeep.ModalSearchAndChat(config)!
+      ? window.Inkeep.ModalSearchAndChat(config)
       : undefined,
   );
 
@@ -66,7 +66,7 @@ const InkeepSearch = ({
 
     const checkInkeep = setInterval(() => {
       if (typeof window !== "undefined" && window.Inkeep?.ModalSearchAndChat) {
-        const inkeep = window.Inkeep.ModalSearchAndChat(config)!;
+        const inkeep = window.Inkeep.ModalSearchAndChat(config);
         setSearchInstance(inkeep);
         clearInterval(checkInkeep);
       }

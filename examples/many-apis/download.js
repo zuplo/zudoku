@@ -69,6 +69,7 @@ async function main() {
     try {
       const schemaResponse = await fetch(versionObj.swaggerUrl);
       if (!schemaResponse.ok) {
+        // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.warn(
           `Failed to download schema for "${apiKey}" from ${versionObj.swaggerUrl}`,
         );
@@ -83,6 +84,7 @@ async function main() {
 
       return { info, localFileName };
     } catch (err) {
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`Error downloading "${apiKey}":`, err);
       return null;
     }

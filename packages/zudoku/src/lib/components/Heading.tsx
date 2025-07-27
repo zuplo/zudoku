@@ -1,9 +1,8 @@
-import type { HTMLAttributes, ReactNode } from "react";
-import { useRegisterAnchorElement } from "./context/ViewportAnchorContext.js";
-
 import { cva, type VariantProps } from "class-variance-authority";
 import { LinkIcon } from "lucide-react";
+import type { HTMLAttributes, ReactNode } from "react";
 import { cn } from "../util/cn.js";
+import { useRegisterAnchorElement } from "./context/ViewportAnchorContext.js";
 
 const heading = cva("group relative", {
   variants: {

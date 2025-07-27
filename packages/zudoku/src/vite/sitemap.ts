@@ -1,6 +1,6 @@
-import { createWriteStream, existsSync } from "fs";
-import { mkdir } from "fs/promises";
-import path from "path";
+import { createWriteStream, existsSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
+import path from "node:path";
 import colors from "picocolors";
 import { SitemapStream } from "sitemap";
 import type { ZudokuSiteMapConfig } from "../config/validators/validate.js";
@@ -73,7 +73,7 @@ export async function generateSitemap({
 
   sitemap.end();
 
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.debug(
     colors.blue(`✓ wrote sitemap to ${colors.bold(sitemapOutputPath)}`),
   );

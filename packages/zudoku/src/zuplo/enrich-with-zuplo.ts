@@ -19,8 +19,8 @@ const enrichWithApiKeyData = (
 
   const firstPolicy = apiKeyPolicies[0];
   const authorizationHeader =
-    (firstPolicy?.handler.options?.["authHeader"] as string) || "Authorization";
-  const authorizationScheme = (firstPolicy?.handler.options?.["authScheme"] ??
+    (firstPolicy?.handler.options?.authHeader as string) || "Authorization";
+  const authorizationScheme = (firstPolicy?.handler.options?.authScheme ??
     "Bearer") as string;
   const authSchemeExample =
     authorizationScheme !== ""
@@ -91,7 +91,7 @@ const enrichWithRateLimitData = (
   return operationObject;
 };
 
-// prettier-ignore
+// biome-ignore format: for readability
 const operations = [
   "get", "put", "post", "delete",
   "options", "head", "patch",  "trace",

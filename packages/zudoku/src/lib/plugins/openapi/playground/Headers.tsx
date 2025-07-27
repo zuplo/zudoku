@@ -24,7 +24,7 @@ import {
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
-import { type Header, type PlaygroundForm } from "./Playground.js";
+import type { Header, PlaygroundForm } from "./Playground.js";
 
 const headerOptions = Object.freeze([
   "Accept",

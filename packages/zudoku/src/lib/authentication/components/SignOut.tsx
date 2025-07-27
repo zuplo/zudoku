@@ -8,7 +8,7 @@ export const SignOut = () => {
 
   useEffect(() => {
     void context.authentication?.signOut().then(() => navigate("/"));
-  }, []);
+  }, [context.authentication, navigate]);
 
   return null;
 };

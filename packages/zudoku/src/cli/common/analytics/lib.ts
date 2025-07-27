@@ -5,7 +5,7 @@ import { machineId } from "../machine-id/lib.js";
 
 interface IdentifyMessageV1 {
   distinctId: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   properties?: Record<string | number, any>;
   disableGeoip?: boolean;
 }
@@ -18,7 +18,7 @@ interface EventMessageV1 extends IdentifyMessageV1 {
 }
 
 interface ZuploEventMessage extends Omit<EventMessageV1, "distinctId"> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   argv: any;
 }
 
@@ -66,7 +66,7 @@ export async function captureEvent({
 
     // Nice to have: set information if this is in CI
     if (process.env.CI) {
-      properties["ci"] = process.env.CI;
+      properties.ci = process.env.CI;
     }
 
     // // Nice to have: set information about the machine

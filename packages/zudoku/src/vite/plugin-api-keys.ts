@@ -1,10 +1,10 @@
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteApiKeysPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-keys-plugin";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
   return {
     name: "zudoku-api-keys-plugin",
     resolveId(id) {

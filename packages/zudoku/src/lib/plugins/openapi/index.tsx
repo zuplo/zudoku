@@ -1,16 +1,16 @@
 import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import { type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { matchPath } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
-import { type ZudokuPlugin } from "../../core/plugins.js";
+import type { ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { createQuery } from "./client/useCreateQuery.js";
 import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
-import { type OasPluginConfig } from "./interfaces.js";
+import type { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
@@ -133,6 +133,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         const versionParam = match?.params.version;
         const version = versionParam ?? getVersions(config).at(0);
         const { type } = config;
+        // biome-ignore lint/style/noNonNullAssertion: version is guaranteed to be defined
         const input = type === "file" ? config.input[version!] : config.input;
 
         const query = createQuery(client, GetNavigationOperationsQuery, {

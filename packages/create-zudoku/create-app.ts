@@ -1,8 +1,7 @@
-/* eslint-disable no-inner-declarations */
-/* eslint-disable no-console */
-import retry from "async-retry";
+// biome-ignore-all lint/suspicious/noConsole: Console is used for logging
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
+import retry from "async-retry";
 import { cyan, green, red } from "picocolors";
 import type { RepoInfo } from "./helpers/examples";
 import {
@@ -154,7 +153,6 @@ export async function createApp({
         );
         console.log();
         await retry(() => downloadAndExtractRepo(root, repoInfo2), {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           retries: 3,
         });
@@ -166,7 +164,6 @@ export async function createApp({
         );
         console.log();
         await retry(() => downloadAndExtractExample(root, example), {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           retries: 3,
         });
@@ -180,7 +177,7 @@ export async function createApp({
         );
       }
       throw new DownloadError(
-        isErrorLike(reason) ? reason.message : reason + "",
+        isErrorLike(reason) ? reason.message : String(reason),
       );
     }
     // Copy `.gitignore` if the application did not provide one

@@ -16,7 +16,7 @@ import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { useAuth } from "../../hooks/index.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
-import { type ApiKeyService } from "./index.js";
+import type { ApiKeyService } from "./index.js";
 
 type CreateApiKey = { description?: string; expiresOn?: string };
 

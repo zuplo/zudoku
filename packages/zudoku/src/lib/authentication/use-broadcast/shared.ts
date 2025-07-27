@@ -1,6 +1,6 @@
 // https://github.com/Romainlg29/use-broadcast/
 
-import { StateCreator, StoreMutatorIdentifier } from "zustand";
+import type { StateCreator, StoreMutatorIdentifier } from "zustand";
 
 export type SharedOptions = {
   /**
@@ -71,7 +71,7 @@ const sharedImpl: SharedImpl = (f, options) => (set, get, store) => {
       self instanceof WorkerGlobalScope
     )
   ) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.warn(
       "BroadcastChannel is not supported in this environment. The store will not be shared.",
     );
@@ -82,7 +82,7 @@ const sharedImpl: SharedImpl = (f, options) => (set, get, store) => {
    * If BroadcastChannel is not supported, return the basic store
    */
   if (typeof BroadcastChannel === "undefined") {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.warn(
       "BroadcastChannel is not supported in this browser. The store will not be shared.",
     );
@@ -220,7 +220,7 @@ const sharedImpl: SharedImpl = (f, options) => (set, get, store) => {
       /**
        * Set the new tab / window id
        */
-      const new_id = tabs[tabs.length - 1]! + 1;
+      const new_id = (tabs[tabs.length - 1] ?? 0) + 1;
       tabs.push(new_id);
 
       options?.onTabsChange?.(tabs);

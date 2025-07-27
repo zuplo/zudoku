@@ -1,4 +1,4 @@
-import { useEffect, useRef, type PropsWithChildren } from "react";
+import { type PropsWithChildren, useEffect, useRef } from "react";
 import { cn } from "../../util/cn.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useZudoku } from "../context/ZudokuContext.js";

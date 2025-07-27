@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { type SchemaObject } from "../../oas/parser/index.js";
+import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import type { OperationListItemResult } from "./OperationList.js";

@@ -1,8 +1,8 @@
-import { glob } from "glob";
-import matter from "gray-matter";
-import { type LucideIcon } from "lucide-react";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { glob } from "glob";
+import matter from "gray-matter";
+import type { LucideIcon } from "lucide-react";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
   InputNavigationCategory,

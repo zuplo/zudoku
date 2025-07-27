@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { useFormContext } from "react-hook-form";
-import { type PlaygroundForm } from "../Playground.js";
+import type { PlaygroundForm } from "../Playground.js";
 
 export const UrlQueryParams = () => {
   const { watch } = useFormContext<PlaygroundForm>();

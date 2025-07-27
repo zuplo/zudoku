@@ -1,5 +1,5 @@
-import type { Root } from "mdast";
 import path from "node:path";
+import type { Root } from "mdast";
 import type { VFile } from "vfile";
 import { exportMdxjsConst } from "./utils.js";
 

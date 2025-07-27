@@ -43,7 +43,7 @@ const parseSchemaInput = async (
       }
     }
     if (schemaInput.includes("://")) {
-      let response;
+      let response: Response;
       try {
         response = await fetch(schemaInput, {
           cache: "force-cache",
@@ -83,7 +83,7 @@ const parseSchemaInput = async (
 
   if (typeof schemaInput === "object") return schemaInput as JSONSchema;
 
-  throw new GraphQLError("Unsupported schema input: " + schemaInput);
+  throw new GraphQLError(`Unsupported schema input: ${schemaInput}`);
 };
 
 /**

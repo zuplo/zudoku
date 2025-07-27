@@ -46,7 +46,7 @@ export async function getRepoInfo(
       }
 
       const info = await infoResponse.json();
-      return { username, name, branch: info["default_branch"], filePath };
+      return { username, name, branch: info.default_branch, filePath };
     } catch {
       return;
     }
@@ -71,7 +71,7 @@ export function hasRepo({
   const contentsUrl = `https://api.github.com/repos/${username}/${name}/contents`;
   const packagePath = `${filePath ? `/${filePath}` : ""}/package.json`;
 
-  return isUrlOk(contentsUrl + packagePath + `?ref=${branch}`);
+  return isUrlOk(`${contentsUrl}${packagePath}?ref=${branch}`);
 }
 
 export function existsInRepo(nameOrUrl: string): Promise<boolean> {

@@ -13,7 +13,9 @@ export const useScrollToHash = () => {
 
       // Operation list items might have subdivisions that the navigation doesn't show.
       // The subdivisions are separated by a slash so we need to remove everything before the slash to get the navigation correct item.
-      const linkHash = cleanHash.split("/").at(0)!;
+      const linkHash = cleanHash.split("/").at(0);
+      if (!linkHash) return false;
+
       const element = document.getElementById(decodeURIComponent(cleanHash));
 
       const link = document.querySelector(

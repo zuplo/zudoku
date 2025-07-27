@@ -1,12 +1,12 @@
+// biome-ignore-all lint/suspicious/noConsole: Logging allowed here
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { bold, cyan } from "picocolors";
 import { copy } from "../helpers/copy";
 import { install } from "../helpers/install";
 
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
-import { bold, cyan } from "picocolors";
-
-import { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
+import type { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
 /**
  * Get the file path for a given file in a template, e.g. "next.config.js".
@@ -70,6 +70,7 @@ export const installTemplate = async ({
   const version = process.env.ZUDOKU_PRIVATE_TEST_VERSION ?? zudokuVersion;
 
   /** Create a package.json for the new project and write it to disk. */
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   const packageJson: any = {
     name: appName,
     version: "0.1.0",

@@ -53,6 +53,7 @@ async function getLatestVersion(): Promise<string | undefined> {
   if (response.status === 200) {
     const result = (await response.json()) as { tag_name: string }[];
     if (Array.isArray(result) && result.length > 0) {
+      // biome-ignore lint/style/noNonNullAssertion: ?
       return result[0]!.tag_name.substring(1);
     }
   }
@@ -72,7 +73,7 @@ async function getVersionCheckInfo(): Promise<VersionCheckInfo> {
       versionCheckInfo = await readFile(versionCheckPath, "utf-8").then(
         JSON.parse,
       );
-    } catch (err) {
+    } catch {
       // Error reading or parsing file, ignore it
     }
 

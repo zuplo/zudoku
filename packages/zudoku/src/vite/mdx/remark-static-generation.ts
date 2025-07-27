@@ -1,8 +1,8 @@
+import vm, { type Context as VmContext } from "node:vm";
 import type { ImportDeclaration, Program } from "estree";
 import { valueToEstree } from "estree-util-value-to-estree";
 import type { Root } from "mdast";
 import type { MdxjsEsm } from "mdast-util-mdx";
-import vm, { type Context as VmContext } from "node:vm";
 import { SKIP, visit } from "unist-util-visit";
 import type { VFile } from "vfile";
 

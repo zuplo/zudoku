@@ -11,7 +11,7 @@ import {
   type RegistryItemCss,
 } from "./shadcn-registry.js";
 
-// prettier-ignore
+// biome-ignore format: for readability
 const THEME_VARIABLES = [
   "background", "foreground", "card", "cardForeground", "popover", "popoverForeground", "primary",
   "primaryForeground", "secondary", "secondaryForeground", "muted", "mutedForeground", "accent",
@@ -66,7 +66,7 @@ const processCustomCss = (css: string | RegistryItemCss): string => {
         rules.push(`${indent}${key}: ${value};`);
       } else {
         rules.push(`${indent}${key} {`);
-        rules.push(...processStyles(value, indent + "  "));
+        rules.push(...processStyles(value, `${indent}  `));
         rules.push(`${indent}}`);
       }
     }
@@ -79,7 +79,7 @@ const processCustomCss = (css: string | RegistryItemCss): string => {
 const MAIN_REPLACE = "/* @vite-plugin-inject main */";
 const DEFAULT_THEME_REPLACE = "/* @vite-plugin-inject defaultTheme */";
 
-// prettier-ignore
+// biome-ignore format: for readability
 export const GOOGLE_FONTS = [
   "Inter", "Roboto", "Open Sans", "Poppins", "Montserrat", "Outfit",
   "Plus Jakarta Sans", "DM Sans", "IBM Plex Sans", "Geist", "Oxanium",
@@ -170,7 +170,7 @@ const processFonts = async (themeConfig: ZudokuConfig["theme"]) => {
           imports.push(...processFont(font));
         }
       }
-    } catch (error) {
+    } catch {
       // Registry fonts failed to load, continue with user fonts and defaults
     }
   }
@@ -289,7 +289,7 @@ export const viteThemePlugin = (): Plugin => {
             );
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: Logging allowed here
           console.error("Failed to load shadcn registry theme:", error);
         }
       }
@@ -335,7 +335,7 @@ export const viteThemePlugin = (): Plugin => {
       // This @theme block only maps CSS variables to Tailwind utilities
       code.push("@theme inline {");
 
-      // prettier-ignore
+      // biome-ignore format: for readability
       const colorVars = [
         "background", "foreground", "card", "card-foreground", "popover", "popover-foreground", "primary",
         "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground", "accent",

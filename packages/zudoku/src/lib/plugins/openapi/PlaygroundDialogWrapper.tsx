@@ -1,7 +1,7 @@
 import { useAuth } from "zudoku/components";
 import type { OperationListItemResult } from "./OperationList.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import { type Content } from "./SidecarExamples.js";
+import type { Content } from "./SidecarExamples.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -26,7 +26,7 @@ export const PlaygroundDialogWrapper = ({
         p.schema?.default ?? p.examples?.find((x) => x.value)?.value ?? "",
       defaultActive: p.required ?? false,
       isRequired: p.required ?? false,
-      enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
+      enum: p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
     }));
 
@@ -37,7 +37,7 @@ export const PlaygroundDialogWrapper = ({
       name: p.name,
       defaultActive: p.required ?? false,
       isRequired: p.required ?? false,
-      enum: p.schema?.type == "array" ? p.schema?.items?.enum : p.schema?.enum,
+      enum: p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
       defaultValue: p.schema?.default,
     }));

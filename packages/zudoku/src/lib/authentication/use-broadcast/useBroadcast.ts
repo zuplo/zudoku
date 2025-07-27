@@ -93,13 +93,13 @@ export const useBroadcast = <T>(
      * If BroadcastChannel is not supported, we log an error and return
      */
     if (typeof window === "undefined") {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.error("Window is undefined!");
       return;
     }
 
     if (!window.BroadcastChannel) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.error("BroadcastChannel is not supported!");
       return;
     }

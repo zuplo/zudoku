@@ -2,8 +2,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   generatePath,
   Navigate,
-  redirect,
   type RouteObject,
+  redirect,
   useLocation,
   useParams,
 } from "react-router";
@@ -170,7 +170,7 @@ export const getRoutes = ({
         basePath,
         routePath: basePath,
         routes: [
-          createNonTagPagesRoute({ path: basePath + "/:tag?" }),
+          createNonTagPagesRoute({ path: `${basePath}/:tag?` }),
           ...createAdditionalRoutes(basePath),
         ],
         client,

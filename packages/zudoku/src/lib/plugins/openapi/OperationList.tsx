@@ -1,4 +1,4 @@
-import { type ResultOf } from "@graphql-typed-document-node/core";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
@@ -16,16 +16,16 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
-import { useApiIdentities } from "../../components/context/ZudokuContext.js";
-import { Endpoint } from "./Endpoint.js";
-import { OperationListItem } from "./OperationListItem.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
+import { Endpoint } from "./Endpoint.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
+import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 
@@ -258,6 +258,7 @@ export const OperationList = ({
             <div className="flex flex-col gap-4 sm:items-end">
               {showVersions && (
                 <Select
+                  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
                   onValueChange={(version) => navigate(versions[version]!)}
                   defaultValue={version}
                   disabled={!hasMultipleVersions}

@@ -13,7 +13,7 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
 import { remarkInjectFilepath } from "./mdx/remark-inject-filepath.js";
@@ -25,13 +25,14 @@ import { exportMdxjsConst } from "./mdx/utils.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
 // so rehype-mdx-import-media can pick them up
+// biome-ignore lint/suspicious/noExplicitAny: Allow any type
 const rehypeNormalizeMdxImages = () => (tree: any) => {
   visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
     if (node.type !== "mdxJsxFlowElement") return;
     if (!["img", "video"].includes(node.name)) return;
 
     const hasStringSrc = node.attributes.some(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: Allow any type
       (attr: any) =>
         attr.type === "mdxJsxAttribute" &&
         attr.name === "src" &&
@@ -42,7 +43,7 @@ const rehypeNormalizeMdxImages = () => (tree: any) => {
 
     node.type = "element";
     node.tagName = node.name;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Allow any type
     node.properties = {} as Record<string, any>;
 
     for (const attr of node.attributes) {

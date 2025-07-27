@@ -1,4 +1,4 @@
-import { type ColorMap } from "../../../components/navigation/NavigationBadge.js";
+import type { ColorMap } from "../../../components/navigation/NavigationBadge.js";
 
 export const MethodColorMap: Record<string, keyof typeof ColorMap> = {
   get: "green",

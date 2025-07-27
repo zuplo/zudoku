@@ -1,8 +1,8 @@
+import { Transform } from "node:stream";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
-import { type HelmetData } from "@zudoku/react-helmet-async";
+import type { HelmetData } from "@zudoku/react-helmet-async";
 import type express from "express";
 import logger from "loglevel";
-import { Transform } from "node:stream";
 import { renderToPipeableStream, renderToStaticMarkup } from "react-dom/server";
 import {
   createStaticHandler,
@@ -49,7 +49,7 @@ export const render = async ({
     if ([301, 302, 303, 307, 308].includes(context.status)) {
       return response.redirect(
         import.meta.env.PROD ? context.status : 307,
-        context.headers.get("Location")!,
+        context.headers.get("Location") ?? "",
       );
     }
 

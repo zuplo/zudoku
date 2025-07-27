@@ -92,19 +92,19 @@ const ApiSchema = z.discriminatedUnion("type", [
 const ApiKeysSchema = z.object({
   enabled: z.boolean(),
   getKeys: z
-    .custom<
-      (context: ZudokuContext) => Promise<ApiKey[]>
-    >((val) => typeof val === "function")
+    .custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   rollKey: z
-    .custom<
-      (id: string, context: ZudokuContext) => Promise<void>
-    >((val) => typeof val === "function")
+    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   deleteKey: z
-    .custom<
-      (id: string, context: ZudokuContext) => Promise<void>
-    >((val) => typeof val === "function")
+    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   updateKeyDescription: z
     .custom<
@@ -434,9 +434,9 @@ const SiteSchema = z
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
-        .custom<
-          "note" | "tip" | "info" | "caution" | "danger" | (string & {})
-        >((val) => typeof val === "string")
+        .custom<"note" | "tip" | "info" | "caution" | "danger" | (string & {})>(
+          (val) => typeof val === "string",
+        )
         .optional(),
       dismissible: z.boolean().optional(),
     }),
@@ -563,9 +563,9 @@ export function validateConfig(config: unknown, configPath?: string) {
     }
 
     // In development mode, log warnings but don't fail
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log(colors.yellow("Validation errors:"));
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log(colors.yellow(z.prettifyError(validationResult.error)));
   }
 }

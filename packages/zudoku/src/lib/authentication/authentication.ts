@@ -8,6 +8,6 @@ export interface AuthenticationPlugin {
   signRequest(request: Request): Promise<Request>;
 }
 
-export interface AuthenticationProviderInitializer<TConfig> {
-  (config: TConfig): AuthenticationPlugin;
-}
+export type AuthenticationProviderInitializer<TConfig> = (
+  config: TConfig,
+) => AuthenticationPlugin;

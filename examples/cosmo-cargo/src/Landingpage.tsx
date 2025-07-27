@@ -60,6 +60,7 @@ export const Landingpage = () => {
         <img
           src="/cosmo.webp"
           className="max-w-[330px] w-full hidden lg:mt-0 lg:col-span-4 lg:flex rounded-3xl drop-shadow-lg dark:drop-shadow-none"
+          alt="Cosmo Cargo"
         />
       </div>
     </section>

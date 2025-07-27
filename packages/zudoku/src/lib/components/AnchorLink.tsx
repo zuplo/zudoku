@@ -1,4 +1,4 @@
-import { type MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import { NavLink, type NavLinkProps, useHref, useLocation } from "react-router";
 import { useScrollToHash } from "../util/useScrollToAnchor.js";
 
