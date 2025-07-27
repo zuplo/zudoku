@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod";
 import { BuildConfigSchema } from "./ZuploBuildConfig.js";
 
 const getZuploBuildConfig = () => {
@@ -14,7 +14,7 @@ const getZuploBuildConfig = () => {
       // eslint-disable-next-line no-console
       console.error("ZUPLO_BUILD_CONFIG is invalid.");
       // eslint-disable-next-line no-console
-      console.log(error.errors);
+      console.log(error.issues);
       return undefined;
     }
     // eslint-disable-next-line no-console

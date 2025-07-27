@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { CircleFadingArrowUpIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { Button } from "../ui/Button.js";
 
 const BuildStatusSchema = z.object({

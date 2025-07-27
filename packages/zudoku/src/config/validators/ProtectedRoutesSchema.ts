@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import { transformProtectedRoutes } from "../../lib/core/ZudokuContext.js";
