@@ -1,5 +1,5 @@
 import type { Options as MdxOptions } from "@mdx-js/rollup";
-import z from "zod/v4";
+import { z } from "zod";
 import type { OpenAPIDocument } from "../../lib/oas/graphql/index.js";
 
 // Schema for build processors

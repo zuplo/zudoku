@@ -1,4 +1,4 @@
-import { z } from "zod/v4";
+import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import { IconNames } from "./icon-types.js";
@@ -9,6 +9,8 @@ const BadgeSchema = z.object({
   label: z.string(),
   // prettier-ignore
   color: z.enum(["green", "blue", "yellow", "red", "purple", "indigo", "gray", "outline"]),
+  invert: z.boolean().optional(),
+  className: z.string().optional(),
 });
 
 const InputNavigationCategoryLinkDocSchema = z.union([

@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { bundledLanguages } from "shiki/langs";
 import { bundledThemes } from "shiki/themes";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { ZudokuConfig } from "../src/config/validators/validate.js";
 
 const fileExists = (path: string) =>
