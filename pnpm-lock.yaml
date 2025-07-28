@@ -65,8 +65,8 @@ importers:
         specifier: 8.57.0
         version: 8.57.0
       eslint-config-prettier:
-        specifier: 10.1.5
-        version: 10.1.5(eslint@8.57.0)
+        specifier: 10.1.8
+        version: 10.1.8(eslint@8.57.0)
       eslint-plugin-import:
         specifier: 2.32.0
         version: 2.32.0(@typescript-eslint/parser@8.37.0(eslint@8.57.0)(typescript@5.8.3))(eslint@8.57.0)
@@ -89,8 +89,8 @@ importers:
         specifier: 3.6.2
         version: 3.6.2
       prettier-plugin-organize-imports:
-        specifier: 4.1.0
-        version: 4.1.0(prettier@3.6.2)(typescript@5.8.3)
+        specifier: 4.2.0
+        version: 4.2.0(prettier@3.6.2)(typescript@5.8.3)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -4736,8 +4736,8 @@ packages:
     resolution: {integrity: sha512-/veY75JbMK4j1yjvuUxuVsiS/hr/4iHs9FTT6cgTexxdE0Ly/glccBAkloH/DofkjRbZU3bnoj38mOmhkZ0lHw==}
     engines: {node: '>=12'}
 
-  eslint-config-prettier@10.1.5:
-    resolution: {integrity: sha512-zc1UmCpNltmVY34vuLRV61r1K27sWuX39E+uyUnY8xS2Bex88VV9cugG+UZbRSRGtGyFboj+D8JODyme1plMpw==}
+  eslint-config-prettier@10.1.8:
+    resolution: {integrity: sha512-82GZUjRS0p/jganf6q1rEO25VSoHH0hKPCTrgillPjdI/3bgBhAE1QzHrHTizjpRvy6pGAvKjDJtk2pF9NDq8w==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
@@ -6763,12 +6763,12 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier-plugin-organize-imports@4.1.0:
-    resolution: {integrity: sha512-5aWRdCgv645xaa58X8lOxzZoiHAldAPChljr/MT0crXVOWTZ+Svl4hIWlz+niYSlO6ikE5UXkN1JrRvIP2ut0A==}
+  prettier-plugin-organize-imports@4.2.0:
+    resolution: {integrity: sha512-Zdy27UhlmyvATZi67BTnLcKTo8fm6Oik59Sz6H64PgZJVs6NJpPD1mT240mmJn62c98/QaL+r3kx9Q3gRpDajg==}
     peerDependencies:
       prettier: '>=2.0'
       typescript: '>=2.9'
-      vue-tsc: ^2.1.0
+      vue-tsc: ^2.1.0 || 3
     peerDependenciesMeta:
       vue-tsc:
         optional: true
@@ -12887,7 +12887,7 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-  eslint-config-prettier@10.1.5(eslint@8.57.0):
+  eslint-config-prettier@10.1.8(eslint@8.57.0):
     dependencies:
       eslint: 8.57.0
 
@@ -15546,7 +15546,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-organize-imports@4.1.0(prettier@3.6.2)(typescript@5.8.3):
+  prettier-plugin-organize-imports@4.2.0(prettier@3.6.2)(typescript@5.8.3):
     dependencies:
       prettier: 3.6.2
       typescript: 5.8.3
