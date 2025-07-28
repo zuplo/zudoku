@@ -23,9 +23,12 @@ export const Markdown = memo(
     const rehypePlugins = useMemo(
       () => [
         rehypeRaw,
-        ...createConfiguredShikiRehypePlugins(syntaxHighlighting?.themes),
+        ...createConfiguredShikiRehypePlugins(
+          syntaxHighlighting?.themes,
+          syntaxHighlighting?.highlighter,
+        ),
       ],
-      [syntaxHighlighting?.themes],
+      [syntaxHighlighting?.themes, syntaxHighlighting?.highlighter],
     );
 
     const mdComponents = useMemo(
