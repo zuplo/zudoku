@@ -1,4 +1,4 @@
-import { Suspense, useEffect, type ReactNode } from "react";
+import { type ReactNode, Suspense, useEffect } from "react";
 import { Outlet } from "react-router";
 import { cn } from "../util/cn.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";

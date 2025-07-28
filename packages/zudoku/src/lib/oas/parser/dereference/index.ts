@@ -8,7 +8,7 @@ type CustomResolver = (ref: string) => Promise<JSONSchema | undefined>;
 
 const cache = new Map<JSONSchema, JSONSchema>();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Allow any type
 const isIndexableObject = (obj: any): obj is Record<string, any> =>
   obj !== null && typeof obj === "object";
 
@@ -18,6 +18,7 @@ export const dereference = async (
   resolvers: CustomResolver[] = [],
 ) => {
   if (cache.has(schema)) {
+    // biome-ignore lint/style/noNonNullAssertion: Cache is guaranteed to have a value
     return cache.get(schema)!;
   }
 

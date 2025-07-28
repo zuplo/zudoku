@@ -107,6 +107,7 @@ export const Preview = () => {
           </button>
           <div className="relative group">
             <img
+              alt="Developer Portal (light mode)"
               src="/preview/light-portal.svg"
               className={cn(
                 activeTab === "developer-portal" && theme === "light"
@@ -115,6 +116,7 @@ export const Preview = () => {
               )}
             />
             <img
+              alt="API Reference (light mode)"
               src="/preview/light-api.svg"
               className={cn(
                 activeTab === "api-reference" && theme === "light"
@@ -123,6 +125,7 @@ export const Preview = () => {
               )}
             />
             <img
+              alt="Developer Portal (dark mode)"
               src="/preview/dark-portal.svg"
               className={cn(
                 activeTab === "developer-portal" && theme === "dark"
@@ -131,6 +134,7 @@ export const Preview = () => {
               )}
             />
             <img
+              alt="API Reference (dark mode)"
               src="/preview/dark-api.svg"
               className={cn(
                 activeTab === "api-reference" && theme === "dark"

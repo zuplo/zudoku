@@ -1,6 +1,6 @@
-import { NextFunction, Request, Response } from "express";
 import path from "node:path";
-import { ViteDevServer } from "vite";
+import type { NextFunction, Request, Response } from "express";
+import type { ViteDevServer } from "vite";
 
 export const errorMiddleware =
   (server: ViteDevServer) =>

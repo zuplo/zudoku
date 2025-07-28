@@ -32,6 +32,8 @@ npm install -g pnpm
 pnpm add --global nx@latest
 ```
 
+4. **Editor Setup**: This project uses [Biome](https://biomejs.dev/) for linting and formatting. For the best development experience, install the Biome extension for your editor or IDE. Setup instructions can be found at [their documentation page](https://biomejs.dev/guides/editors/first-party-extensions/). Note that Prettier is used for Markdown and YAML files since Biome doesn't support them yet.
+
 ## 3. Environment Variables
 
 When working on Zudoku, you will need to create a `.env` file in the root of the project and set the following environment variable in order to run the project locally.

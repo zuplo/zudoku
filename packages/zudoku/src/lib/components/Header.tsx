@@ -37,9 +37,8 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
       <DropdownMenuSubTrigger>{item.label}</DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          {item.children.map((item, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <RecursiveMenu key={i} item={item} />
+          {item.children.map((child) => (
+            <RecursiveMenu key={child.label} item={child} />
           ))}
         </DropdownMenuSubContent>
       </DropdownMenuPortal>

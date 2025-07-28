@@ -1,6 +1,6 @@
-import { async as glob } from "fast-glob";
 import { copyFile, mkdir } from "node:fs/promises";
 import { basename, dirname, join, resolve } from "node:path";
+import { async as glob } from "fast-glob";
 
 interface CopyOption {
   cwd?: string;

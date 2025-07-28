@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/switch-exhaustiveness-check */
-
 /**
  * node-machine-id
  * Copyright (c) 2016 Aleksandr Komlev
@@ -36,7 +34,7 @@ function isWindowsProcessMixedOrNativeArchitecture():
   if (process.platform !== "win32") {
     return "skipped";
   }
-  if (process.arch === "ia32" && process.env["PROCESSOR_ARCHITEW6432"]) {
+  if (process.arch === "ia32" && process.env.PROCESSOR_ARCHITEW6432) {
     return "mixed";
   }
   return "native";
@@ -49,12 +47,14 @@ function hash(guid: string): string {
 function expose(result: string): string {
   switch (process.platform) {
     case "darwin":
+      // biome-ignore lint/style/noNonNullAssertion: Is this safe?
       return result
         .split("IOPlatformUUID")[1]!
         .split("\n")[0]!
         .replace(/=|\s+]"/gi, "")
         .toLowerCase();
     case "win32":
+      // biome-ignore lint/style/noNonNullAssertion: Is this safe?
       return result
         .toString()
         .split("REG_SZ")[1]!

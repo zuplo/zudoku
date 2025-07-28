@@ -23,7 +23,7 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import { type Content } from "../SidecarExamples.js";
+import type { Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
 import BodyPanel from "./BodyPanel.js";
 import {
@@ -37,10 +37,10 @@ import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
+import RequestLoginDialog from "./RequestLoginDialog.js";
 import { useIdentityStore } from "./rememberedIdentity.js";
 import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
-import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 

@@ -1,5 +1,5 @@
 import { createContext, type ReactNode } from "react";
-import { GraphQLClient } from "./GraphQLClient.js";
+import type { GraphQLClient } from "./GraphQLClient.js";
 
 export const GraphQLContext = createContext<GraphQLClient | undefined>(
   undefined,

@@ -1,11 +1,6 @@
 import { motion, useSpring } from "motion/react";
-import { JSX, useRef } from "react";
+import { type JSX, useRef } from "react";
 import Cursor from "./Cursor";
-
-interface Position {
-  x: number;
-  y: number;
-}
 
 export interface SmoothCursorProps {
   cursor?: JSX.Element;
@@ -32,7 +27,6 @@ export function SmoothCursor({
     mass: 1,
     restDelta: 0.001,
   },
-  initialPosition,
 }: SmoothCursorProps) {
   const ref = useRef<HTMLDivElement>(null);
 

@@ -1,5 +1,5 @@
-import { GraphQLJSON } from "graphql-type-json";
 import { GraphQLScalarType } from "graphql/index.js";
+import { GraphQLJSON } from "graphql-type-json";
 import type { RecordAny } from "../../util/traverse.js";
 
 export const CIRCULAR_REF = "$[Circular Reference]";
@@ -14,12 +14,12 @@ const OPENAPI_PROPS = new Set([
 ]);
 
 const handleCircularRefs = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   obj: any,
   visited = new WeakSet(),
   refs = new WeakMap(),
   path: string[] = [],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
 ): any => {
   if (obj === null || typeof obj !== "object") return obj;
 

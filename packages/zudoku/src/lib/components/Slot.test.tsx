@@ -1,18 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
+  type RenderResult,
   screen,
   render as testRender,
-  type RenderResult,
 } from "@testing-library/react";
 import type { PropsWithChildren, ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { MemoryRouter } from "react-router";
 import { describe, expect, it } from "vitest";
 import { ZudokuContext } from "../core/ZudokuContext.js";
-import { Slot } from "./Slot.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
+import { Slot } from "./Slot.js";
 
 /**
  * @vitest-environment happy-dom
@@ -196,12 +196,10 @@ describe("Slot", () => {
       expect(screen.getByText("Source content")).toBeInTheDocument();
 
       rerender(
-        <>
-          <Slot.Target
-            name="footer-after"
-            fallback={<div>Fallback content</div>}
-          />
-        </>,
+        <Slot.Target
+          name="footer-after"
+          fallback={<div>Fallback content</div>}
+        />,
       );
 
       expect(screen.getByText("Fallback content")).toBeInTheDocument();
@@ -374,11 +372,13 @@ describe("Slot", () => {
       await render(
         <>
           {manySlots.map((name) => (
+            // biome-ignore lint/suspicious/noExplicitAny: Allow any type
             <Slot.Source key={name} name={name as any}>
               <div>Content {name}</div>
             </Slot.Source>
           ))}
           {manySlots.map((name) => (
+            // biome-ignore lint/suspicious/noExplicitAny: Allow any type
             <Slot.Target key={name} name={name as any} />
           ))}
         </>,

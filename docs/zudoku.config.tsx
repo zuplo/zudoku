@@ -4,6 +4,7 @@ import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
 import GithubIcon from "./src/GithubIcon";
+
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
 const LandingPage = lazy(() => import("./src/LandingPage"));
 

@@ -1,4 +1,3 @@
-import type { RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -11,6 +10,7 @@ import { configuredNavigation } from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { registerShiki } from "virtual:zudoku-shiki-register";
+import type { RouteObject } from "react-router";
 import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
@@ -23,8 +23,8 @@ import {
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
 import "./main.css";

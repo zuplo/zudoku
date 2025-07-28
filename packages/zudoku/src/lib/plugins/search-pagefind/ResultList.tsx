@@ -3,10 +3,7 @@ import { useLayoutEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import {
-  type PagefindSearchFragment,
-  type PagefindSubResult,
-} from "./types.js";
+import type { PagefindSearchFragment, PagefindSubResult } from "./types.js";
 
 const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
   const aScore = a.weighted_locations.reduce(
@@ -38,6 +35,7 @@ export const ResultList = ({
   const navigate = useNavigate();
   const commandListRef = useRef<HTMLDivElement | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only scroll to top when search term changes
   useLayoutEffect(() => {
     requestIdleCallback(() => {
       commandListRef.current?.scrollTo({ top: 0 });
@@ -101,6 +99,7 @@ export const ResultList = ({
                       <span className="font-bold">{subResult.title}</span>
                       <span
                         className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: Pagefind provides sanitized HTML
                         dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
                       />
                     </div>

@@ -2,7 +2,7 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
 import type { RollupOutput, RollupWatcher } from "rollup";
-import { runnerImport, loadEnv as viteLoadEnv, type ConfigEnv } from "vite";
+import { type ConfigEnv, runnerImport, loadEnv as viteLoadEnv } from "vite";
 import { logger } from "../cli/common/logger.js";
 import invariant from "../lib/util/invariant.js";
 import { getModuleDir } from "../vite/config.js";

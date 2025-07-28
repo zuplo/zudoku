@@ -20,9 +20,6 @@ updates:
         patterns:
           - "@nx/*"
           - "nx"
-      eslint-dependencies:
-        patterns:
-          - "*eslint*"
       prettier-dependencies:
         patterns:
           - "*prettier*"

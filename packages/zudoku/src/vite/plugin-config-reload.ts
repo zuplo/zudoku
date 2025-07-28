@@ -1,6 +1,6 @@
 import path from "node:path";
 import colors from "picocolors";
-import { type Plugin, type ViteDevServer } from "vite";
+import type { Plugin, ViteDevServer } from "vite";
 import { logger } from "../cli/common/logger.js";
 import { getCurrentConfig } from "../config/loader.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";

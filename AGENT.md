@@ -24,7 +24,7 @@
 - **Typescript**: Prefer types over interfaces, PascalCase for components/classes, no `I` prefix for interfaces
 - **Components**: Use anonymous functions to define components
 - **State**: Zustand for global state, React Query for server state
-- **Files**: ESLint + Prettier, TypeScript strict mode, no console/debugger in production, prefer `const` over `let`, don't remove `console.log` when debugging
+- **Files**: TypeScript strict mode, no console/debugger in production, prefer `const` over `let`, don't remove `console.log` when debugging
 - **Functional**: Prefer immutable functional style, using functions like `Object.fromEntries`, `map` and `flatMap` to construct new data
 
 ## Plugin Architecture

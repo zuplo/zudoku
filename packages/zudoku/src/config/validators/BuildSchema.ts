@@ -32,9 +32,9 @@ export function validateBuildConfig(config: unknown) {
     }
 
     // In development mode, log warnings but don't fail
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.warn("Build config validation errors:");
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.warn(z.prettifyError(validationResult.error));
     return;
   }

@@ -3,15 +3,9 @@
 pre-commit:
   parallel: true
   commands:
-    prettier:
-      glob: "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}"
+    check:
+      glob: "**/*.{ts,tsx,json,md,yml,js,jsx,css,html,mdx}"
       run: |
-        npx prettier --write {staged_files}
-        git add {staged_files}
-      stage_fixed: true
-    eslint:
-      glob: "**/*.{ts,tsx,js,jsx,mjs}"
-      run: |
-        npx eslint --cache --fix {staged_files}
+        npx biome check --write {staged_files}
         git add {staged_files}
       stage_fixed: true

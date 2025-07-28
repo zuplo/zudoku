@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: Console is used for logging
+import { existsSync, readFileSync } from "node:fs";
+import path, { basename, resolve } from "node:path";
 import ciInfo from "ci-info";
 import { Command } from "commander";
 import Conf from "conf";
-import { existsSync, readFileSync } from "node:fs";
-import path, { basename, resolve } from "node:path";
 import { blue, bold, cyan, green, red, yellow } from "picocolors";
 import type { InitialReturnValue } from "prompts";
 import prompts from "prompts";
@@ -160,7 +160,7 @@ async function run(): Promise<void> {
         if (validation.valid) {
           return true;
         }
-        return "Invalid project name: " + validation.problems[0];
+        return `Invalid project name: ${validation.problems[0]}`;
       },
     });
 
@@ -359,7 +359,7 @@ async function exit(reason: { command?: string }) {
     console.log(`  ${cyan(reason.command)} has failed.`);
   } else {
     console.log(
-      red("Unexpected error. Please report it as a bug:") + "\n",
+      `${red("Unexpected error. Please report it as a bug:")}\n`,
       reason,
     );
   }

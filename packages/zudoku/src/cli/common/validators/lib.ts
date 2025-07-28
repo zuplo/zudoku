@@ -7,7 +7,7 @@ export interface ValidationRule<W, V = null, E = Error> {
 }
 
 export class CompositeValidator<W> implements ValidationRule<W> {
-  private readonly validators = new Array<ValidationRule<W>>();
+  private readonly validators: Array<ValidationRule<W>> = [];
 
   constructor(...validators: Array<ValidationRule<W>>) {
     this.validators = validators;

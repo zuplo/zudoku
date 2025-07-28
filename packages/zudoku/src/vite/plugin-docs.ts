@@ -1,6 +1,6 @@
+import path from "node:path";
 import { glob } from "glob";
 import globParent from "glob-parent";
-import path from "node:path";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
@@ -13,7 +13,7 @@ const ensureLeadingSlash = joinUrl;
 
 const viteDocsPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugin";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "zudoku-docs-plugin",

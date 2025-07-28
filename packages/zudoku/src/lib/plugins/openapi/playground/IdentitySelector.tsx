@@ -1,6 +1,6 @@
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
-import { type ApiIdentity } from "../../../core/ZudokuContext.js";
+import type { ApiIdentity } from "../../../core/ZudokuContext.js";
 import { NO_IDENTITY } from "./Playground.js";
 
 const IdentitySelector = ({

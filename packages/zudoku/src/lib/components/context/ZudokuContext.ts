@@ -1,7 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
-import { type NavigationItem } from "../../../config/validators/NavigationSchema.js";
+import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS } from "../cache.js";

@@ -1,4 +1,4 @@
-import { SVGProps } from "react";
+import type { SVGProps } from "react";
 
 export const Zudoku = (props: SVGProps<SVGSVGElement>) => (
   <svg
@@ -6,6 +6,7 @@ export const Zudoku = (props: SVGProps<SVGSVGElement>) => (
     width={120}
     height={24}
     fill="none"
+    alt="Zudoku logo"
     {...props}
   >
     <g fill="currentColor">

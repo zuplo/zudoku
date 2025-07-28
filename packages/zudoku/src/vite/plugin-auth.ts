@@ -1,9 +1,9 @@
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteAuthPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-auth";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "zudoku-auth-plugin", // required, will show up in warnings and errors

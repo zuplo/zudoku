@@ -1,7 +1,7 @@
 import { ChevronsLeftRightIcon } from "lucide-react";
 import { isValidElement, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
-import { type SchemaObject } from "../../oas/parser/index.js";
+import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
 
 const Pattern = ({ pattern }: { pattern: string }) => {
@@ -76,6 +76,7 @@ export const ParamInfos = ({
   return (
     <span className={className}>
       {filteredItems.map((item, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: index should be stable
         <span className="text-muted-foreground" key={index}>
           {item}
           {index < filteredItems.length - 1 && (

@@ -6,11 +6,11 @@ import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
 import { logger } from "../../cli/common/logger.js";
-import { type ZudokuConfig } from "../../config/validators/validate.js";
+import type { ZudokuConfig } from "../../config/validators/validate.js";
 import invariant from "../../lib/util/invariant.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
-import { type StaticWorkerData, type WorkerData } from "./worker.js";
+import type { StaticWorkerData, WorkerData } from "./worker.js";
 
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 
@@ -145,7 +145,7 @@ export const prerender = async ({
   const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds`;
 
   if (isTTY()) {
-    writeLine(colors.blue(message + "\n"));
+    writeLine(colors.blue(`${message}\n`));
   } else {
     logger.info(colors.blue(message));
   }

@@ -1,4 +1,4 @@
-import { type ZudokuConfig } from "zudoku";
+import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
   page: {

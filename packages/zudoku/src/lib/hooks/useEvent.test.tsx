@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { type PropsWithChildren } from "react";
-import { type Location } from "react-router";
+import type { PropsWithChildren } from "react";
+import type { Location } from "react-router";
 import { assertType, describe, expect, it, vi } from "vitest";
 import { ZudokuProvider } from "../components/context/ZudokuProvider.js";
 import { ZudokuContext, type ZudokuEvents } from "../core/ZudokuContext.js";

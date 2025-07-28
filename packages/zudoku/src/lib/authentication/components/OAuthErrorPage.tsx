@@ -72,7 +72,7 @@ const errorDetailsMap: Record<string, { message: string }> = {
   },
 };
 
-export function OAuthErrorPage({ error }: { error: any }) {
+export function OAuthErrorPage({ error }: { error: unknown }) {
   const { login } = useAuth();
 
   if (!(error instanceof OAuthAuthorizationError)) {

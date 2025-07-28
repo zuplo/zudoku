@@ -20,10 +20,10 @@ function clearLine() {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+// biome-ignore lint/complexity/noBannedTypes: todo
 export function throttle(fn: Function) {
   let timerHandle: NodeJS.Timeout | null = null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   return (...args: any[]) => {
     if (timerHandle) return;
     fn(...args);

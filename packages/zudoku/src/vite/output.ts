@@ -2,7 +2,7 @@ import assert from "node:assert";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { LoadedConfig } from "../config/config.js";
+import type { LoadedConfig } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -209,7 +209,7 @@ export async function writeOutput(
   await writeFile(outputFile, JSON.stringify(output, null, 2), "utf-8");
 
   if (process.env.VERCEL) {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log("Wrote Vercel output to", outputDir);
   }
 }

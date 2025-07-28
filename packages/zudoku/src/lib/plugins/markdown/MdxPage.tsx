@@ -6,15 +6,15 @@ import { type PropsWithChildren, useEffect } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { Pagination } from "../../components/Pagination.js";
-import { Typography } from "../../components/Typography.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
+import { Pagination } from "../../components/Pagination.js";
+import { Typography } from "../../components/Typography.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
-import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
+import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
 
 declare global {
   interface Window {
@@ -171,8 +171,8 @@ export const MdxPage = ({
           <>
             <div className="h-px bg-border mt-2 mb-6" />
             <Pagination
-              prev={prev ? { to: prev.id, label: prev.label } : undefined}
-              next={next ? { to: next.id, label: next.label } : undefined}
+              prev={prev ? { to: prev.id, label: prev.label ?? "" } : undefined}
+              next={next ? { to: next.id, label: next.label ?? "" } : undefined}
               className="mb-10"
             />
           </>

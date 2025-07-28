@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { DeveloperHint } from "../components/DeveloperHint.js";
 import { Heading } from "../components/Heading.js";

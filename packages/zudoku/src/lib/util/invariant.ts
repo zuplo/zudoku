@@ -1,4 +1,5 @@
 export default function invariant(
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   condition: any,
   // Not providing an inline default argument for message as the result is smaller
   /**

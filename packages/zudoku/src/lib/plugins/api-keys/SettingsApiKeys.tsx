@@ -36,7 +36,7 @@ import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import { CreateApiKey } from "./CreateApiKey.js";
-import { type ApiConsumer, type ApiKey, type ApiKeyService } from "./index.js";
+import type { ApiConsumer, ApiKey, ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();
@@ -90,7 +90,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       return { previousData };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousData) {
         queryClient.setQueryData(["api-keys"], context.previousData);
       }
@@ -136,7 +136,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       return { previousData };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousData) {
         queryClient.setQueryData(["api-keys"], context.previousData);
       }
@@ -290,7 +290,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
                           </div>
                         </div>
                       ) : (
-                        <>{consumers.label}</>
+                        consumers.label
                       )}
                       <div className="text-muted-foreground text-xs">
                         {consumers.createdOn}
@@ -444,8 +444,7 @@ const RevealApiKey = ({
   const isExpired = expiresOn && new Date(expiresOn) < new Date();
   const daysUntilExpiry = expiresOn
     ? Math.ceil(
-        (new Date(expiresOn).getTime() - new Date().getTime()) /
-          (1000 * 60 * 60 * 24),
+        (new Date(expiresOn).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
       )
     : Infinity;
   const expiresSoon = daysUntilExpiry <= 7 && !isExpired;

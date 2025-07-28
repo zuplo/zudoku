@@ -1,12 +1,12 @@
 import { KeyRoundIcon } from "lucide-react";
-import { type RouteObject } from "react-router";
-import { UseAuthReturn } from "../../authentication/hook.js";
-import { type ZudokuContext } from "../../core/ZudokuContext.js";
-import {
-  type ApiIdentityPlugin,
-  type ProfileMenuPlugin,
-  type ZudokuPlugin,
+import type { RouteObject } from "react-router";
+import type { UseAuthReturn } from "../../authentication/hook.js";
+import type {
+  ApiIdentityPlugin,
+  ProfileMenuPlugin,
+  ZudokuPlugin,
 } from "../../core/plugins.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
 import { ProtectedRoute } from "./ProtectedRoute.js";
@@ -140,7 +140,7 @@ const createDefaultHandler = (
     },
     getConsumers: async (context) => {
       const request = new Request(
-        DEFAULT_API_KEY_ENDPOINT + `/${deploymentName}/consumers`,
+        `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers`,
       );
       await context.signRequest(request);
 

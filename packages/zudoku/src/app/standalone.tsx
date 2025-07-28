@@ -13,7 +13,12 @@ if (!root) {
 }
 
 const apiUrl = root.getAttribute("data-api-url");
-const title = document.getElementsByTagName("title")[0]!.innerText;
+
+if (!apiUrl) {
+  throw new Error("No api url found");
+}
+
+const title = document.getElementsByTagName("title")[0]?.innerText;
 const logoUrl = root.getAttribute("data-logo-url");
 
 // IMPORTANT: This component must not contain tailwind classes
@@ -42,7 +47,7 @@ const config = {
     // Using the plugin directly because there's no config file to load in the virtual plugins
     openApiPlugin({
       type: "url",
-      input: apiUrl!,
+      input: apiUrl,
       path: "/",
     }),
   ],

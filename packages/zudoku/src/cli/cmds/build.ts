@@ -1,4 +1,4 @@
-import { type Argv } from "yargs";
+import type { Argv } from "yargs";
 import { build } from "../build/handler.js";
 import { captureEvent } from "../common/analytics/lib.js";
 import { DEFAULT_PREVIEW_PORT } from "../preview/handler.js";

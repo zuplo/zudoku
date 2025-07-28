@@ -1,9 +1,9 @@
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteCustomPagesPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-custom-pages-plugin";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
   return {
     name: "zudoku-custom-pages-plugin",
     resolveId(id) {

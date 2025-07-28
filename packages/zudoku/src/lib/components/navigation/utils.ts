@@ -67,7 +67,6 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
       case "custom-page":
       case "doc":
         return joinUrl(item.path) === location.pathname ? true : undefined;
-      case "link":
       default:
         return undefined;
     }
@@ -75,14 +74,14 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
 };
 
 export const usePrevNext = (): {
-  prev?: { label: string; id: string };
-  next?: { label: string; id: string };
+  prev?: { label?: string; id: string };
+  next?: { label?: string; id: string };
 } => {
   const currentId = useLocation().pathname;
   const { navigation } = useCurrentNavigation();
 
-  let prev;
-  let next;
+  let prev: { label?: string; id: string } | undefined;
+  let next: { label?: string; id: string } | undefined;
 
   let foundCurrent = false;
 

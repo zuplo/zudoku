@@ -2,7 +2,9 @@ import type { PrerenderResponse } from "./PrerenderResponse.js";
 
 export class InMemoryResponse implements PrerenderResponse {
   private resolve = () => {};
-  private resolved = new Promise<void>((res) => (this.resolve = res));
+  private resolved = new Promise<void>((res) => {
+    this.resolve = res;
+  });
 
   public buffer = "";
   public redirectedTo?: string;

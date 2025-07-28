@@ -11,13 +11,13 @@ export const resolveLocalRef = (schema: JSONSchema, ref: string): unknown => {
   }
   const schemaCache = cache.get(schema);
 
-  if (schemaCache!.has(ref)) {
-    return schemaCache!.get(ref);
+  if (schemaCache?.has(ref)) {
+    return schemaCache.get(ref);
   }
 
   const path = ref.split("/").slice(1);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   let current: any = schema;
   for (const segment of path) {
     if (!current || typeof current !== "object") {
@@ -27,6 +27,6 @@ export const resolveLocalRef = (schema: JSONSchema, ref: string): unknown => {
     current = current[segment] ?? null;
   }
 
-  schemaCache!.set(ref, current);
+  schemaCache?.set(ref, current);
   return current;
 };

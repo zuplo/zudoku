@@ -8,12 +8,14 @@ vi.mock("../config/loader.js", () => ({ getCurrentConfig: vi.fn() }));
 vi.mock("./shadcn-registry.js", () => ({ fetchShadcnRegistryItem: vi.fn() }));
 
 const callPluginLoad = async (plugin: Plugin, id: string) => {
+  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.load!;
   const loadFn = typeof hook === "function" ? hook : hook.handler;
   return loadFn.call({} as PluginContext, id);
 };
 
 const callPluginTransform = async (plugin: Plugin, src: string, id: string) => {
+  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.transform!;
   const transformFn = typeof hook === "function" ? hook : hook.handler;
   return transformFn.call({} as TransformPluginContext, src, id);

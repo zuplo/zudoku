@@ -17,7 +17,6 @@ export const createHttpSnippet = ({
     method: operation.method.toUpperCase(),
     url:
       selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postData: exampleBody,
     headers: [
       ...(exampleBody.text
@@ -63,7 +62,8 @@ export const createHttpSnippet = ({
 };
 
 export const getConverted = (snippet: HTTPSnippet, option: string) => {
-  let converted;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
+  let converted: any;
   switch (option) {
     case "shell":
       converted = snippet.convert("shell", "curl");

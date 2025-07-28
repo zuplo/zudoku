@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef } from "react";
 import { cn } from "../../util/cn.js";
 import { pastellize } from "../../util/pastellize.js";
 
@@ -86,6 +86,8 @@ export const ColorizedParam = ({
   }, [normalizedSlug]);
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: Just passing props through
+    // biome-ignore lint/a11y/useKeyWithClickEvents: Just passing props through
     <span
       {...{ [DATA_ATTR]: normalizedSlug }}
       className={cn(

@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 
 import * as Sentry from "@sentry/node";
 import colors from "picocolors";
@@ -79,7 +78,7 @@ export default function setBlocking() {
 export function textOrJson(text: string) {
   try {
     return JSON.parse(text);
-  } catch (e) {
+  } catch {
     return text;
   }
 }

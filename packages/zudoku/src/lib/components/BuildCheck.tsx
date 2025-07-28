@@ -38,6 +38,7 @@ export const BuildCheck = ({
       buildStatusQuery.data?.status === "success" &&
       buildStatusQuery.data.buildId
     ) {
+      // biome-ignore lint/suspicious/noDocumentCookie: CookieStore too new to use
       document.cookie = `zuplo-build=${buildStatusQuery.data.buildId}; path=/; max-age=300; secure; SameSite=None`;
     }
   }, [buildStatusQuery.data]);

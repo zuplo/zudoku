@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 import { execSync } from "node:child_process";
 import { rmSync } from "node:fs";
 import { join } from "node:path";
@@ -7,7 +6,7 @@ function isInGitRepository(): boolean {
   try {
     execSync("git rev-parse --is-inside-work-tree", { stdio: "ignore" });
     return true;
-  } catch (_) {}
+  } catch {}
   return false;
 }
 
@@ -15,7 +14,7 @@ function isInMercurialRepository(): boolean {
   try {
     execSync("hg --cwd . root", { stdio: "ignore" });
     return true;
-  } catch (_) {}
+  } catch {}
   return false;
 }
 
@@ -23,7 +22,7 @@ function isDefaultBranchSet(): boolean {
   try {
     execSync("git config init.defaultBranch", { stdio: "ignore" });
     return true;
-  } catch (_) {}
+  } catch {}
   return false;
 }
 
@@ -47,11 +46,11 @@ export function tryGitInit(root: string): boolean {
       stdio: "ignore",
     });
     return true;
-  } catch (e) {
+  } catch {
     if (didInit) {
       try {
         rmSync(join(root, ".git"), { recursive: true, force: true });
-      } catch (_) {}
+      } catch {}
     }
     return false;
   }

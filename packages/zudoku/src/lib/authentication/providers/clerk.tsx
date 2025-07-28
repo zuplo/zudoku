@@ -1,10 +1,10 @@
 import type { Clerk } from "@clerk/clerk-js";
 import { LogOutIcon } from "lucide-react";
-import { type ZudokuPlugin } from "zudoku/plugins";
-import { type ClerkAuthenticationConfig } from "../../../config/config.js";
-import {
-  type AuthenticationPlugin,
-  type AuthenticationProviderInitializer,
+import type { ZudokuPlugin } from "zudoku/plugins";
+import type { ClerkAuthenticationConfig } from "../../../config/config.js";
+import type {
+  AuthenticationPlugin,
+  AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";

@@ -1,6 +1,6 @@
+import { readFile } from "node:fs/promises";
 import { glob } from "glob";
 import matter from "gray-matter";
-import { readFile } from "node:fs/promises";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { reload } from "./plugin-config-reload.js";

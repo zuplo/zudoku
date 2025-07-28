@@ -12,8 +12,6 @@ lerna-debug.log*
 .env
 coverage
 
-# Eslint
-.eslintcache
 
 # compiled output
 dist

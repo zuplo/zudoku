@@ -4,7 +4,7 @@ import { joinPath } from "../../util/joinPath.js";
 import type { GraphQLClient } from "./client/GraphQLClient.js";
 import { GraphQLProvider } from "./client/GraphQLContext.js";
 import { OasConfigProvider } from "./context.js";
-import { type OasPluginConfig } from "./interfaces.js";
+import type { OasPluginConfig } from "./interfaces.js";
 import { getVersions } from "./util/getRoutes.js";
 
 export const OasProvider = ({
@@ -25,6 +25,7 @@ export const OasProvider = ({
       config.type === "file"
         ? {
             type: config.type,
+            // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
             input: version ? config.input[version]! : firstVersion!,
           }
         : { type: config.type, input: config.input };

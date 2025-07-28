@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-
 declare module "virtual:zudoku-docs-plugin" {
   export const configuredDocsPlugin:
     | import("./lib/core/plugins.ts").ZudokuPlugin

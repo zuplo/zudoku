@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+// biome-ignore-all lint/suspicious/noConsole: Console is used for logging
 import { lstatSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { blue, green } from "picocolors";

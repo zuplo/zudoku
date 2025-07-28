@@ -6,7 +6,6 @@
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "check:links": "lychee --cache --config ./docs/lychee.yaml --fallback-extensions html --root-dir $PWD/dist --include-fragments ./dist"
   },
   "dependencies": {

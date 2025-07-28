@@ -1,4 +1,4 @@
-import { type ZudokuBuildConfig } from "zudoku";
+import type { ZudokuBuildConfig } from "zudoku";
 
 const buildConfig: ZudokuBuildConfig = {
   processors: [

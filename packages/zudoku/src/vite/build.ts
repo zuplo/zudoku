@@ -124,7 +124,7 @@ export async function runBuild(options: { dir: string }) {
       }
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.error(e);
       throw e;
     }

@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
 import { PathRenderer } from "../../../../components/PathRenderer.js";
 import { ColorizedParam } from "../../ColorizedParam.js";
-import { type PlaygroundForm } from "../Playground.js";
+import type { PlaygroundForm } from "../Playground.js";
 
 export const UrlPath = ({ url }: { url: string }) => {
   const { watch, setFocus } = useFormContext<PlaygroundForm>();

@@ -1,6 +1,6 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { MenuIcon } from "lucide-react";
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import {
@@ -72,16 +72,14 @@ export const MobileTopNavigation = () => {
                     </li>
                   ) : (
                     Object.values(getProfileMenuItems()).length > 0 && (
-                      <Fragment>
-                        <li>
-                          {profile?.name ? `${profile.name}` : "My Account"}
-                          {profile?.email && (
-                            <div className="font-normal text-muted-foreground">
-                              {profile.email}
-                            </div>
-                          )}
-                        </li>
-                      </Fragment>
+                      <li>
+                        {profile?.name ? `${profile.name}` : "My Account"}
+                        {profile?.email && (
+                          <div className="font-normal text-muted-foreground">
+                            {profile.email}
+                          </div>
+                        )}
+                      </li>
                     )
                   )}
                 </ClientOnly>

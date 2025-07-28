@@ -56,7 +56,7 @@ describe("Generate OpenAPI schema module", () => {
       schema.paths["/pets"].get.responses["200"].content["application/json"]
         .schema;
     const errorSchema =
-      schema.paths["/pets"].get.responses["default"].content["application/json"]
+      schema.paths["/pets"].get.responses.default.content["application/json"]
         .schema;
 
     expect(successSchema).toStrictEqual(input.components.schemas.Pet);

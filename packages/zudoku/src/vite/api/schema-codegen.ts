@@ -1,6 +1,6 @@
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
 import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
-import { type OpenAPIDocument } from "../../lib/oas/parser/index.js";
+import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 
 const unescapeJsonPointer = (uri: string) =>
@@ -138,9 +138,8 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
     const value = lookup(schema, refPath, filePath);
 
     // This shouldn't happen but to be safe we log a warning
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`Could not find value for refPath: ${refPath}`);
       continue;
     }

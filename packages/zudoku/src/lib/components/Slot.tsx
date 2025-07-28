@@ -1,8 +1,8 @@
-import { useId, useLayoutEffect, type ReactNode } from "react";
+import { type ReactNode, useId, useLayoutEffect } from "react";
 import {
+  type SlotType,
   useRenderSlot,
   useSlotContext,
-  type SlotType,
 } from "./context/SlotProvider.js";
 
 // This is to augment the type of the Slot component with custom slot names

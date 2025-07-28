@@ -9,8 +9,7 @@ export const humanFileSize = (bytes = 0) => {
   }
 
   const exponent = Math.floor(Math.log(bytes) / Math.log(1000.0));
-  const decimal = (bytes / Math.pow(1000.0, exponent)).toFixed(
-    exponent ? 2 : 0,
-  );
+  const decimal = (bytes / 1000.0 ** exponent).toFixed(exponent ? 2 : 0);
+
   return `${decimal} ${exponent ? `${"kMGTPEZY"[exponent - 1]}B` : "B"}`;
 };

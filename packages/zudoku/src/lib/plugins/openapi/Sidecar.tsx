@@ -8,9 +8,9 @@ import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
-import { useCreateQuery } from "./client/useCreateQuery.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
+import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 import type { OperationListItemResult } from "./OperationList.js";
@@ -174,6 +174,7 @@ export const Sidecar = ({
                   language={selectedLang}
                   noBackground
                   className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
+                  // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
                   code={code!}
                 />
               </CollapsibleCode>

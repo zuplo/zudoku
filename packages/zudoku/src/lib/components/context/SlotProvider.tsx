@@ -1,17 +1,17 @@
 import {
+  type ComponentType,
   createContext,
   Fragment,
+  type PropsWithChildren,
+  type ReactNode,
   use,
   useMemo,
   useRef,
-  type ComponentType,
-  type PropsWithChildren,
-  type ReactNode,
 } from "react";
 import { createStore, useStore } from "zustand";
 import {
-  useExposedProps,
   type ExposedComponentProps,
+  useExposedProps,
 } from "../../util/useExposedProps.js";
 
 export type SlotType = ReactNode | ComponentType<ExposedComponentProps>;

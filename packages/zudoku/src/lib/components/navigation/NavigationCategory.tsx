@@ -104,7 +104,14 @@ const NavigationCategoryInner = ({
             </div>
           </NavLink>
         ) : (
-          <div onClick={() => setHasInteracted(true)} className={styles}>
+          // biome-ignore lint/a11y/noStaticElementInteractions: This is only to track if the user has interacted
+          <div
+            onClick={() => setHasInteracted(true)}
+            onKeyUp={(e) => {
+              if (e.key === "Enter" || e.key === " ") setHasInteracted(true);
+            }}
+            className={styles}
+          >
             {icon}
             <div className="flex items-center justify-between w-full">
               <div className="flex gap-2 truncate w-full">{category.label}</div>

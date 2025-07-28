@@ -1,13 +1,13 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { type PluginOption } from "vite";
+import type { PluginOption } from "vite";
 import { vitePluginSsrCss } from "./css/plugin.js";
-import viteApiKeysPlugin from "./plugin-api-keys.js";
 import viteApiPlugin from "./plugin-api.js";
+import viteApiKeysPlugin from "./plugin-api-keys.js";
 import viteAuthPlugin from "./plugin-auth.js";
 import viteAliasPlugin from "./plugin-component.js";
-import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteConfigPlugin from "./plugin-config.js";
+import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";

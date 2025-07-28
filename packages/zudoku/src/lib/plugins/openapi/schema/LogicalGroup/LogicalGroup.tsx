@@ -31,7 +31,7 @@ export const LogicalGroup = ({
 
       <Collapsible.Content className="pb-4">
         {schemas.map((subSchema, index) => (
-          // eslint-disable-next-line react/no-array-index-key
+          // biome-ignore lint/suspicious/noArrayIndexKey: Index needed for key
           <LogicalGroupItem key={index} type={type} schema={subSchema} />
         ))}
       </Collapsible.Content>

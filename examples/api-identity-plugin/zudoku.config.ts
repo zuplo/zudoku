@@ -1,4 +1,4 @@
-import { type ZudokuConfig } from "zudoku";
+import type { ZudokuConfig } from "zudoku";
 import { createApiIdentityPlugin } from "zudoku/plugins";
 
 const config: ZudokuConfig = {

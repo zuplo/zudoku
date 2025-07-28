@@ -1,6 +1,6 @@
-import { deepEqual } from "fast-equals";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { deepEqual } from "fast-equals";
 import { type Plugin, runnerImport } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { fileExists } from "../config/file-exists.js";
@@ -26,7 +26,7 @@ import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   const initialConfig = getCurrentConfig();
 
@@ -44,7 +44,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   const buildFileExists = await fileExists(buildFilePath);
 
   let buildProcessors: Processor[] = [];
-  let buildConfig: BuildConfig | undefined = undefined;
+  let buildConfig: BuildConfig | undefined;
 
   if (buildFileExists) {
     const buildModule = await runnerImport<{ default: BuildConfig }>(
@@ -81,7 +81,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       server.watcher.on("change", async (id) => {
         if (!schemaManager.trackedFiles.has(id)) return;
 
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
         await schemaManager.processSchema(id);

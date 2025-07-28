@@ -1,8 +1,7 @@
 {
-  "plugins": ["prettier-plugin-organize-imports"],
   "overrides": [
     {
-      "files": "*.md(x)?",
+      "files": ["**/*.{md,mdx,yml,yaml}"],
       "options": {
         "proseWrap": "always"
       }

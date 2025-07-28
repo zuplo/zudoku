@@ -1,4 +1,4 @@
-import { CircleDashed, LucideProps } from "lucide-react";
+import { CircleDashed, type LucideProps } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,

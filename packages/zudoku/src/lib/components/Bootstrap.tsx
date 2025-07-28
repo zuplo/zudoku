@@ -32,6 +32,7 @@ const Bootstrap = ({
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
+      {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
         <BypassProtectedRoutesContext value={false}>
           <HelmetProvider>

@@ -162,6 +162,7 @@ export class ZudokuContext {
       if (!isEventConsumerPlugin(plugin)) return;
 
       objectEntries(plugin.events).forEach(([event, handler]) => {
+        // biome-ignore lint/style/noNonNullAssertion: handler is guaranteed to be defined
         this.emitter.on(event, handler!);
       });
     });

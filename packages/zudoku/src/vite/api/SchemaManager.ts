@@ -1,11 +1,11 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import {
   $RefParser,
   type JSONSchema,
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import { merge as mergeAllOf } from "allof-merge";
-import fs from "node:fs/promises";
-import path from "node:path";
 import colors from "picocolors";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
@@ -14,7 +14,6 @@ import { ensureArray } from "../../lib/util/ensureArray.js";
 import { generateCode } from "./schema-codegen.js";
 
 type ProcessedSchema = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   schema: OpenAPIDocument;
   version: string;
   inputPath: string;
@@ -54,7 +53,7 @@ export class SchemaManager {
             },
           });
         } catch (error) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: Logging allowed here
           console.warn(
             colors.yellow(
               `Failed to merge \`allOf\` in ${file}: ` +
@@ -93,7 +92,7 @@ export class SchemaManager {
     const filePath = path.resolve(this.config.__meta.rootDir, input);
     const pathId = this.getPathForFile(filePath);
     if (!pathId) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`No path found for file ${input}`);
       return;
     }
@@ -197,10 +196,10 @@ export class SchemaManager {
   ): Promise<OpenAPIDocument> => {
     const validated = await validate(schema);
     if (validated.errors?.length) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`Schema warnings in ${filePath}:`);
       for (const error of validated.errors) {
-        // eslint-disable-next-line no-console
+        // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.warn(error);
       }
     }

@@ -1,9 +1,9 @@
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
 export const viteSearchPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-search-plugin";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "zudoku-search-plugin",

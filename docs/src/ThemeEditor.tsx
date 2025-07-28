@@ -77,7 +77,7 @@ export const ThemeEditor = () => {
         );
       });
     };
-  }, [activeColor, resolvedTheme, radius, customCss]);
+  }, [activeColor, resolvedTheme, radius]);
 
   const handleReset = () => {
     setColor(undefined);
@@ -96,7 +96,8 @@ export const ThemeEditor = () => {
           Object.entries(activeColor?.cssVars.light ?? {})
             .concat(
               typeof radius === "number"
-                ? [["radius", `${radius}rem` as any]]
+                ? // biome-ignore lint/suspicious/noExplicitAny: no need to be explicit
+                  [["radius", `${radius}rem` as any]]
                 : [],
             )
             .map(([key, value]) => [kebabToCamel(key), value.toString()]),
@@ -106,7 +107,8 @@ export const ThemeEditor = () => {
           Object.entries(activeColor?.cssVars.dark ?? {})
             .concat(
               typeof radius === "number"
-                ? [["radius", `${radius}rem` as any]]
+                ? // biome-ignore lint/suspicious/noExplicitAny: no need to be explicit
+                  [["radius", `${radius}rem` as any]]
                 : [],
             )
             .map(([key, value]) => [kebabToCamel(key), value.toString()]),

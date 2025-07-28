@@ -1,5 +1,5 @@
+import path from "node:path";
 import { glob } from "glob";
-import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 import pkgJson from "./package.json";
@@ -61,8 +61,10 @@ export default defineConfig({
         // Optional Modules (i.e. auth providers) are external as we don't
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
+        // biome-ignore lint/complexity/useLiteralKeys: Might exist or not
         ...Object.keys(pkgJson?.["optionalDependencies"] ?? {}),
         // Peer dependencies should also be external
+        // biome-ignore lint/complexity/useLiteralKeys: Might exist or not
         ...Object.keys(pkgJson?.["peerDependencies"] ?? {}),
       ],
       plugins: [visualizer()],

@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 export const groupBy = <
   T extends Record<PropertyKey, any>,
   KeySelector extends (item: T) => PropertyKey,

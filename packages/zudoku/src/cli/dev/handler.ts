@@ -47,7 +47,6 @@ export async function dev(argv: Arguments) {
             resolve();
           })
           .catch((e) => {
-            // eslint-disable-next-line no-console
             console.error("Error stopping server", e);
             resolve();
           });
@@ -57,18 +56,15 @@ export async function dev(argv: Arguments) {
     process.on("SIGTERM", exit);
     process.on("SIGINT", exit);
     process.on("uncaughtException", (e) => {
-      // eslint-disable-next-line no-console
       console.error("Uncaught exception", e);
       void exit();
     });
     process.on("unhandledRejection", (e) => {
       if (e instanceof DOMException && e.name === "AbortError") {
-        // eslint-disable-next-line no-console
         console.log(`[Abort] ${e.message}`);
         return;
       }
 
-      // eslint-disable-next-line no-console
       console.error("Unhandled rejection", e);
       void exit();
     });

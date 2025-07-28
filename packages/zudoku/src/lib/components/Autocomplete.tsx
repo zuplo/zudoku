@@ -1,6 +1,6 @@
 import { PopoverAnchor } from "@radix-ui/react-popover";
 import { useCommandState } from "cmdk";
-import { useRef, useState, type KeyboardEvent, type Ref } from "react";
+import { type KeyboardEvent, type Ref, useRef, useState } from "react";
 import {
   Command,
   CommandInlineInput,
