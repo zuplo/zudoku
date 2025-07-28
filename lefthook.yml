@@ -3,9 +3,11 @@
 pre-commit:
   parallel: true
   commands:
-    check:
-      glob: "**/*.{ts,tsx,json,md,yml,js,jsx,css,html,mdx}"
-      run: |
-        npx biome check --write {staged_files}
-        git add {staged_files}
+    biome:
+      glob: "**/*.{ts,tsx,json,js,jsx,css,html}"
+      run: pnpm biome check --write {staged_files}
+      stage_fixed: true
+    prettier:
+      glob: "**/*.{md,mdx,yml,yaml}"
+      run: pnpm prettier --write {staged_files}
       stage_fixed: true

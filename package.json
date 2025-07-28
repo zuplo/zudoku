@@ -4,14 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "nx run-many -t=build -p zudoku config",
-    "lint": "biome check --write",
-    "lint:ci": "biome check",
-    "lint:md": "node ./scripts/check-admonitions.mjs",
-    "format": "biome check --write && pnpm format:md",
-    "format:ci": "biome check && pnpm format:md:ci",
-    "format:md": "prettier --write '**/*.{md,mdx}'",
-    "format:md:ci": "prettier --check '**/*.{md,mdx}'",
+    "build": "nx run-many -t=build",
+    "fix": "biome check --write && prettier --write '**/*.{md,mdx,yml,yaml}'",
+    "check": "biome ci && prettier --check '**/*.{md,mdx,yml,yaml}' && pnpm check:other",
+    "check:other": "node ./scripts/check-admonitions.mjs",
     "prepare": "lefthook install",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
@@ -26,10 +22,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
-    "@nx/vite": "21.2.4",
-    "@nx/web": "21.2.4",
+    "@nx/vite": "21.3.7",
+    "@nx/web": "21.3.7",
     "lefthook": "^1.12.2",
-    "nx": "21.2.4",
+    "nx": "21.3.7",
     "prettier": "3.6.2",
     "typescript": "5.8.3"
   },
@@ -57,11 +53,9 @@
   },
   "nx": {
     "includedScripts": [
-      "lint",
-      "lint:ci",
-      "lint:md",
-      "format",
-      "format:ci"
+      "fix",
+      "check",
+      "check:docs"
     ]
   },
   "packageManager": "pnpm@10.13.1"
