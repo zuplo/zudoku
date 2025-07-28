@@ -3,7 +3,7 @@
     {
       "files": ["**/*.{md,mdx,yml,yaml}"],
       "options": {
-        "proseWrap": "always"
+        "proseWrap": "preserve"
       }
     }
   ]

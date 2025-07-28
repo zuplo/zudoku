@@ -10,5 +10,6 @@
 !**/*.yml
 !**/*.yaml
 
+pnpm-lock.yaml
 node_modules/
 dist/
