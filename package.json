@@ -55,7 +55,7 @@
     "includedScripts": [
       "fix",
       "check",
-      "check:docs"
+      "check:other"
     ]
   },
   "packageManager": "pnpm@10.13.1"
