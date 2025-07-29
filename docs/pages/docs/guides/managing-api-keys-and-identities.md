@@ -9,7 +9,9 @@ sidebar_icon: key-square
 Zudoku comes with a Plugin to manage API keys in the UI. This plugin is build around the concept of API consumers, where each consumer can have multiple API keys. It includes functionality for creating, viewing, updating, and deleting API keys, as well as managing consumer information.
 
 :::note
+
 The most convenient way to use this plugin is to use it in Zuplo. However the plugin can be used with any other API key management system - you can use a 3rd party API key management system or build your own and still use the Zudoku UI.
+
 :::
 
 ## Using in Zuplo
