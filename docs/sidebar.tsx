@@ -49,6 +49,12 @@ export const docs: Navigation = [
   },
   {
     type: "category",
+    label: "Concepts",
+    icon: "shapes",
+    items: ["docs/concepts/auth-provider-api-identities"],
+  },
+  {
+    type: "category",
     label: "OpenAPI",
     icon: "globe",
     items: [
