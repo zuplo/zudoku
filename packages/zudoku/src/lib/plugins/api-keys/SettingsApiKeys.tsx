@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
+import type { ApiKeyService } from "../../../config/validators/validate.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
@@ -36,7 +37,7 @@ import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import { CreateApiKey } from "./CreateApiKey.js";
-import type { ApiConsumer, ApiKey, ApiKeyService } from "./index.js";
+import type { ApiConsumer, ApiKey } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
   const context = useZudoku();
