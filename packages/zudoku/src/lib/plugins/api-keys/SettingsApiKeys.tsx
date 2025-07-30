@@ -455,7 +455,7 @@ const RevealApiKey = ({
       <div className="flex flex-col gap-1">
         <div className="flex gap-2 items-center text-sm border rounded-md w-full max-w-fit px-1">
           <Secret
-            className="w-fit w-full"
+            className="max-w-fit w-full"
             secret={key}
             status={isExpired ? "expired" : expiresSoon ? "expiring" : "active"}
           />
