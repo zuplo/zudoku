@@ -10,7 +10,7 @@ import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
-import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
+import type { ApiConsumer } from "../../lib/plugins/api-keys/index.js";
 import type { TransformExamplesFn } from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
@@ -89,30 +89,38 @@ const ApiSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+export type ApiKeyService = z.infer<typeof ApiKeysSchema>;
+
 const ApiKeysSchema = z.object({
-  enabled: z.boolean(),
-  getKeys: z
-    .custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
-      (val) => typeof val === "function",
-    )
-    .optional(),
+  getConsumers: z.custom<(context: ZudokuContext) => Promise<ApiConsumer[]>>(
+    (val) => typeof val === "function",
+  ),
   rollKey: z
-    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
+    .custom<(consumerId: string, context: ZudokuContext) => Promise<void>>(
       (val) => typeof val === "function",
     )
     .optional(),
   deleteKey: z
-    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
-      (val) => typeof val === "function",
-    )
-    .optional(),
-  updateKeyDescription: z
     .custom<
       (
-        apiKey: { id: string; description: string },
+        consumerId: string,
+        keyId: string,
         context: ZudokuContext,
       ) => Promise<void>
     >((val) => typeof val === "function")
+    .optional(),
+  updateConsumer: z
+    .custom<
+      (
+        consumer: { id: string; label?: string },
+        context: ZudokuContext,
+      ) => Promise<void>
+    >((val) => typeof val === "function")
+    .optional(),
+  getUsage: z
+    .custom<(apiKeys: string[], context: ZudokuContext) => Promise<void>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   createKey: z
     .custom<
