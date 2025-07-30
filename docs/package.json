@@ -9,7 +9,7 @@
     "check:links": "lychee --cache --config ./docs/lychee.yaml --fallback-extensions html --root-dir $PWD/dist --include-fragments ./dist"
   },
   "dependencies": {
-    "motion": "12.23.9",
+    "motion": "12.23.12",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
