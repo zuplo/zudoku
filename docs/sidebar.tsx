@@ -130,6 +130,7 @@ export const components: Navigation = [
       "docs/components/typography",
       "docs/components/callout",
       "docs/components/icons",
+      "docs/components/secret",
       "docs/components/slot",
       "docs/components/stepper",
       "docs/components/syntax-highlight",
