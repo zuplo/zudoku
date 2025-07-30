@@ -21,17 +21,6 @@ export const isComplexType = (value?: SchemaObject) =>
       typeof value.items === "object" &&
       (!value.items.type || value.items.type === "object")));
 
-export const hasLogicalGroupings = (value: SchemaObject) =>
-  Boolean(value.oneOf ?? value.allOf ?? value.anyOf);
-
-export const LogicalSchemaTypeMap = {
-  allOf: "AND",
-  anyOf: "OR",
-  oneOf: "ONE",
-} as const;
-
-export type LogicalGroupType = "AND" | "OR" | "ONE";
-
 export const isCircularRef = (schema: unknown): schema is string =>
   typeof schema === "string" && schema.startsWith(CIRCULAR_REF);
 
