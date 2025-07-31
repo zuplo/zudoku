@@ -8,6 +8,11 @@ import { install } from "../helpers/install";
 
 import type { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
+// When bundled by ncc, __dirname points to dist/, but templates are at dist/templates/
+const TEMPLATES_DIR = __dirname.endsWith("dist")
+  ? path.join(__dirname, "templates")
+  : __dirname;
+
 /**
  * Get the file path for a given file in a template, e.g. "next.config.js".
  */
@@ -16,7 +21,7 @@ export const getTemplateFile = ({
   mode,
   file,
 }: GetTemplateFileArgs): string => {
-  return path.join(__dirname, template, mode, file);
+  return path.join(TEMPLATES_DIR, template, mode, file);
 };
 
 /**
@@ -39,7 +44,7 @@ export const installTemplate = async ({
    * Copy the template files to the target directory.
    */
   console.log("\nInitializing project with template:", template, "\n");
-  const templatePath = path.join(__dirname, template, mode);
+  const templatePath = path.join(TEMPLATES_DIR, template, mode);
   const copySource = ["**"];
   if (!eslint) copySource.push("!eslintrc.json");
 
