@@ -85,9 +85,8 @@ const viteMdxPlugin = (): Plugin => {
         config.__meta.mode === "internal" || config.__meta.mode === "standalone"
           ? "@mdx-js/react"
           : "zudoku/components",
-      // Treat .md files as MDX
-      mdxExtensions: [".md", ".mdx"],
-      format: "mdx",
+      mdxExtensions: [".mdx"],
+      format: "detect",
       remarkPlugins: [
         remarkStaticGeneration,
         [remarkInjectFilepath, config.__meta.rootDir],
