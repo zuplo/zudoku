@@ -125,15 +125,15 @@ export const components: Navigation = [
   {
     icon: "component",
     type: "category",
-    label: "Components",
+    label: "General",
     items: [
       "docs/components/alert",
+      "docs/components/callout",
       "docs/components/badge",
       "docs/components/card",
-      "docs/components/typography",
-      "docs/components/callout",
       "docs/components/icons",
       "docs/components/markdown",
+      "docs/components/typography",
     ],
   },
   {
