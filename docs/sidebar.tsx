@@ -127,14 +127,45 @@ export const components: Navigation = [
     type: "category",
     label: "Components",
     items: [
+      "docs/components/alert",
+      "docs/components/badge",
+      "docs/components/card",
       "docs/components/typography",
       "docs/components/callout",
       "docs/components/icons",
-      "docs/components/slot",
+      "docs/components/markdown",
+    ],
+  },
+  {
+    icon: "component",
+    type: "category",
+    label: "Documentation",
+    items: [
+      "docs/components/playground",
       "docs/components/stepper",
       "docs/components/syntax-highlight",
-      "docs/components/playground",
-      "docs/components/shadcn",
+    ],
+  },
+  {
+    icon: "component",
+    type: "category",
+    label: "Form",
+    items: [
+      "docs/components/button",
+      "docs/components/checkbox",
+      "docs/components/slider",
+      "docs/components/switch",
+      "docs/components/label",
+    ],
+  },
+  {
+    icon: "component",
+    type: "category",
+    label: "Utility",
+    items: [
+      "docs/components/client-only",
+      "docs/components/head",
+      "docs/components/slot",
     ],
   },
 ];
