@@ -2,12 +2,15 @@
 
 ## Build/Lint/Test Commands
 
-- **Build**: `nx run-many -t=build -p zudoku config` or `pnpm build`
-- **Lint**: `pnpm lint` (fix) or `pnpm lint:ci` (check only)
-- **Format**: `pnpm format` (fix) or `pnpm format:ci` (check)
+- **Check**: To check for all linting/formatting issues, run `pnpm check`
+  - For Markdown and YAML files, run `pnpm prettier --check '**/*.{md,mdx,yml,yaml}'` to check for
+    formatting errors
+  - For all other files, run `pnpm biome ci` to check for linting errors
+- **Fix**: To fix all linting/formatting issues, run `pnpm fix`
+  - For Markdown and YAML files, run `pnpm prettier --write '**/*.{md,mdx,yml,yaml}'` to fix
+    formatting errors
+  - For all other files, run `pnpm biome check --write {files}` to fix linting errors
 - **Test**: `vitest run --typecheck` or for single test: `vitest run path/to/test.spec.ts`
-- **Dev**: Run `nx run cosmo-cargo:dev` anywhere in the monorepo or from examples directory
-  directly: `pnpm dev`
 
 ## Architecture
 
