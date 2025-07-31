@@ -142,6 +142,7 @@ export const components: Navigation = [
     label: "Documentation",
     items: [
       "docs/components/playground",
+      "docs/components/secret",
       "docs/components/stepper",
       "docs/components/syntax-highlight",
     ],

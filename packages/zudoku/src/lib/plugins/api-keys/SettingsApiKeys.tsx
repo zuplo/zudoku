@@ -29,6 +29,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
+import { Secret } from "zudoku/ui/Secret.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
@@ -453,28 +454,11 @@ const RevealApiKey = ({
     <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
       <div className="flex flex-col gap-1">
         <div className="flex gap-2 items-center text-sm border rounded-md w-full max-w-fit px-1">
-          <div className="font-mono w-full h-9 items-center flex px-2 text-xs gap-2">
-            <div
-              className={cn(
-                "rounded-full w-2 h-2 bg-emerald-400 mr-2",
-                (expiresSoon || isExpired) && "bg-neutral-200",
-              )}
-            ></div>
-            <span className="w-full truncate">
-              <div
-                className={cn(
-                  "w-40 inline-block md:w-full truncate",
-                  revealed ? "" : "opacity-20",
-                )}
-              >
-                {revealed
-                  ? key.slice(0, -5)
-                  : "**** ".repeat(key.slice(0, -5).length / 5) +
-                    "*".repeat(key.slice(0, -5).length % 5)}
-              </div>
-              <span>{key.slice(-5)}</span>
-            </span>
-          </div>
+          <Secret
+            className="max-w-fit w-full"
+            secret={key}
+            status={isExpired ? "expired" : expiresSoon ? "expiring" : "active"}
+          />
           <Button
             variant="ghost"
             onClick={() => setRevealed((prev) => !prev)}
