@@ -21,7 +21,7 @@
   ],
   "scripts": {
     "dev": "ncc build ./index.ts -w -o dist/",
-    "build": "rm -rf ./dist && ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register"
+    "build": "rm -rf ./dist && ncc build ./index.ts -o ./dist/ --minify --no-cache --no-source-map-register && cp -r templates ./dist/"
   },
   "devDependencies": {
     "@types/async-retry": "1.4.2",

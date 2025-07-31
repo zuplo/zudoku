@@ -64,6 +64,6 @@ jobs:
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.branch_safe }}.${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
-        run: pnpm publish --provenance --filter zudoku --no-git-checks --tag dev
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag dev
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
