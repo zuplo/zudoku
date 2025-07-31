@@ -3,7 +3,16 @@
   "$schema": "../../node_modules/nx/schemas/nx-schema.json",
   "targets": {
     "build": {
-      "inputs": ["{projectRoot}/**/*.ts", "{projectRoot}/templates/**"],
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm run build",
+        "cwd": "{projectRoot}"
+      },
+      "inputs": [
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/templates/**",
+        "{projectRoot}/package.json"
+      ],
       "outputs": ["{projectRoot}/dist"],
       "cache": true
     },
