@@ -1,12 +1,17 @@
 ---
 title: Configuration File
 sidebar_icon: file-json-2
-description: Learn how to configure your Zudoku documentation site using the configuration file. Covers file formats, options, examples, and best practices.
+description:
+  Learn how to configure your Zudoku documentation site using the configuration file. Covers file
+  formats, options, examples, and best practices.
 ---
 
-Zudoku uses a single file for configuration. It controls the structure, metadata, style, plugins, and routing for your documentation.
+Zudoku uses a single file for configuration. It controls the structure, metadata, style, plugins,
+and routing for your documentation.
 
-You can find the file in the root directory of your project. It will start with `zudoku.config`. The file can be in either JavaScript or TypeScript format and use a `.js`, `.mjs`, `.jsx`, `.ts`, or `.tsx` file extension:
+You can find the file in the root directory of your project. It will start with `zudoku.config`. The
+file can be in either JavaScript or TypeScript format and use a `.js`, `.mjs`, `.jsx`, `.ts`, or
+`.tsx` file extension:
 
 - `zudoku.config.ts`
 - `zudoku.config.tsx`
@@ -14,17 +19,20 @@ You can find the file in the root directory of your project. It will start with 
 - `zudoku.config.jsx`
 - `zudoku.config.mjs`
 
-When you create a project, a default configuration file is generated for you. This file is a good starting point and can be customized to suit your needs.
+When you create a project, a default configuration file is generated for you. This file is a good
+starting point and can be customized to suit your needs.
 
 :::note{title="Security Consideration"}
 
-The Zudoku configuration file runs on both client and server at runtime. Avoid including secrets directly in your config as they may be exposed to the client.
+The Zudoku configuration file runs on both client and server at runtime. Avoid including secrets
+directly in your config as they may be exposed to the client.
 
 :::
 
 ## Example
 
-Below is an example of the default Zudoku configuration. You can edit this configuration to suit your own needs.
+Below is an example of the default Zudoku configuration. You can edit this configuration to suit
+your own needs.
 
 ```typescript
 import type { ZudokuConfig } from "zudoku";
@@ -56,7 +64,9 @@ export default config;
 
 ### `apis`
 
-There are multiple options for referencing your OpenAPI document. The example below uses a URL to an OpenAPI document, but you can also use a local file path. For full details on the options available, see the [API Reference](./api-reference.md).
+There are multiple options for referencing your OpenAPI document. The example below uses a URL to an
+OpenAPI document, but you can also use a local file path. For full details on the options available,
+see the [API Reference](./api-reference.md).
 
 ```json
 {
@@ -95,7 +105,8 @@ Controls global page attributes across the site, including logos and the site ti
 
 ### `navigation`
 
-Defines navigation for both the top bar and the sidebar. Items can be categories, links or custom pages.
+Defines navigation for both the top bar and the sidebar. Items can be categories, links or custom
+pages.
 
 ```json
 {
@@ -110,11 +121,16 @@ Defines navigation for both the top bar and the sidebar. Items can be categories
 
 ### `theme`
 
-Allows you to control the dark and light themes that persist across each MDX page, and the API reference.
+Allows you to control the dark and light themes that persist across each MDX page, and the API
+reference.
 
-You can customize your theme as much as you want using [ShadCDN UI theme variables](https://ui.shadcn.com/docs/theming#list-of-variables). In the example below only the `primary` and `primaryForeground` variables are used but you can add any additional variables from ShadCDN UI that you would like to change.
+You can customize your theme as much as you want using
+[ShadCDN UI theme variables](https://ui.shadcn.com/docs/theming#list-of-variables). In the example
+below only the `primary` and `primaryForeground` variables are used but you can add any additional
+variables from ShadCDN UI that you would like to change.
 
-**Tip**: Use the [ShadCDN UI Theme Generator](https://gradient.page/tools/shadcn-ui-theme-generator) to create a great looking theme based off your primary color.
+**Tip**: Use the [ShadCDN UI Theme Generator](https://gradient.page/tools/shadcn-ui-theme-generator)
+to create a great looking theme based off your primary color.
 
 **Example:**
 
@@ -137,7 +153,8 @@ You can customize your theme as much as you want using [ShadCDN UI theme variabl
 
 ### `metadata`
 
-Controls the site metadata for your documentation. All possible options are outlined in the example below.
+Controls the site metadata for your documentation. All possible options are outlined in the example
+below.
 
 **Example:**
 
@@ -163,7 +180,9 @@ Controls the site metadata for your documentation. All possible options are outl
 
 ### `docs`
 
-Configures where your non API reference documentation can be found in your folder structure. The default is shown in the example below and you don't need to change it unless you want a different structure in place, or to have it match an existing structure that you already have.
+Configures where your non API reference documentation can be found in your folder structure. The
+default is shown in the example below and you don't need to change it unless you want a different
+structure in place, or to have it match an existing structure that you already have.
 
 **Example:**
 
@@ -211,7 +230,8 @@ Controls the sitemap for your documentation. All possible options are outlined i
 
 ### `redirects`
 
-Implements any page redirects you want to use. This gives you control over the resource names in the URL.
+Implements any page redirects you want to use. This gives you control over the resource names in the
+URL.
 
 **Example:**
 
@@ -228,7 +248,8 @@ Implements any page redirects you want to use. This gives you control over the r
 
 ### `port`
 
-The port on which the development server will run. Defaults to `3000`. This option can also be passed to the CLI as `--port' (which takes precedence).
+The port on which the development server will run. Defaults to `3000`. This option can also be
+passed to the CLI as `--port' (which takes precedence).
 
 ```json
 {
@@ -240,7 +261,8 @@ If the port is already in use, the next available port will be used.
 
 ### `basePath`
 
-Sets the base path for your documentation site. This is useful when you want to host your documentation under a specific path.
+Sets the base path for your documentation site. This is useful when you want to host your
+documentation under a specific path.
 
 ```ts
 {
@@ -251,7 +273,9 @@ Sets the base path for your documentation site. This is useful when you want to 
 
 ### `canonicalUrlOrigin`
 
-Sets the canonical [origin URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) for your documentation site. This is used for SEO purposes and helps search engines understand the preferred version of a page.
+Sets the canonical [origin URL](https://developer.mozilla.org/en-US/docs/Web/API/URL/origin) for
+your documentation site. This is used for SEO purposes and helps search engines understand the
+preferred version of a page.
 
 ```ts
 {
@@ -270,7 +294,8 @@ This is the resulting HTML that will be added to the `<head>` of your pages:
 
 ### `cdnUrl`
 
-Configures the CDN URL for your documentation site's assets. You can provide either a string for a single CDN URL or an object to specify different URLs for base and media assets.
+Configures the CDN URL for your documentation site's assets. You can provide either a string for a
+single CDN URL or an object to specify different URLs for base and media assets.
 
 ```ts
 // Single CDN URL
@@ -303,7 +328,9 @@ Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is opti
 
 ### `enableStatusPages`
 
-Enables static generation of status pages for your site. This results in several files (404.html, 500.html, etc.) being generated in the `dist` directory. This is useful as many hosting providers will serve these files automatically when a user visits a non-existent page or encounters an error.
+Enables static generation of status pages for your site. This results in several files (404.html,
+500.html, etc.) being generated in the `dist` directory. This is useful as many hosting providers
+will serve these files automatically when a user visits a non-existent page or encounters an error.
 
 This option is enabled by default, but you can disable it if you don't need these pages.
 
@@ -315,9 +342,12 @@ This option is enabled by default, but you can disable it if you don't need thes
 
 ## Multiple Files
 
-The configuration file is a standard JavaScript or TypeScript file, so you can split it into multiple files if you prefer. This can be useful if you have a large configuration or want to keep your code organized.
+The configuration file is a standard JavaScript or TypeScript file, so you can split it into
+multiple files if you prefer. This can be useful if you have a large configuration or want to keep
+your code organized.
 
-For example, if you wanted to move your navigation configuration to a separate file, you could create a new file called `navigation.ts` and export the navigation configuration from there.
+For example, if you wanted to move your navigation configuration to a separate file, you could
+create a new file called `navigation.ts` and export the navigation configuration from there.
 
 ```ts
 // navigation.ts

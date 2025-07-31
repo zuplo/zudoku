@@ -1,14 +1,18 @@
 ---
 title: Code Blocks
 sidebar_icon: braces
-description: Learn how to use code blocks, syntax highlighting, and advanced features like line highlighting and ANSI output in Zudoku Markdown with Shiki.
+description:
+  Learn how to use code blocks, syntax highlighting, and advanced features like line highlighting
+  and ANSI output in Zudoku Markdown with Shiki.
 ---
 
-Zudoku supports code blocks in Markdown using the [Shiki](https://shiki.style/) syntax highlighting library.
+Zudoku supports code blocks in Markdown using the [Shiki](https://shiki.style/) syntax highlighting
+library.
 
 ## Syntax Highlighting
 
-Code blocks are text blocks wrapped around by strings of 3 backticks. You may check out this reference for the specifications of MDX.
+Code blocks are text blocks wrapped around by strings of 3 backticks. You may check out this
+reference for the specifications of MDX.
 
 ````md
 ```js
@@ -24,7 +28,8 @@ console.log("Every repo must come with a mascot.");
 
 :::note
 
-You can also use the [`SyntaxHighlight` component](../components/syntax-highlight) to render code blocks in TypeScript directly.
+You can also use the [`SyntaxHighlight` component](../components/syntax-highlight) to render code
+blocks in TypeScript directly.
 
 :::
 
@@ -48,7 +53,8 @@ or with the [tailing curly colon syntax](https://shiki.matsu.io/packages/rehype#
 
 Result: `console.log("Hello World"){:js}`
 
-For more details, see the [Shiki Rehype documentation](https://shiki.style/packages/rehype#inline-code).
+For more details, see the
+[Shiki Rehype documentation](https://shiki.style/packages/rehype#inline-code).
 
 You can add a title to code blocks by adding a title attribute after the backticks:
 
@@ -64,7 +70,8 @@ Result:
 console.log("Hello, World!");
 ```
 
-For a complete list of supported languages and their aliases, see the [Shiki Languages documentation](https://shiki.style/languages#bundled-languages).
+For a complete list of supported languages and their aliases, see the
+[Shiki Languages documentation](https://shiki.style/languages#bundled-languages).
 
 ## Advanced Syntax Highlighting
 
@@ -131,7 +138,8 @@ const config: ZudokuConfig = {
 };
 ```
 
-For a complete list of available themes and languages, see the list of [Shiki themes](https://shiki.style/themes) and [Shiki languages](https://shiki.style/languages).
+For a complete list of available themes and languages, see the list of
+[Shiki themes](https://shiki.style/themes) and [Shiki languages](https://shiki.style/languages).
 
 ## Default Supported Languages
 
@@ -156,7 +164,8 @@ By default, Zudoku supports the following languages for syntax highlighting:
 
 ## ANSI Code Blocks
 
-You can use the `ansi` language to highlight terminal outputs with ANSI escape sequences. This is useful for displaying colored terminal output, styled text, and other terminal-specific formatting.
+You can use the `ansi` language to highlight terminal outputs with ANSI escape sequences. This is
+useful for displaying colored terminal output, styled text, and other terminal-specific formatting.
 
 ```ansi title="Terminal Output"
 [0;32mcolored foreground[0m
@@ -182,4 +191,5 @@ Usage:
 ```
 ````
 
-For more details on ANSI highlighting, see the [Shiki documentation](https://shiki.style/languages#ansi).
+For more details on ANSI highlighting, see the
+[Shiki documentation](https://shiki.style/languages#ansi).

@@ -3,7 +3,8 @@ title: Transforming Operation Examples
 sidebar_icon: git-compare-arrows
 ---
 
-Zudoku allows you to transform operation examples in both request and response sections of your API documentation. This feature is particularly useful when you need to:
+Zudoku allows you to transform operation examples in both request and response sections of your API
+documentation. This feature is particularly useful when you need to:
 
 - Modify example data before displaying it
 - Add dynamic values to examples
@@ -12,7 +13,8 @@ Zudoku allows you to transform operation examples in both request and response s
 
 ## Configuration
 
-To use this feature, you need to configure the `transformExamples` function in your `zudoku.config.tsx` file. Here's how to do it:
+To use this feature, you need to configure the `transformExamples` function in your
+`zudoku.config.tsx` file. Here's how to do it:
 
 ```tsx
 import type { ZudokuConfig } from "zudoku";

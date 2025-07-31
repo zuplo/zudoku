@@ -2,23 +2,21 @@
 title: Navigation
 sidebar_icon: compass
 description:
-  Learn how to configure the navigation in Zudoku, including links, categories,
-  documents, and custom pages. Understand the structure of the navigation array
-  and how to use icons, labels, and paths.
+  Learn how to configure the navigation in Zudoku, including links, categories, documents, and
+  custom pages. Understand the structure of the navigation array and how to use icons, labels, and
+  paths.
 ---
 
 import { Book, Code, FileText } from "zudoku/icons";
 
-Zudoku uses a single `navigation` array to control both the top navigation tabs
-and the sidebar. Items at the root of this array appear as tabs, and nested
-items build the sidebar tree. Navigation entries can be links, document
-references, categories or custom pages.
+Zudoku uses a single `navigation` array to control both the top navigation tabs and the sidebar.
+Items at the root of this array appear as tabs, and nested items build the sidebar tree. Navigation
+entries can be links, document references, categories or custom pages.
 
 ## Basic configuration
 
-The navigation is defined using the `navigation` array in the Zudoku config
-file. Each item can be one of several types. At the simplest level you may only
-have links and categories.
+The navigation is defined using the `navigation` array in the Zudoku config file. Each item can be
+one of several types. At the simplest level you may only have links and categories.
 
 ```json
 {
@@ -60,8 +58,7 @@ have links and categories.
 
 ## Navigation Items
 
-Navigation items can be of these types: `category`, `doc`, `link`, or
-`custom-page`.
+Navigation items can be of these types: `category`, `doc`, `link`, or `custom-page`.
 
 - `link`: A direct link to a page or external URL.
 - `category`: A group of links that can be expanded or collapsed.
@@ -71,8 +68,8 @@ Navigation items can be of these types: `category`, `doc`, `link`, or
 
 ### `type: link`
 
-`link` is the most basic item, it directly links to a path or URL. Use this for
-external resources or standalone pages.
+`link` is the most basic item, it directly links to a path or URL. Use this for external resources
+or standalone pages.
 
 ```json
 {
@@ -102,9 +99,8 @@ type NavigationLink = {
 
 ### `type: category`
 
-The `category` type groups related items under a collapsible section. The
-`label` is the displayed text, and the `items` array contains `id`s of
-documents, links, or other categories.
+The `category` type groups related items under a collapsible section. The `label` is the displayed
+text, and the `items` array contains `id`s of documents, links, or other categories.
 
 ```json
 {
@@ -129,9 +125,7 @@ documents, links, or other categories.
 type NavigationCategory = {
   type: "category";
   icon?: string; // Lucide icon name
-  items: Array<
-    NavigationDoc | NavigationLink | NavigationCategory | NavigationCustomPage
-  >;
+  items: Array<NavigationDoc | NavigationLink | NavigationCategory | NavigationCustomPage>;
   label: string;
   collapsible?: boolean;
   collapsed?: boolean;
@@ -144,8 +138,8 @@ type NavigationCategory = {
 
 ### `type: doc`
 
-Doc is used to reference markdown files. The `label` is the text that will be
-displayed, and the `file` is the file path associated with a markdown file.
+Doc is used to reference markdown files. The `label` is the text that will be displayed, and the
+`file` is the file path associated with a markdown file.
 
 ```json
 {
@@ -167,15 +161,7 @@ type NavigationDoc = {
   label?: string;
   badge?: {
     label: string;
-    color:
-      | "green"
-      | "blue"
-      | "yellow"
-      | "red"
-      | "purple"
-      | "indigo"
-      | "gray"
-      | "outline";
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
   display?: "auth" | "anon" | "always" | "hide";
 };
@@ -185,8 +171,8 @@ type NavigationDoc = {
 
 #### Using shorthands
 
-Documents can be referenced as strings (using their file path), which is
-equivalent to `{ "type": "doc", "file": "path" }`:
+Documents can be referenced as strings (using their file path), which is equivalent to
+`{ "type": "doc", "file": "path" }`:
 
 ```json
 {
@@ -211,22 +197,20 @@ equivalent to `{ "type": "doc", "file": "path" }`:
 }
 ```
 
-This is much more concise when you don't need custom labels, icons, or other
-properties for individual documents.
+This is much more concise when you don't need custom labels, icons, or other properties for
+individual documents.
 
 Learn more in the [Markdown documentation](/docs/markdown/overview)
 
 #### Custom paths
 
-The `path` property allows you to customize the URL path for a document. By
-default, Zudoku uses the file path to generate the URL, but you can override
-this behavior by specifying a custom path.
+The `path` property allows you to customize the URL path for a document. By default, Zudoku uses the
+file path to generate the URL, but you can override this behavior by specifying a custom path.
 
 ### `type: custom-page`
 
-Custom pages allow you to create standalone pages that are not tied to a
-Markdown document. This is useful for creating landing pages, dashboards, or any
-other custom content.
+Custom pages allow you to create standalone pages that are not tied to a Markdown document. This is
+useful for creating landing pages, dashboards, or any other custom content.
 
 ```tsx
 {
@@ -249,15 +233,7 @@ type NavigationCustomPage = {
   icon?: string; // Lucide icon name
   badge?: {
     label: string;
-    color:
-      | "green"
-      | "blue"
-      | "yellow"
-      | "red"
-      | "purple"
-      | "indigo"
-      | "gray"
-      | "outline";
+    color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
     invert?: boolean;
   };
   display?: "auth" | "anon" | "always" | "hide";
@@ -268,8 +244,7 @@ type NavigationCustomPage = {
 
 ## Display Control
 
-All navigation items support a `display` property that controls when the item
-should be visible:
+All navigation items support a `display` property that controls when the item should be visible:
 
 - `"always"` (default): Always visible
 - `"auth"`: Only visible when user is authenticated
@@ -287,8 +262,8 @@ should be visible:
 
 ## Badges
 
-Navigation items can display badges with labels and colors. Badges support an
-optional `invert` property for styling:
+Navigation items can display badges with labels and colors. Badges support an optional `invert`
+property for styling:
 
 ```json
 {
@@ -303,11 +278,10 @@ optional `invert` property for styling:
 
 ## Icons
 
-Icons can be added to categories and documents by specifying an `icon` property.
-The value should be the name of a [Lucide icon](https://lucide.dev/icons) (e.g.,
-`book` <Book size={16} style={{ display: 'inline' }} />, `code` <Code size={16}
-style={{ display: 'inline' }} />, `file-text` <FileText size={16}
-style={{ display: 'inline' }} />).
+Icons can be added to categories and documents by specifying an `icon` property. The value should be
+the name of a [Lucide icon](https://lucide.dev/icons) (e.g., `book` <Book size={16}
+style={{ display: 'inline' }} />, `code` <Code size={16} style={{ display: 'inline' }} />,
+`file-text` <FileText size={16} style={{ display: 'inline' }} />).
 
 ```json
 {
@@ -328,12 +302,12 @@ sidebar_icon: book
 
 ## Title & Labels
 
-All navigation items can have a `label` property that determines the displayed
-text. For `doc` items, the `label` is optional; if omitted, Zudoku uses the
-document's `title` from its front matter or the first `#` header.
+All navigation items can have a `label` property that determines the displayed text. For `doc`
+items, the `label` is optional; if omitted, Zudoku uses the document's `title` from its front matter
+or the first `#` header.
 
-To override the navigation label without changing the document's `title`, use
-the `sidebar_label` property in the front matter:
+To override the navigation label without changing the document's `title`, use the `sidebar_label`
+property in the front matter:
 
 ```md
 ---
@@ -342,5 +316,5 @@ sidebar_label: Short Title
 ---
 ```
 
-In this example, the document's title remains "My Long Title," but the sidebar
-displays "Short Title."
+In this example, the document's title remains "My Long Title," but the sidebar displays "Short
+Title."
