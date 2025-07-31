@@ -1,6 +1,14 @@
 import { Badge } from "./Badge.js";
 import { Card } from "./Card.js";
 
+type PropType =
+  | string
+  | {
+      name: string;
+      description: string;
+      required: boolean;
+    };
+
 type ReactComponentDocProps = {
   component: {
     __docgenInfo: {
@@ -9,7 +17,7 @@ type ReactComponentDocProps = {
       props: Record<
         string,
         {
-          type: string | { name: string };
+          type: PropType;
           description: string;
           required: boolean;
         }
