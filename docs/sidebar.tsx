@@ -123,7 +123,7 @@ export const docs: Navigation = [
 ];
 export const components: Navigation = [
   {
-    icon: "component",
+    icon: "album",
     type: "category",
     label: "General",
     items: [
@@ -148,7 +148,7 @@ export const components: Navigation = [
     ],
   },
   {
-    icon: "component",
+    icon: "text-cursor-input",
     type: "category",
     label: "Form",
     items: [
@@ -160,7 +160,7 @@ export const components: Navigation = [
     ],
   },
   {
-    icon: "component",
+    icon: "hard-hat",
     type: "category",
     label: "Utility",
     items: [

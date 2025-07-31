@@ -5,8 +5,28 @@ sidebar_icon: sliders-horizontal
 
 import { Slider } from "zudoku/ui/Slider";
 import { Label } from "zudoku/ui/Label";
+import { useState } from "react";
+
+export const SliderWithValue = () => {
+  const [value, setValue] = useState([75]);
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <Label>Brightness</Label>
+        <span className="text-sm text-muted-foreground">{value[0]}%</span>
+      </div>
+      <Slider value={value} max={100} step={1} onValueChange={setValue} />
+    </div>
+  );
+};
 
 A slider component built on Radix UI primitives for numeric input with a range.
+
+## Import
+
+```tsx
+import { Slider } from "zudoku/ui/Slider";
+```
 
 ## Basic Usage
 
@@ -62,22 +82,22 @@ A slider component built on Radix UI primitives for numeric input with a range.
 
 ## With Value Display
 
-<div className="space-y-2">
-  <div className="flex justify-between">
-    <Label>Brightness</Label>
-    <span className="text-sm text-muted-foreground">75%</span>
-  </div>
-  <Slider defaultValue={[75]} max={100} step={1} />
-</div>
+<SliderWithValue />
 
-```tsx
-<div className="space-y-2">
-  <div className="flex justify-between">
-    <Label>Brightness</Label>
-    <span className="text-sm text-muted-foreground">75%</span>
-  </div>
-  <Slider defaultValue={[75]} max={100} step={1} />
-</div>
+```tsx {2,8,10}
+const SliderWithValue = () => {
+  const [value, setValue] = useState([75]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <Label>Brightness</Label>
+        <span className="text-sm text-muted-foreground">{value[0]}%</span>
+      </div>
+      <Slider value={value} max={100} step={1} onValueChange={setValue} />
+    </div>
+  );
+};
 ```
 
 ## Features

@@ -4,10 +4,16 @@ sidebar_icon: triangle-alert
 ---
 
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
-import { CheckCircle2, Terminal } from "zudoku/icons";
+import { CheckCircle2Icon, TerminalIcon } from "zudoku/icons";
 import { ReactComponentDoc } from "zudoku/ui/ReactComponentDoc";
 
 An alert component for displaying important information to users with different severity levels.
+
+## Import
+
+```tsx
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
+```
 
 ## Components
 
@@ -20,7 +26,7 @@ The Alert component consists of several sub-components:
 ## Default Alert
 
 <Alert className="not-prose">
-  <Terminal className="h-4 w-4" />
+  <TerminalIcon className="h-4 w-4" />
   <AlertTitle>Heads up!</AlertTitle>
   <AlertDescription>
     You can add components and dependencies to your app using the cli.
@@ -29,7 +35,7 @@ The Alert component consists of several sub-components:
 
 ```tsx title="Alert"
 <Alert>
-  <Terminal className="h-4 w-4" />
+  <TerminalIcon className="h-4 w-4" />
   <AlertTitle>Heads up!</AlertTitle>
   <AlertDescription>
     You can add components and dependencies to your app using the cli.
@@ -54,7 +60,7 @@ The Alert component consists of several sub-components:
 ## Without Title
 
 <Alert>
-  <Terminal className="h-4 w-4" />
+  <TerminalIcon className="h-4 w-4" />
   <AlertDescription>
     You can add components and dependencies to your app using the cli.
   </AlertDescription>
@@ -62,7 +68,7 @@ The Alert component consists of several sub-components:
 
 ```tsx
 <Alert>
-  <Terminal className="h-4 w-4" />
+  <TerminalIcon className="h-4 w-4" />
   <AlertDescription>
     You can add components and dependencies to your app using the cli.
   </AlertDescription>
@@ -92,14 +98,14 @@ The Alert component consists of several sub-components:
 ### Success Alert
 
 <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
-  <CheckCircle2 className="h-4 w-4" />
+  <CheckCircle2Icon className="h-4 w-4" />
   <AlertTitle>Success!</AlertTitle>
   <AlertDescription>Your changes have been saved successfully.</AlertDescription>
 </Alert>
 
 ```tsx
 <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
-  <CheckCircle2 className="h-4 w-4" />
+  <CheckCircle2Icon className="h-4 w-4" />
   <AlertTitle>Success!</AlertTitle>
   <AlertDescription>Your changes have been saved successfully.</AlertDescription>
 </Alert>
