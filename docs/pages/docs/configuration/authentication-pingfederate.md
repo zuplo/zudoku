@@ -1,10 +1,14 @@
 ---
 title: PingFederate Authentication Setup
 sidebar_label: PingFederate
-description: Learn how to set up PingFederate authentication for Zudoku using OpenID Connect for enterprise-grade single sign-on.
+description:
+  Learn how to set up PingFederate authentication for Zudoku using OpenID Connect for
+  enterprise-grade single sign-on.
 ---
 
-PingFederate is an enterprise federation server that enables secure single sign-on (SSO) and API security for organizations. This guide walks you through integrating PingFederate with Zudoku using OpenID Connect.
+PingFederate is an enterprise federation server that enables secure single sign-on (SSO) and API
+security for organizations. This guide walks you through integrating PingFederate with Zudoku using
+OpenID Connect.
 
 ## Prerequisites
 
@@ -102,15 +106,20 @@ PingFederate can map user attributes from various sources. Ensure these standard
 
 ### Common Issues
 
-1. **Discovery Endpoint Not Found**: Ensure your issuer URL is correct and accessible. The OpenID Connect discovery endpoint should be available at `https://your-pingfederate-server/.well-known/openid-configuration`.
+1. **Discovery Endpoint Not Found**: Ensure your issuer URL is correct and accessible. The OpenID
+   Connect discovery endpoint should be available at
+   `https://your-pingfederate-server/.well-known/openid-configuration`.
 
-2. **Invalid Client Configuration**: Verify that the client ID matches exactly and that the redirect URIs are properly configured in PingFederate.
+2. **Invalid Client Configuration**: Verify that the client ID matches exactly and that the redirect
+   URIs are properly configured in PingFederate.
 
 3. **CORS Errors**: Check that your site's domain is added to PingFederate's CORS configuration.
 
-4. **Missing User Attributes**: Ensure attribute mappings are configured in your Access Token Manager.
+4. **Missing User Attributes**: Ensure attribute mappings are configured in your Access Token
+   Manager.
 
-5. **Token Validation Errors**: Verify that your PingFederate server's certificates are valid and that clock synchronization is accurate.
+5. **Token Validation Errors**: Verify that your PingFederate server's certificates are valid and
+   that clock synchronization is accurate.
 
 ## Security Considerations
 
@@ -121,6 +130,7 @@ PingFederate can map user attributes from various sources. Ensure these standard
 
 ## Next Steps
 
-- Review [PingFederate documentation](https://docs.pingidentity.com/pingfederate/) for advanced features
+- Review [PingFederate documentation](https://docs.pingidentity.com/pingfederate/) for advanced
+  features
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation
 - Configure group-based access control using PingFederate claims

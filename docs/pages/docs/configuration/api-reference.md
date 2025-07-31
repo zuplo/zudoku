@@ -1,16 +1,22 @@
 ---
 title: API Reference
 sidebar_icon: square-library
-description: Learn how to configure the `apis` setting in Zudoku to generate API reference documentation from OpenAPI files, including file and URL references, versioning, customization options, and OpenAPI extensions.
+description:
+  Learn how to configure the `apis` setting in Zudoku to generate API reference documentation from
+  OpenAPI files, including file and URL references, versioning, customization options, and OpenAPI
+  extensions.
 ---
 
-The `apis` configuration setting in the [Zudoku Configuration](./overview.md) file allows you to specify the OpenAPI document that you want to use to generate your API reference documentation.
+The `apis` configuration setting in the [Zudoku Configuration](./overview.md) file allows you to
+specify the OpenAPI document that you want to use to generate your API reference documentation.
 
-There are multiple ways to reference an API file in the configuration including using a URL or a local file path. The OpenAPI document can be in either JSON or YAML format.
+There are multiple ways to reference an API file in the configuration including using a URL or a
+local file path. The OpenAPI document can be in either JSON or YAML format.
 
 ## File Reference
 
-You can reference a local OpenAPI document by setting the `type` to `file` and providing the path to the file.
+You can reference a local OpenAPI document by setting the `type` to `file` and providing the path to
+the file.
 
 ```tsx title=zudoku.config.ts
 const config = {
@@ -26,7 +32,9 @@ const config = {
 
 ## URL Reference
 
-If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document if you want to test and play around):
+If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing
+the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document
+if you want to test and play around):
 
 ```jsx title=zudoku.config.ts
 const config = {
@@ -42,13 +50,15 @@ const config = {
 
 :::caution{title="CORS Policy"}
 
-If you are using a URL to reference your OpenAPI document, you may need to ensure that the server hosting the document has the correct CORS policy in place to allow the Zudoku site to access it.
+If you are using a URL to reference your OpenAPI document, you may need to ensure that the server
+hosting the document has the correct CORS policy in place to allow the Zudoku site to access it.
 
 :::
 
 ## Versioning
 
-When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API documentation:
+When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API
+documentation:
 
 ```tsx title=zudoku.config.ts
 const config = {
@@ -97,7 +107,8 @@ Available options:
 
 ## Default Options
 
-Instead of setting options for each API individually, you can use `defaults.apis` to set global defaults that apply to all APIs:
+Instead of setting options for each API individually, you can use `defaults.apis` to set global
+defaults that apply to all APIs:
 
 ```tsx title=zudoku.config.ts
 const config = {
@@ -121,7 +132,8 @@ Individual API options will override these defaults when specified.
 
 ## Extensions
 
-Zudoku supports OpenAPI extensions (properties starting with `x-`) to customize behavior at different levels of your API documentation.
+Zudoku supports OpenAPI extensions (properties starting with `x-`) to customize behavior at
+different levels of your API documentation.
 
 ### Operations
 
@@ -176,7 +188,9 @@ x-tagGroups:
 
 ## Metadata
 
-Your API reference page metadata is sourced directly from your OpenAPI spec. The [`info`](https://spec.openapis.org/oas/v3.1.0#info-object) object is used set the corresponding tags in the page's `head`.
+Your API reference page metadata is sourced directly from your OpenAPI spec. The
+[`info`](https://spec.openapis.org/oas/v3.1.0#info-object) object is used set the corresponding tags
+in the page's `head`.
 
 | Metadata Property | OpenAPI Property | Comment                                                                                                                                        |
 | ----------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |

@@ -1,10 +1,14 @@
 ---
 title: Search
 sidebar_icon: search-code
-description: Learn how to configure and customize search functionality in Zudoku, including setup instructions for Pagefind and Inkeep providers, result transformation, and ranking options.
+description:
+  Learn how to configure and customize search functionality in Zudoku, including setup instructions
+  for Pagefind and Inkeep providers, result transformation, and ranking options.
 ---
 
-Zudoku offers search functionality that enhances user experience by enabling content discovery across your site. When configured, a search bar will appear in the header, allowing users to quickly find relevant information on any page.
+Zudoku offers search functionality that enhances user experience by enabling content discovery
+across your site. When configured, a search bar will appear in the header, allowing users to quickly
+find relevant information on any page.
 
 We currently support two search providers:
 
@@ -13,7 +17,8 @@ We currently support two search providers:
 
 ## Pagefind
 
-[Pagefind](https://pagefind.app/) is a lightweight, static search library that can be used to add search to your Zudoku site without any external services.
+[Pagefind](https://pagefind.app/) is a lightweight, static search library that can be used to add
+search to your Zudoku site without any external services.
 
 To enable pagefind search, configure the `search` option in your configuration:
 
@@ -36,13 +41,15 @@ To enable pagefind search, configure the `search` option in your configuration:
 
 ### Transforming/Filtering Search Results
 
-You can transform or filter search results using the `transformResults` option. This function receives the search result along with the current auth state and context, allowing you to:
+You can transform or filter search results using the `transformResults` option. This function
+receives the search result along with the current auth state and context, allowing you to:
 
 - Filter results based on user permissions
 - Modify result content
 - Add custom results
 
-The type of `result` is the same as [the type returned by Pagefind's search API](https://github.com/CloudCannon/pagefind/blob/03552d041d9533b09563f6c50466b25d394ece64/pagefind_web_js/types/index.d.ts#L123-L160).
+The type of `result` is the same as
+[the type returned by Pagefind's search API](https://github.com/CloudCannon/pagefind/blob/03552d041d9533b09563f6c50466b25d394ece64/pagefind_web_js/types/index.d.ts#L123-L160).
 
 ```typescript
 {
@@ -65,15 +72,18 @@ The type of `result` is the same as [the type returned by Pagefind's search API]
 }
 ```
 
-For more information about how Pagefind's ranking system works and how to customize it for your content, see the [Pagefind ranking documentation](https://pagefind.app/docs/ranking/).
+For more information about how Pagefind's ranking system works and how to customize it for your
+content, see the [Pagefind ranking documentation](https://pagefind.app/docs/ranking/).
 
 ## Inkeep
 
-[Inkeep](https://inkeep.com/) is an AI-powered search and chat platform that can index your documentation and provide intelligent search capabilities to your users.
+[Inkeep](https://inkeep.com/) is an AI-powered search and chat platform that can index your
+documentation and provide intelligent search capabilities to your users.
 
 ### Setting up Inkeep Integration
 
-Before you can use Inkeep search in your Zudoku site, you need to set up an Inkeep integration and have your site indexed. Here's how to get started:
+Before you can use Inkeep search in your Zudoku site, you need to set up an Inkeep integration and
+have your site indexed. Here's how to get started:
 
 #### 1. Create an Inkeep Account
 
@@ -89,7 +99,8 @@ Before you can use Inkeep search in your Zudoku site, you need to set up an Inke
 
 #### 3. Get Your Integration Credentials
 
-To add Inkeep search to your site you will need to copy some variables from your [Inkeep account setting](https://portal.inkeep.com/):
+To add Inkeep search to your site you will need to copy some variables from your
+[Inkeep account setting](https://portal.inkeep.com/):
 
 - API Key
 - Integration ID
@@ -97,7 +108,8 @@ To add Inkeep search to your site you will need to copy some variables from your
 
 #### 4. Configure Zudoku
 
-Once you have your credentials and your site is indexed, you can configure the `search` option in your [Zudoku Configuration](./overview.md):
+Once you have your credentials and your site is indexed, you can configure the `search` option in
+your [Zudoku Configuration](./overview.md):
 
 ```typescript
 {

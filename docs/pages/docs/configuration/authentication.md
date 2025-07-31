@@ -3,15 +3,20 @@ title: Overview
 sidebar_icon: shield-check
 ---
 
-If you use a managed authentication service, such as Auth0, Clerk, or OpenID, you can implement this into your site and allow users to browse and interact with your documentation and API reference in a logged in state.
+If you use a managed authentication service, such as Auth0, Clerk, or OpenID, you can implement this
+into your site and allow users to browse and interact with your documentation and API reference in a
+logged in state.
 
 ## Configuration
 
-To implement the authentication option for your site, add the `authentication` property to the [Zudoku Configuration](./overview.md) file. The configuration is slightly different depending on the authentication provider you use.
+To implement the authentication option for your site, add the `authentication` property to the
+[Zudoku Configuration](./overview.md) file. The configuration is slightly different depending on the
+authentication provider you use.
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, Supabase, Azure B2C, and any OpenID provider that supports the OpenID Connect protocol.
+Zudoku supports Clerk, Auth0, Supabase, Azure B2C, and any OpenID provider that supports the OpenID
+Connect protocol.
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -19,7 +24,8 @@ Not seeing your authentication provider? [Let us know](https://github.com/zuplo/
 
 For Auth0, you will need the `clientId` associated with the domain you are using.
 
-You can find this in the Auth0 dashboard under [Application Settings](https://auth0.com/docs/get-started/applications/application-settings).
+You can find this in the Auth0 dashboard under
+[Application Settings](https://auth0.com/docs/get-started/applications/application-settings).
 
 ```typescript
 {
@@ -34,16 +40,19 @@ You can find this in the Auth0 dashboard under [Application Settings](https://au
 }
 ```
 
-To setup Auth0, create a Single Page Application (SPA) application in the Auth0 dashboard. Set the following options:
+To setup Auth0, create a Single Page Application (SPA) application in the Auth0 dashboard. Set the
+following options:
 
 - Callback URL to `https://your-site.com/oauth/callback`.
-- For development environments only, we recommend configuring your app to allow the a wildcard callback like `https://*.zuplo.app/oauth/callback` to allow for testing each environment.
+- For development environments only, we recommend configuring your app to allow the a wildcard
+  callback like `https://*.zuplo.app/oauth/callback` to allow for testing each environment.
 - For local development, set the callback url to `http://localhost:3000/oauth/callback`.
 - Add your site hostname (your-site.com) to the list of allowed CORS origins.
 
 ### Clerk
 
-For Clerk you will need the publishable key for your application. You can find this in the Clerk dashboard on the [API Keys](https://dashboard.clerk.com/last-active?path=api-keys) page.
+For Clerk you will need the publishable key for your application. You can find this in the Clerk
+dashboard on the [API Keys](https://dashboard.clerk.com/last-active?path=api-keys) page.
 
 ```typescript
 {
@@ -78,15 +87,19 @@ For authentication services that support OpenID, you will need to supply an `cli
 When configuring your OpenID provider, you will need to set the following:
 
 - Callback or Redirect URI to `https://your-site.com/oauth/callback`.
-- If your provider supports wildcard callback urls, we recommend configuring your development identity provider to allow a wildcard callback like `https://*.zuplo.site/oauth/callback` to allow for testing each environment.
+- If your provider supports wildcard callback urls, we recommend configuring your development
+  identity provider to allow a wildcard callback like `https://*.zuplo.site/oauth/callback` to allow
+  for testing each environment.
 - For local development set the callback url to `http://localhost:3000/oauth/callback`.
 - Add your site hostname (your-site.com) to the list of allowed CORS origins.
 
-By default, the scopes "openid", "profile", and "email" are requested. You can customize these by providing your own array of scopes.
+By default, the scopes "openid", "profile", and "email" are requested. You can customize these by
+providing your own array of scopes.
 
 ### Supabase
 
-To use Supabase as your authentication provider, supply your project's URL, API key, and the OAuth provider to use.
+To use Supabase as your authentication provider, supply your project's URL, API key, and the OAuth
+provider to use.
 
 ```typescript
 {
@@ -104,11 +117,15 @@ To use Supabase as your authentication provider, supply your project's URL, API 
 }
 ```
 
-The `provider` option can be any of Supabase Auth's supported providers, such as `apple`, `azure`, `bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`, `keycloak`, `linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`, `twitter`, `workos`, `zoom`, or `fly`.
+The `provider` option can be any of Supabase Auth's supported providers, such as `apple`, `azure`,
+`bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`, `keycloak`,
+`linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`, `twitter`,
+`workos`, `zoom`, or `fly`.
 
 ### Azure B2C
 
-For Azure B2C authentication, you will need to provide your Azure B2C tenant name, client ID, and policy name.
+For Azure B2C authentication, you will need to provide your Azure B2C tenant name, client ID, and
+policy name.
 
 ```typescript
 {
@@ -132,11 +149,14 @@ When configuring your Azure B2C application, you will need to set the following:
 - Add your site hostname (your-site.com) to the list of allowed CORS origins
 - Configure the appropriate user flows (policies) in your Azure B2C tenant
 
-By default, the scopes "openid", "profile", and "email" are requested. You can customize these by providing your own array of scopes.
+By default, the scopes "openid", "profile", and "email" are requested. You can customize these by
+providing your own array of scopes.
 
 ## User Data
 
-After the user authenticates, the user profile is loaded via the provider's [User Info endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo). The following fields are used to display the user profile:
+After the user authenticates, the user profile is loaded via the provider's
+[User Info endpoint](https://openid.net/specs/openid-connect-core-1_0.html#UserInfo). The following
+fields are used to display the user profile:
 
 - `name` - The user's full name
 - `email` - The user's email address
@@ -147,11 +167,14 @@ If the provider does not return a field, it will be left blank.
 
 ## Protected Routes
 
-You can protect specific routes in your documentation by adding the `protectedRoutes` property to your configuration. This property supports two formats: a simple array of path patterns, or an advanced object format with custom authorization logic.
+You can protect specific routes in your documentation by adding the `protectedRoutes` property to
+your configuration. This property supports two formats: a simple array of path patterns, or an
+advanced object format with custom authorization logic.
 
 ### Array Format
 
-The simplest way to protect routes is to provide an array of path patterns. Users must be authenticated to access these routes.
+The simplest way to protect routes is to provide an array of path patterns. Users must be
+authenticated to access these routes.
 
 ```typescript
 {
@@ -168,7 +191,8 @@ The simplest way to protect routes is to provide an array of path patterns. User
 
 ### Advanced Object Format
 
-For more complex authorization logic, you can provide a record mapping route patterns to custom callback functions:
+For more complex authorization logic, you can provide a record mapping route patterns to custom
+callback functions:
 
 ```typescript
 {
@@ -211,4 +235,5 @@ For example:
 - `/docs/*` matches `/docs/getting-started` or `/docs/api/reference`
 - `/settings` matches only the exact path `/settings`
 
-After logging in, users will be automatically redirected back to the protected route they were trying to access.
+After logging in, users will be automatically redirected back to the protected route they were
+trying to access.

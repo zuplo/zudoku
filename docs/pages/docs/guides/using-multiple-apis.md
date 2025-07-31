@@ -3,13 +3,16 @@ title: Multiple APIs
 sidebar_icon: file-stack
 ---
 
-Zudoku supports creating documentation and API references for multiple APIs and can work with as many OpenAPI documents as you need.
+Zudoku supports creating documentation and API references for multiple APIs and can work with as
+many OpenAPI documents as you need.
 
-In order to do this you will need to modify the [Zudoku Configuration](../configuration/overview.md) file to include additional APIs.
+In order to do this you will need to modify the [Zudoku Configuration](../configuration/overview.md)
+file to include additional APIs.
 
 ## Configuration
 
-Using multiple APIs is a configuration setting that you can add in the [Zudoku Configuration](../configuration/overview.md) file.
+Using multiple APIs is a configuration setting that you can add in the
+[Zudoku Configuration](../configuration/overview.md) file.
 
 ### Step 1: Add your APIs
 
@@ -80,4 +83,5 @@ Make sure that:
 2. Your OpenAPI files are placed in the correct location as specified in the `input` field
 3. The `label` in navigation matches what you want to display in the sidebar
 
-You don't necessarily need to add the APIs to your sidebar, you can also put them into the top navigation or link to them from your docs.
+You don't necessarily need to add the APIs to your sidebar, you can also put them into the top
+navigation or link to them from your docs.

@@ -2,21 +2,19 @@
 sidebar_label: Footer
 sidebar_icon: panel-bottom-dashed
 description:
-  Learn how to configure the footer in Zudoku, including columns, social links,
-  copyright notice, and logo. Customize the footer's position and content with
-  slots.
+  Learn how to configure the footer in Zudoku, including columns, social links, copyright notice,
+  and logo. Customize the footer's position and content with slots.
 ---
 
 # Footer Configuration
 
-The footer is a customizable component that appears at the bottom of every page
-in your Zudoku site. You can configure various aspects of the footer including
-its position, columns, social links, copyright notice, and logo.
+The footer is a customizable component that appears at the bottom of every page in your Zudoku site.
+You can configure various aspects of the footer including its position, columns, social links,
+copyright notice, and logo.
 
 ## Basic Configuration
 
-The footer is configured in your `zudoku.config.tsx` file under the
-`page.footer` property:
+The footer is configured in your `zudoku.config.tsx` file under the `page.footer` property:
 
 ```tsx
 const config: ZudokuConfig = {
@@ -34,8 +32,7 @@ const config: ZudokuConfig = {
 
 ## Position
 
-You can control the horizontal alignment of the footer content using the
-`position` property:
+You can control the horizontal alignment of the footer content using the `position` property:
 
 ```tsx
 footer: {
@@ -47,8 +44,7 @@ footer: {
 }
 ```
 
-This affects how the content in the footer's main row is positioned
-horizontally.
+This affects how the content in the footer's main row is positioned horizontally.
 
 ## Columns
 
@@ -79,9 +75,8 @@ footer: {
 }
 ```
 
-Each column can have its own positioning with the `position` property, which can
-be `"start"`, `"center"`, or `"end"`. This controls how the column is positioned
-within the footer grid.
+Each column can have its own positioning with the `position` property, which can be `"start"`,
+`"center"`, or `"end"`. This controls how the column is positioned within the footer grid.
 
 ## Social Media Links
 
@@ -155,8 +150,8 @@ footer: {
 
 ## Customizing with Slot
 
-Zudoku provides `footer-before` and `footer-after` slots that allow you to
-insert custom content before or after the main footer columns:
+Zudoku provides `footer-before` and `footer-after` slots that allow you to insert custom content
+before or after the main footer columns:
 
 ```tsx
 // In your zudoku.config.tsx
