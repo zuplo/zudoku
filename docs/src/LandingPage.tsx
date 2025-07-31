@@ -93,19 +93,13 @@ const LandingPage = () => {
         <Zudoku />
         <ul className="flex items-center gap-6 ">
           <li>
-            <Link href="/docs" target="_blank">
-              Documentation
-            </Link>
+            <Link href="/docs">Documentation</Link>
           </li>
           <li>
-            <Link href="/docs/components/typography" target="_blank">
-              Components
-            </Link>
+            <Link href="/docs/components/typography">Components</Link>
           </li>
           <li>
-            <Link href="/docs/theme-playground" target="_blank">
-              Themes
-            </Link>
+            <Link href="/docs/theme-playground">Themes</Link>
           </li>
         </ul>
         <div className="flex items-center gap-2">
