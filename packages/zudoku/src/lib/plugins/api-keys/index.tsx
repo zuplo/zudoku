@@ -1,42 +1,17 @@
 import { KeyRoundIcon } from "lucide-react";
 import type { RouteObject } from "react-router";
-import type { UseAuthReturn } from "../../authentication/hook.js";
+import type { ApiKeyService } from "../../../config/validators/validate.js";
 import type {
   ApiIdentityPlugin,
   ProfileMenuPlugin,
   ZudokuPlugin,
 } from "../../core/plugins.js";
-import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
 import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
-
-export type ApiKeyService = {
-  getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
-  rollKey?: (consumerId: string, context: ZudokuContext) => Promise<void>;
-  deleteKey?: (
-    consumerId: string,
-    keyId: string,
-    context: ZudokuContext,
-  ) => Promise<void>;
-  updateConsumer?: (
-    consumer: { id: string; label?: string },
-    context: ZudokuContext,
-  ) => Promise<void>;
-  getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
-  createKey?: ({
-    apiKey,
-    context,
-    auth,
-  }: {
-    apiKey: { description: string; expiresOn?: string };
-    context: ZudokuContext;
-    auth: UseAuthReturn;
-  }) => Promise<void>;
-};
 
 export type ApiKeyPluginOptions =
   | ApiKeyService
