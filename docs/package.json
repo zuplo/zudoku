@@ -9,6 +9,7 @@
     "check:links": "lychee --cache --config ./docs/lychee.yaml --fallback-extensions html --root-dir $PWD/dist --include-fragments ./dist"
   },
   "dependencies": {
+    "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.0",
     "motion": "12.23.12",
     "react": "catalog:",
     "react-dom": "catalog:"

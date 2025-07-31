@@ -123,19 +123,50 @@ export const docs: Navigation = [
 ];
 export const components: Navigation = [
   {
+    icon: "album",
+    type: "category",
+    label: "General",
+    items: [
+      "docs/components/alert",
+      "docs/components/callout",
+      "docs/components/badge",
+      "docs/components/card",
+      "docs/components/icons",
+      "docs/components/markdown",
+      "docs/components/typography",
+    ],
+  },
+  {
     icon: "component",
     type: "category",
-    label: "Components",
+    label: "Documentation",
     items: [
-      "docs/components/typography",
-      "docs/components/callout",
-      "docs/components/icons",
+      "docs/components/playground",
       "docs/components/secret",
-      "docs/components/slot",
       "docs/components/stepper",
       "docs/components/syntax-highlight",
-      "docs/components/playground",
-      "docs/components/shadcn",
+    ],
+  },
+  {
+    icon: "text-cursor-input",
+    type: "category",
+    label: "Form",
+    items: [
+      "docs/components/button",
+      "docs/components/checkbox",
+      "docs/components/slider",
+      "docs/components/switch",
+      "docs/components/label",
+    ],
+  },
+  {
+    icon: "hard-hat",
+    type: "category",
+    label: "Utility",
+    items: [
+      "docs/components/client-only",
+      "docs/components/head",
+      "docs/components/slot",
     ],
   },
 ];

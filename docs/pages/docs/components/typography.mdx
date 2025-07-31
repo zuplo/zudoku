@@ -1,5 +1,6 @@
 ---
 title: Typography
+sidebar_icon: letter-text
 ---
 
 import { Typography } from "zudoku/components";
@@ -7,6 +8,13 @@ import { Typography } from "zudoku/components";
 The Typography component applies consistent prose styling to text content using
 [Tailwind's typography plugin](https://github.com/tailwindlabs/tailwindcss-typography). It
 automatically formats headings, paragraphs, lists, and other text elements with appropriate spacing,
+
+## Import
+
+```tsx
+import { Typography } from "zudoku/components";
+```
+
 font sizes, and styling that adapts to both light and dark themes.
 
 This component is particularly useful when rendering markdown content or when you need consistent
@@ -29,5 +37,25 @@ style headings, paragraphs, lists, and other text elements:
 ```tsx
 import { Typography } from "zudoku/components";
 
-<Typography>{/* Content */}</Typography>;
+<Typography>
+  <h1>Hello World</h1>
+  <p>This is a paragraph</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+    <li>Item 3</li>
+  </ul>
+</Typography>;
 ```
+
+## Example
+
+<Typography>
+  <h1>Hello World</h1>
+  <p>This is a paragraph</p>
+  <ul>
+    <li>Item 1</li>
+    <li>Item 2</li>
+    <li>Item 3</li>
+  </ul>
+</Typography>

@@ -1,0 +1,72 @@
+---
+title: Checkbox
+sidebar_icon: check-square
+---
+
+import { Checkbox } from "zudoku/ui/Checkbox";
+import { Label } from "zudoku/ui/Label";
+
+A checkbox component built on Radix UI primitives for boolean input.
+
+## Import
+
+```tsx
+import { Checkbox } from "zudoku/ui/Checkbox";
+```
+
+## Basic Usage
+
+<Checkbox />
+
+```tsx
+<Checkbox />
+```
+
+## With Label
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label htmlFor="terms">Accept terms and conditions</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label htmlFor="terms">Accept terms and conditions</Label>
+</div>
+```
+
+## Checked State
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms2" defaultChecked />
+  <Label htmlFor="terms2">Accept terms and conditions</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms2" defaultChecked />
+  <Label htmlFor="terms2">Accept terms and conditions</Label>
+</div>
+```
+
+## Disabled State
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms3" disabled />
+  <Label htmlFor="terms3">Accept terms and conditions</Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms3" disabled />
+  <Label htmlFor="terms3">Accept terms and conditions</Label>
+</div>
+```
+
+## Features
+
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Indeterminate State**: Supports indeterminate state for partial selections
+- **Controlled/Uncontrolled**: Can be used with or without state management
+- **Customizable**: Easy to style with className prop

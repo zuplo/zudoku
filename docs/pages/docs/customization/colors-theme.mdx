@@ -32,7 +32,7 @@ You can manually define colors for both light and dark modes, either by extendin
 hex values, RGB, HSL, OKLCH, etc. - basically anything that is supported by
 [Tailwind CSS](https://tailwindcss.com):
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     light: {
@@ -133,7 +133,7 @@ the great [tweakcn](https://tweakcn.com/) visual theme editor.
    <Framed align="start">![](./tweakcn2.webp)</Framed>
 
 1. Add it to your configuration:
-   ```tsx title=zudoku.config.ts
+   ```ts title=zudoku.config.ts
    const config = {
      theme: {
        registryUrl: "https://tweakcn.com/r/themes/northern-lights.json",
@@ -149,7 +149,7 @@ the great [tweakcn](https://tweakcn.com/) visual theme editor.
 
 You can still override specific values if needed:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     registryUrl: "https://tweakcn.com/api/registry/theme/xyz123",
@@ -166,7 +166,7 @@ const config = {
 
 Alternatively, you can copy the CSS code and paste it into your `customCss` configuration:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     customCss: `
@@ -188,7 +188,7 @@ Changes to `customCss` require restarting the development server to take effect.
 
 ### CSS String
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     customCss: `
@@ -202,7 +202,7 @@ const config = {
 
 ### CSS Object
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     customCss: {
@@ -220,7 +220,7 @@ Zudoku comes with a built-in default theme based on
 [shadcn/ui zinc base colors](https://ui.shadcn.com/docs/theming#zinc). If you want to start
 completely from scratch without any default styling, you can disable the default theme:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     noDefaultTheme: true,
@@ -236,7 +236,7 @@ complete control over your theme. Changing this requires to restart the developm
 
 Here's a comprehensive example combining multiple theming approaches:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     // Import base theme from registry

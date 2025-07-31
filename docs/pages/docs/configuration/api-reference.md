@@ -18,7 +18,7 @@ local file path. The OpenAPI document can be in either JSON or YAML format.
 You can reference a local OpenAPI document by setting the `type` to `file` and providing the path to
 the file.
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   // ...
   apis: {
@@ -36,7 +36,7 @@ If your OpenAPI document is accessible elsewhere via URL you can use this config
 the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document
 if you want to test and play around):
 
-```jsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   // ...
   apis: {
@@ -60,7 +60,7 @@ hosting the document has the correct CORS policy in place to allow the Zudoku si
 When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API
 documentation:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   apis: {
     type: "file",
@@ -78,7 +78,7 @@ const config = {
 
 The `options` field allows you to customize the API reference behavior:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   apis: {
     type: "file",
@@ -110,7 +110,7 @@ Available options:
 Instead of setting options for each API individually, you can use `defaults.apis` to set global
 defaults that apply to all APIs:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   defaults: {
     apis: {

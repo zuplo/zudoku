@@ -15,7 +15,7 @@ You can use predefined Google Fonts, external sources, or local fonts.
 The easiest way to use fonts is with predefined Google Fonts. Simply specify the font name as a
 string:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {
@@ -44,7 +44,7 @@ Geist Mono
 
 For more control or to use fonts not in the predefined list, you can specify a custom font URL:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {
@@ -76,7 +76,7 @@ To use local fonts, add them to the `public` folder and create a `fonts.css` fil
 
 Then reference the local CSS file:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {
@@ -93,7 +93,7 @@ const config = {
 
 You can mix predefined fonts with custom fonts:
 
-```tsx title=zudoku.config.ts
+```ts title=zudoku.config.ts
 const config = {
   theme: {
     fonts: {

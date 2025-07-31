@@ -1,8 +1,20 @@
 ---
 title: Callout
+sidebar_icon: circle-alert
 ---
 
+import { Callout } from "zudoku/ui/Callout";
+import { ReactComponentDoc } from "zudoku/ui/ReactComponentDoc";
+
 This is a callout component that can be used to draw attention to important information.
+
+## Import
+
+```tsx
+import { Callout } from "zudoku/ui/Callout";
+```
+
+<ReactComponentDoc component={Callout} />
 
 :::tip{title="Hot tip"}
 
@@ -10,18 +22,6 @@ There's a shortcut to use callout components in Markdown files:
 [Admonitions](../markdown/admonitions).
 
 :::
-
-## Props
-
-```ts
-type CalloutProps = {
-  type: "note" | "info" | "tip" | "danger" | "caution";
-  children: ReactNode;
-  title?: string;
-  className?: string;
-  icon?: boolean;
-};
-```
 
 ## Note
 

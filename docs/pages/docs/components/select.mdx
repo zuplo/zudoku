@@ -1,0 +1,176 @@
+---
+title: Select
+sidebar_icon: chevron-down
+---
+
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "zudoku/ui/Select";
+import { Label } from "zudoku/ui/Label";
+
+A select component built on Radix UI primitives for choosing from a list of options.
+
+## Import
+
+<!-- prettier-ignore -->
+```tsx
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "zudoku/ui/Select";
+```
+
+## Components
+
+The Select component consists of several sub-components:
+
+- `Select` - The main container (root)
+- `SelectTrigger` - Button that opens the select menu
+- `SelectValue` - Displays the selected value
+- `SelectContent` - The dropdown content container
+- `SelectItem` - Individual selectable option
+- `SelectLabel` - Section labels within the dropdown
+- `SelectSeparator` - Visual separator between groups
+- `SelectGroup` - Groups related items together
+
+## Basic Usage
+
+<Select>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Select a fruit" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectItem value="banana">Banana</SelectItem>
+    <SelectItem value="blueberry">Blueberry</SelectItem>
+    <SelectItem value="grapes">Grapes</SelectItem>
+    <SelectItem value="pineapple">Pineapple</SelectItem>
+  </SelectContent>
+</Select>
+
+```tsx
+<Select>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Select a fruit" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="apple">Apple</SelectItem>
+    <SelectItem value="banana">Banana</SelectItem>
+    <SelectItem value="blueberry">Blueberry</SelectItem>
+    <SelectItem value="grapes">Grapes</SelectItem>
+    <SelectItem value="pineapple">Pineapple</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+## With Labels and Groups
+
+<Select>
+  <SelectTrigger className="w-[280px]">
+    <SelectValue placeholder="Select a timezone" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectGroup>
+      <SelectLabel>North America</SelectLabel>
+      <SelectItem value="est">Eastern Standard Time (EST)</SelectItem>
+      <SelectItem value="cst">Central Standard Time (CST)</SelectItem>
+      <SelectItem value="mst">Mountain Standard Time (MST)</SelectItem>
+      <SelectItem value="pst">Pacific Standard Time (PST)</SelectItem>
+      <SelectItem value="akst">Alaska Standard Time (AKST)</SelectItem>
+      <SelectItem value="hst">Hawaii Standard Time (HST)</SelectItem>
+    </SelectGroup>
+    <SelectSeparator />
+    <SelectGroup>
+      <SelectLabel>Europe & Africa</SelectLabel>
+      <SelectItem value="gmt">Greenwich Mean Time (GMT)</SelectItem>
+      <SelectItem value="cet">Central European Time (CET)</SelectItem>
+      <SelectItem value="eet">Eastern European Time (EET)</SelectItem>
+      <SelectItem value="west">Western European Summer Time (WEST)</SelectItem>
+      <SelectItem value="cat">Central Africa Time (CAT)</SelectItem>
+      <SelectItem value="eat">East Africa Time (EAT)</SelectItem>
+    </SelectGroup>
+  </SelectContent>
+</Select>
+
+```tsx
+<Select>
+  <SelectTrigger className="w-[280px]">
+    <SelectValue placeholder="Select a timezone" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectGroup>
+      <SelectLabel>North America</SelectLabel>
+      <SelectItem value="est">Eastern Standard Time (EST)</SelectItem>
+      <SelectItem value="cst">Central Standard Time (CST)</SelectItem>
+      <SelectItem value="mst">Mountain Standard Time (MST)</SelectItem>
+      <SelectItem value="pst">Pacific Standard Time (PST)</SelectItem>
+      <SelectItem value="akst">Alaska Standard Time (AKST)</SelectItem>
+      <SelectItem value="hst">Hawaii Standard Time (HST)</SelectItem>
+    </SelectGroup>
+    <SelectSeparator />
+    <SelectGroup>
+      <SelectLabel>Europe & Africa</SelectLabel>
+      <SelectItem value="gmt">Greenwich Mean Time (GMT)</SelectItem>
+      <SelectItem value="cet">Central European Time (CET)</SelectItem>
+      <SelectItem value="eet">Eastern European Time (EET)</SelectItem>
+      <SelectItem value="west">Western European Summer Time (WEST)</SelectItem>
+      <SelectItem value="cat">Central Africa Time (CAT)</SelectItem>
+      <SelectItem value="eat">East Africa Time (EAT)</SelectItem>
+    </SelectGroup>
+  </SelectContent>
+</Select>
+```
+
+## With Label
+
+<div className="grid w-full max-w-sm items-center gap-1.5">
+  <Label htmlFor="framework">Framework</Label>
+  <Select>
+    <SelectTrigger id="framework">
+      <SelectValue placeholder="Select" />
+    </SelectTrigger>
+    <SelectContent position="popper">
+      <SelectItem value="next">Next.js</SelectItem>
+      <SelectItem value="sveltekit">SvelteKit</SelectItem>
+      <SelectItem value="nuxt">Nuxt.js</SelectItem>
+      <SelectItem value="remix">Remix</SelectItem>
+      <SelectItem value="astro">Astro</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+```tsx
+<div className="grid w-full max-w-sm items-center gap-1.5">
+  <Label htmlFor="framework">Framework</Label>
+  <Select>
+    <SelectTrigger id="framework">
+      <SelectValue placeholder="Select" />
+    </SelectTrigger>
+    <SelectContent position="popper">
+      <SelectItem value="next">Next.js</SelectItem>
+      <SelectItem value="sveltekit">SvelteKit</SelectItem>
+      <SelectItem value="nuxt">Nuxt.js</SelectItem>
+      <SelectItem value="remix">Remix</SelectItem>
+      <SelectItem value="astro">Astro</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+```
+
+## Features
+
+- **Keyboard Navigation**: Full keyboard support for navigation and selection
+- **Accessibility**: Proper ARIA attributes and screen reader support
+- **Controlled/Uncontrolled**: Can be used with or without state management
+- **Searchable**: Built-in search functionality when typing
+- **Custom Positioning**: Flexible positioning options

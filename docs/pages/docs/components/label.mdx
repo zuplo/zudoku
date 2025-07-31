@@ -1,0 +1,86 @@
+---
+title: Label
+sidebar_icon: tag
+---
+
+import { Label } from "zudoku/ui/Label";
+import { Input } from "zudoku/ui/Input";
+import { Textarea } from "zudoku/ui/Textarea";
+import { Checkbox } from "zudoku/ui/Checkbox";
+
+A form label component built on Radix UI primitives with proper accessibility support.
+
+## Import
+
+```tsx
+import { Label } from "zudoku/ui/Label";
+```
+
+## Basic Usage
+
+<Label htmlFor="email">Email</Label>
+
+```tsx
+<Label htmlFor="email">Email</Label>
+```
+
+## With Input
+
+<div className="grid w-full max-w-sm items-center gap-1.5">
+  <Label htmlFor="email">Email</Label>
+  <Input type="email" id="email" placeholder="Email" />
+</div>
+
+```tsx
+<div className="grid w-full max-w-sm items-center gap-1.5">
+  <Label htmlFor="email">Email</Label>
+  <Input type="email" id="email" placeholder="Email" />
+</div>
+```
+
+## With Textarea
+
+<div className="grid w-full gap-1.5">
+  <Label htmlFor="message">Your message</Label>
+  <Textarea placeholder="Type your message here." id="message" />
+</div>
+
+```tsx
+<div className="grid w-full gap-1.5">
+  <Label htmlFor="message">Your message</Label>
+  <Textarea placeholder="Type your message here." id="message" />
+</div>
+```
+
+## With Checkbox
+
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label
+    htmlFor="terms"
+    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  >
+    Accept terms and conditions
+  </Label>
+</div>
+
+```tsx
+<div className="flex items-center space-x-2">
+  <Checkbox id="terms" />
+  <Label
+    htmlFor="terms"
+    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+  >
+    Accept terms and conditions
+  </Label>
+</div>
+```
+
+## Accessibility
+
+The Label component automatically handles proper accessibility attributes when used with form
+controls:
+
+- Associates the label with form controls via `htmlFor` prop
+- Provides screen reader support
+- Enables clicking the label to focus the associated control

@@ -12,6 +12,7 @@ import {
 } from "./cache.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
+import { Slot as SlotImport } from "./Slot.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
 import { Typography as TypographyImport } from "./Typography.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
@@ -25,6 +26,7 @@ export const Button = /*@__PURE__*/ ButtonImport;
 export const Link = /*@__PURE__*/ LinkImport;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 export const Typography = /*@__PURE__*/ TypographyImport;
+export const Slot = /*@__PURE__*/ SlotImport;
 
 /** @deprecated Import from `zudoku/hooks` instead */
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;

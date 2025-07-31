@@ -1,0 +1,108 @@
+---
+title: Slider
+sidebar_icon: sliders-horizontal
+---
+
+import { Slider } from "zudoku/ui/Slider";
+import { Label } from "zudoku/ui/Label";
+import { useState } from "react";
+
+export const SliderWithValue = () => {
+  const [value, setValue] = useState([75]);
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <Label>Brightness</Label>
+        <span className="text-sm text-muted-foreground">{value[0]}%</span>
+      </div>
+      <Slider value={value} max={100} step={1} onValueChange={setValue} />
+    </div>
+  );
+};
+
+A slider component built on Radix UI primitives for numeric input with a range.
+
+## Import
+
+```tsx
+import { Slider } from "zudoku/ui/Slider";
+```
+
+## Basic Usage
+
+<Slider defaultValue={[50]} max={100} step={1} />
+
+```tsx
+<Slider defaultValue={[50]} max={100} step={1} />
+```
+
+## Range Slider
+
+<Slider defaultValue={[25, 75]} max={100} step={1} />
+
+```tsx
+<Slider defaultValue={[25, 75]} max={100} step={1} />
+```
+
+## With Label
+
+<div className="space-y-2">
+  <Label>Volume</Label>
+  <Slider defaultValue={[33]} max={100} step={1} />
+</div>
+
+```tsx
+<div className="space-y-2">
+  <Label>Volume</Label>
+  <Slider defaultValue={[33]} max={100} step={1} />
+</div>
+```
+
+## Disabled State
+
+<Slider defaultValue={[50]} max={100} step={1} disabled />
+
+```tsx
+<Slider defaultValue={[50]} max={100} step={1} disabled />
+```
+
+## Custom Step Size
+
+<div className="space-y-2">
+  <Label>Price Range ($)</Label>
+  <Slider defaultValue={[100]} max={1000} min={0} step={50} />
+</div>
+
+```tsx
+<div className="space-y-2">
+  <Label>Price Range ($)</Label>
+  <Slider defaultValue={[100]} max={1000} min={0} step={50} />
+</div>
+```
+
+## With Value Display
+
+<SliderWithValue />
+
+```tsx {2,8,10}
+const SliderWithValue = () => {
+  const [value, setValue] = useState([75]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between">
+        <Label>Brightness</Label>
+        <span className="text-sm text-muted-foreground">{value[0]}%</span>
+      </div>
+      <Slider value={value} max={100} step={1} onValueChange={setValue} />
+    </div>
+  );
+};
+```
+
+## Features
+
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Multiple Thumbs**: Support for range sliders with multiple values
+- **Customizable**: Easy to style with className prop
+- **Touch Support**: Optimized for touch devices
