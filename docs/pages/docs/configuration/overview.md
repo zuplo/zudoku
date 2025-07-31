@@ -80,7 +80,7 @@ see the [API Reference](./api-reference.md).
 }
 ```
 
-### `page`
+### `site`
 
 Controls global page attributes across the site, including logos and the site title.
 
