@@ -1,4 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
+// biome-ignore-all lint/style/noNonNullAssertion: Allow it
 import { assertType, describe, expectTypeOf, it } from "vitest";
 import type {
   InputNavigation,
@@ -26,7 +27,6 @@ describe("InputNavigationSchema types", () => {
       label: "External Link",
       to: "https://example.com",
       icon: "external-link",
-      description: "Link description",
       badge: { label: "External", color: "blue" },
       display: "auth",
     } satisfies InputNavigationItem;

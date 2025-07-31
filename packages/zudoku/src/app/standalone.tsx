@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
-import { Bootstrap } from "zudoku/components";
+import { Bootstrap } from "zudoku/__internal";
 import type { ZudokuConfig } from "../config/validators/validate.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";
 import "../lib/util/logInit.js";
@@ -13,14 +13,19 @@ if (!root) {
 }
 
 const apiUrl = root.getAttribute("data-api-url");
-const pageTitle = document.getElementsByTagName("title")[0]!.innerText;
+
+if (!apiUrl) {
+  throw new Error("No api url found");
+}
+
+const title = document.getElementsByTagName("title")[0]?.innerText;
 const logoUrl = root.getAttribute("data-logo-url");
 
 // IMPORTANT: This component must not contain tailwind classes
 // This directory is not processed by the tailwind plugin
 
 const config = {
-  page: {
+  site: {
     logo: logoUrl
       ? {
           src: {
@@ -29,7 +34,7 @@ const config = {
           },
         }
       : undefined,
-    pageTitle,
+    title,
   },
   navigation: [
     {
@@ -42,7 +47,7 @@ const config = {
     // Using the plugin directly because there's no config file to load in the virtual plugins
     openApiPlugin({
       type: "url",
-      input: apiUrl!,
+      input: apiUrl,
       path: "/",
     }),
   ],

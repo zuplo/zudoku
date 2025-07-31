@@ -48,6 +48,14 @@ let hasLoggedCdnInfo = false;
 const MEDIA_REGEX =
   /\.(a?png|jpe?g|gif|bmp|svg|webp|tiff|ico|webm|ogg|mp3|wav|m4a|avif|mp4)/i;
 
+const defineEnvVars = (vars: string[]) =>
+  Object.fromEntries(
+    vars.flatMap((v) => [
+      [`process.env.${v}`, JSON.stringify(process.env[v])],
+      [`import.meta.env.${v}`, JSON.stringify(process.env[v])],
+    ]),
+  );
+
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
@@ -104,6 +112,14 @@ export async function getViteConfig(
     ).map((theme) => `@shikijs/themes/${theme}`),
   ].map((dep) => `zudoku > ${dep}`);
 
+  // We define public env vars as `process.env` vars because Vite only exposes them as `import.meta.env` vars
+  const publicVarsProcessEnvDefine = Object.fromEntries(
+    Object.entries(publicEnv).map(([key, value]) => [
+      `process.env.${key}`,
+      value,
+    ]),
+  );
+
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -120,11 +136,16 @@ export async function getViteConfig(
     },
     define: {
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
-      "process.env.SENTRY_DSN": JSON.stringify(process.env.SENTRY_DSN),
-      // This env var doesn't start with the public `ZUPLO_` prefix, so we need to manually define it here
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
-      ...publicEnv,
+      ...defineEnvVars([
+        "SENTRY_DSN",
+        "ZUPLO_BUILD_ID",
+        "ZUPLO_BUILD_CONFIG",
+        "ZUPLO_ENVIRONMENT_TYPE",
+        "ZUPLO_SERVER_URL",
+      ]),
+      ...publicVarsProcessEnvDefine,
     },
     ssr: {
       target: "node",

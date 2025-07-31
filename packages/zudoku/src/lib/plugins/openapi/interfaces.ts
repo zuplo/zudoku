@@ -1,7 +1,7 @@
-import { type AuthState } from "../../authentication/state.js";
-import { type ZudokuContext } from "../../core/ZudokuContext.js";
+import type { AuthState } from "../../authentication/state.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
-import { type OperationListItemResult } from "./OperationList.js";
+import type { OperationListItemResult } from "./OperationList.js";
 
 type DynamicInput = () => Promise<unknown>;
 
@@ -19,12 +19,14 @@ type Example = {
   name: string;
   description?: string | null;
   externalValue?: string | null;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   value?: any | null;
   summary?: string | null;
 };
 
 type Content = {
   mediaType: string;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   schema?: any | null;
   encoding?: Array<{
     name: string;

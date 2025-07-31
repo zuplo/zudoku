@@ -1,5 +1,5 @@
+import path from "node:path";
 import { glob } from "glob";
-import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 import pkgJson from "./package.json";
@@ -11,8 +11,11 @@ const entries: Record<string, string> = {
   "auth-auth0": "./src/lib/authentication/providers/auth0.tsx",
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
   "auth-azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
+  "auth-supabase": "./src/lib/authentication/providers/supabase.tsx",
   plugins: "./src/lib/core/plugins.ts",
   hooks: "./src/lib/hooks/index.ts",
+  router: "./src/lib/core/router.ts",
+  __internal: "./src/lib/core/__internal.tsx",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",
@@ -58,7 +61,11 @@ export default defineConfig({
         // Optional Modules (i.e. auth providers) are external as we don't
         // want to bundle these in the library. Users will install these
         // themselves and they will be bundled in their app
+        // biome-ignore lint/complexity/useLiteralKeys: Might exist or not
         ...Object.keys(pkgJson?.["optionalDependencies"] ?? {}),
+        // Peer dependencies should also be external
+        // biome-ignore lint/complexity/useLiteralKeys: Might exist or not
+        ...Object.keys(pkgJson?.["peerDependencies"] ?? {}),
       ],
       plugins: [visualizer()],
       onwarn(warning, warn) {

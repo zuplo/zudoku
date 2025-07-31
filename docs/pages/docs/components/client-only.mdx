@@ -1,0 +1,65 @@
+---
+title: ClientOnly
+sidebar_icon: monitor
+---
+
+A component that only renders its children on the client-side, preventing hydration mismatches
+between server and client rendering.
+
+## Props
+
+```ts
+type ClientOnlyProps = {
+  children: ReactNode;
+  fallback?: ReactNode;
+};
+```
+
+## Usage
+
+### Basic Usage
+
+```tsx
+<ClientOnly>
+  <SomeClientOnlyComponent />
+</ClientOnly>
+```
+
+### With Fallback
+
+```tsx
+<ClientOnly fallback={<div>Loading...</div>}>
+  <InteractiveWidget />
+</ClientOnly>
+```
+
+## Examples
+
+```tsx
+function MyComponent() {
+  return (
+    <div>
+      <h1>This renders on both server and client</h1>
+      <ClientOnly fallback={<Spinner />}>
+        <ComponentThatUsesWindowObject />
+      </ClientOnly>
+    </div>
+  );
+}
+```
+
+## Use Cases
+
+- **Browser APIs**: Components that use `window`, `document`, or other browser-only APIs
+- **Third-party Libraries**: Libraries that don't support SSR
+- **Theme Switches**: Preventing flash of incorrect theme
+- **Interactive Widgets**: Components with complex client-side state
+- **Conditional Features**: Features that should only appear on the client
+
+## Notes
+
+:::caution Use ClientOnly sparingly as it can impact SEO and initial page load performance. Only use
+it when necessary for components that cannot be server-rendered. :::
+
+:::tip Always provide a meaningful fallback that matches the approximate size and layout of your
+client-only component to prevent layout shifts. :::

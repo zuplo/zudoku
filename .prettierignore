@@ -1,14 +1,15 @@
-# Add files here to ignore them from prettier formatting
-dist/
-coverage/
-node_modules/
-packages/zudoku/lib/
-packages/zudoku/standalone/
-packages/zudoku/src/app/demo-cdn.html
-/.nx/cache
-/.nx/workspace-data
+# Ignore all files by default
+*
+
+# But don't ignore directories (so prettier can traverse)
+!*/
+
+# Format only markdown files
+!**/*.md
+!**/*.mdx
+!**/*.yml
+!**/*.yaml
+
 pnpm-lock.yaml
-.next/
-stats.html
-.vercel/
-examples/many-apis/apis/
+node_modules/
+dist/

@@ -1,4 +1,4 @@
-import { type Argv } from "yargs";
+import type { Argv } from "yargs";
 import { captureEvent } from "../common/analytics/lib.js";
 import { type Arguments, dev } from "../dev/handler.js";
 

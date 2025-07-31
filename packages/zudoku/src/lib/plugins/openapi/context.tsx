@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { type OasPluginContext } from "./interfaces.js";
+import type { OasPluginContext } from "./interfaces.js";
 
 const OasContext = createContext<{ config: OasPluginContext } | undefined>(
   undefined,

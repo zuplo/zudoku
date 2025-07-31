@@ -9,13 +9,15 @@ import {
   TooltipTrigger,
 } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
+import { useAuth } from "../../authentication/hook.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
+import { useZudoku } from "../context/ZudokuContext.js";
 import { NavigationBadge } from "./NavigationBadge.js";
 import { NavigationCategory } from "./NavigationCategory.js";
-import { navigationListItem } from "./utils.js";
+import { navigationListItem, shouldShowItem } from "./utils.js";
 
 const TruncatedLabel = ({
   label,
@@ -74,6 +76,12 @@ export const NavigationItem = ({
 }) => {
   const location = useLocation();
   const { activeAnchor } = useViewportAnchor();
+  const auth = useAuth();
+  const context = useZudoku();
+
+  if (!shouldShowItem(auth, context)(item)) {
+    return null;
+  }
 
   switch (item.type) {
     case "category":
@@ -106,7 +114,7 @@ export const NavigationItem = ({
       );
     case "link":
     case "custom-page": {
-      const href = item.type === "link" ? item.to : item.path;
+      const href = item.type === "link" ? item.to : joinUrl(item.path);
       return !href.startsWith("http") ? (
         <AnchorLink
           to={{
@@ -116,7 +124,9 @@ export const NavigationItem = ({
           }}
           {...{ [DATA_ANCHOR_ATTR]: href.split("#")[1] }}
           className={navigationListItem({
-            isActive: href === [location.pathname, activeAnchor].join("#"),
+            isActive:
+              href ===
+              [location.pathname, activeAnchor].filter(Boolean).join("#"),
           })}
           onClick={onRequestClose}
         >

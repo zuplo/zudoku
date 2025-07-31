@@ -2,10 +2,8 @@ import { BracketsIcon, FileTextIcon } from "lucide-react";
 import { useLayoutEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router";
 import { CommandGroup, CommandItem, CommandList } from "zudoku/ui/Command.js";
-import {
-  type PagefindSearchFragment,
-  type PagefindSubResult,
-} from "./types.js";
+import { joinUrl } from "../../util/joinUrl.js";
+import type { PagefindSearchFragment, PagefindSubResult } from "./types.js";
 
 const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
   const aScore = a.weighted_locations.reduce(
@@ -22,6 +20,7 @@ const sortSubResults = (a: PagefindSubResult, b: PagefindSubResult) => {
 const hoverClassname = `cursor-pointer border border-transparent data-[selected=true]:border-border`;
 
 export const ResultList = ({
+  basePath,
   searchResults,
   searchTerm,
   onClose,
@@ -36,11 +35,19 @@ export const ResultList = ({
   const navigate = useNavigate();
   const commandListRef = useRef<HTMLDivElement | null>(null);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Only scroll to top when search term changes
   useLayoutEffect(() => {
     requestIdleCallback(() => {
       commandListRef.current?.scrollTo({ top: 0 });
     });
   }, [searchTerm]);
+
+  const stripBasePath = (url: string) => {
+    if (basePath && url.startsWith(basePath)) {
+      return joinUrl(url.slice(basePath.length));
+    }
+    return url;
+  };
 
   return (
     <CommandList className="max-h-[450px]" ref={commandListRef}>
@@ -60,11 +67,11 @@ export const ResultList = ({
               value={`${result.meta.title}-${result.url}`}
               className={hoverClassname}
               onSelect={() => {
-                void navigate(result.url);
+                void navigate(stripBasePath(result.url));
                 onClose();
               }}
             >
-              <Link to={result.url}>
+              <Link to={stripBasePath(result.url)}>
                 {result.meta.section === "openapi" ? (
                   <BracketsIcon />
                 ) : (
@@ -83,15 +90,16 @@ export const ResultList = ({
                   value={`sub-${result.meta.title}-${subResult.url}`}
                   className={hoverClassname}
                   onSelect={() => {
-                    void navigate(subResult.url);
+                    void navigate(stripBasePath(subResult.url));
                     onClose();
                   }}
                 >
-                  <Link to={subResult.url} onClick={onClose}>
+                  <Link to={stripBasePath(subResult.url)} onClick={onClose}>
                     <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
                       <span className="font-bold">{subResult.title}</span>
                       <span
                         className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
+                        // biome-ignore lint/security/noDangerouslySetInnerHtml: Pagefind provides sanitized HTML
                         dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
                       />
                     </div>

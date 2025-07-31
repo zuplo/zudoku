@@ -1,9 +1,10 @@
-import { compile } from "json-schema-to-typescript-lite";
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 import fs from "node:fs/promises";
 import path from "node:path";
+import { compile } from "json-schema-to-typescript-lite";
 import { bundledLanguages } from "shiki/langs";
 import { bundledThemes } from "shiki/themes";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { ZudokuConfig } from "../src/config/validators/validate.js";
 
 const fileExists = (path: string) =>

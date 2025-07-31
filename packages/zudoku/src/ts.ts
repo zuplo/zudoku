@@ -1,5 +1,5 @@
-/* eslint-disable no-console */
-import path from "path";
+// biome-ignore-all lint/suspicious/noConsole: Console is used for logging
+import path from "node:path";
 import ts from "typescript";
 
 /**
@@ -70,9 +70,9 @@ export async function checkTypescriptString(code: string) {
   const diagnostics = ts.getPreEmitDiagnostics(program);
 
   diagnostics.forEach((diagnostic) => {
-    if (diagnostic.file) {
+    if (diagnostic.file && diagnostic.start) {
       const { line, character } = diagnostic.file.getLineAndCharacterOfPosition(
-        diagnostic.start!,
+        diagnostic.start,
       );
       const message = ts.flattenDiagnosticMessageText(
         diagnostic.messageText,

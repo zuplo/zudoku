@@ -13,7 +13,6 @@ export const createServer = (config: OpenApiPluginOptions) =>
       schemaImports: config.schemaImports,
     },
     plugins: [
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       useLogger({
         logFn: (eventName, { args }) => {
           if (import.meta.env.PROD) return;
@@ -24,7 +23,7 @@ export const createServer = (config: OpenApiPluginOptions) =>
             const startEvent = eventName.replace("-end", "-start");
             const start = map.get(`${startEvent}-${args.operationName}`);
             if (start) {
-              // eslint-disable-next-line no-console
+              // biome-ignore lint/suspicious/noConsole: Logging allowed here
               console.log(
                 `[zudoku:debug] ${args.operationName} query took ${performance.now() - start}ms`,
               );

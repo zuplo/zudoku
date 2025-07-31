@@ -23,10 +23,9 @@
   "dependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",
-    "@clerk/clerk-js": "^5.43.4"
+    "@clerk/clerk-js": "^5.71.0"
   },
   "devDependencies": {
-    "@mdx-js/react": "3.0.1",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "zudoku": "workspace:*"

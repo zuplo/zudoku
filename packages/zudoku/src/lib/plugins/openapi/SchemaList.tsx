@@ -14,9 +14,8 @@ import {
 } from "zudoku/ui/Collapsible.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown, ProseClasses } from "../../components/Markdown.js";
+import { Markdown } from "../../components/Markdown.js";
 import { Toc } from "../../components/navigation/Toc.js";
-import { cn } from "../../util/cn.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/gql.js";
@@ -110,14 +109,9 @@ export function SchemaList() {
           </div>
           {data.schema.description && (
             <CollapsibleContent className="CollapsibleContent">
-              <div
-                className={cn(
-                  ProseClasses,
-                  "pt-4 max-w-full prose-img:max-w-prose",
-                )}
-              >
+              <div className="mt-4 max-w-full border rounded-sm bg-muted/25">
                 <Markdown
-                  className="border rounded-sm bg-muted/25 border-border px-2.5 md:px-4"
+                  className="max-w-full prose-img:max-w-prose border-border p-3 lg:p-5"
                   content={data.schema.description}
                 />
               </div>

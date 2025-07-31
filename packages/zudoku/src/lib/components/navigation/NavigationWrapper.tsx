@@ -1,4 +1,4 @@
-import { useEffect, useRef, type PropsWithChildren } from "react";
+import { type PropsWithChildren, useEffect, useRef } from "react";
 import { cn } from "../../util/cn.js";
 import { scrollIntoViewIfNeeded } from "../../util/scrollIntoViewIfNeeded.js";
 import { useZudoku } from "../context/ZudokuContext.js";
@@ -19,7 +19,10 @@ export const NavigationWrapper = ({
   }, []);
 
   return (
-    <div className="grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r">
+    <div
+      className="grid sticky top-(--header-height) lg:h-[calc(100vh-var(--header-height))] grid-rows-[1fr_min-content] border-r"
+      data-pagefind-ignore="all"
+    >
       <nav
         ref={navRef}
         className={cn(
@@ -37,7 +40,7 @@ export const NavigationWrapper = ({
       </nav>
 
       <div className="bg-background border-t p-2 mx-5  gap-2 items-center mt-2 drop-shadow-[0_-3px_1px_rgba(0,0,0,0.015)] hidden lg:[&:has(>_:nth-child(1):last-child)]:flex">
-        {options.page?.showPoweredBy !== false && <PoweredByZudoku />}
+        {options.site?.showPoweredBy !== false && <PoweredByZudoku />}
       </div>
     </div>
   );

@@ -1,0 +1,101 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.1.2/schema.json",
+  "vcs": {
+    "enabled": false,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css,html}",
+      "!**/node_modules/**",
+      "!.nx/**",
+      "!**/pagefind/**",
+      "!**/.vercel/**",
+      "!**/dist/**",
+      "!**/coverage/**",
+      "!packages/zudoku/lib/**",
+      "!examples/many-apis/apis/**",
+      "!packages/zudoku/standalone",
+      "!packages/zudoku/src/lib/plugins/openapi/graphql/**",
+      "!packages/zudoku/src/app/main.css",
+      "!**/*.md",
+      "!**/*.mdx"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "domains": {
+      "react": "recommended"
+    },
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noConsole": "error",
+        "noConfusingVoidType": "off"
+      },
+      "a11y": {
+        "noSvgWithoutTitle": "off"
+      },
+      "performance": {
+        "noAccumulatingSpread": "off"
+      },
+      "correctness": {
+        "noUnusedImports": {
+          "level": "error",
+          "fix": "safe"
+        }
+      },
+      "style": {
+        "useNodejsImportProtocol": {
+          "level": "warn",
+          "fix": "safe"
+        },
+        "useImportType": {
+          "level": "warn",
+          "fix": "safe",
+          "options": {
+            "style": "auto"
+          }
+        }
+      }
+    }
+  },
+
+  "overrides": [
+    {
+      "includes": ["packages/zudoku/src/cli/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off"
+          }
+        }
+      }
+    }
+  ],
+  "html": {
+    "formatter": {
+      "selfCloseVoidElements": "always"
+    }
+  },
+  "json": {
+    "formatter": {
+      "trailingCommas": "none"
+    }
+  },
+  "assist": {
+    "enabled": true,
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  }
+}

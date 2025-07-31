@@ -109,6 +109,7 @@ describe("getIssuer", () => {
   it("should throw error for unsupported authentication type", async () => {
     const config = {
       authentication: {
+        // biome-ignore lint/suspicious/noExplicitAny: Allow any type
         type: "unsupported" as any,
       },
     } as ZudokuConfig;

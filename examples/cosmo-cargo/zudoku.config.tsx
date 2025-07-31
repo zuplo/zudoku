@@ -1,5 +1,9 @@
-import type { ZudokuConfig, ZudokuContext } from "zudoku";
-import { type ApiIdentity, type ApiIdentityPlugin } from "zudoku";
+import type {
+  ApiIdentity,
+  ApiIdentityPlugin,
+  ZudokuConfig,
+  ZudokuContext,
+} from "zudoku";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
@@ -13,6 +17,9 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
           return request;
         },
+        authorizationFields: {
+          headers: ["Authorization"],
+        },
       },
     ] satisfies ApiIdentity[];
   }
@@ -22,7 +29,7 @@ const config: ZudokuConfig = {
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
-  page: {
+  site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       width: 130,
@@ -125,6 +132,27 @@ const config: ZudokuConfig = {
           icon: "library-big",
           label: "Shipping Guides",
           items: ["interstellar", "intergalactic"],
+        },
+        {
+          type: "category",
+          icon: "shield",
+          label: "Premium Guides",
+          display: "auth",
+          items: [
+            {
+              type: "doc",
+              file: "member-benefits",
+              label: "Member Benefits",
+              icon: "user-plus",
+            },
+            {
+              type: "doc",
+              file: "premium-fleet",
+              path: "premium-fleet-services",
+              label: "Premium Fleet Services",
+              icon: "trophy",
+            },
+          ],
         },
       ],
     },

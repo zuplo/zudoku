@@ -1,6 +1,6 @@
 import { $RefParser } from "@apidevtools/json-schema-ref-parser";
 import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
-import { type OpenAPIDocument } from "../../lib/oas/parser/index.js";
+import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 
 const unescapeJsonPointer = (uri: string) =>
@@ -12,32 +12,73 @@ const getSegmentsFromPath = (path: string) =>
 // Find all $ref occurrences in the schema and assign them unique variable names
 const createLocalRefMap = (obj: RecordAny) => {
   const refMap = new Map<string, number>();
+  const siblingsMap = new Map<string, RecordAny>();
   let refCounter = 0;
+  let siblingCounter = 0;
 
   traverse(obj, (node) => {
     if (typeof node.$ref === "string" && node.$ref.startsWith("#/")) {
       if (!refMap.has(node.$ref)) {
         refMap.set(node.$ref, refCounter++);
       }
+
+      const { $ref, description, summary } = node;
+
+      if (description || summary) {
+        const siblings = { description, summary };
+        const uniqueKey = `${$ref}__${siblingCounter++}`;
+        siblingsMap.set(uniqueKey, { refPath: $ref, siblings });
+
+        // Replace the node's $ref with our unique key so we can track it
+        node.__uniqueRefKey = uniqueKey;
+      }
     }
     return node;
   });
 
-  return refMap;
+  return { refMap, siblingsMap };
 };
 
 // Replace all $ref occurrences with a special marker that will be transformed into a reference to the __refMap lookup
-const setRefMarkers = (obj: RecordAny, refMap: Map<string, number>) =>
+const setRefMarkers = (
+  obj: RecordAny,
+  refMap: Map<string, number>,
+  siblingsMap: Map<string, RecordAny>,
+) =>
   traverse<string | RecordAny>(obj, (node) => {
-    if (node.$ref && typeof node.$ref === "string" && refMap.has(node.$ref)) {
-      return `__refMap:${node.$ref}`;
+    const { $ref, __uniqueRefKey } = node;
+    if ($ref && typeof $ref === "string" && refMap.has($ref)) {
+      if (__uniqueRefKey && siblingsMap.has(__uniqueRefKey)) {
+        return `__refMap+Siblings:${__uniqueRefKey}`;
+      } else {
+        return `__refMap:${$ref}`;
+      }
     }
     return node;
   });
 
 // Replace the marker strings with actual __refMap lookups in the generated code
-const replaceRefMarkers = (code?: string) =>
-  code?.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
+const replaceRefMarkers = (
+  code?: string,
+  siblingsMap?: Map<string, RecordAny>,
+) => {
+  if (!code) return code;
+
+  // Handle simple refs
+  code = code.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
+
+  // Handle refs with siblings
+  code = code.replace(/"__refMap\+Siblings:(.*?)"/g, (_, uniqueKey) => {
+    const entry = siblingsMap?.get(uniqueKey);
+    // Fallback to the simple ref if no siblings are found
+    if (!entry) return `__refMap["${uniqueKey}"]`;
+
+    const { refPath, siblings } = entry;
+    return `Object.assign({}, __refMap["${refPath}"], ${JSON.stringify(siblings)}, { __$ref: __refMap["${refPath}"].__$ref })`;
+  });
+
+  return code;
+};
 
 const lookup = (
   schema: RecordAny,
@@ -75,7 +116,7 @@ const lookup = (
  * This ensures object identity throughout the circular references.
  */
 export const generateCode = async (schema: RecordAny, filePath?: string) => {
-  const refMap = createLocalRefMap(schema);
+  const { refMap, siblingsMap } = createLocalRefMap(schema);
   const lines: string[] = [];
 
   const str = (obj: unknown, indent = 2) => JSON.stringify(obj, null, indent);
@@ -97,28 +138,31 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
     const value = lookup(schema, refPath, filePath);
 
     // This shouldn't happen but to be safe we log a warning
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!value) {
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`Could not find value for refPath: ${refPath}`);
       continue;
     }
 
-    const transformedValue = setRefMarkers(value, refMap);
+    const transformedValue = setRefMarkers(value, refMap, siblingsMap);
 
     lines.push(
       // Use assign so that the object identity is maintained and correctly resolves circular references
-      `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue))});`,
+      `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue), siblingsMap)});`,
       `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
     );
   }
 
-  const transformed = setRefMarkers(schema, refMap);
-  lines.push(`export const schema = ${replaceRefMarkers(str(transformed))};`);
+  const transformed = setRefMarkers(schema, refMap, siblingsMap);
+  lines.push(
+    `export const schema = ${replaceRefMarkers(str(transformed), siblingsMap)};`,
+  );
 
   // slugify is quite expensive for big schemas, so we pre-generate the slugs here to shave off time
-  const dereferencedSchema =
-    await $RefParser.dereference<OpenAPIDocument>(schema);
+  const dereferencedSchema = await $RefParser.dereference<OpenAPIDocument>(
+    schema,
+    { dereference: { preservedProperties: ["description", "summary"] } },
+  );
   const slugs = getAllSlugs(
     getAllOperations(dereferencedSchema.paths),
     dereferencedSchema.tags,

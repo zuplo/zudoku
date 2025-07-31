@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/node";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import * as Sentry from "@sentry/node";
 import { gte } from "semver";
 import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
@@ -23,7 +23,8 @@ process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
 const MIN_NODE_VERSION = "20.0.0";
 
 if (gte(process.versions.node, MIN_NODE_VERSION)) {
-  let packageJson;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
+  let packageJson: any;
   try {
     packageJson = JSON.parse(
       readFileSync(

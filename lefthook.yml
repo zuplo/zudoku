@@ -1,0 +1,13 @@
+# This is the lefthook configuration that replaces husky + lint-staged
+
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      glob: "**/*.{ts,tsx,json,js,jsx,css,html}"
+      run: pnpm biome check --write {staged_files}
+      stage_fixed: true
+    prettier:
+      glob: "**/*.{md,mdx,yml,yaml}"
+      run: pnpm prettier --write {staged_files}
+      stage_fixed: true

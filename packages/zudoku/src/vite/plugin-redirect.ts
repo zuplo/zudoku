@@ -1,9 +1,9 @@
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteRedirectPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-redirect-plugin";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "zudoku-redirect-plugin",

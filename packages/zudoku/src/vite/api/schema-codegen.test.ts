@@ -1,3 +1,4 @@
+import type { OpenAPIV3_1 } from "openapi-types";
 import { describe, expect, it } from "vitest";
 import { generateCode } from "./schema-codegen.js";
 
@@ -55,7 +56,7 @@ describe("Generate OpenAPI schema module", () => {
       schema.paths["/pets"].get.responses["200"].content["application/json"]
         .schema;
     const errorSchema =
-      schema.paths["/pets"].get.responses["default"].content["application/json"]
+      schema.paths["/pets"].get.responses.default.content["application/json"]
         .schema;
 
     expect(successSchema).toStrictEqual(input.components.schemas.Pet);
@@ -331,6 +332,94 @@ describe("Generate OpenAPI schema module", () => {
         operations: {},
         tags: {},
       };"
+    `);
+  });
+
+  it("should handle OpenAPI v3.1 refs alongside description and summary", async () => {
+    const input: OpenAPIV3_1.Document = {
+      openapi: "3.1.0",
+      info: {
+        title: "Test API",
+        version: "1.0.0",
+      },
+      components: {
+        schemas: {
+          Pet: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+            },
+          },
+        },
+      },
+      paths: {
+        "/pets": {
+          get: {
+            responses: {
+              "200": {
+                description: "Success",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Pet",
+                      description: "A pet object with additional context",
+                      summary: "Pet response",
+                    },
+                  },
+                },
+              },
+              "201": {
+                description: "Created",
+                content: {
+                  "application/json": {
+                    schema: {
+                      $ref: "#/components/schemas/Pet",
+                      description: "A newly created pet",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    const responseSchema200 =
+      schema.paths["/pets"].get.responses["200"].content["application/json"]
+        .schema;
+    const responseSchema201 =
+      schema.paths["/pets"].get.responses["201"].content["application/json"]
+        .schema;
+
+    // First response should have both description and summary
+    expect(responseSchema200).toMatchInlineSnapshot(`
+      {
+        "__$ref": "#/components/schemas/Pet",
+        "description": "A pet object with additional context",
+        "properties": {
+          "name": {
+            "type": "string",
+          },
+        },
+        "summary": "Pet response",
+        "type": "object",
+      }
+    `);
+
+    // Second response should have only description (different from first)
+    expect(responseSchema201).toMatchInlineSnapshot(`
+      {
+        "__$ref": "#/components/schemas/Pet",
+        "description": "A newly created pet",
+        "properties": {
+          "name": {
+            "type": "string",
+          },
+        },
+        "type": "object",
+      }
     `);
   });
 });

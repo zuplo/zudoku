@@ -1,5 +1,5 @@
 import path from "node:path";
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 
 const viteAliasPlugin = (): Plugin => {

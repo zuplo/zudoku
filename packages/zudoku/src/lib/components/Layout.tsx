@@ -1,8 +1,6 @@
-import { Helmet } from "@zudoku/react-helmet-async";
-import { Suspense, useEffect, type ReactNode } from "react";
-import { Outlet, useLocation } from "react-router";
+import { type ReactNode, Suspense, useEffect } from "react";
+import { Outlet } from "react-router";
 import { cn } from "../util/cn.js";
-import { joinUrl } from "../util/joinUrl.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
 import { useZudoku } from "./context/ZudokuContext.js";
@@ -19,8 +17,7 @@ const LoadingFallback = () => (
 );
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
-  const { meta, authentication, options } = useZudoku();
-  const location = useLocation();
+  const { authentication } = useZudoku();
 
   useScrollToAnchor();
   useScrollToTop();
@@ -32,22 +29,6 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   return (
     <>
-      <Helmet titleTemplate={meta?.title}>
-        {options.canonicalUrlOrigin && (
-          <link
-            rel="canonical"
-            href={joinUrl(
-              options.canonicalUrlOrigin,
-              options.basePath,
-              location.pathname,
-            )}
-          />
-        )}
-        {meta?.description && (
-          <meta name="description" content={meta.description} />
-        )}
-        {meta?.favicon && <link rel="icon" href={meta.favicon} />}
-      </Helmet>
       <Slot.Target name="layout-before-head" />
       <Header />
       <Slot.Target name="layout-after-head" />

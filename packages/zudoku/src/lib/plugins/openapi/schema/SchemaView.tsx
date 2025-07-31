@@ -1,23 +1,21 @@
 import { InfoIcon } from "lucide-react";
-import { Markdown, ProseClasses } from "../../../components/Markdown.js";
+import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Card } from "../../../ui/Card.js";
-import { cn } from "../../../util/cn.js";
 import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
+import { AllOfGroupView } from "./AllOfGroup/AllOfGroupView.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
-import {
-  SchemaLogicalGroup,
-  SchemaPropertyItem,
-} from "./SchemaPropertyItem.js";
-import { hasLogicalGroupings, isBasicType } from "./utils.js";
+import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
+import { UnionView } from "./UnionView.js";
+import { isBasicType } from "./utils.js";
 
 const renderMarkdown = (content?: string) =>
   content && (
     <Markdown
-      className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
+      className="text-sm leading-normal line-clamp-4"
       content={content}
     />
   );
@@ -37,10 +35,12 @@ export const SchemaView = ({
   schema,
   defaultOpen = false,
   cardHeader,
+  embedded,
 }: {
   schema?: SchemaObject | null;
   defaultOpen?: boolean;
   cardHeader?: React.ReactNode;
+  embedded?: boolean;
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
@@ -57,8 +57,12 @@ export const SchemaView = ({
     return <ConstValue schema={schema} />;
   }
 
-  if (hasLogicalGroupings(schema)) {
-    return <SchemaLogicalGroup schema={schema} />;
+  if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
+    return <UnionView schema={schema} />;
+  }
+
+  if (Array.isArray(schema.allOf)) {
+    return <AllOfGroupView schema={schema} />;
   }
 
   if (isBasicType(schema.type)) {
@@ -84,14 +88,9 @@ export const SchemaView = ({
 
     const additionalProperties =
       typeof schema.additionalProperties === "object" ? (
-        <SchemaView schema={schema.additionalProperties} />
+        <SchemaView schema={schema.additionalProperties} embedded />
       ) : schema.additionalProperties === true ? (
-        <div
-          className={cn(
-            ProseClasses,
-            "text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1",
-          )}
-        >
+        <div className="text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1">
           <span>Additional properties are allowed</span>
           <a
             className="p-0.5 -m-0.5"
@@ -104,8 +103,10 @@ export const SchemaView = ({
         </div>
       ) : null;
 
+    const Component = embedded ? "div" : Card;
+
     return (
-      <Card className="divide-y overflow-hidden">
+      <Component className="divide-y overflow-hidden">
         {cardHeader}
         {groupNames.map(
           (group) =>
@@ -124,7 +125,7 @@ export const SchemaView = ({
             ),
         )}
         {additionalProperties}
-      </Card>
+      </Component>
     );
   }
 

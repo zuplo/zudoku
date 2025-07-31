@@ -3,7 +3,8 @@ import colors from "picocolors";
 import type { ComponentType, ReactNode } from "react";
 import { isValidElement } from "react";
 import type { BundledLanguage, BundledTheme } from "shiki";
-import { z } from "zod/v4";
+import { z } from "zod";
+import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { AuthState } from "../../lib/authentication/state.js";
 import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
@@ -16,6 +17,7 @@ import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
 import { InputNavigationSchema } from "./InputNavigationSchema.js";
+import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
 
 const ThemeSchema = z
   .object({
@@ -90,19 +92,19 @@ const ApiSchema = z.discriminatedUnion("type", [
 const ApiKeysSchema = z.object({
   enabled: z.boolean(),
   getKeys: z
-    .custom<
-      (context: ZudokuContext) => Promise<ApiKey[]>
-    >((val) => typeof val === "function")
+    .custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   rollKey: z
-    .custom<
-      (id: string, context: ZudokuContext) => Promise<void>
-    >((val) => typeof val === "function")
+    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   deleteKey: z
-    .custom<
-      (id: string, context: ZudokuContext) => Promise<void>
-    >((val) => typeof val === "function")
+    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
+      (val) => typeof val === "function",
+    )
     .optional(),
   updateKeyDescription: z
     .custom<
@@ -114,10 +116,15 @@ const ApiKeysSchema = z.object({
     .optional(),
   createKey: z
     .custom<
-      (
-        apiKey: { description: string; expiresOn?: string },
-        context: ZudokuContext,
-      ) => Promise<void>
+      ({
+        apiKey,
+        context,
+        auth,
+      }: {
+        apiKey: { description: string; expiresOn?: string };
+        context: ZudokuContext;
+        auth: UseAuthReturn;
+      }) => Promise<void>
     >((val) => typeof val === "function")
     .optional(),
 });
@@ -126,6 +133,7 @@ const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
   alt: z.string().optional(),
   width: z.string().or(z.number()).optional(),
+  href: z.string().optional(),
 });
 
 export const FooterSocialIcons = [
@@ -230,6 +238,13 @@ export const DocsConfigSchema = z.object({
     .object({
       toc: z.boolean(),
       disablePager: z.boolean(),
+      showLastModified: z.boolean(),
+      suggestEdit: z
+        .object({
+          url: z.string(),
+          text: z.string().optional(),
+        })
+        .optional(),
     })
     .partial()
     .optional(),
@@ -242,7 +257,9 @@ const Redirect = z.object({
 
 const SearchSchema = z
   .discriminatedUnion("type", [
-    z.object({
+    // looseObject to allow additional properties so the
+    // user can set other inkeep settings
+    z.looseObject({
       type: z.literal("inkeep"),
       apiKey: z.string(),
       integrationId: z.string(),
@@ -279,9 +296,12 @@ const SearchSchema = z
 const AuthenticationSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("clerk"),
-    clerkPubKey: z.custom<`pk_test_${string}` | `pk_live_${string}`>((val) =>
-      typeof val === "string" ? /^pk_(test|live)_\w+$/.test(val) : false,
-    ),
+    clerkPubKey: z
+      .custom<`pk_test_${string}` | `pk_live_${string}`>()
+      .refine((val) => /^pk_(test|live)_\w+$/.test(val), {
+        message: "Clerk public key invalid, must start with pk_test or pk_live",
+      }),
+    jwtTemplateName: z.string().optional().default("dev-portal"),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -352,6 +372,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
 const MetadataSchema = z
   .object({
     title: z.string(),
+    defaultTitle: z.string().optional(),
     description: z.string(),
     logo: z.string(),
     favicon: z.string(),
@@ -403,9 +424,9 @@ const ThemeConfigSchema = z.object({
   noDefaultTheme: z.boolean().optional(),
 });
 
-const PageSchema = z
+const SiteSchema = z
   .object({
-    pageTitle: z.string(),
+    title: z.string(),
     logoUrl: z.string(),
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
@@ -413,9 +434,9 @@ const PageSchema = z
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
-        .custom<
-          "note" | "tip" | "info" | "caution" | "danger" | (string & {})
-        >((val) => typeof val === "string")
+        .custom<"note" | "tip" | "info" | "caution" | "danger" | (string & {})>(
+          (val) => typeof val === "string",
+        )
         .optional(),
       dismissible: z.boolean().optional(),
     }),
@@ -472,7 +493,7 @@ const BaseConfigSchema = z.object({
     remarkPlugins?: Options["remarkPlugins"];
     rehypePlugins?: Options["rehypePlugins"];
   }>(),
-  protectedRoutes: z.array(z.string()).optional(),
+  protectedRoutes: ProtectedRoutesSchema,
   basePath: z.string().optional(),
   canonicalUrlOrigin: z.string().optional(),
   cdnUrl: CdnUrlSchema.optional(),
@@ -484,7 +505,7 @@ const BaseConfigSchema = z.object({
       ca: z.string().optional(),
     })
     .optional(),
-  page: PageSchema,
+  site: SiteSchema,
   navigation: InputNavigationSchema,
   theme: ThemeConfigSchema,
   syntaxHighlighting: z
@@ -530,13 +551,21 @@ export type ZudokuConfig = Omit<BaseZudokuConfig, "navigation"> & {
   navigation?: z.infer<typeof InputNavigationSchema>;
 };
 
-export function validateConfig(config: unknown) {
+export function validateConfig(config: unknown, configPath?: string) {
   const validationResult = ZudokuConfig.safeParse(config);
 
   if (!validationResult.success) {
-    // eslint-disable-next-line no-console
+    // In production (build mode), throw an error to fail the build
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(
+        `Whoops, looks like there's an issue with your ${configPath ?? "config"}:\n${z.prettifyError(validationResult.error)}`,
+      );
+    }
+
+    // In development mode, log warnings but don't fail
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log(colors.yellow("Validation errors:"));
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log(colors.yellow(z.prettifyError(validationResult.error)));
   }
 }

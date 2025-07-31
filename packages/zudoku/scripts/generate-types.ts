@@ -1,6 +1,6 @@
-import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { format } from "prettier";
 
 const iconNames = Object.keys(icons)

@@ -1,6 +1,0 @@
-node_modules
-dist/
-packages/zudoku/lib/
-.nx/
-packages/create-zudoku-app/templates
-packages/zudoku/src/shiki/

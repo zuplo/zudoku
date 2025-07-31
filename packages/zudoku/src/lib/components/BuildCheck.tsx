@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { CircleFadingArrowUpIcon, LoaderCircleIcon } from "lucide-react";
-import { z } from "zod/v4";
+import { useEffect } from "react";
+import { z } from "zod";
 import { Button } from "../ui/Button.js";
 
 const BuildStatusSchema = z.object({
@@ -11,17 +12,17 @@ const BuildStatusSchema = z.object({
 
 export const BuildCheck = ({
   buildId,
+  environmentType,
   endpoint = "/__zuplo/docs",
 }: {
   buildId?: string;
+  environmentType?: string;
   endpoint?: string;
 }) => {
   const buildStatusQuery = useQuery({
     queryKey: ["zuplo-build-check", buildId, endpoint],
     refetchInterval: 3000,
-    enabled:
-      typeof buildId !== "undefined" &&
-      import.meta.env.ZUPLO_ENVIRONMENT_TYPE === "WORKING_COPY",
+    enabled: buildId !== undefined && environmentType === "WORKING_COPY",
     retry: false,
     queryFn: () =>
       fetch(endpoint, { signal: AbortSignal.timeout(2000) })
@@ -31,6 +32,16 @@ export const BuildCheck = ({
         })
         .then((data) => BuildStatusSchema.parse(data)),
   });
+
+  useEffect(() => {
+    if (
+      buildStatusQuery.data?.status === "success" &&
+      buildStatusQuery.data.buildId
+    ) {
+      // biome-ignore lint/suspicious/noDocumentCookie: CookieStore too new to use
+      document.cookie = `zuplo-build=${buildStatusQuery.data.buildId}; path=/; max-age=300; secure; SameSite=None`;
+    }
+  }, [buildStatusQuery.data]);
 
   if (
     buildStatusQuery.isError ||

@@ -1,4 +1,3 @@
-import { type RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -11,18 +10,21 @@ import { configuredNavigation } from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { registerShiki } from "virtual:zudoku-shiki-register";
+import type { RouteObject } from "react-router";
 import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
   Layout,
+  Meta,
   RouteGuard,
   RouterError,
   StatusPage,
-  Zudoku,
-} from "zudoku/components";
+} from "zudoku/__internal";
+import { Zudoku } from "zudoku/components";
+import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
 import "./main.css";
@@ -36,12 +38,12 @@ export const convertZudokuConfigToOptions = (
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
     protectedRoutes: config.protectedRoutes,
-    page: {
-      ...config.page,
+    site: {
+      ...config.site,
       showPoweredBy:
         ZuploEnv.buildConfig?.entitlements.devPortalZuploBranding ??
-        config.page?.showPoweredBy,
-      logo: config.page?.logo,
+        config.site?.showPoweredBy,
+      logo: config.site?.logo,
     },
     slots: config.slots,
     metadata: {
@@ -82,22 +84,13 @@ export const getRoutesByOptions = (
     .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
     .concat(
       enableStatusPages
-        ? [400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504].map(
-            (statusCode) => ({
-              path: `/${statusCode}`,
-              element: <StatusPage statusCode={statusCode} />,
-            }),
-          )
+        ? [400, 404, 500].map((statusCode) => ({
+            path: `/${statusCode}`,
+            element: <StatusPage statusCode={statusCode} />,
+          }))
         : [],
     )
-    .concat([
-      {
-        path: "*",
-        loader: () => {
-          throw new Response("Not Found", { status: 404 });
-        },
-      },
-    ]);
+    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }]);
 
   // @TODO Detect conflicts in routes and log warning
 
@@ -116,22 +109,33 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
       element: (
         <Zudoku {...options}>
           <BuildCheck
-            buildId={
-              import.meta.env.IS_ZUPLO && import.meta.env.ZUPLO_BUILD_ID
-                ? import.meta.env.ZUPLO_BUILD_ID
-                : undefined
-            }
+            buildId={import.meta.env.ZUPLO_BUILD_ID}
+            environmentType={import.meta.env.ZUPLO_ENVIRONMENT_TYPE}
           />
-          <Layout />
+          <Outlet />
         </Zudoku>
       ),
+      hydrateFallbackElement: <div>Loading...</div>,
       children: [
         {
-          element: <RouteGuard />,
+          element: (
+            <Meta>
+              <RouteGuard />
+            </Meta>
+          ),
           errorElement: <RouterError />,
-          children: routes,
+          children: routes.map((r) =>
+            r.handle?.layout === "none" ? r : wrapWithLayout(r),
+          ),
         },
       ],
     },
   ];
+};
+
+const wrapWithLayout = (route: RouteObject) => {
+  return {
+    element: <Layout />,
+    children: [route],
+  };
 };

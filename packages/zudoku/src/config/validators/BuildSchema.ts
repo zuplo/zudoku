@@ -1,5 +1,5 @@
 import type { Options as MdxOptions } from "@mdx-js/rollup";
-import z from "zod/v4";
+import { z } from "zod";
 import type { OpenAPIDocument } from "../../lib/oas/graphql/index.js";
 
 // Schema for build processors
@@ -26,9 +26,15 @@ export function validateBuildConfig(config: unknown) {
   const validationResult = BuildConfigSchema.safeParse(config);
 
   if (!validationResult.success) {
-    // eslint-disable-next-line no-console
+    // In production (build mode), throw an error to fail the build
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(z.prettifyError(validationResult.error));
+    }
+
+    // In development mode, log warnings but don't fail
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.warn("Build config validation errors:");
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.warn(z.prettifyError(validationResult.error));
     return;
   }

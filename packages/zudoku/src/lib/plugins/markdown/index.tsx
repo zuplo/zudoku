@@ -1,6 +1,6 @@
 import type { Toc } from "@stefanprobst/rehype-extract-toc";
 import type { MDXProps } from "mdx/types.js";
-import { type JSX } from "react";
+import type { JSX } from "react";
 import type { ZudokuDocsConfig } from "../../../config/validators/validate.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 
@@ -9,7 +9,7 @@ export interface MarkdownPluginOptions extends ZudokuDocsConfig {
 }
 export type MarkdownPluginDefaultOptions = Pick<
   Frontmatter,
-  "toc" | "disablePager"
+  "toc" | "disablePager" | "showLastModified" | "suggestEdit"
 >;
 
 export type Frontmatter = {
@@ -19,12 +19,21 @@ export type Frontmatter = {
   toc?: boolean;
   disablePager?: boolean;
   disable_pager?: boolean;
+  showLastModified?: boolean;
+  lastModifiedTime?: number;
+  suggestEdit?:
+    | {
+        url: string;
+        text?: string;
+      }
+    | false;
 };
 
 export type MDXImport = {
   tableOfContents: Toc;
   frontmatter: Frontmatter;
   excerpt?: string;
+  __filepath: string;
   default: (props: MDXProps) => JSX.Element;
 };
 
@@ -41,7 +50,6 @@ export const markdownPlugin = (
           return {
             element: (
               <MdxPage
-                file={routePath}
                 mdxComponent={Component}
                 {...props}
                 defaultOptions={options.defaultOptions}

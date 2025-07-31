@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type RecordAny, traverse } from "../../../util/traverse.js";
 import type { OpenAPIDocument } from "../index.js";
 /**
@@ -71,6 +70,7 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
 
       if (isMultipart) {
         // Types
+        // biome-ignore lint/suspicious/noExplicitAny: Allow any type
         const entries: [string, any][] = Object.entries(schema.properties);
 
         for (const [, value] of entries) {
@@ -110,6 +110,7 @@ export const upgradeSchema = (schema: RecordAny): OpenAPIDocument => {
 
   schema = traverse(schema, (sub) => {
     if (sub.type === "string" && sub.format === "binary") {
+      // biome-ignore lint/suspicious/noExplicitAny: Allow any type
       return undefined as any;
     }
 

@@ -1,19 +1,20 @@
 import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
+import { EditIcon } from "lucide-react";
 import { type PropsWithChildren, useEffect } from "react";
+import { Button } from "zudoku/ui/Button.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { ProseClasses } from "../../components/Markdown.js";
-import { Pagination } from "../../components/Pagination.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
+import { Pagination } from "../../components/Pagination.js";
+import { Typography } from "../../components/Typography.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
-import { cn } from "../../util/cn.js";
-import { type MarkdownPluginDefaultOptions, type MDXImport } from "./index.js";
+import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
 
 declare global {
   interface Window {
@@ -38,14 +39,13 @@ const MarkdownHeadings = {
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
-  file,
   frontmatter = {},
   defaultOptions,
+  __filepath,
   tableOfContents,
   excerpt,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
-    file: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
   }
@@ -53,15 +53,32 @@ export const MdxPage = ({
   const categoryTitle = useCurrentItem()?.categoryLabel;
 
   const title = frontmatter.title;
+  const description = frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
   const pageTitle =
-    tableOfContents.find((item) => item.depth === 1)?.value ?? title;
+    title ?? tableOfContents.find((item) => item.depth === 1)?.value;
   const hidePager =
     frontmatter.disable_pager ??
     frontmatter.disablePager ??
     defaultOptions?.disablePager ??
     false;
+
+  const showLastModified =
+    frontmatter.showLastModified ?? defaultOptions?.showLastModified ?? true;
+
+  const lastModifiedDate = frontmatter.lastModifiedTime
+    ? new Date(frontmatter.lastModifiedTime)
+    : null;
+
+  const editConfig =
+    frontmatter.suggestEdit !== false &&
+    (frontmatter.suggestEdit ?? defaultOptions?.suggestEdit);
+
+  const editUrl = editConfig
+    ? editConfig.url.replaceAll("{filePath}", __filepath)
+    : null;
+  const editText = editConfig ? editConfig.text || "Edit this page" : null;
 
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??
@@ -75,7 +92,7 @@ export const MdxPage = ({
   useEffect(() => {
     if (process.env.NODE_ENV === "development") {
       window.__getReactRefreshIgnoredExports = ({ id }) => {
-        if (!id.endsWith(file)) return;
+        if (!id.endsWith(__filepath)) return;
 
         return ["frontmatter", "tableOfContents"];
       };
@@ -84,7 +101,7 @@ export const MdxPage = ({
         window.__getReactRefreshIgnoredExports = undefined;
       };
     }
-  }, [file]);
+  }, [__filepath]);
 
   return (
     <div
@@ -94,14 +111,9 @@ export const MdxPage = ({
     >
       <Helmet>
         <title>{pageTitle}</title>
-        {excerpt && <meta name="description" content={excerpt} />}
+        {description && <meta name="description" content={description} />}
       </Helmet>
-      <div
-        className={cn(
-          ProseClasses,
-          "max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)",
-        )}
-      >
+      <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
         {(category || title) && (
           <header>
             {category && <CategoryHeading>{category}</CategoryHeading>}
@@ -115,18 +127,58 @@ export const MdxPage = ({
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}
         />
+        <div className="h-16" />
+        {(showLastModified && lastModifiedDate) || editUrl ? (
+          <div className="flex justify-between text-xs text-muted-foreground ">
+            <div />
+            <div className="flex items-center gap-2">
+              <div>
+                {editUrl && (
+                  <Button asChild variant="ghost" size="sm">
+                    <a
+                      href={editUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1"
+                    >
+                      <EditIcon size={12} />
+                      {editText}
+                    </a>
+                  </Button>
+                )}
+              </div>
+              <div>
+                {showLastModified && lastModifiedDate && (
+                  <div
+                    title={lastModifiedDate.toLocaleString(undefined, {
+                      dateStyle: "full",
+                      timeStyle: "medium",
+                    })}
+                  >
+                    Last modified on{" "}
+                    <time dateTime={lastModifiedDate.toISOString()}>
+                      {lastModifiedDate.toLocaleDateString(undefined, {
+                        dateStyle: "long",
+                      })}
+                    </time>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
         {!hidePager && (
           <>
-            <hr className="my-10" />
+            <div className="h-px bg-border mt-2 mb-6" />
             <Pagination
-              prev={prev ? { to: prev.id, label: prev.label } : undefined}
-              next={next ? { to: next.id, label: next.label } : undefined}
-              className="mb-4"
+              prev={prev ? { to: prev.id, label: prev.label ?? "" } : undefined}
+              next={next ? { to: next.id, label: next.label ?? "" } : undefined}
+              className="mb-10"
             />
           </>
         )}
-      </div>
-      <div className="hidden xl:block">
+      </Typography>
+      <div className="hidden xl:block" data-pagefind-ignore="all">
         {showToc && <Toc entries={tocEntries} />}
       </div>
     </div>

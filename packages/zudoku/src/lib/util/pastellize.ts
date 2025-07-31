@@ -1,8 +1,8 @@
 const c2n = (c: string) =>
   Math.abs(
-    isNaN(parseInt(c))
+    Number.isNaN(parseInt(c))
       ? c.toLowerCase().charCodeAt(0) - 96
-      : isNaN(parseInt(c))
+      : Number.isNaN(parseInt(c))
         ? 0
         : parseInt(c),
   );

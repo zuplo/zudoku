@@ -1,9 +1,9 @@
-import express, { type Express } from "express";
-import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import fs from "node:fs/promises";
 import http, { type Server } from "node:http";
 import https from "node:https";
 import path from "node:path";
+import express, { type Express } from "express";
+import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
   isRunnableDevEnvironment,
@@ -26,7 +26,6 @@ import { getDevHtml } from "./html.js";
 
 const DEFAULT_DEV_PORT = 3000;
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type EntryServerImport = typeof import("../app/entry.server.js");
 
 export class DevServer {
@@ -82,7 +81,6 @@ export class DevServer {
 
     viteConfig.server = {
       ...viteConfig.server,
-      open: this.options.open,
       hmr: { server },
     };
 
@@ -156,7 +154,7 @@ export class DevServer {
         const { config } = await loadZudokuConfig(configEnv, this.options.dir);
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
-          dir: config.page?.dir,
+          dir: config.site?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
@@ -191,6 +189,16 @@ export class DevServer {
     });
 
     this.terminator = createHttpTerminator({ server });
+
+    // Manually set resolved URLs on the Vite server since we're managing the HTTP server
+    if (this.options.open || process.env.ZUDOKU_OPEN_BROWSER) {
+      const url = `${this.protocol}://localhost:${this.resolvedPort}`;
+      vite.resolvedUrls = {
+        local: [`${url}${vite.config.base || "/"}`],
+        network: [],
+      };
+      vite.openBrowser();
+    }
 
     return { vite, express: app };
   }

@@ -1,6 +1,6 @@
 import { PopoverAnchor } from "@radix-ui/react-popover";
 import { useCommandState } from "cmdk";
-import { useRef, useState, type KeyboardEvent, type Ref } from "react";
+import { type KeyboardEvent, type Ref, useRef, useState } from "react";
 import {
   Command,
   CommandInlineInput,
@@ -26,7 +26,7 @@ const AutocompletePopover = ({
   options,
   onChange,
   className,
-  placeholder = "Enter value",
+  placeholder = "Value",
   onEnterPress,
   ref,
 }: AutocompleteProps) => {
@@ -39,6 +39,7 @@ const AutocompletePopover = ({
     <Popover open={open}>
       <PopoverAnchor>
         <CommandInlineInput
+          autoComplete="off"
           ref={(el) => {
             inputRef.current = el;
             if (typeof ref === "function") {

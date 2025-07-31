@@ -1,0 +1,33 @@
+---
+title: Typography
+---
+
+import { Typography } from "zudoku/components";
+
+The Typography component applies consistent prose styling to text content using
+[Tailwind's typography plugin](https://github.com/tailwindlabs/tailwindcss-typography). It
+automatically formats headings, paragraphs, lists, and other text elements with appropriate spacing,
+font sizes, and styling that adapts to both light and dark themes.
+
+This component is particularly useful when rendering markdown content or when you need consistent
+text formatting across your documentation.
+
+## Props
+
+```ts
+type TypographyProps = {
+  children: React.ReactNode;
+  className?: string;
+};
+```
+
+## Usage
+
+Wrap any content that needs prose formatting with the Typography component. It will automatically
+style headings, paragraphs, lists, and other text elements:
+
+```tsx
+import { Typography } from "zudoku/components";
+
+<Typography>{/* Content */}</Typography>;
+```

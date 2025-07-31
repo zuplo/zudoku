@@ -4,12 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "build": "nx run-many -t=build -p zudoku config",
-    "lint": "eslint --cache --fix .",
-    "lint:ci": "eslint .",
-    "format": "prettier --write .",
-    "format:ci": "prettier --check .",
-    "prepare": "husky",
+    "build": "nx run-many -t=build",
+    "fix": "biome check --write && prettier --write '**/*.{md,mdx,yml,yaml}'",
+    "check": "biome ci && prettier --check '**/*.{md,mdx,yml,yaml}' && pnpm check:other",
+    "check:other": "node ./scripts/check-admonitions.mjs",
+    "prepare": "lefthook install",
     "release:pre": "gh workflow run release.yaml -f releaseType=prerelease",
     "release:minor": "gh workflow run release.yaml -f releaseType=minor",
     "local": "cp .env.example .env",
@@ -17,35 +16,17 @@
     "reset": "nx reset && npm run build:clean",
     "clean": "git clean -Xfde !.env"
   },
-  "lint-staged": {
-    "**/*.{ts,tsx,json,md,yml,js,jsx,css,html}": [
-      "prettier --write"
-    ],
-    "**/*.{ts,tsx,js,jsx,mjs}": [
-      "eslint --cache --fix"
-    ]
-  },
   "engines": {
     "node": ">=20.19.0 <21.0.0 || >=22.7.0",
     "pnpm": ">=10"
   },
   "devDependencies": {
-    "@nx/eslint": "21.1.2",
-    "@nx/vite": "21.1.2",
-    "@nx/web": "21.1.2",
-    "@typescript-eslint/eslint-plugin": "8.33.1",
-    "@typescript-eslint/parser": "8.33.1",
-    "eslint": "8.57.0",
-    "eslint-config-prettier": "10.1.5",
-    "eslint-plugin-import": "2.31.0",
-    "eslint-plugin-react": "7.37.5",
-    "eslint-plugin-react-hooks": "5.2.0",
-    "eslint-plugin-react-refresh": "0.4.20",
-    "husky": "9.1.7",
-    "lint-staged": "16.1.0",
-    "nx": "21.1.2",
-    "prettier": "3.5.3",
-    "prettier-plugin-organize-imports": "4.1.0",
+    "@biomejs/biome": "2.1.2",
+    "@nx/vite": "21.3.7",
+    "@nx/web": "21.3.7",
+    "lefthook": "^1.12.2",
+    "nx": "21.3.7",
+    "prettier": "3.6.2",
     "typescript": "5.8.3"
   },
   "pnpm": {
@@ -72,11 +53,10 @@
   },
   "nx": {
     "includedScripts": [
-      "lint",
-      "lint:ci",
-      "format",
-      "format:ci"
+      "fix",
+      "check",
+      "check:other"
     ]
   },
-  "packageManager": "pnpm@10.10.0"
+  "packageManager": "pnpm@10.13.1"
 }

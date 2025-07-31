@@ -10,6 +10,12 @@
       "url": "https://developers.sh.example.com"
     }
   },
+  "x-tagGroups": [
+    {
+      "name": "Shipment",
+      "tags": ["Shipment Management", "Tracking & Notifications"]
+    }
+  ],
   "tags": [
     {
       "name": "Shipment Management",
@@ -29,7 +35,8 @@
     },
     {
       "name": "Tracking & Notifications",
-      "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates."
+      "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates.",
+      "x-displayName": "🔔 Notifications"
     },
     {
       "name": "System",
@@ -564,81 +571,11 @@
     }
   },
   "paths": {
-    "/health": {
-      "get": {
-        "summary": "Health check",
-        "description": "Check if the API is up and running",
-        "operationId": "healthCheck",
-        "responses": {
-          "200": {
-            "description": "API is healthy",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "status": {
-                      "type": "string",
-                      "enum": ["healthy"]
-                    },
-                    "timestamp": {
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  }
-                },
-                "example": {
-                  "status": "healthy",
-                  "timestamp": "2025-01-09T12:00:00Z"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/version": {
-      "get": {
-        "summary": "Get API version",
-        "description": "Get information about the current API version",
-        "operationId": "getVersion",
-        "responses": {
-          "200": {
-            "description": "Version information",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "version": {
-                      "type": "string"
-                    },
-                    "releaseDate": {
-                      "type": "string",
-                      "format": "date"
-                    },
-                    "environment": {
-                      "type": "string",
-                      "enum": ["production", "staging", "development"]
-                    }
-                  }
-                },
-                "example": {
-                  "version": "1.0.0",
-                  "releaseDate": "2025-01-01",
-                  "environment": "production"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/shipments": {
       "post": {
         "tags": ["Shipment Management"],
         "summary": "Create a new shipment",
-        "description": "Creates a new shipment with the provided details",
+        "description": "Creates a new shipment with the provided details.\n\nThis endpoint allows you to **create and register** a new shipment in the Cosmo Cargo platform. The shipment will be assigned a unique `trackingNumber` and will enter the `CREATED` status.\n\n### How to use with SDK\n\nHere's how to create a shipment using `@cosmo-cargo/sdk{:sh}`:\n\n```ts\nimport { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create(config);\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);\n```\n\n**Note:** Use the `X-Request-Priority` header to expedite processing for urgent shipments.",
         "operationId": "createShipment",
         "parameters": [
           {
@@ -2757,14 +2694,15 @@
         "operationId": "getRouteEstimate",
         "parameters": [
           {
-            "name": "originFacilityId",
+            "name": "serviceLevel",
             "in": "path",
             "required": true,
             "schema": {
+              "default": "STANDARD",
               "type": "string",
-              "example": "LAX1"
+              "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
             },
-            "description": "ID of the origin facility"
+            "description": "Service level for the route"
           },
           {
             "name": "destinationFacilityId",
@@ -2777,15 +2715,14 @@
             "description": "ID of the destination facility"
           },
           {
-            "name": "serviceLevel",
+            "name": "originFacilityId",
             "in": "path",
             "required": true,
             "schema": {
-              "default": "STANDARD",
               "type": "string",
-              "enum": ["ECONOMY", "STANDARD", "EXPRESS", "SAME_DAY"]
+              "example": "LAX1"
             },
-            "description": "Service level for the route"
+            "description": "ID of the origin facility"
           }
         ],
         "responses": {
@@ -3052,6 +2989,76 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "description": "Check if the API is up and running",
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "API is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": ["healthy"]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                },
+                "example": {
+                  "status": "healthy",
+                  "timestamp": "2025-01-09T12:00:00Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "summary": "Get API version",
+        "description": "Get information about the current API version",
+        "operationId": "getVersion",
+        "responses": {
+          "200": {
+            "description": "Version information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "releaseDate": {
+                      "type": "string",
+                      "format": "date"
+                    },
+                    "environment": {
+                      "type": "string",
+                      "enum": ["production", "staging", "development"]
+                    }
+                  }
+                },
+                "example": {
+                  "version": "1.0.0",
+                  "releaseDate": "2025-01-01",
+                  "environment": "production"
                 }
               }
             }

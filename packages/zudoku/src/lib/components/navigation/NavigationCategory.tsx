@@ -46,7 +46,7 @@ const NavigationCategoryInner = ({
       }}
       variant="ghost"
       size="icon"
-      className="size-6 hover:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l-5))] hover:dark:bg-[hsl(from_hsl(var(--accent))_h_s_calc(l+5))]"
+      className="size-6 hover:bg-[hsl(from_var(--accent)_h_s_calc(l+6*var(--dark)))]"
     >
       <ChevronRightIcon
         size={16}
@@ -104,7 +104,14 @@ const NavigationCategoryInner = ({
             </div>
           </NavLink>
         ) : (
-          <div onClick={() => setHasInteracted(true)} className={styles}>
+          // biome-ignore lint/a11y/noStaticElementInteractions: This is only to track if the user has interacted
+          <div
+            onClick={() => setHasInteracted(true)}
+            onKeyUp={(e) => {
+              if (e.key === "Enter" || e.key === " ") setHasInteracted(true);
+            }}
+            className={styles}
+          >
             {icon}
             <div className="flex items-center justify-between w-full">
               <div className="flex gap-2 truncate w-full">{category.label}</div>

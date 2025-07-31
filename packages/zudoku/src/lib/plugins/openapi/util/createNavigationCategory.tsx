@@ -31,6 +31,7 @@ export const createNavigationCategory = ({
     to: `${path}#${operation.slug}`,
     badge: {
       label: operation.method,
+      // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
       color: MethodColorMap[operation.method.toLowerCase()]!,
       invert: true,
     },

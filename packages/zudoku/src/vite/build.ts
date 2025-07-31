@@ -60,7 +60,7 @@ export async function runBuild(options: { dir: string }) {
     const html = getBuildHtml({
       jsEntry: joinUrl(viteClientConfig.base, jsEntry),
       cssEntries: cssEntries.map((css) => joinUrl(viteClientConfig.base, css)),
-      dir: config.page?.dir,
+      dir: config.site?.dir,
     });
 
     const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
@@ -81,6 +81,19 @@ export async function runBuild(options: { dir: string }) {
 
       if (!results.find((r) => r.outputPath === indexHtml)) {
         await writeFile(indexHtml, html, "utf-8");
+      }
+
+      // find 400.html, 404.html, 500.html
+      const statusPages = results.flatMap((r) =>
+        /400|404|500\.html$/.test(r.outputPath) ? r.outputPath : [],
+      );
+
+      // move status pages to root path (i.e. without base path)
+      for (const statusPage of statusPages) {
+        await rename(
+          statusPage,
+          path.join(options.dir, DIST_DIR, path.basename(statusPage)),
+        );
       }
 
       // Delete the server build output directory because we don't need it anymore
@@ -104,14 +117,14 @@ export async function runBuild(options: { dir: string }) {
 
       if (ZuploEnv.isZuplo && issuer) {
         await writeFile(
-          path.join(options.dir, "dist/.output/zuplo.json"),
+          path.join(options.dir, DIST_DIR, ".output/zuplo.json"),
           JSON.stringify({ issuer }, null, 2),
           "utf-8",
         );
       }
     } catch (e) {
       // dynamic imports in prerender swallow the stack trace, so we log it here
-      // eslint-disable-next-line no-console
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.error(e);
       throw e;
     }

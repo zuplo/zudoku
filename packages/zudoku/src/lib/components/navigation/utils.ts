@@ -4,6 +4,8 @@ import type {
   NavigationCategory,
   NavigationItem,
 } from "../../../config/validators/NavigationSchema.js";
+import type { UseAuthReturn } from "../../authentication/hook.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
 
@@ -56,31 +58,30 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
   const location = useLocation();
 
   return traverseNavigationItem(category, (item) => {
-    if (item.type === "category" && item.link) {
-      const categoryLinkPath = joinUrl(item.link.path);
-      if (categoryLinkPath === location.pathname) {
-        return true;
-      }
-    }
-
-    if (item.type === "doc") {
-      const docPath = joinUrl(item.path);
-      if (docPath === location.pathname) {
-        return true;
-      }
+    switch (item.type) {
+      case "category":
+        if (!item.link) {
+          return undefined;
+        }
+        return joinUrl(item.link.path) === location.pathname ? true : undefined;
+      case "custom-page":
+      case "doc":
+        return joinUrl(item.path) === location.pathname ? true : undefined;
+      default:
+        return undefined;
     }
   });
 };
 
 export const usePrevNext = (): {
-  prev?: { label: string; id: string };
-  next?: { label: string; id: string };
+  prev?: { label?: string; id: string };
+  next?: { label?: string; id: string };
 } => {
   const currentId = useLocation().pathname;
   const { navigation } = useCurrentNavigation();
 
-  let prev;
-  let next;
+  let prev: { label?: string; id: string } | undefined;
+  let next: { label?: string; id: string } | undefined;
 
   let foundCurrent = false;
 
@@ -132,15 +133,19 @@ export const navigationListItem = cva(
   },
 );
 
-export const isHiddenItem =
-  (isAuthenticated?: boolean) =>
+export const shouldShowItem =
+  (auth: UseAuthReturn, context: ZudokuContext) =>
   (item: NavigationItem): boolean => {
+    if (typeof item.display === "function") {
+      return item.display({ context, auth });
+    }
+
     if (item.display === "hide") return false;
     if (!item.label) return false;
 
     return (
-      (item.display === "auth" && isAuthenticated) ||
-      (item.display === "anon" && !isAuthenticated) ||
+      (item.display === "auth" && auth.isAuthenticated) ||
+      (item.display === "anon" && !auth.isAuthenticated) ||
       !item.display ||
       item.display === "always"
     );

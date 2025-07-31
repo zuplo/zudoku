@@ -2,14 +2,14 @@ import * as Collapsible from "@radix-ui/react-collapsible";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { Markdown } from "../../components/Markdown.js";
-import { type SchemaObject } from "../../oas/graphql/index.js";
+import type { SchemaObject } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
 import { ColorizedParam } from "./ColorizedParam.js";
+import { EnumValues } from "./components/EnumValues.js";
+import { SelectOnClick } from "./components/SelectOnClick.js";
 import type { OperationListItemResult } from "./OperationList.js";
 import type { ParameterGroup } from "./OperationListItem.js";
 import { ParamInfos } from "./ParamInfos.js";
-import { EnumValues } from "./components/EnumValues.js";
-import { SelectOnClick } from "./components/SelectOnClick.js";
 import { SchemaExampleAndDefault } from "./schema/SchemaExampleAndDefault.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { isArrayType } from "./schema/utils.js";
@@ -72,6 +72,12 @@ export const ParameterListItem = ({
       {parameter.description && (
         <Markdown
           content={parameter.description}
+          className="text-sm prose prose-p:my-1 prose-code:whitespace-pre-line"
+        />
+      )}
+      {paramSchema.description && (
+        <Markdown
+          content={paramSchema.description}
           className="text-sm prose-p:my-1 prose-code:whitespace-pre-line"
         />
       )}

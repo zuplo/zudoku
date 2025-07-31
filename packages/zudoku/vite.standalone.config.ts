@@ -1,5 +1,5 @@
+import path from "node:path";
 import { fileURLToPath } from "node:url";
-import path from "path";
 import { defineConfig } from "vite";
 import { setStandaloneConfig } from "./src/config/loader.js";
 import vitePlugin from "./src/vite/plugin.js";
@@ -32,7 +32,7 @@ export default defineConfig({
       }, {}),
       name: "Zudoku",
       formats: ["es"],
-      fileName: (format, fileName) => {
+      fileName: (_format, fileName) => {
         if (fileName === "standalone") {
           return `main.js`;
         } else if (fileName === "demo") {

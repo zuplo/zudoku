@@ -1,7 +1,8 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { cn } from "../util/cn.js";
+import { useCopyToClipboard } from "../util/useCopyToClipboard.js";
 
 export type CodeBlockProps = {
   className?: string;
@@ -13,91 +14,102 @@ export type CodeBlockProps = {
   children?: ReactNode;
   code?: ReactNode;
   showCopy?: "hover" | "always" | "never";
-  showCopyText?: boolean;
   disabled?: boolean;
   showLineNumbers?: boolean;
 };
 
+const IconToLanguageMap: Record<string, RegExp> = {
+  typescript: /(tsx?|typescript)/,
+  javascript: /(jsx?|javascript)/,
+  markdown: /(md|markdown)/,
+  mdx: /mdx/,
+  json: /json/,
+  yaml: /yaml/,
+  toml: /toml/,
+  gnubash: /(shell|bash|sh|zsh)/,
+  python: /(py|python)/,
+  dotnet: /(^cs$|csharp|vb)/,
+  rust: /(rs|rust)/,
+  ruby: /(rb|ruby)/,
+  php: /php/,
+  html5: /html?/,
+  css: /css/,
+};
+
+const getIconUrl = (language?: string) => {
+  if (!language) return undefined;
+
+  const icon = Object.entries(IconToLanguageMap).find(([_, regex]) =>
+    regex.test(language),
+  );
+  return icon
+    ? `https://cdn.simpleicons.org/${icon[0]}/000/fff?viewbox=auto`
+    : undefined;
+};
+
 export const CodeBlock = ({
   children,
-  title,
+  title = "Code",
   language,
   showCopy = "hover",
-  showCopyText,
-  showLanguageIndicator = true,
+  showLanguageIndicator,
   showLineNumbers,
   ...props
 }: CodeBlockProps) => {
-  const [isCopied, setIsCopied] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
   const ref = useRef<HTMLDivElement>(null);
 
   if (!children) return null;
 
+  const iconUrl = showLanguageIndicator ? getIconUrl(language) : undefined;
+
   return (
     <div
       className={cn(
-        "code-block-wrapper relative group bg-muted/50 rounded-md",
+        "border code-block-wrapper relative group bg-muted/50 rounded-md overflow-hidden",
         showLineNumbers && "line-numbers",
       )}
     >
-      {title && (
-        <div className="text-xs text-muted-foreground top-2 font-mono border-b w-full py-2 px-4 ">
+      <div className="border-b flex items-center h-10 font-sans bg-black/2">
+        <div className="flex items-center gap-2 flex-1 text-sm w-full px-3">
+          {iconUrl && (
+            <img src={iconUrl} className="h-3 max-w-4" alt={language} />
+          )}
           {title}
-        </div>
-      )}
+        </div>{" "}
+        {showCopy !== "never" && (
+          <button
+            type="button"
+            aria-label="Copy code"
+            title="Copy code"
+            className={cn(
+              "transition px-2 py-2 mx-1 rounded-sm",
+              !isCopied && "hover:bg-accent hover:brightness-95",
+            )}
+            disabled={isCopied}
+            onClick={() => {
+              if (!ref.current?.textContent) return;
+
+              copyToClipboard(ref.current.textContent);
+            }}
+          >
+            {isCopied ? (
+              <CheckIcon className="text-emerald-600" size={14} />
+            ) : (
+              <CopyIcon size={14} />
+            )}
+          </button>
+        )}
+      </div>
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar p-4",
+          "code-block text-sm not-prose scrollbar overflow-x-auto scrollbar [&_code]:p-3 [&_code]:py-2",
           props.className,
         )}
         ref={ref}
       >
         {children}
       </div>
-      {showLanguageIndicator && (
-        <span
-          className={cn(
-            "absolute top-1.5 end-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
-            title && "top-12",
-            showCopy === "always" && "hidden",
-          )}
-        >
-          {language}
-        </span>
-      )}
-      {showCopy !== "never" && (
-        <button
-          type="button"
-          aria-label="Copy code"
-          title="Copy code"
-          className={cn(
-            "absolute top-2 end-2 p-2 transition hover:shadow-xs active:shadow-none active:inset-shadow-xs hover:outline outline-border rounded-md text-sm text-muted-foreground",
-            title && "top-10",
-            showCopy === "hover" && "opacity-0 group-hover:opacity-100",
-            showCopyText && "flex gap-2 items-center font-medium",
-          )}
-          disabled={isCopied}
-          onClick={() => {
-            if (!ref.current?.textContent) return;
-
-            setIsCopied(true);
-            void navigator.clipboard.writeText(ref.current.textContent);
-            setTimeout(() => setIsCopied(false), 2000);
-          }}
-        >
-          {isCopied ? (
-            <CheckIcon
-              className="text-emerald-600"
-              size={16}
-              strokeWidth={2.5}
-              absoluteStrokeWidth
-            />
-          ) : (
-            <CopyIcon size={16} />
-          )}
-          {showCopyText && "Copy"}
-        </button>
-      )}
     </div>
   );
 };

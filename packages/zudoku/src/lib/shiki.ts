@@ -43,6 +43,8 @@ export const defaultHighlightOptions = {
     dark: "github-dark",
   },
   defaultColor: false,
+  defaultLanguage: "text",
+  fallbackLanguage: "text",
   inline: "tailing-curly-colon",
   addLanguageClass: true,
   transformers: [transformerMetaHighlight(), transformerMetaWordHighlight()],
@@ -104,14 +106,14 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
   });
 };
 
-export const createConfiguredShikiRehypePlugins = (themes?: ThemesRecord) => [
+export const createConfiguredShikiRehypePlugins = (
+  themes: ThemesRecord = defaultHighlightOptions.themes,
+  highlighterInstance: HighlighterCore = highlighter,
+) => [
   [
     rehypeShikiFromHighlighter,
-    highlighter,
-    {
-      ...defaultHighlightOptions,
-      themes: themes ?? defaultHighlightOptions.themes,
-    },
+    highlighterInstance,
+    { ...defaultHighlightOptions, themes },
   ] satisfies Pluggable,
   rehypeCodeBlockPlugin,
 ];

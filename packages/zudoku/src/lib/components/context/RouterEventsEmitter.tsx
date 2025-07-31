@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useLocation, type Location } from "react-router";
+import { type Location, useLocation } from "react-router";
 import { useZudoku } from "./ZudokuContext.js";
 
 export const RouterEventsEmitter = () => {

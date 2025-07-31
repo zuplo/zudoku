@@ -39,7 +39,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: nx run-many -t lint:ci format:ci build:ci test
+      - run: nx run-many -t lint:ci format:ci build:ci test lint:md
 
       - name: Get Variables
         id: vars
@@ -50,7 +50,7 @@ jobs:
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
-        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --filter config --tag canary --no-git-checks
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
@@ -62,3 +62,47 @@ jobs:
       - name: Has Stats
         run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
         id: stats-file
+
+  check-links:
+    name: Check Links
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm install nx --global
+
+      - run: nx run docs:build
+
+      - name: Restore lychee cache
+        id: cache-lychee
+        uses: actions/cache/restore@v4
+        with:
+          path: docs/.lycheecache
+          key: lychee-cache-${{ hashFiles('docs/.lycheecache') }}
+          restore-keys: |
+            lychee-cache-
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --fallback-extensions html --cache --config ./docs/lychee.toml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
+      - name: Save lychee cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: docs/.lycheecache
+          key: lychee-cache-${{ hashFiles('docs/.lycheecache') }}

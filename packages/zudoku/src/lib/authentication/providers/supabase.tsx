@@ -4,14 +4,14 @@ import {
   type Session,
   type SupabaseClient,
 } from "@supabase/supabase-js";
-import { type SupabaseAuthenticationConfig } from "../../../config/config.js";
-import {
-  type AuthenticationPlugin,
-  type AuthenticationProviderInitializer,
-} from "../authentication.js";
+import type { SupabaseAuthenticationConfig } from "../../../config/config.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
+import type {
+  AuthenticationPlugin,
+  AuthenticationProviderInitializer,
+} from "../authentication.js";
 import { AuthorizationError } from "../errors.js";
-import { useAuthState, type UserProfile } from "../state.js";
+import { type UserProfile, useAuthState } from "../state.js";
 
 class SupabaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -21,6 +21,7 @@ class SupabaseAuthenticationProvider
   private readonly provider: Provider;
   private readonly redirectToAfterSignUp: string;
   private readonly redirectToAfterSignIn: string;
+  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Keep around
   private readonly redirectToAfterSignOut: string;
 
   constructor({

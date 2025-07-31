@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
+import { Card } from "zudoku/ui/Card.js";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import {
   Dialog,
@@ -9,7 +10,7 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { Label } from "zudoku/ui/Label.js";
-import { type ApiIdentity } from "../../../core/ZudokuContext.js";
+import type { ApiIdentity } from "../../../core/ZudokuContext.js";
 import IdentitySelector from "./IdentitySelector.js";
 
 const IdentityDialog = ({
@@ -39,13 +40,13 @@ const IdentityDialog = ({
         <DialogDescription>
           Please select an identity for this request.
         </DialogDescription>
-        <div className="max-h-80 overflow-auto">
+        <Card className="max-h-80 overflow-auto">
           <IdentitySelector
             identities={identities}
             setValue={setIdentity}
             value={identity}
           />
-        </div>
+        </Card>
         <DialogFooter className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <Checkbox

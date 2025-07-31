@@ -1,6 +1,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
+import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import {
   Drawer,
@@ -8,25 +9,30 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "../ui/Drawer.js";
+import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
-import { isHiddenItem } from "./navigation/utils.js";
+import { shouldShowItem } from "./navigation/utils.js";
 import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { TopNavItem } from "./TopNavigation.js";
+import { TopNavItem, TopNavLink } from "./TopNavigation.js";
 
 export const MobileTopNavigation = () => {
-  const { navigation, options } = useZudoku();
-  const { isAuthenticated } = useAuth();
+  const context = useZudoku();
+  const authState = useAuth();
+
+  const { navigation, options, getProfileMenuItems } = context;
+  const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const filteredItems = navigation.filter(isHiddenItem(isAuthenticated));
+  const accountItems = getProfileMenuItems();
+  const filteredItems = navigation.filter(shouldShowItem(authState, context));
 
   return (
     <Drawer
-      direction={options.page?.dir === "rtl" ? "left" : "right"}
+      direction={options.site?.dir === "rtl" ? "left" : "right"}
       open={drawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
@@ -50,9 +56,34 @@ export const MobileTopNavigation = () => {
               <li className="empty:hidden">
                 <Slot.Target name="top-navigation-side" />
               </li>
-              <li>
-                <ThemeSwitch />
-              </li>
+
+              {isAuthEnabled && (
+                <ClientOnly
+                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
+                >
+                  {!isAuthenticated ? (
+                    <li>
+                      <TopNavLink
+                        to="/signin"
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        Login
+                      </TopNavLink>
+                    </li>
+                  ) : (
+                    Object.values(getProfileMenuItems()).length > 0 && (
+                      <li>
+                        {profile?.name ? `${profile.name}` : "My Account"}
+                        {profile?.email && (
+                          <div className="font-normal text-muted-foreground">
+                            {profile.email}
+                          </div>
+                        )}
+                      </li>
+                    )
+                  )}
+                </ClientOnly>
+              )}
               {filteredItems.map((item) => (
                 <li key={item.label}>
                   <button type="button" onClick={() => setDrawerOpen(false)}>
@@ -60,9 +91,28 @@ export const MobileTopNavigation = () => {
                   </button>
                 </li>
               ))}
+              {isAuthEnabled && isAuthenticated && accountItems.length > 0 && (
+                <ClientOnly
+                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
+                >
+                  {accountItems.map((i) => (
+                    <li key={i.label}>
+                      <TopNavLink
+                        to={i.path ?? ""}
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        {i.label}
+                      </TopNavLink>
+                    </li>
+                  ))}
+                </ClientOnly>
+              )}
+              <li>
+                <ThemeSwitch />
+              </li>
             </ul>
           </div>
-          {options.page?.showPoweredBy !== false && (
+          {options.site?.showPoweredBy !== false && (
             <PoweredByZudoku className="grow-0 justify-center gap-1" />
           )}
         </div>

@@ -22,20 +22,21 @@ export const Pagination = ({
         prev ? "justify-between" : "justify-end",
         className,
       )}
+      data-pagefind-ignore="all"
     >
       {prev && (
         <Button variant="ghost" asChild>
           <Link to={prev.to} relative="path" className={linkClass}>
-            <ArrowLeftIcon size={12} />
-            <span className="truncate">{prev.label}</span>
+            <ArrowLeftIcon size={14} strokeWidth={2.5} />
+            <span className="text-lg truncate">{prev.label}</span>
           </Link>
         </Button>
       )}
       {next && (
         <Button variant="ghost" asChild>
           <Link to={next.to} relative="path" className={linkClass}>
-            <span className="truncate">{next.label}</span>
-            <ArrowRightIcon size={12} />
+            <span className="text-lg truncate">{next.label}</span>
+            <ArrowRightIcon size={14} strokeWidth={2.5} />
           </Link>
         </Button>
       )}

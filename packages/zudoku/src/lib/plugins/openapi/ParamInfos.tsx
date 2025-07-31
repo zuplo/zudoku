@@ -1,7 +1,7 @@
 import { ChevronsLeftRightIcon } from "lucide-react";
 import { isValidElement, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
-import { type SchemaObject } from "../../oas/parser/index.js";
+import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
 
 const Pattern = ({ pattern }: { pattern: string }) => {
@@ -40,15 +40,15 @@ const getSchemaInfos = (schema?: SchemaObject) => {
     schema.enum && "enum",
     schema.const && "const",
     schema.format,
-    schema.minimum && `min: ${schema.minimum}`,
-    schema.maximum && `max: ${schema.maximum}`,
-    schema.minLength && `minLength: ${schema.minLength}`,
-    schema.maxLength && `maxLength: ${schema.maxLength}`,
-    schema.minItems && `minItems: ${schema.minItems}`,
-    schema.maxItems && `maxItems: ${schema.maxItems}`,
+    schema.minimum !== undefined && `min: ${schema.minimum}`,
+    schema.maximum !== undefined && `max: ${schema.maximum}`,
+    schema.minLength !== undefined && `minLength: ${schema.minLength}`,
+    schema.maxLength !== undefined && `maxLength: ${schema.maxLength}`,
+    schema.minItems !== undefined && `minItems: ${schema.minItems}`,
+    schema.maxItems !== undefined && `maxItems: ${schema.maxItems}`,
+    schema.minProperties !== undefined && `minProps: ${schema.minProperties}`,
+    schema.maxProperties !== undefined && `maxProps: ${schema.maxProperties}`,
     schema.uniqueItems && "unique",
-    schema.minProperties && `minProps: ${schema.minProperties}`,
-    schema.maxProperties && `maxProps: ${schema.maxProperties}`,
     schema.readOnly && "readOnly",
     schema.writeOnly && "writeOnly",
     schema.deprecated && "deprecated",
@@ -76,6 +76,7 @@ export const ParamInfos = ({
   return (
     <span className={className}>
       {filteredItems.map((item, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: index should be stable
         <span className="text-muted-foreground" key={index}>
           {item}
           {index < filteredItems.length - 1 && (

@@ -1,14 +1,17 @@
 import path from "node:path";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import type { FontConfig } from "../config/validators/validate.js";
+import type {
+  FontConfig,
+  ZudokuConfig,
+} from "../config/validators/validate.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 import {
   fetchShadcnRegistryItem,
   type RegistryItemCss,
 } from "./shadcn-registry.js";
 
-// prettier-ignore
+// biome-ignore format: for readability
 const THEME_VARIABLES = [
   "background", "foreground", "card", "cardForeground", "popover", "popoverForeground", "primary",
   "primaryForeground", "secondary", "secondaryForeground", "muted", "mutedForeground", "accent",
@@ -44,7 +47,11 @@ const generateRegistryCss = (cssVars: Record<string, string>) =>
     .map(([key, value]) => `  --${key}: ${value};`)
     .join("\n");
 
-const processRegistryCustomCss = (css: RegistryItemCss): string => {
+const processCustomCss = (css: string | RegistryItemCss): string => {
+  if (typeof css === "string") {
+    return css;
+  }
+
   const processStyles = (
     styles: RegistryItemCss | string,
     indent = "",
@@ -59,7 +66,7 @@ const processRegistryCustomCss = (css: RegistryItemCss): string => {
         rules.push(`${indent}${key}: ${value};`);
       } else {
         rules.push(`${indent}${key} {`);
-        rules.push(...processStyles(value, indent + "  "));
+        rules.push(...processStyles(value, `${indent}  `));
         rules.push(`${indent}}`);
       }
     }
@@ -72,7 +79,7 @@ const processRegistryCustomCss = (css: RegistryItemCss): string => {
 const MAIN_REPLACE = "/* @vite-plugin-inject main */";
 const DEFAULT_THEME_REPLACE = "/* @vite-plugin-inject defaultTheme */";
 
-// prettier-ignore
+// biome-ignore format: for readability
 export const GOOGLE_FONTS = [
   "Inter", "Roboto", "Open Sans", "Poppins", "Montserrat", "Outfit",
   "Plus Jakarta Sans", "DM Sans", "IBM Plex Sans", "Geist", "Oxanium",
@@ -114,6 +121,83 @@ const processFontConfig = (fontConfig?: FontConfig) => {
   };
 };
 
+const processFonts = async (themeConfig: ZudokuConfig["theme"]) => {
+  const imports: string[] = [];
+  const families = {
+    sans: "Geist, sans-serif",
+    serif: undefined as string | undefined,
+    mono: '"Geist Mono", monospace',
+  };
+
+  // Process user fonts
+  const userFonts = {
+    sans: processFontConfig(themeConfig?.fonts?.sans),
+    serif: processFontConfig(themeConfig?.fonts?.serif),
+    mono: processFontConfig(themeConfig?.fonts?.mono),
+  };
+
+  // Add user font imports
+  for (const font of Object.values(userFonts)) {
+    if (font.url) {
+      imports.push(font.url);
+    }
+  }
+
+  // Process registry fonts if available
+  let registryFonts = {
+    sans: undefined as string | undefined,
+    serif: undefined as string | undefined,
+    mono: undefined as string | undefined,
+  };
+
+  if (themeConfig?.registryUrl) {
+    try {
+      const registryItem = await fetchShadcnRegistryItem(
+        themeConfig.registryUrl,
+      );
+      const { cssVars = {} } = registryItem;
+      const { theme: regThemeVars = {}, light: regLightVars = {} } = cssVars;
+
+      registryFonts = {
+        sans: regLightVars["font-sans"] ?? regThemeVars["font-sans"],
+        serif: regLightVars["font-serif"] ?? regThemeVars["font-serif"],
+        mono: regLightVars["font-mono"] ?? regThemeVars["font-mono"],
+      };
+
+      // Add registry font imports
+      for (const font of Object.values(registryFonts)) {
+        if (font) {
+          imports.push(...processFont(font));
+        }
+      }
+    } catch {
+      // Registry fonts failed to load, continue with user fonts and defaults
+    }
+  }
+
+  // Determine final font families with priority: user > registry > defaults
+  families.sans =
+    userFonts.sans.fontFamily || registryFonts.sans || "Geist, sans-serif";
+  families.serif = userFonts.serif.fontFamily || registryFonts.serif;
+  families.mono =
+    userFonts.mono.fontFamily ||
+    registryFonts.mono ||
+    '"Geist Mono", monospace';
+
+  // Add default font imports if no user or registry fonts
+  if (!userFonts.sans.fontFamily && !registryFonts.sans) {
+    imports.push(getGoogleFontUrl("Geist"));
+  }
+  if (!userFonts.serif.fontFamily && !registryFonts.serif) {
+    imports.push(getGoogleFontUrl("Playfair Display"));
+  }
+  if (!userFonts.mono.fontFamily && !registryFonts.mono) {
+    imports.push(getGoogleFontUrl("Geist Mono"));
+  }
+
+  return { imports, families };
+};
+
 export const virtualModuleId = "virtual:zudoku-theme.css";
 export const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
@@ -136,28 +220,16 @@ export const viteThemePlugin = (): Plugin => {
 
       const themeConfig = config.theme ?? {};
       const themeCss: string[] = [];
-      const fontImports: string[] = [];
 
-      const userFonts = {
-        sans: processFontConfig(themeConfig.fonts?.sans),
-        serif: processFontConfig(themeConfig.fonts?.serif),
-        mono: processFontConfig(themeConfig.fonts?.mono),
-      };
+      // Consolidate all font processing
+      const fonts = await processFonts(themeConfig);
 
-      fontImports.push(
-        ...Object.values(userFonts)
-          .filter((font) => font.url)
-          .map((font) => `@import url('${font.url}');`),
-      );
-
-      if (themeConfig.customCss) {
-        if (typeof themeConfig.customCss === "string") {
-          themeCss.push(themeConfig.customCss);
-        } else {
-          themeCss.push(processRegistryCustomCss(themeConfig.customCss));
-        }
+      // Add all font imports at once
+      if (fonts.imports.length > 0) {
+        themeCss.push(...fonts.imports.map((url) => `@import url('${url}');`));
       }
 
+      // Handle registry theme variables
       if (themeConfig.registryUrl) {
         try {
           const registryItem = await fetchShadcnRegistryItem(
@@ -166,15 +238,11 @@ export const viteThemePlugin = (): Plugin => {
 
           // Extract theme variables from registry
           const { cssVars = {}, css = {} } = registryItem;
-          const {
-            theme: regThemeVars = {},
-            light: regLightVars = {},
-            dark: regDarkVars = {},
-          } = cssVars;
+          const { light: regLightVars = {}, dark: regDarkVars = {} } = cssVars;
 
           // Process custom CSS from registry
           if (Object.keys(css).length > 0) {
-            themeCss.push(processRegistryCustomCss(css));
+            themeCss.push(processCustomCss(css));
           }
 
           // Merge registry variables with user overrides
@@ -205,18 +273,6 @@ export const viteThemePlugin = (): Plugin => {
             themeCss.push(`.dark {\n${generateRegistryCss(darkVars)}\n}`);
           }
 
-          const themeFonts = {
-            sans: lightVars["font-sans"] ?? regThemeVars["font-sans"],
-            serif: lightVars["font-serif"] ?? regThemeVars["font-serif"],
-            mono: lightVars["font-mono"] ?? regThemeVars["font-mono"],
-          };
-
-          fontImports.push(
-            ...Object.values(themeFonts)
-              .flatMap((font) => (font ? processFont(font) : []))
-              .map((family) => `@import url('${family}');`),
-          );
-
           if (lightVars["letter-spacing"] !== "0em") {
             themeCss.push(
               "@theme inline {",
@@ -233,7 +289,7 @@ export const viteThemePlugin = (): Plugin => {
             );
           }
         } catch (error) {
-          // eslint-disable-next-line no-console
+          // biome-ignore lint/suspicious/noConsole: Logging allowed here
           console.error("Failed to load shadcn registry theme:", error);
         }
       }
@@ -245,36 +301,19 @@ export const viteThemePlugin = (): Plugin => {
         themeCss.push(`.dark {\n${generateCss(themeConfig.dark)}\n}`);
       }
 
-      if (userFonts.sans.fontFamily) {
-        themeCss.push(
-          `:root {\n  --font-sans: ${userFonts.sans.fontFamily};\n}`,
-        );
-      }
-      if (userFonts.serif.fontFamily) {
-        themeCss.push(
-          `:root {\n  --font-serif: ${userFonts.serif.fontFamily};\n}`,
-        );
-      }
-      if (userFonts.mono.fontFamily) {
-        themeCss.push(
-          `:root {\n  --font-mono: ${userFonts.mono.fontFamily};\n}`,
-        );
+      // Add font family CSS variables
+      const rootVars = [
+        `  --font-sans: ${fonts.families.sans};`,
+        `  --font-mono: ${fonts.families.mono};`,
+      ];
+
+      if (fonts.families.serif) {
+        rootVars.push(`  --font-serif: ${fonts.families.serif};`);
       }
 
-      if (fontImports.length === 0) {
-        fontImports.push(
-          `@import url('${getGoogleFontUrl("Geist")}');`,
-          `@import url('${getGoogleFontUrl("Geist Mono")}');`,
-        );
-        themeCss.push(
-          ":root {",
-          "  --font-sans: Geist, sans-serif;",
-          '  --font-mono: "Geist Mono", monospace;',
-          "}",
-        );
-      }
+      themeCss.push(":root {", ...rootVars, "}");
 
-      return [...fontImports, ...themeCss].join("\n");
+      return themeCss.join("\n");
     },
 
     // Handle static theme content in main.css
@@ -296,7 +335,7 @@ export const viteThemePlugin = (): Plugin => {
       // This @theme block only maps CSS variables to Tailwind utilities
       code.push("@theme inline {");
 
-      // prettier-ignore
+      // biome-ignore format: for readability
       const colorVars = [
         "background", "foreground", "card", "card-foreground", "popover", "popover-foreground", "primary",
         "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground", "accent",
@@ -320,6 +359,11 @@ export const viteThemePlugin = (): Plugin => {
       );
 
       code.push("}");
+
+      const customCss = config.theme?.customCss;
+      if (customCss) {
+        code.push(processCustomCss(customCss));
+      }
 
       const defaultThemeImport = config.theme?.noDefaultTheme
         ? ""

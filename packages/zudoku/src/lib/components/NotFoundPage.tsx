@@ -3,13 +3,13 @@ import { Link, useParams } from "react-router";
 import { CategoryHeading } from "./CategoryHeading.js";
 import { DeveloperHint } from "./DeveloperHint.js";
 import { Heading } from "./Heading.js";
-import { ProseClasses } from "./Markdown.js";
+import { Typography } from "./Typography.js";
 
 export const NotFoundPage = () => {
   const params = useParams();
 
   return (
-    <div className={ProseClasses + " h-full pt-(--padding-content-top)"}>
+    <Typography className="h-full pt-(--padding-content-top)">
       <CategoryHeading>404</CategoryHeading>
       <Heading level={1} className="flex gap-3.5 items-center">
         Page not found
@@ -18,9 +18,10 @@ export const NotFoundPage = () => {
       <DeveloperHint>
         Start by adding a file at{" "}
         <code>
-          {"{PROJECT_ROOT}"}/{params["*"]}.mdx
+          {"{DOCUMENT_ROOT}"}/{params["*"]}.mdx
         </code>{" "}
-        and add some content to make this error go away.
+        and add some content to make this error go away. By default{" "}
+        <code>DOCUMENT_ROOT</code> is the `pages` directory.
       </DeveloperHint>
       <p>
         It seems that the page you are looking for does not exist or may have
@@ -28,6 +29,6 @@ export const NotFoundPage = () => {
         menu to find the correct page.
       </p>
       <Link to="/">Go back home</Link>
-    </div>
+    </Typography>
   );
 };

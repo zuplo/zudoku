@@ -1,46 +1,24 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { InlineCode } from "../../../components/InlineCode.js";
-import { Markdown, ProseClasses } from "../../../components/Markdown.js";
+import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
-import { cn } from "../../../util/cn.js";
-import { objectEntries } from "../../../util/objectEntries.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
-import { LogicalGroup } from "./LogicalGroup/LogicalGroup.js";
+import { AllOfGroupView } from "./AllOfGroup/AllOfGroupView.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   extractCircularRefInfo,
-  hasLogicalGroupings,
   isArrayCircularRef,
   isArrayType,
   isCircularRef,
   isComplexType,
-  LogicalSchemaTypeMap,
 } from "./utils.js";
-
-export const SchemaLogicalGroup = ({ schema }: { schema: SchemaObject }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const toggleOpen = useCallback(() => setIsOpen((prev) => !prev), []);
-
-  for (const [key, type] of objectEntries(LogicalSchemaTypeMap)) {
-    if (!schema[key]) continue;
-
-    return (
-      <LogicalGroup
-        schemas={schema[key]}
-        type={type}
-        isOpen={isOpen}
-        toggleOpen={toggleOpen}
-      />
-    );
-  }
-};
 
 const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
   <InlineCode
@@ -85,7 +63,9 @@ export const SchemaPropertyItem = ({
   }
 
   const isCollapsible = Boolean(
-    (hasLogicalGroupings(schema) ||
+    (schema.allOf ||
+      schema.anyOf ||
+      schema.oneOf ||
       isComplexType(schema) ||
       (isArrayType(schema) &&
         "items" in schema &&
@@ -117,7 +97,7 @@ export const SchemaPropertyItem = ({
         </div>
         {schema.description && (
           <Markdown
-            className={cn(ProseClasses, "text-sm leading-normal line-clamp-4")}
+            className="text-sm leading-normal"
             content={schema.description}
           />
         )}
@@ -127,6 +107,7 @@ export const SchemaPropertyItem = ({
         {schema.const && <ConstValue schema={schema} hideDescription />}
         {schema.enum && <EnumValues values={schema.enum} />}
         <SchemaExampleAndDefault schema={schema} />
+
         {isCollapsible && (
           <Collapsible.Root
             defaultOpen={defaultOpen}
@@ -143,9 +124,9 @@ export const SchemaPropertyItem = ({
             )}
             <Collapsible.Content>
               <div className="mt-2">
-                {hasLogicalGroupings(schema) ? (
-                  <SchemaLogicalGroup schema={schema} />
-                ) : schema.type === "object" ? (
+                {schema.allOf ? (
+                  <AllOfGroupView schema={schema} />
+                ) : schema.anyOf || schema.oneOf || schema.type === "object" ? (
                   <SchemaView schema={schema} />
                 ) : isArrayType(schema) && "items" in schema ? (
                   <SchemaView schema={schema.items} />

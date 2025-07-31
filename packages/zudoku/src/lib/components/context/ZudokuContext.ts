@@ -1,8 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 import { matchPath, useLocation } from "react-router";
-import { type NavigationItem } from "../../../config/validators/NavigationSchema.js";
-import { useAuth } from "../../authentication/hook.js";
+import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS } from "../cache.js";
@@ -40,19 +39,33 @@ const getItemPath = (item: NavigationItem) => {
     case "link":
       return item.to;
     case "custom-page":
-      return item.path;
+      return joinUrl(item.path);
     default:
       return undefined;
   }
 };
-export const useCurrentNavigation = () => {
-  const { getPluginNavigation, navigation, options } = useZudoku();
-  const location = useLocation();
-  const auth = useAuth();
 
-  const isProtectedRoute = options.protectedRoutes?.some((route) =>
-    matchPath(route, location.pathname),
-  );
+const extractAllPaths = (items: NavigationItem[]) => {
+  const paths = new Set<string>();
+
+  const collectPaths = (items: NavigationItem[]) => {
+    for (const item of items) {
+      const itemPath = getItemPath(item)?.split("?").at(0)?.split("#").at(0);
+
+      if (itemPath) paths.add(itemPath);
+      if (item.type === "category") {
+        collectPaths(item.items);
+      }
+    }
+  };
+  collectPaths(items);
+
+  return [...paths];
+};
+
+export const useCurrentNavigation = () => {
+  const { getPluginNavigation, navigation } = useZudoku();
+  const location = useLocation();
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
     if (getItemPath(item) === location.pathname) {
@@ -67,12 +80,8 @@ export const useCurrentNavigation = () => {
 
   let topNavItem = navItem;
   if (!navItem && data.length > 0) {
-    // Extract base paths from plugin navigation items
-    const pluginBasePaths = data.flatMap((item) => {
-      return getItemPath(item)?.split("?").at(0)?.split("#").at(0) ?? [];
-    });
+    const pluginBasePaths = extractAllPaths(data);
 
-    // Find top-level nav item that matches any plugin base path
     topNavItem = navigation
       .flatMap((item) => {
         const itemPath = getItemPath(item);
@@ -88,13 +97,11 @@ export const useCurrentNavigation = () => {
       })?.item;
   }
 
-  const hasNavigation =
-    auth.isAuthEnabled && !auth.isAuthenticated && isProtectedRoute;
-
   return {
-    navigation: hasNavigation
-      ? []
-      : [...(navItem?.type === "category" ? navItem.items : []), ...data],
+    navigation: [
+      ...(navItem?.type === "category" ? navItem.items : []),
+      ...data,
+    ],
     topNavItem,
   };
 };

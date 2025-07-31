@@ -66,7 +66,7 @@ const ZudokoInner = memo(
     const queryClient = useQueryClient();
 
     useEffect(() => {
-      if (didNavigate) {
+      if (didNavigate || !navigation.location) {
         return;
       }
       setDidNavigate(true);
@@ -78,7 +78,7 @@ const ZudokoInner = memo(
       ?.flatMap((plugin) =>
         hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
       )
-      // eslint-disable-next-line react/no-array-index-key
+      // biome-ignore lint/suspicious/noArrayIndexKey: No other key is available
       .map((entry, i) => <Helmet key={i}>{entry}</Helmet>);
 
     return (

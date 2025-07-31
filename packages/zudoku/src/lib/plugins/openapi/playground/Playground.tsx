@@ -1,8 +1,15 @@
 import { useNProgress } from "@tanem/react-nprogress";
 import { useMutation } from "@tanstack/react-query";
-import { Fragment, useEffect, useRef, useState, useTransition } from "react";
+import {
+  CheckIcon,
+  CopyIcon,
+  IdCardLanyardIcon,
+  ShapesIcon,
+} from "lucide-react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
+import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import {
   Select,
   SelectContent,
@@ -10,13 +17,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
-import { PathRenderer } from "../../../components/PathRenderer.js";
+import { useHotkey } from "../../../hooks/useHotkey.js";
+import { cn } from "../../../util/cn.js";
+import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import { ColorizedParam } from "../ColorizedParam.js";
-import { type Content } from "../SidecarExamples.js";
+import type { Content } from "../SidecarExamples.js";
 import { useSelectedServer } from "../state.js";
 import BodyPanel from "./BodyPanel.js";
+import {
+  CollapsibleHeader,
+  CollapsibleHeaderTrigger,
+} from "./CollapsibleHeader.js";
 import { createUrl } from "./createUrl.js";
 import { extractFileName, isBinaryContentType } from "./fileUtils.js";
 import { Headers } from "./Headers.js";
@@ -24,8 +37,10 @@ import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import { useIdentityStore } from "./rememberedIdentity.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
+import { useIdentityStore } from "./rememberedIdentity.js";
+import { UrlPath } from "./request-panel/UrlPath.js";
+import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
@@ -133,6 +148,17 @@ export const Playground = ({
   const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const { label: hotkeyLabel } = useHotkey("meta+enter", () => {
+    formRef.current?.requestSubmit();
+  });
+
+  const pathParamOrder =
+    url.match(/\{([^}]+)\}/g)?.map((match) => match.slice(1, -1)) ?? [];
+  const sortedPathParams = [...pathParams].sort(
+    (a, b) => pathParamOrder.indexOf(a.name) - pathParamOrder.indexOf(b.name),
+  );
 
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
@@ -154,7 +180,7 @@ export const Playground = ({
                   enum: [],
                 },
               ],
-        pathParams: pathParams.map((param) => ({
+        pathParams: sortedPathParams.map((param) => ({
           name: param.name,
           value: param.defaultValue ?? "",
         })),
@@ -178,13 +204,18 @@ export const Playground = ({
         ]),
       },
     });
-  const formState = watch();
+  const identity = watch("identity");
+
+  const authorizationFields = useMemo(
+    () => identities.data?.find((i) => i.id === identity)?.authorizationFields,
+    [identities.data, identity],
+  );
 
   useEffect(() => {
-    if (formState.identity) {
-      latestSetRememberedIdentity.current(formState.identity);
+    if (identity) {
+      latestSetRememberedIdentity.current(identity);
     }
-  }, [latestSetRememberedIdentity, formState.identity]);
+  }, [latestSetRememberedIdentity, identity]);
 
   const queryMutation = useMutation({
     gcTime: 0,
@@ -217,6 +248,10 @@ export const Playground = ({
         3210,
       );
       abortControllerRef.current = new AbortController();
+
+      abortControllerRef.current.signal.addEventListener("abort", () => {
+        clearTimeout(warningTimeout);
+      });
 
       try {
         const response = await fetch(request, {
@@ -297,38 +332,6 @@ export const Playground = ({
     };
   }, []);
 
-  const path = (
-    <PathRenderer
-      path={url}
-      renderParam={({ name, originalValue, index }) => {
-        const formValue = formState.pathParams.find(
-          (param) => param.name === name,
-        )?.value;
-
-        return (
-          <ColorizedParam
-            name={name}
-            backgroundOpacity="0"
-            slug={name}
-            onClick={() => form.setFocus(`pathParams.${index}.value`)}
-          >
-            {formValue || originalValue}
-          </ColorizedParam>
-        );
-      }}
-    />
-  );
-
-  const urlQueryParams = formState.queryParams
-    .filter((p) => p.active)
-    .map((p, i, arr) => (
-      <Fragment key={p.name}>
-        {p.name}={encodeURIComponent(p.value).replaceAll("%20", "+")}
-        {i < arr.length - 1 && "&"}
-        <wbr />
-      </Fragment>
-    ));
-
   const serverSelect = (
     <div className="inline-block opacity-50 hover:opacity-100 transition">
       {server ? (
@@ -362,43 +365,45 @@ export const Playground = ({
   const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
     method.toUpperCase(),
   );
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
 
   return (
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
     >
-      <form
-        onSubmit={handleSubmit((data) => {
-          if (identities.data?.length === 0 || data.identity) {
-            queryMutation.mutate(data);
-          } else {
-            setShowSelectIdentity(true);
-          }
-        })}
-        className="relative"
-      >
-        <IdentityDialog
-          identities={identities.data ?? []}
-          open={showSelectIdentity}
-          onOpenChange={setShowSelectIdentity}
-          onSubmit={({ rememberedIdentity, identity }) => {
-            if (rememberedIdentity) {
-              setValue("identity", identity ?? NO_IDENTITY);
+      <TooltipProvider delayDuration={150}>
+        <form
+          ref={formRef}
+          onSubmit={handleSubmit((data) => {
+            if (identities.data?.length === 0 || data.identity) {
+              queryMutation.mutate(data);
+            } else {
+              setShowSelectIdentity(true);
             }
-            setShowSelectIdentity(false);
-            queryMutation.mutate({ ...formState, identity });
-          }}
-        />
-        <RequestLoginDialog
-          open={showLogin}
-          setOpen={(open) => setSkipLogin(!open)}
-          onSignUp={onSignUp}
-          onLogin={onLogin}
-        />
+          })}
+          className="relative"
+        >
+          <IdentityDialog
+            identities={identities.data ?? []}
+            open={showSelectIdentity}
+            onOpenChange={setShowSelectIdentity}
+            onSubmit={({ rememberedIdentity, identity }) => {
+              if (rememberedIdentity) {
+                setValue("identity", identity ?? NO_IDENTITY);
+              }
+              setShowSelectIdentity(false);
+              queryMutation.mutate({ ...form.getValues(), identity });
+            }}
+          />
+          <RequestLoginDialog
+            open={showLogin}
+            setOpen={(open) => setSkipLogin(!open)}
+            onSignUp={onSignUp}
+            onLogin={onLogin}
+          />
 
-        <div className="grid grid-cols-[1fr_min-content_1fr] text-sm">
-          <div className="col-span-3 p-4 border-b">
-            <div className="flex gap-2 items-stretch">
+          <div className="grid grid-cols-[1fr_1px_1fr] text-sm">
+            <div className="col-span-3 p-4 border-b flex gap-2 items-stretch">
               <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
                 <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
@@ -406,73 +411,123 @@ export const Playground = ({
                 <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
                   <div className="h-full py-1.5">
                     {serverSelect}
-                    {path}
-                    {urlQueryParams.length > 0 ? "?" : ""}
-                    {urlQueryParams}
+                    <UrlPath url={url} />
+                    <UrlQueryParams />
                   </div>
-                  <div
-                    className="h-[1px] bg-primary absolute left-0 -bottom-0 z-10 transition-all duration-300 ease-in-out"
-                    style={{
-                      opacity: isFinished ? 0 : 1,
-                      width: isFinished ? 0 : `${progress * 100}%`,
+                </div>
+                <div className="px-1">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      copyToClipboard(
+                        createUrl(
+                          server ?? selectedServer,
+                          url,
+                          form.getValues(),
+                        ).toString(),
+                      );
                     }}
-                  />
+                    variant="ghost"
+                    size="icon-xs"
+                    className={cn(
+                      "hover:opacity-100 transition",
+                      isCopied ? "text-emerald-600 opacity-100" : "opacity-50",
+                    )}
+                  >
+                    {isCopied ? (
+                      <CheckIcon className="text-green-500" size={14} />
+                    ) : (
+                      <CopyIcon size={14} />
+                    )}
+                  </Button>
                 </div>
               </div>
 
               <Button
                 type="submit"
-                disabled={identities.isLoading || form.formState.isSubmitting}
+                variant={queryMutation.isPending ? "destructive" : "default"}
+                onClick={(e) => {
+                  if (queryMutation.isPending) {
+                    abortControllerRef.current?.abort(
+                      "Request cancelled by user",
+                    );
+                    e.preventDefault();
+                  }
+                }}
+                className="w-18"
               >
-                Send
+                {queryMutation.isPending ? "Cancel" : "Send"}
               </Button>
             </div>
-          </div>
-          <div className="flex flex-col gap-5 p-4 after:bg-muted-foreground/20 relative  overflow-y-auto h-[80vh]">
-            {identities.data?.length !== 0 && (
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-2">
-                  <span className="font-semibold">Authentication</span>
-                  <IdentitySelector
-                    value={formState.identity}
-                    identities={identities.data ?? []}
-                    setValue={(value) => setValue("identity", value)}
-                  />
-                </div>
-              </div>
-            )}
+            <div className="relative overflow-y-auto h-[80vh]">
+              {identities.data?.length !== 0 && (
+                <Collapsible defaultOpen>
+                  <CollapsibleHeaderTrigger>
+                    <IdCardLanyardIcon size={16} />
+                    <CollapsibleHeader className="col-span-2">
+                      Authentication
+                    </CollapsibleHeader>
+                  </CollapsibleHeaderTrigger>
+                  <CollapsibleContent className="CollapsibleContent">
+                    <IdentitySelector
+                      value={identity}
+                      identities={identities.data ?? []}
+                      setValue={(value) => setValue("identity", value)}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
 
-            {pathParams.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <span className="font-semibold">Path Parameters</span>
-                <PathParams url={url} control={control} />
-              </div>
-            )}
+              {sortedPathParams.length > 0 && (
+                <Collapsible defaultOpen>
+                  <CollapsibleHeaderTrigger>
+                    <ShapesIcon size={16} />
+                    <CollapsibleHeader className="col-span-2">
+                      Path Parameters
+                    </CollapsibleHeader>
+                  </CollapsibleHeaderTrigger>
+                  <CollapsibleContent className="CollapsibleContent">
+                    <PathParams url={url} control={control} />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
 
-            <div className="flex flex-col gap-2">
-              <span className="font-semibold">Query Parameters</span>
-              <QueryParams control={control} queryParams={queryParams} />
+              <QueryParams control={control} schemaQueryParams={queryParams} />
+
+              <Headers
+                control={control}
+                schemaHeaders={headers}
+                lockedHeaders={authorizationFields?.headers}
+              />
+              {isBodySupported && <BodyPanel content={examples} />}
             </div>
-
-            <Headers control={control} headers={headers} />
-            {isBodySupported && <BodyPanel examples={examples} />}
+            <div className="w-full bg-muted-foreground/20" />
+            <ResultPanel
+              queryMutation={queryMutation}
+              showLongRunningWarning={showLongRunningWarning}
+              isFinished={isFinished}
+              progress={progress}
+              tip={
+                <div className="text-xs w-full">
+                  <span className="text-muted-foreground">
+                    Press{" "}
+                    <kbd className="text-foreground border rounded m-0.5 px-1 py-0.5 capitalize">
+                      {hotkeyLabel.join(" + ")}
+                    </kbd>{" "}
+                    to send a request
+                  </span>
+                </div>
+              }
+              onCancel={() => {
+                abortControllerRef.current?.abort(
+                  "Request cancelled by the user",
+                );
+                setShowLongRunningWarning(false);
+              }}
+            />
           </div>
-          <div className="w-px bg-muted-foreground/20" />
-          <ResultPanel
-            queryMutation={queryMutation}
-            showPathParamsWarning={formState.pathParams.some(
-              (p) => p.value === "",
-            )}
-            showLongRunningWarning={showLongRunningWarning}
-            onCancel={() => {
-              abortControllerRef.current?.abort(
-                "Request cancelled by the user",
-              );
-              setShowLongRunningWarning(false);
-            }}
-          />
-        </div>
-      </form>
+        </form>
+      </TooltipProvider>
     </FormProvider>
   );
 };

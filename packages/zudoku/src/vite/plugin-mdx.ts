@@ -2,9 +2,8 @@ import rehypeMetaAsAttributes from "@lekoarts/rehype-meta-as-attributes";
 import mdx from "@mdx-js/rollup";
 import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
+import type { Root as HastRoot } from "hast";
 import { toString as hastToString } from "hast-util-to-string";
-import type { Root } from "mdast";
-import path from "node:path";
 import rehypeMdxImportMedia from "rehype-mdx-import-media";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
@@ -14,20 +13,26 @@ import remarkFrontmatter from "remark-frontmatter";
 import remarkGfm from "remark-gfm";
 import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
-import { type Plugin } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
-import { remarkStaticGeneration } from "./remarkStaticGeneration.js";
+import { remarkInjectFilepath } from "./mdx/remark-inject-filepath.js";
+import { remarkLastModified } from "./mdx/remark-last-modified.js";
+import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
+import { remarkNormalizeImageUrl } from "./mdx/remark-normalize-image-url.js";
+import { remarkStaticGeneration } from "./mdx/remark-static-generation.js";
+import { exportMdxjsConst } from "./mdx/utils.js";
 
 // Convert mdxJsxFlowElement img elements to regular element nodes
 // so rehype-mdx-import-media can pick them up
+// biome-ignore lint/suspicious/noExplicitAny: Allow any type
 const rehypeNormalizeMdxImages = () => (tree: any) => {
   visit(tree, ["mdxJsxFlowElement", "mdxJsxElement"], (node) => {
     if (node.type !== "mdxJsxFlowElement") return;
     if (!["img", "video"].includes(node.name)) return;
 
     const hasStringSrc = node.attributes.some(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // biome-ignore lint/suspicious/noExplicitAny: Allow any type
       (attr: any) =>
         attr.type === "mdxJsxAttribute" &&
         attr.name === "src" &&
@@ -38,7 +43,7 @@ const rehypeNormalizeMdxImages = () => (tree: any) => {
 
     node.type = "element";
     node.tagName = node.name;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // biome-ignore lint/suspicious/noExplicitAny: Allow any type
     node.properties = {} as Record<string, any>;
 
     for (const attr of node.attributes) {
@@ -55,34 +60,11 @@ const rehypeNormalizeMdxImages = () => (tree: any) => {
   });
 };
 
-const remarkLinkRewritePlugin =
-  (basePath = "") =>
-  (tree: Root) => {
-    visit(tree, "link", (node) => {
-      if (!node.url) return;
-
-      const base = path.join(basePath);
-      if (node.url.startsWith(base)) {
-        node.url = node.url.slice(base.length);
-      } else if (
-        !node.url.startsWith("http") &&
-        !node.url.startsWith("mailto:") &&
-        !node.url.startsWith("/") &&
-        !node.url.startsWith("#")
-      ) {
-        node.url = path.join("../", node.url);
-      }
-
-      node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
-    });
-  };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rehypeExcerptWithMdxExport = () => (tree: any) => {
+const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
   let excerpt: string | undefined;
 
-  visit(tree, "element", (node) => {
-    if (node.tagName !== "p") return;
+  visit(tree, "element", (node, _index, parent) => {
+    if (node.tagName !== "p" || parent?.type !== "root") return;
 
     excerpt = hastToString(node);
     return EXIT;
@@ -90,39 +72,7 @@ const rehypeExcerptWithMdxExport = () => (tree: any) => {
 
   if (!excerpt) return;
 
-  // Inject the excerpt as a named export into the MDX AST
-  // Injection code taken from @stefanprobst/rehype-extract-toc/mdx
-  tree.children.unshift({
-    type: "mdxjsEsm",
-    data: {
-      estree: {
-        type: "Program",
-        sourceType: "module",
-        body: [
-          {
-            type: "ExportNamedDeclaration",
-            source: null,
-            specifiers: [],
-            declaration: {
-              type: "VariableDeclaration",
-              kind: "const",
-              declarations: [
-                {
-                  type: "VariableDeclarator",
-                  id: { name: "excerpt", type: "Identifier" },
-                  init: {
-                    type: "Literal",
-                    value: excerpt,
-                    raw: JSON.stringify(excerpt),
-                  },
-                },
-              ],
-            },
-          },
-        ],
-      },
-    },
-  });
+  tree.children.unshift(exportMdxjsConst("excerpt", excerpt));
 };
 
 const viteMdxPlugin = (): Plugin => {
@@ -140,13 +90,19 @@ const viteMdxPlugin = (): Plugin => {
       format: "mdx",
       remarkPlugins: [
         remarkStaticGeneration,
+        [remarkInjectFilepath, config.__meta.rootDir],
         remarkComment,
         remarkGfm,
         remarkFrontmatter,
+        // ---  important:
+        // this must be sandwiched between remarkFrontmatter and remarkMdxFrontmatter
+        remarkLastModified,
+        // ---
         remarkMdxFrontmatter,
         remarkDirective,
         remarkDirectiveRehype,
-        [remarkLinkRewritePlugin, config.basePath],
+        [remarkLinkRewrite, config.basePath],
+        [remarkNormalizeImageUrl, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
       ],
       rehypePlugins: [

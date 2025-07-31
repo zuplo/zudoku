@@ -8,7 +8,7 @@ import {
 
 export const viteShikiRegisterPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-shiki-register";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "vite-plugin-shiki-register",

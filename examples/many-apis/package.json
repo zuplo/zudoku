@@ -13,9 +13,5 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"
-  },
-  "devDependencies": {
-    "js-yaml": "4.1.0",
-    "serve": "14.2.4"
   }
 }

@@ -26,19 +26,11 @@
       "dependsOn": ["build"]
     }
   },
-  "plugins": [
-    {
-      "plugin": "@nx/eslint/plugin",
-      "options": {
-        "targetName": "eslint:lint"
-      }
-    }
-  ],
   "cli": {
     "packageManager": "pnpm"
   },
   "release": {
-    "projects": ["zudoku", "create-zudoku-app"],
+    "projects": ["zudoku", "create-zudoku"],
     "releaseTagPattern": "v{version}",
     "versionPlans": true,
     "version": {

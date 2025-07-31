@@ -12,8 +12,6 @@ lerna-debug.log*
 .env
 coverage
 
-# Eslint
-.eslintcache
 
 # compiled output
 dist
@@ -50,6 +48,7 @@ yarn-error.log
 testem.log
 /typings
 *.tsbuildinfo
+.husky/
 
 # System Files
 .DS_Store
@@ -62,7 +61,7 @@ Thumbs.db
 
 .nx/cache
 .nx/workspace-data
-
+.github/instructions/nx.instructions.md
 
 gha-creds-*.json
 
@@ -72,3 +71,6 @@ gha-creds-*.json
 
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
+
+
+.lycheecache

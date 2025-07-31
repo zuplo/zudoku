@@ -1,6 +1,6 @@
+import path from "node:path";
 import { glob } from "glob";
 import globParent from "glob-parent";
-import path from "node:path";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { NavigationResolver } from "../config/validators/NavigationSchema.js";
@@ -13,7 +13,7 @@ const ensureLeadingSlash = joinUrl;
 
 const viteDocsPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-docs-plugin";
-  const resolvedVirtualModuleId = "\0" + virtualModuleId;
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "zudoku-docs-plugin",
@@ -44,7 +44,7 @@ const viteDocsPlugin = (): Plugin => {
       const globImportBasePath =
         process.env.NODE_ENV === "development" ? (config.basePath ?? "") : "";
 
-      const allFileImports: Record<string, string> = {};
+      const globbedDocuments: Record<string, string> = {};
 
       for (const globPattern of docsConfig.files) {
         // This is a workaround for a bug(?) in Vite where `import.meta.glob` failed us:
@@ -73,7 +73,7 @@ const viteDocsPlugin = (): Plugin => {
           const importPath = ensureLeadingSlash(
             path.posix.join(globImportBasePath, file),
           );
-          allFileImports[routePath] = importPath;
+          globbedDocuments[routePath] = importPath;
         }
       }
 
@@ -83,25 +83,32 @@ const viteDocsPlugin = (): Plugin => {
           config,
         ).resolve();
 
-        // Collect custom paths from navigation
         traverseNavigation(resolvedNavigation, (item) => {
-          if (item.type === "doc" && item.path !== item.file) {
-            // Find the import path for this file
-            const fileRoutePath = ensureLeadingSlash(
-              item.file.replace(/\.mdx?$/, ""),
-            );
-            const importPath = allFileImports[fileRoutePath];
-            if (importPath) {
-              // Create route for custom path pointing to the same file
-              allFileImports[ensureLeadingSlash(item.path)] = importPath;
-            }
-          }
+          const doc =
+            item.type === "doc"
+              ? { file: item.file, path: item.path }
+              : item.type === "category" && item.link
+                ? { file: item.link.file, path: item.link.path }
+                : undefined;
+
+          // Only continue if the doc has a custom path
+          if (!doc || doc.path === doc.file) return;
+
+          const fileRoutePath = ensureLeadingSlash(
+            doc.file.replace(/\.mdx?$/, ""),
+          );
+          const importPath = globbedDocuments[fileRoutePath];
+          if (!importPath) return;
+
+          const customPath = ensureLeadingSlash(doc.path);
+          globbedDocuments[customPath] = importPath;
+          delete globbedDocuments[fileRoutePath];
         });
       }
 
       code.push(
         `const fileImports = {`,
-        ...Object.entries(allFileImports).map(
+        ...Object.entries(globbedDocuments).map(
           ([routePath, importPath]) =>
             `  "${routePath}": () => import("${importPath}"),`,
         ),

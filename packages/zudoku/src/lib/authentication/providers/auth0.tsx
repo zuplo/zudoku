@@ -1,7 +1,7 @@
-import { type Auth0AuthenticationConfig } from "../../../config/config.js";
-import {
-  type AuthenticationPlugin,
-  type AuthenticationProviderInitializer,
+import type { Auth0AuthenticationConfig } from "../../../config/config.js";
+import type {
+  AuthenticationPlugin,
+  AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { useAuthState } from "../state.js";
 import { OpenIDAuthenticationProvider } from "./openid.js";
@@ -64,7 +64,7 @@ class Auth0AuthenticationProvider
 
       // window.location.href = logoutUrl.toString();
     } else {
-      const logoutUrl = new URL(
+      const _logoutUrl = new URL(
         `${this.issuer.replace(/\/$/, "")}/oidc/logout`,
       );
       // window.location.href = logoutUrl.toString();

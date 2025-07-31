@@ -68,7 +68,7 @@ jobs:
       - run: git config --global user.email "integrations@zuplo.com"
       - run: git config --global user.name "Zuplo Integrations"
 
-      - run: nx run-many -t root:lint:ci root:format:ci build:ci
+      - run: nx run-many -t root:lint:ci root:format:ci build:ci lint:md
 
       - name: Get Variables
         id: vars
@@ -86,7 +86,7 @@ jobs:
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
-        run: pnpm publish --provenance --filter zudoku --filter create-zudoku-app --no-git-checks --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
+        run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
@@ -202,14 +202,26 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
 
+      - name: Generate a token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: |
+            docs
+            core
+            www
+
       # Trigger updates of internal projects using Zudoku
       - run: gh workflow run update-zudoku.yaml --repo zuplo/docs --ref main
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
       - run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
         # Only for non-prerelease
         if: github.event_name == 'workflow_dispatch'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET_TRIGGER_DOCS_WORKFLOWS }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}

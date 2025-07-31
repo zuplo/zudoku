@@ -62,7 +62,6 @@ async function* searchResultGenerator({
 
       if (transformed === false) {
         // Skip this result
-        continue;
       } else if (transformed === true || transformed == null) {
         // Keep the original result
         yield result;

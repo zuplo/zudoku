@@ -1,17 +1,18 @@
 import type { AuthenticationResult, EventMessage } from "@azure/msal-browser";
 import { EventType, PublicClientApplication } from "@azure/msal-browser";
-import { type AzureB2CAuthenticationConfig } from "../../../config/config.js";
+import { ErrorBoundary } from "react-error-boundary";
+import type { AzureB2CAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import {
-  type AuthenticationPlugin,
-  type AuthenticationProviderInitializer,
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
+import type {
+  AuthenticationPlugin,
+  AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
+import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
-
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 
 const AZUREB2C_CALLBACK_PATH = "/oauth/callback";
 
@@ -181,7 +182,11 @@ export class AzureB2CAuthPlugin
         path: AZUREB2C_CALLBACK_PATH,
         element: (
           <ClientOnly>
-            <CallbackHandler handleCallback={this.handleCallback} />
+            <ErrorBoundary
+              fallbackRender={({ error }) => <OAuthErrorPage error={error} />}
+            >
+              <CallbackHandler handleCallback={this.handleCallback} />
+            </ErrorBoundary>
           </ClientOnly>
         ),
       },

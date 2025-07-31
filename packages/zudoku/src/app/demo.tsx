@@ -1,7 +1,7 @@
 import logger from "loglevel";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
-import { Bootstrap } from "zudoku/components";
+import { Bootstrap } from "zudoku/__internal";
 import type { ZudokuConfig } from "../config/validators/validate.js";
 import DemoAnnouncement from "../lib/demo/DemoAnnouncement.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";
@@ -10,6 +10,10 @@ import "./main.css";
 import { getRoutesByConfig } from "./main.js";
 
 const apiUrl = new URL(window.location.href).searchParams.get("api-url");
+const logoUrl = new URL(window.location.href).searchParams.get("logo-url");
+const logoWidth = new URL(window.location.href).searchParams.get("logo-width");
+const title =
+  new URL(window.location.href).searchParams.get("title") ?? "Zudoku Demo";
 
 if (!apiUrl) {
   throw new Error(
@@ -29,9 +33,9 @@ if (!root) {
 // IMPORTANT: This component must not contain tailwind classes
 // This directory is not processed by the tailwind plugin
 
-const config = {
-  page: {
-    pageTitle: "",
+const config: ZudokuConfig = {
+  site: {
+    title,
     banner: {
       message: <DemoAnnouncement />,
     },
@@ -52,6 +56,19 @@ const config = {
     }),
   ],
 } satisfies ZudokuConfig;
+
+if (logoUrl && logoWidth) {
+  config.site = {
+    ...config.site,
+    logo: {
+      src: {
+        light: logoUrl,
+        dark: logoUrl,
+      },
+      width: logoWidth,
+    },
+  };
+}
 
 const routes = getRoutesByConfig(config);
 const router = createBrowserRouter(routes, {

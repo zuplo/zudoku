@@ -63,7 +63,7 @@ const usePagefind = (options: PagefindOptions) => {
   });
 
   if (result.isError && result.error.message !== "NOT_BUILT_YET") {
-    // eslint-disable-next-line no-console
+    // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.error(result.error);
   }
 
@@ -141,9 +141,7 @@ export const PagefindSearch = ({
             <Callout type="info">
               Search is currently not available in development mode by default.
               <br />
-              To still use search in development, run <code>
-                zudoku build
-              </code>{" "}
+              To still use search in development, run <code>zudoku build</code>{" "}
               and copy the <code>dist/pagefind</code> directory to your{" "}
               <code>public</code> directory.
             </Callout>
@@ -153,6 +151,7 @@ export const PagefindSearch = ({
         </div>
       ) : (
         <ResultList
+          basePath={context.options.basePath}
           searchResults={searchResults ?? []}
           searchTerm={searchTerm}
           onClose={onClose}

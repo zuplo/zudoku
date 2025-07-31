@@ -1,10 +1,10 @@
 import type { Clerk } from "@clerk/clerk-js";
 import { LogOutIcon } from "lucide-react";
-import { type ZudokuPlugin } from "zudoku/plugins";
-import { type ClerkAuthenticationConfig } from "../../../config/config.js";
-import {
-  type AuthenticationPlugin,
-  type AuthenticationProviderInitializer,
+import type { ZudokuPlugin } from "zudoku/plugins";
+import type { ClerkAuthenticationConfig } from "../../../config/config.js";
+import type {
+  AuthenticationPlugin,
+  AuthenticationProviderInitializer,
 } from "../authentication.js";
 import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
@@ -15,6 +15,7 @@ const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
 > = ({
   clerkPubKey,
+  jwtTemplateName,
   redirectToAfterSignOut = "/",
   redirectToAfterSignUp,
   redirectToAfterSignIn,
@@ -61,7 +62,9 @@ const clerkAuth: AuthenticationProviderInitializer<
     if (!clerkApi?.session) {
       throw new Error("No session available");
     }
-    const response = await clerkApi.session.getToken();
+    const response = await clerkApi.session.getToken({
+      template: jwtTemplateName,
+    });
     if (!response) {
       throw new Error("Could not get access token from Clerk");
     }

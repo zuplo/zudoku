@@ -1,26 +1,24 @@
-const baseSettings = {
-  theme: {
-    components: {
-      AIChatPageWrapper: {
-        defaultProps: {
-          size: "shrink-vertically",
-          variant: "no-shadow",
-        },
-      },
-      SearchBarTrigger: {
-        defaultProps: {
-          size: "expand",
-          variant: "subtle", // Choose from 'emphasized' or 'subtle'
-        },
-      },
-    },
-  },
-} as const;
+import type {
+  InkeepAIChatSettings,
+  InkeepBaseSettings,
+  InkeepModalSettings,
+  InkeepSearchSettings,
+} from "@inkeep/cxkit-types";
 
-const modalSettings = {};
+const baseSettings: InkeepBaseSettings = {
+  primaryBrandColor: "#26D6FF",
+};
 
-const searchSettings = {};
+const modalSettings: InkeepModalSettings = {
+  shortcutKey: "k",
+};
 
-const aiChatSettings = {};
+const searchSettings: InkeepSearchSettings = {
+  placeholder: "Search...",
+};
+
+const aiChatSettings: InkeepAIChatSettings = {
+  aiAssistantName: "Assistant",
+};
 
 export { aiChatSettings, baseSettings, modalSettings, searchSettings };

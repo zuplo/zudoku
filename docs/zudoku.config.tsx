@@ -3,79 +3,93 @@ import type { ZudokuConfig } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
-import { DocusaurusDocsLicense } from "./src/DocusaurusDocsLicense";
 import GithubIcon from "./src/GithubIcon";
-import PreviewBanner from "./src/PreviewBanner";
+
 const ThemePlayground = lazy(() => import("./src/ThemeEditor.js"));
+const LandingPage = lazy(() => import("./src/LandingPage"));
 
 const config: ZudokuConfig = {
-  basePath: "/docs",
   canonicalUrlOrigin: "https://zudoku.dev",
-  page: {
+  site: {
     showPoweredBy: true,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
       width: 130,
     },
-    banner: {
-      message: <PreviewBanner />,
-      dismissible: true,
-    },
   },
   theme: {
+    customCss: `
+
+@theme {
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-3deg);
+    }
+    50% {
+      transform: rotate(3deg);
+    }
+  }
+}`,
     light: {
-      primary: "#3b82f6",
+      primary: "#7362ef",
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#3b82f6",
-      primaryForeground: "#FFFFFF",
+      primary: "#7362ef",
+      primaryForeground: "#000000",
     },
-  },
-  mdx: {
-    components: { DocusaurusDocsLicense },
   },
   metadata: {
     title: "%s | Zudoku",
+    defaultTitle: "Zudoku",
     favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
   },
   docs: {
-    files: "/pages/**/*.{md,mdx}",
+    defaultOptions: {
+      showLastModified: true,
+      suggestEdit: {
+        text: "Edit this page",
+        url: "https://github.com/zuplo/zudoku/edit/main/docs/{filePath}",
+      },
+    },
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",
   },
   search: {
-    type: "inkeep",
-    apiKey: "2c941c4469ab259f1ba676d2b6ee595559230399ad90a074",
-    integrationId: "cm4sn77nj00h4jvirrkbe01d1",
-    organizationId: "org_dDOlt2uJlMWM8oIS",
-    primaryBrandColor: "#ff00bd",
-    organizationDisplayName: "Zudoku",
+    type: "pagefind",
   },
   redirects: [
-    { from: "/", to: "/introduction" },
-    { from: "/getting-started", to: "/app-quickstart" },
+    { from: "/docs", to: "/docs/quickstart" },
+    { from: "/getting-started", to: "/docs/quickstart" },
+    { from: "/app-quickstart", to: "/docs/quickstart" },
     { from: "/components", to: "/components/callout" },
+    { from: "/configuration/page", to: "/configuration/site" },
   ],
   navigation: [
     {
+      type: "custom-page",
+      path: "/",
+      display: "hide",
+      element: <LandingPage />,
+      layout: "none",
+    },
+    {
       type: "category",
-      icon: "book",
       label: "Documentation",
       items: docs,
     },
     {
       type: "category",
       label: "Components",
-      icon: "component",
       items: components,
     },
     {
       type: "custom-page",
-      path: "/theme-playground",
-      icon: "palette",
+      path: "/docs/theme-playground",
       label: "Themes",
       element: <ThemePlayground />,
     },
@@ -96,7 +110,7 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: "./schema/placeholder.json",
-      path: "api-placeholder",
+      path: "/docs/api-placeholder",
     },
   ],
   slots: {

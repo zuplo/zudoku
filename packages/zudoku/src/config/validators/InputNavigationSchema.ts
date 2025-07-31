@@ -1,13 +1,16 @@
-import { z } from "zod/v4";
+import { z } from "zod";
+import type { UseAuthReturn } from "../../lib/authentication/hook.js";
+import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import { IconNames } from "./icon-types.js";
 
 const IconSchema = z.enum(IconNames);
 
 const BadgeSchema = z.object({
   label: z.string(),
-  // prettier-ignore
+  // biome-ignore format: for readability
   color: z.enum(["green", "blue", "yellow", "red", "purple", "indigo", "gray", "outline"]),
   invert: z.boolean().optional(),
+  className: z.string().optional(),
 });
 
 const InputNavigationCategoryLinkDocSchema = z.union([
@@ -20,7 +23,12 @@ const InputNavigationCategoryLinkDocSchema = z.union([
 ]);
 
 export const DisplaySchema = z
-  .enum(["auth", "anon", "always", "hide"])
+  .union([
+    z.enum(["auth", "anon", "always", "hide"]),
+    z.custom<
+      (params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean
+    >((val) => typeof val === "function"),
+  ])
   .default("always")
   .optional();
 
@@ -43,7 +51,6 @@ const InputNavigationLinkSchema = z.object({
   to: z.string(),
   label: z.string(),
   icon: IconSchema.optional(),
-  description: z.string().optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
 });
@@ -56,6 +63,7 @@ const InputNavigationCustomPageSchema = z.object({
   icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
+  layout: z.enum(["default", "none"]).optional(),
 });
 
 // Base category schema without items
@@ -63,7 +71,6 @@ const BaseInputNavigationCategorySchema = z.object({
   type: z.literal("category"),
   icon: IconSchema.optional(),
   label: z.string(),
-  description: z.string().optional(),
   collapsible: z.boolean().optional(),
   collapsed: z.boolean().optional(),
   link: InputNavigationCategoryLinkDocSchema.optional(),

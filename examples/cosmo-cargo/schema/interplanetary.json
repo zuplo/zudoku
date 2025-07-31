@@ -123,9 +123,7 @@
           },
           "metadata": {
             "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            },
+            "additionalProperties": true,
             "description": "Simple string-to-string dictionary for cargo metadata",
             "example": {
               "manufacturer": "SpaceTech Inc",
@@ -341,6 +339,643 @@
             "type": "string"
           }
         }
+      },
+      "PaymentMethod": {
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Credit Card",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "credit_card"
+              },
+              "cardNumber": {
+                "type": "string",
+                "pattern": "^[0-9]{16}$"
+              },
+              "expiryDate": {
+                "type": "string",
+                "pattern": "^(0[1-9]|1[0-2])/[0-9]{2}$"
+              },
+              "cvv": {
+                "type": "string",
+                "pattern": "^[0-9]{3,4}$"
+              }
+            },
+            "required": ["type", "cardNumber", "expiryDate", "cvv"]
+          },
+          {
+            "type": "object",
+            "title": "Bank Transfer",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "bank_transfer"
+              },
+              "accountNumber": {
+                "type": "string",
+                "minLength": 10,
+                "maxLength": 20
+              },
+              "routingNumber": {
+                "type": "string",
+                "pattern": "^[0-9]{9}$"
+              },
+              "bankName": {
+                "type": "string"
+              }
+            },
+            "required": ["type", "accountNumber", "routingNumber", "bankName"]
+          },
+          {
+            "type": "object",
+            "title": "Crypto Payment",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "crypto"
+              },
+              "currency": {
+                "type": "string",
+                "enum": ["BTC", "ETH", "USDC"]
+              },
+              "walletAddress": {
+                "type": "string",
+                "minLength": 26,
+                "maxLength": 42
+              }
+            },
+            "required": ["type", "currency", "walletAddress"]
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "CargoContents": {
+        "anyOf": [
+          {
+            "type": "object",
+            "title": "Liquid Cargo",
+            "description": "Properties specific to liquid cargo",
+            "properties": {
+              "state": {
+                "type": "string",
+                "const": "liquid"
+              },
+              "viscosity": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Viscosity in cP"
+              },
+              "density": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Density in kg/m³"
+              },
+              "flammable": {
+                "type": "boolean"
+              }
+            },
+            "required": ["state", "viscosity", "density"]
+          },
+          {
+            "type": "object",
+            "title": "Solid Cargo",
+            "description": "Properties specific to solid cargo",
+            "properties": {
+              "state": {
+                "type": "string",
+                "const": "solid"
+              },
+              "hardness": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 10,
+                "description": "Mohs hardness scale"
+              },
+              "fragile": {
+                "type": "boolean"
+              }
+            },
+            "required": ["state", "hardness"]
+          },
+          {
+            "type": "object",
+            "title": "Gas Cargo",
+            "description": "Properties specific to gaseous cargo",
+            "properties": {
+              "state": {
+                "type": "string",
+                "const": "gas"
+              },
+              "pressure": {
+                "type": "number",
+                "minimum": 0,
+                "description": "Pressure in bar"
+              },
+              "compressed": {
+                "type": "boolean"
+              }
+            },
+            "required": ["state", "pressure"]
+          }
+        ],
+        "discriminator": {
+          "propertyName": "state"
+        }
+      },
+      "PrimitiveUnion": {
+        "anyOf": [
+          {
+            "type": "string",
+            "description": "Text identifier"
+          },
+          {
+            "type": "number",
+            "description": "Numeric identifier"
+          },
+          {
+            "type": "boolean",
+            "description": "Flag value"
+          }
+        ]
+      },
+      "NullableString": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "FlexibleArray": {
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "number"
+                }
+              },
+              "required": ["id", "value"]
+            }
+          ]
+        }
+      },
+      "MixedRequirements": {
+        "anyOf": [
+          {
+            "type": "object",
+            "title": "Option A",
+            "properties": {
+              "common": {
+                "type": "string",
+                "description": "Common field across all variants"
+              },
+              "optionA": {
+                "type": "string"
+              },
+              "specificToA": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": ["common", "optionA"]
+          },
+          {
+            "type": "object",
+            "title": "Option B",
+            "properties": {
+              "common": {
+                "type": "string",
+                "description": "Common field across all variants"
+              },
+              "optionB": {
+                "type": "boolean"
+              },
+              "specificToB": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": ["common", "optionB", "specificToB"]
+          },
+          {
+            "type": "object",
+            "title": "Option C",
+            "properties": {
+              "common": {
+                "type": "string",
+                "description": "Common field across all variants"
+              },
+              "optionC": {
+                "type": "integer",
+                "enum": [1, 2, 3]
+              }
+            },
+            "required": ["common"]
+          }
+        ]
+      },
+      "LargeUnion": {
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Type 1",
+            "properties": {
+              "type": { "const": 1 },
+              "data": { "type": "string" }
+            },
+            "required": ["type", "data"]
+          },
+          {
+            "type": "object",
+            "title": "Type 2",
+            "properties": {
+              "type": { "const": 2 },
+              "data": { "type": "number" }
+            },
+            "required": ["type", "data"]
+          },
+          {
+            "type": "object",
+            "title": "Type 3",
+            "properties": {
+              "type": { "const": 3 },
+              "data": { "type": "boolean" }
+            },
+            "required": ["type", "data"]
+          },
+          {
+            "type": "object",
+            "title": "Type 4",
+            "properties": {
+              "type": { "const": 4 },
+              "data": { "type": "array", "items": { "type": "string" } }
+            },
+            "required": ["type", "data"]
+          },
+          {
+            "type": "object",
+            "title": "Type 5",
+            "properties": {
+              "type": { "const": 5 },
+              "data": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["type", "data"]
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "EnhancedShipment": {
+        "description": "An enhanced shipment that combines base shipment properties with premium features",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InterplanetaryShipment"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "premiumFeatures": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "title": "Insurance Package",
+                    "properties": {
+                      "featureType": {
+                        "type": "string",
+                        "const": "insurance"
+                      },
+                      "coverageAmount": {
+                        "type": "number",
+                        "minimum": 1000,
+                        "description": "Coverage amount in credits"
+                      },
+                      "deductible": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Deductible amount in credits"
+                      },
+                      "coverageType": {
+                        "type": "string",
+                        "enum": ["BASIC", "COMPREHENSIVE", "PLATINUM"],
+                        "description": "Type of insurance coverage"
+                      }
+                    },
+                    "required": [
+                      "featureType",
+                      "coverageAmount",
+                      "coverageType"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "title": "Advanced Tracking",
+                    "properties": {
+                      "featureType": {
+                        "type": "string",
+                        "const": "tracking"
+                      },
+                      "updateFrequency": {
+                        "type": "string",
+                        "enum": ["HOURLY", "REAL_TIME", "QUANTUM_ENTANGLED"],
+                        "description": "How often tracking updates are provided"
+                      },
+                      "sensors": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "LOCATION",
+                            "TEMPERATURE",
+                            "RADIATION",
+                            "ACCELERATION",
+                            "QUANTUM_STATE"
+                          ]
+                        },
+                        "minItems": 1,
+                        "description": "Active sensors for tracking"
+                      }
+                    },
+                    "required": ["featureType", "updateFrequency", "sensors"]
+                  },
+                  {
+                    "type": "object",
+                    "title": "Priority Handling",
+                    "properties": {
+                      "featureType": {
+                        "type": "string",
+                        "const": "priority"
+                      },
+                      "queuePosition": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 10,
+                        "description": "Priority queue position (1 is highest)"
+                      },
+                      "guaranteedDelivery": {
+                        "type": "boolean",
+                        "description": "Whether delivery date is guaranteed"
+                      },
+                      "compensationRate": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 100,
+                        "description": "Compensation percentage for late delivery"
+                      }
+                    },
+                    "required": [
+                      "featureType",
+                      "queuePosition",
+                      "guaranteedDelivery"
+                    ]
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "featureType"
+                }
+              },
+              "securityOptions": {
+                "description": "Additional security measures for the shipment",
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "title": "Biometric Lock",
+                    "properties": {
+                      "biometricLock": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": ["FINGERPRINT", "RETINAL", "DNA"]
+                          },
+                          "authorizedPersonnel": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1
+                          }
+                        },
+                        "required": ["type", "authorizedPersonnel"]
+                      }
+                    },
+                    "required": ["biometricLock"]
+                  },
+                  {
+                    "type": "object",
+                    "title": "Quantum Encryption",
+                    "properties": {
+                      "quantumEncryption": {
+                        "type": "object",
+                        "properties": {
+                          "qubits": {
+                            "type": "integer",
+                            "minimum": 128,
+                            "maximum": 4096
+                          },
+                          "entanglementKey": {
+                            "type": "string",
+                            "pattern": "^QK-[A-Z0-9]{16}$"
+                          }
+                        },
+                        "required": ["qubits", "entanglementKey"]
+                      }
+                    },
+                    "required": ["quantumEncryption"]
+                  },
+                  {
+                    "type": "object",
+                    "title": "Armed Escort",
+                    "properties": {
+                      "armedEscort": {
+                        "type": "object",
+                        "properties": {
+                          "escortShips": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5
+                          },
+                          "weaponClass": {
+                            "type": "string",
+                            "enum": ["DEFENSIVE", "OFFENSIVE", "MIXED"]
+                          }
+                        },
+                        "required": ["escortShips", "weaponClass"]
+                      }
+                    },
+                    "required": ["armedEscort"]
+                  }
+                ]
+              }
+            },
+            "required": ["premiumFeatures"]
+          }
+        ]
+      },
+      "ComplexRoute": {
+        "description": "A complex routing configuration with nested logical operators",
+        "type": "object",
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "configuration": {
+            "allOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "baseRoute": {
+                    "$ref": "#/components/schemas/ShippingRoute"
+                  }
+                },
+                "required": ["baseRoute"]
+              },
+              {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "title": "Emergency Route",
+                    "properties": {
+                      "routeClass": {
+                        "type": "string",
+                        "const": "emergency"
+                      },
+                      "hazardType": {
+                        "type": "string",
+                        "enum": [
+                          "ASTEROID_FIELD",
+                          "SOLAR_FLARE",
+                          "PIRATE_ACTIVITY",
+                          "WORMHOLE_INSTABILITY"
+                        ]
+                      },
+                      "alternativeStops": {
+                        "type": "array",
+                        "items": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "title": "Space Station",
+                              "properties": {
+                                "type": { "const": "station" },
+                                "stationId": { "type": "string" },
+                                "dockingBay": { "type": "integer" }
+                              },
+                              "required": ["type", "stationId"]
+                            },
+                            {
+                              "type": "object",
+                              "title": "Emergency Beacon",
+                              "properties": {
+                                "type": { "const": "beacon" },
+                                "coordinates": {
+                                  "type": "object",
+                                  "properties": {
+                                    "x": { "type": "number" },
+                                    "y": { "type": "number" },
+                                    "z": { "type": "number" }
+                                  },
+                                  "required": ["x", "y", "z"]
+                                }
+                              },
+                              "required": ["type", "coordinates"]
+                            }
+                          ]
+                        },
+                        "minItems": 1
+                      }
+                    },
+                    "required": ["routeClass", "hazardType", "alternativeStops"]
+                  },
+                  {
+                    "type": "object",
+                    "title": "Optimized Route",
+                    "properties": {
+                      "routeClass": {
+                        "type": "string",
+                        "const": "optimized"
+                      },
+                      "optimizationCriteria": {
+                        "anyOf": [
+                          {
+                            "type": "object",
+                            "properties": {
+                              "criterion": { "const": "fuel_efficiency" },
+                              "targetSaving": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 50,
+                                "description": "Target fuel saving percentage"
+                              }
+                            },
+                            "required": ["criterion", "targetSaving"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "criterion": { "const": "time_optimization" },
+                              "maxDays": {
+                                "type": "integer",
+                                "minimum": 1
+                              }
+                            },
+                            "required": ["criterion", "maxDays"]
+                          },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "criterion": { "const": "safety_priority" },
+                              "avoidanceZones": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "ASTEROID_BELT",
+                                    "RADIATION_ZONE",
+                                    "CONTESTED_SPACE"
+                                  ]
+                                },
+                                "minItems": 1
+                              }
+                            },
+                            "required": ["criterion", "avoidanceZones"]
+                          }
+                        ]
+                      }
+                    },
+                    "required": ["routeClass", "optimizationCriteria"]
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "routeClass"
+                }
+              }
+            ]
+          }
+        },
+        "required": ["routeId", "configuration"]
       }
     }
   },

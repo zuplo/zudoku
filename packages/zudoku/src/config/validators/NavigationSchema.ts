@@ -1,7 +1,8 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { glob } from "glob";
 import matter from "gray-matter";
-import { type LucideIcon } from "lucide-react";
-import fs from "node:fs/promises";
+import type { LucideIcon } from "lucide-react";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
   InputNavigationCategory,
@@ -59,6 +60,9 @@ const extractTitleFromContent = (content: string): string | undefined =>
 const isNavigationItem = (item: unknown): item is NavigationItem =>
   item !== undefined;
 
+const toPosixPath = (filePath: string) =>
+  filePath.split(path.win32.sep).join(path.posix.sep);
+
 export class NavigationResolver {
   private rootDir: string;
   private globPatterns: string[];
@@ -75,7 +79,7 @@ export class NavigationResolver {
     this.globFiles = await glob(this.globPatterns, {
       root: this.rootDir,
       ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
-    });
+    }).then((files) => files.map(toPosixPath));
 
     const resolvedItems = await Promise.all(
       this.items.map((item) => this.resolveItem(item)),
@@ -88,14 +92,16 @@ export class NavigationResolver {
     filePath: string,
     categoryLabel?: string,
   ): Promise<NavigationDoc | undefined> {
+    const fileNoExt = toPosixPath(filePath).replace(/\.mdx?$/, "");
+
     const foundMatches = this.globFiles.find(
       (file) =>
-        file.endsWith(`${filePath}.md`) || file.endsWith(`${filePath}.mdx`),
+        file.endsWith(`${fileNoExt}.md`) || file.endsWith(`${fileNoExt}.mdx`),
     );
 
     if (!foundMatches) {
       throw new Error(
-        `File not found for document '${filePath}'. Check your navigation configuration.`,
+        `File not found for document '${filePath}'. Navigation items of type 'doc' must point to a valid .md or .mdx file. Do you mean 'link' or 'custom-page'? Check navigation configuration documentation for more information: https://zudoku.dev/docs/configuration/navigation`,
       );
     }
 
@@ -117,7 +123,7 @@ export class NavigationResolver {
       label,
       icon,
       categoryLabel,
-      path: filePath,
+      path: fileNoExt,
     } satisfies NavigationDoc;
 
     return doc;

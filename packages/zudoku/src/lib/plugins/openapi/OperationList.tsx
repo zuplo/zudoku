@@ -1,4 +1,4 @@
-import { type ResultOf } from "@graphql-typed-document-node/core";
+import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
@@ -16,17 +16,16 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
-import { Heading } from "../../components/Heading.js";
-import { Markdown, ProseClasses } from "../../components/Markdown.js";
-import { Pagination } from "../../components/Pagination.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
-import { cn } from "../../util/cn.js";
-import { Endpoint } from "./Endpoint.js";
-import { OperationListItem } from "./OperationListItem.js";
+import { Heading } from "../../components/Heading.js";
+import { Markdown } from "../../components/Markdown.js";
+import { Pagination } from "../../components/Pagination.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
+import { Endpoint } from "./Endpoint.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
+import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 
@@ -221,6 +220,8 @@ export const OperationList = ({
       : undefined,
   };
 
+  const helmetTitle = [schema.tag.name, title].filter(Boolean).join(" - ");
+
   return (
     <div
       className="pt-(--padding-content-top)"
@@ -228,7 +229,7 @@ export const OperationList = ({
       data-pagefind-meta="section:openapi"
     >
       <Helmet>
-        <title>{[schema.tag.name, title].filter(Boolean).join(" - ")}</title>
+        {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (
           <meta name="description" content={metaDescription} />
         )}
@@ -244,7 +245,7 @@ export const OperationList = ({
                 registerNavigationAnchor
                 className="mb-0"
               >
-                {schema.tag.name ?? "Other endpoints"}
+                {schema.tag.name ?? "Documentation"}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ms-1.5">
                     {" "}
@@ -257,6 +258,7 @@ export const OperationList = ({
             <div className="flex flex-col gap-4 sm:items-end">
               {showVersions && (
                 <Select
+                  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
                   onValueChange={(version) => navigate(versions[version]!)}
                   defaultValue={version}
                   disabled={!hasMultipleVersions}
@@ -291,14 +293,9 @@ export const OperationList = ({
           </div>
           {schema.description && (
             <CollapsibleContent className="CollapsibleContent">
-              <div
-                className={cn(
-                  ProseClasses,
-                  "pt-4 max-w-full prose-img:max-w-prose",
-                )}
-              >
+              <div className="mt-4 max-w-full border rounded-sm bg-muted/25">
                 <Markdown
-                  className="border rounded-sm bg-muted/25 border-border px-2.5 md:px-4"
+                  className="max-w-full prose-img:max-w-prose border-border p-3 lg:p-5"
                   content={schema.description}
                 />
               </div>
@@ -306,14 +303,10 @@ export const OperationList = ({
           )}
         </Collapsible>
         {tagDescription && (
-          <div
-            className={cn(
-              ProseClasses,
-              "my-4 max-w-full prose-img:max-w-prose",
-            )}
-          >
-            <Markdown content={tagDescription} />
-          </div>
+          <Markdown
+            className="my-4 max-w-full prose-img:max-w-prose"
+            content={tagDescription}
+          />
         )}
       </div>
       <hr />

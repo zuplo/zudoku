@@ -4,8 +4,9 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 export const isBasicType = (
   type: unknown,
 ): type is "string" | "number" | "boolean" | "integer" | "null" =>
-  typeof type === "string" &&
-  ["string", "number", "boolean", "integer", "null"].includes(type);
+  (typeof type === "string" &&
+    ["string", "number", "boolean", "integer", "null"].includes(type)) ||
+  (Array.isArray(type) && type.every(isBasicType));
 
 export const isArrayType = (value: SchemaObject) =>
   value.type === "array" ||
@@ -19,17 +20,6 @@ export const isComplexType = (value?: SchemaObject) =>
     (value.type === "array" &&
       typeof value.items === "object" &&
       (!value.items.type || value.items.type === "object")));
-
-export const hasLogicalGroupings = (value: SchemaObject) =>
-  Boolean(value.oneOf ?? value.allOf ?? value.anyOf);
-
-export const LogicalSchemaTypeMap = {
-  allOf: "AND",
-  anyOf: "OR",
-  oneOf: "ONE",
-} as const;
-
-export type LogicalGroupType = "AND" | "OR" | "ONE";
 
 export const isCircularRef = (schema: unknown): schema is string =>
   typeof schema === "string" && schema.startsWith(CIRCULAR_REF);

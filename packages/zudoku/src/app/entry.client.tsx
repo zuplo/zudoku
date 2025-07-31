@@ -1,15 +1,16 @@
+import config from "virtual:zudoku-config";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import {
   createBrowserRouter,
   matchRoutes,
   type RouteObject,
 } from "react-router";
-import config from "virtual:zudoku-config";
 import "vite/modulepreload-polyfill";
-import { Bootstrap } from "zudoku/components";
+import { Bootstrap } from "zudoku/__internal";
 import { getRoutesByConfig } from "./main.js";
 
 const routes = getRoutesByConfig(config);
+// biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
 
 declare global {
@@ -33,7 +34,7 @@ if (root.childElementCount > 0) {
 }
 
 if (import.meta.env.IS_ZUPLO) {
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.log(
     `%cPowered by Zuplo v${window.ZUDOKU_VERSION}`,
     [
@@ -46,7 +47,7 @@ if (import.meta.env.IS_ZUPLO) {
     ].join(" ;"),
   );
 } else {
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.log(
     `%cZUDOKU%c by Zuplo v${window.ZUDOKU_VERSION}`,
     [
@@ -69,7 +70,7 @@ if (import.meta.env.IS_ZUPLO) {
       "letter-spacing: 5px",
     ].join(" ;"),
   );
-  // eslint-disable-next-line no-console
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.log("» Learn more about Zudoku https://zudoku.dev");
 }
 
@@ -84,7 +85,7 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
       lazyMatches.map(async (m) => {
         if (typeof m.route.lazy !== "function") return;
 
-        const routeModule = await m.route.lazy!();
+        const routeModule = await m.route.lazy();
         Object.assign(m.route, { ...routeModule, lazy: undefined });
       }),
     );

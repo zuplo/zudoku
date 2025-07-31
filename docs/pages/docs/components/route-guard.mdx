@@ -1,0 +1,361 @@
+---
+title: RouteGuard
+sidebar_icon: shield-check
+---
+
+A component that provides authentication and authorization protection for routes and components.
+
+## Usage
+
+The RouteGuard component wraps content that requires authentication or specific permissions.
+
+```tsx
+import { RouteGuard } from "zudoku";
+
+function ProtectedContent() {
+  return (
+    <RouteGuard>
+      <h1>Protected Content</h1>
+      <p>This content is only visible to authenticated users.</p>
+    </RouteGuard>
+  );
+}
+```
+
+## Features
+
+- **Authentication Control**: Restricts access to authenticated users only
+- **Permission-Based Access**: Support for role and permission-based authorization
+- **Flexible Fallbacks**: Customizable content for unauthorized access
+- **Integration Ready**: Works seamlessly with Zudoku's authentication system
+
+## Basic Protection
+
+### Authentication Required
+
+```tsx
+<RouteGuard>
+  <AdminDashboard />
+</RouteGuard>
+```
+
+### With Custom Fallback
+
+```tsx
+<RouteGuard fallback={<LoginPrompt />}>
+  <UserProfile />
+</RouteGuard>
+```
+
+### Inline Fallback
+
+```tsx
+<RouteGuard fallback="Please log in to view this content">
+  <PremiumFeatures />
+</RouteGuard>
+```
+
+## Advanced Usage
+
+### Role-Based Protection
+
+```tsx
+<RouteGuard requiredRole="admin">
+  <AdminPanel />
+</RouteGuard>
+```
+
+### Permission-Based Protection
+
+```tsx
+<RouteGuard requiredPermissions={["read:docs", "write:docs"]}>
+  <DocumentEditor />
+</RouteGuard>
+```
+
+### Multiple Conditions
+
+```tsx
+<RouteGuard
+  requiredRole="editor"
+  requiredPermissions={["edit:content"]}
+  fallback={<AccessDeniedMessage />}
+>
+  <ContentManagement />
+</RouteGuard>
+```
+
+## Integration with Routes
+
+### Protected Route
+
+```tsx
+import { createBrowserRouter } from "react-router";
+import { RouteGuard } from "zudoku";
+
+const router = createBrowserRouter([
+  {
+    path: "/admin",
+    element: (
+      <RouteGuard requiredRole="admin">
+        <AdminLayout />
+      </RouteGuard>
+    ),
+    children: [
+      {
+        path: "users",
+        element: <UserManagement />,
+      },
+    ],
+  },
+]);
+```
+
+### Nested Protection
+
+```tsx
+function App() {
+  return (
+    <Layout>
+      <RouteGuard>
+        {/* All child routes require authentication */}
+        <Outlet />
+      </RouteGuard>
+    </Layout>
+  );
+}
+```
+
+### Conditional Protection
+
+```tsx
+function ConditionallyProtected({ requireAuth, children }) {
+  if (requireAuth) {
+    return <RouteGuard fallback={<LoginButton />}>{children}</RouteGuard>;
+  }
+
+  return children;
+}
+```
+
+## Authentication States
+
+### Loading State
+
+```tsx
+<RouteGuard loadingFallback={<Spinner />}>
+  <ProtectedContent />
+</RouteGuard>
+```
+
+### Error State
+
+```tsx
+<RouteGuard errorFallback={<AuthError />} fallback={<LoginForm />}>
+  <SecureData />
+</RouteGuard>
+```
+
+### Unauthenticated State
+
+```tsx
+<RouteGuard
+  fallback={
+    <div className="text-center py-8">
+      <h2>Authentication Required</h2>
+      <p>Please sign in to access this content.</p>
+      <Button asChild>
+        <Link to="/login">Sign In</Link>
+      </Button>
+    </div>
+  }
+>
+  <UserDashboard />
+</RouteGuard>
+```
+
+## Permission Patterns
+
+### Resource-Specific Permissions
+
+```tsx
+function DocumentView({ documentId }) {
+  return (
+    <RouteGuard requiredPermissions={[`read:document:${documentId}`]}>
+      <DocumentContent id={documentId} />
+    </RouteGuard>
+  );
+}
+```
+
+### Hierarchical Permissions
+
+```tsx
+<RouteGuard
+  requiredPermissions={["admin", "moderator"]}
+  requireAll={false} // OR logic instead of AND
+>
+  <ModerationTools />
+</RouteGuard>
+```
+
+### Dynamic Permissions
+
+```tsx
+function DynamicGuard({ resource, action, children }) {
+  const permission = `${action}:${resource}`;
+
+  return <RouteGuard requiredPermissions={[permission]}>{children}</RouteGuard>;
+}
+
+// Usage
+<DynamicGuard resource="posts" action="delete">
+  <DeleteButton />
+</DynamicGuard>;
+```
+
+## Custom Authorization Logic
+
+### Custom Guard Component
+
+```tsx
+function CustomRouteGuard({ children, customCheck, fallback = <AccessDenied /> }) {
+  const { user } = useAuth();
+  const hasAccess = customCheck(user);
+
+  return <RouteGuard>{hasAccess ? children : fallback}</RouteGuard>;
+}
+```
+
+### Time-Based Access
+
+```tsx
+function TimeBasedGuard({ children, allowedHours }) {
+  const currentHour = new Date().getHours();
+  const isAllowed = allowedHours.includes(currentHour);
+
+  return <RouteGuard>{isAllowed ? children : <OutsideBusinessHours />}</RouteGuard>;
+}
+```
+
+### Subscription-Based Access
+
+```tsx
+function SubscriptionGuard({ children, requiredPlan }) {
+  const { user } = useAuth();
+  const hasValidSubscription = user?.subscription?.plan === requiredPlan;
+
+  return <RouteGuard>{hasValidSubscription ? children : <UpgradePrompt />}</RouteGuard>;
+}
+```
+
+## Error Handling
+
+### Authentication Errors
+
+```tsx
+<RouteGuard
+  onAuthError={(error) => {
+    console.error("Auth error:", error);
+    // Redirect to login or show error
+  }}
+  fallback={<AuthenticationError />}
+>
+  <ProtectedContent />
+</RouteGuard>
+```
+
+### Permission Errors
+
+```tsx
+<RouteGuard
+  onPermissionError={(missingPermissions) => {
+    analytics.track("access_denied", {
+      permissions: missingPermissions,
+    });
+  }}
+  requiredPermissions={["admin"]}
+>
+  <AdminTools />
+</RouteGuard>
+```
+
+## Best Practices
+
+### Granular Protection
+
+```tsx
+// Protect specific features, not entire pages
+function UserProfile() {
+  return (
+    <div>
+      <h1>User Profile</h1>
+      <PublicInfo />
+
+      <RouteGuard>
+        <PrivateInfo />
+      </RouteGuard>
+
+      <RouteGuard requiredRole="admin">
+        <AdminControls />
+      </RouteGuard>
+    </div>
+  );
+}
+```
+
+### Layered Security
+
+```tsx
+// Combine route-level and component-level protection
+const protectedRoutes = [
+  {
+    path: "/admin",
+    element: (
+      <RouteGuard requiredRole="admin">
+        <AdminLayout />
+      </RouteGuard>
+    ),
+    children: [
+      {
+        path: "sensitive",
+        element: (
+          <RouteGuard requiredPermissions={["access:sensitive"]}>
+            <SensitiveData />
+          </RouteGuard>
+        ),
+      },
+    ],
+  },
+];
+```
+
+### User Experience
+
+```tsx
+<RouteGuard
+  fallback={
+    <div className="max-w-md mx-auto text-center py-12">
+      <Lock size={48} className="mx-auto mb-4 text-gray-400" />
+      <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+      <p className="text-gray-600 mb-4">Please sign in to access this content.</p>
+      <Button asChild>
+        <Link to="/login">Sign In</Link>
+      </Button>
+    </div>
+  }
+>
+  <ProtectedContent />
+</RouteGuard>
+```
+
+## Notes
+
+:::tip Use RouteGuard at multiple levels - route level for page protection and component level for
+feature protection. :::
+
+:::info RouteGuard integrates with Zudoku's authentication system and will automatically check user
+authentication state and permissions. :::
+
+:::caution Always provide meaningful fallback content to guide users on how to gain access to
+protected content. :::

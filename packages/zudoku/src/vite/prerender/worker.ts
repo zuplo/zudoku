@@ -1,13 +1,13 @@
 import path from "node:path";
 import Piscina from "piscina";
 import { matchPath } from "react-router";
-import { type ZudokuConfig } from "../../config/validators/validate.js";
+import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
+import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
 import { InMemoryResponse } from "./InMemoryResponse.js";
-import { type WorkerResult } from "./prerender.js";
+import type { WorkerResult } from "./prerender.js";
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 type EntryServer = typeof import("../../app/entry.server.js");
 
 export type StaticWorkerData = {
@@ -44,9 +44,13 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   });
 
   const sharedOpts = { template, request, routes, basePath };
-  const isProtectedRoute = config.protectedRoutes?.some((route) =>
-    matchPath(route, urlPath),
-  );
+
+  const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
+  const isProtectedRoute = protectedRoutes
+    ? Object.keys(protectedRoutes).some((route) =>
+        matchPath({ path: route, end: true }, urlPath),
+      )
+    : false;
 
   let html: string;
 

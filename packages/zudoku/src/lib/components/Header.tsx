@@ -37,9 +37,8 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
       <DropdownMenuSubTrigger>{item.label}</DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          {item.children.map((item, i) => (
-            // eslint-disable-next-line react/no-array-index-key
-            <RecursiveMenu key={i} item={item} />
+          {item.children.map((child) => (
+            <RecursiveMenu key={child.label} item={child} />
           ))}
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
@@ -60,56 +59,58 @@ export const Header = memo(function HeaderInner() {
   const auth = useAuth();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
-  const { page, plugins, options } = context;
+  const { site, plugins, options } = context;
 
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
     .flatMap((p) => p.getProfileMenuItems(context))
     .sort((i) => i.weight ?? 0);
 
-  const logoLightSrc = page?.logo
-    ? /https?:\/\//.test(page.logo.src.light)
-      ? page.logo.src.light
-      : joinUrl(options.basePath, page.logo.src.light)
+  const logoLightSrc = site?.logo
+    ? /https?:\/\//.test(site.logo.src.light)
+      ? site.logo.src.light
+      : joinUrl(options.basePath, site.logo.src.light)
     : undefined;
-  const logoDarkSrc = page?.logo
-    ? /https?:\/\//.test(page.logo.src.dark)
-      ? page.logo.src.dark
-      : joinUrl(options.basePath, page.logo.src.dark)
+  const logoDarkSrc = site?.logo
+    ? /https?:\/\//.test(site.logo.src.dark)
+      ? site.logo.src.dark
+      : joinUrl(options.basePath, site.logo.src.dark)
     : undefined;
 
   const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";
 
   return (
-    <header className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full">
+    <header
+      className="sticky lg:top-0 z-10 bg-background/80 backdrop-blur w-full"
+      data-pagefind-ignore="all"
+    >
       <Banner />
       <div className={cn(borderBottom, "relative")}>
         <PageProgress />
         <div className="max-w-screen-2xl mx-auto flex items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
           <div className="flex">
-            <Link to="/">
+            <Link to={site?.logo?.href ?? "/"}>
               <div className="flex items-center gap-3.5">
-                {page?.logo && (
+                {site?.logo ? (
                   <>
                     <img
                       src={logoLightSrc}
-                      alt={page.logo.alt ?? page.pageTitle}
-                      style={{ width: page.logo.width }}
+                      alt={site.logo.alt ?? site.title}
+                      style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) dark:hidden"
                       loading="lazy"
                     />
                     <img
                       src={logoDarkSrc}
-                      alt={page.logo.alt ?? page.pageTitle}
-                      style={{ width: page.logo.width }}
+                      alt={site.logo.alt ?? site.title}
+                      style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) hidden dark:block"
                       loading="lazy"
                     />
                   </>
+                ) : (
+                  <span className="font-semibold text-2xl">{site?.title}</span>
                 )}
-                <span className="font-semibold text-2xl">
-                  {page?.pageTitle}
-                </span>
               </div>
             </Link>
           </div>

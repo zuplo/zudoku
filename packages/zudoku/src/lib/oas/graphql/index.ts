@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 import SchemaBuilder from "@pothos/core";
 import {
   type CountableSlugify,
@@ -554,6 +554,7 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
       resolve: (root) =>
         Object.entries(root.paths ?? {}).map(([path, value]) => ({
           path,
+          // biome-ignore lint/style/noNonNullAssertion: value is guaranteed to be defined
           methods: Object.keys(value!) as typeof HttpMethods,
         })),
     }),

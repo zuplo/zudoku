@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// biome-ignore lint/suspicious/noExplicitAny: Allow any type
 export type RecordAny = Record<string, any>;
 
 export type JsonPrimitive = string | number | boolean | null;

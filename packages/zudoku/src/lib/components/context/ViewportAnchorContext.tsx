@@ -1,12 +1,12 @@
 import {
   createContext,
+  type PropsWithChildren,
   use,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type PropsWithChildren,
 } from "react";
 
 type AnchorContextType = {
@@ -128,7 +128,7 @@ export const ViewportAnchorProvider = ({ children }: PropsWithChildren) => {
 
   const value = useMemo(
     () => ({ activeAnchor, setActiveAnchor, ...observeFns }),
-    [activeAnchor, setActiveAnchor, observeFns],
+    [activeAnchor, observeFns],
   );
 
   return (

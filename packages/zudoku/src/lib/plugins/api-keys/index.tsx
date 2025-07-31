@@ -1,11 +1,12 @@
 import { KeyRoundIcon } from "lucide-react";
-import { type RouteObject } from "react-router";
-import { type ZudokuContext } from "../../core/ZudokuContext.js";
-import {
-  type ApiIdentityPlugin,
-  type ProfileMenuPlugin,
-  type ZudokuPlugin,
+import type { RouteObject } from "react-router";
+import type { UseAuthReturn } from "../../authentication/hook.js";
+import type {
+  ApiIdentityPlugin,
+  ProfileMenuPlugin,
+  ZudokuPlugin,
 } from "../../core/plugins.js";
+import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
 import { ProtectedRoute } from "./ProtectedRoute.js";
@@ -26,10 +27,15 @@ export type ApiKeyService = {
     context: ZudokuContext,
   ) => Promise<void>;
   getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
-  createKey?: (
-    apiKey: { description: string; expiresOn?: string },
-    context: ZudokuContext,
-  ) => Promise<void>;
+  createKey?: ({
+    apiKey,
+    context,
+    auth,
+  }: {
+    apiKey: { description: string; expiresOn?: string };
+    context: ZudokuContext;
+    auth: UseAuthReturn;
+  }) => Promise<void>;
 };
 
 export type ApiKeyPluginOptions =
@@ -56,7 +62,28 @@ export interface ApiConsumer {
   key?: ApiKey;
 }
 
-const createDefaultHandler = (deploymentName: string): ApiKeyService => {
+const parseJsonSafe = async (response: Response) => {
+  try {
+    return await response.json();
+  } catch {
+    return;
+  }
+};
+
+const throwIfProblemJson = async (response: Response) => {
+  const contentType = response.headers.get("content-type");
+  if (!response.ok && contentType?.includes("application/problem+json")) {
+    const data = await parseJsonSafe(response);
+    if (data.type && data.title) {
+      throw new Error(data.detail ?? data.title);
+    }
+  }
+};
+
+const createDefaultHandler = (
+  deploymentName: string,
+  options: ApiKeyPluginOptions,
+): ApiKeyService => {
   return {
     deleteKey: async (consumerId, keyId, context) => {
       const request = new Request(
@@ -67,8 +94,8 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
         },
       );
       await context.signRequest(request);
-
       const response = await fetch(request);
+      await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
     updateConsumer: async (consumer, context) => {
@@ -89,6 +116,7 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
           ),
         ),
       );
+      await throwIfProblemJson(response);
       invariant(response.ok, "Failed to update API key description");
     },
     rollKey: async (consumerId, context) => {
@@ -107,22 +135,25 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
           ),
         ),
       );
+      await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
     getConsumers: async (context) => {
       const request = new Request(
-        DEFAULT_API_KEY_ENDPOINT + `/${deploymentName}/consumers`,
+        `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers`,
       );
       await context.signRequest(request);
 
       const keys = await fetch(request);
+      await throwIfProblemJson(keys);
       invariant(keys.ok, "Failed to fetch API keys");
 
       const data = (await keys.json()) as {
         data: [
           {
             id: string;
-            label: string;
+            label?: string;
+            subject?: string;
             apiKeys: {
               data: ApiKey[];
             };
@@ -132,11 +163,12 @@ const createDefaultHandler = (deploymentName: string): ApiKeyService => {
 
       return data.data.map((consumer) => ({
         id: consumer.id,
-        label: consumer.label || "API Key",
+        label: consumer.label || consumer.subject || "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
       }));
     },
+    ...options,
   };
 };
 
@@ -148,7 +180,7 @@ export const apiKeyPlugin = (
 ): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
   const service: ApiKeyService =
     "deploymentName" in options
-      ? createDefaultHandler(options.deploymentName)
+      ? createDefaultHandler(options.deploymentName, options)
       : options;
 
   return {
@@ -174,14 +206,13 @@ export const apiKeyPlugin = (
             return request;
           },
           id: consumer.id,
-          label: consumer.description ?? consumer.id,
+          label: consumer.label,
         }));
       } catch {
         return [];
       }
     },
     getRoutes: (): RouteObject[] => {
-      // TODO: Make lazy
       return [
         {
           element: <ProtectedRoute />,
@@ -191,10 +222,6 @@ export const apiKeyPlugin = (
               path: "/settings/api-keys",
               element: <SettingsApiKeys service={service} />,
             },
-            // {
-            //   path: "/settings/api-keys/new",
-            //   element: <CreateApiKey service={service} />,
-            // },
           ],
         },
       ];

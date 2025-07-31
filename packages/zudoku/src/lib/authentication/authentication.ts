@@ -1,6 +1,6 @@
 export interface AuthenticationPlugin {
-  signUp(options?: { redirectTo?: string }): Promise<void>;
-  signIn(options?: { redirectTo?: string }): Promise<void>;
+  signUp(options?: { redirectTo?: string; replace?: boolean }): Promise<void>;
+  signIn(options?: { redirectTo?: string; replace?: boolean }): Promise<void>;
   signOut(): Promise<void>;
   // @deprecated use signRequest instead
   getAccessToken(): Promise<string>;
@@ -8,6 +8,6 @@ export interface AuthenticationPlugin {
   signRequest(request: Request): Promise<Request>;
 }
 
-export interface AuthenticationProviderInitializer<TConfig> {
-  (config: TConfig): AuthenticationPlugin;
-}
+export type AuthenticationProviderInitializer<TConfig> = (
+  config: TConfig,
+) => AuthenticationPlugin;

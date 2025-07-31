@@ -2,17 +2,17 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown, ProseClasses } from "../../components/Markdown.js";
+import { Markdown } from "../../components/Markdown.js";
 import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
-import { OperationsFragment } from "./OperationList.js";
-import { ParameterList } from "./ParameterList.js";
-import { Sidecar } from "./Sidecar.js";
 import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
+import { OperationsFragment } from "./OperationList.js";
+import { ParameterList } from "./ParameterList.js";
+import { Sidecar } from "./Sidecar.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { methodForColor } from "./util/methodToColor.js";
 
@@ -82,27 +82,25 @@ export const OperationListItem = ({
         >
           {operation.description && (
             <Markdown
-              className={`${ProseClasses} max-w-full prose-img:max-w-prose`}
+              className="max-w-full prose-img:max-w-prose"
               content={operation.description}
             />
           )}
-          {operation.parameters && operation.parameters.length > 0 && (
-            <>
-              {PARAM_GROUPS.flatMap((group) =>
-                groupedParameters[group]?.length ? (
-                  <ParameterList
-                    key={group}
-                    summary={operation.summary ?? undefined}
-                    id={operation.slug}
-                    parameters={groupedParameters[group]}
-                    group={group}
-                  />
-                ) : (
-                  []
-                ),
-              )}
-            </>
-          )}
+          {operation.parameters &&
+            operation.parameters.length > 0 &&
+            PARAM_GROUPS.flatMap((group) =>
+              groupedParameters[group]?.length ? (
+                <ParameterList
+                  key={group}
+                  summary={operation.summary ?? undefined}
+                  id={operation.slug}
+                  parameters={groupedParameters[group]}
+                  group={group}
+                />
+              ) : (
+                []
+              ),
+            )}
           {renderIf(operation.requestBody?.content?.at(0)?.schema, (schema) => (
             <div className="mt-4 flex flex-col gap-4">
               <Heading

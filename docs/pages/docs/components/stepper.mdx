@@ -1,0 +1,125 @@
+---
+title: Stepper
+sidebar_icon: list-ordered
+---
+
+A vertical stepper component that displays a sequence of steps with automatic numbering and visual
+connections between steps. Perfect for multi-step processes, tutorials, or guided workflows.
+
+## Usage
+
+Wrap Markdown lists with the `Stepper` component to create a vertical stepper like this:
+
+<div className="flex gap-4 sm:items-center sm:flex-row flex-col">
+  <div className="flex-1">
+
+<!-- prettier-ignore -->
+```tsx
+    <Stepper>
+
+1. **Identify the Problem**
+1. **Plan Your Project**
+1. **Build Your Solution**
+1. **Test and Deploy**
+
+</Stepper>
+```
+
+  </div>
+  <div className="flex-1">
+
+    <Stepper>
+
+1. **Identify the Problem**
+1. **Plan Your Project**
+1. **Build Your Solution**
+1. **Test and Deploy**
+
+</Stepper>
+  </div>
+</div>
+
+## Advanced Example
+
+<Stepper>
+
+1. **Identify the Problem**
+
+   Begin by identifying the problem you're trying to solve. This foundational step ensures you're
+   building the right solution for your needs.
+
+1. **Plan Your Project**
+
+   Define your project requirements and goals. This ensures you're building the right solution for
+   your needs.
+
+   :::info
+
+   Make sure you have gathered all the information you need before you start planning your project.
+
+   :::
+
+1. **Build Your Solution**
+
+   With a solid plan in place, start implementing your solution. Break down complex tasks into
+   manageable pieces and track your progress.
+   - Create component structure
+   - Implement core functionality
+   - Add styling and polish
+
+1. **Test and Deploy** 🚀
+
+   ```sh
+   pnpm build
+   pnpm test
+   pnpm deploy --prod
+   ```
+
+</Stepper>
+
+<details>
+  <summary>**See Markdown for example above 👆**</summary>
+
+<SyntaxHighlight language="mdx" code={`
+<Stepper>
+
+1. **Identify the Problem**
+
+   Begin by identifying the problem you're trying to solve. This foundational step ensures you're
+   building the right solution for your needs.
+
+1. **Plan Your Project**
+
+   Define your project requirements and goals. This ensures you're building the right solution for
+   your needs.
+
+   :::info
+
+   Make sure you have gathered all the information you need before you start planning your project.
+
+   :::
+
+1. **Build Your Solution**
+
+   With a solid plan in place, start implementing your solution. Break down complex tasks into
+   manageable pieces and track your progress.
+   - Create component structure
+   - Implement core functionality
+   - Add styling and polish
+
+1. **Test and Deploy** 🚀
+
+<!-- prettier-ignore-start -->
+   \`\`\`sh
+
+   pnpm build 
+   pnpm test 
+   pnpm deploy --prod
+
+   \`\`\`
+<!-- prettier-ignore-end -->
+
+</Stepper>
+`.trim()} />
+
+</details>

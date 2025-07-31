@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 import { describe, expect, it } from "vitest";
 import { removeExtensions } from "./removeExtensions.js";
 

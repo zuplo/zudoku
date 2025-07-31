@@ -9,7 +9,10 @@ export const CategoryHeading = ({
   className?: string;
 }) => {
   return (
-    <div className={cx("text-sm font-semibold text-primary mb-2", className)}>
+    <div
+      className={cx("text-sm font-semibold text-primary mb-2", className)}
+      data-pagefind-ignore="all"
+    >
       {children}
     </div>
   );

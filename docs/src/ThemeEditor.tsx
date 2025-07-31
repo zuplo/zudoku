@@ -43,7 +43,7 @@ export const ThemeEditor = () => {
   const { resolvedTheme, setTheme } = useTheme();
   const [color, setColor] = useState<string>();
   const [radius, setRadius] = useState<number>();
-  const [customCss, setCustomCss] = useState<string>("");
+  const [customCss, setCustomCss] = useState("");
   const [isPasteDialogOpen, setIsPasteDialogOpen] = useState(false);
 
   const activeColor = useMemo(() => {
@@ -77,7 +77,7 @@ export const ThemeEditor = () => {
         );
       });
     };
-  }, [activeColor, resolvedTheme, radius, customCss]);
+  }, [activeColor, resolvedTheme, radius]);
 
   const handleReset = () => {
     setColor(undefined);
@@ -88,6 +88,34 @@ export const ThemeEditor = () => {
   const handlePasteTheme = (pastedCss: string) => {
     setCustomCss(pastedCss);
   };
+
+  const themeConfig = useMemo(() => {
+    return {
+      theme: {
+        light: Object.fromEntries(
+          Object.entries(activeColor?.cssVars.light ?? {})
+            .concat(
+              typeof radius === "number"
+                ? // biome-ignore lint/suspicious/noExplicitAny: no need to be explicit
+                  [["radius", `${radius}rem` as any]]
+                : [],
+            )
+            .map(([key, value]) => [kebabToCamel(key), value.toString()]),
+        ),
+
+        dark: Object.fromEntries(
+          Object.entries(activeColor?.cssVars.dark ?? {})
+            .concat(
+              typeof radius === "number"
+                ? // biome-ignore lint/suspicious/noExplicitAny: no need to be explicit
+                  [["radius", `${radius}rem` as any]]
+                : [],
+            )
+            .map(([key, value]) => [kebabToCamel(key), value.toString()]),
+        ),
+      },
+    };
+  }, [activeColor?.cssVars, radius]);
 
   return (
     <div className="not-prose">
@@ -111,42 +139,9 @@ export const ThemeEditor = () => {
             </DialogHeader>
             <SyntaxHighlight
               language="css"
-              showCopy="always"
-              showCopyText
-              className="p-2 border rounded-lg max-h-[400px] overflow-y-auto"
-              code={JSON.stringify(
-                {
-                  theme: {
-                    light: Object.fromEntries(
-                      Object.entries(activeColor?.cssVars.light ?? {})
-                        .concat(
-                          typeof radius === "number"
-                            ? [["radius", `${radius}rem` as any]]
-                            : [],
-                        )
-                        .map(([key, value]) => [
-                          kebabToCamel(key),
-                          value.toString(),
-                        ]),
-                    ),
-
-                    dark: Object.fromEntries(
-                      Object.entries(activeColor?.cssVars.dark ?? {})
-                        .concat(
-                          typeof radius === "number"
-                            ? [["radius", `${radius}rem` as any]]
-                            : [],
-                        )
-                        .map(([key, value]) => [
-                          kebabToCamel(key),
-                          value.toString(),
-                        ]),
-                    ),
-                  },
-                },
-                null,
-                2,
-              )}
+              className="max-h-[350px]"
+              showLanguageIndicator
+              code={JSON.stringify(themeConfig, null, 2)}
             />
           </DialogContent>
         </Dialog>
@@ -203,7 +198,7 @@ export const ThemeEditor = () => {
           </DialogContent>
         </Dialog>
         <Button size="sm" asChild variant="link">
-          <Link to="/customization/colors-theme">Documentation</Link>
+          <Link to="/docs/customization/colors-theme">Documentation</Link>
         </Button>
       </div>
       <div className="border-border border-b border-dashed border-px my-2" />

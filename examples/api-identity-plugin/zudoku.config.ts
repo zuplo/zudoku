@@ -1,8 +1,8 @@
-import { type ZudokuConfig } from "zudoku";
+import type { ZudokuConfig } from "zudoku";
 import { createApiIdentityPlugin } from "zudoku/plugins";
 
 const config: ZudokuConfig = {
-  page: {
+  site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
@@ -15,9 +15,17 @@ const config: ZudokuConfig = {
       to: "/documentation/introduction",
     },
   ],
-  topNavigation: [
-    { id: "documentation/introduction", label: "Introduction" },
-    { id: "api", label: "Demo API" },
+  navigation: [
+    {
+      type: "category",
+      label: "Documentation",
+      items: ["documentation/introduction"],
+    },
+    {
+      type: "link",
+      to: "/api",
+      label: "Rick & Morty API",
+    },
   ],
   docs: {
     files: "/pages/**/*.mdx",
