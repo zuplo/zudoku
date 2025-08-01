@@ -28,6 +28,9 @@ type ReactComponentDocProps = {
 
 export const ReactComponentDoc = ({ component }: ReactComponentDocProps) => {
   const docgen = component.__docgenInfo;
+
+  if (!docgen) return null;
+
   return (
     <Card className="not-prose">
       <div className="flex flex-col gap-2">
