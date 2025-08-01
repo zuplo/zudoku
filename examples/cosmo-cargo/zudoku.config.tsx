@@ -251,6 +251,17 @@ const config: ZudokuConfig = {
       path: "/catalog/api-tracking",
       categories: [{ label: "General", tags: ["Tracking"] }],
     },
+    {
+      type: "file",
+      input: "./schema/ai-cargo.json",
+      path: "/catalog/api-ai-cargo",
+      categories: [
+        {
+          label: "AI & Automation",
+          tags: ["MCP Integration", "AI Optimization"],
+        },
+      ],
+    },
   ],
   theme: {
     light: {
