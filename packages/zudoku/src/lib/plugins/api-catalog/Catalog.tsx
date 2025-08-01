@@ -62,6 +62,13 @@ export const Catalog = ({
                   <Markdown
                     className="text-sm whitespace-pre-wrap mb-6 line-clamp-2"
                     content={api.description}
+                    components={{
+                      // Because we're wrapping the description in a Link already,
+                      // we need to strip out other links to not get a hydration error, like:
+                      // > In HTML, <a> cannot be a descendant of <a>.
+                      // > This will cause a hydration error.
+                      a: (props) => <span {...props} />,
+                    }}
                   />
                 </div>
               </Link>
