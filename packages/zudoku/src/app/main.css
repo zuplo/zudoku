@@ -1,5 +1,6 @@
 /* @vite-plugin-inject defaultTheme */
 @import "tailwindcss" source("..");
+@import "tw-animate-css";
 
 /* @vite-plugin-inject main */
 
