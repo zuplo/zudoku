@@ -237,9 +237,23 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
               {service.createKey && "Get started and create your first key."}
             </p>
             {service.createKey && (
-              <Button asChild variant="outline">
-                <Link to="/settings/api-keys/new">Create API Key</Link>
-              </Button>
+              <Dialog
+                open={isCreateApiKeyOpen}
+                onOpenChange={setIsCreateApiKeyOpen}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="outline">Create API Key</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create API Key</DialogTitle>
+                  </DialogHeader>
+                  <CreateApiKey
+                    service={service}
+                    onOpenChange={setIsCreateApiKeyOpen}
+                  />
+                </DialogContent>
+              </Dialog>
             )}
           </div>
         ) : (
