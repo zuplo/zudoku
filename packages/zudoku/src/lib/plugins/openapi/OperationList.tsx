@@ -1,4 +1,3 @@
-import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
@@ -23,6 +22,7 @@ import { Pagination } from "../../components/Pagination.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { Endpoint } from "./Endpoint.js";
+import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
@@ -96,7 +96,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
   }
 `);
 
-export type OperationListItemResult = ResultOf<typeof OperationsFragment>;
+export type OperationListItemResult = OperationsFragmentFragment;
 
 const SchemaWarmupQuery = graphql(/* GraphQL */ `
   query SchemaWarmup($input: JSON!, $type: SchemaType!) {
@@ -129,6 +129,7 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
           slug
           ...OperationsFragment
         }
+        extensions
         next {
           name
           slug
@@ -220,7 +221,8 @@ export const OperationList = ({
       : undefined,
   };
 
-  const helmetTitle = [schema.tag.name, title].filter(Boolean).join(" - ");
+  const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
+  const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
   return (
     <div
@@ -245,7 +247,7 @@ export const OperationList = ({
                 registerNavigationAnchor
                 className="mb-0"
               >
-                {schema.tag.name ?? "Documentation"}
+                {tagTitle}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ms-1.5">
                     {" "}
