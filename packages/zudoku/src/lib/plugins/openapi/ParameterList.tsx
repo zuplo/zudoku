@@ -1,11 +1,9 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { Heading } from "../../components/Heading.js";
 import { Card } from "../../ui/Card.js";
+import type { ParameterItem } from "./graphql/graphql.js";
 import type { ParameterGroup } from "./OperationListItem.js";
-import {
-  ParameterListItem,
-  type ParameterListItemResult,
-} from "./ParameterListItem.js";
+import { ParameterListItem } from "./ParameterListItem.js";
 
 export const ParameterList = ({
   summary,
@@ -15,7 +13,7 @@ export const ParameterList = ({
 }: {
   summary?: string;
   group: ParameterGroup;
-  parameters: ParameterListItemResult[];
+  parameters: ParameterItem[];
   id: string;
 }) => (
   <>

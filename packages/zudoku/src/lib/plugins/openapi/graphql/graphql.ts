@@ -314,6 +314,7 @@ export type OperationsForTagQuery = {
       __typename?: "SchemaTag";
       name?: string | null;
       description?: string | null;
+      extensions?: any | null;
       operations: Array<
         { __typename?: "OperationItem"; slug: string } & {
           " $fragmentRefs"?: {
@@ -532,6 +533,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
         slug
         ...OperationsFragment
       }
+      extensions
       next {
         name
         slug

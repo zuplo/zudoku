@@ -1,7 +1,9 @@
-import { useAuth } from "zudoku/components";
-import type { OperationListItemResult } from "./OperationList.js";
+import { useAuth } from "zudoku/hooks";
+import type {
+  MediaTypeObject,
+  OperationsFragmentFragment,
+} from "./graphql/graphql.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
-import type { Content } from "./SidecarExamples.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -11,8 +13,8 @@ export const PlaygroundDialogWrapper = ({
 }: {
   server?: string;
   servers?: string[];
-  operation: OperationListItemResult;
-  examples?: Content;
+  operation: OperationsFragmentFragment;
+  examples?: MediaTypeObject[];
 }) => {
   const { isAuthEnabled, login, signup, isPending, isAuthenticated } =
     useAuth();
