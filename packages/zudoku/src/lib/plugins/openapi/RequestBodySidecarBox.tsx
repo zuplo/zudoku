@@ -1,11 +1,12 @@
+import type { MediaTypeObject } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
-import { type Content, SidecarExamples } from "./SidecarExamples.js";
+import { SidecarExamples } from "./SidecarExamples.js";
 
 export const RequestBodySidecarBox = ({
   content,
   onExampleChange,
 }: {
-  content: Content;
+  content: MediaTypeObject[];
   onExampleChange?: (example: unknown) => void;
 }) => {
   if (content.length === 0) return null;

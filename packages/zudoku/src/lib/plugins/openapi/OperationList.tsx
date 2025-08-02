@@ -22,7 +22,6 @@ import { Pagination } from "../../components/Pagination.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { Endpoint } from "./Endpoint.js";
-import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
@@ -95,8 +94,6 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     }
   }
 `);
-
-export type OperationListItemResult = OperationsFragmentFragment;
 
 const SchemaWarmupQuery = graphql(/* GraphQL */ `
   query SchemaWarmup($input: JSON!, $type: SchemaType!) {

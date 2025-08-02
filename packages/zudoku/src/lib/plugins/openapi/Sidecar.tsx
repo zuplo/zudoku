@@ -12,8 +12,8 @@ import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
+import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
-import type { OperationListItemResult } from "./OperationList.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
@@ -54,7 +54,7 @@ export const Sidecar = ({
   selectedResponse,
   onSelectResponse,
 }: {
-  operation: OperationListItemResult;
+  operation: OperationsFragmentFragment;
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
 }) => {

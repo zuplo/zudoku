@@ -23,7 +23,7 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import type { Content } from "../SidecarExamples.js";
+import type { MediaTypeObject } from "../graphql/graphql.js";
 import { useSelectedServer } from "../state.js";
 import BodyPanel from "./BodyPanel.js";
 import {
@@ -117,7 +117,7 @@ export type PlaygroundContentProps = {
   queryParams?: QueryParam[];
   pathParams?: PathParam[];
   defaultBody?: string;
-  examples?: Content;
+  examples?: MediaTypeObject[];
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
