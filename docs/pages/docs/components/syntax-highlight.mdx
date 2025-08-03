@@ -61,3 +61,349 @@ You can either use `children` or `code` prop to pass the code to the component.
   console.log(i);
 }`}
 </SyntaxHighlight>
+
+## Supported Languages
+
+Here are examples for all supported languages:
+
+### TypeScript / JavaScript / TSX
+
+```typescript title="User.ts"
+interface User {
+  name: string;
+  age: number;
+}
+
+const greet = (user: User): string => `Hello, ${user.name}!`;
+```
+
+```javascript title="fibonacci.js"
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(10));
+```
+
+```tsx title="App.tsx"
+export const App = () => {
+  return <div>Hello, World!</div>;
+};
+```
+
+### Markdown / MDX
+
+```markdown title="hello.md"
+# Hello World
+
+This is **bold** and _italic_ text.
+
+- Item 1
+- Item 2
+
+[Link to Zudoku](https://zudoku.dev)
+```
+
+```mdx title="welcome.mdx"
+import { Button } from "./Button";
+
+# Welcome to MDX
+
+<Button onClick={() => alert("Hello!")}>Click me</Button>
+```
+
+### JSON / YAML / TOML
+
+```json title="package.json"
+{
+  "name": "zudoku",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}
+```
+
+```yaml title="package.yml"
+name: zudoku
+version: 1.0.0
+scripts:
+  dev: vite
+  build: vite build
+```
+
+```toml title="package.toml"
+[package]
+name = "zudoku"
+version = "1.0.0"
+
+[dependencies]
+react = "^19.0.0"
+```
+
+### Shell / Bash / Terminal
+
+```bash title="build.sh"
+#!/bin/bash
+
+# Install and build
+npm install
+
+if [ "$NODE_ENV" = "production" ]; then
+  npm run build
+else
+  npm run dev
+fi
+```
+
+```ansi title=ANSI
+$ pnpm run build
+
+> zudoku@1.0.0 build
+
+[36mvite v7.0.5 [32mbuilding for production...[0m
+[32m✓ 34 modules transformed.
+[90mdist/[39m[32mindex.html                 [0m[90m0.46 kB[0m [33m│ gzip:  0.30 kB[0m
+[90mdist/[39m[36massets/index-4sK2hL.css   [0m[90m24.67 kB[0m [33m│ gzip:  4.72 kB[0m
+[90mdist/[39m[35massets/index-B1tPwS.js   [0m[90m143.18 kB[0m [33m│ gzip: 46.13 kB[0m
+[34m✓ built in 1.23s
+```
+
+### GraphQL
+
+```graphql title="schema.graphql"
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type Query {
+  user(id: ID!): User
+  users: [User!]!
+}
+
+type Mutation {
+  createUser(name: String!, email: String!): User!
+}
+```
+
+### Python
+
+```python title="data_processor.py"
+import asyncio
+from typing import List, Optional
+
+class DataProcessor:
+    def __init__(self, name: str):
+        self.name = name
+
+    async def process_items(self, items: List[str]) -> dict:
+        results = [await self._process(item) for item in items]
+        return {"processed": len(results), "items": results}
+```
+
+### C#
+
+```csharp title="user_service.cs"
+using System;
+using System.Linq;
+
+public class UserService {
+    private readonly List<User> _users = new();
+
+    public async Task<User?> GetUserAsync(int id) {
+        await Task.Delay(100);
+        return _users.FirstOrDefault(u => u.Id == id);
+    }
+}
+```
+
+### Rust
+
+```rust title="main.rs"
+use std::collections::HashMap;
+
+fn main() {
+    let mut scores = HashMap::new();
+    scores.insert(String::from("Blue"), 10);
+    scores.insert(String::from("Red"), 50);
+
+    println!("Team scores: {:?}", scores);
+}
+```
+
+### Ruby
+
+```ruby title="todo_list.rb"
+class TodoList
+  attr_reader :name, :items
+
+  def initialize(name)
+    @name = name
+    @items = []
+  end
+
+  def add_item(description)
+    @items << { description: description, completed: false }
+  end
+end
+```
+
+### PHP
+
+```php title="user.php"
+<?php
+class User {
+    public function __construct(
+        public readonly int $id,
+        public readonly string $name,
+        public readonly string $email
+    ) {}
+
+    public function getDisplayName(): string {
+        return ucfirst($this->name);
+    }
+}
+```
+
+### HTML
+
+<!-- prettier-ignore -->
+```html title="index.html"
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Zudoku Example</title>
+  </head>
+  <body>
+    <h1>Welcome to Zudoku</h1>
+    <p>Build beautiful documentation sites with ease.</p>
+    <p>
+      Nunc nec ornare libero. Sed ultricies lorem vitae enim vestibulum, at posuere augue ullamcorper.
+    </p>
+  </body>
+</html>
+```
+
+### CSS
+
+```css title="styles.css"
+.button {
+  background-color: #007bff;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+```
+
+### Java
+
+```java title="user_service.java"
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class UserService {
+    private List<User> users;
+
+    public List<User> getActiveUsers() {
+        return users.stream()
+            .filter(User::isActive)
+            .collect(Collectors.toList());
+    }
+}
+```
+
+### Go
+
+```go title="main.go"
+package main
+
+import "fmt"
+
+type User struct {
+    ID    int
+    Name  string
+    Email string
+}
+
+func main() {
+    user := User{ID: 1, Name: "Alice", Email: "alice@example.com"}
+    fmt.Printf("User: %+v\n", user)
+}
+```
+
+### Kotlin
+
+```kotlin title="user.kt"
+data class User(val id: Long, val name: String, val email: String)
+
+class UserRepository {
+    private val users = mutableListOf<User>()
+
+    fun addUser(user: User) {
+        users.add(user)
+    }
+
+    fun findById(id: Long): User? = users.find { it.id == id }
+}
+```
+
+### Objective-C
+
+```objc title="user.m"
+#import <Foundation/Foundation.h>
+
+@interface User : NSObject
+@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong) NSString *email;
+@property (nonatomic, assign) NSInteger userId;
+
+- (instancetype)initWithName:(NSString *)name
+                       email:(NSString *)email
+                      userId:(NSInteger)userId;
+@end
+```
+
+### Swift
+
+```swift title="user.swift"
+import Foundation
+
+struct User: Codable {
+    let id: UUID
+    let name: String
+    let email: String
+
+    init(name: String, email: String) {
+        self.id = UUID()
+        self.name = name
+        self.email = email
+    }
+}
+```
+
+### XML
+
+```xml title="app.xml"
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appSettings>
+    <add key="ApplicationName" value="Zudoku" />
+    <add key="Version" value="1.0.0" />
+  </appSettings>
+  <modules>
+    <module name="Auth" enabled="true" />
+    <module name="Logging" enabled="true" />
+  </modules>
+</configuration>
+```

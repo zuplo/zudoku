@@ -34,7 +34,7 @@ directly in your config as they may be exposed to the client.
 Below is an example of the default Zudoku configuration. You can edit this configuration to suit
 your own needs.
 
-```typescript
+```ts title=zudoku.config.ts
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
@@ -68,7 +68,7 @@ There are multiple options for referencing your OpenAPI document. The example be
 OpenAPI document, but you can also use a local file path. For full details on the options available,
 see the [API Reference](./api-reference.md).
 
-```json
+```ts
 {
   // ...
   "apis": {
@@ -86,7 +86,7 @@ Controls global page attributes across the site, including logos and the site ti
 
 **Example:**
 
-```json
+```ts
 {
   // ...
   "site": {
@@ -108,7 +108,7 @@ Controls global page attributes across the site, including logos and the site ti
 Defines navigation for both the top bar and the sidebar. Items can be categories, links or custom
 pages.
 
-```json
+```ts
 {
   // ...
   "navigation": [
@@ -134,7 +134,7 @@ to create a great looking theme based off your primary color.
 
 **Example:**
 
-```json
+```ts
 {
   // ...
   "theme": {
@@ -158,7 +158,7 @@ below.
 
 **Example:**
 
-```json
+```ts
 {
   // ...
   "metadata": {
@@ -186,7 +186,7 @@ structure in place, or to have it match an existing structure that you already h
 
 **Example:**
 
-```json
+```ts
 {
   // ...
   "docs": {
@@ -200,7 +200,7 @@ structure in place, or to have it match an existing structure that you already h
 
 Controls the sitemap for your documentation. All possible options are outlined in the example below.
 
-```json
+```ts
 {
   // ...
   "sitemap": {
@@ -235,7 +235,7 @@ URL.
 
 **Example:**
 
-```json
+```ts
 {
   // ...
   "redirects": [
@@ -251,7 +251,7 @@ URL.
 The port on which the development server will run. Defaults to `3000`. This option can also be
 passed to the CLI as `--port' (which takes precedence).
 
-```json
+```ts
 {
   "port": 9001
 }
@@ -316,7 +316,7 @@ single CDN URL or an object to specify different URLs for base and media assets.
 
 Enables HTTPS for the dev server. `key` and `cert` are required and `ca` is optional.
 
-```json
+```ts
 {
   "https": {
     "key": "/path/to/key.pem",

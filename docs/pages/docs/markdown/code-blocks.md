@@ -9,6 +9,9 @@ description:
 Zudoku supports code blocks in Markdown using the [Shiki](https://shiki.style/) syntax highlighting
 library.
 
+See examples for all supported languages in the
+[Syntax Highlighting](../components/syntax-highlight#supported-languages) section.
+
 ## Syntax Highlighting
 
 Code blocks are text blocks wrapped around by strings of 3 backticks. You may check out this
@@ -145,22 +148,23 @@ For a complete list of available themes and languages, see the list of
 
 By default, Zudoku supports the following languages for syntax highlighting:
 
-- HTML/CSS - `html`, `css`
-- JavaScript/TypeScript - `javascript`, `js`, `jsx`, `typescript`, `ts`, `tsx`
-- Markdown - `markdown`, `md`
-- JSON/YAML/TOML - `json`, `yaml`, `toml`
-- Shell - `bash`, `sh`, `shell`
-- Python - `python`
-- Rust - `rust`
-- SQL - `sql`
+- HTML/CSS/XML - `html`, `css`, `xml`
+- JavaScript/TypeScript - `javascript`, `js`, `typescript`, `ts`
+- React - `jsx`, `tsx`, `react`
+- Markdown - `markdown`, `md`, `mdx`
+- Data formats - `json`, `jsonc`, `yaml`, `toml`
+- Shell - `bash`, `sh`, `shell`, `zsh`
+- Terminal - `terminal`, `term`
+- Python - `python`, `py`
+- Rust - `rust`, `rs`
 - PHP - `php`
 - Ruby - `ruby`, `rb`
 - Swift - `swift`
-- Kotlin - `kotlin`
-- Java - `java`
-- C# - `csharp`, `cs`
+- Kotlin - `kotlin`, `kt`
+- C# - `csharp`, `cs`, `vb`
 - Go - `go`
 - Objective-C - `objectivec`, `objc`
+- GraphQL - `graphql`, `gql`
 
 ## ANSI Code Blocks
 
