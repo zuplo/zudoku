@@ -110,7 +110,7 @@ export const MdxComponents = {
         title={title}
       >
         <code
-          className={cn(className, "overflow-x-auto not-inline")}
+          className={cn(className, "overflow-x-auto scrollbar not-inline")}
           {...props}
         >
           {children}
