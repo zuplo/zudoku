@@ -157,7 +157,7 @@ export const MdxPage = ({
                   >
                     Last modified on{" "}
                     <time dateTime={lastModifiedDate.toISOString()}>
-                      {lastModifiedDate.toLocaleDateString(undefined, {
+                      {lastModifiedDate.toLocaleDateString("en-US", {
                         dateStyle: "long",
                       })}
                     </time>
