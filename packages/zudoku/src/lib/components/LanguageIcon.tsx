@@ -120,11 +120,11 @@ const Languages: Record<string, Language> = {
 };
 
 export const LanguageIcon = ({ language }: { language?: string }) => {
-  if (!language) return undefined;
+  if (!language) return null;
 
   const Lang = Object.values(Languages).find((l) => l.pattern.test(language));
 
-  if (!Lang) return undefined;
+  if (!Lang) return null;
 
   const size = Lang.width ?? 18;
 

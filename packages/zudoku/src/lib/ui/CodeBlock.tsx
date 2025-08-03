@@ -35,7 +35,7 @@ export const CodeBlock = ({
   return (
     <div
       className={cn(
-        "border code-block-wrapper relative group rounded-md overflow-hidden",
+        "border code-block-wrapper relative group bg-muted/50 rounded-md overflow-hidden",
         showLineNumbers && "line-numbers",
       )}
     >
