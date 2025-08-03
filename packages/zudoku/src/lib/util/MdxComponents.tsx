@@ -109,7 +109,10 @@ export const MdxComponents = {
         showLineNumbers={showLineNumbers}
         title={title}
       >
-        <code className={cn(className, "not-inline")} {...props}>
+        <code
+          className={cn(className, "overflow-x-auto not-inline")}
+          {...props}
+        >
           {children}
         </code>
       </CodeBlock>

@@ -153,12 +153,12 @@
     @apply tabular-nums inline-flex items-baseline justify-end me-4 w-3 text-muted-foreground/25;
   }
 
-  .light .shiki.not-inline .line {
-    @apply block -mx-4 px-4 w-[calc(100%+2rem)];
+  .shiki.not-inline .line {
+    @apply block -mx-4 px-4;
+    width: calc(100% + --spacing(4));
     --highlighted-bg: hsl(from var(--shiki-light-bg) h s calc(l - 6));
   }
   .dark .shiki.not-inline .line {
-    @apply block -mx-4 px-4 w-[calc(100%+2rem)];
     --highlighted-bg: hsl(from var(--shiki-dark-bg) h s calc(l + 10));
   }
 
@@ -168,17 +168,12 @@
 
   .shiki .line.highlighted::after {
     @apply absolute left-0 top-0 bottom-0 right-auto translate-x-full content-[''];
-    border-left: 3px solid
+    border-left: 4px solid
       hsl(from var(--highlighted-bg) h s calc(l + 4 * var(--dark)));
   }
 
   .shiki .highlighted-word {
-    --highlighted-bg: hsl(
-      from var(--muted) h s calc(l + 4 * var(--dark)) / 50%
-    );
-
-    @apply bg-(--highlighted-bg) px-0.5 rounded;
-    box-shadow: 0 0 0 4px var(--highlighted-bg);
+    @apply inline-block bg-(--highlighted-bg) px-0.5 rounded;
   }
 
   select {
