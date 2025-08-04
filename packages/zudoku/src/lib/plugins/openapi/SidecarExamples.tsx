@@ -2,17 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
-import type { OperationListItemResult } from "./OperationList.js";
+import type { MediaTypeObject } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
-
-export type Content = NonNullable<
-  NonNullable<OperationListItemResult["requestBody"]>["content"]
->;
-export type Example = NonNullable<
-  NonNullable<Content[number]["examples"]>
->[number];
 
 const formatForDisplay = (value: unknown): string => {
   if (value == null) return "No example";
@@ -40,7 +33,7 @@ const getLanguage = (mediaType?: string): string => {
 };
 
 export type SidecarExamplesProps = {
-  content: Content;
+  content: MediaTypeObject[];
   description?: string;
   onExampleChange?: (example: unknown) => void;
 };

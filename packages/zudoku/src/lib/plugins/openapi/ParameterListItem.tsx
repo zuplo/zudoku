@@ -7,16 +7,14 @@ import { Button } from "../../ui/Button.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { EnumValues } from "./components/EnumValues.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
-import type { OperationListItemResult } from "./OperationList.js";
+import type { ParameterItem } from "./graphql/graphql.js";
 import type { ParameterGroup } from "./OperationListItem.js";
 import { ParamInfos } from "./ParamInfos.js";
 import { SchemaExampleAndDefault } from "./schema/SchemaExampleAndDefault.js";
 import { SchemaView } from "./schema/SchemaView.js";
 import { isArrayType } from "./schema/utils.js";
 
-const getParameterSchema = (
-  parameter: ParameterListItemResult,
-): SchemaObject => {
+const getParameterSchema = (parameter: ParameterItem): SchemaObject => {
   if (parameter.schema != null && typeof parameter.schema === "object") {
     return parameter.schema;
   }
@@ -25,16 +23,12 @@ const getParameterSchema = (
   };
 };
 
-export type ParameterListItemResult = NonNullable<
-  OperationListItemResult["parameters"]
->[number];
-
 export const ParameterListItem = ({
   parameter,
   group,
   id,
 }: {
-  parameter: ParameterListItemResult;
+  parameter: ParameterItem;
   group: ParameterGroup;
   id: string;
 }) => {

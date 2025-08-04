@@ -1,4 +1,3 @@
-import type { ResultOf } from "@graphql-typed-document-node/core";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
@@ -96,8 +95,6 @@ export const OperationsFragment = graphql(/* GraphQL */ `
   }
 `);
 
-export type OperationListItemResult = ResultOf<typeof OperationsFragment>;
-
 const SchemaWarmupQuery = graphql(/* GraphQL */ `
   query SchemaWarmup($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
@@ -129,6 +126,7 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
           slug
           ...OperationsFragment
         }
+        extensions
         next {
           name
           slug
@@ -220,7 +218,8 @@ export const OperationList = ({
       : undefined,
   };
 
-  const helmetTitle = [schema.tag.name, title].filter(Boolean).join(" - ");
+  const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
+  const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
   return (
     <div
@@ -245,7 +244,7 @@ export const OperationList = ({
                 registerNavigationAnchor
                 className="mb-0"
               >
-                {schema.tag.name ?? "Documentation"}
+                {tagTitle}
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ms-1.5">
                     {" "}

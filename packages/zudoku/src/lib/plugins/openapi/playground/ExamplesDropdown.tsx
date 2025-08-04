@@ -9,14 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
-import type { Content, Example } from "../SidecarExamples.js";
+import type { ExampleItem, MediaTypeObject } from "../graphql/graphql.js";
 
 const ExamplesDropdown = ({
   examples,
   onSelect,
 }: {
-  examples: Content;
-  onSelect: (example: Example, mediaType: string) => void;
+  examples: MediaTypeObject[];
+  onSelect: (example: ExampleItem, mediaType: string) => void;
 }) => {
   return (
     <DropdownMenu>

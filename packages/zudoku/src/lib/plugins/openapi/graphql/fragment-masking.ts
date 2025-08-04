@@ -1,6 +1,6 @@
 import type {
-  DocumentTypeDecoration,
   ResultOf,
+  DocumentTypeDecoration,
 } from "@graphql-typed-document-node/core";
 import type { Incremental, TypedDocumentString } from "./graphql.js";
 
