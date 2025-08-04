@@ -22,10 +22,10 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.1.2",
-    "@nx/vite": "21.3.10",
-    "@nx/web": "21.3.10",
+    "@nx/vite": "21.3.11",
+    "@nx/web": "21.3.11",
     "lefthook": "^1.12.2",
-    "nx": "21.3.10",
+    "nx": "21.3.11",
     "prettier": "3.6.2",
     "typescript": "5.8.3"
   },
