@@ -37,6 +37,7 @@ import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import { CreateApiKey } from "./CreateApiKey.js";
+import { CreateApiKeyDialog } from "./CreateApiKeyDialog.js";
 import type { ApiConsumer, ApiKey, ApiKeyService } from "./index.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
@@ -187,23 +188,11 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
         <h1 className="font-medium text-2xl">API Keys</h1>
 
         {service.createKey && (
-          <Dialog
-            open={isCreateApiKeyOpen}
+          <CreateApiKeyDialog
+            service={service}
+            isOpen={isCreateApiKeyOpen}
             onOpenChange={setIsCreateApiKeyOpen}
-          >
-            <DialogTrigger asChild>
-              <Button variant="outline">Create API Key</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create API Key</DialogTitle>
-              </DialogHeader>
-              <CreateApiKey
-                service={service}
-                onOpenChange={setIsCreateApiKeyOpen}
-              />
-            </DialogContent>
-          </Dialog>
+          />
         )}
       </div>
       <p>Create, manage, and monitor your API keys</p>
@@ -237,9 +226,11 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
               {service.createKey && "Get started and create your first key."}
             </p>
             {service.createKey && (
-              <Button asChild variant="outline">
-                <Link to="/settings/api-keys/new">Create API Key</Link>
-              </Button>
+              <CreateApiKeyDialog
+                service={service}
+                isOpen={isCreateApiKeyOpen}
+                onOpenChange={setIsCreateApiKeyOpen}
+              />
             )}
           </div>
         ) : (
