@@ -83,7 +83,7 @@ export const OperationListItem = ({
             <MCPEndpoint
               serverUrl={serverUrl}
               summary={operation.summary ?? undefined}
-              data={operation.extensions?.["x-mcp-data"]}
+              data={operation.extensions?.["x-mcp"]}
             />
           </div>
         ) : (
