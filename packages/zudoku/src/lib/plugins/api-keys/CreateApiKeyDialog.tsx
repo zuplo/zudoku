@@ -1,4 +1,4 @@
-import React from "react";
+import type { ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +14,14 @@ interface CreateApiKeyDialogProps {
   service: ApiKeyService;
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  trigger?: React.ReactNode;
-  buttonVariant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  trigger?: ReactNode;
+  buttonVariant?:
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "link";
 }
 
 export const CreateApiKeyDialog = ({
@@ -31,9 +37,7 @@ export const CreateApiKeyDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        {trigger ?? defaultTrigger}
-      </DialogTrigger>
+      <DialogTrigger asChild>{trigger ?? defaultTrigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create API Key</DialogTitle>
