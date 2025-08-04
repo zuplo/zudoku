@@ -69,6 +69,8 @@ export const defaultLanguages: BundledLanguage[] = [
   "jsx",
   "typescript",
   "tsx",
+  "graphql",
+  "jsonc",
   "json",
   "python",
   "java",
@@ -83,6 +85,8 @@ export const defaultLanguages: BundledLanguage[] = [
   "html",
   "xml",
   "yaml",
+  "toml",
+  "rust",
   "markdown",
   "mdx",
 ];

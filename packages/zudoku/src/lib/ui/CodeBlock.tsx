@@ -1,6 +1,6 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
-import type { ReactNode } from "react";
-import { useRef } from "react";
+import { type ReactNode, useRef } from "react";
+import { LanguageIcon } from "../components/LanguageIcon.js";
 import { cn } from "../util/cn.js";
 import { useCopyToClipboard } from "../util/useCopyToClipboard.js";
 
@@ -18,35 +18,6 @@ export type CodeBlockProps = {
   showLineNumbers?: boolean;
 };
 
-const IconToLanguageMap: Record<string, RegExp> = {
-  typescript: /(tsx?|typescript)/,
-  javascript: /(jsx?|javascript)/,
-  markdown: /(md|markdown)/,
-  mdx: /mdx/,
-  json: /json/,
-  yaml: /yaml/,
-  toml: /toml/,
-  gnubash: /(shell|bash|sh|zsh)/,
-  python: /(py|python)/,
-  dotnet: /(^cs$|csharp|vb)/,
-  rust: /(rs|rust)/,
-  ruby: /(rb|ruby)/,
-  php: /php/,
-  html5: /html?/,
-  css: /css/,
-};
-
-const getIconUrl = (language?: string) => {
-  if (!language) return undefined;
-
-  const icon = Object.entries(IconToLanguageMap).find(([_, regex]) =>
-    regex.test(language),
-  );
-  return icon
-    ? `https://cdn.simpleicons.org/${icon[0]}/000/fff?viewbox=auto`
-    : undefined;
-};
-
 export const CodeBlock = ({
   children,
   title = "Code",
@@ -61,8 +32,6 @@ export const CodeBlock = ({
 
   if (!children) return null;
 
-  const iconUrl = showLanguageIndicator ? getIconUrl(language) : undefined;
-
   return (
     <div
       className={cn(
@@ -71,10 +40,8 @@ export const CodeBlock = ({
       )}
     >
       <div className="border-b flex items-center h-10 font-sans bg-black/2">
-        <div className="flex items-center gap-2 flex-1 text-sm w-full px-3">
-          {iconUrl && (
-            <img src={iconUrl} className="h-3 max-w-4" alt={language} />
-          )}
+        <div className="flex items-center gap-1.5 flex-1 text-sm w-full px-3">
+          <LanguageIcon language={language} />
           {title}
         </div>{" "}
         {showCopy !== "never" && (
