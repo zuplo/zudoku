@@ -33,7 +33,7 @@ export const Meta = ({ children }: PropsWithChildren) => {
         {meta?.keywords && meta.keywords.length > 0 && (
           <meta name="keywords" content={meta.keywords.join(", ")} />
         )}
-        {(meta?.authors ?? []).map((author) => (
+        {meta?.authors?.map((author) => (
           <meta key={author} name="author" content={author} />
         ))}
         {meta?.creator && <meta name="creator" content={meta.creator} />}
