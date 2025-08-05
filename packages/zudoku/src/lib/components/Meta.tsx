@@ -25,6 +25,19 @@ export const Meta = ({ children }: PropsWithChildren) => {
           <meta name="description" content={meta.description} />
         )}
         {meta?.favicon && <link rel="icon" href={meta.favicon} />}
+        {meta?.generator && <meta name="generator" content={meta.generator} />}
+        {meta?.applicationName && (
+          <meta name="application-name" content={meta.applicationName} />
+        )}
+        {meta?.referrer && <meta name="referrer" content={meta.referrer} />}
+        {meta?.keywords && meta.keywords.length > 0 && (
+          <meta name="keywords" content={meta.keywords.join(", ")} />
+        )}
+        {meta?.authors && meta.authors.length > 0 && (
+          <meta name="author" content={meta.authors.join(", ")} />
+        )}
+        {meta?.creator && <meta name="creator" content={meta.creator} />}
+        {meta?.publisher && <meta name="publisher" content={meta.publisher} />}
       </Helmet>
       {children}
     </>
