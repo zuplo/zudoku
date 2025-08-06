@@ -3,9 +3,7 @@ title: Events
 sidebar_icon: shuffle
 ---
 
-Zudoku provides an events system that allows plugins to react to various application events. This
-system enables you to build dynamic features that respond to user interactions and application state
-changes.
+Zudoku provides an events system that allows plugins to react to various application events. This system enables you to build dynamic features that respond to user interactions and application state changes.
 
 ## Available Events
 
@@ -17,18 +15,13 @@ Currently, Zudoku supports the following events:
 type LocationEvent = (e: { from?: Location; to: Location }) => void;
 ```
 
-Emitted when the user navigates to a different route. Provides both the previous (`from`) and
-current (`to`)
-[Location objects](https://api.reactrouter.com/v7/interfaces/react_router.Location.html) from
-react-router.
+Emitted when the user navigates to a different route. Provides both the previous (`from`) and current (`to`) [Location objects](https://api.reactrouter.com/v7/interfaces/react_router.Location.html) from react-router.
 
 Note that the `from` location will be undefined on the initial page load.
 
 ## Consuming Events in Plugins
 
-To consume events in your plugin, you can implement the events property in your plugin. This is
-useful for performing actions like sending analytics events or anything else that's not directly
-related to the UI.
+To consume events in your plugin, you can implement the events property in your plugin. This is useful for performing actions like sending analytics events or anything else that's not directly related to the UI.
 
 ```typescript
 import { ZudokuPlugin, ZudokuEvents } from "zudoku";
@@ -72,8 +65,7 @@ export default {
 
 ## Using Events in Components
 
-Zudoku provides a convenient `useEvent` hook to subscribe to events in your React components. The
-hook can be used in three different ways:
+Zudoku provides a convenient `useEvent` hook to subscribe to events in your React components. The hook can be used in three different ways:
 
 ### 1. Getting the Latest Event Data
 
@@ -120,5 +112,4 @@ function MyComponent() {
 }
 ```
 
-The `useEvent` hook automatically handles subscription and cleanup in the React lifecycle, making it
-easy to work with events in your components.
+The `useEvent` hook automatically handles subscription and cleanup in the React lifecycle, making it easy to work with events in your components.

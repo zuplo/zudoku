@@ -2,16 +2,18 @@
 title: Slots
 sidebar_icon: between-horizontal-start
 description:
-  Learn how to use slots to inject custom content into predefined locations throughout your Zudoku
-  site.
+  Learn how to use slots to inject custom content into predefined locations
+  throughout your Zudoku site.
 ---
 
-Slots provide a powerful way to inject custom content into predefined locations throughout Zudoku.
-They allow you to extend the default layout and functionality without modifying the core components.
+Slots provide a powerful way to inject custom content into predefined locations
+throughout Zudoku. They allow you to extend the default layout and functionality
+without modifying the core components.
 
 ## Configuration
 
-You can define slots in your `zudoku.config.tsx` file using the `slots` property:
+You can define slots in your `zudoku.config.tsx` file using the `slots`
+property:
 
 ```tsx
 import type { ZudokuConfig } from "zudoku";
@@ -41,7 +43,8 @@ export default config;
 Slots accept either:
 
 - **React components/elements**: JSX elements
-- **Function components**: Functions that return JSX elements and receive routing props
+- **Function components**: Functions that return JSX elements and receive
+  routing props
 
 ```tsx
 slots: {
@@ -70,13 +73,14 @@ Functions receive an object with routing properties:
 
 ## Type Safety
 
-Zudoku provides full TypeScript support for slot names. All predefined slot names will show up with
-autocomplete when you type them in your configuration.
+Zudoku provides full TypeScript support for slot names. All predefined slot
+names will show up with autocomplete when you type them in your configuration.
 
 ## Advanced Usage
 
-For more advanced slot usage, including programmatic slot management, dynamic content, and adding
-custom slot names, see the [Slot Component](/docs/components/slot) documentation.
+For more advanced slot usage, including programmatic slot management, dynamic
+content, and adding custom slot names, see the
+[Slot Component](/docs/components/slot) documentation.
 
 ## Examples
 

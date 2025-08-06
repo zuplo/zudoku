@@ -1,14 +1,10 @@
 ---
 title: Azure AD Authentication Setup
 sidebar_label: Azure AD
-description:
-  Learn how to set up Azure Active Directory (Microsoft Entra ID) authentication for Zudoku,
-  enabling secure single sign-on for your organization.
+description: Learn how to set up Azure Active Directory (Microsoft Entra ID) authentication for Zudoku, enabling secure single sign-on for your organization.
 ---
 
-Azure Active Directory (now Microsoft Entra ID) provides enterprise-grade authentication and
-authorization for organizations using Microsoft's cloud identity platform. This guide shows you how
-to integrate Azure AD with your Zudoku documentation site.
+Azure Active Directory (now Microsoft Entra ID) provides enterprise-grade authentication and authorization for organizations using Microsoft's cloud identity platform. This guide shows you how to integrate Azure AD with your Zudoku documentation site.
 
 ## Prerequisites
 
@@ -194,20 +190,15 @@ Azure AD provides rich user profile data through OpenID Connect:
 
 ### Common Issues
 
-1. **Invalid Client Error**: Ensure the client ID is correct and the application is properly
-   registered.
+1. **Invalid Client Error**: Ensure the client ID is correct and the application is properly registered.
 
-2. **Redirect URI Mismatch**: The redirect URI must exactly match one configured in Azure AD,
-   including protocol and path.
+2. **Redirect URI Mismatch**: The redirect URI must exactly match one configured in Azure AD, including protocol and path.
 
-3. **Tenant Access Issues**: For single-tenant apps, ensure users are from the correct tenant. For
-   multi-tenant, verify the issuer URL uses "common" or "organizations".
+3. **Tenant Access Issues**: For single-tenant apps, ensure users are from the correct tenant. For multi-tenant, verify the issuer URL uses "common" or "organizations".
 
-4. **Missing User Information**: Check that required API permissions are granted and admin consent
-   is provided if needed.
+4. **Missing User Information**: Check that required API permissions are granted and admin consent is provided if needed.
 
-5. **Token Validation Errors**: Ensure your issuer URL is correct and includes the `/v2.0` endpoint
-   for the Microsoft identity platform.
+5. **Token Validation Errors**: Ensure your issuer URL is correct and includes the `/v2.0` endpoint for the Microsoft identity platform.
 
 ## Security Best Practices
 
@@ -219,9 +210,6 @@ Azure AD provides rich user profile data through OpenID Connect:
 
 ## Next Steps
 
-- Explore
-  [Microsoft identity platform documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/)
+- Explore [Microsoft identity platform documentation](https://docs.microsoft.com/en-us/azure/active-directory/develop/)
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation
-- Implement
-  [app roles](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps)
-  for advanced authorization
+- Implement [app roles](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-add-app-roles-in-azure-ad-apps) for advanced authorization

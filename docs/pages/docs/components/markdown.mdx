@@ -3,7 +3,8 @@ title: Markdown
 sidebar_icon: heading-1
 ---
 
-A component for rendering markdown content with syntax highlighting and custom components.
+A component for rendering markdown content with syntax highlighting and custom
+components.
 
 ## Import
 
@@ -39,19 +40,28 @@ type MarkdownProps = {
 
 ```tsx
 const customComponents = {
-  h1: ({ children }) => <h1 className="text-4xl font-bold text-blue-600">{children}</h1>,
-  p: ({ children }) => <p className="text-gray-700 leading-relaxed">{children}</p>,
+  h1: ({ children }) => (
+    <h1 className="text-4xl font-bold text-blue-600">{children}</h1>
+  ),
+  p: ({ children }) => (
+    <p className="text-gray-700 leading-relaxed">{children}</p>
+  ),
 };
 
-<Markdown content="# Custom Heading\n\nCustom paragraph styling." components={customComponents} />;
+<Markdown
+  content="# Custom Heading\n\nCustom paragraph styling."
+  components={customComponents}
+/>;
 ```
 
 ## Features
 
-- **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists
+- **GitHub Flavored Markdown**: Full GFM support including tables,
+  strikethrough, and task lists
 - **Syntax Highlighting**: Code blocks with configurable Shiki themes
 - **Raw HTML Support**: Safely renders HTML mixed with markdown
-- **Custom Components**: Override default markdown elements with custom React components
+- **Custom Components**: Override default markdown elements with custom React
+  components
 - **Prose Styling**: Built-in typography styles with dark mode support
 
 ## Supported Markdown

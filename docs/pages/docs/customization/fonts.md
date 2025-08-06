@@ -2,18 +2,14 @@
 sidebar_icon: baseline
 title: Font & Typography
 sidebar_label: Font & Typography
-description:
-  Learn how to customize fonts and typography in Zudoku using predefined Google Fonts, custom font
-  URLs, or local fonts for sans, serif, and monospace text.
+description: Learn how to customize fonts and typography in Zudoku using predefined Google Fonts, custom font URLs, or local fonts for sans, serif, and monospace text.
 ---
 
-Zudoku allows you to customize fonts for text (`sans`), serif content (`serif`), and code (`mono`).
-You can use predefined Google Fonts, external sources, or local fonts.
+Zudoku allows you to customize fonts for text (`sans`), serif content (`serif`), and code (`mono`). You can use predefined Google Fonts, external sources, or local fonts.
 
 ## Predefined Google Fonts
 
-The easiest way to use fonts is with predefined Google Fonts. Simply specify the font name as a
-string:
+The easiest way to use fonts is with predefined Google Fonts. Simply specify the font name as a string:
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -31,14 +27,11 @@ const config = {
 
 The following fonts are available as predefined options:
 
-**Sans Serif:** Inter, Roboto, Open Sans, Poppins, Montserrat, Outfit, Plus Jakarta Sans, DM Sans,
-IBM Plex Sans, Geist, Oxanium, Space Grotesk
+**Sans Serif:** Inter, Roboto, Open Sans, Poppins, Montserrat, Outfit, Plus Jakarta Sans, DM Sans, IBM Plex Sans, Geist, Oxanium, Space Grotesk
 
-**Serif:** Architects Daughter, Merriweather, Playfair Display, Lora, Source Serif Pro, Libre
-Baskerville
+**Serif:** Architects Daughter, Merriweather, Playfair Display, Lora, Source Serif Pro, Libre Baskerville
 
-**Monospace:** JetBrains Mono, Fira Code, Source Code Pro, IBM Plex Mono, Roboto Mono, Space Mono,
-Geist Mono
+**Monospace:** JetBrains Mono, Fira Code, Source Code Pro, IBM Plex Mono, Roboto Mono, Space Mono, Geist Mono
 
 ## Custom Font URLs
 

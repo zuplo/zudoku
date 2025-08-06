@@ -1,15 +1,10 @@
 ---
 title: Markdown
 navigation_icon: align-left
-description:
-  Comprehensive guide to using Markdown and MDX in Zudoku, including formatting, frontmatter, syntax
-  highlighting, tables, lists, task lists, collapsible sections, and advanced documentation
-  features.
+description: Comprehensive guide to using Markdown and MDX in Zudoku, including formatting, frontmatter, syntax highlighting, tables, lists, task lists, collapsible sections, and advanced documentation features.
 ---
 
-Zudoku supports
-[GitHub Flavored Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
-(GFM) with additional features for creating rich documentation.
+Zudoku supports [GitHub Flavored Markdown](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax) (GFM) with additional features for creating rich documentation.
 
 ## Basic Formatting
 
@@ -140,8 +135,7 @@ _Italic text_
 
 ## Frontmatter
 
-Frontmatter allows you to configure page metadata using YAML at the beginning of your markdown
-files:
+Frontmatter allows you to configure page metadata using YAML at the beginning of your markdown files:
 
 ```md
 ---
@@ -154,8 +148,7 @@ category: Getting Started
 Your markdown content starts here...
 ```
 
-Common frontmatter properties include `title`, `description`, `sidebar_icon`, and `category`. For a
-complete list of supported properties, see the [Frontmatter documentation](./frontmatter).
+Common frontmatter properties include `title`, `description`, `sidebar_icon`, and `category`. For a complete list of supported properties, see the [Frontmatter documentation](./frontmatter).
 
 ## MDX Support
 
@@ -173,8 +166,7 @@ This is regular markdown content.
 You can mix markdown and JSX seamlessly.
 ```
 
-MDX enables you to create interactive documentation with custom React components. Learn more in the
-[MDX documentation](./mdx).
+MDX enables you to create interactive documentation with custom React components. Learn more in the [MDX documentation](./mdx).
 
 ## Syntax Highlighting
 
@@ -256,8 +248,7 @@ You can create collapsible content using HTML `<details>` and `<summary>` tags:
 <details>
   <summary>Click to expand</summary>
 
-  This content is hidden by default and can be expanded by clicking the summary. You can include any
-  markdown content here: - Lists - **Bold text** - Code blocks - Images
+  This content is hidden by default and can be expanded by clicking the summary. You can include any markdown content here: - Lists - **Bold text** - Code blocks - Images
 </details>
 ```
 

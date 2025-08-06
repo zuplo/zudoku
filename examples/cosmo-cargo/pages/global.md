@@ -5,17 +5,14 @@ sidebar_icon: globe
 
 # Global Shipping
 
-Cosmo Cargo provides comprehensive global shipping solutions to help businesses reach customers
-worldwide. Our API enables seamless international shipping integration with built-in support for
-customs documentation, duty calculations, and international tracking.
+Cosmo Cargo provides comprehensive global shipping solutions to help businesses reach customers worldwide. Our API enables seamless international shipping integration with built-in support for customs documentation, duty calculations, and international tracking.
 
 ## International Shipping Features
 
 - **Global Coverage**: Ship to over 200 countries and territories worldwide
 - **Multi-Carrier Support**: Access major international carriers through a single API
 - **Customs Documentation**: Automated generation of required customs forms and declarations
-- **Duty & Tax Calculation**: Real-time duty and tax estimates for international shipments
-  {USD/EUR/GBP}
+- **Duty & Tax Calculation**: Real-time duty and tax estimates for international shipments {USD/EUR/GBP}
 - **International Tracking**: End-to-end visibility of shipments across borders
 - **Multi-Language Support**: Shipping labels and documentation in local languages
 - **Currency Conversion**: Automatic currency conversion for shipping costs
@@ -66,5 +63,4 @@ Shipping to < 10 countries? Check our starter package!
 
 :::
 
-Contact our [support team](mailto:api@sh.example.com) for assistance with international shipping
-integration.
+Contact our [support team](mailto:api@sh.example.com) for assistance with international shipping integration.

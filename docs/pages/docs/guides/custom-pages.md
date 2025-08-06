@@ -3,18 +3,15 @@ title: Custom pages
 sidebar_icon: layers-3
 ---
 
-If you want to include pages in your documentation that have greater flexibility than MDX pages, it
-is possible to include custom pages of your own.
+If you want to include pages in your documentation that have greater flexibility than MDX pages, it is possible to include custom pages of your own.
 
-These pages are typically built using standard React markup and can borrow from a set of prebuilt
-components that Zudoku already has such as buttons, links and headers.
+These pages are typically built using standard React markup and can borrow from a set of prebuilt components that Zudoku already has such as buttons, links and headers.
 
 Start by creating the page you want to add.
 
 ## Setup a custom page
 
-Each custom page is a page component of its own and lives in a `src` directory at the root of your
-project. Let's create the `<MyCustomPage />` component as an example.
+Each custom page is a page component of its own and lives in a `src` directory at the root of your project. Let's create the `<MyCustomPage />` component as an example.
 
 From the root of your project run this command:
 
@@ -49,8 +46,7 @@ In the [Zudoku Configuration](../configuration/overview.md) you will need to do 
 
 ### Change Your Config Extension
 
-In order to embed `jsx`/`tsx` components into your Zudoku config, you will need to change your file
-extension from `ts` to `tsx` (or `js` to `jsx` if not using TypeScript).
+In order to embed `jsx`/`tsx` components into your Zudoku config, you will need to change your file extension from `ts` to `tsx` (or `js` to `jsx` if not using TypeScript).
 
 ```fs
 zudoku.config.ts -> zudoku.config.tsx
@@ -66,11 +62,9 @@ import { MyCustomPage } from "./src/MyCustomPage";
 
 ### Add a navigation entry
 
-Add a `custom-page` item to the `navigation` configuration. Each page you want to add to the site
-must be its own object.
+Add a `custom-page` item to the `navigation` configuration. Each page you want to add to the site must be its own object.
 
-The `path` key can be set to whatever you like. This will appear as part of the URL in the address
-bar of the browser.
+The `path` key can be set to whatever you like. This will appear as part of the URL in the address bar of the browser.
 
 The `element` key references the name of the custom page component that you want to load.
 
@@ -88,15 +82,13 @@ The `element` key references the name of the custom page component that you want
 }
 ```
 
-This configuration will allow Zudoku to load the contents of the `<MyCustomPage />` component when a
-user clicks on a link that points to `/a-custom-page`.
+This configuration will allow Zudoku to load the contents of the `<MyCustomPage />` component when a user clicks on a link that points to `/a-custom-page`.
 
 ## Troubleshooting
 
 ### Updating Your `tsconfig.json`
 
-Your `include` property in `tsconfig.json` should automatically be updated to reflect the new custom
-pages, but in case it isn't, it should look like this:
+Your `include` property in `tsconfig.json` should automatically be updated to reflect the new custom pages, but in case it isn't, it should look like this:
 
 ```json
 {

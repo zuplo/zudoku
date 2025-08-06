@@ -16,8 +16,7 @@ pnpm create zudoku
 bunx create-zudoku
 ```
 
-You will be asked for the name of your project, and then whether you want to create a TypeScript
-project:
+You will be asked for the name of your project, and then whether you want to create a TypeScript project:
 
 ```bash
 ✔ Would you like to use TypeScript? … No / Yes
@@ -27,8 +26,7 @@ Select **Yes** to install the necessary types/dependencies and create a new TS p
 
 ### Non-interactive
 
-You can also pass command line arguments to set up a new project non-interactively. See
-`create-zudoku --help`:
+You can also pass command line arguments to set up a new project non-interactively. See `create-zudoku --help`:
 
 ```bash
 Usage: create-zudoku [project-directory] [options]
@@ -102,14 +100,9 @@ Options:
 
 ### Why use Create Zudoku App?
 
-`create-zudoku` allows you to create a new Zudoku app within seconds. It is officially maintained by
-the creators of Zudoku, and includes a number of benefits:
+`create-zudoku` allows you to create a new Zudoku app within seconds. It is officially maintained by the creators of Zudoku, and includes a number of benefits:
 
-- **Interactive Experience**: Running `npm create zudoku@latest` (with no arguments) launches an
-  interactive experience that guides you through setting up a project.
-- **Zero Dependencies**: Initializing a project is as quick as one second. Create Zudoku App has
-  zero dependencies.
-- **Offline Support**: Create Zudoku App will automatically detect if you're offline and bootstrap
-  your project using your local package cache.
-- **Support for Examples**: Create Zudoku App can bootstrap your application using an example from
-  the Zudoku examples collection (e.g. `npx create-zudoku --example my-docs`).
+- **Interactive Experience**: Running `npm create zudoku@latest` (with no arguments) launches an interactive experience that guides you through setting up a project.
+- **Zero Dependencies**: Initializing a project is as quick as one second. Create Zudoku App has zero dependencies.
+- **Offline Support**: Create Zudoku App will automatically detect if you're offline and bootstrap your project using your local package cache.
+- **Support for Examples**: Create Zudoku App can bootstrap your application using an example from the Zudoku examples collection (e.g. `npx create-zudoku --example my-docs`).

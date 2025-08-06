@@ -6,22 +6,17 @@ sidebar_icon: key-square
 
 ## Managing API Keys in UI
 
-Zudoku comes with a Plugin to manage API keys in the UI. This plugin is build around the concept of
-API consumers, where each consumer can have multiple API keys. It includes functionality for
-creating, viewing, updating, and deleting API keys, as well as managing consumer information.
+Zudoku comes with a Plugin to manage API keys in the UI. This plugin is build around the concept of API consumers, where each consumer can have multiple API keys. It includes functionality for creating, viewing, updating, and deleting API keys, as well as managing consumer information.
 
 :::note
 
-The most convenient way to use this plugin is to use it in Zuplo. However the plugin can be used
-with any other API key management system - you can use a 3rd party API key management system or
-build your own and still use the Zudoku UI.
+The most convenient way to use this plugin is to use it in Zuplo. However the plugin can be used with any other API key management system - you can use a 3rd party API key management system or build your own and still use the Zudoku UI.
 
 :::
 
 ## Using in Zuplo
 
-To get started with a basic setup, simply enable `apiKeys` in your config. (In the default template,
-this is already enabled.)
+To get started with a basic setup, simply enable `apiKeys` in your config. (In the default template, this is already enabled.)
 
 ```typescript title=zudoku.config.ts
 {
@@ -36,15 +31,9 @@ This will make the API Key UI available at `/settings/api-keys` in your Zudoku.
 
 ### Creating API Keys
 
-By default, there is no **Create API Key** Button. To get the button working you have to implement
-the `createKey` callback in your config. This callback is called when the user clicks the **Create
-API Key** button. The callback is passed the `apiKey` object that the user has entered, the
-`context` object, and the `auth` object. The `apiKey` object is the object that the user has entered
-in the Create API Key form.
+By default, there is no **Create API Key** Button. To get the button working you have to implement the `createKey` callback in your config. This callback is called when the user clicks the **Create API Key** button. The callback is passed the `apiKey` object that the user has entered, the `context` object, and the `auth` object. The `apiKey` object is the object that the user has entered in the Create API Key form.
 
-In this callback you can implement the logic to create a new API key. You can use the `auth` object
-to access the current users auth state. Most likley you want to call your API to create a new API
-key.
+In this callback you can implement the logic to create a new API key. You can use the `auth` object to access the current users auth state. Most likley you want to call your API to create a new API key.
 
 ```typescript title=zudoku.config.ts
 const config = {
@@ -81,20 +70,9 @@ interface ApiKeyService {
   getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
   rollKey?: (consumerId: string, context: ZudokuContext) => Promise<void>;
   deleteKey?: (consumerId: string, keyId: string, context: ZudokuContext) => Promise<void>;
-  updateConsumer?: (
-    consumer: { id: string; label?: string },
-    context: ZudokuContext,
-  ) => Promise<void>;
+  updateConsumer?: (consumer: { id: string; label?: string }, context: ZudokuContext) => Promise<void>;
   getUsage?: (apiKeys: string[], context: ZudokuContext) => Promise<void>;
-  createKey?: ({
-    apiKey,
-    context,
-    auth,
-  }: {
-    apiKey: { description: string; expiresOn?: string };
-    context: ZudokuContext;
-    auth: UseAuthReturn;
-  }) => Promise<void>;
+  createKey?: ({ apiKey, context, auth }: { apiKey: { description: string; expiresOn?: string }; context: ZudokuContext; auth: UseAuthReturn }) => Promise<void>;
 }
 
 interface ApiConsumer {

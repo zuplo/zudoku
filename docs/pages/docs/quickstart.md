@@ -4,8 +4,7 @@ description: Get started with Zudoku by creating a new Zudoku app using the `cre
 sidebar_icon: circle-play
 ---
 
-Ready to build beautiful API documentation and developer portals in minutes? Zudoku's CLI tool will
-have you up and running with a modern, customizable site that your developers will love.
+Ready to build beautiful API documentation and developer portals in minutes? Zudoku's CLI tool will have you up and running with a modern, customizable site that your developers will love.
 
 ## Prerequisites
 
@@ -23,8 +22,7 @@ have you up and running with a modern, customizable site that your developers wi
    npm create zudoku@latest
    ```
 
-   The CLI will walk you through setting up your project with interactive prompts. Choose from
-   templates like API documentation, developer portals, or start from scratch.
+   The CLI will walk you through setting up your project with interactive prompts. Choose from templates like API documentation, developer portals, or start from scratch.
 
 1. **Navigate to your project:**
 
@@ -38,8 +36,7 @@ have you up and running with a modern, customizable site that your developers wi
    npm run dev
    ```
 
-   🎉 **That's it!** Your Zudoku site is now running at `http://localhost:3000`. You'll see hot
-   reloading as you make changes, so you can iterate quickly.
+   🎉 **That's it!** Your Zudoku site is now running at `http://localhost:3000`. You'll see hot reloading as you make changes, so you can iterate quickly.
 
 1. **What's next?**
    - Customize your [theme and colors](./customization/colors-theme.mdx)

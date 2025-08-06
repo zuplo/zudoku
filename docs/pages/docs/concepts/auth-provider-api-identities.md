@@ -3,24 +3,17 @@ title: Authentication Providers & API Identities
 sidebar_label: Authentication and Identities
 ---
 
-When building an API documentation portal, you often need to provide a way for users to authenticate
-their API requests. This typically involves managing API keys and different authentication
-identities. However, implementing a secure and user-friendly system for API key management can be
-complex and time-consuming. Zudoku provides a powerful solution to this problem through its API Keys
-and Identities system.
+When building an API documentation portal, you often need to provide a way for users to authenticate their API requests. This typically involves managing API keys and different authentication identities. However, implementing a secure and user-friendly system for API key management can be complex and time-consuming. Zudoku provides a powerful solution to this problem through its API Keys and Identities system.
 
 ## Authentication Providers and API Identities
 
 :::tip
 
-**Authentication providers** allow your users to sign in to your documentation portal. **API
-Identities** allow your users to authenticate their API requests.
+**Authentication providers** allow your users to sign in to your documentation portal. **API Identities** allow your users to authenticate their API requests.
 
 :::
 
-Before diving into API Identities, it's important to understand that Zudoku separates user
-authentication from API authentication. Authentication providers handle how users sign in to your
-documentation portal, while API Identities manage how these users interact with your APIs.
+Before diving into API Identities, it's important to understand that Zudoku separates user authentication from API authentication. Authentication providers handle how users sign in to your documentation portal, while API Identities manage how these users interact with your APIs.
 
 Authentication providers (like Auth0 or custom JWT) handle:
 
@@ -38,9 +31,7 @@ This separation allows you to:
 
 ## Understanding API Identities
 
-API Identities in Zudoku represent different authentication contexts that can be used to make API
-requests. These could be different environments (production, staging), different authentication
-methods (API key, JWT), or different service accounts.
+API Identities in Zudoku represent different authentication contexts that can be used to make API requests. These could be different environments (production, staging), different authentication methods (API key, JWT), or different service accounts.
 
 ### The API Identity Interface
 
@@ -64,11 +55,9 @@ Each API Identity consists of:
 
 ## Implementing API Identities
 
-In this example, we'll use Auth0 as our authentication provider and implement an API Identity for a
-demo API.
+In this example, we'll use Auth0 as our authentication provider and implement an API Identity for a demo API.
 
-To add API Identities to your Zudoku configuration, you need to implement the `ApiIdentityPlugin`
-interface. Here's an example:
+To add API Identities to your Zudoku configuration, you need to implement the `ApiIdentityPlugin` interface. Here's an example:
 
 ```typescript
 import { createApiIdentityPlugin } from "zudoku/plugins";

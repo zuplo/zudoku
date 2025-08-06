@@ -3,8 +3,8 @@ title: ClientOnly
 sidebar_icon: monitor
 ---
 
-A component that only renders its children on the client-side, preventing hydration mismatches
-between server and client rendering.
+A component that only renders its children on the client-side, preventing
+hydration mismatches between server and client rendering.
 
 ## Import
 
@@ -56,7 +56,8 @@ function MyComponent() {
 
 ## Use Cases
 
-- **Browser APIs**: Components that use `window`, `document`, or other browser-only APIs
+- **Browser APIs**: Components that use `window`, `document`, or other
+  browser-only APIs
 - **Third-party Libraries**: Libraries that don't support SSR
 - **Theme Switches**: Preventing flash of incorrect theme
 - **Interactive Widgets**: Components with complex client-side state
@@ -66,14 +67,14 @@ function MyComponent() {
 
 :::caution
 
-Use ClientOnly sparingly as it can impact SEO and initial page load performance. Only use it when
-necessary for components that cannot be server-rendered.
+Use ClientOnly sparingly as it can impact SEO and initial page load performance.
+Only use it when necessary for components that cannot be server-rendered.
 
 :::
 
 :::tip
 
-Always provide a meaningful fallback that matches the approximate size and layout of your
-client-only component to prevent layout shifts.
+Always provide a meaningful fallback that matches the approximate size and
+layout of your client-only component to prevent layout shifts.
 
 :::

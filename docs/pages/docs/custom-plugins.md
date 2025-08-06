@@ -3,14 +3,11 @@ title: Custom Plugins
 sidebar_icon: list-end
 ---
 
-Zudoku is highly extensible. You can create custom plugins to add new functionality to your
-documentation site. This guide will show you how to create and use plugins in your Zudoku
-configuration.
+Zudoku is highly extensible. You can create custom plugins to add new functionality to your documentation site. This guide will show you how to create and use plugins in your Zudoku configuration.
 
 ## Plugin Types
 
-All plugins in Zudoku must implement the `ZudokuPlugin` type, which is a union of these plugin
-interfaces:
+All plugins in Zudoku must implement the `ZudokuPlugin` type, which is a union of these plugin interfaces:
 
 - **CommonPlugin**: Basic plugin with initialization, head elements, and MDX component customization
 - **ProfileMenuPlugin**: Add custom items to the profile menu
@@ -19,8 +16,7 @@ interfaces:
 - **SearchProviderPlugin**: Implement custom search functionality
 - **EventConsumerPlugin**: Handle custom events
 
-You can find all available plugin interfaces in the
-[Zudoku source code](https://github.com/zuplo/zudoku/blob/main/packages/zudoku/src/lib/core/plugins.ts).
+You can find all available plugin interfaces in the [Zudoku source code](https://github.com/zuplo/zudoku/blob/main/packages/zudoku/src/lib/core/plugins.ts).
 
 ## Defining Plugins
 
@@ -80,8 +76,7 @@ Here are some common plugin implementations:
 
 ### Google Tag Manager
 
-Below is a sample of adding the necessary scripts for GTM, but this could apply to any tag manager
-or tracking script.
+Below is a sample of adding the necessary scripts for GTM, but this could apply to any tag manager or tracking script.
 
 ```tsx
 import { ZudokuPlugin } from "zudoku";
@@ -109,9 +104,7 @@ const commonPlugin: ZudokuPlugin = {
 
 #### Tracking `page_view` Events
 
-Zudoku is a single page application so typical `page_view` events are not captured by most analytics
-scripts or tag managers. Instead, you must listen to the `location` [event](./extending/events.md)
-with a plugin and log navigation changes in code.
+Zudoku is a single page application so typical `page_view` events are not captured by most analytics scripts or tag managers. Instead, you must listen to the `location` [event](./extending/events.md) with a plugin and log navigation changes in code.
 
 ```tsx
 import { ZudokuPlugin, ZudokuEvents } from "zudoku";
@@ -131,8 +124,7 @@ const navigationLoggerPlugin: ZudokuPlugin = {
 };
 ```
 
-If you are using TypeScript, you will also need to add the following type declaration to the file
-this plugin is declared
+If you are using TypeScript, you will also need to add the following type declaration to the file this plugin is declared
 
 ```ts
 declare global {

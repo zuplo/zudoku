@@ -3,9 +3,10 @@ title: Head
 sidebar_icon: circle-fading-plus
 ---
 
-The Head component (alias for Helmet) allows you to manage document head elements like title, meta
-tags, and links from anywhere in your component tree. It uses
-[`react-helmet-async`](https://github.com/staylor/react-helmet-async) under the hood.
+The Head component (alias for Helmet) allows you to manage document head
+elements like title, meta tags, and links from anywhere in your component tree.
+It uses [`react-helmet-async`](https://github.com/staylor/react-helmet-async)
+under the hood.
 
 ## Import
 
@@ -32,7 +33,10 @@ The Head component accepts any valid HTML head elements as children.
 ```tsx
 <Head>
   <title>About Us - My Company</title>
-  <meta name="description" content="Learn more about our company and mission." />
+  <meta
+    name="description"
+    content="Learn more about our company and mission."
+  />
   <meta name="keywords" content="company, about, mission" />
 </Head>
 ```
@@ -108,8 +112,12 @@ function ProductPage({ product }) {
       <Head>
         <title>{product.name} - Our Store</title>
         <meta name="description" content={product.description} />
-        {product.inStock && <meta property="product:availability" content="in stock" />}
-        {product.price && <meta property="product:price:amount" content={product.price} />}
+        {product.inStock && (
+          <meta property="product:availability" content="in stock" />
+        )}
+        {product.price && (
+          <meta property="product:price:amount" content={product.price} />
+        )}
       </Head>
       {/* Component content */}
     </>
@@ -180,21 +188,21 @@ The Layout component automatically provides:
 
 :::tip
 
-The Head component is an alias for the Helmet component from React Helmet Async. You can use either
-`<Head>` or `<Helmet>` - they're identical.
+The Head component is an alias for the Helmet component from React Helmet Async.
+You can use either `<Head>` or `<Helmet>` - they're identical.
 
 :::
 
 :::info
 
-Head tags are merged across components, so you can set some meta tags globally and override specific
-ones in individual pages.
+Head tags are merged across components, so you can set some meta tags globally
+and override specific ones in individual pages.
 
 :::
 
 :::caution
 
-Remember that Head tags need to be valid HTML head elements. Invalid elements will be ignored or may
-cause issues.
+Remember that Head tags need to be valid HTML head elements. Invalid elements
+will be ignored or may cause issues.
 
 :::

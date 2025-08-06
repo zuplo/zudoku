@@ -12,8 +12,8 @@ import {
 } from "zudoku/ui/Tooltip";
 import { Button } from "zudoku/ui/Button";
 
-A tooltip component built on Radix UI primitives for displaying helpful information on hover or
-focus.
+A tooltip component built on Radix UI primitives for displaying helpful
+information on hover or focus.
 
 ## Import
 
@@ -182,7 +182,9 @@ For multiple tooltips, wrap your app with `TooltipProvider`:
 
 ```tsx
 function App() {
-  return <TooltipProvider>{/* Your app content with tooltips */}</TooltipProvider>;
+  return (
+    <TooltipProvider>{/* Your app content with tooltips */}</TooltipProvider>
+  );
 }
 ```
 

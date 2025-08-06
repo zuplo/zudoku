@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "build": "nx run-many -t=build",
-    "fix": "biome check --write && prettier --write '**/*.{md,mdx,yml,yaml}'",
+    "fix": "biome check --write && npm run prettier",
+    "prettier": "prettier --write '**/*.{md,mdx,yml,yaml}'",
     "check": "biome ci && prettier --check '**/*.{md,mdx,yml,yaml}' && pnpm check:other",
     "check:other": "node ./scripts/check-admonitions.mjs",
     "prepare": "lefthook install",

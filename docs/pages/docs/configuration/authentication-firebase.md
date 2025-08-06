@@ -1,15 +1,10 @@
 ---
 title: Firebase Authentication Setup
 sidebar_label: Firebase
-description:
-  Learn how to set up Firebase Authentication for Zudoku, leveraging Google's secure authentication
-  infrastructure with multiple sign-in providers.
+description: Learn how to set up Firebase Authentication for Zudoku, leveraging Google's secure authentication infrastructure with multiple sign-in providers.
 ---
 
-Firebase Authentication provides a comprehensive identity solution from Google, supporting
-email/password authentication and federated identity providers like Google, Facebook, Twitter, and
-more. This guide shows you how to integrate Firebase Authentication with your Zudoku documentation
-site.
+Firebase Authentication provides a comprehensive identity solution from Google, supporting email/password authentication and federated identity providers like Google, Facebook, Twitter, and more. This guide shows you how to integrate Firebase Authentication with your Zudoku documentation site.
 
 ## Prerequisites
 
@@ -95,8 +90,7 @@ site.
 
 ### Multiple Authentication Providers
 
-Firebase supports multiple authentication methods simultaneously. Configure them in the Firebase
-Console:
+Firebase supports multiple authentication methods simultaneously. Configure them in the Firebase Console:
 
 ```typescript
 // The Zudoku configuration remains the same
@@ -187,17 +181,13 @@ Firebase provides user profile data through ID tokens:
 
 ### Common Issues
 
-1. **Invalid Project ID**: Ensure you're using the correct Firebase project ID in both clientId and
-   issuer URL.
+1. **Invalid Project ID**: Ensure you're using the correct Firebase project ID in both clientId and issuer URL.
 
-2. **Domain Not Authorized**: Add all your domains (including localhost for development) to the
-   authorized domains list.
+2. **Domain Not Authorized**: Add all your domains (including localhost for development) to the authorized domains list.
 
-3. **Authentication Persistence**: Firebase handles session persistence automatically, but ensure
-   cookies are enabled.
+3. **Authentication Persistence**: Firebase handles session persistence automatically, but ensure cookies are enabled.
 
-4. **CORS Issues**: Firebase typically handles CORS automatically, but check your authorized domains
-   if issues arise.
+4. **CORS Issues**: Firebase typically handles CORS automatically, but check your authorized domains if issues arise.
 
 5. **Token Expiration**: Firebase tokens expire after 1 hour but are automatically refreshed.
 
@@ -222,6 +212,5 @@ Firebase provides tools to migrate users from other authentication systems:
 
 - Explore [Firebase Authentication documentation](https://firebase.google.com/docs/auth)
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation
-- Implement [custom claims](https://firebase.google.com/docs/auth/admin/custom-claims) for
-  role-based access
+- Implement [custom claims](https://firebase.google.com/docs/auth/admin/custom-claims) for role-based access
 - Set up [Firebase Security Rules](https://firebase.google.com/docs/rules) for additional protection

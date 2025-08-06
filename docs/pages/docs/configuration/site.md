@@ -1,9 +1,7 @@
 ---
 sidebar_label: Branding & Layout
 sidebar_icon: layout-dashboard
-description:
-  Customize your Zudoku site's branding, logo, banner, and layout options with detailed
-  configuration examples and guidance.
+description: Customize your Zudoku site's branding, logo, banner, and layout options with detailed configuration examples and guidance.
 ---
 
 # Branding & Layout
@@ -66,8 +64,7 @@ Configure the site's logo with different versions for light and dark themes:
 
 #### Colors & Theme
 
-We allow you to fully customize all colors, borders, etc - read more about it in
-[Colors & Themes](/docs/customization/colors-theme)
+We allow you to fully customize all colors, borders, etc - read more about it in [Colors & Themes](/docs/customization/colors-theme)
 
 ## Layout
 
@@ -89,8 +86,7 @@ Add a banner message to the top of the page:
 
 ### Footer
 
-The footer configuration has its own dedicated section. See the [Footer Configuration](./footer) for
-details.
+The footer configuration has its own dedicated section. See the [Footer Configuration](./footer) for details.
 
 ## Complete Example
 

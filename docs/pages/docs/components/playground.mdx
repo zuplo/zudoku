@@ -3,10 +3,11 @@ title: API Playground
 sidebar_icon: circle-play
 ---
 
-You can use this component to allow users to test your API anywhere in your documentation.
+You can use this component to allow users to test your API anywhere in your
+documentation.
 
-This component is **only available in [MDX files](/docs/markdown/mdx)** and you can use it directly
-without any imports:
+This component is **only available in [MDX files](/docs/markdown/mdx)** and you
+can use it directly without any imports:
 
 ```tsx
 <OpenPlaygroundButton {...props} />
@@ -14,7 +15,8 @@ without any imports:
 
 :::tip{title="Hot tip"}
 
-The Playground can point to any API endpoint, even if it's not in the API catalog.
+The Playground can point to any API endpoint, even if it's not in the API
+catalog.
 
 :::
 
@@ -36,7 +38,8 @@ type PlaygroundProps = {
 
 ### Zuplo Echo
 
-In this example, we're using the Zuplo Echo API to test the `POST /hello-world/{name}` endpoint.
+In this example, we're using the Zuplo Echo API to test the
+`POST /hello-world/{name}` endpoint.
 
 <OpenPlaygroundButton
   server="https://echo.zuplo.io/"
@@ -73,15 +76,24 @@ In this example, we're using the Zuplo Echo API to test the `POST /hello-world/{
 
 ### JSON Placeholder
 
-In this example, we're using the JSON Placeholder API to test the `GET /photos` endpoint. We can
-also change the Text on the button to something more specific to the API.
+In this example, we're using the JSON Placeholder API to test the `GET /photos`
+endpoint. We can also change the Text on the button to something more specific
+to the API.
 
-<OpenPlaygroundButton server="https://jsonplaceholder.typicode.com" url="/photos" method="GET">
+<OpenPlaygroundButton
+  server="https://jsonplaceholder.typicode.com"
+  url="/photos"
+  method="GET"
+>
   Test Photos Endpoint
 </OpenPlaygroundButton>
 
 ```tsx
-<OpenPlaygroundButton server="https://jsonplaceholder.typicode.com" url="/photos" method="GET">
+<OpenPlaygroundButton
+  server="https://jsonplaceholder.typicode.com"
+  url="/photos"
+  method="GET"
+>
   Test Photos Endpoint
 </OpenPlaygroundButton>
 ```

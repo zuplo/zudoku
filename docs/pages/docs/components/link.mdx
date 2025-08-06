@@ -3,8 +3,8 @@ title: Link
 sidebar_icon: link
 ---
 
-A navigation component that provides client-side routing capabilities for internal links and
-external link handling.
+A navigation component that provides client-side routing capabilities for
+internal links and external link handling.
 
 ## Import
 
@@ -142,7 +142,10 @@ function ConditionalLink({ to, disabled, children }) {
 ### With Custom Styling
 
 ```tsx
-<Link to="/important-page" className="text-blue-600 hover:text-blue-800 underline">
+<Link
+  to="/important-page"
+  className="text-blue-600 hover:text-blue-800 underline"
+>
   Important Page
 </Link>
 ```
@@ -180,7 +183,11 @@ function DeleteLink({ itemId }) {
   };
 
   return (
-    <Link to={`/items/${itemId}/delete`} onClick={handleClick} className="text-red-600">
+    <Link
+      to={`/items/${itemId}/delete`}
+      onClick={handleClick}
+      className="text-red-600"
+    >
       Delete Item
     </Link>
   );
@@ -222,21 +229,21 @@ The Link component maintains accessibility best practices:
 
 :::tip
 
-The Link component is optimized for internal navigation and provides the best user experience for
-single-page application routing.
+The Link component is optimized for internal navigation and provides the best
+user experience for single-page application routing.
 
 :::
 
 :::info
 
-For external links, use a regular `<a>` tag instead of the Link component to ensure proper external
-navigation behavior.
+For external links, use a regular `<a>` tag instead of the Link component to
+ensure proper external navigation behavior.
 
 :::
 
 :::caution
 
-When using `reloadDocument`, the link will perform a full page reload, which may impact performance
-and user experience.
+When using `reloadDocument`, the link will perform a full page reload, which may
+impact performance and user experience.
 
 :::

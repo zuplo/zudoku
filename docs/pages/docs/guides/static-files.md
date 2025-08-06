@@ -1,17 +1,12 @@
 ---
 title: Static Files
 sidebar_icon: folder-open
-description:
-  Learn how to serve and reference static files like images and PDFs in your Zudoku documentation
-  using the public directory.
+description: Learn how to serve and reference static files like images and PDFs in your Zudoku documentation using the public directory.
 ---
 
-Zudoku makes it easy to serve static files like images, PDFs, or any other assets alongside your
-documentation. Any files placed in the `public` directory will be served at the root path `/` during
-dev, and copied to the root of the dist directory as-is.
+Zudoku makes it easy to serve static files like images, PDFs, or any other assets alongside your documentation. Any files placed in the `public` directory will be served at the root path `/` during dev, and copied to the root of the dist directory as-is.
 
-Note that you should always reference `public` assets using root absolute path - for example,
-`public/icon.png` should be referenced in source code as `/icon.png`.
+Note that you should always reference `public` assets using root absolute path - for example, `public/icon.png` should be referenced in source code as `/icon.png`.
 
 ## Usage
 
@@ -47,8 +42,7 @@ If you want users to download a file like a PDF, you can use an anchor tag like 
 
 ## Relative paths
 
-If you want to reference a file that is in the same directory as the current file, you can also use
-a relative path:
+If you want to reference a file that is in the same directory as the current file, you can also use a relative path:
 
 ```md title="page.mdx"
 ![API Architecture](./image.png)

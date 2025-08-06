@@ -3,14 +3,11 @@ title: Navigation Migration
 navigation_icon: arrow-right-left
 ---
 
-This guide explains how to migrate existing configurations that used `topNavigation`, `sidebar` and
-`customPages` to the new unified `navigation` configuration introduced in vNEXT.
+This guide explains how to migrate existing configurations that used `topNavigation`, `sidebar` and `customPages` to the new unified `navigation` configuration introduced in vNEXT.
 
 ## Overview
 
-Navigation is now configured through a single `navigation` array. Items at the root level become top
-navigation tabs, while nested categories automatically form the sidebar. Custom pages are added
-using the `custom-page` item type.
+Navigation is now configured through a single `navigation` array. Items at the root level become top navigation tabs, while nested categories automatically form the sidebar. Custom pages are added using the `custom-page` item type.
 
 ## Before and After
 
@@ -75,13 +72,10 @@ const config: ZudokuConfig = {
 
 1. **Update plugin configs**
 
-   Replace all uses of `navigationId` with `path` in plugin options like `apis` or `catalogs`.
-   Navigation items of type `link` should use the `to` property to reference the path of the API or
-   catalog.
+   Replace all uses of `navigationId` with `path` in plugin options like `apis` or `catalogs`. Navigation items of type `link` should use the `to` property to reference the path of the API or catalog.
 
 1. **Reference plugin paths in navigation**
 
-   Items produced by plugins are not added automatically. Add links or categories in your
-   `navigation` so users can access them.
+   Items produced by plugins are not added automatically. Add links or categories in your `navigation` so users can access them.
 
 </Stepper>

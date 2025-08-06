@@ -1,18 +1,14 @@
 ---
 title: Auth0 Authentication Setup
 sidebar_label: Auth0
-description:
-  Learn how to set up Auth0 authentication for Zudoku, including application configuration and
-  integration steps for secure API documentation access.
+description: Learn how to set up Auth0 authentication for Zudoku, including application configuration and integration steps for secure API documentation access.
 ---
 
-Auth0 is a flexible authentication and authorization platform that integrates seamlessly with
-Zudoku. This guide walks you through setting up Auth0 authentication for your documentation site.
+Auth0 is a flexible authentication and authorization platform that integrates seamlessly with Zudoku. This guide walks you through setting up Auth0 authentication for your documentation site.
 
 ## Prerequisites
 
-If you don't have an Auth0 account, you can sign up for a
-[free Auth0 account](https://auth0.com/signup) that provides 7,000 monthly active users.
+If you don't have an Auth0 account, you can sign up for a [free Auth0 account](https://auth0.com/signup) that provides 7,000 monthly active users.
 
 ## Setup Steps
 
@@ -20,8 +16,7 @@ If you don't have an Auth0 account, you can sign up for a
 
 1. **Create Auth0 Application**
 
-   [Create a new Auth0 application](https://auth0.com/docs/get-started/auth0-overview/create-applications)
-   in the Auth0 dashboard:
+   [Create a new Auth0 application](https://auth0.com/docs/get-started/auth0-overview/create-applications) in the Auth0 dashboard:
    - Select type **Single Page Web Applications**
    - Give your application a descriptive name
 
@@ -91,17 +86,14 @@ authentication: {
 
 ### Common Issues
 
-1. **Callback URL Mismatch**: Ensure your callback URLs in Auth0 exactly match your site's URL,
-   including the `/oauth/callback` path.
+1. **Callback URL Mismatch**: Ensure your callback URLs in Auth0 exactly match your site's URL, including the `/oauth/callback` path.
 
 2. **CORS Errors**: Add your site's domain to the Allowed Web Origins in Auth0.
 
-3. **Authentication Loop**: Check that your Auth0 domain includes the protocol (`https://`) but no
-   trailing slash.
+3. **Authentication Loop**: Check that your Auth0 domain includes the protocol (`https://`) but no trailing slash.
 
 ## Next Steps
 
 - Learn about [protecting routes](./authentication.md#protected-routes) in your documentation
-- Explore other [authentication providers](./authentication.md#authentication-providers) supported
-  by Zudoku
+- Explore other [authentication providers](./authentication.md#authentication-providers) supported by Zudoku
 - Configure [user permissions](./authentication.md#user-data) based on Auth0 roles
