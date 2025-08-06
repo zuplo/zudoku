@@ -2,6 +2,7 @@
 title: Quickstart
 description: Get started with Zudoku by creating a new Zudoku app using the `create-zudoku` tool.
 sidebar_icon: circle-play
+zuplo: false
 ---
 
 Ready to build beautiful API documentation and developer portals in minutes? Zudoku's CLI tool will

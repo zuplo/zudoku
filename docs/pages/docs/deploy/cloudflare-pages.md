@@ -1,5 +1,6 @@
 ---
 title: Cloudflare Pages
+zuplo: false
 ---
 
 [Pages](https://developers.cloudflare.com/pages) is a low configuration way of publishing your

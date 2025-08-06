@@ -1,5 +1,6 @@
 ---
 title: Deploying Zudoku
+zuplo: false
 ---
 
 Once you are happy with your Zudoku powered documentation and ready to push your docs to production

@@ -1,5 +1,6 @@
 ---
 title: GitHub Pages
+zuplo: false
 ---
 
 [GitHub Pages](https://pages.github.com/) is a great way to publish your documentation, especially
