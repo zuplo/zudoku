@@ -1,5 +1,6 @@
 ---
 title: Upload/FTP
+zuplo: false
 ---
 
 Zudoku can produce a build of static HTML, JavaScript and CSS files that you can deploy directly to

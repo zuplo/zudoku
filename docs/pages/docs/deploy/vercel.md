@@ -1,5 +1,6 @@
 ---
 title: Vercel
+zuplo: false
 ---
 
 [Vercel](https://vercel.com) offers multiple ways to deploy to its service, including via GitHub,
