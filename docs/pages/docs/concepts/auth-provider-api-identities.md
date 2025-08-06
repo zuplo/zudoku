@@ -72,7 +72,7 @@ demo API.
 
 :::note
 
-This example shows how to impliment API Identities in Zudoku. If you're using Zuplo and you are
+This example shows how to implement API Identities in Zudoku. If you're using Zuplo and you are
 using the built-in API Key management system, you don't need to implement this yourself. Zuplo will
 handle API Identities for you.
 
