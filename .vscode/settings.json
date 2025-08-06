@@ -23,11 +23,15 @@
   },
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 100,
+    "editor.rulers": [100]
   },
   "[mdx]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "editor.wordWrapColumn": 100,
+    "editor.rulers": [100]
   },
 
   // Set it explicitely to be sure: https://github.com/biomejs/biome-vscode/discussions/230
