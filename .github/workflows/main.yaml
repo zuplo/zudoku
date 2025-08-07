@@ -223,3 +223,8 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
+      - name: Trigger Zuplo Docs Update
+        # Only for non-prerelease
+        if: github.event_name == 'workflow_dispatch'
+        run: curl ${{ secrets.VERCEL_DOCS_WEBHOOK_URL }}
