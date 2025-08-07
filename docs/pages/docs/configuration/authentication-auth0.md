@@ -47,7 +47,21 @@ If you don't have an Auth0 account, you can sign up for a
 
    Keep the default refresh token expiration settings unless you have specific requirements.
 
-3. **Configure Zudoku**
+3. Create an Auth0 API:
+   - Navigate to the [APIs section](https://manage.auth0.com/#/apis) in the Auth0 dashboard
+   - Click **Create API**
+   - Set a name (e.g., "Zudoku API") and an identifier (e.g., `https://your-domain.com/api`)
+   - Choose **RS256** as the signing algorithm
+   - Save the API
+
+   :::warning
+
+   This step is important. If you skip creating an API, Zudoku will not be able to validate the
+   tokens issued by Auth0, leading to authentication failures.
+
+   :::
+
+4. **Configure Zudoku**
 
    Add the Auth0 configuration to your [Zudoku configuration file](./overview.md):
 
@@ -59,7 +73,7 @@ If you don't have an Auth0 account, you can sign up for a
        type: "auth0",
        domain: "your-domain.us.auth0.com",
        clientId: "<your-auth0-client-id>",
-       scopes: ["openid", "profile", "email"], // Optional: customize scopes
+       audience: "https://your-domain.com/api", // Your Auth0 API identifier
      },
      // ... other configuration
    };
@@ -68,7 +82,7 @@ If you don't have an Auth0 account, you can sign up for a
    Where:
    - **domain**: Your Auth0 domain (found in your application's Basic Information)
    - **clientId**: The Client ID from your Auth0 application settings
-   - **scopes**: Optional array of OAuth scopes (defaults to `["openid", "profile", "email"]`)
+   - **audience**: The identifier of the Auth0 API you created (e.g., `https://your-domain.com/api`)
 
 </Stepper>
 
@@ -98,6 +112,9 @@ authentication: {
 
 3. **Authentication Loop**: Check that your Auth0 domain includes the protocol (`https://`) but no
    trailing slash.
+
+4. **Token Validation Errors**: Ensure the audience in your Zudoku configuration matches the
+   identifier of the Auth0 API you created.
 
 ## Next Steps
 

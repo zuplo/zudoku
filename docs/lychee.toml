@@ -31,6 +31,7 @@ exclude = [
   "stackoverflow.com",
   "dashboard.clerk.com",
   "openid.net",
+  "manage.auth0.com",
 
   "https://portal.azure.com/",
 
