@@ -129,8 +129,9 @@ You can customize your theme as much as you want using
 below only the `primary` and `primaryForeground` variables are used but you can add any additional
 variables from ShadCDN UI that you would like to change.
 
-**Tip**: Use the [ShadCDN UI Theme Generator](https://gradient.page/tools/shadcn-ui-theme-generator)
-to create a great looking theme based off your primary color.
+**Tip**: Use the
+[ShadCDN UI Theme Generator](https://zippystarter.com/tools/shadcn-ui-theme-generator) to create a
+great looking theme based off your primary color.
 
 **Example:**
 
