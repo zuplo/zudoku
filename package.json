@@ -27,7 +27,7 @@
     "lefthook": "^1.12.2",
     "nx": "21.3.11",
     "prettier": "3.6.2",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   },
   "pnpm": {
     "overrides": {
