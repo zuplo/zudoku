@@ -18,7 +18,7 @@ the project, open a feature request, or contribute to the codebase, visit the
 
 After you have connected your Zuplo project to
 [source control](https://zuplo.com/docs/articles/source-control) you can clone your project locally.
-Running the Developer Portal locally allows you to see change in real-time with live-reload.
+Running the Developer Portal locally allows you to see changes in real-time with live-reload.
 
 1. Clone the repository
 
