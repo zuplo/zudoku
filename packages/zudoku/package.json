@@ -40,6 +40,7 @@
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
+    "./plugins/llms-txt": "./src/lib/plugins/llms-txt/index.tsx",
     "./components": "./src/lib/components/index.ts",
     "./router": "./src/lib/core/router.ts",
     "./__internal": "./src/lib/core/__internal.tsx",

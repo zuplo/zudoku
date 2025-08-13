@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import type { ZudokuConfig } from "zudoku";
+import { llmsTxtPlugin } from "zudoku/plugins/llms-txt";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
@@ -105,6 +106,43 @@ const config: ZudokuConfig = {
         );
       },
     },
+    llmsTxtPlugin({
+      title: "Zudoku Documentation",
+      description:
+        "A modern toolkit for building beautiful documentation websites",
+      customSections: [
+        {
+          title: "Getting Started",
+          items: [
+            {
+              title: "Quick Start Guide",
+              url: "/docs/quickstart",
+              description: "Get up and running with Zudoku in minutes",
+            },
+            {
+              title: "Configuration",
+              url: "/docs/configuration/site",
+              description: "Learn how to configure your Zudoku site",
+            },
+          ],
+        },
+        {
+          title: "Resources",
+          items: [
+            {
+              title: "GitHub Repository",
+              url: "https://github.com/zuplo/zudoku",
+              description: "Source code and development",
+            },
+            {
+              title: "Discord Community",
+              url: "https://discord.gg/stPRhjbA55",
+              description: "Get help and connect with the community",
+            },
+          ],
+        },
+      ],
+    }),
   ],
   apis: [
     {
