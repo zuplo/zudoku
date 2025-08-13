@@ -46,6 +46,13 @@ const customComponents = {
 <Markdown content="# Custom Heading\n\nCustom paragraph styling." components={customComponents} />;
 ```
 
+:::info
+
+Custom components provided via the `components` prop will merge with default MDX components,
+allowing you to override specific elements while keeping others intact.
+
+:::
+
 ## Features
 
 - **GitHub Flavored Markdown**: Full GFM support including tables, strikethrough, and task lists
@@ -68,8 +75,12 @@ const customComponents = {
 
 ### Emphasis
 
+<!-- prettier-ignore -->
 ```markdown
-_italic_ or _italic_ **bold** or **bold** **_bold italic_** ~~strikethrough~~
+_italic_ or *italic*
+**bold** or __bold__
+**_bold italic_**
+~~strikethrough~~
 ```
 
 ### Lists
@@ -85,25 +96,34 @@ _italic_ or _italic_ **bold** or **bold** **_bold italic_** ~~strikethrough~~
 
 ### Code
 
-`````markdown
-Inline `code` with backticks
+The Markdown component supports both inline code and code blocks with syntax highlighting.
 
-````javascript
+**Inline code** with backticks:
+
+```markdown
+Inline `code` with backticks
+```
+
+**Code blocks** with syntax highlighting:
+
+````markdown
+```javascript
 // Code block with syntax highlighting
 function hello() {
   console.log("Hello, world!");
 }
-\```
+```
 ````
-`````
 
-````
+For advanced syntax highlighting features like line numbers, titles, and line highlighting, see:
+
+- [Code Blocks](/docs/markdown/code-blocks) - Markdown code block syntax and features
+- [Syntax Highlight](/docs/components/syntax-highlight) - React component for syntax highlighting
 
 ### Links and Images
 
 ```markdown
-[Link text](https://example.com)
-![Alt text](image.jpg)
+[Link text](https://example.com) ![Alt text](image.jpg)
 ```
 
 ### Tables
@@ -123,17 +143,9 @@ The Markdown component automatically uses:
 - **Rehype Raw**: For HTML support
 - **Shiki**: For syntax highlighting with your configured themes
 
-## Notes
-
 :::tip
 
-The Markdown component integrates with Zudoku's syntax highlighting configuration and will use the same themes as configured in your Zudoku options.
+The Markdown component integrates with Zudoku's syntax highlighting configuration and will use the
+same themes as configured in your Zudoku options.
 
 :::
-
-:::info
-
-Custom components provided via the `components` prop will merge with default MDX components, allowing you to override specific elements while keeping others intact.
-
-:::
-````
