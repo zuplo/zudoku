@@ -335,6 +335,91 @@ describe("Generate OpenAPI schema module", () => {
     `);
   });
 
+  it("should handle refs with siblings without duplication", async () => {
+    const input = {
+      components: {
+        schemas: {
+          BaseType: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+            },
+          },
+          Container: {
+            type: "object",
+            properties: {
+              // Same ref with different sibling properties
+              first: {
+                $ref: "#/components/schemas/BaseType",
+                description: "First instance",
+              },
+              second: {
+                $ref: "#/components/schemas/BaseType",
+                description: "Second instance",
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    const container = schema.components.schemas.Container;
+
+    // Both should inherit BaseType properties
+    expect(container.properties.first.properties.id).toEqual({
+      type: "string",
+    });
+    expect(container.properties.second.properties.id).toEqual({
+      type: "string",
+    });
+
+    // Each should have its unique description
+    expect(container.properties.first.description).toBe("First instance");
+    expect(container.properties.second.description).toBe("Second instance");
+
+    // They should be different object instances (not the same reference)
+    expect(container.properties.first).not.toBe(container.properties.second);
+  });
+
+  it("should generate correct code for refs with siblings", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Pet: {
+            type: "object",
+            properties: { name: { type: "string" } },
+          },
+          Response: {
+            type: "object",
+            // Ref with description sibling
+            properties: {
+              data: {
+                $ref: "#/components/schemas/Pet",
+                description: "The pet data",
+              },
+              // Plain ref without siblings
+              error: { $ref: "#/components/schemas/Pet" },
+            },
+          },
+        },
+      },
+    };
+
+    const code = await generateCode(input);
+
+    // Ref with siblings uses a merged variable and preserves __$ref
+    expect(code).toContain(
+      'const __merged_0 = Object.assign({}, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
+    );
+    expect(code).toContain(
+      'Object.defineProperty(__merged_0, "__$ref", { value: __refMapPaths[0], enumerable: false });',
+    );
+
+    // Plain ref uses direct reference
+    expect(code).toContain('"error": __refMap["#/components/schemas/Pet"]');
+  });
+
   it("should handle OpenAPI v3.1 refs alongside description and summary", async () => {
     const input: OpenAPIV3_1.Document = {
       openapi: "3.1.0",
@@ -394,9 +479,10 @@ describe("Generate OpenAPI schema module", () => {
         .schema;
 
     // First response should have both description and summary
+    // Note: __$ref is non-enumerable so it won't show in the snapshot
+    expect(responseSchema200.__$ref).toBe("#/components/schemas/Pet");
     expect(responseSchema200).toMatchInlineSnapshot(`
       {
-        "__$ref": "#/components/schemas/Pet",
         "description": "A pet object with additional context",
         "properties": {
           "name": {
@@ -409,9 +495,9 @@ describe("Generate OpenAPI schema module", () => {
     `);
 
     // Second response should have only description (different from first)
+    expect(responseSchema201.__$ref).toBe("#/components/schemas/Pet");
     expect(responseSchema201).toMatchInlineSnapshot(`
       {
-        "__$ref": "#/components/schemas/Pet",
         "description": "A newly created pet",
         "properties": {
           "name": {

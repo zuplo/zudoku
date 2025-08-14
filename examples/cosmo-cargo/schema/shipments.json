@@ -246,6 +246,17 @@
                 "lastChecked": "2024-03-14T15:45:00Z"
               }
             }
+          },
+          "tracking": {
+            "$ref": "#/components/schemas/TrackingDetails",
+            "description": "Real-time tracking information for this shipment"
+          },
+          "returnTracking": {
+            "oneOf": [
+              { "$ref": "#/components/schemas/TrackingDetails" },
+              { "type": "null" }
+            ],
+            "description": "Tracking details for return shipment if applicable"
           }
         },
         "additionalProperties": true
@@ -340,6 +351,48 @@
             "maxLength": 500
           }
         }
+      },
+      "TrackingDetails": {
+        "type": "object",
+        "description": "Detailed tracking information for a shipment",
+        "properties": {
+          "currentLocation": {
+            "type": "string",
+            "description": "Current location of the shipment",
+            "example": "Distribution Center - Los Angeles, CA"
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Estimated delivery date and time"
+          },
+          "lastUpdate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last tracking update timestamp"
+          },
+          "carrier": {
+            "type": "string",
+            "description": "Carrier handling the shipment",
+            "enum": ["FEDEX", "UPS", "USPS", "DHL"],
+            "example": "FEDEX"
+          },
+          "deliveryConfirmation": {
+            "type": "object",
+            "properties": {
+              "signedBy": {
+                "type": "string",
+                "description": "Name of person who signed for delivery"
+              },
+              "signatureImage": {
+                "type": "string",
+                "format": "uri",
+                "description": "URL to signature image"
+              }
+            }
+          }
+        },
+        "required": ["currentLocation", "lastUpdate"]
       },
       "ShipmentHistory": {
         "type": "object",

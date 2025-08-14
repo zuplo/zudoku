@@ -12,7 +12,10 @@ const getSegmentsFromPath = (path: string) =>
 // Find all $ref occurrences in the schema and assign them unique variable names
 const createLocalRefMap = (obj: RecordAny) => {
   const refMap = new Map<string, number>();
-  const siblingsMap = new Map<string, RecordAny>();
+  const siblingsMap = new Map<
+    string,
+    { refPath: string; siblings: RecordAny }
+  >();
   let refCounter = 0;
   let siblingCounter = 0;
 
@@ -22,14 +25,14 @@ const createLocalRefMap = (obj: RecordAny) => {
         refMap.set(node.$ref, refCounter++);
       }
 
-      const { $ref, description, summary } = node;
+      const { $ref, ...otherProps } = node;
 
-      if (description || summary) {
-        const siblings = { description, summary };
+      // Check if there are sibling properties (anything besides $ref)
+      if (Object.keys(otherProps).length > 0) {
         const uniqueKey = `${$ref}__${siblingCounter++}`;
-        siblingsMap.set(uniqueKey, { refPath: $ref, siblings });
+        siblingsMap.set(uniqueKey, { refPath: $ref, siblings: otherProps });
 
-        // Replace the node's $ref with our unique key so we can track it
+        // Mark this node with the unique key so we can track it
         node.__uniqueRefKey = uniqueKey;
       }
     }
@@ -43,42 +46,32 @@ const createLocalRefMap = (obj: RecordAny) => {
 const setRefMarkers = (
   obj: RecordAny,
   refMap: Map<string, number>,
-  siblingsMap: Map<string, RecordAny>,
+  ignoreSiblings = false,
 ) =>
-  traverse<string | RecordAny>(obj, (node) => {
+  traverse(obj, (node) => {
     const { $ref, __uniqueRefKey } = node;
     if ($ref && typeof $ref === "string" && refMap.has($ref)) {
-      if (__uniqueRefKey && siblingsMap.has(__uniqueRefKey)) {
-        return `__refMap+Siblings:${__uniqueRefKey}`;
-      } else {
+      if (ignoreSiblings || !__uniqueRefKey) {
         return `__refMap:${$ref}`;
       }
+      return `__refMap+Siblings:${__uniqueRefKey}`;
     }
     return node;
   });
 
-// Replace the marker strings with actual __refMap lookups in the generated code
-const replaceRefMarkers = (
-  code?: string,
-  siblingsMap?: Map<string, RecordAny>,
-) => {
-  if (!code) return code;
+// Replace simple ref markers with __refMap lookups
+const replaceRefMarkers = (code: string) =>
+  code.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
 
-  // Handle simple refs
-  code = code.replace(/"__refMap:(.*?)"/g, '__refMap["$1"]');
-
-  // Handle refs with siblings
-  code = code.replace(/"__refMap\+Siblings:(.*?)"/g, (_, uniqueKey) => {
-    const entry = siblingsMap?.get(uniqueKey);
-    // Fallback to the simple ref if no siblings are found
-    if (!entry) return `__refMap["${uniqueKey}"]`;
-
-    const { refPath, siblings } = entry;
-    return `Object.assign({}, __refMap["${refPath}"], ${JSON.stringify(siblings)}, { __$ref: __refMap["${refPath}"].__$ref })`;
-  });
-
-  return code;
-};
+// Replace sibling ref markers with merged variable names
+const replaceSiblingRefMarkers = (
+  code: string,
+  mergedRefs: Map<string, string>,
+) =>
+  code.replace(
+    /"__refMap\+Siblings:(.*?)"/g,
+    (_, uniqueKey) => mergedRefs.get(uniqueKey) ?? `__refMap["${uniqueKey}"]`,
+  );
 
 const lookup = (
   schema: RecordAny,
@@ -134,29 +127,71 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
     "const __refMapPaths = Object.keys(__refMap);",
   );
 
-  for (const [refPath, index] of refMap) {
-    const value = lookup(schema, refPath, filePath);
+  /**
+   * Two-pass approach to handle OpenAPI 3.1 refs with sibling properties:
+   *
+   * Problem: When we have { $ref: "#/path", description: "text" }, we need to merge
+   * the referenced schema with siblings using Object.assign(). But if we do this
+   * before the referenced schema is populated, we merge with an empty object.
 
-    // This shouldn't happen but to be safe we log a warning
-    if (!value) {
-      // biome-ignore lint/suspicious/noConsole: Logging allowed here
-      console.warn(`Could not find value for refPath: ${refPath}`);
-      continue;
+   * Solution:
+   *   - Pass 1: Populate all base schemas in __refMap (ignoring siblings)
+   *   - Pass 2: Create merged objects that combine refs with their siblings
+   *
+   * This ensures Object.assign() merges with populated schemas, not empty objects.
+   */
+
+  // Pass 1: Populate all base refs (ignoring siblings temporarily)
+  // This ensures all refs have their base properties before merging
+  const assignBaseRefs = () => {
+    for (const [refPath, index] of refMap) {
+      const value = lookup(schema, refPath, filePath);
+
+      if (!value) {
+        // biome-ignore lint/suspicious/noConsole: Logging allowed here
+        console.warn(`Could not find value for refPath: ${refPath}`);
+        continue;
+      }
+
+      const transformedValue = setRefMarkers(value, refMap, true);
+
+      lines.push(
+        `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue))});`,
+        `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
+      );
+    }
+  };
+
+  // Pass 2: Create merged objects for refs with siblings
+  const createMergedRefs = () => {
+    if (siblingsMap.size === 0) return;
+
+    const mergedRefs = new Map<string, string>();
+    let mergedCounter = 0;
+
+    for (const [uniqueKey, { refPath, siblings }] of siblingsMap) {
+      const varName = `__merged_${mergedCounter++}`;
+      mergedRefs.set(uniqueKey, varName);
+
+      // Create merged object and preserve __$ref
+      const refIndex = refMap.get(refPath);
+      lines.push(
+        `const ${varName} = Object.assign({}, __refMap["${refPath}"], ${str(siblings)});`,
+        `Object.defineProperty(${varName}, "__$ref", { value: __refMapPaths[${refIndex}], enumerable: false });`,
+      );
     }
 
-    const transformedValue = setRefMarkers(value, refMap, siblingsMap);
+    return mergedRefs;
+  };
 
-    lines.push(
-      // Use assign so that the object identity is maintained and correctly resolves circular references
-      `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue), siblingsMap)});`,
-      `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
-    );
-  }
+  assignBaseRefs();
+  const mergedRefs = createMergedRefs();
+  const transformed = setRefMarkers(schema, refMap);
 
-  const transformed = setRefMarkers(schema, refMap, siblingsMap);
-  lines.push(
-    `export const schema = ${replaceRefMarkers(str(transformed), siblingsMap)};`,
-  );
+  let finalCode = replaceRefMarkers(str(transformed));
+  if (mergedRefs) finalCode = replaceSiblingRefMarkers(finalCode, mergedRefs);
+
+  lines.push(`export const schema = ${finalCode};`);
 
   // slugify is quite expensive for big schemas, so we pre-generate the slugs here to shave off time
   const dereferencedSchema = await $RefParser.dereference<OpenAPIDocument>(
