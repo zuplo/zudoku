@@ -45,7 +45,7 @@ export const unionVariants = (schema: SchemaObject): SchemaObject[] => {
           ...variant,
           type: "object" as const,
           properties: schema.properties,
-          required: variant.required || schema.required,
+          required: variant.required ?? schema.required,
         };
       }
 
