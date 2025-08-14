@@ -318,7 +318,7 @@
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "6.0.3",
     "tsx": "4.19.4",
-    "typescript": "5.8.3",
+    "typescript": "5.9.2",
     "vitest": "3.2.4"
   },
   "peerDependencies": {
