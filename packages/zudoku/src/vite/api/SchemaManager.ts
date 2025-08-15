@@ -5,6 +5,7 @@ import {
   type JSONSchema,
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
+import slugify from "@sindresorhus/slugify";
 import { merge as mergeAllOf } from "allof-merge";
 import colors from "picocolors";
 import type { LoadedConfig } from "../../config/config.js";
@@ -90,8 +91,8 @@ export class SchemaManager {
 
   public processSchema = async (input: string) => {
     const filePath = path.resolve(this.config.__meta.rootDir, input);
-    const pathId = this.getPathForFile(filePath);
-    if (!pathId) {
+    const configuredPath = this.getPathForFile(filePath);
+    if (!configuredPath) {
       // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`No path found for file ${input}`);
       return;
@@ -121,9 +122,12 @@ export class SchemaManager {
     const processedTime = Date.now();
     const code = await generateCode(processedSchema, filePath);
 
+    // Create a unique filename using the configuredPath to avoid collisions
+    // when multiple APIs use the same basename (e.g., index.json)
+    const prefixPath = slugify(configuredPath, { separator: "_" });
     const processedFilePath = path.posix.join(
       this.storeDir,
-      `${path.basename(filePath)}.js`,
+      `${prefixPath}-${path.basename(filePath)}.js`,
     );
     await fs.writeFile(processedFilePath, code);
     this.schemaMap.set(filePath, {
@@ -137,17 +141,17 @@ export class SchemaManager {
       inputPath: filePath,
     } satisfies ProcessedSchema;
 
-    const schemas = this.processedSchemas[pathId];
+    const schemas = this.processedSchemas[configuredPath];
 
     if (!schemas) {
-      throw new Error(`No schemas found for navigation ID ${pathId}.`);
+      throw new Error(`No schemas found for navigation ID ${configuredPath}.`);
     }
 
     const index = schemas.findIndex((s) => s.inputPath === filePath);
     if (index > -1) {
       schemas[index] = processed;
     }
-    this.fileToPath.set(filePath, pathId);
+    this.fileToPath.set(filePath, configuredPath);
     return processed;
   };
 
