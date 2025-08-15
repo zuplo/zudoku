@@ -36,6 +36,23 @@ const config: ZudokuConfig = {
   docs: {
     files: "/pages/**/*.mdx",
   },
+  llmsTxt: {
+    title: "Zudoku Example Documentation",
+    description:
+      "Sample documentation site showcasing Zudoku features and configuration options",
+    customSections: [
+      {
+        title: "API Reference",
+        items: [
+          {
+            title: "Rick & Morty API",
+            url: "https://rickandmorty.zuplo.io",
+            description: "External API for Rick and Morty data",
+          },
+        ],
+      },
+    ],
+  },
 };
 
 export default config;
