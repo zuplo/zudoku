@@ -130,10 +130,12 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
         next {
           name
           slug
+          extensions
         }
         prev {
           name
           slug
+          extensions
         }
       }
     }
@@ -209,11 +211,16 @@ export const OperationList = ({
     (hasMultipleVersions && options?.showVersionSelect !== "hide");
 
   const paginationProps = {
-    prev: prev?.name ? { to: `../${prev.slug}`, label: prev.name } : undefined,
+    prev: prev
+      ? {
+          to: `../${prev.slug}`,
+          label: prev.extensions?.["x-displayName"] ?? prev.name,
+        }
+      : undefined,
     next: next
       ? {
           to: `../${next.slug ?? UNTAGGED_PATH}`,
-          label: next.name ?? "Other endpoints",
+          label: next.extensions?.["x-displayName"] ?? next.name,
         }
       : undefined,
   };
