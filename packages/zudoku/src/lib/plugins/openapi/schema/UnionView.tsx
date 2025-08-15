@@ -1,4 +1,3 @@
-import { ArrowDownIcon } from "lucide-react";
 import { useState } from "react";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Badge } from "../../../ui/Badge.js";
@@ -114,7 +113,7 @@ export const UnionView = ({ schema }: { schema: SchemaObject }) => {
     currentVariantIndex >= 0 ? variants[currentVariantIndex] : null;
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden text-sm">
       <div className="flex flex-col gap-4 p-4">
         <div className="flex items-center gap-2">
           <Badge variant="outline">{mode}</Badge>
@@ -129,14 +128,7 @@ export const UnionView = ({ schema }: { schema: SchemaObject }) => {
           selectedVariant={selectedVariant}
           onSelectVariant={setSelectedVariant}
         />
-
-        <div className="flex justify-center items-center gap-2">
-          <ArrowDownIcon size={14} />
-          <ArrowDownIcon size={14} />
-          <ArrowDownIcon size={14} />
-          <ArrowDownIcon size={14} />
-        </div>
-
+        <strong>Properties for {selectedVariant}:</strong>
         {currentVariant && <VariantPanel variant={currentVariant} />}
       </div>
     </Card>
