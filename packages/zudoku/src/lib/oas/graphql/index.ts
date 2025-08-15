@@ -111,18 +111,34 @@ export const getAllTags = (
     ),
   );
 
-  return [
+  const result = [
     // Keep root tags that are actually used in operations
     ...rootTags
       .filter((tag) => operationTags.has(tag.name))
       .map((tag) => ({ ...tag, slug: slugs[tag.name] })),
     // Add tags found in operations but not defined in root tags
-    ...[...operationTags]
+    ...Array.from(operationTags)
       .filter((tag) => !rootTags.some((rt) => rt.name === tag))
       .map((tag) => ({ name: tag, slug: slugs[tag] })),
     // Add untagged operations if there are any
     ...(hasUntaggedOperations ? [{ name: undefined, slug: undefined }] : []),
   ];
+
+  // Apply x-tagGroups ordering if present
+  const tagGroups = (schema as any)["x-tagGroups"] ?? [];
+
+  if (tagGroups.length === 0) return result;
+
+  const groupOrder = tagGroups.flatMap((group: any) => group.tags);
+  return result.sort((a, b) => {
+    if (!a.name || !b.name) return 0; // Keep untagged at end
+    const indexA = groupOrder.indexOf(a.name);
+    const indexB = groupOrder.indexOf(b.name);
+    if (indexA === -1 && indexB === -1) return 0; // Keep original order for ungrouped
+    if (indexA === -1) return 1; // Ungrouped after grouped
+    if (indexB === -1) return -1; // Grouped before ungrouped
+    return indexA - indexB;
+  });
 };
 
 export const getAllSlugs = (

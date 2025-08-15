@@ -14,6 +14,10 @@
     {
       "name": "Shipment",
       "tags": ["Shipment Management", "Tracking & Notifications"]
+    },
+    {
+      "name": "Billing & International",
+      "tags": ["Rates & Billing", "International Shipping"]
     }
   ],
   "tags": [

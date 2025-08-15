@@ -326,11 +326,13 @@ export type OperationsForTagQuery = {
         __typename?: "SchemaTag";
         name?: string | null;
         slug?: string | null;
+        extensions?: any | null;
       } | null;
       prev?: {
         __typename?: "SchemaTag";
         name?: string | null;
         slug?: string | null;
+        extensions?: any | null;
       } | null;
     } | null;
   };
@@ -537,10 +539,12 @@ export const OperationsForTagDocument = new TypedDocumentString(`
       next {
         name
         slug
+        extensions
       }
       prev {
         name
         slug
+        extensions
       }
     }
   }
