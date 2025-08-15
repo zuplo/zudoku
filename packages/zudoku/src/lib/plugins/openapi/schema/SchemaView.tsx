@@ -20,14 +20,20 @@ const renderMarkdown = (content?: string) =>
     />
   );
 
-const renderBasicSchema = (schema: SchemaObject) => (
-  <Card className="p-4 space-y-2">
-    <span className="text-sm text-muted-foreground">
-      <ParamInfos schema={schema} />
-    </span>
-    {schema.enum && <EnumValues values={schema.enum} />}
-    {renderMarkdown(schema.description)}
-    <SchemaExampleAndDefault schema={schema} />
+const renderBasicSchema = (
+  schema: SchemaObject,
+  cardHeader?: React.ReactNode,
+) => (
+  <Card className="overflow-hidden">
+    {cardHeader}
+    <div className="p-4 space-y-2">
+      <span className="text-sm text-muted-foreground">
+        <ParamInfos schema={schema} />
+      </span>
+      {schema.enum && <EnumValues values={schema.enum} />}
+      {renderMarkdown(schema.description)}
+      <SchemaExampleAndDefault schema={schema} />
+    </div>
   </Card>
 );
 
@@ -58,19 +64,19 @@ export const SchemaView = ({
   }
 
   if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
-    return <UnionView schema={schema} />;
+    return <UnionView schema={schema} cardHeader={cardHeader} />;
   }
 
   if (Array.isArray(schema.allOf)) {
-    return <AllOfGroupView schema={schema} />;
+    return <AllOfGroupView schema={schema} cardHeader={cardHeader} />;
   }
 
   if (isBasicType(schema.type)) {
-    return renderBasicSchema(schema);
+    return renderBasicSchema(schema, cardHeader);
   }
 
   if (schema.type === "array" && typeof schema.items === "object") {
-    return <SchemaView schema={schema.items} />;
+    return <SchemaView schema={schema.items} cardHeader={cardHeader} />;
   }
 
   if (schema.type === "object") {

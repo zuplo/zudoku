@@ -352,6 +352,66 @@
           }
         }
       },
+      "HTTPValidationError": {
+        "type": "object",
+        "required": ["detail"],
+        "properties": {
+          "detail": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["loc", "msg", "type"],
+              "properties": {
+                "loc": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Field location"
+                },
+                "msg": {
+                  "type": "string",
+                  "description": "Error message"
+                },
+                "type": {
+                  "type": "string",
+                  "description": "Error type"
+                }
+              }
+            }
+          }
+        },
+        "description": "HTTP validation error details"
+      },
+      "ShipmentValidationError": {
+        "type": "object",
+        "required": ["code", "message", "field"],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "INVALID_ADDRESS",
+              "INVALID_PACKAGE",
+              "INVALID_WEIGHT",
+              "MISSING_FIELD"
+            ],
+            "description": "Specific validation error code"
+          },
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "field": {
+            "type": "string",
+            "description": "Field that failed validation"
+          },
+          "suggestion": {
+            "type": "string",
+            "description": "Suggested fix for the error"
+          }
+        },
+        "description": "Shipment-specific validation error"
+      },
       "TrackingDetails": {
         "type": "object",
         "description": "Detailed tracking information for a shipment",
@@ -815,15 +875,47 @@
             }
           },
           "400": {
-            "description": "Invalid input",
+            "description": "Invalid input - returns either HTTP validation error or shipment-specific validation error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "anyOf": [
+                    { "$ref": "#/components/schemas/HTTPValidationError" },
+                    { "$ref": "#/components/schemas/ShipmentValidationError" }
+                  ]
                 },
-                "example": {
-                  "code": "INVALID_INPUT",
-                  "message": "Invalid recipient address provided"
+                "examples": {
+                  "http_validation_error": {
+                    "summary": "HTTP Validation Error",
+                    "value": {
+                      "detail": [
+                        {
+                          "loc": ["body", "recipientAddress", "postalCode"],
+                          "msg": "String should match pattern '^[0-9]{5}$'",
+                          "type": "string_pattern_mismatch"
+                        }
+                      ]
+                    }
+                  },
+                  "shipment_validation_error": {
+                    "summary": "Shipment Validation Error",
+                    "value": {
+                      "code": "INVALID_ADDRESS",
+                      "message": "The recipient address is not valid for the selected shipping service",
+                      "field": "recipientAddress",
+                      "suggestion": "Please verify the postal code format for the destination country"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Error code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
