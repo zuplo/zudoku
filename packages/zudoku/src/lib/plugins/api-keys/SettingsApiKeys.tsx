@@ -6,9 +6,6 @@ import {
 import {
   CheckIcon,
   CircleSlashIcon,
-  CopyIcon,
-  EyeIcon,
-  EyeOffIcon,
   PencilLineIcon,
   RefreshCwIcon,
   TrashIcon,
@@ -34,7 +31,6 @@ import { Slot } from "../../components/Slot.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import { cn } from "../../util/cn.js";
-import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import { CreateApiKeyDialog } from "./CreateApiKeyDialog.js";
 import type { ApiConsumer, ApiKey, ApiKeyService } from "./index.js";
 
@@ -428,7 +424,6 @@ const RevealApiKey = ({
   className?: string;
 }) => {
   const [revealed, setRevealed] = useState(false);
-  const [isCopied, copyToClipboard] = useCopyToClipboard();
 
   const { key, createdOn, expiresOn } = apiKey;
   const isExpired = expiresOn && new Date(expiresOn) < new Date();
@@ -442,27 +437,13 @@ const RevealApiKey = ({
   return (
     <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
       <div className="flex flex-col gap-1">
-        <div className="flex gap-2 items-center text-sm border rounded-md w-full max-w-fit px-1">
-          <Secret
-            className="max-w-fit w-full"
-            secret={key}
-            status={isExpired ? "expired" : expiresSoon ? "expiring" : "active"}
-          />
-          <Button
-            variant="ghost"
-            onClick={() => setRevealed((prev) => !prev)}
-            size="icon"
-          >
-            {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => copyToClipboard(key)}
-            size="icon"
-          >
-            {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
-          </Button>
-        </div>
+        <Secret
+          className="max-w-fit w-full"
+          secret={key}
+          status={isExpired ? "expired" : expiresSoon ? "expiring" : "active"}
+          revealed={revealed}
+          onReveal={setRevealed}
+        />
         <div className="flex gap-1 mt-0.5 text-nowrap">
           {createdOn && (
             <span className="text-xs text-muted-foreground">
