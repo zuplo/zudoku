@@ -25,8 +25,36 @@ export type FieldDoc = {
   requiredInAll: boolean;
 };
 
-export const unionVariants = (schema: SchemaObject) =>
-  (schema.oneOf ?? schema.anyOf ?? []) as SchemaObject[];
+export const unionVariants = (schema: SchemaObject): SchemaObject[] => {
+  const variants = (schema.oneOf ?? schema.anyOf ?? []) as SchemaObject[];
+
+  // If parent schema has properties that variants don't, merge them
+  // This handles the pattern where anyOf/oneOf is used just for required field combinations
+  if (schema.properties && Object.keys(schema.properties).length > 0) {
+    return variants.map((variant) => {
+      // If variant doesn't define its own properties or type, inherit from parent
+      const shouldInherit =
+        !variant.properties &&
+        !variant.type &&
+        !variant.allOf &&
+        !variant.oneOf &&
+        !variant.anyOf;
+
+      if (shouldInherit) {
+        return {
+          ...variant,
+          type: "object" as const,
+          properties: schema.properties,
+          required: variant.required ?? schema.required,
+        };
+      }
+
+      return variant;
+    });
+  }
+
+  return variants;
+};
 
 export const decideExclusivity = (
   schema: SchemaObject,

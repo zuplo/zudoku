@@ -1,7 +1,8 @@
+import { useState } from "react";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Badge } from "../../../ui/Badge.js";
 import { Card } from "../../../ui/Card.js";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../ui/Tabs.js";
+import { cn } from "../../../util/cn.js";
 import { SchemaView } from "./SchemaView.js";
 import {
   decideExclusivity,
@@ -13,9 +14,13 @@ import {
 const DecisionTable = ({
   variants,
   schema,
+  selectedVariant,
+  onSelectVariant,
 }: {
   variants: SchemaObject[];
   schema: SchemaObject;
+  selectedVariant: string;
+  onSelectVariant: (label: string) => void;
 }) => {
   const rows = variants.map((v, i) => ({
     label: labelForVariant(i, v),
@@ -36,7 +41,18 @@ const DecisionTable = ({
           <tbody className="divide-y">
             {rows.map((row) => (
               <tr key={row.label} className="hover:bg-muted/30">
-                <td className="p-2 font-medium">{row.label}</td>
+                <td className="p-2 font-medium">
+                  <button
+                    type="button"
+                    className={cn(
+                      "hover:underline",
+                      selectedVariant === row.label && "text-primary",
+                    )}
+                    onClick={() => onSelectVariant(row.label)}
+                  >
+                    {row.label}
+                  </button>
+                </td>
                 <td className="p-2 text-muted-foreground text-xs">
                   {row.guards.length > 0
                     ? row.guards.join(" · ")
@@ -51,14 +67,16 @@ const DecisionTable = ({
   );
 };
 
-const VariantPanel = ({ variant }: { variant: SchemaObject }) => (
-  <div className="my-4">
-    {variant.description && (
-      <p className="text-sm text-muted-foreground">{variant.description}</p>
-    )}
-    <SchemaView schema={variant} />
-  </div>
-);
+const VariantPanel = ({ variant }: { variant: SchemaObject }) => {
+  return (
+    <div className="space-y-2">
+      {variant.description && (
+        <p className="text-sm text-muted-foreground">{variant.description}</p>
+      )}
+      <SchemaView schema={variant} />
+    </div>
+  );
+};
 
 export const UnionView = ({ schema }: { schema: SchemaObject }) => {
   const mode = Array.isArray(schema.oneOf)
@@ -67,10 +85,14 @@ export const UnionView = ({ schema }: { schema: SchemaObject }) => {
       ? "anyOf"
       : undefined;
 
+  const variants = mode ? unionVariants(schema) : [];
+  const [selectedVariant, setSelectedVariant] = useState(() =>
+    variants[0] ? labelForVariant(0, variants[0]) : "",
+  );
+
   if (!mode) return null;
 
   const exclusivity = decideExclusivity(schema);
-  const variants = unionVariants(schema);
 
   const semanticsMessage =
     exclusivity === "exactly-one" ? (
@@ -84,8 +106,14 @@ export const UnionView = ({ schema }: { schema: SchemaObject }) => {
       </>
     );
 
+  const currentVariantIndex = variants.findIndex(
+    (v, i) => labelForVariant(i, v) === selectedVariant,
+  );
+  const currentVariant =
+    currentVariantIndex >= 0 ? variants[currentVariantIndex] : null;
+
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden text-sm">
       <div className="flex flex-col gap-4 p-4">
         <div className="flex items-center gap-2">
           <Badge variant="outline">{mode}</Badge>
@@ -94,30 +122,15 @@ export const UnionView = ({ schema }: { schema: SchemaObject }) => {
           </div>
         </div>
 
-        <DecisionTable variants={variants} schema={schema} />
+        <DecisionTable
+          variants={variants}
+          schema={schema}
+          selectedVariant={selectedVariant}
+          onSelectVariant={setSelectedVariant}
+        />
+        <strong>Properties for {selectedVariant}:</strong>
+        {currentVariant && <VariantPanel variant={currentVariant} />}
       </div>
-      <Tabs defaultValue="0" className="w-full px-4">
-        <TabsList className="flex w-full">
-          {variants.map((v, i) => (
-            <TabsTrigger
-              key={labelForVariant(i, v)}
-              value={String(i)}
-              className="flex-1"
-            >
-              {labelForVariant(i, v)}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {variants.map((v, i) => (
-          <TabsContent
-            key={labelForVariant(i, v)}
-            value={String(i)}
-            className="px-2"
-          >
-            <VariantPanel variant={v} />
-          </TabsContent>
-        ))}
-      </Tabs>
     </Card>
   );
 };
