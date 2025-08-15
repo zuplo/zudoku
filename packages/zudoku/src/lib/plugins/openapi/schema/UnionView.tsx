@@ -78,7 +78,13 @@ const VariantPanel = ({ variant }: { variant: SchemaObject }) => {
   );
 };
 
-export const UnionView = ({ schema }: { schema: SchemaObject }) => {
+export const UnionView = ({
+  schema,
+  cardHeader,
+}: {
+  schema: SchemaObject;
+  cardHeader?: React.ReactNode;
+}) => {
   const mode = Array.isArray(schema.oneOf)
     ? "oneOf"
     : Array.isArray(schema.anyOf)
@@ -114,6 +120,7 @@ export const UnionView = ({ schema }: { schema: SchemaObject }) => {
 
   return (
     <Card className="overflow-hidden text-sm">
+      {cardHeader}
       <div className="flex flex-col gap-4 p-4">
         <div className="flex items-center gap-2">
           <Badge variant="outline">{mode}</Badge>
