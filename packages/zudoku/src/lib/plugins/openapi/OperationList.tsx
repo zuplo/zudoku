@@ -220,7 +220,7 @@ export const OperationList = ({
     next: next
       ? {
           to: `../${next.slug ?? UNTAGGED_PATH}`,
-          label: next.extensions?.["x-displayName"] ?? next.name,
+          label: next.extensions?.["x-displayName"] ?? next.name ?? "Other endpoints",
         }
       : undefined,
   };
