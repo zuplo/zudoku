@@ -89,13 +89,12 @@ jobs:
       - run: nx run docs:build
 
       - name: Restore lychee cache
-        id: cache-lychee
+        id: restore-cache
         uses: actions/cache/restore@v4
         with:
           path: docs/.lycheecache
-          key: lychee-cache-${{ hashFiles('docs/.lycheecache') }}
-          restore-keys: |
-            lychee-cache-
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
 
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
@@ -106,4 +105,4 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: docs/.lycheecache
-          key: lychee-cache-${{ hashFiles('docs/.lycheecache') }}
+          key: ${{ steps.restore-cache.outputs.cache-primary-key }}
