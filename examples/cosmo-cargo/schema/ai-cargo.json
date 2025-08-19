@@ -281,7 +281,10 @@
         "summary": "Universal MCP endpoint",
         "description": "Main Model Context Protocol (MCP) endpoint that allows AI tools to interact with the Cosmo Cargo system. This endpoint provides intelligent cargo management, route optimization, and predictive analytics capabilities.",
         "operationId": "mcpUniversal",
-        "x-mcp": true,
+        "x-mcp-server": {
+          "name": "Cosmo Cargo AI",
+          "version": "1.0.0"
+        },
         "requestBody": {
           "required": true,
           "content": {

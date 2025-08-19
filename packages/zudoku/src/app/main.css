@@ -33,6 +33,10 @@
   code::after {
     content: none;
   }
+
+  ol > li {
+    @apply my-2.5;
+  }
 }
 
 @layer base {

@@ -36,7 +36,7 @@ export const OperationListItem = ({
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
-  const isMCPEndpoint = operation.extensions?.["x-mcp"] !== undefined;
+  const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
 
   return (
     <div>
@@ -83,7 +83,7 @@ export const OperationListItem = ({
             <MCPEndpoint
               serverUrl={serverUrl}
               summary={operation.summary ?? undefined}
-              data={operation.extensions?.["x-mcp"]}
+              data={operation.extensions?.["x-mcp-server"]}
             />
           </div>
         ) : (

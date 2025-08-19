@@ -37,6 +37,7 @@ export const CodeBlock = ({
       className={cn(
         "border code-block-wrapper relative group rounded-md overflow-hidden",
         showLineNumbers && "line-numbers",
+        props.className,
       )}
     >
       <div className="border-b flex items-center h-10 font-sans bg-black/2">
@@ -69,10 +70,7 @@ export const CodeBlock = ({
         )}
       </div>
       <div
-        className={cn(
-          "code-block text-sm not-prose scrollbar [&_code]:px-3 [&_code]:py-2",
-          props.className,
-        )}
+        className="code-block text-sm not-prose scrollbar [&_code]:px-3 [&_code]:py-2"
         ref={ref}
       >
         {children}

@@ -19,12 +19,12 @@ export const MCPEndpoint = ({
   summary?: string;
 }) => {
   const [isCopied, setIsCopied] = useState(false);
-  const mcpUrl = `${serverUrl ?? ""}/mcp`;
+  const mcpUrl = `${(serverUrl ?? "").replace(/\/+$/, "")}/mcp`;
 
   const name =
     typeof data === "boolean"
       ? (summary ?? "mcp-server")
-      : (data?.serverName ?? summary ?? "mcp-server");
+      : (data?.name ?? summary ?? "mcp-server");
 
   const claudeConfig = `{
   "mcpServers": {
@@ -41,11 +41,7 @@ export const MCPEndpoint = ({
   const cursorConfig = `{
   "mcpServers": {
     "${name}": {
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"],
-      "env": {
-        "FETCH_URL": "${mcpUrl}"
-      }
+      "url": "${mcpUrl}"
     }
   }
 }`;
@@ -61,6 +57,15 @@ export const MCPEndpoint = ({
       "env": {
         "FETCH_URL": "${mcpUrl}"
       }
+    }
+  }
+}`;
+
+  const vscodeSseConfig = `{
+  "servers": {
+    "${name}": {
+      "type": "sse",
+      "url": "${mcpUrl}"
     }
   }
 }`;
@@ -129,8 +134,8 @@ export const MCPEndpoint = ({
               <TabsTrigger value="vscode">VS Code</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="claude" className="space-y-3">
-              <Typography className="text-sm">
+            <Typography className="text-sm max-w-full">
+              <TabsContent value="claude" className="space-y-3">
                 <ol>
                   <li>
                     Open Claude Desktop and click <strong>Settings</strong> in
@@ -171,11 +176,9 @@ export const MCPEndpoint = ({
                   View official docs
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
-              </Typography>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="chatgpt" className="space-y-3">
-              <Typography className="text-sm">
+              <TabsContent value="chatgpt" className="space-y-3">
                 <Callout type="note" title="Requirements">
                   ChatGPT Pro, Team, Enterprise, or Edu subscription. Note: MCP
                   support is limited to read-only operations through Deep
@@ -197,20 +200,19 @@ export const MCPEndpoint = ({
                   </li>
                   <li>Access through Deep Research in your chat interface</li>
                 </ol>
-              </Typography>
-              <a
-                href="https://help.openai.com/en/articles/11487775-connectors-in-chatgpt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-              >
-                View official docs
-                <ExternalLinkIcon className="h-3 w-3" />
-              </a>
-            </TabsContent>
 
-            <TabsContent value="cursor" className="space-y-3">
-              <Typography className="text-sm">
+                <a
+                  href="https://help.openai.com/en/articles/11487775-connectors-in-chatgpt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  View official docs
+                  <ExternalLinkIcon className="h-3 w-3" />
+                </a>
+              </TabsContent>
+
+              <TabsContent value="cursor" className="space-y-3">
                 <ol>
                   <li>
                     <span>Create or edit: </span>
@@ -237,11 +239,9 @@ export const MCPEndpoint = ({
                   View official docs
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
-              </Typography>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="vscode" className="space-y-3">
-              <Typography className="text-sm">
+              <TabsContent value="vscode" className="space-y-3">
                 <Callout type="note" title="Requirements">
                   VS Code with GitHub Copilot extension
                 </Callout>
@@ -259,6 +259,16 @@ export const MCPEndpoint = ({
                       className="mt-2"
                     />
                   </li>
+                  <li>
+                    Alternatively, configure SSE without a wrapper:
+                    <SyntaxHighlight
+                      showLanguageIndicator
+                      title="mcp.json (SSE)"
+                      language="json"
+                      code={vscodeSseConfig}
+                      className="mt-2"
+                    />
+                  </li>
                   <li>Restart VS Code to apply the configuration</li>
                   <li>
                     Use MCP tools in GitHub Copilot Chat by selecting Agent mode
@@ -273,8 +283,8 @@ export const MCPEndpoint = ({
                   View official docs
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
-              </Typography>
-            </TabsContent>
+              </TabsContent>
+            </Typography>
           </Tabs>
         </div>
       </div>
