@@ -1,0 +1,596 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "AI-Powered Cargo Management API",
+    "description": "Advanced AI-powered endpoints for intelligent cargo management, route optimization, and predictive analytics for the Cosmo Cargo platform.\n\n## Model Context Protocol (MCP) Integration\nThis API includes MCP-enabled endpoints that allow AI tools to directly interact with our cargo management system for intelligent decision-making and automation.\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Cosmo Cargo AI Support",
+      "email": "ai@cosmocargo.space",
+      "url": "https://ai.cosmocargo.space"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.cosmocargo.space/ai/v1",
+      "description": "Production AI environment"
+    },
+    {
+      "url": "https://staging-api.cosmocargo.space/ai/v1",
+      "description": "Staging AI environment"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "CargoOptimizationRequest": {
+        "type": "object",
+        "required": ["origin", "destination", "cargo"],
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Origin space station or planet",
+            "example": "Earth Station Alpha"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination space station or planet",
+            "example": "Mars Colony Beta"
+          },
+          "cargo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CargoItem"
+            }
+          },
+          "constraints": {
+            "$ref": "#/components/schemas/OptimizationConstraints"
+          }
+        }
+      },
+      "CargoItem": {
+        "type": "object",
+        "required": ["type", "weight", "volume"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERISHABLE",
+              "FRAGILE",
+              "HAZARDOUS",
+              "STANDARD",
+              "PRIORITY"
+            ],
+            "description": "Type of cargo"
+          },
+          "weight": {
+            "type": "number",
+            "format": "float",
+            "description": "Weight in metric tons"
+          },
+          "volume": {
+            "type": "number",
+            "format": "float",
+            "description": "Volume in cubic meters"
+          },
+          "specialRequirements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["temperature-controlled", "zero-gravity-storage"]
+          }
+        }
+      },
+      "OptimizationConstraints": {
+        "type": "object",
+        "properties": {
+          "maxTransitTime": {
+            "type": "integer",
+            "description": "Maximum transit time in Earth days"
+          },
+          "preferredCarriers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "avoidRoutes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Routes to avoid (e.g., asteroid belts)"
+          }
+        }
+      },
+      "OptimizationResult": {
+        "type": "object",
+        "properties": {
+          "recommendedRoute": {
+            "$ref": "#/components/schemas/SpaceRoute"
+          },
+          "estimatedCost": {
+            "type": "number",
+            "format": "float",
+            "description": "Cost in Galactic Credits"
+          },
+          "estimatedTime": {
+            "type": "integer",
+            "description": "Transit time in Earth days"
+          },
+          "confidenceScore": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "alternativeRoutes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SpaceRoute"
+            }
+          }
+        }
+      },
+      "SpaceRoute": {
+        "type": "object",
+        "properties": {
+          "routeId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "waypoints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "carrier": {
+            "type": "string"
+          },
+          "vesselType": {
+            "type": "string",
+            "enum": [
+              "FREIGHTER",
+              "EXPRESS_SHUTTLE",
+              "HEAVY_HAULER",
+              "QUANTUM_TRANSPORT"
+            ]
+          }
+        }
+      },
+      "PredictionRequest": {
+        "type": "object",
+        "required": ["shipmentId"],
+        "properties": {
+          "shipmentId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "predictionTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["DELAY", "DAMAGE", "ROUTE_DISRUPTION", "COST_OVERRUN"]
+            }
+          }
+        }
+      },
+      "PredictionResult": {
+        "type": "object",
+        "properties": {
+          "predictions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Prediction"
+            }
+          },
+          "overallRiskLevel": {
+            "type": "string",
+            "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+          }
+        }
+      },
+      "Prediction": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "probability": {
+            "type": "number",
+            "format": "float",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "impact": {
+            "type": "string",
+            "enum": ["MINIMAL", "MODERATE", "SEVERE", "CATASTROPHIC"]
+          },
+          "mitigation": {
+            "type": "string",
+            "description": "Suggested mitigation strategy"
+          }
+        }
+      },
+      "MCPResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "mcpMetadata": {
+            "type": "object",
+            "properties": {
+              "processingTime": {
+                "type": "number",
+                "format": "float",
+                "description": "Processing time in milliseconds"
+              },
+              "aiModel": {
+                "type": "string",
+                "description": "AI model used for processing"
+              },
+              "confidence": {
+                "type": "number",
+                "format": "float",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/mcp": {
+      "post": {
+        "tags": ["AI Operations"],
+        "summary": "Universal MCP endpoint",
+        "description": "Main Model Context Protocol (MCP) endpoint that allows AI tools to interact with the Cosmo Cargo system. This endpoint provides intelligent cargo management, route optimization, and predictive analytics capabilities.",
+        "operationId": "mcpUniversal",
+        "x-mcp-server": {
+          "name": "Cosmo Cargo AI",
+          "version": "1.0.0"
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["action", "parameters"],
+                "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "optimize_cargo",
+                      "predict_delays",
+                      "find_best_route",
+                      "analyze_risk"
+                    ],
+                    "description": "The AI action to perform"
+                  },
+                  "parameters": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Action-specific parameters"
+                  },
+                  "context": {
+                    "type": "object",
+                    "properties": {
+                      "urgency": {
+                        "type": "string",
+                        "enum": ["LOW", "NORMAL", "HIGH", "CRITICAL"]
+                      },
+                      "userPreferences": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "action": "optimize_cargo",
+                "parameters": {
+                  "origin": "Earth Station Alpha",
+                  "destination": "Europa Mining Colony",
+                  "cargo": [
+                    {
+                      "type": "PERISHABLE",
+                      "weight": 50.5,
+                      "volume": 120.0,
+                      "specialRequirements": ["temperature-controlled"]
+                    }
+                  ]
+                },
+                "context": {
+                  "urgency": "HIGH"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "MCP request processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MCPResponse"
+                },
+                "example": {
+                  "success": true,
+                  "message": "Cargo optimization completed successfully",
+                  "data": {
+                    "recommendedRoute": {
+                      "routeId": "550e8400-e29b-41d4-a716-446655440000",
+                      "waypoints": [
+                        "Earth Station Alpha",
+                        "Mars Transit Hub",
+                        "Europa Mining Colony"
+                      ],
+                      "carrier": "Stellar Express Lines",
+                      "vesselType": "EXPRESS_SHUTTLE"
+                    },
+                    "estimatedCost": 15750.5,
+                    "estimatedTime": 14
+                  },
+                  "mcpMetadata": {
+                    "processingTime": 342.5,
+                    "aiModel": "CosmoCargoAI-v3.2",
+                    "confidence": 0.94
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid MCP request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/optimize": {
+      "post": {
+        "tags": ["AI Operations"],
+        "summary": "Optimize cargo routing",
+        "description": "Uses advanced AI algorithms to find the optimal route for cargo shipments across the solar system, considering factors like transit time, cost, and special cargo requirements.",
+        "operationId": "optimizeCargo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CargoOptimizationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Optimization completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OptimizationResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/predict": {
+      "post": {
+        "tags": ["AI Operations"],
+        "summary": "Predict shipment issues",
+        "description": "Uses machine learning to predict potential issues with shipments including delays, damage risks, and route disruptions based on historical data and current space weather conditions.",
+        "operationId": "predictIssues",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PredictionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Predictions generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PredictionResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analyze/fleet-performance": {
+      "get": {
+        "tags": ["AI Operations"],
+        "summary": "Analyze fleet performance",
+        "description": "Provides AI-powered analytics on fleet performance including fuel efficiency, delivery times, and maintenance predictions.",
+        "operationId": "analyzeFleet",
+        "parameters": [
+          {
+            "name": "timeRange",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["7d", "30d", "90d", "1y"],
+              "default": "30d"
+            }
+          },
+          {
+            "name": "fleetId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fleet analysis completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "overallScore": {
+                      "type": "number",
+                      "format": "float",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "insights": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "finding": {
+                            "type": "string"
+                          },
+                          "recommendation": {
+                            "type": "string"
+                          },
+                          "priority": {
+                            "type": "string",
+                            "enum": ["LOW", "MEDIUM", "HIGH"]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quantum-routes": {
+      "get": {
+        "tags": ["Quantum Transport"],
+        "summary": "Get quantum shipping routes",
+        "description": "Returns available quantum tunneling routes for ultra-fast delivery across vast distances. These routes use experimental quantum technology for near-instantaneous transport.",
+        "operationId": "getQuantumRoutes",
+        "parameters": [
+          {
+            "name": "minDistance",
+            "in": "query",
+            "description": "Minimum distance in light-years",
+            "schema": {
+              "type": "number",
+              "format": "float"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Available quantum routes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "routes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "routeId": {
+                            "type": "string"
+                          },
+                          "entryPoint": {
+                            "type": "string"
+                          },
+                          "exitPoint": {
+                            "type": "string"
+                          },
+                          "distance": {
+                            "type": "number",
+                            "description": "Distance in light-years"
+                          },
+                          "quantumStability": {
+                            "type": "number",
+                            "format": "float",
+                            "minimum": 0,
+                            "maximum": 1
+                          },
+                          "energyRequired": {
+                            "type": "number",
+                            "description": "Energy in terawatts"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "AI Operations",
+      "description": "AI-powered cargo management and optimization endpoints"
+    },
+    {
+      "name": "Quantum Transport",
+      "description": "Experimental quantum tunneling transport routes"
+    }
+  ]
+}

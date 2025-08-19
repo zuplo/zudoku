@@ -10,6 +10,7 @@ import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
 import { type FragmentType, useFragment } from "./graphql/index.js";
+import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { Sidecar } from "./Sidecar.js";
@@ -35,6 +36,7 @@ export const OperationListItem = ({
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
+  const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
 
   return (
     <div>
@@ -58,91 +60,110 @@ export const OperationListItem = ({
         >
           {operation.summary}
         </Heading>
-        <div className="text-sm flex gap-2 font-mono col-span-full">
-          <span className={methodForColor(operation.method)}>
-            {operation.method.toUpperCase()}
-          </span>
-          <SelectOnClick className="max-w-full truncate flex cursor-pointer">
-            {serverUrl && (
-              <div className="text-neutral-400 dark:text-neutral-500 truncate">
-                {serverUrl.replace(/\/$/, "")}
+        {!isMCPEndpoint && (
+          <div className="text-sm flex gap-2 font-mono col-span-full">
+            <span className={methodForColor(operation.method)}>
+              {operation.method.toUpperCase()}
+            </span>
+            <SelectOnClick className="max-w-full truncate flex cursor-pointer">
+              {serverUrl && (
+                <div className="text-neutral-400 dark:text-neutral-500 truncate">
+                  {serverUrl.replace(/\/$/, "")}
+                </div>
+              )}
+              <div className="text-neutral-900 dark:text-neutral-200">
+                {operation.path}
               </div>
-            )}
-            <div className="text-neutral-900 dark:text-neutral-200">
-              {operation.path}
-            </div>
-          </SelectOnClick>
-        </div>
+            </SelectOnClick>
+          </div>
+        )}
 
-        <div
-          className={cn(
-            "flex flex-col gap-4",
-            options?.disableSidecar && "col-span-full",
-          )}
-        >
-          {operation.description && (
-            <Markdown
-              className="max-w-full prose-img:max-w-prose"
-              content={operation.description}
+        {isMCPEndpoint ? (
+          <div className="col-span-full">
+            <MCPEndpoint
+              serverUrl={serverUrl}
+              summary={operation.summary ?? undefined}
+              data={operation.extensions?.["x-mcp-server"]}
             />
-          )}
-          {operation.parameters &&
-            operation.parameters.length > 0 &&
-            PARAM_GROUPS.flatMap((group) =>
-              groupedParameters[group]?.length ? (
-                <ParameterList
-                  key={group}
-                  summary={operation.summary ?? undefined}
-                  id={operation.slug}
-                  parameters={groupedParameters[group]}
-                  group={group}
-                />
-              ) : (
-                []
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "flex flex-col gap-4",
+              options?.disableSidecar && "col-span-full",
+            )}
+          >
+            {operation.description && (
+              <Markdown
+                className="max-w-full prose-img:max-w-prose"
+                content={operation.description}
+              />
+            )}
+            {operation.parameters &&
+              operation.parameters.length > 0 &&
+              PARAM_GROUPS.flatMap((group) =>
+                groupedParameters[group]?.length ? (
+                  <ParameterList
+                    key={group}
+                    summary={operation.summary ?? undefined}
+                    id={operation.slug}
+                    parameters={groupedParameters[group]}
+                    group={group}
+                  />
+                ) : (
+                  []
+                ),
+              )}
+            {renderIf(
+              operation.requestBody?.content?.at(0)?.schema,
+              (schema) => (
+                <div className="mt-4 flex flex-col gap-4">
+                  <Heading
+                    level={3}
+                    className="capitalize flex items-center gap-2"
+                    id={`${operation.slug}/request-body`}
+                  >
+                    {operation.summary && (
+                      <VisuallyHidden>
+                        {operation.summary} &rsaquo;{" "}
+                      </VisuallyHidden>
+                    )}
+                    Request Body{" "}
+                    {operation.requestBody?.required === false ? (
+                      <Badge variant="muted">optional</Badge>
+                    ) : (
+                      ""
+                    )}
+                  </Heading>
+                  <SchemaView schema={schema} />
+                </div>
               ),
             )}
-          {renderIf(operation.requestBody?.content?.at(0)?.schema, (schema) => (
-            <div className="mt-4 flex flex-col gap-4">
-              <Heading
-                level={3}
-                className="capitalize flex items-center gap-2"
-                id={`${operation.slug}/request-body`}
-              >
-                {operation.summary && (
-                  <VisuallyHidden>{operation.summary} &rsaquo; </VisuallyHidden>
-                )}
-                Request Body{" "}
-                {operation.requestBody?.required === false ? (
-                  <Badge variant="muted">optional</Badge>
-                ) : (
-                  ""
-                )}
-              </Heading>
-              <SchemaView schema={schema} />
-            </div>
-          ))}
-          {operation.responses.length > 0 && (
-            <>
-              <Heading
-                level={3}
-                className="capitalize mt-8 pt-8 border-t"
-                id={`${operation.slug}/responses`}
-              >
-                {operation.summary && (
-                  <VisuallyHidden>{operation.summary} &rsaquo; </VisuallyHidden>
-                )}
-                Responses
-              </Heading>
-              <ResponseContent
-                responses={operation.responses}
-                selectedResponse={selectedResponse}
-                onSelectResponse={setSelectedResponse}
-              />
-            </>
-          )}
-        </div>
+            {operation.responses.length > 0 && (
+              <>
+                <Heading
+                  level={3}
+                  className="capitalize mt-8 pt-8 border-t"
+                  id={`${operation.slug}/responses`}
+                >
+                  {operation.summary && (
+                    <VisuallyHidden>
+                      {operation.summary} &rsaquo;{" "}
+                    </VisuallyHidden>
+                  )}
+                  Responses
+                </Heading>
+                <ResponseContent
+                  responses={operation.responses}
+                  selectedResponse={selectedResponse}
+                  onSelectResponse={setSelectedResponse}
+                />
+              </>
+            )}
+          </div>
+        )}
 
-        {renderIf(!options?.disableSidecar, () => (
+        {renderIf(!options?.disableSidecar && !isMCPEndpoint, () => (
           <Sidecar
             selectedResponse={selectedResponse}
             onSelectResponse={setSelectedResponse}
