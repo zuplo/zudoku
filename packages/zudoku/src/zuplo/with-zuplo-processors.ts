@@ -8,8 +8,8 @@ import type {
 import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtensions.js";
 import { removeParameters } from "../lib/plugins/openapi/processors/removeParameters.js";
 import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
-import { enrichWithMcpServerData } from "./enrich-with-mcp.js";
 import { enrichWithZuploData } from "./enrich-with-zuplo.js";
+import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
 
 export const getProcessors = async (rootDir: string): Promise<Processor[]> => {
   const policiesConfig = JSON.parse(
@@ -22,7 +22,7 @@ export const getProcessors = async (rootDir: string): Promise<Processor[]> => {
       shouldRemove: ({ parameter }) => parameter["x-internal"],
     }),
     enrichWithZuploData({ policiesConfig }),
-    enrichWithMcpServerData({ rootDir }),
+    enrichWithZuploMcpServerData({ rootDir }),
     ({ schema }: ProcessorArg) => {
       const url = ZuploEnv.serverUrl;
       if (!url) return schema;

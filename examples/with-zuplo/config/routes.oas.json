@@ -13,6 +13,7 @@
   "paths": {
     "/todos": {
       "get": {
+        "operationId": "getTodos",
         "summary": "Get all API keys",
         "responses": {
           "200": {
@@ -35,7 +36,7 @@
               "files": [
                 {
                   "path": "./config/routes.oas.json",
-                  "operationIds": ["todo"]
+                  "operationIds": ["getTodos"]
                 }
               ]
             }

@@ -467,9 +467,6 @@ importers:
       '@zudoku/react-helmet-async':
         specifier: 2.0.5
         version: 2.0.5(react@19.1.1)
-      '@zuplo/mcp':
-        specifier: 0.0.17
-        version: 0.0.17
       allof-merge:
         specifier: 0.6.7
         version: 0.6.7
@@ -3862,9 +3859,6 @@ packages:
     resolution: {integrity: sha512-wDakXPJEiQb4JmacSqPyAiJPdOBFqp6e3VUbm1BtTEkXo6FrC2nN+GmIniQ2OimBEC042rSZ9JdQBX+wou/MKw==}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
-
-  '@zuplo/mcp@0.0.17':
-    resolution: {integrity: sha512-h8TePwjOj9Qdw1OO+tWDp6pYtm/YCLTBCwJrRF/etCRxrzXsWOIzxSUj1xwCdnkHNQLehYLTODqW4+9h55eo7Q==}
 
   '@zxcvbn-ts/core@3.0.4':
     resolution: {integrity: sha512-aQeiT0F09FuJaAqNrxynlAwZ2mW/1MdXakKWNmGM1Qp/VaY6CnB/GfnMS2T8gB2231Esp1/maCWd8vTG4OuShw==}
@@ -7386,9 +7380,6 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
-
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
   zod@4.0.10:
     resolution: {integrity: sha512-3vB+UU3/VmLL2lvwcY/4RV2i9z/YU0DTV/tDuYjrwmx5WeJ7hwy+rGEEx8glHp6Yxw7ibRbKSaIFBgReRPe5KA==}
@@ -11191,10 +11182,6 @@ snapshots:
       react: 19.1.1
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
-
-  '@zuplo/mcp@0.0.17':
-    dependencies:
-      zod: 3.25.76
 
   '@zxcvbn-ts/core@3.0.4':
     dependencies:
@@ -15435,8 +15422,6 @@ snapshots:
       yargs-parser: 22.0.0
 
   yocto-queue@0.1.0: {}
-
-  zod@3.25.76: {}
 
   zod@4.0.10: {}
 
