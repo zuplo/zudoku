@@ -20,6 +20,28 @@
           }
         }
       }
+    },
+    "/mcp": {
+      "post": {
+        "summary": "MCP Server",
+        "operationId": "mcpServerHandler",
+        "x-zuplo-route": {
+          "corsPolicy": "none",
+          "handler": {
+            "export": "mcpServerHandler",
+            "module": "$import(@zuplo/runtime)",
+            "options": {
+              "debugMode": true,
+              "files": [
+                {
+                  "path": "./config/routes.oas.json",
+                  "operationIds": ["todo"]
+                }
+              ]
+            }
+          }
+        }
+      }
     }
   }
 }
