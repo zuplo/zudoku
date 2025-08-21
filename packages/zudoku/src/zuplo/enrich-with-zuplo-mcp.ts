@@ -1,46 +1,18 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import type {
+  ExtensionMcpServer,
+  ExtensionMcpServerTool,
+} from "@zuplo/mcp/openapi/types";
 import type { OpenAPIV3_1 } from "openapi-types";
 import type { ProcessorArg } from "../config/validators/BuildSchema.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
-
-interface McpTool {
-  name: string;
-  description: string;
-  inputSchema?: object;
-}
-
-interface McpServerExtension {
-  name: string;
-  version: string;
-  tools?: McpTool[];
-}
-
-const operations = [
-  "get",
-  "put",
-  "post",
-  "delete",
-  "options",
-  "head",
-  "patch",
-  "trace",
-];
-
-const loadOpenApiFile = async (
-  filePath: string,
-): Promise<OpenAPIV3_1.Document | null> => {
-  try {
-    const fileContent = await fs.readFile(filePath, "utf-8");
-    return JSON.parse(fileContent);
-  } catch (e) {
-    throw e;
-  }
-};
+import type { RecordAny } from "../lib/util/types.js";
+import { operations } from "./enrich-with-zuplo.js";
 
 const extractOperationSchema = (
-  operation: OpenAPIV3_1.OperationObject & Record<string, any>,
-): McpTool | null => {
+  operation: OpenAPIV3_1.OperationObject & RecordAny,
+): ExtensionMcpServerTool | null => {
   if (!operation.operationId) return null;
 
   // Check if tool is explicitly disabled
@@ -55,7 +27,7 @@ const extractOperationSchema = (
   const jsonContent = requestBody?.content?.["application/json"];
   const schema = jsonContent?.schema;
 
-  const tool: McpTool = {
+  const tool: ExtensionMcpServerTool = {
     // Use custom name from x-zuplo-mcp-tool or fallback to operationId
     name: mcpToolConfig?.name || operation.operationId,
     // Use custom description from x-zuplo-mcp-tool or fallback to operation description
@@ -77,10 +49,10 @@ const extractOperationSchema = (
 // Build a lookup map of operationId -> operation for efficient access
 const buildOperationLookup = (
   document: OpenAPIV3_1.Document,
-): Map<string, OpenAPIV3_1.OperationObject & Record<string, any>> => {
+): Map<string, OpenAPIV3_1.OperationObject & RecordAny> => {
   const operationMap = new Map<
     string,
-    OpenAPIV3_1.OperationObject & Record<string, any>
+    OpenAPIV3_1.OperationObject & RecordAny
   >();
 
   if (!document.paths) return operationMap;
@@ -91,7 +63,7 @@ const buildOperationLookup = (
     for (const method of operations) {
       const operation = (pathItem as OpenAPIV3_1.PathItemObject)[
         method as keyof OpenAPIV3_1.PathItemObject
-      ] as (OpenAPIV3_1.OperationObject & Record<string, any>) | undefined;
+      ] as (OpenAPIV3_1.OperationObject & RecordAny) | undefined;
 
       if (operation?.operationId) {
         operationMap.set(operation.operationId, operation);
@@ -105,8 +77,8 @@ const buildOperationLookup = (
 const findOperationsInDocument = (
   document: OpenAPIV3_1.Document,
   operationIds: string[],
-): McpTool[] => {
-  const tools: McpTool[] = [];
+): ExtensionMcpServerTool[] => {
+  const tools: ExtensionMcpServerTool[] = [];
   const operationLookup = buildOperationLookup(document);
 
   for (const operationId of operationIds) {
@@ -132,12 +104,14 @@ export const enrichWithZuploMcpServerData = ({
 
     const modifiedSchema = { ...schema };
 
-    for (const [_pathKey, pathItem] of objectEntries(modifiedSchema.paths!)) {
+    if (!modifiedSchema?.paths) return modifiedSchema;
+
+    for (const [_pathKey, pathItem] of objectEntries(modifiedSchema.paths)) {
       if (!pathItem || typeof pathItem !== "object") continue;
 
       const operation = (pathItem as OpenAPIV3_1.PathItemObject)[
         "post" as keyof OpenAPIV3_1.PathItemObject
-      ] as (OpenAPIV3_1.OperationObject & Record<string, any>) | undefined;
+      ] as (OpenAPIV3_1.OperationObject & RecordAny) | undefined;
       if (!operation?.["x-zuplo-route"]) continue;
 
       const zuploRoute = operation["x-zuplo-route"];
@@ -146,13 +120,14 @@ export const enrichWithZuploMcpServerData = ({
       if (handler?.export !== "mcpServerHandler" || !handler.options?.files)
         continue;
 
-      const tools: McpTool[] = [];
+      const tools: ExtensionMcpServerTool[] = [];
 
       for (const fileConfig of handler.options.files) {
         if (!fileConfig.path || !fileConfig.operationIds) continue;
 
         const resolvedPath = path.resolve(rootDir, "../", fileConfig.path);
-        const document = await loadOpenApiFile(resolvedPath);
+        const fileContent = await fs.readFile(resolvedPath, "utf-8");
+        const document = JSON.parse(fileContent);
 
         if (document) {
           const fileTools = findOperationsInDocument(
@@ -164,7 +139,7 @@ export const enrichWithZuploMcpServerData = ({
         }
       }
 
-      const mcpExtension: McpServerExtension = {
+      const mcpExtension: ExtensionMcpServer = {
         name: "Zuplo MCP Server",
         version: "0.0.0",
       };

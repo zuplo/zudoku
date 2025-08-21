@@ -14,10 +14,37 @@
     "/todos": {
       "get": {
         "operationId": "getTodos",
-        "summary": "Get all API keys",
+        "summary": "Get all todos",
         "responses": {
           "200": {
-            "description": "A list of API keys"
+            "description": "A list of todos"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTodo",
+        "summary": "Create a todo",
+        "x-zuplo-mcp-tool": {
+          "name": "create_todo_tool",
+          "description": "Creates a new todo"
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["text"],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "The todo text"
+                  }
+                },
+                "example": {
+                  "text": "mow the lawn"
+                }
+              }
+            }
           }
         }
       }
@@ -36,7 +63,7 @@
               "files": [
                 {
                   "path": "./config/routes.oas.json",
-                  "operationIds": ["getTodos"]
+                  "operationIds": ["getTodos", "createTodo"]
                 }
               ]
             }
