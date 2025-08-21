@@ -450,8 +450,8 @@ importers:
         specifier: 5.0.55
         version: 5.0.55(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@tanstack/react-query':
-        specifier: 5.81.5
-        version: 5.81.5(react@19.1.1)
+        specifier: 5.85.5
+        version: 5.85.5(react@19.1.1)
       '@types/react':
         specifier: 'catalog:'
         version: 19.1.10
@@ -3549,11 +3549,11 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  '@tanstack/query-core@5.81.5':
-    resolution: {integrity: sha512-ZJOgCy/z2qpZXWaj/oxvodDx07XcQa9BF92c0oINjHkoqUPsmm3uG08HpTaviviZ/N9eP1f9CM7mKSEkIo7O1Q==}
+  '@tanstack/query-core@5.85.5':
+    resolution: {integrity: sha512-KO0WTob4JEApv69iYp1eGvfMSUkgw//IpMnq+//cORBzXf0smyRwPLrUvEe5qtAEGjwZTXrjxg+oJNP/C00t6w==}
 
-  '@tanstack/react-query@5.81.5':
-    resolution: {integrity: sha512-lOf2KqRRiYWpQT86eeeftAGnjuTR35myTP8MXyvHa81VlomoAWNEd8x5vkcAfQefu0qtYCvyqLropFZqgI2EQw==}
+  '@tanstack/react-query@5.85.5':
+    resolution: {integrity: sha512-/X4EFNcnPiSs8wM2v+b6DqS5mmGeuJQvxBglmDxl6ZQb5V26ouD2SJYAcC3VjbNwqhY2zjxVD15rDA5nGbMn3A==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -10806,11 +10806,11 @@ snapshots:
       react: 19.1.1
       react-dom: 19.1.1(react@19.1.1)
 
-  '@tanstack/query-core@5.81.5': {}
+  '@tanstack/query-core@5.85.5': {}
 
-  '@tanstack/react-query@5.81.5(react@19.1.1)':
+  '@tanstack/react-query@5.85.5(react@19.1.1)':
     dependencies:
-      '@tanstack/query-core': 5.81.5
+      '@tanstack/query-core': 5.85.5
       react: 19.1.1
 
   '@testing-library/dom@10.4.1':

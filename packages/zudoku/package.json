@@ -224,7 +224,7 @@
     "@tailwindcss/typography": "0.5.16",
     "@tailwindcss/vite": "4.1.11",
     "@tanem/react-nprogress": "5.0.55",
-    "@tanstack/react-query": "5.81.5",
+    "@tanstack/react-query": "5.85.5",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "4.6.0",
