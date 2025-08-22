@@ -4,12 +4,18 @@ import type {
   ExtensionMcpServer,
   ExtensionMcpServerTool,
 } from "@zuplo/mcp/openapi/types";
+import {
+  DEFAULT_MCP_SERVER_NAME,
+  DEFAULT_MCP_SERVER_VERSION,
+} from "@zuplo/mcp/server";
 import type { OpenAPIV3_1 } from "openapi-types";
 import type { ProcessorArg } from "../config/validators/BuildSchema.js";
-import { objectEntries } from "../lib/util/objectEntries.js";
+import { traverse, traverseAsync } from "../lib/util/traverse.js";
 import type { RecordAny } from "../lib/util/types.js";
 import { operations } from "./enrich-with-zuplo.js";
 
+// extracts x-mcp-server metadata from the operation using x-zuplo-mcp-tool
+// as a first class citizen.
 const extractOperationSchema = (
   operation: OpenAPIV3_1.OperationObject & RecordAny,
 ): ExtensionMcpServerTool | null => {
@@ -21,16 +27,12 @@ const extractOperationSchema = (
     return null;
   }
 
-  const requestBody = operation.requestBody as
-    | OpenAPIV3_1.RequestBodyObject
-    | undefined;
-  const jsonContent = requestBody?.content?.["application/json"];
-  const schema = jsonContent?.schema;
-
   const tool: ExtensionMcpServerTool = {
     // Use custom name from x-zuplo-mcp-tool or fallback to operationId
     name: mcpToolConfig?.name || operation.operationId,
-    // Use custom description from x-zuplo-mcp-tool or fallback to operation description
+
+    // Use custom description from x-zuplo-mcp-tool or fallback
+    // to operation description
     description:
       mcpToolConfig?.description ||
       operation.summary ||
@@ -38,42 +40,52 @@ const extractOperationSchema = (
       `Operation ${operation.operationId}`,
   };
 
-  // Only add inputSchema if we have a valid schema
+  // Grab valid request body JSON schema for the tool
+  const requestBody = operation.requestBody as
+    | OpenAPIV3_1.RequestBodyObject
+    | undefined;
+
+  const schema = requestBody?.content?.["application/json"]?.schema;
   if (schema && typeof schema === "object") {
-    tool.inputSchema = schema;
+    // TODO: @jpmcb - Zuplo also supports in-path parameters and query parameters
+    // as MCP "inputSchema" arguments. In order to document full argument params,
+    // Zudoku will need to more intelligently parse these elements of an operation.
+    tool.inputSchema = { body: schema };
   }
 
   return tool;
 };
 
-// Build a lookup map of operationId -> operation for efficient access
+// Builds a lookup map of operationId -> operation for efficient access
 const buildOperationLookup = (
   document: OpenAPIV3_1.Document,
-): Map<string, OpenAPIV3_1.OperationObject & RecordAny> => {
-  const operationMap = new Map<
-    string,
-    OpenAPIV3_1.OperationObject & RecordAny
-  >();
+): Map<string, OpenAPIV3_1.OperationObject> => {
+  const operationMap = new Map<string, OpenAPIV3_1.OperationObject>();
 
-  if (!document.paths) return operationMap;
-
-  for (const [_pathKey, pathItem] of objectEntries(document.paths)) {
-    if (!pathItem || typeof pathItem !== "object") continue;
-
-    for (const method of operations) {
-      const operation = (pathItem as OpenAPIV3_1.PathItemObject)[
-        method as keyof OpenAPIV3_1.PathItemObject
-      ] as (OpenAPIV3_1.OperationObject & RecordAny) | undefined;
-
-      if (operation?.operationId) {
-        operationMap.set(operation.operationId, operation);
-      }
+  traverse(document, (node, path) => {
+    // Check if we're at a path item level (paths -> /some/path -> method)
+    // and validate it's in allowed operations
+    if (
+      !path ||
+      path.length < 2 ||
+      path[0] !== "paths" ||
+      !operations.includes(path[path.length - 1] as string)
+    ) {
+      return node;
     }
-  }
+
+    if (node.operationId) {
+      operationMap.set(node.operationId, node);
+    }
+
+    return node;
+  });
 
   return operationMap;
 };
 
+// Takes an OpenAPI document and returns the x-mcp-server tools list defined
+// by an MCP server's options.files[x].operationIds array.
 const findOperationsInDocument = (
   document: OpenAPIV3_1.Document,
   operationIds: string[],
@@ -81,7 +93,7 @@ const findOperationsInDocument = (
   const tools: ExtensionMcpServerTool[] = [];
   const operationLookup = buildOperationLookup(document);
 
-  for (const operationId of operationIds) {
+  operationIds.forEach((operationId) => {
     const operation = operationLookup.get(operationId);
     if (operation) {
       const tool = extractOperationSchema(operation);
@@ -89,11 +101,12 @@ const findOperationsInDocument = (
         tools.push(tool);
       }
     }
-  }
+  });
 
   return tools;
 };
 
+// Enriches an OpenAPI schema with x-mcp-server data based on the Zuplo MCP server handler
 export const enrichWithZuploMcpServerData = ({
   rootDir,
 }: {
@@ -101,24 +114,22 @@ export const enrichWithZuploMcpServerData = ({
 }) => {
   return async ({ schema }: ProcessorArg) => {
     if (!schema.paths) return schema;
-
     const modifiedSchema = { ...schema };
-
     if (!modifiedSchema?.paths) return modifiedSchema;
 
-    for (const [_pathKey, pathItem] of objectEntries(modifiedSchema.paths)) {
-      if (!pathItem || typeof pathItem !== "object") continue;
+    await traverseAsync(modifiedSchema, async (node, nodePath) => {
+      // Check if we're at a "post" operation (paths -> /some/path -> "post").
+      // HTTP MCP servers are only allow post operations.
+      if (!nodePath || nodePath.length !== 3 || nodePath[2] !== "post") {
+        return node;
+      }
 
-      const operation = (pathItem as OpenAPIV3_1.PathItemObject)[
-        "post" as keyof OpenAPIV3_1.PathItemObject
-      ] as (OpenAPIV3_1.OperationObject & RecordAny) | undefined;
-      if (!operation?.["x-zuplo-route"]) continue;
+      const operation = node as RecordAny;
+      if (!operation?.["x-zuplo-route"]) return node;
 
-      const zuploRoute = operation["x-zuplo-route"];
-      const handler = zuploRoute?.handler;
-
+      const handler = operation["x-zuplo-route"]?.handler;
       if (handler?.export !== "mcpServerHandler" || !handler.options?.files)
-        continue;
+        return node;
 
       const tools: ExtensionMcpServerTool[] = [];
 
@@ -140,16 +151,17 @@ export const enrichWithZuploMcpServerData = ({
       }
 
       const mcpExtension: ExtensionMcpServer = {
-        name: "Zuplo MCP Server",
-        version: "0.0.0",
+        name: DEFAULT_MCP_SERVER_NAME,
+        version: DEFAULT_MCP_SERVER_VERSION,
       };
 
       if (tools.length > 0) {
         mcpExtension.tools = tools;
       }
 
-      operation["x-mcp-server"] = mcpExtension;
-    }
+      node["x-mcp-server"] = mcpExtension;
+      return node;
+    });
 
     return modifiedSchema;
   };
