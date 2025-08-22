@@ -127,7 +127,7 @@ const config: ZudokuConfig = {
         </Button>
         <Button variant="ghost" size="icon" asChild>
           <a
-            href="https://discord.gg/stPRhjbA55"
+            href="https://discord.zudoku.dev"
             aria-label="Join Zudoku Discord community"
             rel="noopener noreferrer"
           >

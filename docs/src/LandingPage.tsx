@@ -104,7 +104,7 @@ const LandingPage = () => {
         </ul>
         <div className="flex items-center gap-2">
           <a
-            href="https://discord.gg/zudoku"
+            href="https://discord.zudoku.dev"
             className="gap-2 rounded-full p-2 hover:bg-accent transition"
             target="_blank"
             rel="noreferrer"
@@ -518,7 +518,7 @@ const LandingPage = () => {
           </h3>
           <div className="flex-1 flex flex-col items-start md:flex-row my-10 lg:my-0 lg:justify-end md:items-end gap-4">
             <a
-              href="https://discord.gg/zudoku"
+              href="https://discord.zudoku.dev"
               className="w-full md:w-fit font-medium text-lg bg-[#7362EF] text-white px-6 py-2 rounded-full text-nowrap"
             >
               Join our Discord
