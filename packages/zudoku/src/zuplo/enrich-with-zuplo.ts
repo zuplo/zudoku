@@ -92,9 +92,9 @@ const enrichWithRateLimitData = (
 };
 
 // biome-ignore format: for readability
-const operations = [
+export const operations = [
   "get", "put", "post", "delete",
-  "options", "head", "patch",  "trace",
+  "options", "head", "patch", "trace",
 ];
 
 const rateLimitingResponse: OpenAPIV3_1.ResponseObject = {
