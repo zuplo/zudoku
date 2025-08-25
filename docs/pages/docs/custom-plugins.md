@@ -191,8 +191,6 @@ const AccountPageNavItemPlugin: ZudokuPlugin = {
     ];
   }
 };
-
-export { AccountPageNavItemPlugin };
 ```
 
 ### Event Consumer Plugin
