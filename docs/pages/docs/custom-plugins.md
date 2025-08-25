@@ -188,7 +188,7 @@ const AccountPageNavItemPlugin: ZudokuPlugin = {
         category: "middle",
         icon: UserIcon,
       },
-    ];
+    ]
   }
 };
 ```
