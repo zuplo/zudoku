@@ -63,10 +63,13 @@ const viteDocsPlugin = (): Plugin => {
           posix: true,
         });
 
-        const parent = globParent(globPattern);
+        // Normalize parent by removing leading `./` or `/`
+        const parent = globParent(globPattern).replace(/^\.?\//, "");
 
-        const toRoutePath = (file: string) =>
-          ensureLeadingSlash(file.slice(parent.length).replace(/\.mdx?$/, ""));
+        const toRoutePath = (file: string) => {
+          const relativePath = path.posix.relative(parent, file);
+          return ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
+        };
 
         for (const file of globbedFiles) {
           const routePath = toRoutePath(file);
