@@ -165,6 +165,34 @@ const navigationPlugin: ZudokuPlugin = {
 };
 ```
 
+### Dropdown Navigation Plugin
+
+```tsx
+import { ZudokuPlugin, RouteObject } from "zudoku";
+import { UserIcon } from "zudoku/icons";
+
+const AccountPageNavItemPlugin: ZudokuPlugin = {
+  getRoutes: (): RouteObject[] => {
+    return [
+      {
+        path: "/account",
+        element: <Account />, // This is a custom page
+      },
+    ];
+  },
+  getProfileMenuItems: () => {
+    return [
+      {
+        label: "Account",
+        path: "/account",
+        category: "middle",
+        icon: UserIcon,
+      },
+    ];
+  },
+};
+```
+
 ### Event Consumer Plugin
 
 ```tsx
