@@ -169,7 +169,7 @@ const navigationPlugin: ZudokuPlugin = {
 
 ```tsx
 import { ZudokuPlugin, RouteObject } from "zudoku";
-import { UserIcon } from "lucide-react";
+import { UserIcon } from "zudoku/icons";
 
 const AccountPageNavItemPlugin: ZudokuPlugin = {
   getRoutes: (): RouteObject[] => {
