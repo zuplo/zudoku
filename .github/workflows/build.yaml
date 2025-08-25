@@ -92,17 +92,18 @@ jobs:
         id: restore-cache
         uses: actions/cache/restore@v4
         with:
-          path: docs/.lycheecache
-          key: cache-lychee-${{ github.sha }}
-          restore-keys: cache-lychee-
+          path: .lycheecache
+          key: cache-lychee-v2-${{ github.sha }}
+          restore-keys: cache-lychee-v2-
 
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --fallback-extensions html --cache --config ./docs/lychee.toml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
+          lycheeVersion: v0.18.1
+          args: --fallback-extensions html --cache --max-cache-age 1d --config ./docs/lychee.toml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
       - name: Save lychee cache
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: docs/.lycheecache
-          key: ${{ steps.restore-cache.outputs.cache-primary-key }}
+          path: .lycheecache
+          key: cache-lychee-v2-${{ github.sha }}
