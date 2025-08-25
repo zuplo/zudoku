@@ -49,7 +49,7 @@ receives the search result along with the current auth state and context, allowi
 - Add custom results
 
 The type of `result` is the same as
-[the type returned by Pagefind's search API](https://github.com/CloudCannon/pagefind/blob/03552d041d9533b09563f6c50466b25d394ece64/pagefind_web_js/types/index.d.ts#L123-L160).
+[the type returned by Pagefind's search API](https://github.com/Pagefind/pagefind/blob/03552d041d9533b09563f6c50466b25d394ece64/pagefind_web_js/types/index.d.ts#L123-L160).
 
 ```typescript
 {
