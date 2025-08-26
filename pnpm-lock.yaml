@@ -573,8 +573,8 @@ importers:
         specifier: 10.1.0
         version: 10.1.0(@types/react@19.1.10)(react@19.1.1)
       react-router:
-        specifier: 7.6.3
-        version: 7.6.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: 7.8.2
+        version: 7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       rehype-mdx-import-media:
         specifier: 1.2.0
         version: 1.2.0
@@ -6389,8 +6389,8 @@ packages:
       '@types/react':
         optional: true
 
-  react-router@7.6.3:
-    resolution: {integrity: sha512-zf45LZp5skDC6I3jDLXQUu0u26jtuP4lEGbc7BbdyxenBN1vJSTA18czM2D+h5qyMBuMrD+9uB+mU37HIoKGRA==}
+  react-router@7.8.2:
+    resolution: {integrity: sha512-7M2fR1JbIZ/jFWqelpvSZx+7vd7UlBTfdZqf6OSdF9g6+sfdqJDAWcak6ervbHph200ePlu+7G8LdoiC3ReyAQ==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       react: '>=18'
@@ -14261,7 +14261,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.10
 
-  react-router@7.6.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  react-router@7.8.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       cookie: 1.0.2
       react: 19.1.1
