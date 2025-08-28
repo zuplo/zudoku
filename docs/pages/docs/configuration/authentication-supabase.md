@@ -31,8 +31,9 @@ You'll need a Supabase project. If you don't have one,
 2. **Get Your Project Credentials**
 
    From your Supabase project dashboard:
-   - Go to **Settings** → **API**
+   - Go to **Settings** → **Data API**
    - Copy your **Project URL** (looks like `https://your-project.supabase.co`)
+   - Go to **Settings** → **API Keys**
    - Copy your **anon public** API key
 
 3. **Configure Zudoku**
@@ -83,6 +84,12 @@ field:
 - `workos` - WorkOS
 - `zoom` - Zoom
 - `fly` - Fly.io
+
+:::info
+
+Email does not need to be specified as a provider because it is enabled by default in Supabase.
+
+:::
 
 ## Configuration Options
 
