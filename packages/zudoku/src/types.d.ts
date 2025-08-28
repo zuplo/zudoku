@@ -40,6 +40,21 @@ declare module "virtual:zudoku-redirect-plugin" {
     | import("./lib/core/plugins.ts").ZudokuPlugin
     | undefined;
 }
+
+declare module "virtual:zudoku-llms-txt-plugin" {
+  export const configuredLlmsTxtPlugin:
+    | import("./lib/core/plugins.ts").ZudokuPlugin
+    | undefined;
+}
+
+declare module "virtual:zudoku-llms-txt-data" {
+  export const markdownFiles: Array<{
+    path: string;
+    title: string;
+    description?: string;
+    content?: string;
+  }>;
+}
 declare module "virtual:zudoku-config" {
   const config: import("./config/config.ts").ZudokuConfig;
   export default config;
