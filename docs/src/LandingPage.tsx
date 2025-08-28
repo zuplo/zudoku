@@ -73,7 +73,7 @@ const TechStack = [
     height: 45,
   },
   {
-    href: "https://vitejs.dev/",
+    href: "https://vite.dev/",
     src: "/tech/vite.svg",
     alt: "Vite",
     height: 55,

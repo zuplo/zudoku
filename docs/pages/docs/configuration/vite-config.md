@@ -3,8 +3,8 @@ title: Vite Config
 sidebar_icon: server-crash
 ---
 
-Zuplo is built on top of [Vite](https://vitejs.dev/) and can be customized using a
-[Vite configuration file](https://vitejs.dev/config/) if advanced functionality is required.
+Zudoku is built on top of [Vite](https://vite.dev/) and can be customized using a
+[Vite configuration file](https://vite.dev/config/) if advanced functionality is required.
 
 Not all configurations are supported in Zudoku, but common tasks like adding plugins will generally
 work as expected. Simply create a `vite.config.ts` file in the root of your project and set the

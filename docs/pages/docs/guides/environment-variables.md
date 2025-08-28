@@ -3,7 +3,7 @@ title: Environment Variables
 sidebar_icon: table
 ---
 
-Zudoku is built on top of Vite and uses [their approach](https://vitejs.dev/guide/env-and-mode) for
+Zudoku is built on top of Vite and uses [their approach](https://vite.dev/guide/env-and-mode) for
 managing environment variables.
 
 Zudoku exposes environment variables under the `import.meta.env` object as strings automatically.
@@ -23,7 +23,7 @@ other secrets.
 
 When developing locally, you can create a `.env` file in the root of your project and add
 environment-specific variables. See the
-[Vite documentation](https://vitejs.dev/guide/env-and-mode.html#env-files) for more information on
+[Vite documentation](https://vite.dev/guide/env-and-mode.html#env-files) for more information on
 supported files.
 
 Here is an example of a `.env.local` file:
