@@ -1,3 +1,4 @@
+import os from "node:os";
 import type { ZudokuBuildConfig } from "zudoku";
 
 const buildConfig: ZudokuBuildConfig = {
@@ -8,6 +9,9 @@ const buildConfig: ZudokuBuildConfig = {
       return schema;
     },
   ],
+  prerender: {
+    workers: Math.floor(os.cpus().length * 0.75),
+  },
 };
 
 export default buildConfig;

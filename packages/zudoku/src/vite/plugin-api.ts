@@ -3,12 +3,10 @@ import path from "node:path";
 import { deepEqual } from "fast-equals";
 import { type Plugin, runnerImport } from "vite";
 import { ZuploEnv } from "../app/env.js";
-import { fileExists } from "../config/file-exists.js";
 import { getCurrentConfig } from "../config/loader.js";
 import {
-  type BuildConfig,
+  getBuildConfig,
   type Processor,
-  validateBuildConfig,
 } from "../config/validators/BuildSchema.js";
 import {
   getAllOperations,
@@ -37,23 +35,8 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 
-  const buildFilePath = path.join(
-    initialConfig.__meta.rootDir,
-    "zudoku.build.ts",
-  );
-  const buildFileExists = await fileExists(buildFilePath);
-
-  let buildProcessors: Processor[] = [];
-  let buildConfig: BuildConfig | undefined;
-
-  if (buildFileExists) {
-    const buildModule = await runnerImport<{ default: BuildConfig }>(
-      buildFilePath,
-    ).then((m) => m.module.default);
-
-    buildConfig = validateBuildConfig(buildModule);
-    buildProcessors = buildConfig?.processors ?? [];
-  }
+  const buildConfig = await getBuildConfig();
+  const buildProcessors = buildConfig?.processors ?? [];
 
   const tmpStoreDir = path.posix.join(
     initialConfig.__meta.rootDir,
