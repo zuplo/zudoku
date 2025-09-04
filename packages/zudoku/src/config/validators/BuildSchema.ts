@@ -23,14 +23,7 @@ export const BuildConfigSchema = z.object({
   processors: z.array(BuildProcessorSchema).optional(),
   remarkPlugins: z.custom<MdxOptions["remarkPlugins"]>().optional(),
   rehypePlugins: z.custom<MdxOptions["rehypePlugins"]>().optional(),
-  prerender: z
-    .object({
-      workers: z
-        .number()
-        .default(Math.floor(os.cpus().length * 0.8))
-        .optional(),
-    })
-    .optional(),
+  prerender: z.object({ workers: z.number().optional() }).optional(),
 });
 
 export const getBuildConfig = async () => {
@@ -50,7 +43,7 @@ export const getBuildConfig = async () => {
   return validateBuildConfig(buildModule);
 };
 
-export type BuildConfig = z.output<typeof BuildConfigSchema>;
+export type BuildConfig = z.infer<typeof BuildConfigSchema>;
 
 export function validateBuildConfig(config: unknown): BuildConfig | undefined {
   const validationResult = BuildConfigSchema.safeParse(config);
