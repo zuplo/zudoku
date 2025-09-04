@@ -1,4 +1,3 @@
-import os from "node:os";
 import path from "node:path";
 import type { Options as MdxOptions } from "@mdx-js/rollup";
 import { runnerImport } from "vite";
