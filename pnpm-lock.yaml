@@ -468,8 +468,8 @@ importers:
         specifier: 2.0.5
         version: 2.0.5(react@19.1.1)
       '@zuplo/mcp':
-        specifier: ^0.0.18
-        version: 0.0.18
+        specifier: ^0.0.20
+        version: 0.0.20
       allof-merge:
         specifier: 0.6.7
         version: 0.6.7
@@ -3885,8 +3885,8 @@ packages:
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
-  '@zuplo/mcp@0.0.18':
-    resolution: {integrity: sha512-Lwffy72XuWAUhBgSuJKE085lgPTNmzfHE1I71sz7AxkW1+MhgIVsJi0xA0uPtBpjDCs9ABFoGxHnTCO35wWLyw==}
+  '@zuplo/mcp@0.0.20':
+    resolution: {integrity: sha512-Fvn8vFdyE9wjfc5H3vvMBfoMirQpd2rfI6Xfl3Th/6Ugeb6N6lE1mG4kux033l9c2N+T6PBOdED6xtsSGV/6vw==}
 
   '@zxcvbn-ts/core@3.0.4':
     resolution: {integrity: sha512-aQeiT0F09FuJaAqNrxynlAwZ2mW/1MdXakKWNmGM1Qp/VaY6CnB/GfnMS2T8gB2231Esp1/maCWd8vTG4OuShw==}
@@ -11337,7 +11337,7 @@ snapshots:
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
 
-  '@zuplo/mcp@0.0.18':
+  '@zuplo/mcp@0.0.20':
     dependencies:
       zod: 3.25.76
 
