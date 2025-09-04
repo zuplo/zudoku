@@ -1,6 +1,10 @@
+import path from "node:path";
 import type { Options as MdxOptions } from "@mdx-js/rollup";
+import { runnerImport } from "vite";
 import { z } from "zod";
 import type { OpenAPIDocument } from "../../lib/oas/graphql/index.js";
+import { fileExists } from "../file-exists.js";
+import { getCurrentConfig } from "../loader.js";
 
 // Schema for build processors
 export const BuildProcessorSchema = z.custom<
@@ -18,11 +22,29 @@ export const BuildConfigSchema = z.object({
   processors: z.array(BuildProcessorSchema).optional(),
   remarkPlugins: z.custom<MdxOptions["remarkPlugins"]>().optional(),
   rehypePlugins: z.custom<MdxOptions["rehypePlugins"]>().optional(),
+  prerender: z.object({ workers: z.number().optional() }).optional(),
 });
+
+export const getBuildConfig = async () => {
+  const initialConfig = getCurrentConfig();
+  const buildFilePath = path.join(
+    initialConfig.__meta.rootDir,
+    "zudoku.build.ts",
+  );
+
+  const buildFileExists = await fileExists(buildFilePath);
+  if (!buildFileExists) return undefined;
+
+  const buildModule = await runnerImport<{ default: BuildConfig }>(
+    buildFilePath,
+  ).then((m) => m.module.default);
+
+  return validateBuildConfig(buildModule);
+};
 
 export type BuildConfig = z.infer<typeof BuildConfigSchema>;
 
-export function validateBuildConfig(config: unknown) {
+export function validateBuildConfig(config: unknown): BuildConfig | undefined {
   const validationResult = BuildConfigSchema.safeParse(config);
 
   if (!validationResult.success) {

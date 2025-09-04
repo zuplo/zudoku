@@ -6,6 +6,7 @@ import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
 import { logger } from "../../cli/common/logger.js";
+import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
 import invariant from "../../lib/util/invariant.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
@@ -65,11 +66,15 @@ export const prerender = async ({
   const config: ZudokuConfig = await import(serverConfigPath).then(
     (m) => m.default,
   );
+
+  const buildConfig = await getBuildConfig();
   const module = await import(entryServerPath);
   const getRoutes = module.getRoutesByConfig as typeof getRoutesByConfig;
 
   const routes = getRoutes(config);
   const paths = routesToPaths(routes);
+  const maxThreads =
+    buildConfig?.prerender?.workers ?? Math.floor(os.cpus().length * 0.8);
 
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
@@ -82,7 +87,11 @@ export const prerender = async ({
   );
 
   if (!isTTY()) {
-    logger.info(colors.dim(`prerendering ${paths.length} routes...`));
+    logger.info(
+      colors.dim(
+        `prerendering ${paths.length} routes using ${maxThreads} workers...`,
+      ),
+    );
   }
 
   let completedCount = 0;
@@ -100,7 +109,7 @@ export const prerender = async ({
   const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
     idleTimeout: 5_000,
-    maxThreads: Math.floor(os.cpus().length * 0.8),
+    maxThreads,
     workerData: {
       template: html,
       distDir,
@@ -127,7 +136,9 @@ export const prerender = async ({
         const now = performance.now();
         if (now - lastLogTime >= LOG_INTERVAL_MS) {
           logger.info(
-            colors.blue(`prerendered ${completedCount}/${paths.length} routes`),
+            colors.blue(
+              `prerendered ${completedCount}/${paths.length} routes using ${maxThreads} workers`,
+            ),
           );
           lastLogTime = now;
         }
@@ -142,7 +153,7 @@ export const prerender = async ({
 
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
 
-  const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds`;
+  const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds using ${maxThreads} workers`;
 
   if (isTTY()) {
     writeLine(colors.blue(`${message}\n`));
