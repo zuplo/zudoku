@@ -271,7 +271,6 @@
     "rehype-slug": "6.0.0",
     "remark-comment": "1.0.0",
     "remark-directive": "4.0.0",
-    "remark-directive-rehype": "0.4.2",
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.1",
     "remark-mdx-frontmatter": "5.2.0",
@@ -315,12 +314,15 @@
     "@vitest/coverage-v8": "3.2.4",
     "esbuild": "0.25.8",
     "happy-dom": "18.0.1",
+    "hastscript": "9.0.1",
+    "mdast-util-directive": "3.1.0",
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "6.0.3",
     "tsx": "4.20.4",
     "typescript": "5.9.2",
+    "unist-util-map": "4.0.0",
     "vitest": "3.2.4"
   },
   "peerDependencies": {
