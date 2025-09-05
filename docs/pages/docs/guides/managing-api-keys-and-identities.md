@@ -27,7 +27,7 @@ this is already enabled.)
 {
   // ...
   apiKeys: {
-    enabled: true;
+    enabled: true,
   }
 }
 ```
