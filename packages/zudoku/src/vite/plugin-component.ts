@@ -12,6 +12,7 @@ const viteAliasPlugin = (): Plugin => {
         ["zudoku/components", "src/lib/components/index.ts"],
         ["zudoku/plugins/openapi", "src/lib/plugins/openapi/index.tsx"],
         ["zudoku/plugins/api-catalog", "src/lib/plugins/api-catalog/index.tsx"],
+        ["zudoku/plugins/llms-txt", "src/lib/plugins/llms-txt/index.tsx"],
         [
           "zudoku/plugins/search-inkeep",
           "src/lib/plugins/search-inkeep/index.tsx",

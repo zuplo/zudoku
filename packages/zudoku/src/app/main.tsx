@@ -6,6 +6,7 @@ import {
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
+import { configuredLlmsTxtPlugin } from "virtual:zudoku-llms-txt-plugin";
 import { configuredNavigation } from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
@@ -61,6 +62,7 @@ export const convertZudokuConfigToOptions = (
       ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
+      ...(configuredLlmsTxtPlugin ? [configuredLlmsTxtPlugin] : []),
       ...configuredApiCatalogPlugins,
       ...(config.plugins ?? []),
     ],
