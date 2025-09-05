@@ -26,6 +26,8 @@ exclude = [
   "dashboard.clerk.com",
   "openid.net",
   "manage.auth0.com",
+  # Browser redirect seems to work correctly
+  "https://docs.pingidentity.com/pingfederate/",
 
   "https://portal.azure.com/",
 
