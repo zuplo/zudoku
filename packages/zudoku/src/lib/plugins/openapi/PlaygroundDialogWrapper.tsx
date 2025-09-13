@@ -1,4 +1,3 @@
-import { useAuth } from "zudoku/hooks";
 import type {
   MediaTypeObject,
   OperationsFragmentFragment,
@@ -16,9 +15,6 @@ export const PlaygroundDialogWrapper = ({
   operation: OperationsFragmentFragment;
   examples?: MediaTypeObject[];
 }) => {
-  const { isAuthEnabled, login, signup, isPending, isAuthenticated } =
-    useAuth();
-
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
     .sort((a, b) => (a.required && !b.required ? -1 : 1))
@@ -61,9 +57,6 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
-      requiresLogin={isAuthEnabled && !isAuthenticated && !isPending}
-      onLogin={() => login()}
-      onSignUp={() => signup()}
     />
   );
 };
