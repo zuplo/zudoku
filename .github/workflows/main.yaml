@@ -94,7 +94,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: git push origin main --follow-tags
 
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v8
         name: ${{ github.event_name == 'workflow_dispatch' && 'Create Release' || 'Create Pre-release' }}
         id: create-release
         with:
