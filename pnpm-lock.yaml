@@ -658,8 +658,8 @@ importers:
         specifier: 5.0.7
         version: 5.0.7(@types/node@22.13.5)(enquirer@2.4.1)(graphql-sock@1.0.1(graphql@16.11.0))(graphql@16.11.0)(typescript@5.9.2)
       '@inkeep/cxkit-types':
-        specifier: 0.5.90
-        version: 0.5.90
+        specifier: 0.5.98
+        version: 0.5.98
       '@testing-library/dom':
         specifier: 10.4.1
         version: 10.4.1
@@ -2007,8 +2007,8 @@ packages:
     resolution: {integrity: sha512-ZpJxMqB+Qfe3rp6uszCQoag4nSw42icURnBRfFYSOmTgEeOe4rD0vYlbA8spvCu2TlCesNTlEN9BLWtQqLxabA==}
     engines: {node: '>=18.0.0'}
 
-  '@inkeep/cxkit-types@0.5.90':
-    resolution: {integrity: sha512-6h1M5E1BR5aGeSOEa+Iw8VrvWH8en/pOclBZ5CeWH8KzXh59nVaUxOIKpCZFfLCkv4fJiyoVNIlkYAspcYIrBA==}
+  '@inkeep/cxkit-types@0.5.98':
+    resolution: {integrity: sha512-mSC+0uBGcYYu0UrCpMb7QHlTD66f24LgXYn38nXLyb+/CvCXCAk5N+RjaKiRZ+1yved8DEDYjZhsCgiuKeXhTQ==}
 
   '@isaacs/balanced-match@4.0.1':
     resolution: {integrity: sha512-yzMTt9lEb8Gv7zRioUilSglI0c0smZ9k5D65677DLWLtWJaXIS3CqcGyUFByYKlnUj6TkjLVs54fBl6+TiGQDQ==}
@@ -3473,8 +3473,8 @@ packages:
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
 
-  '@swc/types@0.1.24':
-    resolution: {integrity: sha512-tjTMh3V4vAORHtdTprLlfoMptu1WfTZG9Rsca6yOKyNYsRr+MUXutKmliB17orgSZk5DpnDxs8GUdd/qwYxOng==}
+  '@swc/types@0.1.25':
+    resolution: {integrity: sha512-iAoY/qRhNH8a/hBvm3zKj9qQ4oc2+3w1unPJa2XvTK3XjeLXtzcCingVPw/9e5mn1+0yPqxcBGp9Jf0pkfMb1g==}
 
   '@tailwindcss/node@4.1.11':
     resolution: {integrity: sha512-yzhzuGRmv5QyU9qLNg4GTlYI6STedBWRE7NjxP45CsFYYq9taI0zJXZBMqIC/c8fViNLhmrbpSFS57EoxUmD6Q==}
@@ -9226,7 +9226,7 @@ snapshots:
       '@repeaterjs/repeater': 3.0.6
       tslib: 2.8.1
 
-  '@inkeep/cxkit-types@0.5.90': {}
+  '@inkeep/cxkit-types@0.5.98': {}
 
   '@isaacs/balanced-match@4.0.1': {}
 
@@ -10837,7 +10837,7 @@ snapshots:
   '@swc/core@1.10.1(@swc/helpers@0.5.17)':
     dependencies:
       '@swc/counter': 0.1.3
-      '@swc/types': 0.1.24
+      '@swc/types': 0.1.25
     optionalDependencies:
       '@swc/core-darwin-arm64': 1.10.1
       '@swc/core-darwin-x64': 1.10.1
@@ -10859,7 +10859,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@swc/types@0.1.24':
+  '@swc/types@0.1.25':
     dependencies:
       '@swc/counter': 0.1.3
     optional: true
