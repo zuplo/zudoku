@@ -104,6 +104,16 @@ export const generateSchemaExample = (
     }, {});
   }
 
+  // Check for property-level examples
+  if (
+    schema.examples &&
+    Array.isArray(schema.examples) &&
+    schema.examples.length > 0
+  ) {
+    const randomIndex = Math.floor(Math.random() * schema.examples.length);
+    return schema.examples[randomIndex];
+  }
+
   switch (schema.type) {
     case "string":
       return name || "string";
