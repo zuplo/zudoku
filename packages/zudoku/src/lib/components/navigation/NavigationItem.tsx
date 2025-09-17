@@ -144,7 +144,7 @@ export const NavigationItem = ({
         <a
           className={navigationListItem()}
           href={href}
-          target="_blank"
+          target={"target" in item ? item.target : "_blank"}
           rel="noopener noreferrer"
           onClick={onRequestClose}
         >
