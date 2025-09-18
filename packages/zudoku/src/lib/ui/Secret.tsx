@@ -1,10 +1,47 @@
 import { CheckIcon, CopyIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { useState } from "react";
 import { cn } from "../util/cn.js";
-import { useCopyToClipboard } from "../util/useCopyToClipboard.js";
 import { Button } from "./Button.js";
 
 type Status = "active" | "expired" | "expiring" | "revoked" | "none";
+
+export const SecretText = ({
+  secret,
+  revealed = false,
+  previewChars = 5,
+  className,
+}: {
+  secret: string;
+  revealed?: boolean;
+  previewChars?: number;
+  className?: string;
+}) => {
+  return (
+    <span className="w-full truncate">
+      <div
+        className={cn(
+          "w-40 inline-block md:w-fit",
+          revealed ? "" : "opacity-50",
+        )}
+      >
+        {revealed
+          ? secret.slice(0, previewChars === 0 ? secret.length : -previewChars)
+          : "•••• ".repeat(
+              secret.slice(
+                0,
+                previewChars === 0 ? secret.length : -previewChars,
+              ).length / 5,
+            ) +
+            "•".repeat(
+              secret.slice(
+                0,
+                previewChars === 0 ? secret.length : -previewChars,
+              ).length % 5,
+            )}
+      </div>
+      {previewChars > 0 && <span>{secret.slice(-previewChars)}</span>}
+    </span>
+  );
+};
 
 export const Secret = ({
   secret,
@@ -51,33 +88,11 @@ export const Secret = ({
             )}
           />
         )}
-        <span className="w-full truncate">
-          <div
-            className={cn(
-              "w-40 inline-block md:w-fit",
-              revealed ? "" : "opacity-50",
-            )}
-          >
-            {revealed
-              ? secret.slice(
-                  0,
-                  previewChars === 0 ? secret.length : -previewChars,
-                )
-              : "•••• ".repeat(
-                  secret.slice(
-                    0,
-                    previewChars === 0 ? secret.length : -previewChars,
-                  ).length / 5,
-                ) +
-                "•".repeat(
-                  secret.slice(
-                    0,
-                    previewChars === 0 ? secret.length : -previewChars,
-                  ).length % 5,
-                )}
-          </div>
-          {previewChars > 0 && <span>{secret.slice(-previewChars)}</span>}
-        </span>
+        <SecretText
+          secret={secret}
+          revealed={revealed}
+          previewChars={previewChars}
+        />
       </div>
       {disabledReveal !== true && (
         <Button
