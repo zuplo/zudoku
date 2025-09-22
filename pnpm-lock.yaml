@@ -419,6 +419,9 @@ importers:
       '@sentry/react':
         specifier: ^9.12.0
         version: 9.30.0(react@19.1.1)
+      '@shikijs/engine-javascript':
+        specifier: 3.12.0
+        version: 3.12.0
       '@shikijs/langs':
         specifier: 3.12.0
         version: 3.12.0
