@@ -56,6 +56,7 @@ const ApiOptionsSchema = z
     disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
+    expandApiInformation: z.boolean(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),

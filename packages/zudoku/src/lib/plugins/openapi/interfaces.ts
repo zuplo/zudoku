@@ -54,6 +54,7 @@ type BaseOasConfig = {
     disableSidecar?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
+    expandApiInformation?: boolean;
     transformExamples?: TransformExamplesFn;
   };
 };

@@ -243,8 +243,9 @@ export const OperationList = ({
           <meta name="description" content={metaDescription} />
         )}
       </Helmet>
+
       <div className="mb-8">
-        <Collapsible className="w-full">
+        <Collapsible className="w-full" open={options?.expandApiInformation}>
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex flex-col flex-1 gap-2">
               <CategoryHeading>{title}</CategoryHeading>
