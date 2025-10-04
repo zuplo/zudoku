@@ -4,6 +4,7 @@ import withToc from "@stefanprobst/rehype-extract-toc";
 import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import type { Root as HastRoot } from "hast";
 import { toString as hastToString } from "hast-util-to-string";
+import mdxMermaid from "mdx-mermaid";
 import rehypeMdxImportMedia from "rehype-mdx-import-media";
 import rehypeSlug from "rehype-slug";
 import remarkComment from "remark-comment";
@@ -100,6 +101,7 @@ const viteMdxPlugin = (): Plugin => {
         remarkMdxFrontmatter,
         remarkDirective,
         remarkDirectiveRehype,
+        [mdxMermaid, { output: "svg" }],
         [remarkLinkRewrite, config.basePath],
         [remarkNormalizeImageUrl, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
