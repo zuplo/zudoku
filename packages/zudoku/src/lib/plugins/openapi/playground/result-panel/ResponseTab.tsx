@@ -99,7 +99,7 @@ const RowValue = ({ value, header }: { value: string; header: string }) => {
   const [revealed, setRevealed] = useState(!isSecret);
   return (
     <RowContent
-      className={cn(isSecret && "cursor-pointer flex item-center group")}
+      className={cn(isSecret && "cursor-pointer flex group")}
       onClick={() => {
         if (isSecret) {
           setRevealed((prev) => !prev);
