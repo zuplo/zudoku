@@ -16,7 +16,7 @@
 API documentation should always be free.
 
 <a href="#-installation"><strong>Installation</strong></a> ·
-<a href="https://zudoku.dev/docs/app-quickstart"><strong>Docs</strong></a> ·
+<a href="https://zudoku.dev/docs/quickstart"><strong>Docs</strong></a> ·
 <a href="#-examples"><strong>Examples</strong></a> ·
 <a href="#-contributing--community"><strong>Contributing</strong></a> ·
 <a href="#-motivation"><strong>Motivation</strong></a>
