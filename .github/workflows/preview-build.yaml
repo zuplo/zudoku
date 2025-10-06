@@ -13,7 +13,7 @@ jobs:
   approval-reminder:
     if: |
       github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.fork == true &&
+      github.event.pull_request.head.repo.fork &&
       !contains(github.event.pull_request.labels.*.name, 'approve public build')
     runs-on: ubuntu-latest
     permissions:
@@ -35,11 +35,16 @@ jobs:
             );
 
             if (!exists) {
+              const body = `Preview build of published Zudoku package
+
+              > [!WARNING]
+              > This PR is from an external contributor. To run the public package build workflow, a maintainer must add the \`approve public build\` label after reviewing the changes.`;
+
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: "Preview build of published Zudoku package\\n\\n> [!WARNING]\\n> This PR is from an external contributor. To run the public package build workflow, a maintainer must add the \`approve public build\` label after reviewing the changes."
+                body,
               });
             }
 
