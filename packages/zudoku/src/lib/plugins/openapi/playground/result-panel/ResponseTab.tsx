@@ -3,6 +3,8 @@ import {
   CornerDownLeftIcon,
   CornerDownRightIcon,
   DownloadIcon,
+  EyeIcon,
+  EyeOffIcon,
   PlusCircleIcon,
 } from "lucide-react";
 import { useState } from "react";
@@ -12,6 +14,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import { SecretText } from "zudoku/ui/Secret.js";
 import {
   Select,
   SelectContent,
@@ -19,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { cn } from "../../../../util/cn.js";
 import createVariantComponent from "../../../../util/createVariantComponent.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
 import {
@@ -89,6 +93,30 @@ const Row = createVariantComponent(
 );
 
 const RowContent = createVariantComponent("div", "py-1 break-all");
+const RowValue = ({ value, header }: { value: string; header: string }) => {
+  const secretHeaders = ["authorization", "key", "secret", "token"];
+  const isSecret = secretHeaders.includes(header.toLowerCase());
+  const [revealed, setRevealed] = useState(!isSecret);
+  return (
+    <RowContent
+      className={cn(isSecret && "cursor-pointer flex group")}
+      onClick={() => {
+        if (isSecret) {
+          setRevealed((prev) => !prev);
+        }
+      }}
+    >
+      <SecretText secret={value} previewChars={0} revealed={revealed} />
+      {isSecret ? (
+        revealed ? (
+          <EyeOffIcon size={14} className={cn("hidden group-hover:block")} />
+        ) : (
+          <EyeIcon size={14} className={cn("hidden group-hover:block")} />
+        )
+      ) : null}
+    </RowContent>
+  );
+};
 
 export const ResponseTab = ({
   body = "",
@@ -158,7 +186,7 @@ export const ResponseTab = ({
               .map(([key, value]) => (
                 <Row key={key}>
                   <RowContent>{key}</RowContent>
-                  <RowContent>{value}</RowContent>
+                  <RowValue value={value} header={key} />
                 </Row>
               ))}
           </div>
@@ -177,7 +205,7 @@ export const ResponseTab = ({
             {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
               <Row key={key}>
                 <RowContent>{key}</RowContent>
-                <RowContent>{value}</RowContent>
+                <RowValue value={value} header={key} />
               </Row>
             ))}
             {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
@@ -195,7 +223,7 @@ export const ResponseTab = ({
                     .map(([key, value]) => (
                       <Row key={key}>
                         <RowContent>{key}</RowContent>
-                        <RowContent>{value}</RowContent>
+                        <RowValue value={value} header={key} />
                       </Row>
                     ))}
                 </CollapsibleContent>
