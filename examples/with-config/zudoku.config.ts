@@ -19,6 +19,11 @@ const config: ZudokuConfig = {
           label: "Get started",
           items: ["documentation/introduction", "documentation/installation"],
         },
+        {
+          type: "category",
+          label: "Features",
+          items: ["documentation/mermaid-test"],
+        },
       ],
     },
     {

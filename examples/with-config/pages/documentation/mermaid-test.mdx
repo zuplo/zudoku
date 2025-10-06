@@ -1,0 +1,85 @@
+---
+title: Mermaid Diagrams
+---
+
+# Mermaid Diagrams
+
+This page demonstrates Mermaid diagram support in Zudoku. You can create various types of diagrams
+using Mermaid syntax in code blocks.
+
+## Flowchart Example
+
+A simple flowchart showing a decision tree:
+
+```mermaid
+graph TD;
+    A[Start] --> B{Is it working?};
+    B -->|Yes| C[Great!];
+    B -->|No| D[Debug];
+    D --> B;
+    C --> E[End];
+```
+
+## Sequence Diagram
+
+Visualize API interactions between different actors:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant API
+    participant Database
+    User->>API: Request data
+    API->>Database: Query
+    Database-->>API: Results
+    API-->>User: Response
+```
+
+## Class Diagram
+
+Display object-oriented class structures:
+
+```mermaid
+classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound()
+    }
+    class Dog {
+        +String breed
+        +bark()
+    }
+    Animal <|-- Dog
+```
+
+## Gantt Chart
+
+Project timeline visualization:
+
+```mermaid
+gantt
+    title Project Timeline
+    dateFormat YYYY-MM-DD
+    axisFormat %b %d
+    section Planning
+    Requirements :done, 2024-01-01, 30d
+    Design :active, 2024-02-01, 20d
+    section Development
+    Implementation :2024-02-21, 45d
+    Testing :2024-04-07, 15d
+```
+
+## State Diagram
+
+Model state transitions:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Processing: Start
+    Processing --> Success: Complete
+    Processing --> Error: Fail
+    Success --> [*]
+    Error --> Idle: Retry
+```
