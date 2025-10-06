@@ -50,6 +50,7 @@ const InputNavigationLinkSchema = z.object({
   type: z.literal("link"),
   to: z.string(),
   label: z.string(),
+  target: z.enum(["_self", "_blank"]).optional(),
   icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,

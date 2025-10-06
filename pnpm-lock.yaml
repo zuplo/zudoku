@@ -342,8 +342,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0(acorn@8.14.1)(rollup@4.46.1)
       '@pothos/core':
-        specifier: 4.8.0
-        version: 4.8.0(graphql@16.11.0)
+        specifier: 4.10.0
+        version: 4.10.0(graphql@16.11.0)
       '@radix-ui/react-accordion':
         specifier: 1.2.12
         version: 1.2.12(@types/react-dom@19.1.7(@types/react@19.1.10))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
@@ -419,6 +419,9 @@ importers:
       '@sentry/react':
         specifier: ^9.12.0
         version: 9.30.0(react@19.1.1)
+      '@shikijs/engine-javascript':
+        specifier: 3.12.0
+        version: 3.12.0
       '@shikijs/langs':
         specifier: 3.12.0
         version: 3.12.0
@@ -468,8 +471,8 @@ importers:
         specifier: 2.0.5
         version: 2.0.5(react@19.1.1)
       '@zuplo/mcp':
-        specifier: ^0.0.18
-        version: 0.0.18
+        specifier: ^0.0.22
+        version: 0.0.22
       allof-merge:
         specifier: 0.6.7
         version: 0.6.7
@@ -1957,6 +1960,7 @@ packages:
   '@graphql-tools/prisma-loader@8.0.17':
     resolution: {integrity: sha512-fnuTLeQhqRbA156pAyzJYN0KxCjKYRU5bz1q/SKOwElSnAU4k7/G1kyVsWLh7fneY78LoMNH5n+KlFV8iQlnyg==}
     engines: {node: '>=16.0.0'}
+    deprecated: 'This package was intended to be used with an older versions of Prisma.\nThe newer versions of Prisma has a different approach to GraphQL integration.\nTherefore, this package is no longer needed and has been deprecated and removed.\nLearn more: https://www.prisma.io/graphql'
     peerDependencies:
       graphql: ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
@@ -2537,8 +2541,8 @@ packages:
   '@posthog/core@1.0.0':
     resolution: {integrity: sha512-gquQld+duT9DdzLIFoHZkUMW0DZOTSLCtSjuuC/zKFz65Qecbz9p37DHBJMkw0dCuB8Mgh2GtH8Ag3PznJrP3g==}
 
-  '@pothos/core@4.8.0':
-    resolution: {integrity: sha512-2AUfsit2nbK31u7IDThvFR3cTiXESLMvOov6RP8jN8XUyirH4HeCg2e/6wiVHCpTeJo1K0CHWkf+szUovKo+Lg==}
+  '@pothos/core@4.10.0':
+    resolution: {integrity: sha512-spC7v6N80GfDKqt6ZSGELLu7EFDZsuQBb/oCqAtDwAe+HIL5T0STjv220IumLeC8lIAMgTaZMa/WnMNKkawbFg==}
     peerDependencies:
       graphql: ^16.10.0
 
@@ -3473,8 +3477,8 @@ packages:
   '@swc/helpers@0.5.17':
     resolution: {integrity: sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==}
 
-  '@swc/types@0.1.24':
-    resolution: {integrity: sha512-tjTMh3V4vAORHtdTprLlfoMptu1WfTZG9Rsca6yOKyNYsRr+MUXutKmliB17orgSZk5DpnDxs8GUdd/qwYxOng==}
+  '@swc/types@0.1.25':
+    resolution: {integrity: sha512-iAoY/qRhNH8a/hBvm3zKj9qQ4oc2+3w1unPJa2XvTK3XjeLXtzcCingVPw/9e5mn1+0yPqxcBGp9Jf0pkfMb1g==}
 
   '@tailwindcss/node@4.1.11':
     resolution: {integrity: sha512-yzhzuGRmv5QyU9qLNg4GTlYI6STedBWRE7NjxP45CsFYYq9taI0zJXZBMqIC/c8fViNLhmrbpSFS57EoxUmD6Q==}
@@ -3885,8 +3889,8 @@ packages:
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
-  '@zuplo/mcp@0.0.18':
-    resolution: {integrity: sha512-Lwffy72XuWAUhBgSuJKE085lgPTNmzfHE1I71sz7AxkW1+MhgIVsJi0xA0uPtBpjDCs9ABFoGxHnTCO35wWLyw==}
+  '@zuplo/mcp@0.0.22':
+    resolution: {integrity: sha512-1lSblT0DLVSv8mq76zpbMag2Wd/IwSXLsOkubrwFm+Q9cCpvoB6jAl1I3a2agHlQ3o5LTY+yUn2nyGyS8HzuqQ==}
 
   '@zxcvbn-ts/core@3.0.4':
     resolution: {integrity: sha512-aQeiT0F09FuJaAqNrxynlAwZ2mW/1MdXakKWNmGM1Qp/VaY6CnB/GfnMS2T8gB2231Esp1/maCWd8vTG4OuShw==}
@@ -4706,6 +4710,10 @@ packages:
 
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
+
+  eventsource-parser@3.0.6:
+    resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
+    engines: {node: '>=18.0.0'}
 
   expect-type@1.2.1:
     resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
@@ -9860,7 +9868,7 @@ snapshots:
 
   '@posthog/core@1.0.0': {}
 
-  '@pothos/core@4.8.0(graphql@16.11.0)':
+  '@pothos/core@4.10.0(graphql@16.11.0)':
     dependencies:
       graphql: 16.11.0
 
@@ -10837,7 +10845,7 @@ snapshots:
   '@swc/core@1.10.1(@swc/helpers@0.5.17)':
     dependencies:
       '@swc/counter': 0.1.3
-      '@swc/types': 0.1.24
+      '@swc/types': 0.1.25
     optionalDependencies:
       '@swc/core-darwin-arm64': 1.10.1
       '@swc/core-darwin-x64': 1.10.1
@@ -10859,7 +10867,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@swc/types@0.1.24':
+  '@swc/types@0.1.25':
     dependencies:
       '@swc/counter': 0.1.3
     optional: true
@@ -11337,8 +11345,9 @@ snapshots:
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
 
-  '@zuplo/mcp@0.0.18':
+  '@zuplo/mcp@0.0.22':
     dependencies:
+      eventsource-parser: 3.0.6
       zod: 3.25.76
 
   '@zxcvbn-ts/core@3.0.4':
@@ -12143,6 +12152,8 @@ snapshots:
   eventemitter3@4.0.7: {}
 
   eventemitter3@5.0.1: {}
+
+  eventsource-parser@3.0.6: {}
 
   expect-type@1.2.1: {}
 

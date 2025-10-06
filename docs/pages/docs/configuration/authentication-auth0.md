@@ -41,11 +41,11 @@ If you don't have an Auth0 account, you can sign up for a
      - Preview (wildcard): `https://*.your-domain.com`
      - Local development: `http://localhost:3000`
 
-   **Refresh Token Settings:**
-   - **Rotation**: Enabled
-   - **Reuse Interval**: 0 (recommended)
+   **Refresh Token Rotation:**
+   - **Allow Refresh Token Rotation**: Enabled
+   - **Rotation Overlap Period**: 0 seconds (recommended)
 
-   Keep the default refresh token expiration settings unless you have specific requirements.
+   Keep the default **Refresh Token Expiration** settings unless you have specific requirements.
 
 3. Create an Auth0 API:
    - Navigate to the [APIs section](https://manage.auth0.com/#/apis) in the Auth0 dashboard
