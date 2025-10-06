@@ -13,7 +13,7 @@ jobs:
   approval-reminder:
     if: |
       github.event_name == 'pull_request_target' &&
-      github.event.pull_request.head.repo.full_name != github.repository &&
+      github.event.pull_request.head.repo.fork == true &&
       !contains(github.event.pull_request.labels.*.name, 'approve public build')
     runs-on: ubuntu-latest
     permissions:
