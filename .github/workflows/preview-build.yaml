@@ -2,6 +2,8 @@ name: Public Package Build
 
 on:
   pull_request:
+  pull_request_target:
+    types: [labeled]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref }}
@@ -10,6 +12,10 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    # Run on internal PRs or external PRs with 'approve public build' label
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'pull_request_target' && github.event.label.name == 'approve public build')
     permissions:
       contents: read
       id-token: write
@@ -17,6 +23,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
