@@ -471,8 +471,8 @@ importers:
         specifier: 2.0.5
         version: 2.0.5(react@19.1.1)
       '@zuplo/mcp':
-        specifier: ^0.0.18
-        version: 0.0.18
+        specifier: ^0.0.22
+        version: 0.0.22
       allof-merge:
         specifier: 0.6.7
         version: 0.6.7
@@ -3889,8 +3889,8 @@ packages:
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
 
-  '@zuplo/mcp@0.0.18':
-    resolution: {integrity: sha512-Lwffy72XuWAUhBgSuJKE085lgPTNmzfHE1I71sz7AxkW1+MhgIVsJi0xA0uPtBpjDCs9ABFoGxHnTCO35wWLyw==}
+  '@zuplo/mcp@0.0.22':
+    resolution: {integrity: sha512-1lSblT0DLVSv8mq76zpbMag2Wd/IwSXLsOkubrwFm+Q9cCpvoB6jAl1I3a2agHlQ3o5LTY+yUn2nyGyS8HzuqQ==}
 
   '@zxcvbn-ts/core@3.0.4':
     resolution: {integrity: sha512-aQeiT0F09FuJaAqNrxynlAwZ2mW/1MdXakKWNmGM1Qp/VaY6CnB/GfnMS2T8gB2231Esp1/maCWd8vTG4OuShw==}
@@ -4710,6 +4710,10 @@ packages:
 
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
+
+  eventsource-parser@3.0.6:
+    resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
+    engines: {node: '>=18.0.0'}
 
   expect-type@1.2.1:
     resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
@@ -11341,8 +11345,9 @@ snapshots:
       react-fast-compare: 3.2.2
       shallowequal: 1.1.0
 
-  '@zuplo/mcp@0.0.18':
+  '@zuplo/mcp@0.0.22':
     dependencies:
+      eventsource-parser: 3.0.6
       zod: 3.25.76
 
   '@zxcvbn-ts/core@3.0.4':
@@ -12147,6 +12152,8 @@ snapshots:
   eventemitter3@4.0.7: {}
 
   eventemitter3@5.0.1: {}
+
+  eventsource-parser@3.0.6: {}
 
   expect-type@1.2.1: {}
 
