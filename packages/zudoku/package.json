@@ -190,7 +190,7 @@
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
     "@mdx-js/react": "3.1.0",
     "@mdx-js/rollup": "3.1.0",
-    "@pothos/core": "4.8.0",
+    "@pothos/core": "4.10.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
     "@radix-ui/react-aspect-ratio": "1.1.7",
