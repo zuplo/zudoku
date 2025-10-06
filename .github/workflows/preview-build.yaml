@@ -2,14 +2,50 @@ name: Public Package Build
 
 on:
   pull_request:
+  pull_request_target:
+    types: [labeled]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.head_ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
+  approval-reminder:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              per_page: 100
+            });
+
+            const exists = comments.some(c =>
+              c.user.login === "github-actions[bot]" &&
+              c.body.includes("Preview build of published Zudoku package")
+            );
+
+            if (!exists) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: "Preview build of published Zudoku package\\n\\n> [!WARNING]\\n> This PR is from an external contributor. To run the public package build workflow, a maintainer must add the \`approve public build\` label after reviewing the changes."
+              });
+            }
+
   run:
     runs-on: ubuntu-latest
+    # Run on internal PRs or external PRs with 'approve public build' label
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'pull_request_target' && github.event.label.name == 'approve public build')
     permissions:
       contents: read
       id-token: write
@@ -17,6 +53,9 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Safe: Only runs after maintainer approval via 'approve public build' label
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || '' }}
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
