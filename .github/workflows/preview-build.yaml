@@ -19,7 +19,7 @@ jobs:
     permissions:
       pull-requests: write
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@v8
         with:
           script: |
             const { data: comments } = await github.rest.issues.listComments({
@@ -137,7 +137,7 @@ jobs:
           command: pages deploy examples/cosmo-cargo/dist --project-name=cosmocargo-public-package
 
       - name: Comment PR
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const deploymentUrl = "${{ steps.deploy.outputs.deployment-url }}";
@@ -160,8 +160,8 @@ jobs:
                 per_page: 100
               });
 
-              const botComment = comments.find((c) => 
-                c.user.login === "github-actions[bot]" && 
+              const botComment = comments.find((c) =>
+                c.user.login === "github-actions[bot]" &&
                 c.body.includes("Preview build of published Zudoku package")
               );
 
