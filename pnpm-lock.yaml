@@ -411,8 +411,8 @@ importers:
         specifier: 1.2.3
         version: 1.2.3(@types/react-dom@19.1.7(@types/react@19.1.10))(@types/react@19.1.10)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       '@scalar/openapi-parser':
-        specifier: 0.18.0
-        version: 0.18.0
+        specifier: 0.22.1
+        version: 0.22.1
       '@sentry/node':
         specifier: 9.26.0
         version: 9.26.0
@@ -3253,8 +3253,24 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scalar/openapi-parser@0.18.0':
-    resolution: {integrity: sha512-qAWEfJR5f/LwSFULFeSkD56LHgU9ovyj+e1uqy9XaW9Hb9P0ewIGKi+Gd4wTyxfFkdPLXTFYXApjviP6jV+new==}
+  '@scalar/helpers@0.0.11':
+    resolution: {integrity: sha512-EoAufzG0crQloYJxbCV8F+Y5vPyeeh1HMngGlXPT6oGSJPi6DiNA9wztqK3lvaBmSkJMh4VKIbejVqAXx1a0tg==}
+    engines: {node: '>=20'}
+
+  '@scalar/json-magic@0.6.0':
+    resolution: {integrity: sha512-sy2yL7V8ZF7oUoMl46TjFbBfqZESDmKPfPXeyWeIcwKgjFwjM/FvLdGOOPNsYQ2tPZUCzg8QCNJk9QM+BKVyRg==}
+    engines: {node: '>=20'}
+
+  '@scalar/openapi-parser@0.22.1':
+    resolution: {integrity: sha512-GJV7f9VLoyKbArMcWETbJ+xPqkopNBlb+oxEBSlSYYsoWc+p+sLAtuwObfJT8Ia+CStl5Y2ZRk/2DgCuy1vsaQ==}
+    engines: {node: '>=20'}
+
+  '@scalar/openapi-types@0.4.0':
+    resolution: {integrity: sha512-vdFLzz7vETw6kS3bxWUHCBeFtJOnr1bk/+FXKyxKkd6TbcyT6USXkoelI704IaBdoXyOgGX10FD1IVrs4FwUow==}
+    engines: {node: '>=20'}
+
+  '@scalar/openapi-upgrader@0.1.1':
+    resolution: {integrity: sha512-NlrQezuNGtejqS/SQshY9SjD4D66jiJcWgC2zfCS4muyfE2K85e0i6gegnKLZPSNrqoAvJyR78NPapme9z2/wg==}
     engines: {node: '>=20'}
 
   '@scure/base@1.2.6':
@@ -5463,8 +5479,8 @@ packages:
     resolution: {integrity: sha512-huMg+mGp6wHPjkaLdchuOvxVRMzvz6OVdhivatiH2Qn47O5Zm46jwzbVPYIanX6N/8ZTjGLBxv8tZ0KYmKt/Jg==}
     hasBin: true
 
-  leven@4.0.0:
-    resolution: {integrity: sha512-puehA3YKku3osqPlNuzGDUHq8WpwXupUg1V6NXdV38G+gr+gkBwFC8g1b/+YcIvp8gnqVIus+eJCH/eGsRmJNw==}
+  leven@4.1.0:
+    resolution: {integrity: sha512-KZ9W9nWDT7rF7Dazg8xyLHGLrmpgq2nVNFUckhqdW3szVP6YhCpp/RAnpmVExA9JvrMynjwSLVrEj3AepHR6ew==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
   lightningcss-darwin-arm64@1.30.1:
@@ -7454,6 +7470,11 @@ packages:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
     engines: {node: '>= 6'}
 
+  yaml@2.8.0:
+    resolution: {integrity: sha512-4lLa/EcQCB0cJkyts+FpIRx5G/llPxfP6VQU5KByHEhLxY3IJCH0f0Hy1MHI8sClTvsIb8qwRJ6R/ZdlDJ/leQ==}
+    engines: {node: '>= 14.6'}
+    hasBin: true
+
   yaml@2.8.1:
     resolution: {integrity: sha512-lcYcMxX2PO9XMGvAJkJ3OsNMw+/7FKes7/hgerGUYWIoWu5j/+YQqcZr5JnPZWzOsEBgMbSbiSTn/dv/69Mkpw==}
     engines: {node: '>= 14.6'}
@@ -7484,6 +7505,9 @@ packages:
 
   zod@4.0.10:
     resolution: {integrity: sha512-3vB+UU3/VmLL2lvwcY/4RV2i9z/YU0DTV/tDuYjrwmx5WeJ7hwy+rGEEx8glHp6Yxw7ibRbKSaIFBgReRPe5KA==}
+
+  zod@4.1.11:
+    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
   zustand@5.0.3:
     resolution: {integrity: sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==}
@@ -10556,14 +10580,32 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.46.1':
     optional: true
 
-  '@scalar/openapi-parser@0.18.0':
+  '@scalar/helpers@0.0.11': {}
+
+  '@scalar/json-magic@0.6.0':
     dependencies:
+      '@scalar/helpers': 0.0.11
+      yaml: 2.8.0
+
+  '@scalar/openapi-parser@0.22.1':
+    dependencies:
+      '@scalar/json-magic': 0.6.0
+      '@scalar/openapi-types': 0.4.0
+      '@scalar/openapi-upgrader': 0.1.1
       ajv: 8.17.1
       ajv-draft-04: 1.0.0(ajv@8.17.1)
       ajv-formats: 3.0.1(ajv@8.17.1)
       jsonpointer: 5.0.1
-      leven: 4.0.0
-      yaml: 2.8.1
+      leven: 4.1.0
+      yaml: 2.8.0
+
+  '@scalar/openapi-types@0.4.0':
+    dependencies:
+      zod: 4.1.11
+
+  '@scalar/openapi-upgrader@0.1.1':
+    dependencies:
+      '@scalar/openapi-types': 0.4.0
 
   '@scure/base@1.2.6': {}
 
@@ -13026,7 +13068,7 @@ snapshots:
       lefthook-windows-arm64: 1.12.3
       lefthook-windows-x64: 1.12.3
 
-  leven@4.0.0: {}
+  leven@4.1.0: {}
 
   lightningcss-darwin-arm64@1.30.1:
     optional: true
@@ -15633,6 +15675,8 @@ snapshots:
 
   yaml@1.10.2: {}
 
+  yaml@2.8.0: {}
+
   yaml@2.8.1: {}
 
   yargs-parser@21.1.1: {}
@@ -15663,6 +15707,8 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.0.10: {}
+
+  zod@4.1.11: {}
 
   zustand@5.0.3(@types/react@19.1.10)(react@19.1.1)(use-sync-external-store@1.5.0(react@19.1.1)):
     optionalDependencies:
