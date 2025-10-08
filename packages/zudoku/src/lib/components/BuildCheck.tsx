@@ -71,16 +71,18 @@ export const BuildCheck = ({
           ? "A new version of the developer portal will be available soon."
           : "To see the new version, reload the page now."}
       </span>
-      <Button
-        variant="outline"
-        size="sm"
-        className="w-full"
-        onClick={() => {
-          window.location.reload();
-        }}
-      >
-        Reload
-      </Button>
+      {isCompleted && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => {
+            window.location.reload();
+          }}
+        >
+          Reload
+        </Button>
+      )}
     </div>
   );
 };

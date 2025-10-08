@@ -15,6 +15,7 @@ import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { EXIT, visit } from "unist-util-visit";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
+import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
 import { remarkInjectFilepath } from "./mdx/remark-inject-filepath.js";
 import { remarkLastModified } from "./mdx/remark-last-modified.js";
@@ -75,8 +76,9 @@ const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
   tree.children.unshift(exportMdxjsConst("excerpt", excerpt));
 };
 
-const viteMdxPlugin = (): Plugin => {
+const viteMdxPlugin = async (): Promise<Plugin> => {
   const config = getCurrentConfig();
+  const buildConfig = await getBuildConfig();
 
   return {
     enforce: "pre",
@@ -103,6 +105,7 @@ const viteMdxPlugin = (): Plugin => {
         [remarkLinkRewrite, config.basePath],
         [remarkNormalizeImageUrl, config.basePath],
         ...(config.build?.remarkPlugins ?? []),
+        ...(buildConfig?.remarkPlugins ?? []),
       ],
       rehypePlugins: [
         rehypeSlug,
@@ -116,6 +119,7 @@ const viteMdxPlugin = (): Plugin => {
           config.syntaxHighlighting?.themes,
         ),
         ...(config.build?.rehypePlugins ?? []),
+        ...(buildConfig?.rehypePlugins ?? []),
       ],
     }),
     name: "zudoku-mdx-plugin",
