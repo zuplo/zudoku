@@ -167,6 +167,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
+              `    expandApiInformation: config.defaults?.apis?.expandApiInformation ?? false,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
