@@ -30,10 +30,10 @@ export const MCPEndpoint = ({
   "mcpServers": {
     "${name}": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"],
-      "env": {
-        "FETCH_URL": "${mcpUrl}"
-      }
+      "args": [
+        "mcp-remote",
+        "${mcpUrl}"
+      ]
     }
   }
 }`;
@@ -51,21 +51,11 @@ export const MCPEndpoint = ({
   const vscodeConfig = `{
   "servers": {
     "${name}": {
-      "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-fetch"],
-      "env": {
-        "FETCH_URL": "${mcpUrl}"
-      }
-    }
-  }
-}`;
-
-  const vscodeSseConfig = `{
-  "servers": {
-    "${name}": {
-      "type": "sse",
-      "url": "${mcpUrl}"
+      "args": [
+        "mcp-remote",
+        "${mcpUrl}"
+      ]
     }
   }
 }`;
@@ -256,16 +246,6 @@ export const MCPEndpoint = ({
                       title="mcp.json"
                       language="json"
                       code={vscodeConfig}
-                      className="mt-2"
-                    />
-                  </li>
-                  <li>
-                    Alternatively, configure SSE without a wrapper:
-                    <SyntaxHighlight
-                      showLanguageIndicator
-                      title="mcp.json (SSE)"
-                      language="json"
-                      code={vscodeSseConfig}
                       className="mt-2"
                     />
                   </li>
