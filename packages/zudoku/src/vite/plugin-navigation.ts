@@ -1,4 +1,5 @@
 import { stringify } from "javascript-stringify";
+import { isElement } from "react-is";
 import type { Plugin, ViteDevServer } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { IconNames } from "../config/validators/icon-types.js";
@@ -41,6 +42,9 @@ export const viteNavigationPlugin = (): Plugin => {
       const code = stringify(
         resolvedNavigation,
         (value, _indent, next, key) => {
+          // Skip non-serializable React elements
+          if (isElement(value)) return undefined;
+
           if (key === "icon" && typeof value === "string") {
             const iconName = toPascalCase(value);
 

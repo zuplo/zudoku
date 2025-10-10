@@ -329,8 +329,8 @@
     "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4",
-    "react": ">=19",
-    "react-dom": ">=19"
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "peerDependenciesMeta": {
     "@azure/msal-browser": {
