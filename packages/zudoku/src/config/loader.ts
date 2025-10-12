@@ -1,8 +1,12 @@
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
-import type { RollupOutput, RollupWatcher } from "rollup";
-import { type ConfigEnv, runnerImport, loadEnv as viteLoadEnv } from "vite";
+import {
+  type build,
+  type ConfigEnv,
+  runnerImport,
+  loadEnv as viteLoadEnv,
+} from "vite";
 import { logger } from "../cli/common/logger.js";
 import invariant from "../lib/util/invariant.js";
 import { getModuleDir } from "../vite/config.js";
@@ -76,9 +80,9 @@ async function loadZudokuConfigWithMeta(
   return configWithMetadata;
 }
 
-export function findOutputPathOfServerConfig(
-  output: RollupOutput | RollupOutput[] | RollupWatcher,
-) {
+type BuildResult = Awaited<ReturnType<typeof build>>;
+
+export function findOutputPathOfServerConfig(output: BuildResult) {
   if (Array.isArray(output)) {
     throw new Error("Expected a single output, but got an array");
   }
