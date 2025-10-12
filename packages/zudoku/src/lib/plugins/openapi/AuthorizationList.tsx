@@ -1,9 +1,13 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useEffect } from "react";
 import { Heading } from "../../components/Heading.js";
-import { Card } from "../../ui/Card.js";
-import { Label } from "../../ui/Label.js";
-import { RadioGroup, RadioGroupItem } from "../../ui/RadioGroup.js";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/Select.js";
 import { AuthorizationListItem } from "./AuthorizationListItem.js";
 import type { SecurityRequirement } from "./graphql/graphql.js";
 import {
@@ -11,8 +15,6 @@ import {
   useSecurityState,
 } from "./state/securityState.js";
 import { inferSchemeType } from "./util/authHelpers.js";
-
-const NO_AUTH = "__none";
 
 export const AuthorizationList = ({
   summary,
@@ -43,11 +45,6 @@ export const AuthorizationList = ({
   }, [currentSelection, security, id, setSelectedScheme, credentials]);
 
   const handleSchemeChange = (schemeName: string) => {
-    if (schemeName === NO_AUTH) {
-      setSelectedScheme(id, null);
-      return;
-    }
-
     const scheme = security.find((s) => s.name === schemeName);
     if (scheme) {
       const selection: SecuritySchemeSelection = {
@@ -65,34 +62,30 @@ export const AuthorizationList = ({
   }
 
   return (
-    <>
+    <div className="my-4 flex flex-col gap-4">
       <Heading level={3} id={`${id}/authorization`}>
         {summary && <VisuallyHidden>{summary} &rsaquo; </VisuallyHidden>}
         Authorization
       </Heading>
-      <Card>
-        <RadioGroup
-          onValueChange={handleSchemeChange}
-          value={currentSelection?.name ?? security[0]!.name}
-          className="gap-0 rounded-md overflow-hidden"
-        >
+      <Select
+        onValueChange={handleSchemeChange}
+        value={currentSelection?.name ?? security[0]!.name}
+      >
+        <SelectTrigger className="h-auto min-h-10 py-2">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
           {security.map((requirement, index) => (
-            <div key={`${requirement.name}-${index}`}>
-              <Label
-                className={`h-10 items-center font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75 ${
-                  index < security.length - 1 ? "border-b" : ""
-                }`}
-              >
-                <RadioGroupItem
-                  value={requirement.name}
-                  id={`${id}-${requirement.name}`}
-                />
-                <AuthorizationListItem requirement={requirement} />
-              </Label>
-            </div>
+            <SelectItem
+              key={`${requirement.name}-${index}`}
+              value={requirement.name}
+              className="h-auto py-2"
+            >
+              <AuthorizationListItem requirement={requirement} />
+            </SelectItem>
           ))}
-        </RadioGroup>
-      </Card>
-    </>
+        </SelectContent>
+      </Select>
+    </div>
   );
 };

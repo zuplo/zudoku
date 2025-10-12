@@ -118,6 +118,64 @@ export const getSchemeInfo = (name: string): SecuritySchemeInfo => {
 };
 
 /**
+ * Get appropriate placeholder value for each authentication type
+ */
+const getPlaceholderValue = (auth: SecuritySchemeSelection): string => {
+  const lowerName = auth.name.toLowerCase();
+
+  // HTTP Bearer
+  if (auth.type === "http" && lowerName.includes("bearer")) {
+    return "<YOUR_BEARER_TOKEN>";
+  }
+
+  // HTTP Basic
+  if (auth.type === "http" && lowerName.includes("basic")) {
+    return "<BASE64_ENCODED_CREDENTIALS>";
+  }
+
+  // OAuth 2.0
+  if (auth.type === "oauth2") {
+    return "<YOUR_ACCESS_TOKEN>";
+  }
+
+  // OpenID Connect
+  if (auth.type === "openIdConnect") {
+    return "<YOUR_ID_TOKEN>";
+  }
+
+  // API Key - Cookie
+  if (
+    auth.type === "apiKey" &&
+    (lowerName.includes("cookie") || auth.apiKey?.in === "cookie")
+  ) {
+    return "<YOUR_COOKIE_VALUE>";
+  }
+
+  // API Key - Query
+  if (
+    auth.type === "apiKey" &&
+    (lowerName.includes("query") ||
+      lowerName.includes("param") ||
+      auth.apiKey?.in === "query")
+  ) {
+    return "<YOUR_API_KEY>";
+  }
+
+  // API Key - Header (default)
+  if (auth.type === "apiKey") {
+    return "<YOUR_API_KEY>";
+  }
+
+  // Other HTTP schemes (Digest, HOBA, etc.)
+  if (auth.type === "http") {
+    return "<YOUR_CREDENTIALS>";
+  }
+
+  // Generic fallback
+  return "<YOUR_TOKEN>";
+};
+
+/**
  * Determine where the API key should be placed based on the scheme name
  */
 const getApiKeyLocation = (
@@ -171,7 +229,7 @@ export const applyAuth = (
 ): AuthApplication | null => {
   if (!auth) return null;
 
-  const value = actualValue ?? auth.value ?? "<YOUR_TOKEN>";
+  const value = actualValue ?? auth.value ?? getPlaceholderValue(auth);
   const lowerName = auth.name.toLowerCase();
 
   // HTTP Bearer
