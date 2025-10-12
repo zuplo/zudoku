@@ -221,9 +221,6 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "es2022",
-      },
       entries: [
         configEnv.isSsrBuild
           ? getAppServerEntryPath()
