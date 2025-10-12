@@ -411,6 +411,15 @@ const ResponseItem = builder
     }),
   });
 
+const SecurityRequirementItem = builder
+  .objectRef<{ name: string; scopes: string[] }>("SecurityRequirement")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      scopes: t.exposeStringList("scopes"),
+    }),
+  });
+
 const OperationItem = builder
   .objectRef<GraphQLOperationObject>("OperationItem")
   .implement({
@@ -502,6 +511,19 @@ const OperationItem = builder
       extensions: t.field({
         type: JSONObjectScalar,
         resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
+      security: t.field({
+        type: [SecurityRequirementItem],
+        resolve: (parent) => {
+          if (!parent.security) return [];
+          return parent.security.flatMap((req) =>
+            Object.entries(req).map(([name, scopes]) => ({
+              name,
+              scopes: scopes ?? [],
+            })),
+          );
+        },
         nullable: true,
       }),
     }),
