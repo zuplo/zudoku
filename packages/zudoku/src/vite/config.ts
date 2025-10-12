@@ -190,9 +190,6 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "es2022",
-      },
       entries: [path.posix.join(getModuleDir(), "src/{app,lib}/**")],
       include: [
         "react-dom/client",
