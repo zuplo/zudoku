@@ -14,7 +14,7 @@ import {
   type SecuritySchemeSelection,
   useSecurityState,
 } from "./state/securityState.js";
-import { inferSchemeType } from "./util/authHelpers.js";
+import { addApiKeyMetadata, inferSchemeType } from "./util/authHelpers.js";
 
 export const AuthorizationList = ({
   summary,
@@ -29,7 +29,6 @@ export const AuthorizationList = ({
     useSecurityState();
   const currentSelection = selectedSchemes[id];
 
-  // Auto-select first security option by default if none selected
   useEffect(() => {
     if (!currentSelection && security.length > 0) {
       // biome-ignore lint/style/noNonNullAssertion: security.length > 0 guarantees security[0] exists
@@ -42,18 +41,7 @@ export const AuthorizationList = ({
         value: credentials[firstScheme.name],
       };
 
-      // Add apiKey metadata for API key auth types
-      if (type === "apiKey") {
-        const lowerName = firstScheme.name.toLowerCase();
-        if (lowerName.includes("cookie")) {
-          selection.apiKey = { in: "cookie", name: "session_id" };
-        } else if (lowerName.includes("query") || lowerName.includes("param")) {
-          selection.apiKey = { in: "query", name: "api_key" };
-        } else {
-          selection.apiKey = { in: "header", name: "X-API-Key" };
-        }
-      }
-
+      addApiKeyMetadata(selection, firstScheme.name);
       setSelectedScheme(id, selection);
     }
   }, [currentSelection, security, id, setSelectedScheme, credentials]);
@@ -69,18 +57,7 @@ export const AuthorizationList = ({
         value: credentials[scheme.name],
       };
 
-      // Add apiKey metadata for API key auth types
-      if (type === "apiKey") {
-        const lowerName = scheme.name.toLowerCase();
-        if (lowerName.includes("cookie")) {
-          selection.apiKey = { in: "cookie", name: "session_id" };
-        } else if (lowerName.includes("query") || lowerName.includes("param")) {
-          selection.apiKey = { in: "query", name: "api_key" };
-        } else {
-          selection.apiKey = { in: "header", name: "X-API-Key" };
-        }
-      }
-
+      addApiKeyMetadata(selection, scheme.name);
       setSelectedScheme(id, selection);
     }
   };
@@ -97,7 +74,7 @@ export const AuthorizationList = ({
       </Heading>
       <Select
         onValueChange={handleSchemeChange}
-        value={currentSelection?.name ?? security[0]!.name}
+        value={currentSelection?.name ?? security[0]?.name}
       >
         <SelectTrigger className="h-auto min-h-10 py-2">
           <SelectValue />

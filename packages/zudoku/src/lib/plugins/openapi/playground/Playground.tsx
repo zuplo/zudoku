@@ -167,7 +167,6 @@ export const Playground = ({
   const { getSelectedScheme } = useSecurityState();
   const lastAppliedAuthRef = useRef<string | null>(null);
 
-  // Load saved auth selection for this operation
   useEffect(() => {
     const saved = getSelectedScheme(operationId);
     if (saved) {
@@ -185,7 +184,6 @@ export const Playground = ({
     (a, b) => pathParamOrder.indexOf(a.name) - pathParamOrder.indexOf(b.name),
   );
 
-  // Get initial auth headers
   const initialAuth = getSelectedScheme(operationId);
   const initialAuthHeaders = useMemo(() => {
     if (!initialAuth) return [];
@@ -257,7 +255,6 @@ export const Playground = ({
     [identities.data, identity],
   );
 
-  // Compute locked headers from both auth plugin and selected security scheme
   const lockedHeaders = useMemo(() => {
     const headers = [...(authorizationFields?.headers ?? [])];
 
@@ -277,15 +274,12 @@ export const Playground = ({
     }
   }, [latestSetRememberedIdentity, identity]);
 
-  // Update headers when auth selection changes
   // biome-ignore lint/correctness/useExhaustiveDependencies: form is stable and we only want to run when selectedAuth changes
   useEffect(() => {
     if (!selectedAuth) return;
 
-    // Create a unique key for this auth selection
     const authKey = `${selectedAuth.name}-${selectedAuth.value || ""}`;
 
-    // Only update if this auth hasn't been applied yet
     if (lastAppliedAuthRef.current === authKey) return;
     lastAppliedAuthRef.current = authKey;
 
@@ -293,7 +287,6 @@ export const Playground = ({
     if (authApplication) {
       const currentHeaders = form.getValues("headers");
 
-      // Remove all possible auth headers from previous selections
       const commonAuthHeaders = [
         "Authorization",
         "Cookie",
@@ -314,7 +307,6 @@ export const Playground = ({
         active: boolean;
       }> = [];
 
-      // Add headers from authApplication
       if (authApplication.headers) {
         newAuthHeaders.push(
           ...Object.entries(authApplication.headers).map(([name, value]) => ({
@@ -325,7 +317,6 @@ export const Playground = ({
         );
       }
 
-      // Convert cookies to Cookie header
       if (authApplication.cookies) {
         const cookieValue = Object.entries(authApplication.cookies)
           .map(([name, value]) => `${name}=${value}`)
@@ -352,13 +343,11 @@ export const Playground = ({
           .map((header) => [header.name, header.value]),
       ]);
 
-      // Apply selected security scheme using centralized helper
       const authApplication = applyAuth(selectedAuth, selectedAuth?.value);
       if (authApplication?.headers) {
         Object.assign(headers, authApplication.headers);
       }
 
-      // Build URL with query params (including auth if needed)
       const requestUrl = createUrl(server ?? selectedServer, url, data);
       if (authApplication?.queryParams) {
         for (const [name, value] of Object.entries(
@@ -374,7 +363,6 @@ export const Playground = ({
         body: data.body ? data.body : undefined,
       });
 
-      // Apply cookies if needed
       if (authApplication?.cookies) {
         const cookies = Object.entries(authApplication.cookies)
           .map(([name, value]) => `${name}=${value}`)

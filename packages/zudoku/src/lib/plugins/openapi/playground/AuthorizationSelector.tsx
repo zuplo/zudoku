@@ -9,7 +9,11 @@ import {
   type SecuritySchemeSelection,
   useSecurityState,
 } from "../state/securityState.js";
-import { getSchemeInfo, inferSchemeType } from "../util/authHelpers.js";
+import {
+  addApiKeyMetadata,
+  getSchemeInfo,
+  inferSchemeType,
+} from "../util/authHelpers.js";
 import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
 
 export const AuthorizationSelector = ({
@@ -38,18 +42,7 @@ export const AuthorizationSelector = ({
         value: credentials[scheme.name],
       };
 
-      // Add apiKey metadata for API key auth types
-      if (type === "apiKey") {
-        const lowerName = scheme.name.toLowerCase();
-        if (lowerName.includes("cookie")) {
-          selection.apiKey = { in: "cookie", name: "session_id" };
-        } else if (lowerName.includes("query") || lowerName.includes("param")) {
-          selection.apiKey = { in: "query", name: "api_key" };
-        } else {
-          selection.apiKey = { in: "header", name: "X-API-Key" };
-        }
-      }
-
+      addApiKeyMetadata(selection, scheme.name);
       setSelectedScheme(operationId, selection);
       onAuthChange?.(selection);
     }

@@ -176,6 +176,18 @@ const getPlaceholderValue = (auth: SecuritySchemeSelection): string => {
 };
 
 /**
+ * Add apiKey metadata to a security scheme selection based on the scheme name
+ */
+export const addApiKeyMetadata = (
+  selection: SecuritySchemeSelection,
+  schemeName: string,
+): void => {
+  if (selection.type === "apiKey") {
+    selection.apiKey = getApiKeyLocation(schemeName);
+  }
+};
+
+/**
  * Determine where the API key should be placed based on the scheme name
  */
 const getApiKeyLocation = (
