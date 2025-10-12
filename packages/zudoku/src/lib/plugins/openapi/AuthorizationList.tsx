@@ -34,12 +34,26 @@ export const AuthorizationList = ({
     if (!currentSelection && security.length > 0) {
       // biome-ignore lint/style/noNonNullAssertion: security.length > 0 guarantees security[0] exists
       const firstScheme = security[0]!;
+      const type = inferSchemeType(firstScheme.name);
       const selection: SecuritySchemeSelection = {
         name: firstScheme.name,
-        type: inferSchemeType(firstScheme.name),
+        type,
         scopes: firstScheme.scopes,
         value: credentials[firstScheme.name],
       };
+
+      // Add apiKey metadata for API key auth types
+      if (type === "apiKey") {
+        const lowerName = firstScheme.name.toLowerCase();
+        if (lowerName.includes("cookie")) {
+          selection.apiKey = { in: "cookie", name: "session_id" };
+        } else if (lowerName.includes("query") || lowerName.includes("param")) {
+          selection.apiKey = { in: "query", name: "api_key" };
+        } else {
+          selection.apiKey = { in: "header", name: "X-API-Key" };
+        }
+      }
+
       setSelectedScheme(id, selection);
     }
   }, [currentSelection, security, id, setSelectedScheme, credentials]);
@@ -47,12 +61,26 @@ export const AuthorizationList = ({
   const handleSchemeChange = (schemeName: string) => {
     const scheme = security.find((s) => s.name === schemeName);
     if (scheme) {
+      const type = inferSchemeType(scheme.name);
       const selection: SecuritySchemeSelection = {
         name: scheme.name,
-        type: inferSchemeType(scheme.name),
+        type,
         scopes: scheme.scopes,
         value: credentials[scheme.name],
       };
+
+      // Add apiKey metadata for API key auth types
+      if (type === "apiKey") {
+        const lowerName = scheme.name.toLowerCase();
+        if (lowerName.includes("cookie")) {
+          selection.apiKey = { in: "cookie", name: "session_id" };
+        } else if (lowerName.includes("query") || lowerName.includes("param")) {
+          selection.apiKey = { in: "query", name: "api_key" };
+        } else {
+          selection.apiKey = { in: "header", name: "X-API-Key" };
+        }
+      }
+
       setSelectedScheme(id, selection);
     }
   };

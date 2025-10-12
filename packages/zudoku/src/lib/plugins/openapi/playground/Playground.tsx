@@ -165,6 +165,7 @@ export const Playground = ({
   const [selectedAuth, setSelectedAuth] =
     useState<SecuritySchemeSelection | null>(null);
   const { getSelectedScheme } = useSecurityState();
+  const lastAppliedAuthRef = useRef<string | null>(null);
 
   // Load saved auth selection for this operation
   useEffect(() => {
@@ -183,6 +184,22 @@ export const Playground = ({
   const sortedPathParams = [...pathParams].sort(
     (a, b) => pathParamOrder.indexOf(a.name) - pathParamOrder.indexOf(b.name),
   );
+
+  // Get initial auth headers
+  const initialAuth = getSelectedScheme(operationId);
+  const initialAuthHeaders = useMemo(() => {
+    if (!initialAuth) return [];
+
+    const authApplication = applyAuth(initialAuth, initialAuth.value);
+    if (authApplication?.headers) {
+      return Object.entries(authApplication.headers).map(([name, value]) => ({
+        name,
+        value,
+        active: true,
+      }));
+    }
+    return [];
+  }, [initialAuth]);
 
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
@@ -210,18 +227,23 @@ export const Playground = ({
         })),
         headers:
           headers.length > 0
-            ? headers.map((header) => ({
-                name: header.name,
-                value: header.defaultValue ?? "",
-                active: header.defaultActive ?? false,
-              }))
-            : [
-                {
-                  name: "",
-                  value: "",
-                  active: false,
-                },
-              ],
+            ? [
+                ...headers.map((header) => ({
+                  name: header.name,
+                  value: header.defaultValue ?? "",
+                  active: header.defaultActive ?? false,
+                })),
+                ...initialAuthHeaders,
+              ]
+            : initialAuthHeaders.length > 0
+              ? initialAuthHeaders
+              : [
+                  {
+                    name: "",
+                    value: "",
+                    active: false,
+                  },
+                ],
         identity: getRememberedIdentity([
           NO_IDENTITY,
           ...(identities.data?.map((i) => i.id) ?? []),
@@ -235,11 +257,89 @@ export const Playground = ({
     [identities.data, identity],
   );
 
+  // Compute locked headers from both auth plugin and selected security scheme
+  const lockedHeaders = useMemo(() => {
+    const headers = [...(authorizationFields?.headers ?? [])];
+
+    if (selectedAuth) {
+      const authApplication = applyAuth(selectedAuth, selectedAuth.value);
+      if (authApplication?.headers) {
+        headers.push(...Object.keys(authApplication.headers));
+      }
+    }
+
+    return headers;
+  }, [authorizationFields, selectedAuth]);
+
   useEffect(() => {
     if (identity) {
       latestSetRememberedIdentity.current(identity);
     }
   }, [latestSetRememberedIdentity, identity]);
+
+  // Update headers when auth selection changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: form is stable and we only want to run when selectedAuth changes
+  useEffect(() => {
+    if (!selectedAuth) return;
+
+    // Create a unique key for this auth selection
+    const authKey = `${selectedAuth.name}-${selectedAuth.value || ""}`;
+
+    // Only update if this auth hasn't been applied yet
+    if (lastAppliedAuthRef.current === authKey) return;
+    lastAppliedAuthRef.current = authKey;
+
+    const authApplication = applyAuth(selectedAuth, selectedAuth.value);
+    if (authApplication) {
+      const currentHeaders = form.getValues("headers");
+
+      // Remove all possible auth headers from previous selections
+      const commonAuthHeaders = [
+        "Authorization",
+        "Cookie",
+        "X-API-Key",
+        "X-Api-Key",
+        "api_key",
+      ];
+      const filteredHeaders = currentHeaders.filter(
+        (h) =>
+          !commonAuthHeaders.some(
+            (ah) => ah.toLowerCase() === h.name.toLowerCase(),
+          ),
+      );
+
+      const newAuthHeaders: Array<{
+        name: string;
+        value: string;
+        active: boolean;
+      }> = [];
+
+      // Add headers from authApplication
+      if (authApplication.headers) {
+        newAuthHeaders.push(
+          ...Object.entries(authApplication.headers).map(([name, value]) => ({
+            name,
+            value,
+            active: true,
+          })),
+        );
+      }
+
+      // Convert cookies to Cookie header
+      if (authApplication.cookies) {
+        const cookieValue = Object.entries(authApplication.cookies)
+          .map(([name, value]) => `${name}=${value}`)
+          .join("; ");
+        newAuthHeaders.push({
+          name: "Cookie",
+          value: cookieValue,
+          active: true,
+        });
+      }
+
+      setValue("headers", [...filteredHeaders, ...newAuthHeaders]);
+    }
+  }, [selectedAuth, setValue]);
 
   const queryMutation = useMutation({
     gcTime: 0,
@@ -259,15 +359,13 @@ export const Playground = ({
       }
 
       // Build URL with query params (including auth if needed)
-      let requestUrl = createUrl(server ?? selectedServer, url, data);
+      const requestUrl = createUrl(server ?? selectedServer, url, data);
       if (authApplication?.queryParams) {
-        const urlObj = new URL(requestUrl);
         for (const [name, value] of Object.entries(
           authApplication.queryParams,
         )) {
-          urlObj.searchParams.set(name, value);
+          requestUrl.searchParams.set(name, value);
         }
-        requestUrl = urlObj.toString();
       }
 
       const request = new Request(requestUrl, {
@@ -566,7 +664,7 @@ export const Playground = ({
               <Headers
                 control={control}
                 schemaHeaders={headers}
-                lockedHeaders={authorizationFields?.headers}
+                lockedHeaders={lockedHeaders}
               />
               {isBodySupported && <BodyPanel content={examples} />}
             </div>

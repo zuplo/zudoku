@@ -1,4 +1,4 @@
-import { LockKeyholeIcon } from "lucide-react";
+import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import { Input } from "zudoku/ui/Input.js";
@@ -10,8 +10,7 @@ import {
   useSecurityState,
 } from "../state/securityState.js";
 import { getSchemeInfo, inferSchemeType } from "../util/authHelpers.js";
-
-const NO_AUTH = "__none";
+import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
 
 export const AuthorizationSelector = ({
   operationId,
@@ -26,23 +25,31 @@ export const AuthorizationSelector = ({
     useSecurityState();
 
   const selectedScheme = selectedSchemes[operationId];
-  const [editingScheme, setEditingScheme] = useState<string | null>(null);
+  const [visibleSchemes, setVisibleSchemes] = useState<Set<string>>(new Set());
 
   const handleSchemeChange = (schemeName: string) => {
-    if (schemeName === NO_AUTH) {
-      setSelectedScheme(operationId, null);
-      onAuthChange?.(null);
-      return;
-    }
-
     const scheme = security.find((s) => s.name === schemeName);
     if (scheme) {
+      const type = inferSchemeType(scheme.name);
       const selection: SecuritySchemeSelection = {
         name: scheme.name,
-        type: inferSchemeType(scheme.name),
+        type,
         scopes: scheme.scopes,
         value: credentials[scheme.name],
       };
+
+      // Add apiKey metadata for API key auth types
+      if (type === "apiKey") {
+        const lowerName = scheme.name.toLowerCase();
+        if (lowerName.includes("cookie")) {
+          selection.apiKey = { in: "cookie", name: "session_id" };
+        } else if (lowerName.includes("query") || lowerName.includes("param")) {
+          selection.apiKey = { in: "query", name: "api_key" };
+        } else {
+          selection.apiKey = { in: "header", name: "X-API-Key" };
+        }
+      }
+
       setSelectedScheme(operationId, selection);
       onAuthChange?.(selection);
     }
@@ -56,6 +63,18 @@ export const AuthorizationSelector = ({
     }
   };
 
+  const toggleVisibility = (schemeName: string) => {
+    setVisibleSchemes((prev) => {
+      const next = new Set(prev);
+      if (next.has(schemeName)) {
+        next.delete(schemeName);
+      } else {
+        next.add(schemeName);
+      }
+      return next;
+    });
+  };
+
   if (!security || security.length === 0) {
     return null;
   }
@@ -64,88 +83,52 @@ export const AuthorizationSelector = ({
     <div className="w-full overflow-hidden">
       <RadioGroup
         onValueChange={handleSchemeChange}
-        value={selectedScheme?.name ?? NO_AUTH}
-        defaultValue={NO_AUTH}
+        value={selectedScheme?.name}
         className="gap-0"
       >
-        <Label className="h-10 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75">
-          <RadioGroupItem value={NO_AUTH} id={NO_AUTH} />
-          <span>None</span>
-        </Label>
+        <ParamsGrid>
+          {security.map((scheme) => {
+            const schemeInfo = getSchemeInfo(scheme.name);
+            const credentialValue = credentials[scheme.name];
+            const isVisible = visibleSchemes.has(scheme.name);
 
-        {security.map((scheme) => {
-          const schemeInfo = getSchemeInfo(scheme.name);
-          const isEditing = editingScheme === scheme.name;
-          const credentialValue = credentials[scheme.name];
-
-          return (
-            <div key={scheme.name} className="border-b">
-              <Label className="h-10 items-center font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75">
+            return (
+              <ParamsGridItem key={scheme.name}>
                 <RadioGroupItem value={scheme.name} id={scheme.name} />
-                <div className="flex-1 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="font-medium">{scheme.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {schemeInfo.displayName}
-                      {scheme.scopes && scheme.scopes.length > 0 && (
-                        <> • {scheme.scopes.length} scope(s)</>
-                      )}
-                    </span>
-                  </div>
-                  {selectedScheme?.name === scheme.name && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setEditingScheme(isEditing ? null : scheme.name);
-                      }}
-                    >
-                      <LockKeyholeIcon size={14} />
-                      {credentialValue ? "Update" : "Configure"}
-                    </Button>
-                  )}
+                <Label
+                  htmlFor={scheme.name}
+                  className="cursor-pointer font-normal font-mono text-xs"
+                >
+                  {scheme.name}
+                </Label>
+                <div className="flex items-center gap-1 w-full">
+                  <Input
+                    type={isVisible ? "text" : "password"}
+                    placeholder={schemeInfo.credentialPlaceholder}
+                    value={credentialValue ?? ""}
+                    onChange={(e) =>
+                      handleCredentialChange(scheme.name, e.target.value)
+                    }
+                    className="w-full border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => toggleVisibility(scheme.name)}
+                    className="opacity-50 hover:opacity-100"
+                  >
+                    {isVisible ? (
+                      <EyeOffIcon size={14} />
+                    ) : (
+                      <EyeIcon size={14} />
+                    )}
+                  </Button>
                 </div>
-              </Label>
-
-              {selectedScheme?.name === scheme.name && isEditing && (
-                <div className="p-4 bg-muted/50 space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor={`credential-${scheme.name}`}>
-                      {schemeInfo.credentialLabel}
-                    </Label>
-                    <Input
-                      id={`credential-${scheme.name}`}
-                      type="password"
-                      placeholder={schemeInfo.credentialPlaceholder}
-                      value={credentialValue ?? ""}
-                      onChange={(e) =>
-                        handleCredentialChange(scheme.name, e.target.value)
-                      }
-                    />
-                  </div>
-
-                  {scheme.scopes && scheme.scopes.length > 0 && (
-                    <div className="space-y-1">
-                      <Label className="text-xs">Required Scopes:</Label>
-                      <div className="flex flex-wrap gap-1">
-                        {scheme.scopes.map((scope) => (
-                          <span
-                            key={scope}
-                            className="text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground font-mono"
-                          >
-                            {scope}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
+              </ParamsGridItem>
+            );
+          })}
+        </ParamsGrid>
       </RadioGroup>
     </div>
   );
