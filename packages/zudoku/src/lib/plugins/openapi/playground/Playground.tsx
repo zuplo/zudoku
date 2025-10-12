@@ -23,8 +23,17 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type {
+  MediaTypeObject,
+  SecurityRequirement,
+} from "../graphql/graphql.js";
+import {
+  type SecuritySchemeSelection,
+  useSecurityState,
+} from "../state/securityState.js";
 import { useSelectedServer } from "../state.js";
+import { applyAuth } from "../util/authHelpers.js";
+import { AuthorizationSelector } from "./AuthorizationSelector.js";
 import BodyPanel from "./BodyPanel.js";
 import {
   CollapsibleHeader,
@@ -121,6 +130,8 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  security?: SecurityRequirement[];
+  operationId?: string;
 };
 
 export const Playground = ({
@@ -136,6 +147,8 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  security = [],
+  operationId = "",
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -149,6 +162,17 @@ export const Playground = ({
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
   const formRef = useRef<HTMLFormElement>(null);
+  const [selectedAuth, setSelectedAuth] =
+    useState<SecuritySchemeSelection | null>(null);
+  const { getSelectedScheme } = useSecurityState();
+
+  // Load saved auth selection for this operation
+  useEffect(() => {
+    const saved = getSelectedScheme(operationId);
+    if (saved) {
+      setSelectedAuth(saved);
+    }
+  }, [operationId, getSelectedScheme]);
 
   const { label: hotkeyLabel } = useHotkey("meta+enter", () => {
     formRef.current?.requestSubmit();
@@ -228,14 +252,41 @@ export const Playground = ({
           .map((header) => [header.name, header.value]),
       ]);
 
-      const request = new Request(
-        createUrl(server ?? selectedServer, url, data),
-        {
-          method: method.toUpperCase(),
-          headers,
-          body: data.body ? data.body : undefined,
-        },
-      );
+      // Apply selected security scheme using centralized helper
+      const authApplication = applyAuth(selectedAuth, selectedAuth?.value);
+      if (authApplication?.headers) {
+        Object.assign(headers, authApplication.headers);
+      }
+
+      // Build URL with query params (including auth if needed)
+      let requestUrl = createUrl(server ?? selectedServer, url, data);
+      if (authApplication?.queryParams) {
+        const urlObj = new URL(requestUrl);
+        for (const [name, value] of Object.entries(
+          authApplication.queryParams,
+        )) {
+          urlObj.searchParams.set(name, value);
+        }
+        requestUrl = urlObj.toString();
+      }
+
+      const request = new Request(requestUrl, {
+        method: method.toUpperCase(),
+        headers,
+        body: data.body ? data.body : undefined,
+      });
+
+      // Apply cookies if needed
+      if (authApplication?.cookies) {
+        const cookies = Object.entries(authApplication.cookies)
+          .map(([name, value]) => `${name}=${value}`)
+          .join("; ");
+        const existingCookie = request.headers.get("Cookie");
+        request.headers.set(
+          "Cookie",
+          existingCookie ? `${existingCookie}; ${cookies}` : cookies,
+        );
+      }
 
       if (data.identity !== NO_IDENTITY) {
         await identities.data
@@ -465,7 +516,7 @@ export const Playground = ({
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} />
                     <CollapsibleHeader className="col-span-2">
-                      Authentication
+                      Authentication (Plugin)
                     </CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
@@ -473,6 +524,24 @@ export const Playground = ({
                       value={identity}
                       identities={identities.data ?? []}
                       setValue={(value) => setValue("identity", value)}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {security.length > 0 && (
+                <Collapsible defaultOpen>
+                  <CollapsibleHeaderTrigger>
+                    <IdCardLanyardIcon size={16} />
+                    <CollapsibleHeader className="col-span-2">
+                      Authorization
+                    </CollapsibleHeader>
+                  </CollapsibleHeaderTrigger>
+                  <CollapsibleContent className="CollapsibleContent">
+                    <AuthorizationSelector
+                      operationId={operationId}
+                      security={security}
+                      onAuthChange={setSelectedAuth}
                     />
                   </CollapsibleContent>
                 </Collapsible>

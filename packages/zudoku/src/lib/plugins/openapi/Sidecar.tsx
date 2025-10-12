@@ -19,7 +19,9 @@ import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
+import { useSecurityState } from "./state/securityState.js";
 import { useSelectedServer } from "./state.js";
+import { generateAuthHeader } from "./util/authHelpers.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
@@ -73,6 +75,12 @@ export const Sidecar = ({
   const selectedLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
+  // Get selected auth for this operation (using slug to match AuthorizationList)
+  // Use Zustand selector to reactively subscribe to changes
+  const selectedAuth = useSecurityState(
+    (state) => state.selectedSchemes[operation.slug],
+  );
+
   const requestBodyContent = operation.requestBody?.content;
 
   const transformedRequestBodyContent =
@@ -113,6 +121,9 @@ export const Sidecar = ({
           )
         : undefined);
 
+    // Generate auth header based on selected security scheme
+    const authHeader = generateAuthHeader(selectedAuth ?? null);
+
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
@@ -122,6 +133,7 @@ export const Sidecar = ({
             text: JSON.stringify(exampleBody, null, 2),
           }
         : { mimeType: "application/json" },
+      authHeader,
     });
 
     return getConverted(snippet, selectedLang);
@@ -131,6 +143,7 @@ export const Sidecar = ({
     operation,
     selectedServer,
     selectedLang,
+    selectedAuth,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
