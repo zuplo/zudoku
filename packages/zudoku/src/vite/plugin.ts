@@ -11,6 +11,7 @@ import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
 import viteDocsPlugin from "./plugin-docs.js";
 import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
+import viteLlmsPlugin from "./plugin-llms.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import { viteNavigationPlugin } from "./plugin-navigation.js";
 import viteRedirectPlugin from "./plugin-redirect.js";
@@ -35,6 +36,7 @@ export default function vitePlugin(): PluginOption {
     viteSearchPlugin(),
     viteAliasPlugin(),
     viteRedirectPlugin(),
+    viteLlmsPlugin(),
     vitePluginSsrCss({ entries: ["zudoku/app/entry.server.tsx"] }),
     viteThemePlugin(),
     tailwindcss(),

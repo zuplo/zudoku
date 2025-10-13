@@ -251,6 +251,36 @@ export const DocsConfigSchema = z.object({
     .optional(),
 });
 
+const LlmsConfigSchema = z
+  .object({
+    publishMarkdown: z
+      .boolean()
+      .default(true)
+      .describe(
+        "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
+      ),
+    llmsTxt: z
+      .boolean()
+      .default(true)
+      .describe(
+        "When enabled, generates an llms.txt file following the spec at https://llmstxt.org/. This file provides a summary with links to all documentation.",
+      ),
+    llmsTxtFull: z
+      .boolean()
+      .default(true)
+      .describe(
+        "When enabled, generates an llms-full.txt file with the complete content of all markdown documents for LLM consumption.",
+      ),
+    includeProtected: z
+      .boolean()
+      .default(false)
+      .describe(
+        "When enabled, includes content from protected routes in the generated .md files and llms.txt files. By default, protected routes are excluded.",
+      ),
+  })
+  .partial()
+  .default({});
+
 const Redirect = z.object({
   from: z.string(),
   to: z.string(),
@@ -523,6 +553,7 @@ const BaseConfigSchema = z.object({
   authentication: AuthenticationSchema,
   search: SearchSchema,
   docs: DocsConfigSchema.optional(),
+  llms: LlmsConfigSchema.optional(),
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
   catalogs: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,
@@ -543,6 +574,7 @@ export const ZudokuConfig = BaseConfigSchema.partial();
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
+export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
 
 // Use `z.input` type for flexibility with transforms,
