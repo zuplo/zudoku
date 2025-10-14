@@ -24,23 +24,25 @@ import {
 import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
 
+type EntryServerImport = typeof import("../app/entry.server.js");
+type DevServerOptions = {
+  dir: string;
+  ssr?: boolean;
+  open?: boolean;
+  argPort?: number;
+};
+
 const DEFAULT_DEV_PORT = 3000;
 
-type EntryServerImport = typeof import("../app/entry.server.js");
-
 export class DevServer {
-  private terminator: HttpTerminator | undefined;
-  public resolvedPort = 0;
-  public protocol = "http";
+  resolvedPort = 0;
+  protocol = "http";
+  #terminator: HttpTerminator | undefined;
+  #options: DevServerOptions;
 
-  constructor(
-    private options: {
-      dir: string;
-      ssr?: boolean;
-      open?: boolean;
-      argPort?: number;
-    },
-  ) {}
+  constructor(options: DevServerOptions) {
+    this.#options = options;
+  }
 
   private async createNodeServer(
     app: Express,
@@ -49,7 +51,7 @@ export class DevServer {
     if (!config.https) return http.createServer(app);
 
     this.protocol = "https";
-    const { dir } = this.options;
+    const { dir } = this.#options;
 
     const [key, cert, ca] = await Promise.all([
       fs.readFile(path.resolve(dir, config.https.key)),
@@ -68,13 +70,13 @@ export class DevServer {
     const configEnv: ZudokuConfigEnv = {
       mode: "development",
       command: "serve",
-      isSsrBuild: this.options.ssr,
+      isSsrBuild: this.#options.ssr,
     };
-    const viteConfig = await getViteConfig(this.options.dir, configEnv);
-    const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+    const viteConfig = await getViteConfig(this.#options.dir, configEnv);
+    const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
 
     this.resolvedPort = await findAvailablePort(
-      this.options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
+      this.#options.argPort ?? config.port ?? DEFAULT_DEV_PORT,
     );
 
     const server = await this.createNodeServer(app, config);
@@ -96,7 +98,7 @@ export class DevServer {
     );
 
     app.use(async (req, res, next) => {
-      const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+      const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
       const base = config.basePath;
       if (
         req.method.toLowerCase() === "get" &&
@@ -125,7 +127,7 @@ export class DevServer {
     app.use(vite.middlewares);
 
     printDiagnosticsToConsole(
-      `Server-side rendering ${this.options.ssr ? "enabled" : "disabled"}`,
+      `Server-side rendering ${this.#options.ssr ? "enabled" : "disabled"}`,
     );
 
     if (config.search?.type === "pagefind") {
@@ -151,14 +153,14 @@ export class DevServer {
       }
 
       try {
-        const { config } = await loadZudokuConfig(configEnv, this.options.dir);
+        const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
         const rawHtml = getDevHtml({
           jsEntry: "/__z/entry.client.tsx",
           dir: config.site?.dir,
         });
         const template = await vite.transformIndexHtml(url, rawHtml);
 
-        if (this.options.ssr) {
+        if (this.#options.ssr) {
           const server = await ssrEnvironment.runner.import<EntryServerImport>(
             getAppServerEntryPath(),
           );
@@ -188,10 +190,10 @@ export class DevServer {
       server.listen(this.resolvedPort, () => resolve());
     });
 
-    this.terminator = createHttpTerminator({ server });
+    this.#terminator = createHttpTerminator({ server });
 
     // Manually set resolved URLs on the Vite server since we're managing the HTTP server
-    if (this.options.open || process.env.ZUDOKU_OPEN_BROWSER) {
+    if (this.#options.open || process.env.ZUDOKU_OPEN_BROWSER) {
       const url = `${this.protocol}://localhost:${this.resolvedPort}`;
       vite.resolvedUrls = {
         local: [`${url}${vite.config.base || "/"}`],
@@ -204,6 +206,6 @@ export class DevServer {
   }
 
   async stop() {
-    await this.terminator?.terminate();
+    await this.#terminator?.terminate();
   }
 }
