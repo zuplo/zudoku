@@ -5,6 +5,7 @@
     "lib": ["esnext"],
     "strict": true,
     "moduleResolution": "bundler",
+    "erasableSyntaxOnly": true,
     "esModuleInterop": true,
     "noEmit": true,
     "resolveJsonModule": true

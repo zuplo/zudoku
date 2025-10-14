@@ -23,26 +23,27 @@ const throwIfError = (response: GraphQLResponse<unknown>) => {
 };
 
 export class GraphQLClient {
-  private readonly config: OpenApiPluginOptions;
+  #config: OpenApiPluginOptions;
+
   constructor(config: OpenApiPluginOptions) {
     if (config.schemaImports) {
       Object.assign(sharedSchemaImports, config.schemaImports);
     }
-    this.config = config;
+    this.#config = config;
   }
 
   #getLocalServer = async () => {
     if (!localServerPromise) {
       localServerPromise = import("./createServer.js").then((m) =>
-        m.createServer({ ...this.config, schemaImports: sharedSchemaImports }),
+        m.createServer({ ...this.#config, schemaImports: sharedSchemaImports }),
       );
     }
     return localServerPromise;
   };
 
   #executeFetch = async (init: RequestInit): Promise<Response> => {
-    if (this.config.server) {
-      return fetch(this.config.server, init);
+    if (this.#config.server) {
+      return fetch(this.#config.server, init);
     }
 
     const localServer = await this.#getLocalServer();
