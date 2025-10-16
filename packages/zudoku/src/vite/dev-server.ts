@@ -70,7 +70,6 @@ export class DevServer {
     const configEnv: ZudokuConfigEnv = {
       mode: "development",
       command: "serve",
-      isSsrBuild: this.#options.ssr,
     };
     const viteConfig = await getViteConfig(this.#options.dir, configEnv);
     const { config } = await loadZudokuConfig(configEnv, this.#options.dir);
