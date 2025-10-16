@@ -50,14 +50,25 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     processors,
   });
 
+  // Shared promise to ensure buildStart only processes schemas once across environments
+  let processingPromise: Promise<void> | null = null;
+
+  const processSchemas = async () => {
+    await fs.rm(tmpStoreDir, { recursive: true, force: true });
+    await fs.mkdir(tmpStoreDir, { recursive: true });
+    await schemaManager.processAllSchemas();
+  };
+
   return {
     name: "zudoku-api-plugins",
+    // Share this plugin instance across all environments during build
+    sharedDuringBuild: true,
     async buildStart() {
-      await fs.rm(tmpStoreDir, { recursive: true, force: true });
-      await fs.mkdir(tmpStoreDir, { recursive: true });
+      if (!processingPromise) {
+        processingPromise = processSchemas();
+      }
 
-      await schemaManager.processAllSchemas();
-
+      await processingPromise;
       schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
