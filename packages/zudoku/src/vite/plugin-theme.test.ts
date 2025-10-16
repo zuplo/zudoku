@@ -10,6 +10,7 @@ const callPluginLoad = async (plugin: Plugin, id: string) => {
   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.load!;
   const loadFn = typeof hook === "function" ? hook : hook.handler;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   return loadFn.call({} as any, id);
 };
 
@@ -17,6 +18,7 @@ const callPluginTransform = async (plugin: Plugin, src: string, id: string) => {
   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.transform!;
   const transformFn = typeof hook === "function" ? hook : hook.handler;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   return transformFn.call({} as any, src, id);
 };
 
