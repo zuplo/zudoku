@@ -56,6 +56,7 @@ type OperationItem {
   path: String!
   requestBody: RequestBodyObject
   responses: [ResponseItem!]!
+  security: [SecurityRequirement!]
   slug: String!
   summary: String
   tags: [TagItem!]
@@ -150,6 +151,11 @@ enum SchemaType {
   file
   raw
   url
+}
+
+type SecurityRequirement {
+  name: String!
+  scopes: [String!]!
 }
 
 type Server {
