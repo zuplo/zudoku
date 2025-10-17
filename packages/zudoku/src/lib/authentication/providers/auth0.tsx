@@ -25,7 +25,6 @@ class Auth0AuthenticationProvider
     url: URL,
     { isSignUp }: { isSignUp: boolean },
   ) => {
-    url.searchParams.set("prompt", "login");
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
     }
