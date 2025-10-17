@@ -285,7 +285,7 @@ export const Playground = ({
         return {
           status: response.status,
           headers: responseHeaders,
-          size: responseSize ? parseInt(responseSize) : body.length,
+          size: responseSize ? Number(responseSize) : body.length,
           body,
           time,
           isBinary,

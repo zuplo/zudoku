@@ -132,7 +132,6 @@ const Carousel = React.forwardRef<
           canScrollNext,
         }}
       >
-        {/** biome-ignore lint/a11y/useSemanticElements: shadcn uses divs for the carousel */}
         <div
           ref={ref}
           onKeyDownCapture={handleKeyDown}

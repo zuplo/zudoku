@@ -1,14 +1,14 @@
 const c2n = (c: string) =>
   Math.abs(
-    Number.isNaN(parseInt(c))
+    Number.isNaN(Number(c))
       ? c.toLowerCase().charCodeAt(0) - 96
-      : Number.isNaN(parseInt(c))
+      : Number.isNaN(Number(c))
         ? 0
-        : parseInt(c),
+        : Number(c),
   );
 const s2n = (s: string) =>
   s.length > 1
-    ? parseInt(s.split("").reduce((a, c) => `${c2n(a) + c2n(c)}`))
+    ? Number(s.split("").reduce((a, c) => `${c2n(a) + c2n(c)}`))
     : c2n(s);
 
 export const pastellize = (

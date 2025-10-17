@@ -7,6 +7,7 @@
   }
 }
 
-::selection::selection {
+::selection {
+  /* biome-ignore lint/complexity/noImportantStyles: Necessary */
   background: initial !important;
 }
