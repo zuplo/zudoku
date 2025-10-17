@@ -36,6 +36,9 @@ export type Auth0AuthenticationConfig = {
   domain: string;
   audience?: string;
   scopes?: string[];
+  options?: {
+    alwaysPromptLogin?: boolean;
+  };
 } & RedirectOptions;
 
 export type SupabaseAuthenticationConfig = {

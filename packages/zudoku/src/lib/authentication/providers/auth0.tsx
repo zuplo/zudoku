@@ -10,6 +10,7 @@ class Auth0AuthenticationProvider
   extends OpenIDAuthenticationProvider
   implements AuthenticationPlugin
 {
+  private readonly options: Auth0AuthenticationConfig["options"];
   constructor(config: Auth0AuthenticationConfig) {
     super({
       ...config,
@@ -19,21 +20,24 @@ class Auth0AuthenticationProvider
       audience: config.audience,
       scopes: config.scopes,
     });
+    this.options = config.options;
   }
 
   onAuthorizationUrl = async (
     url: URL,
     { isSignUp }: { isSignUp: boolean },
   ) => {
-    url.searchParams.set("prompt", "login");
+    if (this.options?.alwaysPromptLogin !== false) {
+      url.searchParams.set("prompt", "login");
+    }
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
     }
   };
 
   signOut = async (): Promise<void> => {
-    const as = await this.getAuthServer();
-    const idToken = await this.getAccessToken();
+    // const as = await this.getAuthServer();
+    // const idToken = await this.getAccessToken();
 
     useAuthState.setState({
       isAuthenticated: false,
@@ -52,23 +56,25 @@ class Auth0AuthenticationProvider
 
     // The endSessionEndpoint is set, the IdP supports some form of logout,
     // so we use the IdP logout. Otherwise, just redirect the user to home
-    if (as.end_session_endpoint) {
-      const logoutUrl = new URL(as.end_session_endpoint);
-      if (idToken) {
-        logoutUrl.searchParams.set("id_token_hint", idToken);
-      }
-      logoutUrl.searchParams.set(
-        "post_logout_redirect_uri",
-        redirectUrl.toString(),
-      );
-
-      // window.location.href = logoutUrl.toString();
-    } else {
-      const _logoutUrl = new URL(
-        `${this.issuer.replace(/\/$/, "")}/oidc/logout`,
-      );
-      // window.location.href = logoutUrl.toString();
-    }
+    // const logoutUrl = new URL(
+    //   as.end_session_endpoint ??
+    //     `${this.issuer.replace(/\/$/, "")}/oidc/logout`,
+    // );
+    // try {
+    //   await fetch(logoutUrl.toString(), {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       client_id: this.client.client_id,
+    //       post_logout_redirect_uri: redirectUrl.toString(),
+    //     }),
+    //   });
+    //   debugger;
+    // } catch (error) {
+    //   console.error(error);
+    // }
   };
 }
 
