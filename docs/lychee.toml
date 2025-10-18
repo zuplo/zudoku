@@ -30,10 +30,15 @@ exclude = [
   "https://docs.pingidentity.com/pingfederate/",
 
   "https://portal.azure.com/",
+  "github\\.com\\/([^#]+)#L\\d+(-L\\d+)?",
 
   # For some reason we see these false negatives:
   # > Network error: error sending request for url (https://shiki.style/themes) Maybe a certificate error?
   "https://shiki.style/",
+]
+
+exclude_path = [
+  "\\.(md|txt)$",
 ]
 
 # Headers to send with requests
