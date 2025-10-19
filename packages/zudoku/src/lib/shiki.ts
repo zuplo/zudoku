@@ -89,6 +89,15 @@ export const defaultLanguages: BundledLanguage[] = [
   "rust",
   "markdown",
   "mdx",
+  "zig",
+  "scala",
+  "dart",
+  "ocaml",
+  "c",
+  "cpp",
+  "common-lisp",
+  "elixir",
+  "powershell",
 ];
 
 const rehypeCodeBlockPlugin = () => (tree: Root) => {
