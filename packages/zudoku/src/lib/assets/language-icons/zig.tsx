@@ -5,19 +5,63 @@ const ZigIcon = (props: SVGProps<SVGSVGElement>) => (
     xmlns="http://www.w3.org/2000/svg"
     width="1em"
     height="1em"
-    fill="none"
-    viewBox="0 0 24 24"
+    viewBox="0 0 400 140"
     {...props}
   >
     <title>Zig</title>
-    <path
-      fill="#F7A41D"
-      d="M23.429 4.929c-.596-.596-1.544-.596-2.14 0L12 14.218 2.711 4.929c-.596-.596-1.544-.596-2.14 0-.596.596-.596 1.544 0 2.14L9.86 16.358c.298.298.69.447 1.07.447.38 0 .772-.149 1.07-.447l9.429-9.289c.596-.596.596-1.544 0-2.14z"
-    />
-    <path
-      fill="#F7A41D"
-      d="M23.429 19.071c.596-.596.596-1.544 0-2.14L14 7.642c-.298-.298-.69-.447-1.07-.447-.38 0-.772.149-1.07.447L2.431 16.931c-.596.596-.596 1.544 0 2.14.596.596 1.544.596 2.14 0L12 11.782l7.429 7.429c.596.596 1.544.596 2.14 0z"
-    />
+    <g fill="#F7A41D">
+      <g>
+        <polygon points="46,22 28,44 19,30" />
+        <polygon
+          points="46,22 33,33 28,44 22,44 22,95 31,95 20,100 12,117 0,117 0,22"
+          shapeRendering="crispEdges"
+        />
+        <polygon points="31,95 12,117 4,106" />
+      </g>
+      <g>
+        <polygon points="56,22 62,36 37,44" />
+        <polygon
+          points="56,22 111,22 111,44 37,44 56,32"
+          shapeRendering="crispEdges"
+        />
+        <polygon points="116,95 97,117 90,104" />
+        <polygon
+          points="116,95 100,104 97,117 42,117 42,95"
+          shapeRendering="crispEdges"
+        />
+        <polygon points="150,0 52,117 3,140 101,22" />
+      </g>
+      <g>
+        <polygon points="141,22 140,40 122,45" />
+        <polygon
+          points="153,22 153,117 106,117 120,105 125,95 131,95 131,45 122,45 132,36 141,22"
+          shapeRendering="crispEdges"
+        />
+        <polygon points="125,95 130,110 106,117" />
+      </g>
+    </g>
+    <g fill="#121212">
+      <g>
+        <polygon
+          points="260,22 260,37 229,40 177,40 177,22"
+          shapeRendering="crispEdges"
+        />
+        <polygon points="260,37 207,99 207,103 176,103 229,40 229,37" />
+        <polygon
+          points="261,99 261,117 176,117 176,103 206,99"
+          shapeRendering="crispEdges"
+        />
+      </g>
+      <rect x="272" y="22" shapeRendering="crispEdges" width="22" height="95" />
+      <g>
+        <polygon
+          points="394,67 394,106 376,106 376,81 360,70 346,67"
+          shapeRendering="crispEdges"
+        />
+        <polygon points="360,68 376,81 346,67" />
+        <path d="M394,106c-10.2,7.3-24,12-37.7,12c-29,0-51.1-20.8-51.1-48.3c0-27.3,22.5-48.1,52-48.1    c14.3,0,29.2,5.5,38.9,14l-13,15c-7.1-6.3-16.8-10-25.9-10c-17,0-30.2,12.9-30.2,29.5c0,16.8,13.3,29.6,30.3,29.6    c5.7,0,12.8-2.3,19-5.5L394,106z" />
+      </g>
+    </g>
   </svg>
 );
 
