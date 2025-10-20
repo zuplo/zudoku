@@ -17,16 +17,23 @@ All features are enabled by default.
 
 ## Configuration
 
+The `llms` configuration is nested under the `docs` configuration:
+
 ```tsx title="zudoku.config.tsx"
 export default {
-  llms: {
-    publishMarkdown: true, // Generate .md files
-    llmsTxt: true, // Generate llms.txt
-    llmsTxtFull: true, // Generate llms-full.txt
-    includeProtected: false, // Exclude protected routes
+  docs: {
+    files: "pages/**/*.{md,mdx}", // Your markdown files
+    llms: {
+      publishMarkdown: true, // Generate .md files
+      llmsTxt: true, // Generate llms.txt
+      llmsTxtFull: true, // Generate llms-full.txt
+      includeProtected: false, // Exclude protected routes
+    },
   },
 };
 ```
+
+All options are disabled by default.
 
 ### `publishMarkdown`
 
