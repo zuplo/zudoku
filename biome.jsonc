@@ -37,7 +37,8 @@
       "recommended": true,
       "suspicious": {
         "noConsole": "error",
-        "noConfusingVoidType": "off"
+        "noConfusingVoidType": "off",
+        "useIterableCallbackReturn": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
