@@ -31,6 +31,9 @@ export const getIssuer = async (config: ZudokuConfig) => {
     case "azureb2c": {
       return config.authentication.issuer;
     }
+    case "workos": {
+      return `https://${config.authentication.environment}.workos.com/`;
+    }
     case undefined: {
       return undefined;
     }

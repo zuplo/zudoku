@@ -368,6 +368,30 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
   }),
+  z.object({
+    type: z.literal("workos"),
+    clientId: z.string(),
+    environment: z.string().refine(
+      (val) => {
+        if (val.startsWith("http://") || val.startsWith("https://")) {
+          return false;
+        }
+        if (val.includes("/")) {
+          return false;
+        }
+        return val.length > 0;
+      },
+      {
+        message:
+          "Environment must be a host prefix (e.g., 'workos-staging', 'my-company') without protocol or slashes",
+      },
+    ),
+    audience: z.string().optional(),
+    scopes: z.array(z.string()).optional(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
 ]);
 
 const MetadataSchema = z
