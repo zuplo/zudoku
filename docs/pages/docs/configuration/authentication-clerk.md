@@ -83,13 +83,6 @@ that provides 10,000 monthly active users.
    ```bash
    npm install @clerk/clerk-js
    ```
-
-   Or if you're using pnpm:
-
-   ```bash
-   pnpm add @clerk/clerk-js
-   ```
-
 </Stepper>
 
 ## Troubleshooting
