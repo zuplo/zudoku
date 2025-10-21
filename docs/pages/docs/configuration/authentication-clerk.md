@@ -76,6 +76,20 @@ that provides 10,000 monthly active users.
      - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
      - Local Development: `http://localhost:3000/oauth/callback`
 
+5. **Install Clerk Dependencies**
+
+   Add `@clerk/clerk-js` to your project dependencies:
+
+   ```bash
+   npm install @clerk/clerk-js
+   ```
+
+   Or if you're using pnpm:
+
+   ```bash
+   pnpm add @clerk/clerk-js
+   ```
+
 </Stepper>
 
 ## Troubleshooting
@@ -90,6 +104,8 @@ that provides 10,000 monthly active users.
 
 3. **Redirect Issues**: Check that your domain is added to the allowed redirect URLs in Clerk if
    using custom redirects.
+
+4. **ReferenceError: can't access lexical declaration 'xxx' before initialization**: Make sure you have installed Clerk to your project.
 
 ## Next Steps
 
