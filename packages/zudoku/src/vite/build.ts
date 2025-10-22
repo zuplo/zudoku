@@ -27,10 +27,8 @@ export async function runBuild(options: { dir: string }) {
   invariant(builder.environments.client, "Client environment is missing");
   invariant(builder.environments.ssr, "SSR environment is missing");
 
-  const [clientResult, serverResult] = await Promise.all([
-    builder.build(builder.environments.client),
-    builder.build(builder.environments.ssr),
-  ]);
+  const clientResult = await builder.build(builder.environments.client);
+  const serverResult = await builder.build(builder.environments.ssr);
 
   invariant(
     clientResult && !Array.isArray(clientResult),
