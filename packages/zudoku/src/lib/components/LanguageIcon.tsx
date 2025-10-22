@@ -120,12 +120,12 @@ const Languages: Record<string, Language> = {
   zig: {
     pattern: /^zig$/,
     icon: lazy(() => import("../assets/language-icons/zig.js")),
-    width: 20,
+    width: 28,
   },
   scala: {
     pattern: /^scala$/,
     icon: lazy(() => import("../assets/language-icons/scala.js")),
-    width: 20,
+    width: 18,
   },
   dart: {
     pattern: /^dart$/,
@@ -148,19 +148,19 @@ const Languages: Record<string, Language> = {
     width: 20,
   },
   commonlisp: {
-    pattern: /^(clisp|commonlisp|lisp)$/,
+    pattern: /^(clisp|common-lisp|lisp|cl|commonlisp)$/,
     icon: lazy(() => import("../assets/language-icons/commonlisp.js")),
-    width: 20,
+    width: 18,
   },
   elixir: {
     pattern: /^elixir$/,
     icon: lazy(() => import("../assets/language-icons/elixir.js")),
-    width: 20,
+    width: 18,
   },
   powershell: {
     pattern: /^(pshell|powershell|ps1)$/,
     icon: lazy(() => import("../assets/language-icons/powershell.js")),
-    width: 20,
+    width: 18,
   },
 };
 
