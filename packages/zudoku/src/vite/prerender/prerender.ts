@@ -173,5 +173,26 @@ export const prerender = async ({
     baseOutputDir: distDir,
   });
 
+  // Generate llms.txt files if markdown export is enabled
+  if (config.docs) {
+    const { DocsConfigSchema } = await import(
+      "../../config/validators/validate.js"
+    );
+    const { generateLlmsTxtFiles } = await import("../llms.js");
+
+    const llmsConfig = DocsConfigSchema.parse(config.docs).llms ?? {};
+
+    if (llmsConfig.llmsTxt || llmsConfig.llmsTxtFull) {
+      await generateLlmsTxtFiles({
+        basePath: config.basePath,
+        outputUrls: paths,
+        baseOutputDir: distDir,
+        siteName: config.site?.title,
+        llmsConfig,
+        workerResults,
+      });
+    }
+  }
+
   return workerResults;
 };
