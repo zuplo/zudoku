@@ -407,3 +407,197 @@ struct User: Codable {
   </modules>
 </configuration>
 ```
+
+### C
+
+```c title="hello.c"
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct {
+    int id;
+    char name[50];
+} User;
+
+int main() {
+    User user = {1, "Alice"};
+    printf("User: %s (ID: %d)\n", user.name, user.id);
+    return 0;
+}
+```
+
+### C++
+
+```cpp title="user.cpp"
+#include <iostream>
+#include <string>
+#include <vector>
+
+class User {
+private:
+    int id;
+    std::string name;
+
+public:
+    User(int id, std::string name) : id(id), name(name) {}
+
+    void display() const {
+        std::cout << "User: " << name << " (ID: " << id << ")" << std::endl;
+    }
+};
+
+int main() {
+    User user(1, "Alice");
+    user.display();
+    return 0;
+}
+```
+
+### Zig
+
+```zig title="main.zig"
+const std = @import("std");
+
+const User = struct {
+    id: u32,
+    name: []const u8,
+
+    pub fn display(self: User) void {
+        std.debug.print("User: {s} (ID: {})\n", .{ self.name, self.id });
+    }
+};
+
+pub fn main() !void {
+    const user = User{ .id = 1, .name = "Alice" };
+    user.display();
+}
+```
+
+### Scala
+
+```scala title="User.scala"
+case class User(id: Int, name: String, email: String)
+
+object UserRepository {
+  private var users = List[User]()
+
+  def addUser(user: User): Unit = {
+    users = user :: users
+  }
+
+  def findById(id: Int): Option[User] = {
+    users.find(_.id == id)
+  }
+}
+```
+
+### Dart
+
+```dart title="user.dart"
+class User {
+  final int id;
+  final String name;
+  final String email;
+
+  User({required this.id, required this.name, required this.email});
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'email': email,
+  };
+}
+```
+
+### Elixir
+
+```elixir title="user.ex"
+defmodule User do
+  defstruct [:id, :name, :email]
+
+  def new(id, name, email) do
+    %User{id: id, name: name, email: email}
+  end
+
+  def display(%User{name: name, id: id}) do
+    IO.puts("User: #{name} (ID: #{id})")
+  end
+end
+
+# Usage
+user = User.new(1, "Alice", "alice@example.com")
+User.display(user)
+```
+
+### OCaml
+
+```ocaml title="user.ml"
+type user = {
+  id : int;
+  name : string;
+  email : string;
+}
+
+let create_user id name email =
+  { id; name; email }
+
+let display_user user =
+  Printf.printf "User: %s (ID: %d)\n" user.name user.id
+
+let () =
+  let user = create_user 1 "Alice" "alice@example.com" in
+  display_user user
+```
+
+### Common Lisp
+
+```lisp title="user.lisp"
+(defstruct user
+  id
+  name
+  email)
+
+(defun create-user (id name email)
+  (make-user :id id :name name :email email))
+
+(defun display-user (user)
+  (format t "User: ~A (ID: ~A)~%"
+          (user-name user)
+          (user-id user)))
+
+;; Usage
+(let ((user (create-user 1 "Alice" "alice@example.com")))
+  (display-user user))
+```
+
+### PowerShell
+
+```powershell title="user.ps1"
+class User {
+    [int]$Id
+    [string]$Name
+    [string]$Email
+
+    User([int]$id, [string]$name, [string]$email) {
+        $this.Id = $id
+        $this.Name = $name
+        $this.Email = $email
+    }
+
+    [void]Display() {
+        Write-Host "User: $($this.Name) (ID: $($this.Id))"
+    }
+}
+
+# Usage
+$user = [User]::new(1, "Alice", "alice@example.com")
+$user.Display()
+```

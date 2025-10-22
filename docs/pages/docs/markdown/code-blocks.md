@@ -153,17 +153,24 @@ By default, Zudoku supports the following languages for syntax highlighting:
 - React - `jsx`, `tsx`, `react`
 - Markdown - `markdown`, `md`, `mdx`
 - Data formats - `json`, `jsonc`, `yaml`, `toml`
-- Shell - `bash`, `sh`, `shell`, `zsh`
+- Shell - `bash`, `sh`, `shell`, `zsh`, `powershell`
 - Terminal - `terminal`, `term`
 - Python - `python`, `py`
 - Rust - `rust`, `rs`
+- C/C++ - `c`, `cpp`
+- Zig - `zig`
 - PHP - `php`
 - Ruby - `ruby`, `rb`
 - Swift - `swift`
 - Kotlin - `kotlin`, `kt`
+- Scala - `scala`
 - C# - `csharp`, `cs`, `vb`
 - Go - `go`
 - Objective-C - `objectivec`, `objc`
+- Dart - `dart`
+- Elixir - `elixir`
+- OCaml - `ocaml`
+- Common Lisp - `common-lisp`
 - GraphQL - `graphql`, `gql`
 
 ## ANSI Code Blocks
