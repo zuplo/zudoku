@@ -28,7 +28,7 @@ export const useApiIdentities = () => {
   const { invalidateCache } = useCache();
 
   useEffect(() => {
-    if (isAuthenticated) {
+    if (!isAuthenticated) {
       invalidateCache("API_IDENTITIES");
     }
   }, [isAuthenticated, invalidateCache]);
