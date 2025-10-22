@@ -5,7 +5,7 @@ pre-commit:
   commands:
     biome:
       glob: "**/*.{ts,tsx,json,js,jsx,css,html}"
-      run: pnpm biome check --write {staged_files}
+      run: pnpm biome check --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
     prettier:
       glob: "**/*.{md,mdx,yml,yaml}"
