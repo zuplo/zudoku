@@ -237,7 +237,7 @@
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "embla-carousel-react": "8.6.0",
-    "estree-util-value-to-estree": "3.4.0",
+    "estree-util-value-to-estree": "3.4.1",
     "express": "5.1.0",
     "fast-equals": "5.2.2",
     "glob": "11.0.3",
