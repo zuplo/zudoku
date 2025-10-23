@@ -71,8 +71,8 @@ importers:
   docs:
     dependencies:
       '@joshwooding/vite-plugin-react-docgen-typescript':
-        specifier: ^0.6.0
-        version: 0.6.1(typescript@5.9.3)(vite@6.3.5(@types/node@24.8.0)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.4)(yaml@2.8.1))
+        specifier: ^0.6.2
+        version: 0.6.2(typescript@5.9.3)(vite@6.3.5(@types/node@24.8.0)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.4)(yaml@2.8.1))
       motion:
         specifier: 12.23.12
         version: 12.23.12(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -2174,8 +2174,8 @@ packages:
     resolution: {integrity: sha512-DmdYgtezMkh3cpU8/1uyXakv3tJRcmcXxBOcO0tbaozPwpmh4YMsnWrQm9ZmZMfa5ocbxzbFk6O4bDPEc/iAnA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
 
-  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.1':
-    resolution: {integrity: sha512-J4BaTocTOYFkMHIra1JDWrMWpNmBl4EkplIwHEsV8aeUOtdWjwSnln9U7twjMFTAEB7mptNtSKyVi1Y2W9sDJw==}
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.2':
+    resolution: {integrity: sha512-QsQrpmROMwdJGPPaaWfG5lvfd+nhprqq258phge/1LqdNd3RsqmUaP694nhLC9G1nDfu0ngL3OLKoGVHvkIyCw==}
     peerDependencies:
       typescript: '>= 4.3.x'
       vite: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
@@ -9442,10 +9442,9 @@ snapshots:
     dependencies:
       '@sinclair/typebox': 0.34.41
 
-  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.1(typescript@5.9.3)(vite@6.3.5(@types/node@24.8.0)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.4)(yaml@2.8.1))':
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.6.2(typescript@5.9.3)(vite@6.3.5(@types/node@24.8.0)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.4)(yaml@2.8.1))':
     dependencies:
       glob: 10.4.5
-      magic-string: 0.30.17
       react-docgen-typescript: 2.4.0(typescript@5.9.3)
       vite: 6.3.5(@types/node@24.8.0)(jiti@2.6.1)(lightningcss@1.30.1)(tsx@4.20.4)(yaml@2.8.1)
     optionalDependencies:
