@@ -276,7 +276,7 @@
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.1",
     "remark-mdx-frontmatter": "5.2.0",
-    "rollup": "4.46.1",
+    "rollup": "4.52.5",
     "semver": "7.7.2",
     "shiki": "3.13.0",
     "sitemap": "8.0.0",
