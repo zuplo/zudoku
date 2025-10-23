@@ -45,14 +45,14 @@ export class SchemaManager {
     this.storeDir = storeDir;
     this.config = config;
     this.processors = [
-      ({ schema }) => upgrade(schema).specification,
+      ({ schema }) => upgrade(schema).specification as OpenAPIDocument,
       ({ schema, file }) => {
         try {
           return mergeAllOf(schema, {
             onMergeError: (message, path) => {
               throw new Error(`${message} at '${path.join(".")}'`);
             },
-          });
+          }) as OpenAPIDocument;
         } catch (error) {
           // biome-ignore lint/suspicious/noConsole: Logging allowed here
           console.warn(
