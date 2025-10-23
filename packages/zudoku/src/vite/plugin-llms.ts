@@ -6,10 +6,6 @@ import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import {
-  DocsConfigSchema,
-  type ZudokuLlmsConfig,
-} from "../config/validators/validate.js";
-import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
 } from "./plugin-docs.js";
@@ -22,6 +18,25 @@ type MarkdownFileInfo = {
   content: string;
 };
 
+const processMarkdownFile = async (
+  filePath: string,
+): Promise<{ content: string; title?: string; description?: string }> => {
+  const fileContent = await readFile(filePath, "utf-8");
+  const { content: markdownContent, data: frontmatter } = matter(fileContent);
+
+  let finalMarkdown = markdownContent;
+  if (frontmatter.title) {
+    // Add title as H1 at the beginning, matching the behavior in MdxPage.tsx
+    finalMarkdown = `# ${frontmatter.title}\n${markdownContent}`;
+  }
+
+  return {
+    content: finalMarkdown,
+    title: frontmatter.title,
+    description: frontmatter.description,
+  };
+};
+
 /**
  * This plugin generates .md files for each document during the build process.
  * When you access a document like /foo/hello, you can add .md to the url
@@ -32,33 +47,24 @@ type MarkdownFileInfo = {
 const viteLlmsPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
   let markdownFileInfos: MarkdownFileInfo[] = [];
-  let llmsConfig: ZudokuLlmsConfig | undefined;
 
   return {
     name: "zudoku-llms-plugin",
     async buildStart() {
       const config = getCurrentConfig();
+      const llmsConfig = config.docs?.llms;
 
-      if (config.__meta.mode === "standalone" || !config.docs) {
+      if (config.__meta.mode === "standalone" || !llmsConfig?.publishMarkdown) {
         return;
       }
 
-      // Parse docs config to get llms config with defaults
-      llmsConfig = DocsConfigSchema.parse(config.docs).llms;
-
-      // Skip if publishMarkdown is disabled
-      if (llmsConfig?.publishMarkdown === false) {
-        return;
-      }
-
-      // Glob markdown files and resolve custom navigation paths
       markdownFiles = await resolveCustomNavigationPaths(
         config,
         await globMarkdownFiles(config, { absolute: true }),
       );
 
       // Filter out protected routes unless includeProtected is true
-      if (llmsConfig && !llmsConfig.includeProtected) {
+      if (!llmsConfig?.includeProtected) {
         const protectedRoutes = ProtectedRoutesSchema.parse(
           config.protectedRoutes,
         );
@@ -78,14 +84,40 @@ const viteLlmsPlugin = (): Plugin => {
         }
       }
     },
+    configureServer(server) {
+      const config = getCurrentConfig();
+
+      if (!config.docs?.llms?.publishMarkdown) return;
+
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== "GET" || !req.url?.endsWith(".md")) {
+          return next();
+        }
+
+        const basePath = config.basePath ?? "";
+        const routePath = req.url.slice(basePath.length).slice(0, -3);
+        const filePath = markdownFiles[routePath];
+
+        if (!filePath) return next();
+
+        try {
+          const { content } = await processMarkdownFile(filePath);
+          res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+          res.end(content);
+        } catch (error) {
+          // biome-ignore lint/suspicious/noConsole: Logging allowed here
+          console.warn(`Failed to serve markdown for ${routePath}:`, error);
+          return next();
+        }
+      });
+    },
     async closeBundle() {
       const config = getCurrentConfig();
 
       if (
         process.env.NODE_ENV !== "production" ||
         Object.keys(markdownFiles).length === 0 ||
-        !llmsConfig ||
-        llmsConfig.publishMarkdown === false
+        !config.docs?.llms?.publishMarkdown
       ) {
         return;
       }
@@ -101,26 +133,18 @@ const viteLlmsPlugin = (): Plugin => {
 
       for (const [routePath, filePath] of Object.entries(markdownFiles)) {
         try {
-          // Read the original markdown file
-          const content = await readFile(filePath, "utf-8");
-
-          // Parse and remove frontmatter
-          const { content: markdownContent, data: frontmatter } =
-            matter(content);
-
-          // Build the final markdown with title from frontmatter if present
-          let finalMarkdown = markdownContent;
-          if (frontmatter.title) {
-            // Add title as H1 at the beginning, matching the behavior in MdxPage.tsx
-            finalMarkdown = `# ${frontmatter.title}\n${markdownContent}`;
-          }
+          const {
+            content: finalMarkdown,
+            title,
+            description,
+          } = await processMarkdownFile(filePath);
 
           // Store info for llms.txt generation
           markdownFileInfos.push({
             filePath,
             routePath,
-            title: frontmatter.title,
-            description: frontmatter.description,
+            title,
+            description,
             content: finalMarkdown,
           });
 
@@ -142,11 +166,15 @@ const viteLlmsPlugin = (): Plugin => {
 
       // Store markdown file infos and config for llms.txt generation
       // This will be used by the prerender process
-      if (llmsConfig.llmsTxt !== false || llmsConfig.llmsTxtFull !== false) {
+      if (config.docs.llms?.llmsTxt || config.docs.llms?.llmsTxtFull) {
         const markdownInfoPath = path.join(distDir, ".markdown-info.json");
         await writeFile(
           markdownInfoPath,
-          JSON.stringify({ markdownFileInfos, llmsConfig }, null, 2),
+          JSON.stringify(
+            { markdownFileInfos, llmsConfig: config.docs.llms },
+            null,
+            2,
+          ),
           "utf-8",
         );
       }
