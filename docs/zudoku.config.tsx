@@ -49,6 +49,7 @@ const config: ZudokuConfig = {
   },
   docs: {
     defaultOptions: {
+      copyPage: true,
       showLastModified: true,
       suggestEdit: {
         text: "Edit this page",
