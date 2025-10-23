@@ -24,6 +24,6 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*",
-    "@clerk/clerk-js": "^5.90.0"
+    "@clerk/clerk-js": "^5.102.1"
   }
 }
