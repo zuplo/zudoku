@@ -267,6 +267,7 @@ export const DocsConfigSchema = z.object({
   defaultOptions: z
     .object({
       toc: z.boolean(),
+      copyPage: z.boolean().optional(),
       disablePager: z.boolean(),
       showLastModified: z.boolean(),
       suggestEdit: z
