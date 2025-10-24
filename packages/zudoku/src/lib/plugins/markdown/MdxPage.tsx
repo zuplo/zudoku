@@ -151,11 +151,7 @@ export const MdxPage = ({
             <div className="flex-1">
               {category && <CategoryHeading>{category}</CategoryHeading>}
               {title && (
-                <Heading
-                  level={1}
-                  id={slugify(title)}
-                  className="block items-baseline"
-                >
+                <Heading level={1} id={slugify(title)}>
                   {title}
                 </Heading>
               )}
@@ -166,12 +162,12 @@ export const MdxPage = ({
                   variant="ghost"
                   size="sm"
                   onClick={handleCopyMarkdown}
-                  className="rounded-r-none border-r gap-2"
+                  className="rounded-r-none border-r gap-2 h-7"
                 >
                   {isCopied ? (
-                    <CheckIcon className="h-3.5 w-3.5 text-emerald-600" />
+                    <CheckIcon size={14} className="text-emerald-600" />
                   ) : (
-                    <CopyIcon className="h-3.5 w-3.5" />
+                    <CopyIcon size={14} />
                   )}
                   <span className="">Copy page</span>
                 </Button>
@@ -180,9 +176,9 @@ export const MdxPage = ({
                     <Button
                       variant="ghost"
                       size="icon-xs"
-                      className="rounded-l-none h-8"
+                      className="rounded-l-none"
                     >
-                      <ChevronDownIcon className="h-3.5 w-3.5" />
+                      <ChevronDownIcon size={14} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -241,6 +237,7 @@ export const MdxPage = ({
             )}
           </header>
         )}
+
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}
         />
