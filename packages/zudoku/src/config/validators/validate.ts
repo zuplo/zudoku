@@ -11,7 +11,10 @@ import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
-import type { TransformExamplesFn } from "../../lib/plugins/openapi/interfaces.js";
+import type {
+  GenerateCodeSnippetFn,
+  TransformExamplesFn,
+} from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
@@ -49,15 +52,24 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
+const LanguageOption = z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+});
+
 const ApiOptionsSchema = z
   .object({
     examplesLanguage: z.string(),
+    supportedLanguages: z.array(LanguageOption),
     disablePlayground: z.boolean(),
     disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     expandApiInformation: z.boolean(),
     transformExamples: z.custom<TransformExamplesFn>(
+      (val) => typeof val === "function",
+    ),
+    generateCodeSnippet: z.custom<GenerateCodeSnippetFn>(
       (val) => typeof val === "function",
     ),
   })

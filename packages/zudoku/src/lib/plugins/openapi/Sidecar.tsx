@@ -124,13 +124,15 @@ export const Sidecar = ({
         : { mimeType: "application/json" },
     });
 
-    return getConverted(snippet, selectedLang);
+    const converted = options?.generateCodeSnippet?.(snippet, selectedLang);
+    return converted ? converted : getConverted(snippet, selectedLang);
   }, [
     selectedExample,
     transformedRequestBodyContent,
     operation,
     selectedServer,
     selectedLang,
+    options,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
@@ -141,6 +143,11 @@ export const Sidecar = ({
       (operation.extensions["x-explorer-enabled"] === undefined &&
         operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
+
+  let supportedLanguages = EXAMPLE_LANGUAGES;
+  if (options?.supportedLanguages) {
+    supportedLanguages = options?.supportedLanguages;
+  }
 
   return (
     <aside
@@ -192,7 +199,7 @@ export const Sidecar = ({
                     });
                   });
                 }}
-                options={EXAMPLE_LANGUAGES}
+                options={supportedLanguages}
               />
             </SidecarBox.Footer>
           </>
