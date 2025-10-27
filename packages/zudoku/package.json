@@ -228,7 +228,7 @@
     "@tanstack/react-query": "5.85.5",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "5.0.4",
+    "@vitejs/plugin-react": "5.1.0",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
     "@zuplo/mcp": "^0.0.22",
