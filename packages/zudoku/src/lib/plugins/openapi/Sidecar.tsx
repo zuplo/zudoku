@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
@@ -10,7 +9,6 @@ import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
-import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
@@ -58,10 +56,8 @@ export const Sidecar = ({
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
 }) => {
-  const { input, type, options } = useOasConfig();
+  const { options } = useOasConfig();
   const auth = useAuthState();
-  const query = useCreateQuery(GetServerQuery, { input, type });
-  const result = useSuspenseQuery(query);
   const context = useZudoku();
 
   const methodTextColor = methodForColor(operation.method);
@@ -102,7 +98,8 @@ export const Sidecar = ({
     />
   );
 
-  const { selectedServer } = useSelectedServer(result.data.schema.servers);
+  // Use operation-level servers (which already includes path-level and global fallback from GraphQL resolver)
+  const { selectedServer } = useSelectedServer(operation.servers);
 
   const code = useMemo(() => {
     const exampleBody =
@@ -159,7 +156,7 @@ export const Sidecar = ({
           </span>
           {showPlayground && (
             <PlaygroundDialogWrapper
-              servers={result.data.schema.servers.map((server) => server.url)}
+              servers={operation.servers.map((server) => server.url)}
               operation={operation}
               examples={requestBodyContent ?? undefined}
             />

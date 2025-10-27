@@ -192,11 +192,21 @@ export const getAllOperations = (
         ...operationParameters,
       ];
 
+      // servers follow the OpenAPI 3.0 resolution hierarchy:
+      // 1. Operation-level servers (highest precedence)
+      // 2. Path-level servers
+      // 3. Global servers (handled at query time, lowest precedence)
+      const pathServers = value.servers ?? [];
+      const operationServers = operation.servers ?? [];
+      const servers =
+        operationServers.length > 0 ? operationServers : pathServers;
+
       return {
         ...operation,
         method,
         path,
         parameters,
+        servers,
         tags: operation.tags ?? [],
       } satisfies GraphQLOperationObject;
     }),
@@ -439,6 +449,15 @@ const OperationItem = builder
       parameters: t.expose("parameters", {
         type: [ParameterItem],
         nullable: true,
+      }),
+      servers: t.field({
+        type: [ServerItem],
+        resolve: (parent, _, ctx) => {
+          // Return operation/path-level servers if defined, otherwise fall back to global servers
+          return parent.servers && parent.servers.length > 0
+            ? parent.servers
+            : (ctx.schema.servers ?? []);
+        },
       }),
       requestBody: t.field({
         type: RequestBodyObject,

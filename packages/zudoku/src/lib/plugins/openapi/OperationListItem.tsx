@@ -22,10 +22,10 @@ export type ParameterGroup = (typeof PARAM_GROUPS)[number];
 
 export const OperationListItem = ({
   operationFragment,
-  serverUrl,
+  globalSelectedServer,
 }: {
   operationFragment: FragmentType<typeof OperationsFragment>;
-  serverUrl?: string;
+  globalSelectedServer?: string;
 }) => {
   const operation = useFragment(OperationsFragment, operationFragment);
   const groupedParameters = groupBy(
@@ -33,6 +33,14 @@ export const OperationListItem = ({
     (param) => param.in,
   );
   const { options } = useOasConfig();
+
+  // Smart server selection: use global selection if it's valid for this operation,
+  // otherwise use operation's default server (which already has the hierarchy: operation > path > global)
+  const displayServerUrl =
+    globalSelectedServer &&
+    operation.servers.some((s) => s.url === globalSelectedServer)
+      ? globalSelectedServer
+      : operation.servers.at(0)?.url;
 
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
@@ -66,9 +74,9 @@ export const OperationListItem = ({
               {operation.method.toUpperCase()}
             </span>
             <SelectOnClick className="max-w-full truncate flex cursor-pointer">
-              {serverUrl && (
+              {displayServerUrl && (
                 <div className="text-neutral-400 dark:text-neutral-500 truncate">
-                  {serverUrl.replace(/\/$/, "")}
+                  {displayServerUrl.replace(/\/$/, "")}
                 </div>
               )}
               <div className="text-neutral-900 dark:text-neutral-200">
@@ -81,7 +89,7 @@ export const OperationListItem = ({
         {isMCPEndpoint ? (
           <div className="col-span-full">
             <MCPEndpoint
-              serverUrl={serverUrl}
+              serverUrl={displayServerUrl}
               summary={operation.summary ?? undefined}
               data={operation.extensions?.["x-mcp-server"]}
             />
