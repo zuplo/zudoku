@@ -17,7 +17,6 @@ import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
-import { useSelectedServer } from "./state.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
@@ -102,7 +101,8 @@ export const Sidecar = ({
 
   // Manual server selection takes precedence over the server hierarchy.
   // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
-  const selectedServer = globalSelectedServer || operation.servers.at(0)?.url || "";
+  const selectedServer =
+    globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const code = useMemo(() => {
     const exampleBody =
