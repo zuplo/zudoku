@@ -95,7 +95,7 @@ const viteLlmsPlugin = (): Plugin => {
         }
 
         const basePath = config.basePath ?? "";
-        const routePath = req.url.slice(basePath.length).slice(0, -3);
+        const routePath = req.url.slice(basePath.length).replace(/\.md$/, '');
         const filePath = markdownFiles[routePath];
 
         if (!filePath) return next();

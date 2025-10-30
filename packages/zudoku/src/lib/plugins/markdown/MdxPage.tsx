@@ -169,7 +169,7 @@ export const MdxPage = ({
                   ) : (
                     <CopyIcon size={14} />
                   )}
-                  <span className="">Copy page</span>
+                  <span>Copy page</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
