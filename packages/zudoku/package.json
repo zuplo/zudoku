@@ -244,7 +244,7 @@
     "glob-parent": "6.0.2",
     "graphql": "16.11.0",
     "graphql-type-json": "0.3.2",
-    "graphql-yoga": "5.15.1",
+    "graphql-yoga": "5.16.0",
     "gray-matter": "4.0.3",
     "hast-util-to-jsx-runtime": "^2.3.6",
     "hast-util-to-string": "3.0.1",
