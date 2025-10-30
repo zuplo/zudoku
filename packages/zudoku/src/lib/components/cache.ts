@@ -1,17 +1,21 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
 export const CACHE_KEYS = Object.freeze({
   API_IDENTITIES: ["api-identities"],
 });
 
+type CacheKey = keyof typeof CACHE_KEYS;
+
 export const useCache = () => {
   const queryClient = useQueryClient();
+  const invalidateCache = useCallback(
+    (key: CacheKey) =>
+      queryClient.invalidateQueries({ queryKey: CACHE_KEYS[key] }),
+    [queryClient],
+  );
 
-  return {
-    invalidateCache: async (key: keyof typeof CACHE_KEYS) => {
-      await queryClient.invalidateQueries({ queryKey: CACHE_KEYS[key] });
-    },
-  };
+  return { invalidateCache };
 };
 
 /**
