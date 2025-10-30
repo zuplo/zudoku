@@ -3,17 +3,6 @@ title: Server Side
 zuplo: false
 ---
 
-# Server-Side Rendering
-
-SSR mode validates authentication on the server before rendering pages. Use this when your docs
-contain sensitive information.
-
-**The problem with static sites**: All HTML is pre-generated and accessible to anyone. Client-side
-auth can be bypassed by directly accessing files.
-
-**The SSR solution**: Pages are rendered on-demand after validating JWT tokens on the server.
-Unauthorized users get a 401, not your docs.
-
 ## Quick Start
 
 ### 1. Enable SSR
@@ -33,20 +22,7 @@ export default {
 
 ### 2. Configure Auth
 
-In `zudoku.config.tsx`:
-
-```typescript
-import type { ZudokuConfig } from "zudoku";
-
-export default {
-  authentication: {
-    type: "openid",
-    clientId: "your-client-id",
-    issuer: "https://your-auth-server.com",
-  },
-  protectedRoutes: ["/docs/*"],
-};
-```
+- Set up [authentication](./configuration/authentication.md)
 
 ### 3. Build and Run
 
@@ -85,7 +61,7 @@ Install the client SDK:
 npm install @supabase/supabase-js
 ```
 
-## Authentication Flow
+## Authentication Flow Example
 
 1. User requests `/docs/private`
 2. Server extracts JWT from `Authorization: Bearer <token>` header or auth cookies
