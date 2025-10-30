@@ -23,6 +23,13 @@ export const BuildConfigSchema = z.object({
   remarkPlugins: z.custom<MdxOptions["remarkPlugins"]>().optional(),
   rehypePlugins: z.custom<MdxOptions["rehypePlugins"]>().optional(),
   prerender: z.object({ workers: z.number().optional() }).optional(),
+  ssr: z
+    .object({
+      enabled: z.boolean().default(false),
+      port: z.number().default(3001).optional(),
+      host: z.string().default("0.0.0.0").optional(),
+    })
+    .optional(),
 });
 
 export const getBuildConfig = async () => {

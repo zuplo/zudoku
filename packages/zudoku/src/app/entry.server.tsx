@@ -24,6 +24,7 @@ export const render = async ({
   routes,
   basePath,
   bypassProtection,
+  authState,
 }: {
   template: string;
   request: express.Request | Request;
@@ -31,6 +32,7 @@ export const render = async ({
   routes: RouteObject[];
   basePath?: string;
   bypassProtection?: boolean;
+  authState?: { isLoggedIn: boolean; profile?: Record<string, unknown> };
 }) => {
   const { query, dataRoutes } = createStaticHandler(routes, {
     basename: basePath,
@@ -122,11 +124,20 @@ export const render = async ({
             !query.queryKey.includes(NO_DEHYDRATE),
         });
 
+        // Inject both React Query state and auth state
+        const scripts = [
+          `<script>window.DATA=${JSON.stringify(dehydrated)}</script>`,
+        ];
+
+        // Add auth state if provided (SSR mode)
+        if (authState) {
+          scripts.push(
+            `<script>window.AUTH_STATE=${JSON.stringify(authState)}</script>`,
+          );
+        }
+
         response.end(
-          htmlEnd?.replace(
-            "</body>",
-            `<script>window.DATA=${JSON.stringify(dehydrated)}</script></body>`,
-          ),
+          htmlEnd?.replace("</body>", `${scripts.join("\n")}</body>`),
         );
       });
 
