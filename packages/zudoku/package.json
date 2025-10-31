@@ -50,7 +50,8 @@
     "./hooks": "./src/lib/hooks/index.ts",
     "./shiki/*": "./src/shiki/*.js",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
-    "./with-zuplo": "./src/zuplo/with-zuplo.ts"
+    "./with-zuplo": "./src/zuplo/with-zuplo.ts",
+    "./mermaid": "./src/lib/mermaid/index.ts"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -169,6 +170,10 @@
       "./with-zuplo": {
         "require": "./dist/zuplo/with-zuplo.js",
         "import": "./dist/zuplo/with-zuplo.js"
+      },
+      "./mermaid": {
+        "import": "./lib/zudoku.mermaid.js",
+        "types": "./dist/lib/mermaid/index.d.ts"
       }
     }
   },
