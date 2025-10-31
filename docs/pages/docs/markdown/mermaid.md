@@ -46,58 +46,6 @@ For server-side rendering, Zudoku uses the full `rehype-mermaid` plugin which:
 
 :::
 
-## How It Works
-
-Zudoku uses **two different plugins** depending on your rendering strategy:
-
-### Client-Side Rendering (Default)
-
-For `pre-mermaid` strategy, Zudoku uses a **lightweight built-in plugin** (`rehype-mermaid-client`)
-with zero dependencies:
-
-1. **Markdown Parsing** - MDX files are parsed into an Abstract Syntax Tree (AST)
-2. **Remark Plugins** - Process the Markdown AST (before HTML conversion)
-3. **HTML Conversion** - Markdown is converted to HTML
-4. **Rehype Plugins** - Process the HTML AST (after conversion)
-   - **Mermaid Preprocessor** - Marks mermaid blocks to skip syntax highlighting
-   - **Shiki** - Syntax highlights code blocks (skips marked mermaid blocks)
-   - **Mermaid Postprocessor** - Restores mermaid classes
-   - **rehype-mermaid-client** - Transforms blocks for browser rendering
-5. **Browser Rendering** - MermaidInitializer component renders diagrams using mermaid.js
-
-The lightweight plugin simply transforms:
-
-```html
-<pre><code class="language-mermaid">graph TD...</code></pre>
-```
-
-Into:
-
-```html
-<pre class="mermaid">graph TD...</pre>
-```
-
-This format is what mermaid.js expects in the browser. **No heavyweight dependencies needed!**
-
-### Server-Side Rendering
-
-For `inline-svg`, `img-svg`, or `img-png` strategies, Zudoku uses the full `rehype-mermaid` plugin
-which renders diagrams at build time using Playwright.
-
-### Shiki Integration
-
-Zudoku uses [Shiki](https://shiki.style/) for syntax highlighting. To prevent Shiki from
-syntax-highlighting mermaid code blocks (which would prevent diagram rendering), the implementation
-includes:
-
-- **`rehypeMermaidPreprocessor`** - Runs before Shiki, temporarily removes the `language-mermaid`
-  class and marks blocks with `data-mermaid="true"`
-- **`rehypeMermaidPostprocessor`** - Runs after Shiki, restores the `language-mermaid` class for the
-  mermaid plugin to process
-
-This ensures mermaid blocks are preserved intact through the pipeline and rendered as diagrams
-instead of highlighted code.
-
 ## Quick Start
 
 ### Step 1: Configure the Rehype Plugin
