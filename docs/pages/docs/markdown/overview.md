@@ -228,7 +228,6 @@ Zudoku also supports:
 
 - [Admonitions](./admonitions) - Callout boxes for notes, warnings, and tips
 - Task lists with checkboxes
-- Emoji support :tada:
 - Automatic link detection
 
 ### Task Lists
