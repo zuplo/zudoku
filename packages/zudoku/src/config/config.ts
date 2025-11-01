@@ -57,3 +57,11 @@ export type AzureB2CAuthenticationConfig = {
   redirectToAfterSignIn?: string;
   redirectToAfterSignOut?: string;
 } & RedirectOptions;
+
+export type WorkOSAuthenticationConfig = {
+  type: "workos";
+  clientId: string;
+  environment: string;
+  audience?: string;
+  scopes?: string[];
+} & RedirectOptions;

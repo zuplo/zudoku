@@ -31,6 +31,7 @@
     "./auth/openid": "./src/lib/authentication/providers/openid.tsx",
     "./auth/supabase": "./src/lib/authentication/providers/supabase.tsx",
     "./auth/azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
+    "./auth/workos": "./src/lib/authentication/providers/workos.tsx",
     "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.tsx",
@@ -90,6 +91,10 @@
       "./auth/azureb2c": {
         "import": "./lib/zudoku.auth-azureb2c.js",
         "types": "./dist/lib/authentication/providers/azureb2c.d.ts"
+      },
+      "./auth/workos": {
+        "import": "./lib/zudoku.auth-workos.js",
+        "types": "./dist/lib/authentication/providers/workos.d.ts"
       },
       "./plugins": {
         "import": "./lib/zudoku.plugins.js",
