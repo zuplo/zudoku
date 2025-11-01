@@ -56,12 +56,8 @@ const config: ZudokuConfig = {
         url: "https://github.com/zuplo/zudoku/edit/main/docs/{filePath}",
       },
     },
-    llms: {
-      llmsTxt: true,
-      llmsTxtFull: true,
-      publishMarkdown: true,
-      includeProtected: false,
-    },
+    publishMarkdown: true,
+    llms: { llmsTxt: true, llmsTxtFull: true },
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",

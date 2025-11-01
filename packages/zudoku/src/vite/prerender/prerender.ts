@@ -1,3 +1,4 @@
+import { readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -6,9 +7,11 @@ import colors from "picocolors";
 import PiscinaImport from "piscina";
 import type { getRoutesByConfig } from "../../app/main.js";
 import { logger } from "../../cli/common/logger.js";
+import { fileExists } from "../../config/file-exists.js";
 import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
 import invariant from "../../lib/util/invariant.js";
+import type { MarkdownFileInfo } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import type { StaticWorkerData, WorkerData } from "./worker.js";
@@ -180,17 +183,37 @@ export const prerender = async ({
     );
     const { generateLlmsTxtFiles } = await import("../llms.js");
 
-    const llmsConfig = DocsConfigSchema.parse(config.docs).llms ?? {};
+    const docsConfig = DocsConfigSchema.parse(config.docs);
+    const llmsConfig = docsConfig.llms ?? {};
+
+    const markdownInfoPath = path.join(
+      dir,
+      "node_modules/.zudoku/markdown-info.json",
+    );
+    let markdownFileInfos: MarkdownFileInfo[] = [];
+
+    if (await fileExists(markdownInfoPath)) {
+      const markdownInfoContent = await readFile(markdownInfoPath, "utf-8");
+      markdownFileInfos = JSON.parse(markdownInfoContent);
+    }
 
     if (llmsConfig.llmsTxt || llmsConfig.llmsTxtFull) {
       await generateLlmsTxtFiles({
+        markdownFileInfos,
         basePath: config.basePath,
         outputUrls: paths,
         baseOutputDir: distDir,
         siteName: config.site?.title,
-        llmsConfig,
+        llmsTxt: llmsConfig.llmsTxt,
+        llmsTxtFull: llmsConfig.llmsTxtFull,
         workerResults,
       });
+    }
+
+    if (!docsConfig.publishMarkdown) {
+      await Promise.all(
+        markdownFileInfos.map((info) => rm(info.filePath).catch(() => {})),
+      );
     }
   }
 

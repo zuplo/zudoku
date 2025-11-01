@@ -10,7 +10,7 @@ import {
   resolveCustomNavigationPaths,
 } from "./plugin-docs.js";
 
-type MarkdownFileInfo = {
+export type MarkdownFileInfo = {
   filePath: string;
   routePath: string;
   title?: string;
@@ -38,23 +38,35 @@ const processMarkdownFile = async (
 };
 
 /**
- * This plugin generates .md files for each document during the build process.
- * When you access a document like /foo/hello, you can add .md to the url
- * /foo/hello.md and get the raw markdown without frontmatter.
+ * This plugin exports markdown files (.md) for each document during the build process.
+ * In development mode, you can access documents at their URL path with .md extension
+ * (e.g., /foo/hello.md) to get the raw markdown without frontmatter.
  *
- * It also generates llms.txt and llms-full.txt files following the spec at https://llmstxt.org/
+ * Markdown files are generated when:
+ * - publishMarkdown is enabled (for copy button functionality)
+ * - llmsTxt or llmsTxtFull is enabled (for generating llms.txt files)
+ *
+ * It also writes metadata to markdown-info.json used by the llms.txt generator.
  */
-const viteLlmsPlugin = (): Plugin => {
+const viteMarkdownExportPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
   let markdownFileInfos: MarkdownFileInfo[] = [];
 
   return {
-    name: "zudoku-llms-plugin",
+    name: "zudoku-markdown-export-plugin",
+    applyToEnvironment(env) {
+      return env.name === "ssr";
+    },
     async buildStart() {
       const config = getCurrentConfig();
       const llmsConfig = config.docs?.llms;
 
-      if (config.__meta.mode === "standalone" || !llmsConfig?.publishMarkdown) {
+      const needsMdFiles =
+        config.docs?.publishMarkdown ||
+        llmsConfig?.llmsTxt ||
+        llmsConfig?.llmsTxtFull;
+
+      if (config.__meta.mode === "standalone" || !needsMdFiles) {
         return;
       }
 
@@ -63,7 +75,7 @@ const viteLlmsPlugin = (): Plugin => {
         await globMarkdownFiles(config, { absolute: true }),
       );
 
-      // Filter out protected routes unless includeProtected is true
+      // Filter out protected routes unless `includeProtected` is true
       if (!llmsConfig?.includeProtected) {
         const protectedRoutes = ProtectedRoutesSchema.parse(
           config.protectedRoutes,
@@ -86,8 +98,15 @@ const viteLlmsPlugin = (): Plugin => {
     },
     configureServer(server) {
       const config = getCurrentConfig();
+      const llmsConfig = config.docs?.llms;
 
-      if (!config.docs?.llms?.publishMarkdown) return;
+      // Serve .md files if markdown export is needed
+      const needsMdFiles =
+        config.docs?.publishMarkdown ||
+        llmsConfig?.llmsTxt ||
+        llmsConfig?.llmsTxtFull;
+
+      if (!needsMdFiles) return;
 
       server.middlewares.use(async (req, res, next) => {
         if (req.method !== "GET" || !req.url?.endsWith(".md")) {
@@ -113,11 +132,17 @@ const viteLlmsPlugin = (): Plugin => {
     },
     async closeBundle() {
       const config = getCurrentConfig();
+      const llmsConfig = config.docs?.llms;
+
+      const needsMdFiles =
+        config.docs?.publishMarkdown ||
+        llmsConfig?.llmsTxt ||
+        llmsConfig?.llmsTxtFull;
 
       if (
         process.env.NODE_ENV !== "production" ||
         Object.keys(markdownFiles).length === 0 ||
-        !config.docs?.llms?.publishMarkdown
+        !needsMdFiles
       ) {
         return;
       }
@@ -139,7 +164,6 @@ const viteLlmsPlugin = (): Plugin => {
             description,
           } = await processMarkdownFile(filePath);
 
-          // Store info for llms.txt generation
           markdownFileInfos.push({
             filePath,
             routePath,
@@ -148,15 +172,12 @@ const viteLlmsPlugin = (): Plugin => {
             content: finalMarkdown,
           });
 
-          // Determine output path
           const outputFileName =
             routePath === "/" ? "/index.md" : `${routePath}.md`;
           const outputPath = path.join(distDir, outputFileName);
 
-          // Ensure parent directory exists
           await mkdir(path.dirname(outputPath), { recursive: true });
 
-          // Write the markdown file
           await writeFile(outputPath, finalMarkdown, "utf-8");
         } catch (error) {
           // biome-ignore lint/suspicious/noConsole: Logging allowed here
@@ -164,17 +185,14 @@ const viteLlmsPlugin = (): Plugin => {
         }
       }
 
-      // Store markdown file infos and config for llms.txt generation
-      // This will be used by the prerender process
-      if (config.docs.llms?.llmsTxt || config.docs.llms?.llmsTxtFull) {
-        const markdownInfoPath = path.join(distDir, ".markdown-info.json");
+      if (config.docs?.llms?.llmsTxt || config.docs?.llms?.llmsTxtFull) {
+        const markdownInfoPath = path.join(
+          config.__meta.rootDir,
+          "node_modules/.zudoku/markdown-info.json",
+        );
         await writeFile(
           markdownInfoPath,
-          JSON.stringify(
-            { markdownFileInfos, llmsConfig: config.docs.llms },
-            null,
-            2,
-          ),
+          JSON.stringify(markdownFileInfos, null, 2),
           "utf-8",
         );
       }
@@ -182,4 +200,4 @@ const viteLlmsPlugin = (): Plugin => {
   };
 };
 
-export default viteLlmsPlugin;
+export default viteMarkdownExportPlugin;
