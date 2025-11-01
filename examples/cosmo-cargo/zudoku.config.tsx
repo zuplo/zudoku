@@ -29,6 +29,10 @@ const config: ZudokuConfig = {
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
+  docs: {
+    publishMarkdown: true,
+    llms: { llmsTxt: true, llmsTxtFull: true },
+  },
   site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },

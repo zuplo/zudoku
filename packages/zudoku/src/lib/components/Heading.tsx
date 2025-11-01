@@ -1,7 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { LinkIcon } from "lucide-react";
 import type { HTMLAttributes, ReactNode } from "react";
-import { cn } from "../util/cn.js";
 import { useRegisterAnchorElement } from "./context/ViewportAnchorContext.js";
 
 const heading = cva("group relative", {
@@ -64,10 +63,7 @@ export const Heading = ({
 
   return (
     <Component
-      className={heading({
-        className: cn("flex items-center gap-[0.33em]", className),
-        level,
-      })}
+      className={heading({ className, level })}
       ref={registerNavigationAnchor ? ref : undefined}
       id={id}
     >
@@ -75,7 +71,7 @@ export const Heading = ({
       {id && (
         <a
           href={`#${id}`}
-          className="rounded text-[0.8em] text-muted-foreground p-0.5 -m-0.5 opacity-0 group-hover:opacity-50 hover:text-primary hover:!opacity-100 transition-opacity duration-200"
+          className="ms-[0.33em] rounded text-[0.8em] text-muted-foreground p-0.5 -m-0.5 opacity-0 group-hover:opacity-50 hover:text-primary hover:!opacity-100 transition-opacity duration-200 inline-flex items-center align-middle"
           aria-label={`Link to ${id}`}
         >
           <LinkIcon className="size-[0.75em] min-w-4 min-h-4" />
