@@ -24,6 +24,7 @@ const entries: Record<string, string> = {
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
   "plugin-search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
   "plugin-api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
+  mermaid: "./src/lib/mermaid/index.ts",
   ...globEntries("./src/lib/ui/**/*.{ts,tsx}", "ui"),
   ...globEntries("./src/lib/plugins/openapi/processors/*.ts", "processors"),
 };
@@ -33,6 +34,9 @@ export default defineConfig({
     alias: [
       { find: /^zudoku\/ui\/(.*)\.js/, replacement: `./src/lib/ui/$1.tsx` },
     ],
+  },
+  optimizeDeps: {
+    exclude: ["rehype-mermaid", "mermaid-isomorphic", "playwright"],
   },
   build: {
     sourcemap: true,
@@ -66,6 +70,10 @@ export default defineConfig({
         // Peer dependencies should also be external
         // biome-ignore lint/complexity/useLiteralKeys: Might exist or not
         ...Object.keys(pkgJson?.["peerDependencies"] ?? {}),
+
+        // Optional Mermaid dependencies - dynamically imported by users
+        "mermaid",
+        "rehype-mermaid",
       ],
       plugins: [visualizer()],
       onwarn(warning, warn) {
