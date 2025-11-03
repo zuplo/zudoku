@@ -24,7 +24,7 @@ export const MobileTopNavigation = () => {
   const authState = useAuth();
 
   const { navigation, options, getProfileMenuItems } = context;
-  const { isAuthenticated, profile, isAuthEnabled } = authState;
+  const { isAuthenticated, profile, isAuthEnabled, login } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const accountItems = getProfileMenuItems();
@@ -63,12 +63,16 @@ export const MobileTopNavigation = () => {
                 >
                   {!isAuthenticated ? (
                     <li>
-                      <TopNavLink
-                        to="/signin"
-                        onClick={() => setDrawerOpen(false)}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setDrawerOpen(false);
+                          login();
+                        }}
+                        className="text-foreground/75 hover:text-foreground"
                       >
                         Login
-                      </TopNavLink>
+                      </button>
                     </li>
                   ) : (
                     Object.values(getProfileMenuItems()).length > 0 && (

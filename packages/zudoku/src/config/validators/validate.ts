@@ -387,14 +387,30 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     type: z.literal("supabase"),
     supabaseUrl: z.string(),
     supabaseKey: z.string(),
-    provider: z.enum([
-      "google",
-      "github",
-      "gitlab",
-      "bitbucket",
-      "facebook",
-      "twitter",
-    ]),
+    basePath: z.string().optional(),
+    /**
+     * @deprecated Use `providers` (plural) instead for multiple providers
+     */
+    provider: z.string().optional(),
+    providers: z.array(z.string()).optional(),
+    appearance: z
+      .object({
+        theme: z.unknown().optional(),
+        variables: z.unknown().optional(),
+        className: z
+          .object({
+            anchor: z.string().optional(),
+            button: z.string().optional(),
+            container: z.string().optional(),
+            divider: z.string().optional(),
+            input: z.string().optional(),
+            label: z.string().optional(),
+            loader: z.string().optional(),
+            message: z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),

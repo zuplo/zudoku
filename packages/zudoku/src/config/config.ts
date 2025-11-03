@@ -40,10 +40,35 @@ export type Auth0AuthenticationConfig = {
 
 export type SupabaseAuthenticationConfig = {
   type: "supabase";
-  provider: Provider;
   supabaseUrl: string;
   supabaseKey: string;
   basePath?: string;
+  /**
+   * @deprecated Use `providers` (plural) instead. Single provider for backward compatibility.
+   */
+  provider?: Provider;
+  /**
+   * Optional array of OAuth providers to display in the Auth UI.
+   * If not specified, all enabled providers in Supabase will be available.
+   */
+  providers?: Provider[];
+  /**
+   * Optional appearance configuration for the Auth UI.
+   */
+  appearance?: {
+    theme?: unknown;
+    variables?: unknown;
+    className?: {
+      anchor?: string;
+      button?: string;
+      container?: string;
+      divider?: string;
+      input?: string;
+      label?: string;
+      loader?: string;
+      message?: string;
+    };
+  };
 } & RedirectOptions;
 
 export type AzureB2CAuthenticationConfig = {

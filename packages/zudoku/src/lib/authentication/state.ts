@@ -6,6 +6,11 @@ export interface AuthState<ProviderData = unknown> {
   isPending: boolean;
   profile: UserProfile | null;
   providerData: ProviderData | null;
+  oauthError?: {
+    error: string;
+    error_description?: string;
+    error_code?: string;
+  };
   setAuthenticationPending: () => void;
   setLoggedOut: () => void;
   setLoggedIn: ({
@@ -43,12 +48,14 @@ export const useAuthState = create<AuthState>()(
       isPending: true,
       profile: null,
       providerData: null,
+      oauthError: undefined,
       setAuthenticationPending: () =>
         set(() => ({
           isAuthenticated: false,
           isPending: false,
           profile: null,
           providerData: null,
+          oauthError: undefined,
         })),
       setLoggedOut: () =>
         set(() => ({
@@ -56,6 +63,7 @@ export const useAuthState = create<AuthState>()(
           isPending: false,
           profile: null,
           providerData: null,
+          oauthError: undefined,
         })),
       setLoggedIn: ({
         profile,
@@ -69,6 +77,7 @@ export const useAuthState = create<AuthState>()(
           isPending: false,
           profile,
           providerData,
+          oauthError: undefined,
         })),
     }),
     {

@@ -9,8 +9,8 @@ import type {
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { AuthErrorPage } from "../components/AuthErrorPage.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
-import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 
@@ -445,7 +445,7 @@ export class OpenIDAuthenticationProvider
         element: (
           <ClientOnly>
             <ErrorBoundary
-              fallbackRender={({ error }) => <OAuthErrorPage error={error} />}
+              fallbackRender={({ error }) => <AuthErrorPage error={error} />}
             >
               <CallbackHandler handleCallback={this.handleCallback} />
             </ErrorBoundary>
