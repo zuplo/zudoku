@@ -1,84 +1,38 @@
-import type { Provider } from "@supabase/supabase-js";
 import type { ConfigWithMeta } from "./loader.js";
 import type { BuildConfig } from "./validators/BuildSchema.js";
-import type { ZudokuConfig } from "./validators/validate.js";
+import type {
+  AuthenticationConfig,
+  ZudokuConfig,
+} from "./validators/validate.js";
 
 export type { ZudokuConfig };
 
 export type ZudokuBuildConfig = BuildConfig;
 export type LoadedConfig = ConfigWithMeta;
 
-type RedirectOptions = {
-  redirectToAfterSignUp?: string;
-  redirectToAfterSignIn?: string;
-  redirectToAfterSignOut?: string;
-};
-
-export type ClerkAuthenticationConfig = {
-  type: "clerk";
-  clerkPubKey: `pk_test_${string}` | `pk_live_${string}`;
-  jwtTemplateName?: string;
-} & RedirectOptions;
-
-export type OpenIDAuthenticationConfig = {
-  type: "openid";
-  clientId: string;
-
-  issuer: string;
-  scopes?: string[];
-  audience?: string;
-  basePath?: string;
-} & RedirectOptions;
-
-export type Auth0AuthenticationConfig = {
-  type: "auth0";
-  clientId: string;
-  domain: string;
-  audience?: string;
-  scopes?: string[];
-} & RedirectOptions;
-
-export type SupabaseAuthenticationConfig = {
-  type: "supabase";
-  supabaseUrl: string;
-  supabaseKey: string;
-  basePath?: string;
-  /**
-   * @deprecated Use `providers` (plural) instead. Single provider for backward compatibility.
-   */
-  provider?: Provider;
-  /**
-   * Optional array of OAuth providers to display in the Auth UI.
-   * If not specified, all enabled providers in Supabase will be available.
-   */
-  providers?: Provider[];
-  /**
-   * Optional appearance configuration for the Auth UI.
-   */
-  appearance?: {
-    theme?: unknown;
-    variables?: unknown;
-    className?: {
-      anchor?: string;
-      button?: string;
-      container?: string;
-      divider?: string;
-      input?: string;
-      label?: string;
-      loader?: string;
-      message?: string;
-    };
-  };
-} & RedirectOptions;
-
-export type AzureB2CAuthenticationConfig = {
-  type: "azureb2c";
-  clientId: string;
-  tenantName: string;
-  policyName: string;
-  scopes?: string[];
-  basePath?: string;
-  redirectToAfterSignUp?: string;
-  redirectToAfterSignIn?: string;
-  redirectToAfterSignOut?: string;
-} & RedirectOptions;
+// Extract individual authentication config types from the Zod schema
+// This ensures type safety while using the Zod schema as the single source of truth
+export type ClerkAuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "clerk" }
+>;
+export type OpenIDAuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "openid" }
+>;
+export type Auth0AuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "auth0" }
+>;
+export type SupabaseAuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "supabase" }
+>;
+export type FirebaseAuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "firebase" }
+>;
+export type AzureB2CAuthenticationConfig = Extract<
+  AuthenticationConfig,
+  { type: "azureb2c" }
+>;

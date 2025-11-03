@@ -30,6 +30,7 @@
     "./auth/auth0": "./src/lib/authentication/providers/auth0.tsx",
     "./auth/openid": "./src/lib/authentication/providers/openid.tsx",
     "./auth/supabase": "./src/lib/authentication/providers/supabase.tsx",
+    "./auth/firebase": "./src/lib/authentication/providers/firebase.tsx",
     "./auth/azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
     "./plugins": "./src/lib/core/plugins.ts",
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
@@ -86,6 +87,10 @@
       "./auth/supabase": {
         "import": "./lib/zudoku.auth-supabase.js",
         "types": "./dist/lib/authentication/providers/supabase.d.ts"
+      },
+      "./auth/firebase": {
+        "import": "./lib/zudoku.auth-firebase.js",
+        "types": "./dist/lib/authentication/providers/firebase.d.ts"
       },
       "./auth/azureb2c": {
         "import": "./lib/zudoku.auth-azureb2c.js",
@@ -315,6 +320,7 @@
     "@types/yargs": "17.0.33",
     "@vitest/coverage-v8": "3.2.4",
     "esbuild": "0.25.11",
+    "firebase": "^12.5.0",
     "happy-dom": "20.0.2",
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
@@ -331,6 +337,7 @@
     "@supabase/auth-ui-react": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
+    "firebase": "^12.5.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
@@ -351,6 +358,9 @@
       "optional": true
     },
     "@supabase/supabase-js": {
+      "optional": true
+    },
+    "firebase": {
       "optional": true
     }
   }

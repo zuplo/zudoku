@@ -76,18 +76,40 @@ site.
    export default {
      // ... other configuration
      authentication: {
-       type: "openid",
-       clientId: "<your-firebase-project-id>",
-       issuer: "https://securetoken.google.com/<your-firebase-project-id>",
-       scopes: ["openid", "profile", "email"],
+       type: "firebase",
+       apiKey: "AIza...",
+       authDomain: "your-project.firebaseapp.com",
+       projectId: "your-project-id",
+       appId: "1:1234567890:web:abcdef...",
+       // Optional: Specify which authentication providers to enable
+       providers: ["google", "github", "password"],
+       // Optional: Configure redirect paths
+       redirectToAfterSignIn: "/docs",
      },
      // ... other configuration
    };
    ```
 
+   The authentication UI is built with a custom design that automatically matches Zudoku's styling.
+
    Where:
-   - **clientId**: Your Firebase project ID
-   - **issuer**: The Firebase token issuer URL with your project ID
+   - **apiKey**: Your Firebase API key
+   - **authDomain**: Your Firebase auth domain
+   - **projectId**: Your Firebase project ID
+   - **appId**: Your Firebase app ID
+   - **providers**: (Optional) Array of provider IDs (e.g., `"google"`, `"github"`, `"password"`)
+   - **storageBucket**, **messagingSenderId**, **measurementId**: Optional Firebase configuration
+     values
+
+6. **Install Firebase Dependencies**
+
+   Install the required Firebase package:
+
+   ```bash
+   npm install firebase
+   # or
+   pnpm add firebase
+   ```
 
 </Stepper>
 
@@ -95,18 +117,59 @@ site.
 
 ### Multiple Authentication Providers
 
-Firebase supports multiple authentication methods simultaneously. Configure them in the Firebase
-Console:
+Firebase supports multiple authentication methods simultaneously. You can specify which providers to
+enable in your Zudoku configuration using Firebase's official provider ID strings:
 
 ```typescript
-// The Zudoku configuration remains the same
 authentication: {
-  type: "openid",
-  clientId: "<your-firebase-project-id>",
-  issuer: "https://securetoken.google.com/<your-firebase-project-id>",
-  scopes: ["openid", "profile", "email"],
+  type: "firebase",
+  apiKey: "AIza...",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  appId: "1:1234567890:web:abcdef...",
+  // Specify multiple providers using Firebase's official provider IDs
+  providers: ["google", "github", "facebook", "twitter", "password"],
 }
 ```
+
+**Provider IDs:**
+
+| Provider       | Provider ID   | Firebase SDK Constant              |
+| -------------- | ------------- | ---------------------------------- |
+| Google         | `"google"`    | `GoogleAuthProvider.PROVIDER_ID`   |
+| Facebook       | `"facebook"`  | `FacebookAuthProvider.PROVIDER_ID` |
+| Twitter/X      | `"twitter"`   | `TwitterAuthProvider.PROVIDER_ID`  |
+| GitHub         | `"github"`    | `GithubAuthProvider.PROVIDER_ID`   |
+| Microsoft      | `"microsoft"` | `OAuthProvider('microsoft.com')`   |
+| Apple          | `"apple"`     | `OAuthProvider('apple.com')`       |
+| Yahoo          | `"yahoo"`     | `OAuthProvider('yahoo.com')`       |
+| Email/Password | `"password"`  | `EmailAuthProvider.PROVIDER_ID`    |
+| Email Link     | `"emailLink"` | Passwordless authentication        |
+| Phone          | `"phone"`     | `PhoneAuthProvider.PROVIDER_ID`    |
+
+If you don't specify the `providers` array, it defaults to `["password"]` (email/password
+authentication).
+
+**Examples:**
+
+```typescript
+// Google and GitHub OAuth only
+providers: ["google", "github"];
+
+// Email/password only
+providers: ["password"];
+
+// Mix of OAuth and email/password
+providers: ["google", "github", "password"];
+
+// Using Firebase SDK constants directly
+import { GoogleAuthProvider, EmailAuthProvider } from "firebase/auth";
+providers: [GoogleAuthProvider.PROVIDER_ID, EmailAuthProvider.PROVIDER_ID];
+```
+
+> **Reference**: These provider IDs are defined in the Firebase SDK. For more details, see:
+>
+> - [Firebase Authentication Providers](https://firebase.google.com/docs/auth/web/start)
 
 Users can then choose their preferred sign-in method through Firebase's authentication UI.
 
@@ -126,8 +189,12 @@ Protect specific documentation routes using the `protectedRoutes` configuration:
 {
   // ... other configuration
   authentication: {
-    type: "openid",
-    // ... Firebase config
+    type: "firebase",
+    apiKey: "AIza...",
+    authDomain: "your-project.firebaseapp.com",
+    projectId: "your-project-id",
+    appId: "1:1234567890:web:abcdef...",
+    providers: ["google", "github"],
   },
   protectedRoutes: [
     "/api/*",        // Protect all API documentation
