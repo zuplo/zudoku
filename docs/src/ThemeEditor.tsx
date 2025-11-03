@@ -127,12 +127,13 @@ export const ThemeEditor = () => {
         <Dialog>
           <DialogTrigger asChild>
             <Button size="sm" variant="outline">
-              <DownloadIcon size={16} className="me-2" /> Get Theme Config
+              <DownloadIcon size={16} className="me-2" />
+              Get Theme Config
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-[666px]">
+          <DialogContent className="max-w-[666px]! w-full">
             <DialogHeader>
-              <DialogTitle>Theme </DialogTitle>
+              <DialogTitle>Theme</DialogTitle>
               <DialogDescription>
                 Copy and paste the following code into your Zudoku config.
               </DialogDescription>
@@ -152,7 +153,7 @@ export const ThemeEditor = () => {
               Paste theme
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-[666px]">
+          <DialogContent className="max-w-[666px]! w-full">
             <DialogHeader>
               <DialogTitle>Paste Custom CSS</DialogTitle>
               <DialogDescription>
