@@ -567,8 +567,8 @@ importers:
         specifier: 6.0.0
         version: 6.0.0(react@19.2.0)
       react-hook-form:
-        specifier: 7.62.0
-        version: 7.62.0(react@19.2.0)
+        specifier: 7.66.0
+        version: 7.66.0(react@19.2.0)
       react-is:
         specifier: 'catalog:'
         version: 19.2.0
@@ -6495,8 +6495,8 @@ packages:
   react-fast-compare@3.2.2:
     resolution: {integrity: sha512-nsO+KSNgo1SbJqJEYRE9ERzo7YtYbou/OqjSQKxV7jcKox7+usiUVZOAC+XnDOABXggQTno0Y1CpVnuWEc1boQ==}
 
-  react-hook-form@7.62.0:
-    resolution: {integrity: sha512-7KWFejc98xqG/F4bAxpL41NB3o1nnvQO1RWZT3TqRZYL8RryQETGfEdVnJN2fy1crCiBLLjkRBVK05j24FxJGA==}
+  react-hook-form@7.66.0:
+    resolution: {integrity: sha512-xXBqsWGKrY46ZqaHDo+ZUYiMUgi8suYu5kdrS20EG8KiL7VRQitEbNjm+UcrDYrNi1YLyfpmAeGjCZYXLT9YBw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -14477,7 +14477,7 @@ snapshots:
 
   react-fast-compare@3.2.2: {}
 
-  react-hook-form@7.62.0(react@19.2.0):
+  react-hook-form@7.66.0(react@19.2.0):
     dependencies:
       react: 19.2.0
 
