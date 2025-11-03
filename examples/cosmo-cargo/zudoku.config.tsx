@@ -7,7 +7,11 @@ import type {
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
-  async getIdentities(_context: ZudokuContext) {
+  async getIdentities(context: ZudokuContext) {
+    if (!context.getAuthState().isAuthenticated) {
+      return [];
+    }
+
     return [
       {
         label: `Unlimited Subscription`,
