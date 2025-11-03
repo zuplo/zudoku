@@ -1,6 +1,6 @@
 {
   "name": "create-zudoku",
-  "version": "0.62.0",
+  "version": "0.63.0",
   "keywords": [
     "react",
     "zudoku"
@@ -39,7 +39,7 @@
     "fast-glob": "3.3.3",
     "picocolors": "1.1.1",
     "prompts": "2.4.2",
-    "tar": "7.4.3",
+    "tar": "7.5.2",
     "update-check": "1.5.4",
     "validate-npm-package-name": "6.0.2"
   },

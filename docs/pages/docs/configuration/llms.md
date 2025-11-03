@@ -7,24 +7,24 @@ navigation_icon: bot
 Zudoku can generate LLM-friendly versions of your documentation following the
 [llms.txt](https://llmstxt.org/) specification.
 
-During build, three types of files are generated:
+During build, you can optionally generate:
 
-- **`.md` files** - Individual pages with frontmatter removed
+- **`.md` files** - Individual pages with frontmatter removed (via `publishMarkdown`)
 - **`llms.txt`** - Summary with links to all pages
 - **`llms-full.txt`** - Complete documentation in one file
 
-All features are enabled by default.
+All options are disabled by default.
 
 ## Configuration
 
-The `llms` configuration is nested under the `docs` configuration:
+LLM features are configured through the `docs` section in your config:
 
 ```tsx title="zudoku.config.tsx"
 export default {
   docs: {
     files: "pages/**/*.{md,mdx}", // Your markdown files
+    publishMarkdown: true, // Generate .md files
     llms: {
-      publishMarkdown: true, // Generate .md files
       llmsTxt: true, // Generate llms.txt
       llmsTxtFull: true, // Generate llms-full.txt
       includeProtected: false, // Exclude protected routes
@@ -35,12 +35,17 @@ export default {
 
 All options are disabled by default.
 
-### `publishMarkdown`
+:::tip
 
-Generates `.md` files for each page without frontmatter. Pages at `/docs/quickstart` are also
-accessible at `/docs/quickstart.md`.
+When enabled, markdown files are generated during build and deleted after creating the `llms.txt`
+files unless `publishMarkdown: true` is set (see
+[`publishMarkdown` docs](/docs/configuration/docs#publishmarkdown)).
+
+:::
 
 ### `llmsTxt`
+
+**Type:** `boolean` **Default:** `false`
 
 Generates an `llms.txt` file with links to all documentation pages:
 
@@ -53,24 +58,33 @@ Generates an `llms.txt` file with links to all documentation pages:
 
 ### `llmsTxtFull`
 
+**Type:** `boolean` **Default:** `false`
+
 Generates `llms-full.txt` containing the complete content of all pages.
 
 ### `includeProtected`
 
-By default, protected routes are excluded. Set to `true` to include them.
+**Type:** `boolean` **Default:** `false`
+
+By default, protected routes are excluded. Set to `true` to include them in the generated files.
 
 ## Output
 
-Generated files are available at:
+Generated files are available in the output directory after build:
 
 ```text
 dist/
-├── llms.txt           # Summary with links
-├── llms-full.txt      # Complete documentation
+├── llms.txt           # Generated if llmsTxt: true
+├── llms-full.txt      # Generated if llmsTxtFull: true
 └── docs/
-    ├── quickstart.md  # Individual page markdown
+    ├── quickstart.md  # Generated if publishMarkdown: true
     ├── writing.md
     └── ...
 ```
 
-Redirect pages, error pages (400, 404, 500), and protected routes are automatically excluded.
+**Important:** Individual `.md` files are only kept in the final build if `publishMarkdown: true`.
+If only `llmsTxt` or `llmsTxtFull` is enabled, the `.md` files are generated temporarily during the
+build but deleted after the `llms.txt` files are created.
+
+Redirect pages, error pages (400, 404, 500), and protected routes (unless `includeProtected: true`)
+are automatically excluded from all generated files.
