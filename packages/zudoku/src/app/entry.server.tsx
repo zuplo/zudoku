@@ -122,12 +122,16 @@ export const render = async ({
             !query.queryKey.includes(NO_DEHYDRATE),
         });
 
-        response.end(
-          htmlEnd?.replace(
-            "</body>",
-            `<script>window.DATA=${JSON.stringify(dehydrated)}</script></body>`,
-          ),
-        );
+        const parts = htmlEnd?.split("</body>") || [];
+        if (parts.length === 2) {
+          response.write(parts[0]);
+          response.write("<script>window.DATA=");
+          response.write(JSON.stringify(dehydrated));
+          response.write("</script></body>");
+          response.end(parts[1]);
+        } else {
+          response.end(htmlEnd);
+        }
       });
 
       pipe(transformStream);
