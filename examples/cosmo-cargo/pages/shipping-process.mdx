@@ -33,7 +33,7 @@ Our streamlined process ensures your cargo reaches its destination safely and ef
 
 1. **Book Your Shipment**
 
-   Use our API to create a shipping request:
+   Use our SDK to create a shipping request:
 
    ```js title="Book your shipment"
    const shipment = await cosmocargo.shipments.create({
@@ -46,6 +46,14 @@ Our streamlined process ensures your cargo reaches its destination safely and ef
      },
    });
    ```
+
+   or you can call the API directly using the API Playground:
+
+   <OpenPlaygroundButton
+     server="https://cosmocargo.dev"
+     url="/shipments"
+     method="POST"
+   />
 
 1. **Spaceport Processing**
 
