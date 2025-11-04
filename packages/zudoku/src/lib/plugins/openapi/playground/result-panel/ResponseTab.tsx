@@ -1,7 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import {
-  CheckIcon,
-  CopyIcon,
   CornerDownLeftIcon,
   CornerDownRightIcon,
   DownloadIcon,
@@ -9,7 +7,7 @@ import {
   EyeOffIcon,
   PlusCircleIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Collapsible,
@@ -27,7 +25,6 @@ import {
 import { cn } from "../../../../util/cn.js";
 import createVariantComponent from "../../../../util/createVariantComponent.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
-import { useCopyToClipboard } from "../../../../util/useCopyToClipboard.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -143,8 +140,6 @@ export const ResponseTab = ({
   fileName?: string;
   blob?: Blob;
 }) => {
-  const [isCopied, copyToClipboard] = useCopyToClipboard();
-  const ref = useRef<HTMLDivElement>(null);
   const detectedLanguage = detectLanguage(headers);
   const jsonContent = tryParseJson(body);
   const beautifiedBody = jsonContent || body;
@@ -278,47 +273,24 @@ export const ResponseTab = ({
           </div>
         ) : (
           <div className="overflow-auto max-w-full p-4 text-xs max-h-[calc(83.333vh-180px)]">
-            <div className="relative group" ref={ref}>
-              <Highlight
-                language={
-                  view === "types"
-                    ? "typescript"
-                    : view === "raw"
-                      ? jsonContent
-                        ? "plain"
-                        : detectedLanguage
-                      : "json"
-                }
-                code={
-                  (view === "raw"
-                    ? body
-                    : view === "types"
-                      ? types.data?.lines.join("\n")
-                      : beautifiedBody) ?? ""
-                }
-              />
-              <button
-                type="button"
-                aria-label="Copy code"
-                title="Copy code"
-                className={cn(
-                  "absolute top-2 right-2 transition px-2 py-2 mx-1 rounded-sm opacity-0 group-hover:opacity-100",
-                  !isCopied && "hover:bg-accent hover:brightness-95",
-                )}
-                disabled={isCopied}
-                onClick={() => {
-                  if (!ref.current?.textContent) return;
-
-                  copyToClipboard(ref.current.textContent);
-                }}
-              >
-                {isCopied ? (
-                  <CheckIcon className="text-emerald-600" size={14} />
-                ) : (
-                  <CopyIcon size={14} />
-                )}
-              </button>
-            </div>
+            <Highlight
+              language={
+                view === "types"
+                  ? "typescript"
+                  : view === "raw"
+                    ? jsonContent
+                      ? "plain"
+                      : detectedLanguage
+                    : "json"
+              }
+              code={
+                (view === "raw"
+                  ? body
+                  : view === "types"
+                    ? types.data?.lines.join("\n")
+                    : beautifiedBody) ?? ""
+              }
+            />
           </div>
         )}
       </div>
