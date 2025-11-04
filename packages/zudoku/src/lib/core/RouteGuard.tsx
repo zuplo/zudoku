@@ -38,14 +38,18 @@ export const RouteGuard = () => {
     isProtectedRoute && !authCheckFn({ auth, context: zudoku });
 
   useQuery({
-    queryKey: ["login-redirect"],
+    queryKey: ["login-redirect", Math.random()],
     queryFn: async () => {
       await new Promise((resolve) => setTimeout(resolve, 1200));
-      await zudoku.authentication?.signIn({
-        redirectTo: latestPath.current,
-      });
+      await zudoku.authentication?.signIn(
+        { navigate },
+        {
+          redirectTo: latestPath.current,
+        },
+      );
       return true;
     },
+    gcTime: 0,
     enabled: typeof window !== "undefined" && needsToSignIn && !auth.isPending,
   });
 
