@@ -46,6 +46,7 @@ export const docs: Navigation = [
       "docs/markdown/mdx",
       "docs/markdown/admonitions",
       "docs/markdown/code-blocks",
+      "/docs/markdown/mermaid",
     ],
   },
   {

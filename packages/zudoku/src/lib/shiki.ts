@@ -14,6 +14,7 @@ import type {
   BundledTheme,
   CodeOptionsMultipleThemes,
   HighlighterCore,
+  ShikiTransformer,
 } from "shiki";
 import { createHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
@@ -22,6 +23,57 @@ import { visit } from "unist-util-visit";
 import { cn } from "./util/cn.js";
 
 const engine = createJavaScriptRegexEngine({ forgiving: true });
+
+/**
+ * Preprocessor: Add meta attribute to mermaid blocks so transformer can detect them
+ * Shiki preserves meta strings, so this survives the element replacement
+ */
+const rehypeMermaidPreprocessor = () => (tree: Root) => {
+  visit(tree, "element", (node, _index, _parent) => {
+    if (node.tagName !== "code") return;
+
+    const classes = Array.isArray(node.properties.className)
+      ? node.properties.className
+      : [];
+
+    const isMermaid = classes.some(
+      (c: string | number) =>
+        typeof c === "string" &&
+        (c === "language-mermaid" || c === "lang-mermaid" || c === "mermaid"),
+    );
+
+    if (isMermaid) {
+      // Add meta marker that Shiki WILL preserve
+      // biome-ignore lint/suspicious/noExplicitAny: HAST property types don't include custom data attributes
+      (node.data as any) = (node.data as any) || {};
+      // biome-ignore lint/suspicious/noExplicitAny: HAST property types don't include custom data attributes
+      (node.data as any).meta = "zudoku-mermaid";
+    }
+  });
+};
+
+/**
+ * Custom Shiki transformer to mark mermaid code blocks
+ * Detects blocks via meta string (which Shiki preserves)
+ */
+const transformerMermaid = (): ShikiTransformer => ({
+  name: "mermaid-marker",
+  code(node) {
+    const meta = this.options.meta?.__raw || "";
+
+    // Check if this was marked as mermaid via meta
+    if (meta.includes("zudoku-mermaid")) {
+      // Add language-mermaid class for downstream processing
+      const classes = Array.isArray(node.properties.className)
+        ? node.properties.className
+        : [];
+      if (!classes.includes("language-mermaid")) {
+        classes.push("language-mermaid");
+      }
+      node.properties.className = classes;
+    }
+  },
+});
 export const highlighter = await createHighlighterCore({
   engine,
   langAlias: {
@@ -47,7 +99,11 @@ export const defaultHighlightOptions = {
   fallbackLanguage: "text",
   inline: "tailing-curly-colon",
   addLanguageClass: true,
-  transformers: [transformerMetaHighlight(), transformerMetaWordHighlight()],
+  transformers: [
+    transformerMetaHighlight(),
+    transformerMetaWordHighlight(),
+    transformerMermaid(), // Mark mermaid blocks during Shiki processing
+  ],
   parseMetaString: (str) => {
     // Matches key="value", key=value, or key attributes
     const matches = str.matchAll(
@@ -109,10 +165,11 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
 
     // Pass through properties from <pre> to <code> so we can handle it in `code` only
     if (isCodeBlock) {
+      const parentProps = structuredClone(parent.properties);
       node.properties = {
         ...node.properties,
-        ...structuredClone(parent.properties),
-        class: cn(node.properties.class, parent.properties.class),
+        ...parentProps,
+        class: cn(node.properties.class, parentProps.class),
       };
       parent.properties = {};
     }
@@ -123,12 +180,13 @@ export const createConfiguredShikiRehypePlugins = (
   themes: ThemesRecord = defaultHighlightOptions.themes,
   highlighterInstance: HighlighterCore = highlighter,
 ) => [
+  rehypeMermaidPreprocessor, // Add meta marker before Shiki
   [
     rehypeShikiFromHighlighter,
     highlighterInstance,
     { ...defaultHighlightOptions, themes },
   ] satisfies Pluggable,
-  rehypeCodeBlockPlugin,
+  rehypeCodeBlockPlugin, // Merges parent props to code
 ];
 
 export const highlight = (
