@@ -55,5 +55,6 @@
     "nx.json": "jsonc",
     "project.json": "jsonc",
     "*.mdx": "markdown"
-  }
+  },
+  "tailwindCSS.experimental.configFile": "packages/zudoku/src/app/main.css"
 }
