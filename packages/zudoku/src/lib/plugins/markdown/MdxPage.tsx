@@ -27,6 +27,7 @@ import {
 } from "../../components/navigation/utils.js";
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { ChatGPTLogo } from "./assets/ChatGPTLogo.js";
 import { ClaudeLogo } from "./assets/ClaudeLogo.js";
@@ -55,6 +56,7 @@ const MarkdownHeadings = {
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
+  basePath,
   frontmatter = {},
   defaultOptions,
   __filepath,
@@ -62,6 +64,7 @@ export const MdxPage = ({
   excerpt,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
+    basePath: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
   }
@@ -101,7 +104,7 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
-  const markdownUrl = `${location.pathname}.md`;
+  const markdownUrl = joinUrl(basePath, `${location.pathname}.md`);
 
   const handleCopyMarkdown = async () => {
     const response = await fetch(markdownUrl);

@@ -5,6 +5,7 @@ import { matchPath } from "react-router";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
+import { joinUrl } from "../lib/util/joinUrl.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -96,7 +97,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
       }
     },
-    configureServer(server) {
+    async configureServer(server) {
       const config = getCurrentConfig();
       const llmsConfig = config.docs?.llms;
 
@@ -108,12 +109,17 @@ const viteMarkdownExportPlugin = (): Plugin => {
 
       if (!needsMdFiles) return;
 
+      markdownFiles = await resolveCustomNavigationPaths(
+        config,
+        await globMarkdownFiles(config, { absolute: true }),
+      );
+
       server.middlewares.use(async (req, res, next) => {
         if (req.method !== "GET" || !req.url?.endsWith(".md")) {
           return next();
         }
 
-        const basePath = config.basePath ?? "";
+        const basePath = joinUrl(config.basePath);
         const routePath = req.url.slice(basePath.length).replace(/\.md$/, "");
         const filePath = markdownFiles[routePath];
 
