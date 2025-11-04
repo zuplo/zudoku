@@ -178,6 +178,7 @@ export class OpenIDAuthenticationProvider
     const redirectUrl = new URL(window.location.origin);
     redirectUrl.pathname = this.callbackUrlPath;
     redirectUrl.search = "";
+    redirectUrl.hash = "";
 
     authorizationUrl.searchParams.set("client_id", this.client.client_id);
     authorizationUrl.searchParams.set("redirect_uri", redirectUrl.toString());
@@ -384,6 +385,7 @@ export class OpenIDAuthenticationProvider
     const redirectUrl = new URL(url);
     redirectUrl.pathname = this.callbackUrlPath;
     redirectUrl.search = "";
+    redirectUrl.hash = "";
 
     const response = await oauth.authorizationCodeGrantRequest(
       authServer,
