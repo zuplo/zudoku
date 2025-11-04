@@ -5,6 +5,7 @@ import type { ZudokuDocsConfig } from "../../../config/validators/validate.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 
 export interface MarkdownPluginOptions extends ZudokuDocsConfig {
+  basePath: string;
   fileImports: Record<string, () => Promise<MDXImport>>;
 }
 export type MarkdownPluginDefaultOptions = Pick<
@@ -46,6 +47,7 @@ export const markdownPlugin = (
           return {
             element: (
               <MdxPage
+                basePath={options.basePath}
                 mdxComponent={Component}
                 {...props}
                 defaultOptions={options.defaultOptions}

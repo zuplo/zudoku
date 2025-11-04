@@ -56,6 +56,7 @@ const MarkdownHeadings = {
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
+  basePath,
   frontmatter = {},
   defaultOptions,
   __filepath,
@@ -63,6 +64,7 @@ export const MdxPage = ({
   excerpt,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
+    basePath: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
   }
@@ -102,10 +104,7 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
-  const markdownUrl = joinUrl(
-    import.meta.env.BASE_URL,
-    `${location.pathname}.md`,
-  );
+  const markdownUrl = joinUrl(basePath, `${location.pathname}.md`);
 
   const handleCopyMarkdown = async () => {
     const response = await fetch(markdownUrl);

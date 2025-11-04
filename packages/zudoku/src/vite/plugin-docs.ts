@@ -145,6 +145,7 @@ const viteDocsPlugin = (): Plugin => {
         ),
         `};`,
         `export const configuredDocsPlugin = markdownPlugin({`,
+        `  basePath: "${config.basePath ?? ""}",`,
         `  fileImports,`,
         `  defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
         `});`,
