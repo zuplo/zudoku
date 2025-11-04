@@ -236,6 +236,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
+    "cookie-parser": "1.4.7",
     "embla-carousel-react": "8.6.0",
     "estree-util-value-to-estree": "3.4.1",
     "express": "5.1.0",
@@ -250,6 +251,7 @@
     "hast-util-to-string": "3.0.1",
     "http-terminator": "3.2.0",
     "javascript-stringify": "2.1.0",
+    "jose": "5.10.0",
     "json-schema-to-typescript-lite": "15.0.0",
     "loglevel": "1.9.2",
     "lucide-react": "0.548.0",
@@ -300,6 +302,7 @@
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
+    "@types/cookie-parser": "1.4.7",
     "@types/estree": "1.0.8",
     "@types/express": "5.0.3",
     "@types/glob-parent": "5.1.3",
@@ -326,6 +329,7 @@
   },
   "peerDependencies": {
     "@azure/msal-browser": "^4.13.0",
+    "@clerk/backend": "^1.20.0",
     "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4",
@@ -334,6 +338,9 @@
   },
   "peerDependenciesMeta": {
     "@azure/msal-browser": {
+      "optional": true
+    },
+    "@clerk/backend": {
       "optional": true
     },
     "@clerk/clerk-js": {

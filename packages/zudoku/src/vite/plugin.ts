@@ -19,6 +19,9 @@ import { viteSearchPlugin } from "./plugin-search.js";
 import { viteShikiRegisterPlugin } from "./plugin-shiki-register.js";
 import { viteThemePlugin } from "./plugin-theme.js";
 
+// Export SSR server functions
+export { createSSRServer, startSSRServer } from "./ssr-server.js";
+
 export default function vitePlugin(): PluginOption {
   return [
     viteShikiRegisterPlugin(),

@@ -24,6 +24,7 @@ export const render = async ({
   routes,
   basePath,
   bypassProtection,
+  authState,
 }: {
   template: string;
   request: express.Request | Request;
@@ -31,6 +32,7 @@ export const render = async ({
   routes: RouteObject[];
   basePath?: string;
   bypassProtection?: boolean;
+  authState?: { isLoggedIn: boolean; profile?: Record<string, unknown> };
 }) => {
   const { query, dataRoutes } = createStaticHandler(routes, {
     basename: basePath,
@@ -129,6 +131,7 @@ export const render = async ({
 
         if (idx === -1) return response.end(htmlEnd);
 
+        // Serialize React Query state with proper escaping to prevent corruption
         const serialized = JSON.stringify(dehydrated)
           .replace(/</g, "\\u003c")
           .replace(/>/g, "\\u003e");
@@ -137,6 +140,17 @@ export const render = async ({
         response.write("<script>window.DATA=");
         response.write(serialized);
         response.write("</script>");
+
+        // Add auth state if provided (SSR mode)
+        if (authState) {
+          const authStateSerialized = JSON.stringify(authState)
+            .replace(/</g, "\\u003c")
+            .replace(/>/g, "\\u003e");
+          response.write("<script>window.AUTH_STATE=");
+          response.write(authStateSerialized);
+          response.write("</script>");
+        }
+
         response.end(htmlEnd.slice(idx));
       });
 
