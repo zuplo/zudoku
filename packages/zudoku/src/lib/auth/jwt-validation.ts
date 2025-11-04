@@ -4,9 +4,10 @@ import * as jose from "jose";
 import type { ZudokuConfig } from "../../config/config.js";
 
 // JWKS cache to prevent refetching on every request (Issue #1)
+type JWKSGetKeyFunction = ReturnType<typeof jose.createRemoteJWKSet>;
 const jwksCache = new Map<
   string,
-  { jwks: jose.RemoteJWKSet<jose.JWSHeaderParameters>; expiry: number }
+  { jwks: JWKSGetKeyFunction; expiry: number }
 >();
 const JWKS_CACHE_TTL = 3600000; // 1 hour in ms
 
@@ -350,9 +351,7 @@ async function validateAzureB2CToken(
 /**
  * Get cached JWKS or fetch and cache it (Issue #1 fix)
  */
-async function getJWKS(
-  issuer: string,
-): Promise<jose.RemoteJWKSet<jose.JWSHeaderParameters>> {
+async function getJWKS(issuer: string): Promise<JWKSGetKeyFunction> {
   const cached = jwksCache.get(issuer);
   if (cached && Date.now() < cached.expiry) {
     return cached.jwks;
