@@ -14,7 +14,8 @@ const stylesMap = {
     bg: "bg-gray-100 dark:bg-zinc-800/50",
     iconColor: "text-gray-600 dark:text-zinc-300",
     titleColor: "text-gray-600 dark:text-zinc-300",
-    textColor: "text-gray-600 dark:text-zinc-300",
+    textColor:
+      "text-gray-600 dark:text-zinc-300 [&_a]:hover:text-gray-700 [&_a]:dark:hover:text-zinc-400",
     Icon: InfoIcon as LucideIcon,
   },
   tip: {
@@ -22,7 +23,8 @@ const stylesMap = {
     bg: "bg-green-200/25 dark:bg-green-950/70",
     iconColor: "text-green-600 dark:text-green-200",
     titleColor: "text-green-700 dark:text-green-200",
-    textColor: "text-green-600 dark:text-green-50",
+    textColor:
+      "text-green-600 dark:text-green-50 [&_a]:hover:text-green-700 [&_a]:dark:hover:text-green-300",
     Icon: LightbulbIcon as LucideIcon,
   },
   info: {
@@ -30,7 +32,8 @@ const stylesMap = {
     bg: "bg-blue-50 dark:bg-blue-950/40",
     iconColor: "text-blue-400 dark:text-blue-200",
     titleColor: "text-blue-700 dark:text-blue-200",
-    textColor: "text-blue-600 dark:text-blue-100",
+    textColor:
+      "text-blue-600 dark:text-blue-100 [&_a]:hover:text-blue-800 [&_a]:dark:hover:text-blue-300",
     Icon: InfoIcon as LucideIcon,
   },
   caution: {
@@ -38,7 +41,8 @@ const stylesMap = {
     bg: "bg-yellow-100/60 dark:bg-yellow-400/10",
     iconColor: "text-yellow-500 dark:text-yellow-300",
     titleColor: "text-yellow-600 dark:text-yellow-300",
-    textColor: "text-yellow-700 dark:text-yellow-200",
+    textColor:
+      "text-yellow-700 dark:text-yellow-200 [&_a]:hover:text-yellow-800 [&_a]:dark:hover:text-yellow-300",
     Icon: AlertTriangleIcon as LucideIcon,
   },
   danger: {
@@ -46,7 +50,8 @@ const stylesMap = {
     bg: "bg-rose-50 dark:bg-rose-950/40",
     iconColor: "text-rose-400 dark:text-rose-300",
     titleColor: "text-rose-800 dark:text-rose-300",
-    textColor: "text-rose-700 dark:text-rose-100",
+    textColor:
+      "text-rose-700 dark:text-rose-100 [&_a]:hover:text-rose-800 [&_a]:dark:hover:text-rose-300",
     Icon: ShieldAlertIcon as LucideIcon,
   },
 } as const;

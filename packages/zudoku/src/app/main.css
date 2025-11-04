@@ -79,6 +79,23 @@
   ol > li {
     @apply my-2.5;
   }
+
+  header:has(h1) {
+    & ~ p {
+      @apply my-0;
+    }
+  }
+
+  h2 {
+    @apply mt-8 mb-4;
+  }
+
+  ul.contains-task-list {
+    @apply list-none px-0;
+    li {
+      @apply my-1 flex items-center gap-1.5;
+    }
+  }
 }
 
 @layer base {
@@ -138,7 +155,8 @@
   }
 
   ::selection {
-    @apply bg-primary text-primary-foreground;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
   }
 
   .bg-primary::selection,
@@ -156,14 +174,6 @@
     cursor: pointer;
   }
 
-  .prose.prose {
-    ul.contains-task-list {
-      @apply list-none px-0;
-      li {
-        @apply flex items-center gap-2;
-      }
-    }
-  }
 
   .shiki {
     counter-reset: line;
