@@ -116,7 +116,7 @@ export class DevServer {
     app.get("/__z/pagefind-reindex", async (_req, res) => {
       const { config: currentConfig } = await loadZudokuConfig(
         configEnv,
-        this.options.dir,
+        this.#options.dir,
       );
 
       if (currentConfig.search?.type !== "pagefind") {

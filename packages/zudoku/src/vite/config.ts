@@ -187,7 +187,7 @@ export async function getViteConfig(
         build: {
           outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
           emptyOutDir: true,
-          rollupOptions: {
+          rolldownOptions: {
             input:
               configEnv.command === "build"
                 ? "zudoku/app/entry.client.tsx"
@@ -202,7 +202,7 @@ export async function getViteConfig(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
           emptyOutDir: true,
-          rollupOptions: {
+          rolldownOptions: {
             input:
               configEnv.command === "build"
                 ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
