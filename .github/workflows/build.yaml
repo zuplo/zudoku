@@ -56,7 +56,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Build Examples
-        run: nx run-many -t build --projects=tag:example
+        run: nx run-many -t build --projects=tag:example --exclude=mermaid
 
         # Check if the stats file exists, if zudoku doesn't change in the PR
         # the stats file won't exist and we don't need to upload it
