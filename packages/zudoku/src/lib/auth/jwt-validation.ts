@@ -1,6 +1,21 @@
+import { createHash } from "node:crypto";
 import type { Request } from "express";
 import * as jose from "jose";
 import type { ZudokuConfig } from "../../config/config.js";
+
+// JWKS cache to prevent refetching on every request (Issue #1)
+const jwksCache = new Map<
+  string,
+  { jwks: jose.RemoteJWKSet<jose.JWSHeaderParameters>; expiry: number }
+>();
+const JWKS_CACHE_TTL = 3600000; // 1 hour in ms
+
+// Validation result cache to prevent API calls on every request (Issue #4)
+const validationCache = new Map<
+  string,
+  { result: AuthState; expiry: number }
+>();
+const VALIDATION_CACHE_TTL = 300000; // 5 minutes
 
 export type JWTPayload = {
   sub: string;
@@ -24,6 +39,13 @@ export type AuthState = {
 };
 
 /**
+ * Create a hash of the token for cache key (Issue #4)
+ */
+function getTokenHash(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
+/**
  * Extract JWT token from Authorization header or cookies
  */
 export function extractToken(
@@ -43,9 +65,9 @@ export function extractToken(
 
   switch (config.authentication.type) {
     case "clerk": {
-      // Clerk uses __session cookie or __clerk_db_jwt for development
-      // Try session token first, then development JWT
-      return req.cookies?.__session || req.cookies?.__clerk_db_jwt[0] || null;
+      // __session is production cookie
+      // __clerk_db_jwt is development cookie (it's a string, not array!) - Issue #3 fix
+      return req.cookies?.__session || req.cookies?.__clerk_db_jwt || null;
     }
     case "supabase": {
       // Supabase stores access token in cookies
@@ -86,9 +108,38 @@ export function extractToken(
 }
 
 /**
- * Validate JWT token using provider-specific validation
+ * Validate JWT token using provider-specific validation (with caching - Issue #4)
  */
 export async function validateToken(
+  token: string,
+  config: ZudokuConfig,
+): Promise<AuthState | null> {
+  // Check cache first
+  const tokenHash = getTokenHash(token);
+  const cached = validationCache.get(tokenHash);
+
+  if (cached && Date.now() < cached.expiry) {
+    return cached.result;
+  }
+
+  // Validate token
+  const result = await validateTokenUncached(token, config);
+
+  // Cache successful validations
+  if (result?.isLoggedIn) {
+    validationCache.set(tokenHash, {
+      result,
+      expiry: Date.now() + VALIDATION_CACHE_TTL,
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Validate JWT token without caching (internal function)
+ */
+async function validateTokenUncached(
   token: string,
   config: ZudokuConfig,
 ): Promise<AuthState | null> {
@@ -297,6 +348,39 @@ async function validateAzureB2CToken(
 }
 
 /**
+ * Get cached JWKS or fetch and cache it (Issue #1 fix)
+ */
+async function getJWKS(
+  issuer: string,
+): Promise<jose.RemoteJWKSet<jose.JWSHeaderParameters>> {
+  const cached = jwksCache.get(issuer);
+  if (cached && Date.now() < cached.expiry) {
+    return cached.jwks;
+  }
+
+  // Fetch OIDC configuration
+  const wellKnown = await fetch(`${issuer}/.well-known/openid-configuration`);
+  if (!wellKnown.ok) {
+    throw new Error("Failed to fetch OIDC configuration");
+  }
+
+  const config = await wellKnown.json();
+  const jwksUri = config.jwks_uri;
+
+  if (!jwksUri) {
+    throw new Error("JWKS URI not found in OIDC configuration");
+  }
+
+  // Create JWKS remote
+  const jwks = jose.createRemoteJWKSet(new URL(jwksUri));
+
+  // Cache for future requests
+  jwksCache.set(issuer, { jwks, expiry: Date.now() + JWKS_CACHE_TTL });
+
+  return jwks;
+}
+
+/**
  * Generic JWT validation using JWKS endpoint
  */
 async function validateJWTWithJWKS(
@@ -306,21 +390,8 @@ async function validateJWTWithJWKS(
   audience?: string,
 ): Promise<AuthState | null> {
   try {
-    // Discover JWKS endpoint
-    const wellKnown = await fetch(`${issuer}/.well-known/openid-configuration`);
-    if (!wellKnown.ok) {
-      throw new Error("Failed to fetch OIDC configuration");
-    }
-
-    const config = await wellKnown.json();
-    const jwksUri = config.jwks_uri;
-
-    if (!jwksUri) {
-      throw new Error("JWKS URI not found in OIDC configuration");
-    }
-
-    // Create JWKS remote
-    const JWKS = jose.createRemoteJWKSet(new URL(jwksUri));
+    // Get cached or fetch JWKS
+    const JWKS = await getJWKS(issuer);
 
     // Verify token
     const { payload } = await jose.jwtVerify(token, JWKS, {
