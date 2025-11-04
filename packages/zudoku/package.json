@@ -329,6 +329,8 @@
     "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^9.12.0",
     "@supabase/supabase-js": "^2.49.4",
+    "@supabase/auth-ui-react": "^0.4.0",
+    "@supabase/auth-ui-shared": "^0.1.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
@@ -343,6 +345,12 @@
       "optional": true
     },
     "@supabase/supabase-js": {
+      "optional": true
+    },
+    "@supabase/auth-ui-react": {
+      "optional": true
+    },
+    "@supabase/auth-ui-shared": {
       "optional": true
     }
   }

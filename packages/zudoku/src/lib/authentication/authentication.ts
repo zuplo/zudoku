@@ -1,7 +1,18 @@
+import type { NavigateFunction } from "react-router";
+
+export type AuthHandlerContext = { navigate: NavigateFunction };
+export type AuthHandlerOptions = { redirectTo?: string; replace?: boolean };
+
 export interface AuthenticationPlugin {
-  signUp(options?: { redirectTo?: string; replace?: boolean }): Promise<void>;
-  signIn(options?: { redirectTo?: string; replace?: boolean }): Promise<void>;
-  signOut(): Promise<void>;
+  signUp(
+    { navigate }: AuthHandlerContext,
+    options?: AuthHandlerOptions,
+  ): Promise<void>;
+  signIn(
+    { navigate }: AuthHandlerContext,
+    options?: AuthHandlerOptions,
+  ): Promise<void>;
+  signOut({ navigate }: AuthHandlerContext): Promise<void>;
   /**
    * @deprecated use signRequest instead
    */

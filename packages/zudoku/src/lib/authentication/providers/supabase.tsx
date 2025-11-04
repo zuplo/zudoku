@@ -9,9 +9,12 @@ import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  AuthHandlerContext,
+  AuthHandlerOptions,
 } from "../authentication.js";
 import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
+import { SupabaseAuthUI } from "./supabase/SupabaseAuthUI.js";
 
 class SupabaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -23,16 +26,18 @@ class SupabaseAuthenticationProvider
   private readonly redirectToAfterSignIn: string;
   // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Keep around
   private readonly redirectToAfterSignOut: string;
+  private readonly config: SupabaseAuthenticationConfig;
 
-  constructor({
-    supabaseUrl,
-    supabaseKey,
-    provider,
-    redirectToAfterSignUp,
-    redirectToAfterSignIn,
-    redirectToAfterSignOut,
-    basePath,
-  }: SupabaseAuthenticationConfig) {
+  constructor(config: SupabaseAuthenticationConfig) {
+    const {
+      provider,
+      supabaseUrl,
+      supabaseKey,
+      redirectToAfterSignUp,
+      redirectToAfterSignIn,
+      redirectToAfterSignOut,
+      basePath,
+    } = config;
     super();
     this.provider = provider;
     this.client = createClient(supabaseUrl, supabaseKey, {
@@ -41,6 +46,7 @@ class SupabaseAuthenticationProvider
         persistSession: true,
       },
     });
+    this.config = config;
 
     const root = basePath ?? "/";
 
@@ -90,31 +96,31 @@ class SupabaseAuthenticationProvider
     return request;
   }
 
-  signUp = async ({ redirectTo }: { redirectTo?: string }) => {
-    const finalRedirectTo = redirectTo ?? this.redirectToAfterSignUp;
-
-    // Open Supabase Auth UI in a new window
-    await this.client.auth.signInWithOAuth({
-      provider: this.provider,
-      options: {
-        redirectTo: window.location.origin + finalRedirectTo,
-      },
-    });
+  signUp = async (
+    { navigate }: AuthHandlerContext,
+    { redirectTo }: AuthHandlerOptions,
+  ) => {
+    void navigate("/signup");
   };
 
-  signIn = async ({ redirectTo }: { redirectTo?: string }) => {
-    const finalRedirectTo = redirectTo ?? this.redirectToAfterSignIn;
+  signIn = async (
+    { navigate }: AuthHandlerContext,
+    { redirectTo }: AuthHandlerOptions,
+  ) => {
+    void navigate("/signin");
+  };
 
-    await this.client.auth.signInWithOAuth({
-      provider: this.provider,
-      options: {
-        redirectTo: window.location.origin + finalRedirectTo,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
+  getRoutes = () => {
+    return [
+      {
+        path: "/signin",
+        element: <SupabaseAuthUI client={this.client} config={this.config} />,
       },
-    });
+      {
+        path: "/signup",
+        element: <SupabaseAuthUI client={this.client} config={this.config} />,
+      },
+    ];
   };
 
   signOut = async () => {
