@@ -287,7 +287,7 @@
     "unist-util-visit": "5.0.0",
     "vaul": "1.1.2",
     "vfile": "6.0.3",
-    "vite": "npm:rolldown-vite@7.1.16",
+    "vite": "npm:rolldown-vite@7.2.5",
     "yaml": "2.8.1",
     "yargs": "18.0.0",
     "zod": "4.1.12",
