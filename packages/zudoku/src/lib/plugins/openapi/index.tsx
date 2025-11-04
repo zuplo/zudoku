@@ -1,8 +1,7 @@
-import { CirclePlayIcon, LogInIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { CirclePlayIcon } from "lucide-react";
+import type { PropsWithChildren } from "react";
 import { matchPath } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
-import { useAuth } from "../../authentication/hook.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -71,47 +70,28 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
     },
     getMdxComponents: () => ({
       OpenPlaygroundButton: ({
-        requireAuth,
         server,
-        method,
-        url,
+        method = "get",
+        url = "/",
         children,
         ...props
-      }: Partial<PlaygroundContentProps> & { children: ReactNode } & Pick<
-          PlaygroundContentProps,
-          "server"
-        > & {
-          requireAuth: boolean;
-        }) => {
-        const auth = useAuth();
-
+      }: PropsWithChildren<Partial<PlaygroundContentProps>>) => {
         if (!server) {
           throw new Error("Server is required");
         }
 
-        if (requireAuth && !auth.isAuthenticated) {
-          return (
-            <Button
-              className="gap-2 items-center"
-              variant="outline"
-              onClick={auth.login}
-            >
-              Login to open in Playground <LogInIcon size={16} />
-            </Button>
-          );
-        }
-
         return (
           <PlaygroundDialog
-            url={url ?? "/"}
-            method={method ?? "get"}
+            url={url}
+            method={method}
             server={server}
             {...props}
           >
             <Button className="gap-2 items-center" variant="outline">
               {children ?? (
                 <>
-                  Open in Playground <CirclePlayIcon size={16} />
+                  Open in Playground
+                  <CirclePlayIcon size={16} />
                 </>
               )}
             </Button>
