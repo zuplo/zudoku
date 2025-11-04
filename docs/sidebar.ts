@@ -107,6 +107,7 @@ export const docs: Navigation = [
       "docs/deploy/github-pages",
       "docs/deploy/vercel",
       "docs/deploy/direct-upload",
+      "docs/deploy/ssr"
     ],
   },
   {
