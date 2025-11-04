@@ -27,6 +27,7 @@ import {
 } from "../../components/navigation/utils.js";
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { ChatGPTLogo } from "./assets/ChatGPTLogo.js";
 import { ClaudeLogo } from "./assets/ClaudeLogo.js";
@@ -101,7 +102,10 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
-  const markdownUrl = `${location.pathname}.md`;
+  const markdownUrl = joinUrl(
+    import.meta.env.BASE_URL,
+    `${location.pathname}.md`,
+  );
 
   const handleCopyMarkdown = async () => {
     const response = await fetch(markdownUrl);
