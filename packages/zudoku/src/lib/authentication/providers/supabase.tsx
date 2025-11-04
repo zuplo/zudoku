@@ -7,11 +7,12 @@ import {
 import type { SupabaseAuthenticationConfig } from "../../../config/config.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
+  AuthActionContext,
+  AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
-  AuthHandlerContext,
-  AuthHandlerOptions,
 } from "../authentication.js";
+import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 import { SupabaseAuthUI } from "./supabase/SupabaseAuthUI.js";
@@ -97,15 +98,15 @@ class SupabaseAuthenticationProvider
   }
 
   signUp = async (
-    { navigate }: AuthHandlerContext,
-    { redirectTo }: AuthHandlerOptions,
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
   ) => {
     void navigate("/signup");
   };
 
   signIn = async (
-    { navigate }: AuthHandlerContext,
-    { redirectTo }: AuthHandlerOptions,
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
   ) => {
     void navigate("/signin");
   };
@@ -119,6 +120,10 @@ class SupabaseAuthenticationProvider
       {
         path: "/signup",
         element: <SupabaseAuthUI client={this.client} config={this.config} />,
+      },
+      {
+        path: "/signout",
+        element: <SignOut />,
       },
     ];
   };

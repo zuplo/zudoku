@@ -3,6 +3,7 @@ import { LogOutIcon } from "lucide-react";
 import type { ZudokuPlugin } from "zudoku/plugins";
 import type { ClerkAuthenticationConfig } from "../../../config/config.js";
 import type {
+  AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
@@ -158,7 +159,10 @@ const clerkAuth: AuthenticationProviderInitializer<
           : redirectTo,
       });
     },
-    signUp: async ({ redirectTo }: { redirectTo?: string } = {}) => {
+    signUp: async (
+      _: AuthActionContext,
+      { redirectTo }: { redirectTo?: string } = {},
+    ) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignUp({
         signInForceRedirectUrl: redirectToAfterSignIn

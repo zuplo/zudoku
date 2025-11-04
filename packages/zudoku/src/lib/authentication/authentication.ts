@@ -1,18 +1,23 @@
 import type { NavigateFunction } from "react-router";
+import type { ZudokuContext } from "../core/ZudokuContext.js";
 
-export type AuthHandlerContext = { navigate: NavigateFunction };
-export type AuthHandlerOptions = { redirectTo?: string; replace?: boolean };
+export type AuthActionContext = { navigate: NavigateFunction };
+export type AuthActionOptions = { redirectTo?: string; replace?: boolean };
 
 export interface AuthenticationPlugin {
+  initialize?(context: ZudokuContext): Promise<void>;
+  setNavigate?(navigate: NavigateFunction): void;
+
   signUp(
-    { navigate }: AuthHandlerContext,
-    options?: AuthHandlerOptions,
+    { navigate }: AuthActionContext,
+    options: AuthActionOptions,
   ): Promise<void>;
   signIn(
-    { navigate }: AuthHandlerContext,
-    options?: AuthHandlerOptions,
+    { navigate }: AuthActionContext,
+    options: AuthActionOptions,
   ): Promise<void>;
-  signOut({ navigate }: AuthHandlerContext): Promise<void>;
+
+  signOut({ navigate }: AuthActionContext): Promise<void>;
   /**
    * @deprecated use signRequest instead
    */

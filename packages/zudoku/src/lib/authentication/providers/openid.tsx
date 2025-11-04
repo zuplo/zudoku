@@ -7,6 +7,8 @@ import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
+  AuthActionContext,
+  AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
@@ -134,14 +136,8 @@ export class OpenIDAuthenticationProvider
   }
 
   async signIn(
-    _: { navigate: NavigateFunction },
-    {
-      redirectTo,
-      replace = false,
-    }: {
-      redirectTo?: string;
-      replace?: boolean;
-    } = {},
+    _: AuthActionContext,
+    { redirectTo, replace = false }: AuthActionOptions,
   ) {
     return this.authorize({
       redirectTo: this.redirectToAfterSignIn ?? redirectTo ?? "/",
