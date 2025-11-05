@@ -1,0 +1,84 @@
+# Setup
+
+<Stepper>
+
+1. To use Mermaid in your Zudoku documentation site, you need to install the `rehype-mermaid`
+   package.
+
+   ```bash
+   npm install rehype-mermaid
+   ```
+
+1. For the generation of the diagrams you also need to install the `playwright` package.
+
+   ```bash
+   npm install -D playwright
+   ```
+
+1. Install the browsers for playwright.
+
+   ```bash
+   npx playwright install
+   ```
+
+1. Then, you need to add the `rehype-mermaid` plugin to your Zudoku build configuration. It's
+   important to add the plugin before the other plugins so the highlighter won't try to highlight
+   the diagrams.
+
+   ```tsx title="zudoku.build.ts"
+   import rehypeMermaid, { type RehypeMermaidOptions } from "rehype-mermaid";
+   import type { ZudokuBuildConfig } from "zudoku";
+
+   export default {
+     rehypePlugins: (plugins) => [
+       [
+         rehypeMermaid,
+         {
+           strategy: "inline-svg",
+         } satisfies RehypeMermaidOptions,
+       ],
+       ...plugins,
+     ],
+   } satisfies ZudokuBuildConfig;
+   ```
+
+1. To use Mermaid in your Markdown files, you need to add the `mermaid` directive to your Markdown
+   file.
+
+   ````mdx title="pages/mermaid.mdx"
+   # Mermaid
+
+   ```mermaid
+   graph TD;
+       A-->B;
+       A-->C;
+       B-->D;
+       C-->D;
+   ```
+   ````
+
+1. Result:
+
+   ```mermaid
+   graph TD;
+       A-->B;
+       A-->C;
+       B-->D;
+       C-->D;
+   ```
+
+</Stepper>
+
+:::tip
+
+To improve dark mode support, you can add the following custom CSS to your `zudoku.config.tsx`.
+
+```ts title="zudoku.config.tsx"
+export default {
+  theme: {
+    customCss: `.dark svg[id^="mermaid-"] { filter: invert(1); }`,
+  },
+} satisfies ZudokuConfig;
+```
+
+:::
