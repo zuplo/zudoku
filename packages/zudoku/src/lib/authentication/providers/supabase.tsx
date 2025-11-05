@@ -115,11 +115,23 @@ class SupabaseAuthenticationProvider
     return [
       {
         path: "/signin",
-        element: <SupabaseAuthUI client={this.client} config={this.config} />,
+        element: (
+          <SupabaseAuthUI
+            view="sign_in"
+            client={this.client}
+            config={this.config}
+          />
+        ),
       },
       {
         path: "/signup",
-        element: <SupabaseAuthUI client={this.client} config={this.config} />,
+        element: (
+          <SupabaseAuthUI
+            view="sign_up"
+            client={this.client}
+            config={this.config}
+          />
+        ),
       },
       {
         path: "/signout",
