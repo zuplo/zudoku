@@ -37,9 +37,6 @@ const config: ZudokuConfig = {
     supabaseUrl: "https://xgipcjfbwhxxmnmbgang.supabase.co",
     supabaseKey: "sb_publishable_Owrp_sEczaIw9BthUQ8gAw_HDelnNHO",
   },
-  apiKeys: {
-    enabled: true,
-  },
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",
