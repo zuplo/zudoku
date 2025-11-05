@@ -148,7 +148,10 @@ const clerkAuth: AuthenticationProviderInitializer<
       });
       useAuthState.getState().setLoggedOut();
     },
-    signIn: async ({ redirectTo }: { redirectTo?: string } = {}) => {
+    signIn: async (
+      _: AuthActionContext,
+      { redirectTo }: { redirectTo?: string } = {},
+    ) => {
       await ensureLoaded;
       await clerkApi?.redirectToSignIn({
         signInForceRedirectUrl: redirectToAfterSignIn
