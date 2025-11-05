@@ -38,7 +38,7 @@ export const RouteGuard = () => {
   const needsToSignIn =
     isProtectedRoute && !authCheckFn({ auth, context: zudoku });
 
-  if (auth.isPending) {
+  if (auth.isPending && typeof window !== "undefined") {
     return null;
   }
 
