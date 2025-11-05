@@ -7,7 +7,12 @@ import { EmbeddedCodeBlock } from "./EmbeddedCodeBlock.js";
 
 type SyntaxHighlightProps = CodeBlockProps &
   (
-    | { code: string; embedded?: boolean; children?: never }
+    | {
+        code: string;
+        embedded?: boolean;
+        children?: never;
+        fullHeight?: boolean;
+      }
     | { code?: never; children: string; embedded?: boolean }
   );
 
