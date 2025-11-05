@@ -29,9 +29,7 @@ export const SupabaseAuthUI = ({
             ...config.appearance,
           }}
           providers={providers}
-          redirectTo={
-            window.location.origin + (config.redirectToAfterSignIn ?? "/")
-          }
+          redirectTo={config.redirectToAfterSignIn ?? "/"}
         />
       </div>
     </div>
