@@ -1,16 +1,12 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router";
-import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { useAuth } from "../hook.js";
 
 export const SignOut = () => {
-  const context = useZudoku();
-  const navigate = useNavigate();
+  const auth = useAuth();
 
   useEffect(() => {
-    void context.authentication
-      ?.signOut({ navigate })
-      .then(() => navigate("/"));
-  }, [context.authentication, navigate]);
+    void auth.logout();
+  }, [auth]);
 
   return null;
 };

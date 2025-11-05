@@ -8,17 +8,19 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
-import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { useAuth } from "../hook.js";
 
 export const SignIn = () => {
-  const context = useZudoku();
+  const auth = useAuth();
   const [search] = useSearchParams();
+  const redirectTo = search.get("redirect") ?? undefined;
+
   useEffect(() => {
-    void context.authentication?.signIn({
-      redirectTo: search.get("redirect") ?? undefined,
+    void auth.login({
+      redirectTo,
       replace: true,
     });
-  }, [context.authentication, search]);
+  }, [auth, redirectTo]);
 
   return (
     <div className="flex items-center justify-center mt-8">
