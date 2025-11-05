@@ -1,11 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { use } from "react";
 import { matchPath, Outlet, useLocation, useNavigate } from "react-router";
+import { Button } from "zudoku/ui/Button.js";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
@@ -37,21 +38,9 @@ export const RouteGuard = () => {
   const needsToSignIn =
     isProtectedRoute && !authCheckFn({ auth, context: zudoku });
 
-  useQuery({
-    queryKey: ["login-redirect", Math.random()],
-    queryFn: async () => {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      await zudoku.authentication?.signIn(
-        { navigate },
-        {
-          redirectTo: latestPath.current,
-        },
-      );
-      return true;
-    },
-    gcTime: 0,
-    enabled: typeof window !== "undefined" && needsToSignIn && !auth.isPending,
-  });
+  if (auth.isPending) {
+    return null;
+  }
 
   if (needsToSignIn) {
     return (
@@ -65,11 +54,38 @@ export const RouteGuard = () => {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Logging you in...</DialogTitle>
+            <DialogTitle>Login to continue</DialogTitle>
           </DialogHeader>
           <DialogDescription>
             Please wait while we log you in.
           </DialogDescription>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => void navigate(-1)}>
+              Cancel
+            </Button>
+            <div className="w-full"></div>
+            <Button
+              variant="secondary"
+              onClick={() =>
+                void zudoku.authentication?.signUp(
+                  { navigate },
+                  { redirectTo: latestPath.current },
+                )
+              }
+            >
+              Register
+            </Button>
+            <Button
+              onClick={() =>
+                void zudoku.authentication?.signIn(
+                  { navigate },
+                  { redirectTo: latestPath.current },
+                )
+              }
+            >
+              Login{" "}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     );
