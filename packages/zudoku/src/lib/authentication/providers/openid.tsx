@@ -263,7 +263,7 @@ export class OpenIDAuthenticationProvider
     return request;
   };
 
-  signOut = async () => {
+  signOut = async (_: AuthActionContext) => {
     useAuthState.setState({
       isAuthenticated: false,
       isPending: false,

@@ -120,7 +120,10 @@ export class AzureB2CAuthPlugin
     });
   }
 
-  async signIn({ redirectTo }: { redirectTo?: string } = {}) {
+  async signIn(
+    _: AuthActionContext,
+    { redirectTo }: { redirectTo?: string } = {},
+  ) {
     const redirectUri = this.redirectToAfterSignIn ?? redirectTo ?? "/";
     sessionStorage.setItem("redirect-to", redirectUri);
 

@@ -1,7 +1,6 @@
 import type { Auth0AuthenticationConfig } from "../../../config/config.js";
 import type {
   AuthActionContext,
-  AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
@@ -37,10 +36,7 @@ class Auth0AuthenticationProvider
     }
   };
 
-  signOut = async (
-    _: AuthActionContext,
-    __: AuthActionOptions,
-  ): Promise<void> => {
+  signOut = async (_: AuthActionContext): Promise<void> => {
     const as = await this.getAuthServer();
     const idToken = await this.getAccessToken();
 

@@ -10,11 +10,11 @@ export interface AuthenticationPlugin {
 
   signUp(
     { navigate }: AuthActionContext,
-    options: AuthActionOptions,
+    options?: AuthActionOptions,
   ): Promise<void>;
   signIn(
     { navigate }: AuthActionContext,
-    options: AuthActionOptions,
+    options?: AuthActionOptions,
   ): Promise<void>;
 
   signOut({ navigate }: AuthActionContext): Promise<void>;

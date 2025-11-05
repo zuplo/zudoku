@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useNavigate } from "react-router";
 import { Button, Link } from "zudoku/components";
 import {
   Card,
@@ -11,9 +12,13 @@ import { useZudoku } from "../../components/context/ZudokuContext.js";
 
 export const SignUp = () => {
   const context = useZudoku();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    void (context.authentication?.signUp() ?? context.authentication?.signIn());
+    void (
+      context.authentication?.signUp({ navigate }) ??
+      context.authentication?.signIn({ navigate })
+    );
   }, [context.authentication]);
 
   return (
