@@ -153,8 +153,8 @@ export const highlight = (
     components: {
       code: (props) =>
         createElement("code", {
-          className: cn(props.className, HIGHLIGHT_CODE_BLOCK_CLASS),
           ...props,
+          className: cn(props.className, HIGHLIGHT_CODE_BLOCK_CLASS),
         }),
     },
   });
