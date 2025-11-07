@@ -22,25 +22,16 @@ class SupabaseAuthenticationProvider
   implements AuthenticationPlugin
 {
   private readonly client: SupabaseClient;
-  private readonly provider: Provider;
-  private readonly redirectToAfterSignUp: string;
-  private readonly redirectToAfterSignIn: string;
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Keep around
-  private readonly redirectToAfterSignOut: string;
+  private readonly providers: Provider[];
   private readonly config: SupabaseAuthenticationConfig;
 
   constructor(config: SupabaseAuthenticationConfig) {
-    const {
-      provider,
-      supabaseUrl,
-      supabaseKey,
-      redirectToAfterSignUp,
-      redirectToAfterSignIn,
-      redirectToAfterSignOut,
-      basePath,
-    } = config;
+    const { provider, providers, supabaseUrl, supabaseKey } = config;
     super();
-    this.provider = provider;
+    this.providers = providers ?? (provider ? [provider] : []);
+    if (this.providers.length === 0) {
+      throw new Error("At least one provider must be provided");
+    }
     this.client = createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: true,
@@ -48,12 +39,6 @@ class SupabaseAuthenticationProvider
       },
     });
     this.config = config;
-
-    const root = basePath ?? "/";
-
-    this.redirectToAfterSignUp = redirectToAfterSignUp ?? root;
-    this.redirectToAfterSignIn = redirectToAfterSignIn ?? root;
-    this.redirectToAfterSignOut = redirectToAfterSignOut ?? root;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -101,14 +86,22 @@ class SupabaseAuthenticationProvider
     { navigate }: AuthActionContext,
     { redirectTo }: AuthActionOptions,
   ) => {
-    void navigate("/signup");
+    void navigate(
+      redirectTo
+        ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/signup`,
+    );
   };
 
   signIn = async (
     { navigate }: AuthActionContext,
     { redirectTo }: AuthActionOptions,
   ) => {
-    void navigate("/signin");
+    void navigate(
+      redirectTo
+        ? `/signin?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/signin`,
+    );
   };
 
   getRoutes = () => {

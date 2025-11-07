@@ -5,6 +5,7 @@ import {
   type ViewType,
 } from "@supabase/auth-ui-shared";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { useSearchParams } from "react-router";
 import type { SupabaseAuthenticationConfig } from "../../../../config/config.js";
 import { Heading } from "../../../components/Heading.js";
 
@@ -17,7 +18,16 @@ export const SupabaseAuthUI = ({
   config: SupabaseAuthenticationConfig;
   view: ViewType;
 }) => {
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
   const providers = config.provider ? [config.provider] : config.providers;
+  const root = config.basePath ?? "/";
+  const redirectToAfterSignUp =
+    redirectTo ?? config.redirectToAfterSignUp ?? root;
+  const redirectToAfterSignIn =
+    redirectTo ?? config.redirectToAfterSignIn ?? root;
+  const redirectToAfterSignOut =
+    redirectTo ?? config.redirectToAfterSignOut ?? root;
 
   return (
     <div className="flex items-center justify-center">
@@ -27,6 +37,9 @@ export const SupabaseAuthUI = ({
         </Heading>
         <Auth
           view={view}
+          redirectToAfterSignIn={redirectToAfterSignIn}
+          redirectToAfterSignUp={redirectToAfterSignUp}
+          redirectToAfterSignOut={redirectToAfterSignOut}
           supabaseClient={client}
           appearance={{
             theme: ThemeSupa,
