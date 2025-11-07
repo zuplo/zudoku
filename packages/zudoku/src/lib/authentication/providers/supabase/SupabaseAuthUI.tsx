@@ -41,6 +41,7 @@ export const SupabaseAuthUI = ({
           redirectToAfterSignUp={redirectToAfterSignUp}
           redirectToAfterSignOut={redirectToAfterSignOut}
           supabaseClient={client}
+          onlyThirdPartyProviders={config.onlyThirdPartyProviders}
           appearance={{
             theme: ThemeSupa,
             variables: {

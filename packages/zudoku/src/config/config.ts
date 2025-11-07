@@ -48,7 +48,7 @@ export type SupabaseAuthenticationConfig = {
   supabaseUrl: string;
   supabaseKey: string;
   basePath?: string;
-  appearance?: Record<string, unknown>;
+  onlyThirdPartyProviders?: boolean;
 } & RedirectOptions;
 
 export type AzureB2CAuthenticationConfig = {

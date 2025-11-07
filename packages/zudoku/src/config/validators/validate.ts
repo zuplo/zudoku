@@ -394,24 +394,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     supabaseKey: z.string(),
     provider: z.string().optional(),
     providers: z.array(z.string()).optional(),
-    appearance: z
-      .object({
-        theme: z.unknown().optional(),
-        variables: z.unknown().optional(),
-        className: z
-          .object({
-            anchor: z.string().optional(),
-            button: z.string().optional(),
-            container: z.string().optional(),
-            divider: z.string().optional(),
-            input: z.string().optional(),
-            label: z.string().optional(),
-            loader: z.string().optional(),
-            message: z.string().optional(),
-          })
-          .optional(),
-      })
-      .optional(),
+    onlyThirdPartyProviders: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
