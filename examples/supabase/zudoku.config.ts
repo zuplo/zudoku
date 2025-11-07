@@ -8,6 +8,9 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
+  theme: {
+    registryUrl: "https://tweakcn.com/r/themes/supabase.json",
+  },
   navigation: [
     {
       type: "category",

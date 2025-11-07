@@ -1,5 +1,9 @@
 import { Auth } from "@supabase/auth-ui-react";
-import { ThemeSupa, type ViewType } from "@supabase/auth-ui-shared";
+import {
+  ThemeSupa,
+  type ThemeVariables,
+  type ViewType,
+} from "@supabase/auth-ui-shared";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SupabaseAuthenticationConfig } from "../../../../config/config.js";
 import { Heading } from "../../../components/Heading.js";
@@ -13,7 +17,7 @@ export const SupabaseAuthUI = ({
   config: SupabaseAuthenticationConfig;
   view: ViewType;
 }) => {
-  const providers = config.provider ? [config.provider] : undefined;
+  const providers = config.provider ? [config.provider] : config.providers;
 
   return (
     <div className="flex items-center justify-center">
@@ -26,7 +30,27 @@ export const SupabaseAuthUI = ({
           supabaseClient={client}
           appearance={{
             theme: ThemeSupa,
-            ...config.appearance,
+            variables: {
+              default: {
+                colors: {
+                  dividerBackground: "var(--border)",
+                  brand: "var(--primary)",
+                  brandAccent: "hsla(from var(--primary) h s l / 0.8)",
+                  brandButtonText: "var(--primary-foreground)",
+                  defaultButtonBorder: "var(--border)",
+                  inputBorder: "var(--border)",
+                  inputText: "var(--foreground)",
+                  inputBorderHover: "var(--accent)",
+                  defaultButtonBackground: "var(--secondary)",
+                  defaultButtonBackgroundHover: "var(--accent)",
+                },
+                radii: {
+                  borderRadiusButton: "var(--radius)",
+                  buttonBorderRadius: "var(--radius)",
+                  inputBorderRadius: "var(--radius)",
+                },
+              } satisfies ThemeVariables,
+            },
           }}
           providers={providers}
           redirectTo={config.redirectToAfterSignIn ?? "/"}
