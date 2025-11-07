@@ -26,7 +26,7 @@ export const SupabaseAuthUI = ({
           {view === "sign_in" ? "Sign in" : "Sign up"}
         </Heading>
         <Auth
-          view="sign_in"
+          view={view}
           supabaseClient={client}
           appearance={{
             theme: ThemeSupa,
