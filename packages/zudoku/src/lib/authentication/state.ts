@@ -1,5 +1,6 @@
-import { create, type Mutate, type StoreApi } from "zustand";
+import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { syncZustandState } from "../util/syncZustandState.js";
 
 export interface AuthState<ProviderData = unknown> {
   isAuthenticated: boolean;
@@ -16,25 +17,6 @@ export interface AuthState<ProviderData = unknown> {
     providerData: unknown;
   }) => void;
 }
-
-export type StoreWithPersist<T> = Mutate<
-  StoreApi<T>,
-  [["zustand/persist", unknown]]
->;
-
-const withStorageDOMEvents = <T>(store: StoreWithPersist<T>) => {
-  const storageEventCallback = (e: StorageEvent) => {
-    if (e.key === store.persist.getOptions().name && e.newValue) {
-      void store.persist.rehydrate();
-    }
-  };
-
-  window.addEventListener("storage", storageEventCallback);
-
-  return () => {
-    window.removeEventListener("storage", storageEventCallback);
-  };
-};
 
 export const useAuthState = create<AuthState>()(
   persist(
@@ -85,9 +67,7 @@ export const useAuthState = create<AuthState>()(
   ),
 );
 
-if (typeof window !== "undefined") {
-  withStorageDOMEvents(useAuthState);
-}
+syncZustandState(useAuthState);
 
 export interface UserProfile {
   sub: string;
