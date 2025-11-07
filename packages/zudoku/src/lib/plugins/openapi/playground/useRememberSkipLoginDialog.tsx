@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
+import { syncZustandState } from "../../../util/syncZustandState.js";
 
 type RememberSkipLoginState = {
   skipLogin: boolean;
@@ -18,3 +19,5 @@ export const useRememberSkipLoginDialog = create<RememberSkipLoginState>()(
     },
   ),
 );
+
+syncZustandState(useRememberSkipLoginDialog);
