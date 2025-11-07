@@ -85,11 +85,11 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
         <ListTreeIcon size={16} />
         On this page
       </div>
-      <div className="relative ms-2 ps-4">
-        <div className="absolute inset-0 end-auto bg-border w-[2px]" />
+      <div className="relative ms-px ps-4">
+        <div className="absolute inset-0 end-auto bg-border w-[1.5px]" />
         <div
           className={cn(
-            "absolute -start-px -translate-y-1 h-6 w-[4px] rounded-sm bg-primary",
+            "absolute start-0 -translate-y-1 h-6 w-[2.5px] bg-primary",
             paintedOnce.current &&
               "ease-out [transition:top_150ms,opacity_325ms]",
           )}

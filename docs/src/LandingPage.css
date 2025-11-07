@@ -6,8 +6,3 @@
     transform: scale(1);
   }
 }
-
-::selection {
-  /* biome-ignore lint/complexity/noImportantStyles: Necessary */
-  background: initial !important;
-}

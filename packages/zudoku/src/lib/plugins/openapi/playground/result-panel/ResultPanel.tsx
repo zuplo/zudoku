@@ -25,7 +25,7 @@ export const ResultPanel = ({
   tip?: React.ReactNode;
 }) => {
   return (
-    <div className="overflow-y-auto h-[80vh] bg-muted/50">
+    <div className="flex flex-col overflow-y-auto h-[80vh] bg-muted/50">
       {(queryMutation.isPending || queryMutation.data) && (
         <ResponseStatusBar
           status={queryMutation.data?.status}

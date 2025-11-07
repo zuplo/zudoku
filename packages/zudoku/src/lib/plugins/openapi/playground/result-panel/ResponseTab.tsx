@@ -5,7 +5,9 @@ import {
   DownloadIcon,
   EyeIcon,
   EyeOffIcon,
+  MinusCircleIcon,
   PlusCircleIcon,
+  SquareCodeIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
@@ -22,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { cn } from "../../../../util/cn.js";
 import createVariantComponent from "../../../../util/createVariantComponent.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
@@ -30,7 +33,6 @@ import {
   CollapsibleHeaderTrigger,
 } from "../CollapsibleHeader.js";
 import { convertToTypes } from "./convertToTypes.js";
-import { Highlight } from "./Highlight.js";
 
 const mimeTypeToLanguage = (mimeType: string) => {
   const mimeTypeMapping = {
@@ -92,28 +94,35 @@ const Row = createVariantComponent(
   "grid-cols-subgrid grid border-b col-span-full px-4 py-1.5 font-mono text-xs",
 );
 
-const RowContent = createVariantComponent("div", "py-1 break-all");
+const RowContent = createVariantComponent("div", "py-1 break-words");
 const RowValue = ({ value, header }: { value: string; header: string }) => {
   const secretHeaders = ["authorization", "key", "secret", "token"];
   const isSecret = secretHeaders.includes(header.toLowerCase());
   const [revealed, setRevealed] = useState(!isSecret);
   return (
     <RowContent
-      className={cn(isSecret && "cursor-pointer flex group")}
+      className={cn(
+        "max-h-28 overflow-auto",
+        isSecret && "cursor-pointer flex group",
+      )}
       onClick={() => {
         if (isSecret) {
           setRevealed((prev) => !prev);
         }
       }}
     >
-      <SecretText secret={value} previewChars={0} revealed={revealed} />
-      {isSecret ? (
-        revealed ? (
-          <EyeOffIcon size={14} className={cn("hidden group-hover:block")} />
-        ) : (
-          <EyeIcon size={14} className={cn("hidden group-hover:block")} />
-        )
-      ) : null}
+      {!isSecret ? (
+        value
+      ) : (
+        <>
+          <SecretText secret={value} previewChars={0} revealed={revealed} />
+          {revealed ? (
+            <EyeOffIcon size={14} className={cn("hidden group-hover:block")} />
+          ) : (
+            <EyeIcon size={14} className={cn("hidden group-hover:block")} />
+          )}
+        </>
+      )}
     </RowContent>
   );
 };
@@ -174,13 +183,13 @@ export const ResponseTab = ({
     <>
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownRightIcon size={16} />
+          <CornerDownRightIcon size={14} />
           <CollapsibleHeader className="col-span-2">
-            Header Request
+            Request Headers
           </CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
-          <div className="grid grid-cols-2 gap-x-6 text-sm">
+          <div className="grid grid-cols-[2fr_3fr] gap-x-6 text-sm">
             {request.headers
               .slice(0, MAX_HEADERS_TO_SHOW)
               .map(([key, value]) => (
@@ -189,19 +198,45 @@ export const ResponseTab = ({
                   <RowValue value={value} header={key} />
                 </Row>
               ))}
+            {request.headers.length > MAX_HEADERS_TO_SHOW && (
+              <Collapsible className="col-span-full grid-cols-subgrid grid group">
+                <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
+                  Show {request.headers.length - MAX_HEADERS_TO_SHOW} more
+                  headers
+                  <PlusCircleIcon size={12} className="text-muted-foreground" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
+                  {request.headers
+                    .slice(MAX_HEADERS_TO_SHOW)
+                    .map(([key, value]) => (
+                      <Row key={key}>
+                        <RowContent>{key}</RowContent>
+                        <RowValue value={value} header={key} />
+                      </Row>
+                    ))}
+                  <CollapsibleTrigger className="justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
+                    Hide {request.headers.length - MAX_HEADERS_TO_SHOW} headers
+                    <MinusCircleIcon
+                      size={12}
+                      className="text-muted-foreground"
+                    />
+                  </CollapsibleTrigger>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
           </div>
         </CollapsibleContent>
       </Collapsible>
 
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
-          <CornerDownLeftIcon size={16} />
+          <CornerDownLeftIcon size={14} />
           <CollapsibleHeader className="col-span-2">
-            Header Response
+            Response Headers
           </CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
-          <div className="grid grid-cols-2 gap-x-6 text-sm">
+          <div className="grid grid-cols-[2fr_3fr] gap-x-6 text-sm">
             {sortedHeaders.slice(0, MAX_HEADERS_TO_SHOW).map(([key, value]) => (
               <Row key={key}>
                 <RowContent>{key}</RowContent>
@@ -211,10 +246,7 @@ export const ResponseTab = ({
             {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
               <Collapsible className="col-span-full grid-cols-subgrid grid group">
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
-                  <span>
-                    Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more
-                    headers
-                  </span>
+                  Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more headers
                   <PlusCircleIcon size={12} className="text-muted-foreground" />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
@@ -226,6 +258,13 @@ export const ResponseTab = ({
                         <RowValue value={value} header={key} />
                       </Row>
                     ))}
+                  <CollapsibleTrigger className="justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
+                    Hide {sortedHeaders.length - MAX_HEADERS_TO_SHOW} headers
+                    <MinusCircleIcon
+                      size={12}
+                      className="text-muted-foreground"
+                    />
+                  </CollapsibleTrigger>
                 </CollapsibleContent>
               </Collapsible>
             )}
@@ -233,26 +272,30 @@ export const ResponseTab = ({
         </CollapsibleContent>
       </Collapsible>
 
-      <div className="flex gap-2 justify-between items-center border-b h-10">
+      <div className="flex gap-2 justify-between items-center border-b px-2 flex-0">
+        <CollapsibleHeader className="flex items-center gap-2">
+          <SquareCodeIcon size={14} />
+          Response body
+        </CollapsibleHeader>
         {jsonContent && !isBinary && (
-          <div className="px-2">
-            <Select
-              value={view}
-              onValueChange={(value) => setView(value as "formatted" | "raw")}
-            >
-              <SelectTrigger className="min-w-32 border-none h-8">
-                <SelectValue placeholder="View" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="formatted">Formatted</SelectItem>
-                <SelectItem value="raw">Raw</SelectItem>
-                <SelectItem value="types">Types</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <Select
+            value={view}
+            onValueChange={(value) =>
+              setView(value as "formatted" | "raw" | "types")
+            }
+          >
+            <SelectTrigger className="max-w-32 border-0 bg-transparent">
+              <SelectValue placeholder="View" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="formatted">Formatted</SelectItem>
+              <SelectItem value="raw">Raw</SelectItem>
+              <SelectItem value="types">Types</SelectItem>
+            </SelectContent>
+          </Select>
         )}
       </div>
-      <div>
+      <div className="flex-1">
         {isBinary ? (
           <div className="p-4 text-center">
             <div className="flex flex-col items-center gap-4">
@@ -272,26 +315,27 @@ export const ResponseTab = ({
             </div>
           </div>
         ) : (
-          <div className="overflow-auto max-w-full p-4 text-xs max-h-[calc(83.333vh-180px)]">
-            <Highlight
-              language={
-                view === "types"
-                  ? "typescript"
-                  : view === "raw"
-                    ? jsonContent
-                      ? "plain"
-                      : detectedLanguage
-                    : "json"
-              }
-              code={
-                (view === "raw"
-                  ? body
-                  : view === "types"
-                    ? types.data?.lines.join("\n")
-                    : beautifiedBody) ?? ""
-              }
-            />
-          </div>
+          <SyntaxHighlight
+            className="text-xs flex-1"
+            embedded
+            fullHeight
+            language={
+              view === "types"
+                ? "typescript"
+                : view === "raw"
+                  ? jsonContent
+                    ? "plain"
+                    : detectedLanguage
+                  : "json"
+            }
+            code={
+              (view === "raw"
+                ? body
+                : view === "types"
+                  ? types.data?.lines.join("\n")
+                  : beautifiedBody) ?? ""
+            }
+          />
         )}
       </div>
     </>
