@@ -1,11 +1,14 @@
 import logger from "loglevel";
 import * as oauth from "oauth4webapi";
 import { ErrorBoundary } from "react-error-boundary";
+import type { NavigateFunction } from "react-router";
 import type { OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
+  AuthActionContext,
+  AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
@@ -115,13 +118,16 @@ export class OpenIDAuthenticationProvider
     });
   }
 
-  async signUp({
-    redirectTo,
-    replace = false,
-  }: {
-    redirectTo?: string;
-    replace?: boolean;
-  } = {}) {
+  async signUp(
+    _: { navigate: NavigateFunction },
+    {
+      redirectTo,
+      replace = false,
+    }: {
+      redirectTo?: string;
+      replace?: boolean;
+    } = {},
+  ) {
     return this.authorize({
       redirectTo: this.redirectToAfterSignUp ?? redirectTo ?? "/",
       replace,
@@ -129,13 +135,10 @@ export class OpenIDAuthenticationProvider
     });
   }
 
-  async signIn({
-    redirectTo,
-    replace = false,
-  }: {
-    redirectTo?: string;
-    replace?: boolean;
-  } = {}) {
+  async signIn(
+    _: AuthActionContext,
+    { redirectTo, replace = false }: AuthActionOptions,
+  ) {
     return this.authorize({
       redirectTo: this.redirectToAfterSignIn ?? redirectTo ?? "/",
       replace,
@@ -260,7 +263,7 @@ export class OpenIDAuthenticationProvider
     return request;
   };
 
-  signOut = async () => {
+  signOut = async (_: AuthActionContext) => {
     useAuthState.setState({
       isAuthenticated: false,
       isPending: false,

@@ -43,10 +43,12 @@ export type Auth0AuthenticationConfig = {
 
 export type SupabaseAuthenticationConfig = {
   type: "supabase";
-  provider: Provider;
+  provider?: Provider;
+  providers?: Provider[];
   supabaseUrl: string;
   supabaseKey: string;
   basePath?: string;
+  onlyThirdPartyProviders?: boolean;
 } & RedirectOptions;
 
 export type AzureB2CAuthenticationConfig = {

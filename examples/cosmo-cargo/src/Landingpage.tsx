@@ -1,4 +1,5 @@
-import { Button, Head, Link, Typography, useAuth } from "zudoku/components";
+import { Button, Head, Link, Typography } from "zudoku/components";
+import { useAuth } from "zudoku/hooks";
 
 export const Landingpage = () => {
   const { isAuthenticated } = useAuth();

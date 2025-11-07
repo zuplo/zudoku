@@ -32,7 +32,7 @@ import { ZudokuProvider } from "./context/ZudokuProvider.js";
 
 let zudokuContext: ZudokuContext | undefined;
 
-const ZudokoInner = memo(
+const ZudokuInner = memo(
   ({ children, ...props }: PropsWithChildren<ZudokuContextOptions>) => {
     const components = useMemo(
       () => ({ ...DEFAULT_COMPONENTS, ...props.overrides }),
@@ -105,12 +105,12 @@ const ZudokoInner = memo(
   },
 );
 
-ZudokoInner.displayName = "ZudokoInner";
+ZudokuInner.displayName = "ZudokuInner";
 
 const Zudoku = (props: ZudokuContextOptions) => {
   return (
     <ErrorBoundary FallbackComponent={TopLevelError}>
-      <ZudokoInner {...props} />
+      <ZudokuInner {...props} />
     </ErrorBoundary>
   );
 };
