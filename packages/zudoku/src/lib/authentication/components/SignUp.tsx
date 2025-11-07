@@ -7,14 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
-import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { useAuth } from "../hook.js";
 
 export const SignUp = () => {
-  const context = useZudoku();
+  const auth = useAuth();
 
   useEffect(() => {
-    void (context.authentication?.signUp() ?? context.authentication?.signIn());
-  }, [context.authentication]);
+    void auth.signup();
+  }, [auth]);
 
   return (
     <div className="flex items-center justify-center mt-8">
@@ -28,10 +28,7 @@ export const SignUp = () => {
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-2 justify-center">
-            <Button
-              onClick={() => context.authentication?.signIn()}
-              variant="default"
-            >
+            <Button onClick={() => auth.signup()} variant="default">
               Register
             </Button>
             <Button variant="link" className="text-muted-foreground" asChild>

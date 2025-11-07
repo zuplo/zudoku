@@ -40,7 +40,7 @@
     {
       "name": "Tracking & Notifications",
       "description": "Endpoints for tracking shipments and configuring notifications for shipment status updates.",
-      "x-displayName": "🔔 Notifications"
+      "x-displayName": "Notifications"
     },
     {
       "name": "System",

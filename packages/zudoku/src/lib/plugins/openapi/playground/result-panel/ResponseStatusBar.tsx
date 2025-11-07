@@ -84,7 +84,7 @@ export const ResponseStatusBar = ({
   };
 
   return (
-    <div className="relative flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
+    <div className="relative shrink-0 flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
       <div className="flex items-center gap-2">
         <ResponseCodeCircle status={status} /> {status ?? "Sending Request..."}
         {status ? ` ${statusCodeMap[status]}` : ""}
@@ -104,7 +104,7 @@ export const ResponseStatusBar = ({
         </div>
       </div>
       <div
-        className="h-full bg-neutral-500/10 absolute left-0 -bottom-0 z-10 transition-all duration-200 ease-in-out"
+        className="h-full bg-neutral-500/10 absolute left-0 bottom-0 z-10 transition-all duration-200 ease-in-out"
         style={{
           opacity: isFinished ? 0 : 1,
           width: isFinished ? 0 : `${progress * 100}%`,

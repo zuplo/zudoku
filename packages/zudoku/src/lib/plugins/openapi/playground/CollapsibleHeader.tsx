@@ -12,7 +12,7 @@ export const CollapsibleHeaderTrigger = ({
   return (
     <div
       className={cn(
-        "grid grid-cols-[max-content_1fr_min-content_max-content] items-center gap-4 group bg-muted w-full h-10 ps-4 pe-2 border-b",
+        "grid grid-cols-[max-content_1fr_min-content_max-content] items-center gap-2 group bg-muted w-full h-10 ps-4 pe-2 border-b",
         className,
       )}
     >
@@ -24,7 +24,7 @@ export const CollapsibleHeaderTrigger = ({
         )}
       >
         <ChevronUpIcon
-          className="group-data-[state=open]:rotate-180 transition-transform flex-shrink-0"
+          className="group-data-[state=open]:rotate-180 transition-transform shrink-0"
           size={16}
         />
       </CollapsibleTrigger>

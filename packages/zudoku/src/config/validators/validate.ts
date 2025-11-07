@@ -382,19 +382,19 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    options: z
+      .object({
+        alwaysPromptLogin: z.boolean().optional(),
+      })
+      .optional(),
   }),
   z.object({
     type: z.literal("supabase"),
     supabaseUrl: z.string(),
     supabaseKey: z.string(),
-    provider: z.enum([
-      "google",
-      "github",
-      "gitlab",
-      "bitbucket",
-      "facebook",
-      "twitter",
-    ]),
+    provider: z.string().optional(),
+    providers: z.array(z.string()).optional(),
+    onlyThirdPartyProviders: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),

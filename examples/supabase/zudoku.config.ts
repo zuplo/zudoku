@@ -8,6 +8,9 @@ const config: ZudokuConfig = {
       width: 130,
     },
   },
+  theme: {
+    registryUrl: "https://tweakcn.com/r/themes/supabase.json",
+  },
   navigation: [
     {
       type: "category",
@@ -33,13 +36,9 @@ const config: ZudokuConfig = {
   },
   authentication: {
     type: "supabase",
-    provider: "github",
-    supabaseUrl: "https://vjqaastgcqotnutfzcyz.supabase.co",
-    supabaseKey:
-      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZqcWFhc3RnY3FvdG51dGZ6Y3l6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE3ODkwNjIsImV4cCI6MjA1NzM2NTA2Mn0.bGuEFQRDf5E5VzSFIgxQxmZAA5mDvZuNJqWo2KHZ6NY",
-  },
-  apiKeys: {
-    enabled: true,
+    providers: ["github", "google"],
+    supabaseUrl: "https://xgipcjfbwhxxmnmbgang.supabase.co",
+    supabaseKey: "sb_publishable_Owrp_sEczaIw9BthUQ8gAw_HDelnNHO",
   },
   apis: {
     type: "url",
