@@ -1,11 +1,12 @@
 import type { MDXComponents } from "mdx/types.js";
-import { CodeBlock } from "zudoku/ui/CodeBlock.js";
 import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
+import { HIGHLIGHT_CODE_BLOCK_CLASS } from "../shiki.js";
 import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
+import { CodeBlock } from "../ui/CodeBlock.js";
 import { Stepper } from "../ui/Stepper.js";
 import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
 import { cn } from "./cn.js";
@@ -109,10 +110,7 @@ export const MdxComponents = {
         showLineNumbers={showLineNumbers}
         title={title}
       >
-        <code
-          className={cn(className, "overflow-x-auto scrollbar not-inline")}
-          {...props}
-        >
+        <code className={cn(className, HIGHLIGHT_CODE_BLOCK_CLASS)} {...props}>
           {children}
         </code>
       </CodeBlock>
