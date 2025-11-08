@@ -25,9 +25,9 @@ import {
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
 import ExamplesDropdown from "./ExamplesDropdown.js";
-import { MultipartField } from "./MultipartField.js";
 import ParamsGrid from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
+import { MultipartField } from "./request-panel/MultipartField.js";
 
 export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
   const { register, setValue, watch, control } =

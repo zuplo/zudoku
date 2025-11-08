@@ -3,7 +3,6 @@ import {
   LockIcon,
   PlusCircleIcon,
   TableOfContentsIcon,
-  XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import {
@@ -17,13 +16,16 @@ import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
 import { Button } from "../../../ui/Button.js";
-import { Input } from "../../../ui/Input.js";
 import { cn } from "../../../util/cn.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
-import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
+import ParamsGrid, {
+  ParamsGridInput,
+  ParamsGridItem,
+  ParamsGridRemoveButton,
+} from "./ParamsGrid.js";
 import type { Header, PlaygroundForm } from "./Playground.js";
 
 const headerOptions = Object.freeze([
@@ -136,33 +138,23 @@ export const Headers = ({
         <div className="flex flex-col gap-2">
           <div className="overflow-hidden">
             <ParamsGrid>
-              {lockedHeaderFields.map((field) => {
-                return (
-                  <Tooltip key={field.id}>
-                    <TooltipTrigger asChild>
-                      <ParamsGridItem
-                        key={field.id}
-                        className="opacity-50 cursor-not-allowed font-mono text-xs min-h-10"
-                      >
-                        <LockIcon size={16} />
-                        <Input
-                          value={field.name}
-                          disabled
-                          className="w-full border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono"
-                        />
-                        <div>{field.value}</div>
-                      </ParamsGridItem>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      alignOffset={10}
-                      side="bottom"
-                      align="start"
+              {lockedHeaderFields.map((field) => (
+                <Tooltip key={field.id}>
+                  <TooltipTrigger asChild>
+                    <ParamsGridItem
+                      key={field.id}
+                      className="opacity-50 cursor-not-allowed font-mono text-xs min-h-10"
                     >
-                      <p>This header is set by the selected authentication.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                );
-              })}
+                      <LockIcon size={16} />
+                      <ParamsGridInput value={field.name} disabled />
+                      <div>{field.value}</div>
+                    </ParamsGridItem>
+                  </TooltipTrigger>
+                  <TooltipContent alignOffset={10} side="bottom" align="start">
+                    <p>This header is set by the selected authentication.</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
               {fields.map((field, i) => {
                 const currentSchemaHeader = schemaHeaders.find(
                   (h) => h.name === watchedHeaders.at(i)?.name,
@@ -220,20 +212,21 @@ export const Headers = ({
                       control={control}
                       name={`headers.${i}.name`}
                       render={({ field }) => (
-                        <Autocomplete
-                          {...field}
-                          placeholder="Name"
-                          className="border-0 p-0 m-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                          options={[...missingHeaders, ...headerOptions]}
-                          onEnterPress={() => handleHeaderEnter(i)}
-                          onChange={(e) => {
-                            field.onChange(e);
-                            setValue(`headers.${i}.active`, true);
-                          }}
-                          ref={(el) => {
-                            nameRefs.current[i] = el;
-                          }}
-                        />
+                        <ParamsGridInput asChild>
+                          <Autocomplete
+                            {...field}
+                            placeholder="Name"
+                            options={[...missingHeaders, ...headerOptions]}
+                            onEnterPress={() => handleHeaderEnter(i)}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              setValue(`headers.${i}.active`, true);
+                            }}
+                            ref={(el) => {
+                              nameRefs.current[i] = el;
+                            }}
+                          />
+                        </ParamsGridInput>
                       )}
                     />
                     <div className="flex items-center gap-2">
@@ -247,9 +240,8 @@ export const Headers = ({
 
                           if (!hasEnum) {
                             return (
-                              <Input
+                              <ParamsGridInput
                                 placeholder="Value"
-                                className="w-full truncate border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono"
                                 autoComplete="off"
                                 {...field}
                                 ref={(el) => {
@@ -268,28 +260,21 @@ export const Headers = ({
                           }
 
                           return (
-                            <Autocomplete
-                              shouldFilter={false}
-                              value={field.value}
-                              options={currentSchemaHeader.enum ?? []}
-                              onChange={(e) => {
-                                field.onChange(e);
-                                setValue(`headers.${i}.active`, true);
-                              }}
-                              className="border-0 p-0 m-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                            />
+                            <ParamsGridInput asChild>
+                              <Autocomplete
+                                shouldFilter={false}
+                                value={field.value}
+                                options={currentSchemaHeader.enum ?? []}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  setValue(`headers.${i}.active`, true);
+                                }}
+                              />
+                            </ParamsGridInput>
                           );
                         }}
                       />
-                      <Button
-                        size="icon-xs"
-                        variant="ghost"
-                        className="text-muted-foreground opacity-0 group-hover:brightness-95 group-hover:opacity-100"
-                        onClick={() => remove(i)}
-                        type="button"
-                      >
-                        <XIcon size={16} />
-                      </Button>
+                      <ParamsGridRemoveButton onClick={() => remove(i)} />
                     </div>
                   </ParamsGridItem>
                 );

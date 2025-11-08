@@ -1,4 +1,4 @@
-import { PlusCircleIcon, Unlink2Icon, XIcon } from "lucide-react";
+import { PlusCircleIcon, Unlink2Icon } from "lucide-react";
 import { useEffect } from "react";
 import {
   type Control,
@@ -15,8 +15,11 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
-import { InlineInput } from "./InlineInput.js";
-import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
+import ParamsGrid, {
+  ParamsGridInput,
+  ParamsGridItem,
+  ParamsGridRemoveButton,
+} from "./ParamsGrid.js";
 import type { PlaygroundForm, QueryParam } from "./Playground.js";
 
 export const QueryParams = ({
@@ -89,17 +92,20 @@ export const QueryParams = ({
                     control={control}
                     render={({ field }) =>
                       !requiredFields[i] ? (
-                        <Autocomplete
-                          placeholder="Name"
-                          value={field.value}
-                          options={schemaQueryParams.map((param) => param.name)}
-                          onChange={(e) => {
-                            field.onChange(e);
-                          }}
-                          className="border-0 p-0 m-0 shadow-none focus-visible:ring-0 bg-transparent hover:bg-transparent text-xs font-mono"
-                        />
+                        <ParamsGridInput asChild>
+                          <Autocomplete
+                            placeholder="Name"
+                            value={field.value}
+                            options={schemaQueryParams.map(
+                              (param) => param.name,
+                            )}
+                            onChange={(e) => {
+                              field.onChange(e);
+                            }}
+                          />
+                        </ParamsGridInput>
                       ) : (
-                        <InlineInput asChild>
+                        <ParamsGridInput asChild>
                           <label
                             className="flex items-center cursor-pointer gap-1"
                             htmlFor={`queryParams.${i}.active`}
@@ -110,7 +116,7 @@ export const QueryParams = ({
                             {field.value}
                             {requiredFields[i] && <sup>&nbsp;*</sup>}
                           </label>
-                        </InlineInput>
+                        </ParamsGridInput>
                       )
                     }
                     name={`queryParams.${i}.name`}
@@ -153,15 +159,7 @@ export const QueryParams = ({
                       }}
                       name={`queryParams.${i}.value`}
                     />
-                    <Button
-                      size="icon-xs"
-                      variant="ghost"
-                      className="text-muted-foreground opacity-0 group-hover:brightness-95 group-hover:opacity-100"
-                      onClick={() => remove(i)}
-                      type="button"
-                    >
-                      <XIcon size={16} />
-                    </Button>
+                    <ParamsGridRemoveButton onClick={() => remove(i)} />
                   </div>
                 </ParamsGridItem>
               );

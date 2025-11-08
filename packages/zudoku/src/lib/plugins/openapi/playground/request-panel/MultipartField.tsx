@@ -1,13 +1,15 @@
-import { PaperclipIcon, TrashIcon, XIcon } from "lucide-react";
+import { PaperclipIcon, TrashIcon } from "lucide-react";
 import { useRef } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { Button } from "zudoku/components";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
-import { Input } from "zudoku/ui/Input.js";
-import { cn } from "../../../util/cn.js";
-import { humanFileSize } from "../../../util/humanFileSize.js";
-import { ParamsGridItem } from "./ParamsGrid.js";
-import type { PlaygroundForm } from "./Playground.js";
+import { humanFileSize } from "../../../../util/humanFileSize.js";
+import {
+  ParamsGridInput,
+  ParamsGridItem,
+  ParamsGridRemoveButton,
+} from "../ParamsGrid.js";
+import type { PlaygroundForm } from "../Playground.js";
 
 type MultipartFieldProps = {
   index: number;
@@ -45,10 +47,9 @@ export const MultipartField = ({
         control={control}
         name={`multipartFormFields.${index}.key`}
         render={({ field }) => (
-          <Input
+          <ParamsGridInput
             {...field}
             placeholder="Key"
-            className="w-full border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono"
             onChange={(e) => {
               field.onChange(e);
               setValue(`multipartFormFields.${index}.active`, true);
@@ -82,7 +83,7 @@ export const MultipartField = ({
               control={control}
               name={`multipartFormFields.${index}.value`}
               render={({ field }) => (
-                <Input
+                <ParamsGridInput
                   {...field}
                   value={typeof field.value === "string" ? field.value : ""}
                   onChange={(e) => {
@@ -91,7 +92,6 @@ export const MultipartField = ({
                     if (isLastField) onAutoAppend();
                   }}
                   placeholder="Value"
-                  className="w-full border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono"
                 />
               )}
             />
@@ -120,16 +120,10 @@ export const MultipartField = ({
             </Button>
           </>
         )}
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
+        <ParamsGridRemoveButton
           onClick={onRemove}
-          className={cn(isLastField && "opacity-0 pointer-events-none")}
-        >
-          <XIcon size={14} />
-        </Button>
+          className={isLastField ? "opacity-0! pointer-events-none" : ""}
+        />
       </div>
     </ParamsGridItem>
   );

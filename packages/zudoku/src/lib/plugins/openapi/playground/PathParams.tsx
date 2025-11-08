@@ -1,7 +1,6 @@
 import { type Control, Controller, useFieldArray } from "react-hook-form";
-import { Input } from "../../../ui/Input.js";
 import { ColorizedParam } from "../ColorizedParam.js";
-import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
+import ParamsGrid, { ParamsGridInput, ParamsGridItem } from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 
 export const PathParams = ({
@@ -44,12 +43,7 @@ export const PathParams = ({
                 control={control}
                 name={`pathParams.${i}.value`}
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    required
-                    placeholder="Value"
-                    className="w-full truncate border-0 p-0 m-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                  />
+                  <ParamsGridInput {...field} required placeholder="Value" />
                 )}
               />
             </div>
