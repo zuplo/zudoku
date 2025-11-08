@@ -120,7 +120,7 @@ export const Headers = ({
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <TableOfContentsIcon size={16} />
+        <TableOfContentsIcon size={14} />
         <CollapsibleHeader>Headers</CollapsibleHeader>
         <Button
           onClick={addNewHeader}
@@ -129,7 +129,7 @@ export const Headers = ({
           variant="ghost"
           className="hover:bg-accent hover:brightness-95 flex gap-2"
         >
-          Add header <PlusCircleIcon size={16} />
+          Add header <PlusCircleIcon size={14} />
         </Button>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">

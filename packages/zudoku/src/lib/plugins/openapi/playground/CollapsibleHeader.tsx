@@ -1,4 +1,4 @@
-import { ChevronUpIcon } from "lucide-react";
+import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
 import { CollapsibleTrigger } from "zudoku/ui/Collapsible.js";
 import { cn } from "../../../util/cn.js";
 
@@ -19,13 +19,17 @@ export const CollapsibleHeaderTrigger = ({
       {children}
       <CollapsibleTrigger
         className={cn(
-          "flex items-center gap-4 group bg-muted w-full p-2 hover:bg-accent hover:brightness-95 rounded-md",
+          "flex items-center gap-4 group bg-muted w-full p-2 hover:bg-accent hover:brightness-95 opacity-75 rounded-md",
           className,
         )}
       >
-        <ChevronUpIcon
-          className="group-data-[state=open]:rotate-180 transition-transform shrink-0"
-          size={16}
+        <ChevronsDownUpIcon
+          className="group-data-[state=closed]:hidden shrink-0"
+          size={14}
+        />
+        <ChevronsUpDownIcon
+          className="group-data-[state=open]:hidden shrink-0"
+          size={14}
         />
       </CollapsibleTrigger>
     </div>

@@ -62,7 +62,7 @@ export const QueryParams = ({
           variant="ghost"
           className="hover:bg-accent hover:brightness-95 flex gap-2"
         >
-          Add parameter <PlusCircleIcon size={16} />
+          Add parameter <PlusCircleIcon size={14} />
         </Button>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">

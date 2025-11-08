@@ -72,16 +72,20 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
+  bodyMode?: "text" | "file" | "multipart";
+  file?: File | null;
+  multipartFormFields?: Array<{
+    key: string;
+    value: File | string;
+    active: boolean;
+  }>;
   queryParams: Array<{
     name: string;
     value: string;
     active: boolean;
     enum?: string[];
   }>;
-  pathParams: Array<{
-    name: string;
-    value: string;
-  }>;
+  pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
     name: string;
     value: string;
@@ -165,6 +169,9 @@ export const Playground = ({
     useForm<PlaygroundForm>({
       defaultValues: {
         body: defaultBody,
+        bodyMode: "text",
+        file: null,
+        multipartFormFields: [{ key: "", value: "", active: false }],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -173,14 +180,7 @@ export const Playground = ({
                 active: param.defaultActive ?? false,
                 enum: param.enum ?? [],
               }))
-            : [
-                {
-                  name: "",
-                  value: "",
-                  active: false,
-                  enum: [],
-                },
-              ],
+            : [{ name: "", value: "", active: false, enum: [] }],
         pathParams: sortedPathParams.map((param) => ({
           name: param.name,
           value: param.defaultValue ?? "",
@@ -192,13 +192,7 @@ export const Playground = ({
                 value: header.defaultValue ?? "",
                 active: header.defaultActive ?? false,
               }))
-            : [
-                {
-                  name: "",
-                  value: "",
-                  active: false,
-                },
-              ],
+            : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
           ...(identities.data?.map((i) => i.id) ?? []),
@@ -229,12 +223,43 @@ export const Playground = ({
           .map((header) => [header.name, header.value]),
       ]);
 
+      let body: string | FormData | File | undefined;
+
+      // Handle body based on selected mode
+      if (data.bodyMode === "text") {
+        // Text mode: send body as string
+        body = data.body ? data.body : undefined;
+      } else if (data.bodyMode === "file" && data.file) {
+        // File mode: send file as raw binary body
+        body = data.file;
+        // Remove Content-Type header - browser will set it appropriately
+        delete headers["Content-Type"];
+        delete headers["content-type"];
+      } else if (data.bodyMode === "multipart") {
+        // Multipart mode: create FormData with all active fields
+        const formData = new FormData();
+
+        // Append active form fields (can be text or files)
+        data.multipartFormFields
+          ?.filter((field) => field.key && field.active)
+          .forEach((field) => {
+            formData.append(field.key, field.value);
+          });
+
+        body = formData;
+        // Remove Content-Type header - browser will set it appropriately
+        delete headers["Content-Type"];
+        delete headers["content-type"];
+      } else {
+        body = data.body ? data.body : undefined;
+      }
+
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
           method: method.toUpperCase(),
           headers,
-          body: data.body ? data.body : undefined,
+          body,
         },
       );
 
