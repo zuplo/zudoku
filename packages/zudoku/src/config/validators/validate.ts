@@ -244,12 +244,6 @@ const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
 const LlmsConfigSchema = z
   .object({
-    publishMarkdown: z
-      .boolean()
-      .default(false)
-      .describe(
-        "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
-      ),
     llmsTxt: z
       .boolean()
       .default(false)
@@ -276,9 +270,16 @@ export const DocsConfigSchema = z.object({
     .union([z.string(), z.array(z.string())])
     .transform((val) => (typeof val === "string" ? [val] : val))
     .default([DEFAULT_DOCS_FILES]),
+  publishMarkdown: z
+    .boolean()
+    .default(false)
+    .describe(
+      "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
+    ),
   defaultOptions: z
     .object({
       toc: z.boolean(),
+      copyPage: z.boolean().optional(),
       disablePager: z.boolean(),
       showLastModified: z.boolean(),
       suggestEdit: z
@@ -393,19 +394,19 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    options: z
+      .object({
+        alwaysPromptLogin: z.boolean().optional(),
+      })
+      .optional(),
   }),
   z.object({
     type: z.literal("supabase"),
     supabaseUrl: z.string(),
     supabaseKey: z.string(),
-    provider: z.enum([
-      "google",
-      "github",
-      "gitlab",
-      "bitbucket",
-      "facebook",
-      "twitter",
-    ]),
+    provider: z.string().optional(),
+    providers: z.array(z.string()).optional(),
+    onlyThirdPartyProviders: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),

@@ -6,6 +6,7 @@ import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
+  AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
@@ -106,7 +107,10 @@ export class AzureB2CAuthPlugin
     });
   }
 
-  async signUp({ redirectTo }: { redirectTo?: string } = {}) {
+  async signUp(
+    _: AuthActionContext,
+    { redirectTo }: { redirectTo?: string } = {},
+  ) {
     const redirectUri = this.redirectToAfterSignUp ?? redirectTo ?? "/";
     sessionStorage.setItem("redirect-to", redirectUri);
 
@@ -116,7 +120,10 @@ export class AzureB2CAuthPlugin
     });
   }
 
-  async signIn({ redirectTo }: { redirectTo?: string } = {}) {
+  async signIn(
+    _: AuthActionContext,
+    { redirectTo }: { redirectTo?: string } = {},
+  ) {
     const redirectUri = this.redirectToAfterSignIn ?? redirectTo ?? "/";
     sessionStorage.setItem("redirect-to", redirectUri);
 
@@ -156,7 +163,7 @@ export class AzureB2CAuthPlugin
     return request;
   };
 
-  signOut = async () => {
+  signOut = async (_: AuthActionContext) => {
     const account = this.msalInstance.getAllAccounts()[0];
     if (account) {
       await this.msalInstance.logoutRedirect({

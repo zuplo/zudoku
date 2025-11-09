@@ -5,11 +5,12 @@ import type { ZudokuDocsConfig } from "../../../config/validators/validate.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 
 export interface MarkdownPluginOptions extends ZudokuDocsConfig {
+  basePath: string;
   fileImports: Record<string, () => Promise<MDXImport>>;
 }
 export type MarkdownPluginDefaultOptions = Pick<
   Frontmatter,
-  "toc" | "disablePager" | "showLastModified" | "suggestEdit"
+  "toc" | "disablePager" | "showLastModified" | "suggestEdit" | "copyPage"
 >;
 
 export type Frontmatter = {
@@ -21,12 +22,8 @@ export type Frontmatter = {
   disable_pager?: boolean;
   showLastModified?: boolean;
   lastModifiedTime?: number;
-  suggestEdit?:
-    | {
-        url: string;
-        text?: string;
-      }
-    | false;
+  suggestEdit?: { url: string; text?: string } | false;
+  copyPage?: boolean;
 };
 
 export type MDXImport = {
@@ -50,6 +47,7 @@ export const markdownPlugin = (
           return {
             element: (
               <MdxPage
+                basePath={options.basePath}
                 mdxComponent={Component}
                 {...props}
                 defaultOptions={options.defaultOptions}

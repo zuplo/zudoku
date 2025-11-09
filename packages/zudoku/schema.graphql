@@ -56,6 +56,7 @@ type OperationItem {
   path: String!
   requestBody: RequestBodyObject
   responses: [ResponseItem!]!
+  servers: [Server!]!
   slug: String!
   summary: String
   tags: [TagItem!]

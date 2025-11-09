@@ -19,13 +19,14 @@ export type CodeBlockProps = {
 
 export const EmbeddedCodeBlock = ({
   children,
+  fullHeight,
   language,
   showCopy = "hover",
   showCopyText,
   showLanguageIndicator = true,
   showLineNumbers,
   ...props
-}: CodeBlockProps) => {
+}: CodeBlockProps & { fullHeight?: boolean }) => {
   const [isCopied, setIsCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -36,11 +37,13 @@ export const EmbeddedCodeBlock = ({
       className={cn(
         "code-block-wrapper relative group bg-muted/50",
         showLineNumbers && "line-numbers",
+        fullHeight && "h-full",
       )}
     >
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar overflow-x-auto [&>pre]:p-2",
+          "code-block text-sm not-prose scrollbar [&>pre]:overflow-x-auto [&>pre]:p-2",
+          fullHeight && "h-full [&>pre]:h-full",
           props.className,
         )}
         ref={ref}
@@ -50,7 +53,7 @@ export const EmbeddedCodeBlock = ({
       {showLanguageIndicator && (
         <span
           className={cn(
-            "absolute top-1.5 end-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0",
+            "absolute top-1.5 end-3 text-[11px]! font-mono text-muted-foreground transition group-hover:opacity-0",
             showCopy === "always" && "hidden",
           )}
         >

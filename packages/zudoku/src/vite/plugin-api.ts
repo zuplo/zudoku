@@ -58,17 +58,25 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
       await schemaManager.processAllSchemas();
 
-      schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
+      schemaManager
+        .getAllTrackedFiles()
+        .forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
       server.watcher.on("change", async (id) => {
-        if (!schemaManager.trackedFiles.has(id)) return;
+        const mainFiles = schemaManager.getFilesToReprocess(id);
+        if (mainFiles.length === 0) return;
 
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        await schemaManager.processSchema(id);
-        schemaManager.trackedFiles.forEach((file) => server.watcher.add(file));
+        for (const mainFile of mainFiles) {
+          await schemaManager.processSchema(mainFile);
+        }
+        schemaManager
+          .getAllTrackedFiles()
+          .forEach((file) => server.watcher.add(file));
+
         invalidateNavigation(server);
         reload(server);
       });
@@ -86,7 +94,9 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       if (!deepEqual(schemaManager.config.apis, config.apis)) {
         schemaManager.config = config;
         await schemaManager.processAllSchemas();
-        schemaManager.trackedFiles.forEach((file) => this.addWatchFile(file));
+        schemaManager
+          .getAllTrackedFiles()
+          .forEach((file) => this.addWatchFile(file));
       }
 
       if (config.__meta.mode === "standalone") {

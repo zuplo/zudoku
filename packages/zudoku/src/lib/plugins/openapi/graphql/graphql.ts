@@ -79,6 +79,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
+  servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
   tags?: Maybe<Array<TagItem>>;
@@ -225,6 +226,11 @@ export type OperationsFragmentFragment = {
   path: string;
   deprecated?: boolean | null;
   extensions?: any | null;
+  servers: Array<{
+    __typename?: "Server";
+    url: string;
+    description?: string | null;
+  }>;
   parameters?: Array<{
     __typename?: "ParameterItem";
     name: string;
@@ -440,6 +446,10 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   path
   deprecated
   extensions
+  servers {
+    url
+    description
+  }
   parameters {
     name
     in
@@ -562,6 +572,10 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   path
   deprecated
   extensions
+  servers {
+    url
+    description
+  }
   parameters {
     name
     in

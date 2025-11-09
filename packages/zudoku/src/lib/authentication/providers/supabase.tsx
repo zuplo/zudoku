@@ -7,46 +7,38 @@ import {
 import type { SupabaseAuthenticationConfig } from "../../../config/config.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
+  AuthActionContext,
+  AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
+import { SupabaseAuthUI } from "./supabase/SupabaseAuthUI.js";
 
 class SupabaseAuthenticationProvider
   extends CoreAuthenticationPlugin
   implements AuthenticationPlugin
 {
   private readonly client: SupabaseClient;
-  private readonly provider: Provider;
-  private readonly redirectToAfterSignUp: string;
-  private readonly redirectToAfterSignIn: string;
-  // biome-ignore lint/correctness/noUnusedPrivateClassMembers: Keep around
-  private readonly redirectToAfterSignOut: string;
+  private readonly providers: Provider[];
+  private readonly config: SupabaseAuthenticationConfig;
 
-  constructor({
-    supabaseUrl,
-    supabaseKey,
-    provider,
-    redirectToAfterSignUp,
-    redirectToAfterSignIn,
-    redirectToAfterSignOut,
-    basePath,
-  }: SupabaseAuthenticationConfig) {
+  constructor(config: SupabaseAuthenticationConfig) {
+    const { provider, providers, supabaseUrl, supabaseKey } = config;
     super();
-    this.provider = provider;
+    this.providers = providers ?? (provider ? [provider] : []);
+    if (this.providers.length === 0) {
+      throw new Error("At least one provider must be provided");
+    }
     this.client = createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: true,
         persistSession: true,
       },
     });
-
-    const root = basePath ?? "/";
-
-    this.redirectToAfterSignUp = redirectToAfterSignUp ?? root;
-    this.redirectToAfterSignIn = redirectToAfterSignIn ?? root;
-    this.redirectToAfterSignOut = redirectToAfterSignOut ?? root;
+    this.config = config;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -90,31 +82,55 @@ class SupabaseAuthenticationProvider
     return request;
   }
 
-  signUp = async ({ redirectTo }: { redirectTo?: string }) => {
-    const finalRedirectTo = redirectTo ?? this.redirectToAfterSignUp;
-
-    // Open Supabase Auth UI in a new window
-    await this.client.auth.signInWithOAuth({
-      provider: this.provider,
-      options: {
-        redirectTo: window.location.origin + finalRedirectTo,
-      },
-    });
+  signUp = async (
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
+  ) => {
+    void navigate(
+      redirectTo
+        ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/signup`,
+    );
   };
 
-  signIn = async ({ redirectTo }: { redirectTo?: string }) => {
-    const finalRedirectTo = redirectTo ?? this.redirectToAfterSignIn;
+  signIn = async (
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
+  ) => {
+    void navigate(
+      redirectTo
+        ? `/signin?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/signin`,
+    );
+  };
 
-    await this.client.auth.signInWithOAuth({
-      provider: this.provider,
-      options: {
-        redirectTo: window.location.origin + finalRedirectTo,
-        queryParams: {
-          access_type: "offline",
-          prompt: "consent",
-        },
+  getRoutes = () => {
+    return [
+      {
+        path: "/signin",
+        element: (
+          <SupabaseAuthUI
+            view="sign_in"
+            client={this.client}
+            config={this.config}
+          />
+        ),
       },
-    });
+      {
+        path: "/signup",
+        element: (
+          <SupabaseAuthUI
+            view="sign_up"
+            client={this.client}
+            config={this.config}
+          />
+        ),
+      },
+      {
+        path: "/signout",
+        element: <SignOut />,
+      },
+    ];
   };
 
   signOut = async () => {

@@ -1,5 +1,6 @@
 import type { Auth0AuthenticationConfig } from "../../../config/config.js";
 import type {
+  AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
@@ -10,6 +11,7 @@ class Auth0AuthenticationProvider
   extends OpenIDAuthenticationProvider
   implements AuthenticationPlugin
 {
+  private readonly options: Auth0AuthenticationConfig["options"];
   constructor(config: Auth0AuthenticationConfig) {
     super({
       ...config,
@@ -19,27 +21,30 @@ class Auth0AuthenticationProvider
       audience: config.audience,
       scopes: config.scopes,
     });
+    this.options = config.options;
   }
 
   onAuthorizationUrl = async (
     url: URL,
     { isSignUp }: { isSignUp: boolean },
   ) => {
-    url.searchParams.set("prompt", "login");
+    if (this.options?.alwaysPromptLogin !== false) {
+      url.searchParams.set("prompt", "login");
+    }
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
     }
   };
 
-  signOut = async (): Promise<void> => {
+  signOut = async (_: AuthActionContext): Promise<void> => {
     const as = await this.getAuthServer();
     const idToken = await this.getAccessToken();
 
     useAuthState.setState({
       isAuthenticated: false,
       isPending: false,
-      profile: null,
-      providerData: null,
+      profile: undefined,
+      providerData: undefined,
     });
 
     const redirectUrl = new URL(window.location.origin);
