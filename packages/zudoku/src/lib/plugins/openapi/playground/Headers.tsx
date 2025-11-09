@@ -1,10 +1,4 @@
-import {
-  CircleAlertIcon,
-  LockIcon,
-  PlusCircleIcon,
-  TableOfContentsIcon,
-} from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
+import { CircleAlertIcon, LockIcon, TableOfContentsIcon } from "lucide-react";
 import {
   type Control,
   Controller,
@@ -15,7 +9,6 @@ import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
-import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
 import {
   CollapsibleHeader,
@@ -27,6 +20,7 @@ import ParamsGrid, {
   ParamsGridRemoveButton,
 } from "./ParamsGrid.js";
 import type { Header, PlaygroundForm } from "./Playground.js";
+import { useAutoAppendItem } from "./request-panel/useAutoAppendItem.js";
 
 const headerOptions = Object.freeze([
   "Accept",
@@ -71,32 +65,11 @@ export const Headers = ({
     name: "headers",
   });
   const { setValue, watch, formState } = useFormContext<PlaygroundForm>();
-  const valueRefs = useRef<Array<HTMLInputElement | null>>([]);
-  const nameRefs = useRef<Array<HTMLInputElement | null>>([]);
   const watchedHeaders = watch("headers");
 
-  const addNewHeader = useCallback(
-    (e?: React.MouseEvent<HTMLButtonElement>) => {
-      e?.stopPropagation();
-      append({ name: "", value: "", active: false }, { shouldFocus: true });
-    },
-    [append],
+  const handleAutoAppend = useAutoAppendItem(watchedHeaders, () =>
+    append({ name: "", value: "", active: false }, { shouldFocus: false }),
   );
-
-  useEffect(() => {
-    if (watchedHeaders.length === 0) {
-      addNewHeader();
-    }
-  }, [watchedHeaders, addNewHeader]);
-
-  const handleHeaderEnter = (index: number) => {
-    valueRefs.current[index]?.focus();
-  };
-
-  const handleValueEnter = (index: number) => {
-    addNewHeader();
-    requestAnimationFrame(() => nameRefs.current[index + 1]?.focus());
-  };
 
   const missingHeaders = schemaHeaders
     .filter((h) => !watchedHeaders.some((f) => f.name === h.name))
@@ -124,15 +97,6 @@ export const Headers = ({
       <CollapsibleHeaderTrigger>
         <TableOfContentsIcon size={14} />
         <CollapsibleHeader>Headers</CollapsibleHeader>
-        <Button
-          onClick={addNewHeader}
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="hover:bg-accent hover:brightness-95 flex gap-2"
-        >
-          Add header <PlusCircleIcon size={14} />
-        </Button>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">
         <div className="flex flex-col gap-2">
@@ -180,9 +144,7 @@ export const Headers = ({
                               hiddenHeadersIndex.includes(i) && "hidden",
                             )}
                             checked={field.value}
-                            onCheckedChange={(checked) => {
-                              field.onChange(checked);
-                            }}
+                            onCheckedChange={(c) => field.onChange(c === true)}
                           />
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -217,13 +179,10 @@ export const Headers = ({
                             {...field}
                             placeholder="Name"
                             options={[...missingHeaders, ...headerOptions]}
-                            onEnterPress={() => handleHeaderEnter(i)}
                             onChange={(e) => {
                               field.onChange(e);
                               setValue(`headers.${i}.active`, true);
-                            }}
-                            ref={(el) => {
-                              nameRefs.current[i] = el;
+                              handleAutoAppend(i);
                             }}
                           />
                         </ParamsGridInput>
@@ -244,16 +203,10 @@ export const Headers = ({
                                 placeholder="Value"
                                 autoComplete="off"
                                 {...field}
-                                ref={(el) => {
-                                  valueRefs.current[i] = el;
-                                }}
-                                onKeyDown={(e) => {
-                                  if (
-                                    e.key === "Enter" &&
-                                    e.currentTarget.value.trim()
-                                  ) {
-                                    handleValueEnter(i);
-                                  }
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  setValue(`headers.${i}.active`, true);
+                                  handleAutoAppend(i);
                                 }}
                               />
                             );
@@ -268,6 +221,7 @@ export const Headers = ({
                                 onChange={(e) => {
                                   field.onChange(e);
                                   setValue(`headers.${i}.active`, true);
+                                  handleAutoAppend(i);
                                 }}
                               />
                             </ParamsGridInput>

@@ -6,7 +6,7 @@ import createVariantComponent from "../../../util/createVariantComponent.js";
 
 const ParamsGrid = createVariantComponent(
   "div",
-  "grid grid-cols-[min-content_2fr_3fr] items-center gap-x-5",
+  "grid grid-cols-[min-content_2fr_3fr] items-center gap-x-5 [&>*:last-child_[data-slot=remove-button]]:invisible",
 );
 
 export const ParamsGridItem = createVariantComponent(
@@ -35,8 +35,10 @@ export const ParamsGridRemoveButton = ({
     )}
     onClick={onClick}
     type="button"
+    // In the last row the remove button will be hidden by the ParamsGridItem selector
+    data-slot="remove-button"
   >
-    <XIcon size={16} />
+    <XIcon size={14} />
   </Button>
 );
 

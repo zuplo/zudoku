@@ -74,8 +74,8 @@ export type PlaygroundForm = {
   body: string;
   bodyMode?: "text" | "file" | "multipart";
   file?: File | null;
-  multipartFormFields?: Array<{
-    key: string;
+  multipartFormFields: Array<{
+    name: string;
     value: File | string;
     active: boolean;
   }>;
@@ -171,7 +171,7 @@ export const Playground = ({
         body: defaultBody,
         bodyMode: "text",
         file: null,
-        multipartFormFields: [{ key: "", value: "", active: false }],
+        multipartFormFields: [],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -241,9 +241,9 @@ export const Playground = ({
 
         // Append active form fields (can be text or files)
         data.multipartFormFields
-          ?.filter((field) => field.key && field.active)
+          ?.filter((field) => field.name && field.active)
           .forEach((field) => {
-            formData.append(field.key, field.value);
+            formData.append(field.name, field.value);
           });
 
         body = formData;
@@ -518,9 +518,7 @@ export const Playground = ({
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <ShapesIcon size={16} />
-                    <CollapsibleHeader className="col-span-2">
-                      Path Parameters
-                    </CollapsibleHeader>
+                    <CollapsibleHeader>Path Parameters</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <PathParams url={url} control={control} />

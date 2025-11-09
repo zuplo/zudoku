@@ -28,6 +28,7 @@ import ExamplesDropdown from "./ExamplesDropdown.js";
 import ParamsGrid from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 import { MultipartField } from "./request-panel/MultipartField.js";
+import { useAutoAppendItem } from "./request-panel/useAutoAppendItem.js";
 
 export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
   const { register, setValue, watch, control } =
@@ -47,15 +48,9 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
     "multipartFormFields"
   >({ control, name: "multipartFormFields" });
 
-  // Auto-append empty field when user types in the last field
-  const handleAutoAppend = () => {
-    const lastFieldValue = multipartFormFields?.at(-1);
-    if (!lastFieldValue) return;
-
-    if (lastFieldValue.key || lastFieldValue.value) {
-      append({ key: "", value: "", active: false }, { shouldFocus: false });
-    }
-  };
+  const handleAutoAppend = useAutoAppendItem(multipartFormFields, () =>
+    append({ name: "", value: "", active: false }, { shouldFocus: false }),
+  );
 
   const handleFileSelect = (selectedFile: File | null) => {
     setValue("file", selectedFile);
@@ -98,101 +93,103 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger className="items-center">
         <FileInput size={16} />
-        <CollapsibleHeader>Body</CollapsibleHeader>
-        <div className="flex items-center">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hover:bg-accent hover:brightness-95 gap-2"
-              >
-                {bodyMode === "text" ? (
-                  <>
-                    <ScanTextIcon size={14} />
-                    Text
-                  </>
-                ) : bodyMode === "file" ? (
-                  <>
-                    <PaperclipIcon size={14} />
-                    File
-                  </>
-                ) : (
-                  <>
-                    <Grid2x2PlusIcon size={14} />
-                    Multipart
-                  </>
-                )}
-                <ChevronDownIcon size={14} />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="min-w-40">
-              <DropdownMenuItem
-                onSelect={() => setValue("bodyMode", "text")}
-                className="gap-2"
-              >
-                <ScanTextIcon size={14} />
-                <span className="flex-1">Text</span>
-                <span>
-                  {body.length > 0 && (
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+        <CollapsibleHeader className="flex items-center justify-between">
+          Body
+          <div className="flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hover:bg-accent hover:brightness-95 gap-2"
+                >
+                  {bodyMode === "text" ? (
+                    <>
+                      <ScanTextIcon size={14} />
+                      Text
+                    </>
+                  ) : bodyMode === "file" ? (
+                    <>
+                      <PaperclipIcon size={14} />
+                      File
+                    </>
+                  ) : (
+                    <>
+                      <Grid2x2PlusIcon size={14} />
+                      Multipart
+                    </>
                   )}
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => setValue("bodyMode", "file")}
-                className="gap-2"
-              >
-                <PaperclipIcon size={14} />
-                <span className="flex-1">File</span>
-                <span>
-                  {file && (
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                  )}
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={() => setValue("bodyMode", "multipart")}
-                className="gap-2"
-              >
-                <Grid2x2PlusIcon size={14} strokeWidth={1.5} />
-                <span className="flex-1">Multipart</span>
-                <span>
-                  {multipartFormFields?.some((field) => field.active) && (
-                    <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-                  )}
-                </span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <input
-            ref={fileInputRef}
-            type="file"
-            className="hidden"
-            onChange={handleFileInputChange}
-          />
-          <div className="w-px h-5 bg-border" />
-          {content && examples.length > 0 ? (
-            <ExamplesDropdown
-              examples={content}
-              onSelect={(example, mediaType) => {
-                setValue("body", JSON.stringify(example.value, null, 2));
-                setValue("headers", [
-                  ...headers.filter((h) => h.name !== "Content-Type"),
-                  {
-                    name: "Content-Type",
-                    value: mediaType,
-                    active: true,
-                  },
-                ]);
-              }}
+                  <ChevronDownIcon size={14} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="min-w-40">
+                <DropdownMenuItem
+                  onSelect={() => setValue("bodyMode", "text")}
+                  className="gap-2"
+                >
+                  <ScanTextIcon size={14} />
+                  <span className="flex-1">Text</span>
+                  <span>
+                    {body.length > 0 && (
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setValue("bodyMode", "file")}
+                  className="gap-2"
+                >
+                  <PaperclipIcon size={14} />
+                  <span className="flex-1">File</span>
+                  <span>
+                    {file && (
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setValue("bodyMode", "multipart")}
+                  className="gap-2"
+                >
+                  <Grid2x2PlusIcon size={14} strokeWidth={1.5} />
+                  <span className="flex-1">Multipart</span>
+                  <span>
+                    {multipartFormFields?.some((field) => field.active) && (
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              onChange={handleFileInputChange}
             />
-          ) : (
-            <div />
-          )}
-        </div>
+            <div className="w-px mx-1 h-5 bg-border" />
+            {content && examples.length > 0 ? (
+              <ExamplesDropdown
+                examples={content}
+                onSelect={(example, mediaType) => {
+                  setValue("body", JSON.stringify(example.value, null, 2));
+                  setValue("headers", [
+                    ...headers.filter((h) => h.name !== "Content-Type"),
+                    {
+                      name: "Content-Type",
+                      value: mediaType,
+                      active: true,
+                    },
+                  ]);
+                }}
+              />
+            ) : (
+              <div />
+            )}
+          </div>
+        </CollapsibleHeader>
       </CollapsibleHeaderTrigger>
-      <CollapsibleContent className="flex flex-col gap-2">
+      <CollapsibleContent className="CollapsibleContent flex flex-col gap-2">
         {bodyMode === "text" && (
           <Textarea
             {...register("body")}
@@ -263,7 +260,6 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                 field={field}
                 onRemove={() => remove(index)}
                 onAutoAppend={handleAutoAppend}
-                isLastField={index === fields.length - 1}
               />
             ))}
           </ParamsGrid>

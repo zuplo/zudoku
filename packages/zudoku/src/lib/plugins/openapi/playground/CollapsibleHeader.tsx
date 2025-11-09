@@ -12,7 +12,7 @@ export const CollapsibleHeaderTrigger = ({
   return (
     <div
       className={cn(
-        "grid grid-cols-[max-content_1fr_min-content_max-content] items-center gap-2 group bg-muted w-full h-10 ps-4 pe-2 border-b",
+        "grid grid-cols-[max-content_1fr_max-content] items-center gap-2 group bg-muted w-full h-10 ps-4 pe-2 border-b",
         className,
       )}
     >

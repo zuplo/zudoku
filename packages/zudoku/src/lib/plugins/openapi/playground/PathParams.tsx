@@ -20,36 +20,34 @@ export const PathParams = ({
   );
 
   return (
-    <div className="overflow-hidden">
-      <ParamsGrid>
-        {sortedFields.map((field, i) => (
-          <ParamsGridItem key={field.id}>
+    <ParamsGrid>
+      {sortedFields.map((field, i) => (
+        <ParamsGridItem key={field.id}>
+          <Controller
+            control={control}
+            name={`pathParams.${i}.name`}
+            render={() => (
+              <div className="flex items-center">
+                <ColorizedParam
+                  slug={field.name}
+                  name={field.name}
+                  className="font-mono text-xs px-2"
+                />
+              </div>
+            )}
+          />
+
+          <div className="flex justify-between items-center col-span-2">
             <Controller
               control={control}
-              name={`pathParams.${i}.name`}
-              render={() => (
-                <div className="flex items-center">
-                  <ColorizedParam
-                    slug={field.name}
-                    name={field.name}
-                    className="font-mono text-xs px-2"
-                  />
-                </div>
+              name={`pathParams.${i}.value`}
+              render={({ field }) => (
+                <ParamsGridInput {...field} required placeholder="Value" />
               )}
             />
-
-            <div className="flex justify-between items-center col-span-2">
-              <Controller
-                control={control}
-                name={`pathParams.${i}.value`}
-                render={({ field }) => (
-                  <ParamsGridInput {...field} required placeholder="Value" />
-                )}
-              />
-            </div>
-          </ParamsGridItem>
-        ))}
-      </ParamsGrid>
-    </div>
+          </div>
+        </ParamsGridItem>
+      ))}
+    </ParamsGrid>
   );
 };
