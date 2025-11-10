@@ -129,6 +129,7 @@ export class ZudokuContext {
   public meta: ZudokuContextOptions["metadata"];
   public site: ZudokuContextOptions["site"];
   public readonly authentication?: ZudokuContextOptions["authentication"];
+  public readonly getAuthState: () => AuthState;
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
   private readonly navigationPlugins: NavigationPlugin[];
@@ -156,6 +157,8 @@ export class ZudokuContext {
     this.navigation = options.navigation ?? [];
     this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
     this.authentication = this.plugins.find(isAuthenticationPlugin);
+    this.getAuthState = useAuthState.getState;
+
     this.meta = options.metadata;
     this.site = options.site;
     this.plugins.forEach((plugin) => {

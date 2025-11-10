@@ -1,9 +1,8 @@
 name: Public Package Build
 
 on:
-  pull_request:
   pull_request_target:
-    types: [opened, synchronize, labeled]
+    types: [opened, synchronize, labeled, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -52,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     # Run on internal PRs or external PRs with 'approve public build' label
     if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) ||
-      (github.event_name == 'pull_request_target' && github.event.label.name == 'approve public build')
+      (github.event_name == 'pull_request_target' && !github.event.pull_request.head.repo.fork) ||
+      (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'approve public build'))
     permissions:
       contents: read
       id-token: write
@@ -68,7 +67,7 @@ jobs:
         with:
           run_install: false
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: ".tool-versions"
           cache: "pnpm"

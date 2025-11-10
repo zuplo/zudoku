@@ -1,7 +1,7 @@
 /* eslint-disable */
 import type { DocumentTypeDecoration } from "@graphql-typed-document-node/core";
 export type Maybe<T> = T | null;
-export type InputMaybe<T> = Maybe<T>;
+export type InputMaybe<T> = T | null | undefined;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
@@ -80,6 +80,7 @@ export type OperationItem = {
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
   security?: Maybe<Array<SecurityRequirement>>;
+  servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
   tags?: Maybe<Array<TagItem>>;
@@ -232,6 +233,11 @@ export type OperationsFragmentFragment = {
   path: string;
   deprecated?: boolean | null;
   extensions?: any | null;
+  servers: Array<{
+    __typename?: "Server";
+    url: string;
+    description?: string | null;
+  }>;
   parameters?: Array<{
     __typename?: "ParameterItem";
     name: string;
@@ -424,7 +430,9 @@ export class TypedDocumentString<TResult, TVariables>
   extends String
   implements DocumentTypeDecoration<TResult, TVariables>
 {
-  __apiType?: DocumentTypeDecoration<TResult, TVariables>["__apiType"];
+  __apiType?: NonNullable<
+    DocumentTypeDecoration<TResult, TVariables>["__apiType"]
+  >;
   private value: string;
   public __meta__?: Record<string, any> | undefined;
 
@@ -434,7 +442,7 @@ export class TypedDocumentString<TResult, TVariables>
     this.__meta__ = __meta__;
   }
 
-  toString(): string & DocumentTypeDecoration<TResult, TVariables> {
+  override toString(): string & DocumentTypeDecoration<TResult, TVariables> {
     return this.value;
   }
 }
@@ -450,6 +458,10 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   path
   deprecated
   extensions
+  servers {
+    url
+    description
+  }
   parameters {
     name
     in
@@ -576,6 +588,10 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   path
   deprecated
   extensions
+  servers {
+    url
+    description
+  }
   parameters {
     name
     in

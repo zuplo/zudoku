@@ -7,7 +7,7 @@ import {
 } from "@shikijs/transformers";
 import type { Root } from "hast";
 import { toJsxRuntime } from "hast-util-to-jsx-runtime";
-import { Fragment, type JSX } from "react";
+import { createElement, Fragment } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
 import type {
   BundledLanguage,
@@ -20,6 +20,9 @@ import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
 import { cn } from "./util/cn.js";
+
+export const HIGHLIGHT_CODE_BLOCK_CLASS =
+  "overflow-x-auto scrollbar not-inline";
 
 const engine = createJavaScriptRegexEngine({ forgiving: true });
 export const highlighter = await createHighlighterCore({
@@ -89,6 +92,15 @@ export const defaultLanguages: BundledLanguage[] = [
   "rust",
   "markdown",
   "mdx",
+  "zig",
+  "scala",
+  "dart",
+  "ocaml",
+  "c",
+  "cpp",
+  "common-lisp",
+  "elixir",
+  "powershell",
 ];
 
 const rehypeCodeBlockPlugin = () => (tree: Root) => {
@@ -134,5 +146,16 @@ export const highlight = (
     themes,
   });
 
-  return toJsxRuntime(value, { Fragment, jsx, jsxs }) as JSX.Element;
+  return toJsxRuntime(value, {
+    Fragment,
+    jsx,
+    jsxs,
+    components: {
+      code: (props) =>
+        createElement("code", {
+          ...props,
+          className: cn(props.className, HIGHLIGHT_CODE_BLOCK_CLASS),
+        }),
+    },
+  });
 };

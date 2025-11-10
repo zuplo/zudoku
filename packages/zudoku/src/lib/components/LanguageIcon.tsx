@@ -117,6 +117,51 @@ const Languages: Record<string, Language> = {
     pattern: /^(gql|graphql)$/,
     icon: lazy(() => import("../assets/language-icons/graphql.js")),
   },
+  zig: {
+    pattern: /^zig$/,
+    icon: lazy(() => import("../assets/language-icons/zig.js")),
+    width: 28,
+  },
+  scala: {
+    pattern: /^scala$/,
+    icon: lazy(() => import("../assets/language-icons/scala.js")),
+    width: 18,
+  },
+  dart: {
+    pattern: /^dart$/,
+    icon: lazy(() => import("../assets/language-icons/dart.js")),
+    width: 20,
+  },
+  ocaml: {
+    pattern: /^ocaml$/,
+    icon: lazy(() => import("../assets/language-icons/ocaml.js")),
+    width: 20,
+  },
+  c: {
+    pattern: /^c$/,
+    icon: lazy(() => import("../assets/language-icons/c.js")),
+    width: 20,
+  },
+  cpp: {
+    pattern: /^(cpp|c\+\+)$/,
+    icon: lazy(() => import("../assets/language-icons/cpp.js")),
+    width: 20,
+  },
+  commonlisp: {
+    pattern: /^(clisp|common-lisp|lisp|cl|commonlisp)$/,
+    icon: lazy(() => import("../assets/language-icons/commonlisp.js")),
+    width: 18,
+  },
+  elixir: {
+    pattern: /^elixir$/,
+    icon: lazy(() => import("../assets/language-icons/elixir.js")),
+    width: 18,
+  },
+  powershell: {
+    pattern: /^(pshell|powershell|ps1)$/,
+    icon: lazy(() => import("../assets/language-icons/powershell.js")),
+    width: 18,
+  },
 };
 
 export const LanguageIcon = ({ language }: { language?: string }) => {

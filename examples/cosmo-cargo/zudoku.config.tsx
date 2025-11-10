@@ -7,7 +7,11 @@ import type {
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
-  async getIdentities(_context: ZudokuContext) {
+  async getIdentities(context: ZudokuContext) {
+    if (!context.getAuthState().isAuthenticated) {
+      return [];
+    }
+
     return [
       {
         label: `Unlimited Subscription`,
@@ -28,6 +32,10 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 const config: ZudokuConfig = {
   metadata: {
     title: "Cosmo Cargo Inc.",
+  },
+  docs: {
+    publishMarkdown: true,
+    llms: { llmsTxt: true, llmsTxtFull: true },
   },
   site: {
     logo: {
@@ -286,7 +294,7 @@ const config: ZudokuConfig = {
       ring: "20 14.3% 4.1%",
     },
     dark: {
-      background: "20 14.3% 4.1%",
+      background: "#1a1a18",
       foreground: "60 9.1% 97.8%",
       card: "20 14.3% 4.1%",
       cardForeground: "60 9.1% 97.8%",
@@ -302,7 +310,7 @@ const config: ZudokuConfig = {
       accentForeground: "60 9.1% 97.8%",
       destructive: "0 62.8% 30.6%",
       destructiveForeground: "60 9.1% 97.8%",
-      border: "12 6.5% 15.1%",
+      border: "hsl(12deg 4.75% 24.84%)",
       input: "12 6.5% 15.1%",
       ring: "35.5 91.7% 32.9%",
     },

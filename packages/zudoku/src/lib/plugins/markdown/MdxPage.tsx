@@ -1,9 +1,23 @@
 import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { EditIcon } from "lucide-react";
-import { type PropsWithChildren, useEffect } from "react";
+import {
+  CheckIcon,
+  ChevronDownIcon,
+  CopyIcon,
+  EditIcon,
+  ExternalLinkIcon,
+  Link2Icon,
+} from "lucide-react";
+import { type PropsWithChildren, useEffect, useState } from "react";
+import { useLocation } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "zudoku/ui/DropdownMenu.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Toc } from "../../components/navigation/Toc.js";
@@ -13,7 +27,10 @@ import {
 } from "../../components/navigation/utils.js";
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
+import { ChatGPTLogo } from "./assets/ChatGPTLogo.js";
+import { ClaudeLogo } from "./assets/ClaudeLogo.js";
 import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
 
 declare global {
@@ -39,6 +56,7 @@ const MarkdownHeadings = {
 
 export const MdxPage = ({
   mdxComponent: MdxComponent,
+  basePath,
   frontmatter = {},
   defaultOptions,
   __filepath,
@@ -46,11 +64,14 @@ export const MdxPage = ({
   excerpt,
 }: PropsWithChildren<
   Omit<MDXImport, "default"> & {
+    basePath: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
+  const location = useLocation();
+  const [isCopied, setIsCopied] = useState(false);
 
   const title = frontmatter.title;
   const description = frontmatter.description ?? excerpt;
@@ -79,6 +100,20 @@ export const MdxPage = ({
     ? editConfig.url.replaceAll("{filePath}", __filepath)
     : null;
   const editText = editConfig ? editConfig.text || "Edit this page" : null;
+
+  const copyMarkdownConfig =
+    frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
+
+  const markdownUrl = joinUrl(basePath, `${location.pathname}.md`);
+
+  const handleCopyMarkdown = async () => {
+    const response = await fetch(markdownUrl);
+    if (!response.ok) throw new Error("Failed to fetch markdown");
+    const markdown = await response.text();
+    void navigator.clipboard.writeText(markdown);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
 
   const tocEntries =
     tableOfContents.find((item) => item.depth === 1)?.children ??
@@ -115,15 +150,97 @@ export const MdxPage = ({
       </Helmet>
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
         {(category || title) && (
-          <header>
-            {category && <CategoryHeading>{category}</CategoryHeading>}
-            {title && (
-              <Heading level={1} id={slugify(title)}>
-                {title}
-              </Heading>
+          <header className="flex items-start justify-between gap-4">
+            <div className="flex-1">
+              {category && <CategoryHeading>{category}</CategoryHeading>}
+              {title && (
+                <Heading level={1} id={slugify(title)}>
+                  {title}
+                </Heading>
+              )}
+            </div>
+            {copyMarkdownConfig && (
+              <div className="flex items-center border rounded-md">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCopyMarkdown}
+                  className="rounded-r-none border-r gap-2 h-7"
+                >
+                  {isCopied ? (
+                    <CheckIcon size={14} className="text-emerald-600" />
+                  ) : (
+                    <CopyIcon size={14} />
+                  )}
+                  <span>Copy page</span>
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="rounded-l-none"
+                    >
+                      <ChevronDownIcon size={14} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      className="gap-2"
+                      onClick={() =>
+                        void navigator.clipboard.writeText(window.location.href)
+                      }
+                    >
+                      <Link2Icon className="size-4" />
+                      Copy link to page
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="gap-2" asChild>
+                      <a
+                        href={markdownUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLinkIcon className="size-4" />
+                        Open Markdown page
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2"
+                      onClick={() => {
+                        const prompt = encodeURIComponent(
+                          `Help me understand this documentation page: ${window.location.href}`,
+                        );
+                        window.open(
+                          `https://claude.ai/new?q=${prompt}`,
+                          "_blank",
+                        );
+                      }}
+                    >
+                      <ClaudeLogo className="size-4" />
+                      Open in Claude
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2"
+                      onClick={() => {
+                        const prompt = encodeURIComponent(
+                          `Help me understand this documentation page: ${window.location.href}`,
+                        );
+                        window.open(
+                          `https://chatgpt.com/?q=${prompt}`,
+                          "_blank",
+                        );
+                      }}
+                    >
+                      <ChatGPTLogo className="size-4" />
+                      Open in ChatGPT
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             )}
           </header>
         )}
+
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}
         />

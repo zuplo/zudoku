@@ -123,7 +123,7 @@ describe("SchemaManager", () => {
 
     await manager.processAllSchemas();
 
-    expect(manager.trackedFiles.size).toBeGreaterThan(0);
-    expect(manager.trackedFiles.has(schemaPath)).toBe(true);
+    expect(manager.getAllTrackedFiles().length).toBeGreaterThan(0);
+    expect(manager.getAllTrackedFiles()).toContain(schemaPath);
   });
 });

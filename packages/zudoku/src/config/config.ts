@@ -36,14 +36,19 @@ export type Auth0AuthenticationConfig = {
   domain: string;
   audience?: string;
   scopes?: string[];
+  options?: {
+    alwaysPromptLogin?: boolean;
+  };
 } & RedirectOptions;
 
 export type SupabaseAuthenticationConfig = {
   type: "supabase";
-  provider: Provider;
+  provider?: Provider;
+  providers?: Provider[];
   supabaseUrl: string;
   supabaseKey: string;
   basePath?: string;
+  onlyThirdPartyProviders?: boolean;
 } & RedirectOptions;
 
 export type AzureB2CAuthenticationConfig = {

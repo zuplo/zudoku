@@ -39,6 +39,10 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     path
     deprecated
     extensions
+    servers {
+      url
+      description
+    }
     parameters {
       name
       in
@@ -165,7 +169,10 @@ export const OperationList = ({
   const {
     data: { schema },
   } = result;
-  const { selectedServer } = useSelectedServer(schema.servers);
+  // Global server selection for the dropdown UI
+  const { selectedServer: globalSelectedServer } = useSelectedServer(
+    schema.servers,
+  );
   const title = schema.title;
   const summary = schema.summary;
   const description = schema.description;
@@ -332,8 +339,8 @@ export const OperationList = ({
         {operations.map((fragment) => (
           <div key={fragment.slug}>
             <OperationListItem
-              serverUrl={selectedServer}
               operationFragment={fragment}
+              globalSelectedServer={globalSelectedServer}
             />
             <hr className="my-10" />
           </div>

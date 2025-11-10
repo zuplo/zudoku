@@ -230,14 +230,44 @@ const SiteMapSchema = z
 
 const DEFAULT_DOCS_FILES = "/pages/**/*.{md,mdx}";
 
+const LlmsConfigSchema = z
+  .object({
+    llmsTxt: z
+      .boolean()
+      .default(false)
+      .describe(
+        "When enabled, generates an llms.txt file following the spec at https://llmstxt.org/. This file provides a summary with links to all documentation.",
+      ),
+    llmsTxtFull: z
+      .boolean()
+      .default(false)
+      .describe(
+        "When enabled, generates an llms-full.txt file with the complete content of all markdown documents for LLM consumption.",
+      ),
+    includeProtected: z
+      .boolean()
+      .default(false)
+      .describe(
+        "When enabled, includes content from protected routes in the generated .md files and llms.txt files. By default, protected routes are excluded.",
+      ),
+  })
+  .partial();
+
 export const DocsConfigSchema = z.object({
   files: z
     .union([z.string(), z.array(z.string())])
     .transform((val) => (typeof val === "string" ? [val] : val))
     .default([DEFAULT_DOCS_FILES]),
+  publishMarkdown: z
+    .boolean()
+    .default(false)
+    .describe(
+      "When enabled, generates .md files for each document during build. Access documents at their URL path with .md extension (e.g., /foo/hello.md). Markdown files are generated without frontmatter.",
+    ),
   defaultOptions: z
     .object({
       toc: z.boolean(),
+      copyPage: z.boolean().optional(),
       disablePager: z.boolean(),
       showLastModified: z.boolean(),
       suggestEdit: z
@@ -249,6 +279,7 @@ export const DocsConfigSchema = z.object({
     })
     .partial()
     .optional(),
+  llms: LlmsConfigSchema.optional(),
 });
 
 const Redirect = z.object({
@@ -351,19 +382,19 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
+    options: z
+      .object({
+        alwaysPromptLogin: z.boolean().optional(),
+      })
+      .optional(),
   }),
   z.object({
     type: z.literal("supabase"),
     supabaseUrl: z.string(),
     supabaseKey: z.string(),
-    provider: z.enum([
-      "google",
-      "github",
-      "gitlab",
-      "bitbucket",
-      "facebook",
-      "twitter",
-    ]),
+    provider: z.string().optional(),
+    providers: z.array(z.string()).optional(),
+    onlyThirdPartyProviders: z.boolean().optional(),
     redirectToAfterSignUp: z.string().optional(),
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
@@ -543,6 +574,7 @@ export const ZudokuConfig = BaseConfigSchema.partial();
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
+export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
 
 // Use `z.input` type for flexibility with transforms,

@@ -1,5 +1,5 @@
 import path from "node:path";
-import type { Options as MdxOptions } from "@mdx-js/rollup";
+import type { PluggableList } from "unified";
 import { runnerImport } from "vite";
 import { z } from "zod";
 import type { OpenAPIDocument } from "../../lib/oas/graphql/index.js";
@@ -18,10 +18,18 @@ export const BuildProcessorSchema = z.custom<
 export type Processor = z.infer<typeof BuildProcessorSchema>;
 export type ProcessorArg = Parameters<Processor>[0];
 
+const PluginConfigSchema = z
+  .custom<PluggableList>()
+  .or(
+    z.custom<(defaultPlugins: PluggableList) => PluggableList>(
+      (val) => typeof val === "function",
+    ),
+  );
+
 export const BuildConfigSchema = z.object({
   processors: z.array(BuildProcessorSchema).optional(),
-  remarkPlugins: z.custom<MdxOptions["remarkPlugins"]>().optional(),
-  rehypePlugins: z.custom<MdxOptions["rehypePlugins"]>().optional(),
+  remarkPlugins: PluginConfigSchema.optional(),
+  rehypePlugins: PluginConfigSchema.optional(),
   prerender: z.object({ workers: z.number().optional() }).optional(),
 });
 

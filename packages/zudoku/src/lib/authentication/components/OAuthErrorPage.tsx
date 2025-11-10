@@ -106,7 +106,7 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
               type === "invalid_grant" ||
               type === "token_expired") && (
               <Button
-                onClick={login}
+                onClick={() => login()}
                 className="w-full capitalize"
                 variant={"default"}
               >

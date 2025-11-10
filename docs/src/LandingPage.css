@@ -6,7 +6,3 @@
     transform: scale(1);
   }
 }
-
-::selection::selection {
-  background: initial !important;
-}

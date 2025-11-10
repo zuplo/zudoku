@@ -49,12 +49,15 @@ const config: ZudokuConfig = {
   },
   docs: {
     defaultOptions: {
+      copyPage: true,
       showLastModified: true,
       suggestEdit: {
         text: "Edit this page",
         url: "https://github.com/zuplo/zudoku/edit/main/docs/{filePath}",
       },
     },
+    publishMarkdown: true,
+    llms: { llmsTxt: true, llmsTxtFull: true },
   },
   sitemap: {
     siteUrl: "https://zudoku.dev",

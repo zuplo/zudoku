@@ -82,6 +82,14 @@ to integrate Azure AD with your Zudoku documentation site.
    };
    ```
 
+5. **Install Azure AD Dependencies**
+
+   Add `@azure/msal-browser` to your project dependencies:
+
+   ```bash
+   npm install @azure/msal-browser
+   ```
+
 </Stepper>
 
 ## Configuration Options
@@ -208,6 +216,9 @@ Azure AD provides rich user profile data through OpenID Connect:
 
 5. **Token Validation Errors**: Ensure your issuer URL is correct and includes the `/v2.0` endpoint
    for the Microsoft identity platform.
+
+6. **Authentication Not Working**: Make sure you have installed `@azure/msal-browser` to your
+   project.
 
 ## Security Best Practices
 

@@ -49,12 +49,17 @@ You'll need a Supabase project. If you don't have one,
        provider: "github", // or any supported provider
        supabaseUrl: "https://your-project.supabase.co",
        supabaseKey: "<your-anon-public-key>",
-       redirectToAfterSignUp: "/",
-       redirectToAfterSignIn: "/",
-       redirectToAfterSignOut: "/",
      },
      // ... other configuration
    };
+   ```
+
+4. **Install Supabase Dependencies**
+
+   Add `@supabase/supabase-js` to your project dependencies:
+
+   ```bash
+   npm install @supabase/supabase-js @supabase/auth-ui-shared @supabase/auth-ui-react
    ```
 
 </Stepper>
@@ -103,9 +108,6 @@ authentication: {
   provider: "google",
   supabaseUrl: "https://your-project.supabase.co",
   supabaseKey: "<your-anon-public-key>",
-  redirectToAfterSignUp: "/welcome",    // After successful sign up
-  redirectToAfterSignIn: "/dashboard",  // After successful sign in
-  redirectToAfterSignOut: "/",          // After sign out
 }
 ```
 
@@ -132,6 +134,9 @@ Store additional user information in Supabase:
    OAuth provider to include `http://localhost:3000`.
 
 4. **CORS Errors**: Check that your site's domain is properly configured in Supabase's allowed URLs.
+
+5. **Authentication Not Working**: Make sure you have installed `@supabase/supabase-js` to your
+   project.
 
 ## Next Steps
 

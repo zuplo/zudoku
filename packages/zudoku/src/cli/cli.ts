@@ -9,12 +9,12 @@ import dev from "./cmds/dev.js";
 import preview from "./cmds/preview.js";
 import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
-import { logger } from "./common/logger.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
 import {
   printCriticalFailureToConsoleAndExit,
   printDiagnosticsToConsole,
 } from "./common/output.js";
+import { warnPackageVersionMismatch } from "./common/version-check.js";
 
 process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
   ? "internal"
@@ -22,22 +22,23 @@ process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
 
 const MIN_NODE_VERSION = "20.0.0";
 
+// Minimal representation of a package.json file
+type PackageJson = {
+  name: string;
+  version: string;
+  type: string;
+  dependencies: Record<string, string>;
+  devDependencies: Record<string, string>;
+  peerDependencies: Record<string, string>;
+};
+
+export const getPackageJson = (path: string): PackageJson =>
+  JSON.parse(readFileSync(path, "utf-8")) as PackageJson;
+
 if (gte(process.versions.node, MIN_NODE_VERSION)) {
-  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
-  let packageJson: any;
-  try {
-    packageJson = JSON.parse(
-      readFileSync(
-        fileURLToPath(new URL("../../package.json", import.meta.url)),
-        "utf-8",
-      ),
-    );
-  } catch (e) {
-    logger.error(e);
-    await printCriticalFailureToConsoleAndExit(
-      `Unable to load zudoku cli. The package.json is missing or malformed.`,
-    );
-  }
+  const packageJson = getPackageJson(
+    fileURLToPath(new URL("../../package.json", import.meta.url)),
+  );
 
   if (SENTRY_DSN) {
     Sentry.init({
@@ -58,6 +59,7 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
         printDiagnosticsToConsole("Running in Zuplo mode");
       }
     })
+    .middleware(warnPackageVersionMismatch)
     .command(build)
     .command(dev)
     .command(preview)

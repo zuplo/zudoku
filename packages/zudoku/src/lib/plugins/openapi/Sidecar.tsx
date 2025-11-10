@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
@@ -12,7 +11,6 @@ import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
 import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
-import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
@@ -22,7 +20,6 @@ import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { useSecurityState } from "./state/securityState.js";
-import { useSelectedServer } from "./state.js";
 import { generateAuthHeader } from "./util/authHelpers.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
@@ -109,15 +106,15 @@ export const Sidecar = ({
   operation,
   selectedResponse,
   onSelectResponse,
+  globalSelectedServer,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
+  globalSelectedServer?: string;
 }) => {
-  const { input, type, options } = useOasConfig();
+  const { options } = useOasConfig();
   const auth = useAuthState();
-  const query = useCreateQuery(GetServerQuery, { input, type });
-  const result = useSuspenseQuery(query);
   const context = useZudoku();
 
   const methodTextColor = methodForColor(operation.method);
@@ -167,7 +164,10 @@ export const Sidecar = ({
     />
   );
 
-  const { selectedServer } = useSelectedServer(result.data.schema.servers);
+  // Manual server selection takes precedence over the server hierarchy.
+  // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
+  const selectedServer =
+    globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const { displayCode, copyCode } = useMemo(() => {
     const exampleBody =
@@ -272,7 +272,7 @@ export const Sidecar = ({
           </span>
           {showPlayground && (
             <PlaygroundDialogWrapper
-              servers={result.data.schema.servers.map((server) => server.url)}
+              servers={operation.servers.map((server) => server.url)}
               operation={operation}
               examples={requestBodyContent ?? undefined}
             />

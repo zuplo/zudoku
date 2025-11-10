@@ -158,6 +158,7 @@ export const Playground = ({
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
   const { skipLogin, setSkipLogin } = useRememberSkipLoginDialog();
+  const [isLoginDialogDismissed, setIsLoginDialogDismissed] = useState(false);
   const [showLongRunningWarning, setShowLongRunningWarning] = useState(false);
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
@@ -422,7 +423,7 @@ export const Playground = ({
         return {
           status: response.status,
           headers: responseHeaders,
-          size: responseSize ? parseInt(responseSize) : body.length,
+          size: responseSize ? Number(responseSize) : body.length,
           body,
           time,
           isBinary,
@@ -498,7 +499,7 @@ export const Playground = ({
     </div>
   );
 
-  const showLogin = requiresLogin && !skipLogin;
+  const showLogin = requiresLogin && !skipLogin && !isLoginDialogDismissed;
   const isBodySupported = ["POST", "PUT", "PATCH", "DELETE"].includes(
     method.toUpperCase(),
   );
@@ -534,7 +535,17 @@ export const Playground = ({
           />
           <RequestLoginDialog
             open={showLogin}
-            setOpen={(open) => setSkipLogin(!open)}
+            setOpen={(open) => {
+              if (!open) {
+                setIsLoginDialogDismissed(true);
+              }
+            }}
+            onSkip={(rememberSkip) => {
+              setIsLoginDialogDismissed(true);
+              if (rememberSkip) {
+                setSkipLogin(true);
+              }
+            }}
             onSignUp={onSignUp}
             onLogin={onLogin}
           />

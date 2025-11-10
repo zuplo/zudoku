@@ -1,10 +1,11 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect } from "react";
 import { matchPath, useLocation } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
+import { useAuthState } from "../../authentication/state.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { CACHE_KEYS } from "../cache.js";
+import { CACHE_KEYS, useCache } from "../cache.js";
 import { traverseNavigation } from "../navigation/utils.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
@@ -23,6 +24,14 @@ export const useZudoku = () => {
 
 export const useApiIdentities = () => {
   const { getApiIdentities } = useZudoku();
+  const { isAuthenticated } = useAuthState();
+  const { invalidateCache } = useCache();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      invalidateCache("API_IDENTITIES");
+    }
+  }, [isAuthenticated, invalidateCache]);
 
   return useQuery({
     queryFn: getApiIdentities,

@@ -184,9 +184,73 @@ The `url` should be a template where the file path will be appended. For example
 in a `docs/pages/` directory, the URL might be
 `https://github.com/your-org/your-repo/edit/main/docs/pages`.
 
+#### `copyPage`
+
+**Type:** `boolean` **Default:** `undefined`
+
+Whether to show a copy button in the page header that allows users to copy the page markdown. This
+feature requires `publishMarkdown` to be enabled (see below).
+
+```tsx title="zudoku.config.tsx"
+docs: {
+  defaultOptions: {
+    copyPage: true; // Enable copy button for all pages
+  }
+}
+```
+
+The copy button provides:
+
+- A primary "Copy page" action that copies the markdown to clipboard
+- A dropdown with additional options:
+  - Copy link to page
+  - Open markdown file (requires `publishMarkdown: true`)
+  - Open in Claude
+  - Open in ChatGPT
+
+> **Note:** The copy button requires `publishMarkdown: true` to be set in your docs config. If
+> `copyPage` is enabled but `publishMarkdown` is not, a warning will be displayed.
+
+### `publishMarkdown`
+
+**Type:** `boolean` **Default:** `false`
+
+When enabled, generates `.md` files for each documentation page during build. Pages can then be
+accessed at their URL path with the `.md` extension appended (e.g., `/docs/quickstart.md`).
+
+```tsx title="zudoku.config.tsx"
+docs: {
+  publishMarkdown: true,
+}
+```
+
+The generated markdown files:
+
+- Have frontmatter removed for cleaner content
+- Are accessible at `{page-url}.md` in both development and production
+- Are required for the `copyPage` button functionality
+- Are used by LLM features (see [llms.txt configuration](/docs/configuration/llms) for more details)
+
+### `llms`
+
+**Type:** `object` **Default:** `undefined`
+
+Configuration for generating LLM-friendly documentation files. See the
+[llms.txt configuration](/docs/configuration/llms) page for complete documentation.
+
+```tsx title="zudoku.config.tsx"
+docs: {
+  llms: {
+    llmsTxt: true,        // Generate llms.txt summary file
+    llmsTxtFull: true,    // Generate llms-full.txt with complete content
+    includeProtected: false
+  }
+}
+```
+
 ## Overriding Defaults
 
-You can override default options on individual pages using frontmatter:
+You can override [default options](#defaultoptions) on individual pages using frontmatter:
 
 ```markdown
 ---
