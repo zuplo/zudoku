@@ -283,8 +283,8 @@ export const Sidecar = ({
             <SidecarBox.Body className="p-0">
               <CollapsibleCode>
                 <CodeWithMasking
-                  displayCode={displayCode!}
-                  copyCode={copyCode!}
+                  displayCode={displayCode}
+                  copyCode={copyCode}
                   language={selectedLang}
                 />
               </CollapsibleCode>
