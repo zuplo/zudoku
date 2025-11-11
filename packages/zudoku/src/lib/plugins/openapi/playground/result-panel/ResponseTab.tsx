@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   CheckIcon,
-  CopyIcon,
   CornerDownLeftIcon,
   CornerDownRightIcon,
   DownloadIcon,
@@ -11,7 +10,7 @@ import {
   PlusCircleIcon,
   SquareCodeIcon,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
 import {
   Collapsible,
@@ -30,7 +29,6 @@ import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { cn } from "../../../../util/cn.js";
 import createVariantComponent from "../../../../util/createVariantComponent.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
-import { useCopyToClipboard } from "../../../../util/useCopyToClipboard.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -152,8 +150,6 @@ export const ResponseTab = ({
   fileName?: string;
   blob?: Blob;
 }) => {
-  const [isCopied, copyToClipboard] = useCopyToClipboard();
-  const ref = useRef<HTMLDivElement>(null);
   const detectedLanguage = detectLanguage(headers);
   const jsonContent = tryParseJson(body);
   const beautifiedBody = jsonContent || body;
