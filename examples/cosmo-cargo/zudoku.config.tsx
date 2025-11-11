@@ -270,6 +270,12 @@ const config: ZudokuConfig = {
         },
       ],
     },
+    {
+      type: "file",
+      input: "./schema/cargo-containers.json",
+      path: "/catalog/api-cargo-containers",
+      categories: [{ label: "General", tags: ["Containers", "Booking"] }],
+    },
   ],
   theme: {
     light: {

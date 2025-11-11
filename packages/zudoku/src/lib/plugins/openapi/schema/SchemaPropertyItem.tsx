@@ -9,7 +9,6 @@ import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
-import { AllOfGroupView } from "./AllOfGroup/AllOfGroupView.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
 import {
@@ -124,9 +123,7 @@ export const SchemaPropertyItem = ({
             )}
             <Collapsible.Content>
               <div className="mt-2">
-                {schema.allOf ? (
-                  <AllOfGroupView schema={schema} />
-                ) : schema.anyOf || schema.oneOf || schema.type === "object" ? (
+                {schema.anyOf || schema.oneOf || schema.type === "object" ? (
                   <SchemaView schema={schema} />
                 ) : isArrayType(schema) && "items" in schema ? (
                   <SchemaView schema={schema.items} />

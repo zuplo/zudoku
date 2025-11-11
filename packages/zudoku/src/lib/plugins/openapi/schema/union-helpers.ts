@@ -36,7 +36,6 @@ export const unionVariants = (schema: SchemaObject): SchemaObject[] => {
       const shouldInherit =
         !variant.properties &&
         !variant.type &&
-        !variant.allOf &&
         !variant.oneOf &&
         !variant.anyOf;
 
