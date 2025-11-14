@@ -9,6 +9,7 @@
 !**/*.mdx
 !**/*.yml
 !**/*.yaml
+!**/*.html
 
 pnpm-lock.yaml
 node_modules/
