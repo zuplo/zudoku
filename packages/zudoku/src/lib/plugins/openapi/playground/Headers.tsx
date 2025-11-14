@@ -1,10 +1,5 @@
 import { CircleAlertIcon, LockIcon, TableOfContentsIcon } from "lucide-react";
-import {
-  type Control,
-  Controller,
-  useFieldArray,
-  useFormContext,
-} from "react-hook-form";
+import { type Control, useFieldArray, useFormContext } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
@@ -20,34 +15,14 @@ import ParamsGrid, {
   ParamsGridRemoveButton,
 } from "./ParamsGrid.js";
 import type { Header, PlaygroundForm } from "./Playground.js";
-import { useAutoAppendItem } from "./request-panel/useAutoAppendItem.js";
+import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
+// biome-ignore format: Easier to read
 const headerOptions = Object.freeze([
-  "Accept",
-  "Accept-Encoding",
-  "Accept-Language",
-  "Authorization",
-  "Cache-Control",
-  "Connection",
-  "Content-Disposition",
-  "Content-Encoding",
-  "Content-Language",
-  "Content-Length",
-  "Content-Range",
-  "Content-Security-Policy",
-  "Content-Type",
-  "Cookie",
-  "Date",
-  "ETag",
-  "Expires",
-  "Host",
-  "If-Modified-Since",
-  "Location",
-  "Origin",
-  "Pragma",
-  "Referer",
-  "Set-Cookie",
-  "User-Agent",
+  "Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Cache-Control", "Connection",
+  "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Range",
+  "Content-Security-Policy", "Content-Type", "Cookie", "Date", "ETag", "Expires", "Host",
+  "If-Modified-Since", "Location", "Origin", "Pragma", "Referer", "Set-Cookie", "User-Agent",
   "X-Requested-With",
 ]);
 
@@ -60,22 +35,25 @@ export const Headers = ({
   schemaHeaders: Header[];
   lockedHeaders?: string[];
 }) => {
-  const { fields, append, remove } = useFieldArray<PlaygroundForm, "headers">({
+  const { watch, formState } = useFormContext<PlaygroundForm>();
+  const watchedHeaders = watch("headers");
+
+  const fieldArray = useFieldArray<PlaygroundForm, "headers">({
     control,
     name: "headers",
   });
-  const { setValue, watch, formState } = useFormContext<PlaygroundForm>();
-  const watchedHeaders = watch("headers");
 
-  const handleAutoAppend = useAutoAppendItem(watchedHeaders, () =>
-    append({ name: "", value: "", active: false }, { shouldFocus: false }),
-  );
+  const manager = useKeyValueFieldManager<PlaygroundForm, "headers">({
+    fieldArray,
+    name: "headers",
+    defaultValue: { name: "", value: "", active: false },
+  });
 
   const missingHeaders = schemaHeaders
     .filter((h) => !watchedHeaders.some((f) => f.name === h.name))
     .map(({ name }) => name);
 
-  const hiddenHeadersIndex = fields.flatMap((f, index) => {
+  const hiddenHeadersIndex = manager.fields.flatMap((f, index) => {
     const keep = !lockedHeaders
       ?.map((h) => h.toLowerCase())
       .includes(f.name.toLowerCase());
@@ -119,116 +97,88 @@ export const Headers = ({
                   </TooltipContent>
                 </Tooltip>
               ))}
-              {fields.map((field, i) => {
+              {manager.fields.map((field, i) => {
                 const currentSchemaHeader = schemaHeaders.find(
                   (h) => h.name === watchedHeaders.at(i)?.name,
                 );
+                const hasEnum =
+                  currentSchemaHeader?.enum &&
+                  currentSchemaHeader.enum.length > 0;
+                const isHidden = hiddenHeadersIndex.includes(i);
+                const nameInputProps = manager.getNameInputProps(i);
+                const valueInputProps = manager.getValueInputProps(i);
+
                 return (
                   <ParamsGridItem
                     key={field.id}
                     className={cn(
-                      hiddenHeadersIndex.includes(i) && "text-amber-600",
-                      hiddenHeadersIndex.includes(i) &&
+                      isHidden && "text-amber-600",
+                      isHidden &&
                         !formState.dirtyFields.headers?.[i]?.value &&
                         "hidden",
                     )}
                   >
-                    <Controller
-                      control={control}
-                      name={`headers.${i}.active`}
-                      render={({ field }) => (
-                        <>
-                          <Checkbox
-                            id={`headers.${i}.active`}
-                            className={cn(
-                              hiddenHeadersIndex.includes(i) && "hidden",
-                            )}
-                            checked={field.value}
-                            onCheckedChange={(c) => field.onChange(c === true)}
-                          />
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <CircleAlertIcon
-                                className={cn(
-                                  "text-amber-600",
-                                  !hiddenHeadersIndex.includes(i) && "hidden",
-                                )}
-                                size={16}
-                              />
-                            </TooltipTrigger>
-                            <TooltipContent
-                              alignOffset={10}
-                              side="bottom"
-                              align="start"
-                            >
-                              <p>
-                                This header will be overwritten by the selected
-                                authentication.
-                              </p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </>
-                      )}
+                    <Checkbox
+                      className={cn(isHidden && "hidden")}
+                      {...manager.getCheckboxProps(i)}
                     />
-                    <Controller
-                      control={control}
-                      name={`headers.${i}.name`}
-                      render={({ field }) => (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CircleAlertIcon
+                          className={cn(
+                            "text-amber-600",
+                            !isHidden && "hidden",
+                          )}
+                          size={16}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent
+                        alignOffset={10}
+                        side="bottom"
+                        align="start"
+                      >
+                        <p>
+                          This header will be overwritten by the selected
+                          authentication.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <ParamsGridInput asChild>
+                      <Autocomplete
+                        {...nameInputProps}
+                        value={String(manager.getValue(i, "name"))}
+                        placeholder="Name"
+                        options={[...missingHeaders, ...headerOptions]}
+                        onChange={(v) => manager.setValue(i, "name", v)}
+                        onSelect={(v) =>
+                          manager.setValue(i, "name", v, { focus: "next" })
+                        }
+                      />
+                    </ParamsGridInput>
+                    <div className="flex items-center gap-2">
+                      {!hasEnum ? (
+                        <ParamsGridInput
+                          placeholder="Value"
+                          autoComplete="off"
+                          {...valueInputProps}
+                        />
+                      ) : (
                         <ParamsGridInput asChild>
                           <Autocomplete
-                            {...field}
-                            placeholder="Name"
-                            options={[...missingHeaders, ...headerOptions]}
-                            onChange={(e) => {
-                              field.onChange(e);
-                              setValue(`headers.${i}.active`, true);
-                              handleAutoAppend(i);
-                            }}
+                            {...valueInputProps}
+                            value={String(manager.getValue(i, "value"))}
+                            shouldFilter={false}
+                            options={currentSchemaHeader.enum ?? []}
+                            onChange={(v) => manager.setValue(i, "value", v)}
+                            onSelect={(v) =>
+                              manager.setValue(i, "value", v, { focus: "next" })
+                            }
                           />
                         </ParamsGridInput>
                       )}
-                    />
-                    <div className="flex items-center gap-2">
-                      <Controller
-                        control={control}
-                        name={`headers.${i}.value`}
-                        render={({ field }) => {
-                          const hasEnum =
-                            currentSchemaHeader?.enum &&
-                            currentSchemaHeader.enum.length > 0;
-
-                          if (!hasEnum) {
-                            return (
-                              <ParamsGridInput
-                                placeholder="Value"
-                                autoComplete="off"
-                                {...field}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  setValue(`headers.${i}.active`, true);
-                                  handleAutoAppend(i);
-                                }}
-                              />
-                            );
-                          }
-
-                          return (
-                            <ParamsGridInput asChild>
-                              <Autocomplete
-                                shouldFilter={false}
-                                value={field.value}
-                                options={currentSchemaHeader.enum ?? []}
-                                onChange={(e) => {
-                                  field.onChange(e);
-                                  setValue(`headers.${i}.active`, true);
-                                  handleAutoAppend(i);
-                                }}
-                              />
-                            </ParamsGridInput>
-                          );
-                        }}
+                      <ParamsGridRemoveButton
+                        {...manager.getRemoveButtonProps(i)}
                       />
-                      <ParamsGridRemoveButton onClick={() => remove(i)} />
                     </div>
                   </ParamsGridItem>
                 );

@@ -30,7 +30,7 @@ export const ParamsGridRemoveButton = ({
     size="icon-xs"
     variant="ghost"
     className={cn(
-      "text-muted-foreground opacity-0 group-hover:brightness-95 group-hover:opacity-100",
+      "text-muted-foreground opacity-0 group-hover:brightness-95 focus-visible:opacity-100 group-hover:opacity-100",
       className,
     )}
     onClick={onClick}

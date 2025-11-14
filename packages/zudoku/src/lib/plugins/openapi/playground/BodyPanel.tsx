@@ -28,7 +28,7 @@ import ExamplesDropdown from "./ExamplesDropdown.js";
 import ParamsGrid from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 import { MultipartField } from "./request-panel/MultipartField.js";
-import { useAutoAppendItem } from "./request-panel/useAutoAppendItem.js";
+import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
 export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
   const { register, setValue, watch, control } =
@@ -43,14 +43,6 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
   ]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
-  const { fields, append, remove } = useFieldArray<
-    PlaygroundForm,
-    "multipartFormFields"
-  >({ control, name: "multipartFormFields" });
-
-  const handleAutoAppend = useAutoAppendItem(multipartFormFields, () =>
-    append({ name: "", value: "", active: false }, { shouldFocus: false }),
-  );
 
   const handleFileSelect = (selectedFile: File | null) => {
     setValue("file", selectedFile);
@@ -88,6 +80,24 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
     const droppedFile = e.dataTransfer.files?.[0] ?? null;
     handleFileSelect(droppedFile);
   };
+
+  const fieldArray = useFieldArray<PlaygroundForm, "multipartFormFields">({
+    control,
+    name: "multipartFormFields",
+  });
+
+  const manager = useKeyValueFieldManager<
+    PlaygroundForm,
+    "multipartFormFields"
+  >({
+    fieldArray,
+    name: "multipartFormFields",
+    defaultValue: { name: "", value: "", active: false },
+    isEmpty: (item) => {
+      if (item.value instanceof File) return false;
+      return !item.name && !item.value;
+    },
+  });
 
   return (
     <Collapsible defaultOpen>
@@ -194,7 +204,7 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
           <Textarea
             {...register("body")}
             className={cn(
-              "w-full p-2 h-64 font-mono md:text-xs border-none rounded-none focus-visible:ring-0 transition-colors",
+              "w-full px-4 py-2.5 h-64 font-mono md:text-xs border-none rounded-none focus-visible:ring-0 transition-colors",
             )}
             placeholder="Body content"
           />
@@ -253,14 +263,8 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
         )}
         {bodyMode === "multipart" && (
           <ParamsGrid>
-            {fields.map((field, index) => (
-              <MultipartField
-                key={field.id}
-                index={index}
-                field={field}
-                onRemove={() => remove(index)}
-                onAutoAppend={handleAutoAppend}
-              />
+            {manager.fields.map((field, index) => (
+              <MultipartField key={field.id} index={index} manager={manager} />
             ))}
           </ParamsGrid>
         )}

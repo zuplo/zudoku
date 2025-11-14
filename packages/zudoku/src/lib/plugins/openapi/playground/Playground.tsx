@@ -400,6 +400,11 @@ export const Playground = ({
       <TooltipProvider delayDuration={150}>
         <form
           ref={formRef}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+              e.preventDefault();
+            }
+          }}
           onSubmit={handleSubmit((data) => {
             if (identities.data?.length === 0 || data.identity) {
               queryMutation.mutate(data);

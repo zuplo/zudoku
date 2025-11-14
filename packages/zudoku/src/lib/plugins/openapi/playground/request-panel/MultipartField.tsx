@@ -1,6 +1,5 @@
 import { PaperclipIcon, TrashIcon } from "lucide-react";
 import { useRef } from "react";
-import { Controller, useFormContext } from "react-hook-form";
 import { Button } from "zudoku/components";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
@@ -10,51 +9,28 @@ import {
   ParamsGridRemoveButton,
 } from "../ParamsGrid.js";
 import type { PlaygroundForm } from "../Playground.js";
+import type { useKeyValueFieldManager } from "./useKeyValueFieldManager.js";
 
 type MultipartFieldProps = {
   index: number;
-  field: NonNullable<PlaygroundForm["multipartFormFields"]>[number];
-  onRemove: () => void;
-  onAutoAppend: (index: number) => void;
+  manager: ReturnType<
+    typeof useKeyValueFieldManager<PlaygroundForm, "multipartFormFields">
+  >;
 };
 
-export const MultipartField = ({
-  index,
-  onRemove,
-  onAutoAppend,
-}: MultipartFieldProps) => {
-  const { control, setValue, watch } = useFormContext<PlaygroundForm>();
+export const MultipartField = ({ index, manager }: MultipartFieldProps) => {
   const fieldFileInputRef = useRef<HTMLInputElement>(null);
-  const fieldValue = watch(`multipartFormFields.${index}.value`);
+  const fieldValue = manager.getValue(index, "value");
 
   return (
     <ParamsGridItem>
-      <Controller
-        control={control}
-        name={`multipartFormFields.${index}.active`}
-        render={({ field }) => (
-          <Checkbox
-            checked={field.value}
-            onCheckedChange={(checked) => {
-              field.onChange(checked === true);
-            }}
-          />
-        )}
+      <Checkbox
+        {...manager.getCheckboxProps(index)}
+        disabled={!manager.getValue(index, "name")}
       />
-      <Controller
-        control={control}
-        name={`multipartFormFields.${index}.name`}
-        render={({ field }) => (
-          <ParamsGridInput
-            {...field}
-            placeholder="Key"
-            onChange={(e) => {
-              field.onChange(e);
-              setValue(`multipartFormFields.${index}.active`, true);
-              onAutoAppend(index);
-            }}
-          />
-        )}
+      <ParamsGridInput
+        {...manager.getNameInputProps(index)}
+        placeholder="Key"
       />
       <div className="flex items-center gap-1 flex-1">
         {fieldValue instanceof File ? (
@@ -73,28 +49,16 @@ export const MultipartField = ({
               variant="ghost"
               size="icon-xs"
               className="opacity-50 hover:opacity-100 hover:brightness-95 transition-opacity"
-              onClick={() => setValue(`multipartFormFields.${index}.value`, "")}
+              onClick={() => manager.setValue(index, "value", "")}
             >
               <TrashIcon size={13} />
             </Button>
           </div>
         ) : (
           <>
-            <Controller
-              control={control}
-              name={`multipartFormFields.${index}.value`}
-              render={({ field }) => (
-                <ParamsGridInput
-                  {...field}
-                  value={typeof field.value === "string" ? field.value : ""}
-                  onChange={(e) => {
-                    field.onChange(e.target.value);
-                    setValue(`multipartFormFields.${index}.active`, true);
-                    onAutoAppend(index);
-                  }}
-                  placeholder="Value"
-                />
-              )}
+            <ParamsGridInput
+              {...manager.getValueInputProps(index)}
+              placeholder="Value"
             />
             <input
               ref={fieldFileInputRef}
@@ -104,9 +68,8 @@ export const MultipartField = ({
                 const file = e.target.files?.[0];
                 if (!file) return;
 
-                setValue(`multipartFormFields.${index}.value`, file);
-                setValue(`multipartFormFields.${index}.active`, true);
-                onAutoAppend(index);
+                manager.setValue(index, "value", file);
+                manager.setValue(index, "active", true);
               }}
             />
             <Button
@@ -115,13 +78,13 @@ export const MultipartField = ({
               size="icon-xs"
               onClick={() => fieldFileInputRef.current?.click()}
               title="Attach file"
-              className="opacity-0 group-hover:opacity-100 group-hover:brightness-95 transition-opacity"
+              className="opacity-0 focus-visible:opacity-100 group-hover:opacity-100 group-hover:brightness-95 transition-opacity"
             >
               <PaperclipIcon size={14} />
             </Button>
           </>
         )}
-        <ParamsGridRemoveButton onClick={onRemove} />
+        <ParamsGridRemoveButton {...manager.getRemoveButtonProps(index)} />
       </div>
     </ParamsGridItem>
   );
