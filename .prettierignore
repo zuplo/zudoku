@@ -10,7 +10,9 @@
 !**/*.yml
 !**/*.yaml
 !**/*.html
+**/stats.html
 
 pnpm-lock.yaml
 node_modules/
 dist/
+standalone/
