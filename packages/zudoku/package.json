@@ -320,7 +320,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "6.0.3",
-    "tsx": "4.20.4",
+    "tsx": "4.20.6",
     "typescript": "5.9.3",
     "vitest": "4.0.6"
   },
