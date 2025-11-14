@@ -101,7 +101,7 @@ providing your own array of scopes.
 To use Supabase as your authentication provider, supply your project's URL, API key, and the OAuth
 provider to use.
 
-```typescript
+```typescript title="zudoku.config.ts"
 {
   // ...
   authentication: {
@@ -127,7 +127,7 @@ The `provider` option can be any of Supabase Auth's supported providers, such as
 For Azure B2C authentication, you will need to provide your Azure B2C tenant name, client ID, and
 policy name.
 
-```typescript
+```typescript title="zudoku.config.ts"
 {
   // ...
   authentication: {
@@ -167,73 +167,20 @@ If the provider does not return a field, it will be left blank.
 
 ## Protected Routes
 
-You can protect specific routes in your documentation by adding the `protectedRoutes` property to
-your configuration. This property supports two formats: a simple array of path patterns, or an
-advanced object format with custom authorization logic.
+Once authentication is configured, you can protect specific routes in your documentation to require
+users to be authenticated or meet custom authorization requirements.
 
-### Array Format
-
-The simplest way to protect routes is to provide an array of path patterns. Users must be
-authenticated to access these routes.
-
-```typescript
+```typescript title="zudoku.config.ts"
 {
   // ...
   protectedRoutes: [
     "/admin/*",     // Protect all routes under /admin
     "/settings",    // Protect the settings page
     "/api/*",       // Protect all API-related routes
-    "/private/:id"  // Protect dynamic routes with parameters
   ],
   // ...
 }
 ```
 
-### Advanced Object Format
-
-For more complex authorization logic, you can provide a record mapping route patterns to custom
-callback functions:
-
-```typescript
-{
-  // ...
-  protectedRoutes: {
-    // Only allow authenticated users with admin role
-    "/admin/*": ({ auth, context }) =>
-      auth.isAuthenticated && auth.user?.role === "admin",
-
-    // Check if user has enterprise access
-    "/api/enterprise/*": ({ auth, context }) =>
-      auth.isAuthenticated && auth.user?.subscription === "enterprise",
-
-    // Allow access to beta features based on user attributes
-    "/beta/*": ({ auth, context }) =>
-      auth.isAuthenticated && auth.user?.betaAccess === true,
-  },
-  // ...
-}
-```
-
-The callback function receives an object with:
-
-- `auth`: The current authentication state including `isAuthenticated`, `user` data, and more
-- `context`: The Zudoku context providing access to configuration and utilities
-
-The callback must return a boolean indicating whether the user should have access to the route.
-
-### Path Patterns
-
-The path patterns follow the same syntax as [React Router](https://reactrouter.com):
-
-- `:param` matches a URL segment up to the next `/`, `?`, or `#`
-- `*` matches zero or more characters up to the next `/`, `?`, or `#`
-- `/*` matches all characters after the pattern
-
-For example:
-
-- `/users/:id` matches `/users/123` or `/users/abc`
-- `/docs/*` matches `/docs/getting-started` or `/docs/api/reference`
-- `/settings` matches only the exact path `/settings`
-
-After logging in, users will be automatically redirected back to the protected route they were
-trying to access.
+See the [Protected Routes](./protected-routes.md) documentation for detailed information on
+configuring route protection with simple patterns or advanced authorization logic.
