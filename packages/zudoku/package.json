@@ -214,7 +214,7 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@radix-ui/react-visually-hidden": "1.2.4",
     "@scalar/openapi-parser": "0.18.0",
-    "@sentry/node": "9.26.0",
+    "@sentry/node": "10.24.0",
     "@shikijs/engine-javascript": "3.14.0",
     "@shikijs/langs": "3.14.0",
     "@shikijs/rehype": "3.14.0",
