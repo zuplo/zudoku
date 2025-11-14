@@ -81,7 +81,7 @@
   }
 
   header:has(h1) {
-    & ~ p:first-of-type {
+    & + p {
       @apply my-0;
     }
   }
