@@ -116,7 +116,7 @@ default in Supabase. To disable email/password authentication and only use OAuth
 
 All available configuration options for Supabase authentication:
 
-```ts{title="zudoku.config.ts"}
+```ts title="zudoku.config.ts"
 authentication: {
   type: "supabase",
 
