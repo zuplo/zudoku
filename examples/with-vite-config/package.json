@@ -23,7 +23,7 @@
   "devDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",
-    "rollup-plugin-visualizer": "6.0.3",
+    "rollup-plugin-visualizer": "6.0.5",
     "zudoku": "workspace:*"
   }
 }

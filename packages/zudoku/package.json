@@ -319,7 +319,7 @@
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "rollup-plugin-visualizer": "6.0.3",
+    "rollup-plugin-visualizer": "6.0.5",
     "tsx": "4.20.4",
     "typescript": "5.9.3",
     "vitest": "4.0.6"
