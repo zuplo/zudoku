@@ -69,6 +69,7 @@ export const docs: Navigation = [
     icon: "lock",
     items: [
       "docs/configuration/authentication",
+      "docs/configuration/protected-routes",
       "docs/configuration/authentication-auth0",
       "docs/configuration/authentication-clerk",
       "docs/configuration/authentication-azure-ad",
