@@ -79,6 +79,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
+  security?: Maybe<Array<SecurityRequirement>>;
   servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
@@ -188,6 +189,12 @@ export type SchemaTag = {
 
 export type SchemaType = "file" | "raw" | "url";
 
+export type SecurityRequirement = {
+  __typename?: "SecurityRequirement";
+  name: Scalars["String"]["output"];
+  scopes: Array<Scalars["String"]["output"]>;
+};
+
 export type Server = {
   __typename?: "Server";
   description?: Maybe<Scalars["String"]["output"]>;
@@ -288,6 +295,11 @@ export type OperationsFragmentFragment = {
       encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
     }> | null;
   }>;
+  security?: Array<{
+    __typename?: "SecurityRequirement";
+    name: string;
+    scopes: Array<string>;
+  }> | null;
 } & { " $fragmentName"?: "OperationsFragmentFragment" };
 
 export type SchemaWarmupQueryVariables = Exact<{
@@ -503,6 +515,10 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
       schema
     }
   }
+  security {
+    name
+    scopes
+  }
 }
     `,
   { fragmentName: "OperationsFragment" },
@@ -628,6 +644,10 @@ export const OperationsForTagDocument = new TypedDocumentString(`
       }
       schema
     }
+  }
+  security {
+    name
+    scopes
   }
 }`) as unknown as TypedDocumentString<
   OperationsForTagQuery,
