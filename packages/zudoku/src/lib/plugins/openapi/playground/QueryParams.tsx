@@ -1,5 +1,5 @@
 import { Unlink2Icon } from "lucide-react";
-import { type Control, useFieldArray, useFormContext } from "react-hook-form";
+import { type Control, useFormContext } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
@@ -25,13 +25,8 @@ export const QueryParams = ({
   const { watch } = useFormContext<PlaygroundForm>();
   const watchedQueryParams = watch("queryParams");
 
-  const fieldArray = useFieldArray<PlaygroundForm, "queryParams">({
-    control,
-    name: "queryParams",
-  });
-
   const manager = useKeyValueFieldManager<PlaygroundForm, "queryParams">({
-    fieldArray,
+    control,
     name: "queryParams",
     defaultValue: { name: "", value: "", active: false },
   });

@@ -1,5 +1,5 @@
 import { CircleAlertIcon, LockIcon, TableOfContentsIcon } from "lucide-react";
-import { type Control, useFieldArray, useFormContext } from "react-hook-form";
+import { type Control, useFormContext } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
@@ -38,13 +38,8 @@ export const Headers = ({
   const { watch, formState } = useFormContext<PlaygroundForm>();
   const watchedHeaders = watch("headers");
 
-  const fieldArray = useFieldArray<PlaygroundForm, "headers">({
-    control,
-    name: "headers",
-  });
-
   const manager = useKeyValueFieldManager<PlaygroundForm, "headers">({
-    fieldArray,
+    control,
     name: "headers",
     defaultValue: { name: "", value: "", active: false },
   });

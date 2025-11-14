@@ -1,22 +1,31 @@
 import {
-  type ChangeEvent,
   type ComponentPropsWithoutRef,
   type KeyboardEvent,
+  startTransition,
   useCallback,
   useEffect,
   useRef,
 } from "react";
 import type {
+  Control,
   FieldArrayPath,
   FieldArrayWithId,
   FieldValues,
   PathValue,
 } from "react-hook-form";
-import { type useFieldArray, useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
+
+export type Value =
+  | string
+  | number
+  | readonly string[]
+  | File
+  | boolean
+  | undefined;
 
 export type KeyValueField = {
   name: string;
-  value: string | number | readonly string[] | undefined;
+  value: Value;
   active: boolean;
 };
 
@@ -25,7 +34,7 @@ export type KeyValueFieldManagerOptions<
   TName extends FieldArrayPath<TFormData>,
   T extends KeyValueField = PathValue<TFormData, TName>[number],
 > = {
-  fieldArray: ReturnType<typeof useFieldArray<TFormData, TName>>;
+  control: Control<TFormData>;
   name: TName;
   defaultValue: T;
   isEmpty?: (item: T) => boolean;
@@ -43,27 +52,23 @@ export type RemoveButtonProps = { onClick: () => void; disabled?: boolean };
 type SetValueFn = (
   index: number,
   field: keyof KeyValueField,
-  value: string | File | boolean | readonly string[] | undefined,
+  value: Value,
   options?: { focus?: "next" | "previous" },
 ) => void;
 
-type GetValueFn = (
-  index: number,
-  field: keyof KeyValueField,
-) => string | File | number | readonly string[] | boolean | undefined;
+type GetValueFn = (index: number, field: keyof KeyValueField) => Value;
 
-export type UseKeyValueFieldManagerReturn<
-  TFormData extends FieldValues,
-  TName extends FieldArrayPath<TFormData>,
-> = {
-  fields: FieldArrayWithId<TFormData, TName, "id">[];
-  getNameInputProps: (index: number) => ComponentPropsWithoutRef<"input">;
-  getValueInputProps: (index: number) => ComponentPropsWithoutRef<"input">;
+export type UseKeyValueFieldManagerReturn<TFormData extends FieldValues> = {
+  fields: FieldArrayWithId<TFormData>[];
+  getNameInputProps: GetInputPropsFn;
+  getValueInputProps: GetInputPropsFn;
   getCheckboxProps: (index: number) => CheckboxProps;
   getRemoveButtonProps: (index: number) => RemoveButtonProps;
   setValue: SetValueFn;
   getValue: GetValueFn;
 };
+
+type GetInputPropsFn = (index: number) => ComponentPropsWithoutRef<"input">;
 
 export const useKeyValueFieldManager = <
   TFormData extends FieldValues,
@@ -71,9 +76,9 @@ export const useKeyValueFieldManager = <
   T extends KeyValueField = PathValue<TFormData, TName>[number],
 >(
   options: KeyValueFieldManagerOptions<TFormData, TName>,
-): UseKeyValueFieldManagerReturn<TFormData, TName> => {
+): UseKeyValueFieldManagerReturn<TFormData> => {
   const {
-    fieldArray,
+    control,
     name,
     defaultValue,
     isEmpty: customIsEmpty,
@@ -85,20 +90,19 @@ export const useKeyValueFieldManager = <
     setFocus,
     register,
   } = useFormContext();
-
+  const { fields, append, remove } = useFieldArray({ control, name });
   const watchedFields = watch(name) as T[];
+  const lastEditedIndexRef = useRef(-1);
   const prevLengthRef = useRef(-1);
-  const lastEditedIndexRef = useRef<number>(-1);
-  const { fields, append, remove } = fieldArray;
 
   const setValue = useCallback<SetValueFn>(
-    (index, field, value, options?) => {
+    (index, field, value, options) => {
       if (field === "value" || field === "name") {
         lastEditedIndexRef.current = index;
       }
 
-      // biome-ignore lint/suspicious/noExplicitAny: Hard to type this properly with the generic type
-      internalSetValue(`${name}.${index}.${field}` as any, value);
+      // biome-ignore lint/suspicious/noExplicitAny: Can't infer the type of the value here
+      internalSetValue(`${name}.${index}.${field}`, value as any);
 
       if (options?.focus === "next") {
         setFocus(
@@ -133,7 +137,7 @@ export const useKeyValueFieldManager = <
     [customShouldSetActive],
   );
 
-  // Auto-append, auto-remove, and ensure at least one field
+  // Handle auto append/remove of rows
   useEffect(() => {
     if (!watchedFields) return;
 
@@ -142,8 +146,10 @@ export const useKeyValueFieldManager = <
       prevLengthRef.current = watchedFields.length;
 
       if (watchedFields.length === 0) {
-        // biome-ignore lint/suspicious/noExplicitAny: Hard to type this properly with the generic type
-        append(defaultValue as any, { shouldFocus: false });
+        // biome-ignore lint/suspicious/noExplicitAny: Generic field array type
+        append(defaultValue as any, {
+          shouldFocus: false,
+        });
       }
       return;
     }
@@ -152,8 +158,10 @@ export const useKeyValueFieldManager = <
 
     // If no fields, append one
     if (watchedFields.length === 0) {
-      // biome-ignore lint/suspicious/noExplicitAny: Hard to type this properly with the generic type
-      append(defaultValue as any, { shouldFocus: false });
+      // biome-ignore lint/suspicious/noExplicitAny: Generic field array type
+      append(defaultValue as any, {
+        shouldFocus: false,
+      });
       return;
     }
 
@@ -176,7 +184,10 @@ export const useKeyValueFieldManager = <
         if (lowestRemovedIndex === undefined) return;
 
         for (let i = emptyIndices.length - 1; i >= 0; i--) {
-          remove(emptyIndices[i]);
+          const indexToRemove = emptyIndices[i];
+          if (indexToRemove !== undefined) {
+            remove(indexToRemove);
+          }
         }
 
         // If we just edited this field, focus the previous row's value
@@ -195,8 +206,10 @@ export const useKeyValueFieldManager = <
     // If last field has content, append empty one
     const lastField = watchedFields[watchedFields.length - 1];
     if (lastField && !isEmpty(lastField)) {
-      // biome-ignore lint/suspicious/noExplicitAny: Hard to type this properly with the generic type
-      append(defaultValue as any, { shouldFocus: false });
+      // biome-ignore lint/suspicious/noExplicitAny: Generic field array type
+      append(defaultValue as any, {
+        shouldFocus: false,
+      });
     }
   }, [
     watchedFields,
@@ -209,16 +222,25 @@ export const useKeyValueFieldManager = <
     shouldSetActive,
   ]);
 
-  // Auto-update active state based on field content
+  // Auto set active state of row checkbox
   useEffect(() => {
     if (!watchedFields) return;
 
-    watchedFields.forEach((field, index) => {
+    const updates: Array<() => void> = [];
+
+    for (let i = 0; i < watchedFields.length; i++) {
+      const field = watchedFields[i];
+      if (!field) continue;
+
       const shouldBeActive = shouldSetActive(field);
-      if (field.active !== shouldBeActive) {
-        setValue(index, "active", shouldBeActive);
-      }
-    });
+      if (field.active === shouldBeActive) continue;
+
+      updates.push(() => setValue(i, "active", shouldBeActive));
+    }
+
+    if (updates.length === 0) return;
+
+    startTransition(() => updates.forEach((update) => update()));
   }, [watchedFields, shouldSetActive, setValue]);
 
   const isFieldEmpty = useCallback(
@@ -229,56 +251,69 @@ export const useKeyValueFieldManager = <
     [watchedFields, isEmpty],
   );
 
-  const getNameInputProps = useCallback(
-    (index: number) => ({
+  const createKeyDownHandler = useCallback(
+    (index: number, field: "name" | "value") => {
+      const next =
+        field === "name"
+          ? `${name}.${index}.value`
+          : `${name}.${index + 1}.name`;
+
+      const previous =
+        field === "name"
+          ? `${name}.${index - 1}.value`
+          : `${name}.${index}.name`;
+      const canNavigatePrevious = field === "value" || index > 0;
+
+      return (e: KeyboardEvent<HTMLInputElement>) => {
+        if (!(e.target instanceof HTMLInputElement)) return;
+
+        const isAtStart = e.target.selectionStart === 0;
+        const isAtEnd = e.target.selectionStart === e.target.value.length;
+        const isEmpty = !e.target.value;
+
+        if (e.key === "Enter") {
+          setFocus(next);
+        } else if (e.key === "Backspace" && isEmpty && canNavigatePrevious) {
+          setFocus(previous);
+        } else if (e.key === "ArrowLeft" && isAtStart && canNavigatePrevious) {
+          e.preventDefault();
+          setFocus(previous);
+        } else if (e.key === "ArrowRight" && isAtEnd) {
+          e.preventDefault();
+          setFocus(next);
+        }
+      };
+    },
+    [name, setFocus],
+  );
+
+  const getNameInputProps = useCallback<GetInputPropsFn>(
+    (index) => ({
       ...register(`${name}.${index}.name`),
-      onChange: (e: ChangeEvent<HTMLInputElement>) =>
-        setValue(index, "name", e.target.value),
-      onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-          setFocus(`${name}.${index}.value`);
-        } else if (
-          e.key === "Backspace" &&
-          e.target instanceof HTMLInputElement &&
-          !e.target.value
-        ) {
-          setFocus(`${name}.${index - 1}.value`);
-        }
-      },
+      onChange: (e) => setValue(index, "name", e.target.value),
+      onKeyDown: createKeyDownHandler(index, "name"),
     }),
-    [register, setFocus, name, setValue],
+    [register, name, setValue, createKeyDownHandler],
   );
 
-  const getValueInputProps = useCallback(
-    (index: number) => ({
+  const getValueInputProps = useCallback<GetInputPropsFn>(
+    (index) => ({
       ...register(`${name}.${index}.value`),
-      onChange: (e: ChangeEvent<HTMLInputElement>) =>
-        setValue(index, "value", e.target.value),
-      onKeyDown: (e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === "Enter") {
-          setFocus(`${name}.${index + 1}.name`);
-        } else if (
-          e.key === "Backspace" &&
-          e.target instanceof HTMLInputElement &&
-          !e.target.value
-        ) {
-          setFocus(`${name}.${index}.name`);
-        }
-      },
+      onChange: (e) => setValue(index, "value", e.target.value),
+      onKeyDown: createKeyDownHandler(index, "value"),
     }),
-    [register, setFocus, name, setValue],
+    [register, name, setValue, createKeyDownHandler],
   );
 
-  const getCheckboxProps = useCallback(
-    (index: number) =>
-      ({
-        ...register(`${name}.${index}.active`),
-        checked: watch(`${name}.${index}.active`) ?? false,
-        disabled: isFieldEmpty(index),
-        onCheckedChange: (checked: boolean) => {
-          setValue(index, "active", checked === true);
-        },
-      }) satisfies CheckboxProps,
+  const getCheckboxProps = useCallback<(index: number) => CheckboxProps>(
+    (index) => ({
+      ...register(`${name}.${index}.active`),
+      checked: watch(`${name}.${index}.active`) ?? false,
+      disabled: isFieldEmpty(index),
+      onCheckedChange: (checked: boolean) => {
+        setValue(index, "active", checked === true);
+      },
+    }),
     [name, register, isFieldEmpty, watch, setValue],
   );
 

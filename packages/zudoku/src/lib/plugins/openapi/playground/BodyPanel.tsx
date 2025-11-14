@@ -7,7 +7,7 @@ import {
   XIcon,
 } from "lucide-react";
 import { useRef, useState } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { Button } from "zudoku/components";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import {
@@ -81,16 +81,11 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
     handleFileSelect(droppedFile);
   };
 
-  const fieldArray = useFieldArray<PlaygroundForm, "multipartFormFields">({
-    control,
-    name: "multipartFormFields",
-  });
-
   const manager = useKeyValueFieldManager<
     PlaygroundForm,
     "multipartFormFields"
   >({
-    fieldArray,
+    control,
     name: "multipartFormFields",
     defaultValue: { name: "", value: "", active: false },
     isEmpty: (item) => {
