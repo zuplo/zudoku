@@ -5,10 +5,15 @@
     "clientKind": "git",
     "useIgnoreFile": true
   },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
   "files": {
     "ignoreUnknown": true,
     "includes": [
-      "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css,html}",
+      "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css}",
       "!**/node_modules",
       "!.nx",
       "!**/pagefind",
