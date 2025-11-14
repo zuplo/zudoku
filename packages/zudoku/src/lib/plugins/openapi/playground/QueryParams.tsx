@@ -35,6 +35,8 @@ export const QueryParams = ({
     Boolean(param.isRequired),
   );
 
+  const hasSchemaParams = schemaQueryParams.length > 0;
+
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
@@ -55,18 +57,22 @@ export const QueryParams = ({
               <ParamsGridItem key={field.id}>
                 <Checkbox {...manager.getCheckboxProps(i)} />
                 {!requiredFields[i] ? (
-                  <ParamsGridInput asChild>
-                    <Autocomplete
-                      {...nameInputProps}
-                      value={String(manager.getValue(i, "name"))}
-                      placeholder="Name"
-                      options={schemaQueryParams.map((param) => param.name)}
-                      onChange={(v) => manager.setValue(i, "name", v)}
-                      onSelect={(v) =>
-                        manager.setValue(i, "name", v, { focus: "next" })
-                      }
-                    />
-                  </ParamsGridInput>
+                  hasSchemaParams ? (
+                    <ParamsGridInput asChild>
+                      <Autocomplete
+                        {...nameInputProps}
+                        value={String(manager.getValue(i, "name"))}
+                        placeholder="Name"
+                        options={schemaQueryParams.map((param) => param.name)}
+                        onChange={(v) => manager.setValue(i, "name", v)}
+                        onSelect={(v) =>
+                          manager.setValue(i, "name", v, { focus: "next" })
+                        }
+                      />
+                    </ParamsGridInput>
+                  ) : (
+                    <ParamsGridInput {...nameInputProps} placeholder="Name" />
+                  )
                 ) : (
                   <ParamsGridInput asChild>
                     <label

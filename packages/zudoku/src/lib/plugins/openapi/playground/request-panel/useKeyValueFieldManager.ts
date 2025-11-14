@@ -190,12 +190,18 @@ export const useKeyValueFieldManager = <
           }
         }
 
-        // If we just edited this field, focus the previous row's value
+        // If we just edited this field, focus the name field at the same index
+        // (which now contains what was the next row), or previous row if needed
         if (lastEditedIndexRef.current === lowestRemovedIndex) {
-          if (lowestRemovedIndex > 0) {
-            setFocus(`${name}.${lowestRemovedIndex - 1}.value`);
-          } else if (watchedFields.length > 1) {
-            // If we removed index 0, focus the new row 0's name
+          const newLength = watchedFields.length - emptyIndices.length;
+
+          if (lowestRemovedIndex < newLength) {
+            // Next row moved into this position, focus its name field
+            setFocus(`${name}.${lowestRemovedIndex}.name`);
+          } else if (lowestRemovedIndex > 0) {
+            // Removed row was at the end, focus previous row's name
+            setFocus(`${name}.${lowestRemovedIndex - 1}.name`);
+          } else {
             setFocus(`${name}.0.name`);
           }
         }
@@ -274,6 +280,7 @@ export const useKeyValueFieldManager = <
         if (e.key === "Enter") {
           setFocus(next);
         } else if (e.key === "Backspace" && isEmpty && canNavigatePrevious) {
+          e.preventDefault();
           setFocus(previous);
         } else if (e.key === "ArrowLeft" && isAtStart && canNavigatePrevious) {
           e.preventDefault();

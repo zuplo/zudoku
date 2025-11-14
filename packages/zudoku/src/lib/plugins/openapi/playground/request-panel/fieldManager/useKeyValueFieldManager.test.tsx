@@ -188,6 +188,54 @@ describe("useKeyValueFieldManager", () => {
 
       expect(result.current.manager.fields).toHaveLength(1);
     });
+
+    it("should focus name field when current row is auto-removed", async () => {
+      const TestComponent = () => {
+        const form = useFormContext<TestFormData>();
+        const manager = useKeyValueFieldManager({
+          control: form.control,
+          name: "fields",
+          defaultValue: { name: "", value: "", active: false },
+        });
+
+        return manager.fields.map((f, i) => (
+          <div key={f.id}>
+            <input
+              {...manager.getNameInputProps(i)}
+              data-testid={`name-${i}`}
+            />
+            <input
+              {...manager.getValueInputProps(i)}
+              data-testid={`value-${i}`}
+            />
+          </div>
+        ));
+      };
+
+      const Wrapper = createWrapper({
+        fields: [
+          { name: "first", value: "value1", active: true },
+          { name: "second", value: "value2", active: true },
+        ],
+      });
+      const { getByTestId } = render(
+        <Wrapper>
+          <TestComponent />
+        </Wrapper>,
+      );
+
+      const firstNameInput = getByTestId("name-0") as HTMLInputElement;
+      const firstValueInput = getByTestId("value-0") as HTMLInputElement;
+
+      // Clear both fields to trigger auto-remove
+      firstNameInput.focus();
+      fireEvent.change(firstNameInput, { target: { value: "" } });
+      fireEvent.change(firstValueInput, { target: { value: "" } });
+
+      // After auto-remove, focus should be on the name field at index 0
+      // (which now contains what was the second row)
+      expect(document.activeElement).toBe(getByTestId("name-0"));
+    });
   });
 
   describe("active state synchronization", () => {
