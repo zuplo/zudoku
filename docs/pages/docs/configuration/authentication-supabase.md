@@ -55,7 +55,7 @@ You'll need a Supabase project. If you don't have one,
 
    You can configure multiple providers:
 
-   ```ts{title="zudoku.config.ts"}
+   ```ts title="zudoku.config.ts"
    export default {
      // ... other configuration
      authentication: {
