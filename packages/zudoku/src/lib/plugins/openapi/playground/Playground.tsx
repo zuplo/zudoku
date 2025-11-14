@@ -217,50 +217,37 @@ export const Playground = ({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
-      const headers = Object.fromEntries([
-        ...data.headers
-          .filter((h) => h.name && h.active)
-          .map((header) => [header.name, header.value]),
-      ]);
+      const headers = new window.Headers(
+        data.headers.flatMap((h) =>
+          h.name && h.active ? [[h.name, h.value]] : [],
+        ),
+      );
 
       let body: string | FormData | File | undefined;
 
-      // Handle body based on selected mode
-      if (data.bodyMode === "text") {
-        // Text mode: send body as string
-        body = data.body ? data.body : undefined;
-      } else if (data.bodyMode === "file" && data.file) {
-        // File mode: send file as raw binary body
-        body = data.file;
-        // Remove Content-Type header - browser will set it appropriately
-        delete headers["Content-Type"];
-        delete headers["content-type"];
-      } else if (data.bodyMode === "multipart") {
-        // Multipart mode: create FormData with all active fields
-        const formData = new FormData();
+      switch (data.bodyMode) {
+        case "file":
+          body = data.file ?? undefined;
+          headers.delete("Content-Type");
+          break;
+        case "multipart": {
+          const formData = new FormData();
+          data.multipartFormFields
+            ?.filter((field) => field.name && field.active)
+            .forEach((field) => formData.append(field.name, field.value));
 
-        // Append active form fields (can be text or files)
-        data.multipartFormFields
-          ?.filter((field) => field.name && field.active)
-          .forEach((field) => {
-            formData.append(field.name, field.value);
-          });
-
-        body = formData;
-        // Remove Content-Type header - browser will set it appropriately
-        delete headers["Content-Type"];
-        delete headers["content-type"];
-      } else {
-        body = data.body ? data.body : undefined;
+          body = formData;
+          headers.delete("Content-Type");
+          break;
+        }
+        default:
+          body = data.body ?? undefined;
+          break;
       }
 
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
-        {
-          method: method.toUpperCase(),
-          headers,
-          body,
-        },
+        { method, headers, body },
       );
 
       if (data.identity !== NO_IDENTITY) {
@@ -308,6 +295,31 @@ export const Playground = ({
 
         const responseSize = response.headers.get("content-length");
 
+        let requestBody = "";
+
+        switch (data.bodyMode) {
+          case "text":
+            requestBody = data.body;
+            break;
+          case "file":
+            requestBody = `[File: ${data.file?.name ?? "Unknown"}]`;
+            break;
+          case "multipart":
+            requestBody = "[Multipart Form Data]\n";
+            requestBody += data.multipartFormFields
+              ?.filter((f) => f.name && f.active)
+              .map((f) =>
+                f.value instanceof File
+                  ? `${f.name}: [File: ${f.value.name}]`
+                  : `${f.name}: ${f.value}`,
+              )
+              .join("\n");
+            break;
+          default:
+            requestBody = data.body;
+            break;
+        }
+
         return {
           status: response.status,
           headers: responseHeaders,
@@ -325,7 +337,7 @@ export const Playground = ({
               ["User-Agent", "Zudoku Playground"],
               ...Array.from(request.headers.entries()),
             ],
-            body: data.body ? data.body : undefined,
+            body: requestBody,
           },
         } satisfies PlaygroundResult;
       } catch (error) {
