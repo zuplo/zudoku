@@ -40,7 +40,7 @@ You'll need a Supabase project. If you don't have one,
 
    Add the Supabase configuration to your [Zudoku configuration file](./overview.md):
 
-   ```typescript{title="zudoku.config.ts"}
+   ```ts{title="zudoku.config.ts"}
    export default {
      // ... other configuration
      authentication: {
@@ -55,7 +55,7 @@ You'll need a Supabase project. If you don't have one,
 
    You can configure multiple providers:
 
-   ```typescript{title="zudoku.config.ts"}
+   ```ts{title="zudoku.config.ts"}
    export default {
      // ... other configuration
      authentication: {
@@ -116,7 +116,7 @@ default in Supabase. To disable email/password authentication and only use OAuth
 
 All available configuration options for Supabase authentication:
 
-```typescript{title="zudoku.config.ts"}
+```ts{title="zudoku.config.ts"}
 authentication: {
   type: "supabase",
 
