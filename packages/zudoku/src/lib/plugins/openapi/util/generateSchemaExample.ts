@@ -97,13 +97,6 @@ export const generateSchemaExample = (
     return generateSchemaExample(schema.anyOf[randomIndex] as SchemaObject);
   }
 
-  if (schema.allOf) {
-    // https://swagger.io/docs/specification/v3_0/data-models/oneof-anyof-allof-not/#allof
-    return schema.allOf.reduce((acc, allOfSchema) => {
-      return { ...acc, ...generateSchemaExample(allOfSchema as SchemaObject) };
-    }, {});
-  }
-
   // Check for property-level examples
   if (
     schema.examples &&

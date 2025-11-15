@@ -6,12 +6,11 @@ import {
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import slugify from "@sindresorhus/slugify";
-import { merge as mergeAllOf } from "allof-merge";
-import colors from "picocolors";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
+import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
 import { generateCode } from "./schema-codegen.js";
 
 type ProcessedSchema = {
@@ -46,24 +45,7 @@ export class SchemaManager {
     this.config = config;
     this.processors = [
       ({ schema }) => upgrade(schema).specification as OpenAPIDocument,
-      ({ schema, file }) => {
-        try {
-          return mergeAllOf(schema, {
-            onMergeError: (message, path) => {
-              throw new Error(`${message} at '${path.join(".")}'`);
-            },
-          }) as OpenAPIDocument;
-        } catch (error) {
-          // biome-ignore lint/suspicious/noConsole: Logging allowed here
-          console.warn(
-            colors.yellow(
-              `Failed to merge \`allOf\` in ${file}: ` +
-                (error instanceof Error ? error.message : error),
-            ),
-          );
-          return schema; // Return original schema if merge fails
-        }
-      },
+      flattenAllOfProcessor,
       ...processors,
     ];
   }
@@ -123,7 +105,10 @@ export class SchemaManager {
           file: filePath,
           dereference: (schema) =>
             new $RefParser<OpenAPIDocument>().dereference(schema, {
-              dereference: { preservedProperties: ["description", "summary"] },
+              dereference: {
+                preservedProperties: ["description", "summary"],
+                circular: "ignore",
+              },
             }),
         }),
       Promise.resolve(validatedSchema),

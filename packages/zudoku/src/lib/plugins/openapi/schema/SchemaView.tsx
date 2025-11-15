@@ -6,7 +6,6 @@ import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
-import { AllOfGroupView } from "./AllOfGroup/AllOfGroupView.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { UnionView } from "./UnionView.js";
@@ -65,10 +64,6 @@ export const SchemaView = ({
 
   if (Array.isArray(schema.oneOf) || Array.isArray(schema.anyOf)) {
     return <UnionView schema={schema} cardHeader={cardHeader} />;
-  }
-
-  if (Array.isArray(schema.allOf)) {
-    return <AllOfGroupView schema={schema} cardHeader={cardHeader} />;
   }
 
   if (isBasicType(schema.type)) {

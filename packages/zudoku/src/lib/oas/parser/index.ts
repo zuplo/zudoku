@@ -1,6 +1,6 @@
-import { merge as mergeAllOf } from "allof-merge";
 import { GraphQLError } from "graphql/error/index.js";
 import { OpenAPIV3, type OpenAPIV3_1 } from "openapi-types";
+import { flattenAllOfProcessor } from "../../util/flattenAllOf.js";
 import { dereference, type JSONSchema } from "./dereference/index.js";
 import { upgradeSchema } from "./upgrade/index.js";
 
@@ -101,7 +101,12 @@ export const validate = async (schemaInput: unknown) => {
 
   const dereferenced = await dereference(schema);
   const upgraded = upgradeSchema(dereferenced);
-  const merged = mergeAllOf(upgraded) as OpenAPIDocument;
 
-  return merged;
+  const flattened = await flattenAllOfProcessor({
+    schema: upgraded,
+    file: "schema.json",
+    dereference: async (schema) => schema,
+  });
+
+  return flattened;
 };

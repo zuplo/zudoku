@@ -1,0 +1,1053 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cargo Container Specifications API",
+    "version": "2.1.0",
+    "description": "Advanced cargo container booking and management for interplanetary shipping. This API demonstrates complex schema composition using allOf, anyOf, and oneOf patterns for maximum flexibility in container configuration.",
+    "contact": {
+      "name": "Cosmo Cargo Container Division",
+      "email": "containers@cosmocargo.space",
+      "url": "https://cosmocargo.space/containers"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.cosmocargo.space/v2",
+      "description": "Production Galactic Network"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Containers",
+      "description": "Container type specifications and capabilities"
+    },
+    {
+      "name": "Booking",
+      "description": "Container booking and reservation management"
+    },
+    {
+      "name": "Quotes",
+      "description": "Pricing and quote generation"
+    }
+  ],
+  "paths": {
+    "/containers": {
+      "get": {
+        "summary": "List Available Container Types",
+        "description": "Retrieve all available container types across the galaxy. Each container type has unique specifications and capabilities.",
+        "operationId": "listContainers",
+        "tags": ["Containers"],
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by container category",
+            "schema": {
+              "type": "string",
+              "enum": ["standard", "specialized", "hazardous", "luxury"]
+            }
+          },
+          {
+            "name": "maxVolume",
+            "in": "query",
+            "description": "Maximum volume in cubic parsec-meters",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of available containers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "containers": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/ContainerType"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/containers/quote": {
+      "post": {
+        "summary": "Request Container Quote",
+        "description": "Generate a detailed quote for a container booking based on specifications, route, and service level.",
+        "operationId": "requestQuote",
+        "tags": ["Quotes", "Booking"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Quote"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid quote request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/containers/book": {
+      "post": {
+        "summary": "Book a Container",
+        "description": "Create a new container booking with detailed specifications. This endpoint accepts complex container configurations using composition patterns.",
+        "operationId": "bookContainer",
+        "tags": ["Booking"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Booking created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Booking"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid booking request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/containers/{containerId}": {
+      "get": {
+        "summary": "Get Container Details",
+        "description": "Retrieve detailed information about a specific container booking.",
+        "operationId": "getContainer",
+        "tags": ["Containers"],
+        "parameters": [
+          {
+            "name": "containerId",
+            "in": "path",
+            "required": true,
+            "description": "Unique container identifier",
+            "schema": {
+              "type": "string",
+              "pattern": "^CNT-[A-Z0-9]{8}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Container details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Booking"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Container not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update Container Specifications",
+        "description": "Modify container specifications before departure. Some modifications may incur additional fees.",
+        "operationId": "updateContainer",
+        "tags": ["Containers", "Booking"],
+        "parameters": [
+          {
+            "name": "containerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContainerUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Container updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Booking"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseContainer": {
+        "type": "object",
+        "description": "Base properties shared by all container types",
+        "required": ["dimensions", "maxWeight"],
+        "properties": {
+          "dimensions": {
+            "type": "object",
+            "description": "Container dimensions in parsec-millimeters",
+            "required": ["length", "width", "height"],
+            "properties": {
+              "length": {
+                "type": "number",
+                "minimum": 100,
+                "maximum": 50000
+              },
+              "width": {
+                "type": "number",
+                "minimum": 100,
+                "maximum": 50000
+              },
+              "height": {
+                "type": "number",
+                "minimum": 100,
+                "maximum": 50000
+              }
+            }
+          },
+          "maxWeight": {
+            "type": "number",
+            "description": "Maximum weight capacity in gravitic units",
+            "minimum": 1,
+            "maximum": 100000
+          },
+          "shieldRating": {
+            "type": "string",
+            "description": "Protective shield classification",
+            "enum": [
+              "basic",
+              "reinforced",
+              "military-grade",
+              "quantum-hardened"
+            ]
+          }
+        }
+      },
+      "StandardContainer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseContainer"
+          },
+          {
+            "type": "object",
+            "description": "Standard cargo container for general freight",
+            "required": ["type", "stackable"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "standard"
+              },
+              "stackable": {
+                "type": "boolean",
+                "description": "Whether container can be stacked in zero-G"
+              },
+              "standardFeatures": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "anti-gravity-hooks",
+                    "solar-panels",
+                    "auto-pressurization"
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      },
+      "RefrigeratedContainer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseContainer"
+          },
+          {
+            "type": "object",
+            "description": "Temperature-controlled container for perishables",
+            "required": ["type", "temperatureRange", "coolingSystem"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "refrigerated"
+              },
+              "temperatureRange": {
+                "type": "object",
+                "description": "Temperature range in Kelvin",
+                "required": ["min", "max"],
+                "properties": {
+                  "min": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "max": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 500
+                  }
+                }
+              },
+              "coolingSystem": {
+                "type": "string",
+                "enum": [
+                  "cryo-cycle",
+                  "quantum-cooling",
+                  "dark-matter-refrigeration"
+                ],
+                "description": "Type of cooling technology"
+              },
+              "backupPower": {
+                "type": "boolean",
+                "description": "Whether backup power is available during warp jumps"
+              }
+            }
+          }
+        ]
+      },
+      "PressurizedContainer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseContainer"
+          },
+          {
+            "type": "object",
+            "description": "Pressurized container for atmosphere-sensitive cargo",
+            "required": ["type", "pressureLevel", "atmosphereComposition"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "pressurized"
+              },
+              "pressureLevel": {
+                "type": "number",
+                "description": "Internal pressure in kilopascals",
+                "minimum": 50,
+                "maximum": 500
+              },
+              "atmosphereComposition": {
+                "type": "object",
+                "description": "Gas mixture percentages",
+                "properties": {
+                  "oxygen": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "nitrogen": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "argon": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "custom": {
+                    "type": "string",
+                    "description": "Custom gas mixture specification"
+                  }
+                }
+              },
+              "leakDetection": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          }
+        ]
+      },
+      "HazmatContainer": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BaseContainer"
+          },
+          {
+            "type": "object",
+            "description": "Hazardous materials container with enhanced safety features",
+            "required": ["type", "hazardClass", "containmentLevel"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "hazmat"
+              },
+              "hazardClass": {
+                "type": "string",
+                "enum": [
+                  "explosive",
+                  "radioactive",
+                  "bio-hazard",
+                  "antimatter",
+                  "temporal-anomaly"
+                ],
+                "description": "Classification of hazardous material"
+              },
+              "containmentLevel": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5,
+                "description": "Galactic containment certification level"
+              },
+              "shielding": {
+                "type": "object",
+                "required": ["type", "thickness"],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "lead-lined",
+                      "neutron-dampening",
+                      "quantum-isolation"
+                    ]
+                  },
+                  "thickness": {
+                    "type": "number",
+                    "description": "Shielding thickness in millimeters"
+                  }
+                }
+              },
+              "emergencyProtocol": {
+                "type": "string",
+                "description": "Emergency response procedure code"
+              }
+            }
+          }
+        ]
+      },
+      "ContainerType": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/StandardContainer"
+          },
+          {
+            "$ref": "#/components/schemas/RefrigeratedContainer"
+          },
+          {
+            "$ref": "#/components/schemas/PressurizedContainer"
+          },
+          {
+            "$ref": "#/components/schemas/HazmatContainer"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "standard": "#/components/schemas/StandardContainer",
+            "refrigerated": "#/components/schemas/RefrigeratedContainer",
+            "pressurized": "#/components/schemas/PressurizedContainer",
+            "hazmat": "#/components/schemas/HazmatContainer"
+          }
+        }
+      },
+      "HandlingRequirement": {
+        "anyOf": [
+          {
+            "type": "object",
+            "description": "Anti-gravity handling",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "anti-gravity"
+              },
+              "intensity": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Shock-resistant handling",
+            "required": ["type", "maxGForce"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "shock-resistant"
+              },
+              "maxGForce": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 100
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Fragile handling",
+            "required": ["type"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "fragile"
+              },
+              "handlingInstructions": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Time-sensitive handling",
+            "required": ["type", "maxTransitTime"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "time-sensitive"
+              },
+              "maxTransitTime": {
+                "type": "integer",
+                "description": "Maximum transit time in galactic standard hours"
+              }
+            }
+          }
+        ]
+      },
+      "PaymentMethod": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Galactic Credits payment",
+            "required": ["type", "accountNumber"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "galactic-credits"
+              },
+              "accountNumber": {
+                "type": "string",
+                "pattern": "^GC-[0-9]{12}$"
+              },
+              "autoDeduct": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Cryptocurrency payment",
+            "required": ["type", "currency", "walletAddress"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "crypto"
+              },
+              "currency": {
+                "type": "string",
+                "enum": ["bitcoin", "ethereum", "stellar-lumens", "mars-coin"]
+              },
+              "walletAddress": {
+                "type": "string"
+              },
+              "network": {
+                "type": "string",
+                "description": "Blockchain network"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Interplanetary trade agreement",
+            "required": ["type", "agreementId"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "trade-agreement"
+              },
+              "agreementId": {
+                "type": "string",
+                "pattern": "^TA-[A-Z]{3}-[0-9]{8}$"
+              },
+              "creditLine": {
+                "type": "number",
+                "description": "Available credit in galactic credits"
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "DeliverySpeed": {
+        "oneOf": [
+          {
+            "type": "object",
+            "description": "Standard orbital delivery",
+            "required": ["type", "estimatedDays"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "standard-orbit"
+              },
+              "estimatedDays": {
+                "type": "integer",
+                "minimum": 7,
+                "maximum": 90
+              },
+              "trackingEnabled": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Express warp-speed delivery",
+            "required": ["type", "warpFactor"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "express-warp"
+              },
+              "warpFactor": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 9.9,
+                "description": "Warp speed factor for transit"
+              },
+              "guaranteedArrival": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "premiumInsurance": {
+                "type": "boolean",
+                "default": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Instant quantum teleportation",
+            "required": ["type", "sourceGate", "destinationGate"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "instant-teleport"
+              },
+              "sourceGate": {
+                "type": "string",
+                "description": "Source quantum gate identifier"
+              },
+              "destinationGate": {
+                "type": "string",
+                "description": "Destination quantum gate identifier"
+              },
+              "entanglementVerification": {
+                "type": "boolean",
+                "description": "Verify quantum entanglement before transport",
+                "default": true
+              }
+            }
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "NotificationChannel": {
+        "anyOf": [
+          {
+            "type": "object",
+            "required": ["type", "email"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "email"
+              },
+              "email": {
+                "type": "string",
+                "format": "email"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "phone"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "subspace-comm"
+              },
+              "phone": {
+                "type": "string",
+                "description": "Subspace communication frequency"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": ["type", "webhook"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "webhook"
+              },
+              "webhook": {
+                "type": "string",
+                "format": "uri"
+              },
+              "secret": {
+                "type": "string",
+                "description": "Webhook verification secret"
+              }
+            }
+          }
+        ]
+      },
+      "InsuranceCoverage": {
+        "allOf": [
+          {
+            "type": "object",
+            "description": "Base insurance coverage",
+            "required": ["coverageAmount", "deductible"],
+            "properties": {
+              "coverageAmount": {
+                "type": "number",
+                "description": "Total coverage in galactic credits",
+                "minimum": 1000
+              },
+              "deductible": {
+                "type": "number",
+                "description": "Deductible amount",
+                "minimum": 0
+              },
+              "policyNumber": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Optional coverage extensions",
+            "properties": {
+              "coverageExtensions": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "spaceDebris": {
+                        "type": "boolean",
+                        "description": "Coverage for space debris damage"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "solarFlare": {
+                        "type": "boolean",
+                        "description": "Coverage for solar flare events"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "alienEncounter": {
+                        "type": "boolean",
+                        "description": "Coverage for unknown alien entity encounters"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "wormholeAberration": {
+                        "type": "boolean",
+                        "description": "Coverage for wormhole travel anomalies"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "QuoteRequest": {
+        "allOf": [
+          {
+            "type": "object",
+            "required": ["container", "route", "deliverySpeed"],
+            "properties": {
+              "container": {
+                "$ref": "#/components/schemas/ContainerType"
+              },
+              "route": {
+                "type": "object",
+                "required": ["origin", "destination"],
+                "properties": {
+                  "origin": {
+                    "type": "string",
+                    "description": "Origin planet or station code"
+                  },
+                  "destination": {
+                    "type": "string",
+                    "description": "Destination planet or station code"
+                  },
+                  "waypoints": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "deliverySpeed": {
+                "$ref": "#/components/schemas/DeliverySpeed"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "properties": {
+              "handlingRequirements": {
+                "type": "array",
+                "description": "Multiple handling requirements can be specified",
+                "items": {
+                  "$ref": "#/components/schemas/HandlingRequirement"
+                }
+              },
+              "insurance": {
+                "$ref": "#/components/schemas/InsuranceCoverage"
+              }
+            }
+          }
+        ]
+      },
+      "BookingRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/QuoteRequest"
+          },
+          {
+            "type": "object",
+            "required": ["customer", "payment"],
+            "properties": {
+              "customer": {
+                "type": "object",
+                "required": ["name", "contactInfo"],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "customerId": {
+                    "type": "string"
+                  },
+                  "contactInfo": {
+                    "type": "object",
+                    "required": ["notifications"],
+                    "properties": {
+                      "notifications": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                          "$ref": "#/components/schemas/NotificationChannel"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "payment": {
+                "$ref": "#/components/schemas/PaymentMethod"
+              },
+              "notes": {
+                "type": "string",
+                "description": "Additional booking notes"
+              }
+            }
+          }
+        ]
+      },
+      "Quote": {
+        "type": "object",
+        "required": ["quoteId", "totalCost", "breakdown", "validUntil"],
+        "properties": {
+          "quoteId": {
+            "type": "string"
+          },
+          "totalCost": {
+            "type": "number",
+            "description": "Total cost in galactic credits"
+          },
+          "breakdown": {
+            "type": "object",
+            "properties": {
+              "containerFee": {
+                "type": "number"
+              },
+              "deliveryFee": {
+                "type": "number"
+              },
+              "handlingFees": {
+                "type": "number"
+              },
+              "insurancePremium": {
+                "type": "number"
+              },
+              "taxes": {
+                "type": "number"
+              }
+            }
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "Booking": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/BookingRequest"
+          },
+          {
+            "type": "object",
+            "required": ["bookingId", "status", "createdAt"],
+            "properties": {
+              "bookingId": {
+                "type": "string",
+                "pattern": "^BK-[A-Z0-9]{10}$"
+              },
+              "containerId": {
+                "type": "string",
+                "pattern": "^CNT-[A-Z0-9]{8}$"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "confirmed",
+                  "in-transit",
+                  "delivered",
+                  "cancelled"
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "trackingUrl": {
+                "type": "string",
+                "format": "uri"
+              }
+            }
+          }
+        ]
+      },
+      "ContainerUpdate": {
+        "type": "object",
+        "description": "Partial update to container specifications",
+        "properties": {
+          "handlingRequirements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HandlingRequirement"
+            }
+          },
+          "notifications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NotificationChannel"
+            }
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["code", "message"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}
