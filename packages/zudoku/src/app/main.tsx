@@ -90,7 +90,11 @@ export const getRoutesByOptions = (
           }))
         : [],
     )
-    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }]);
+    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }])
+    .map((route) => ({
+      ...route,
+      errorElement: <RouterError className="w-full m-0" />,
+    }));
 
   // @TODO Detect conflicts in routes and log warning
 

@@ -1,7 +1,6 @@
 import { type Control, Controller, useFieldArray } from "react-hook-form";
-import { Input } from "../../../ui/Input.js";
 import { ColorizedParam } from "../ColorizedParam.js";
-import ParamsGrid, { ParamsGridItem } from "./ParamsGrid.js";
+import ParamsGrid, { ParamsGridInput, ParamsGridItem } from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 
 export const PathParams = ({
@@ -21,41 +20,34 @@ export const PathParams = ({
   );
 
   return (
-    <div className="overflow-hidden">
-      <ParamsGrid>
-        {sortedFields.map((field, i) => (
-          <ParamsGridItem key={field.id}>
+    <ParamsGrid>
+      {sortedFields.map((field, i) => (
+        <ParamsGridItem key={field.id}>
+          <Controller
+            control={control}
+            name={`pathParams.${i}.name`}
+            render={() => (
+              <div className="flex items-center">
+                <ColorizedParam
+                  slug={field.name}
+                  name={field.name}
+                  className="font-mono text-xs px-2"
+                />
+              </div>
+            )}
+          />
+
+          <div className="flex justify-between items-center col-span-2">
             <Controller
               control={control}
-              name={`pathParams.${i}.name`}
-              render={() => (
-                <div className="flex items-center">
-                  <ColorizedParam
-                    slug={field.name}
-                    name={field.name}
-                    className="font-mono text-xs px-2"
-                  />
-                </div>
+              name={`pathParams.${i}.value`}
+              render={({ field }) => (
+                <ParamsGridInput {...field} required placeholder="Value" />
               )}
             />
-
-            <div className="flex justify-between items-center col-span-2">
-              <Controller
-                control={control}
-                name={`pathParams.${i}.value`}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    required
-                    placeholder="Value"
-                    className="w-full truncate border-0 p-0 m-0 shadow-none text-xs font-mono focus-visible:ring-0"
-                  />
-                )}
-              />
-            </div>
-          </ParamsGridItem>
-        ))}
-      </ParamsGrid>
-    </div>
+          </div>
+        </ParamsGridItem>
+      ))}
+    </ParamsGrid>
   );
 };
