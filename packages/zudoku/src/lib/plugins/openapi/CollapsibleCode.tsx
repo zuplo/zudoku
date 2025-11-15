@@ -9,6 +9,10 @@ import {
 import { cn } from "../../util/cn.js";
 import useIsomorphicLayoutEffect from "../../util/useIsomorphicLayoutEffect.js";
 
+export const OverflowOverlay = () => (
+  <div className="absolute inset-0 bg-linear-to-b from-transparent to-zinc-50/60 dark:to-zinc-950/90 z-10 transition-all group-hover:to-transparent" />
+);
+
 export const CollapsibleCode = ({
   children,
   maxHeight = 250,
@@ -48,9 +52,7 @@ export const CollapsibleCode = ({
           !open && isOverflowing && "max-h-(--max-height)",
         )}
       >
-        {!open && isOverflowing && (
-          <div className=" absolute inset-0 bg-gradient-to-b from-transparent to-zinc-50/60 dark:to-zinc-950/90 z-10 transition-all group-hover:to-transparent"></div>
-        )}
+        {!open && isOverflowing && <OverflowOverlay />}
         <div ref={contentRef}>{children}</div>
         {!open && isOverflowing && (
           <CollapsibleTrigger

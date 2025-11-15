@@ -200,6 +200,10 @@ export const OperationList = ({
 
   const { operations, next, prev, description: tagDescription } = schema.tag;
 
+  // Simple heuristic to determine if we should lazy highlight the code
+  // This is to avoid the performance issues when there are a lot of operations
+  const shouldLazyHighlight = operations.length > 30;
+
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
   // commonmark formatting, making it ill-suited for use in the meta description
@@ -337,6 +341,7 @@ export const OperationList = ({
             <OperationListItem
               operationFragment={fragment}
               globalSelectedServer={globalSelectedServer}
+              shouldLazyHighlight={shouldLazyHighlight}
             />
             <hr className="my-10" />
           </div>

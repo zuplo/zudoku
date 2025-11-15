@@ -71,7 +71,7 @@ export const ResponseContent = ({
       </div>
       {currentResponse?.description && (
         <Markdown
-          className="text-sm border-t px-4 py-2 text-muted-foreground"
+          className="text-sm border-t px-4 py-2 text-muted-foreground max-w-none"
           content={currentResponse.description}
         />
       )}

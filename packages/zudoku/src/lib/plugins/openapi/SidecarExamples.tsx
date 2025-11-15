@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
-import { CollapsibleCode } from "./CollapsibleCode.js";
+import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
@@ -36,12 +36,16 @@ export type SidecarExamplesProps = {
   content: MediaTypeObject[];
   description?: string;
   onExampleChange?: (example: unknown) => void;
+  isOnScreen: boolean;
+  shouldLazyHighlight?: boolean;
 };
 
 export const SidecarExamples = ({
   content,
   description,
   onExampleChange,
+  isOnScreen,
+  shouldLazyHighlight,
 }: SidecarExamplesProps) => {
   const [selectedContentTypeIndex, setSelectedContentTypeIndex] = useState(0);
   const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
@@ -91,16 +95,16 @@ export const SidecarExamples = ({
               View External Example →
             </a>
           </div>
+        ) : shouldLazyHighlight && !isOnScreen ? (
+          <NonHighlightedCode code={formattedExample} />
         ) : (
-          <CollapsibleCode>
-            <SyntaxHighlight
-              embedded
-              language={language}
-              noBackground
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
-              code={formattedExample}
-            />
-          </CollapsibleCode>
+          <SyntaxHighlight
+            embedded
+            language={language}
+            noBackground
+            className="[--scrollbar-color:gray] rounded-none max-h-[200px] text-xs overflow-auto"
+            code={formattedExample}
+          />
         )}
         {selectedExample?.description && (
           <div className="border-t text-xs px-3 py-1.5 text-muted-foreground">

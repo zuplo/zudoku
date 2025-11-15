@@ -8,10 +8,14 @@ export const ResponsesSidecarBox = ({
   responses,
   selectedResponse,
   onSelectResponse,
+  isOnScreen,
+  shouldLazyHighlight,
 }: {
   responses: ResponseItem[];
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
+  isOnScreen: boolean;
+  shouldLazyHighlight?: boolean;
 }) => {
   return (
     <SidecarBox.Root>
@@ -40,7 +44,11 @@ export const ResponsesSidecarBox = ({
         </SidecarBox.Head>
         {responses.map((response) => (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
-            <SidecarExamples content={response.content ?? []} />
+            <SidecarExamples
+              content={response.content ?? []}
+              isOnScreen={isOnScreen}
+              shouldLazyHighlight={shouldLazyHighlight}
+            />
           </Tabs.Content>
         ))}
       </Tabs.Root>

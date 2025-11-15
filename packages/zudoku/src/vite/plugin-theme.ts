@@ -1,10 +1,12 @@
 import path from "node:path";
+import { normalizeTheme, type ThemeRegistration } from "shiki";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import type {
   FontConfig,
   ZudokuConfig,
 } from "../config/validators/validate.js";
+import { defaultHighlightOptions } from "../lib/shiki.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 import {
   fetchShadcnRegistryItem,
@@ -311,7 +313,25 @@ export const viteThemePlugin = (): Plugin => {
         rootVars.push(`  --font-serif: ${fonts.families.serif};`);
       }
 
-      themeCss.push(":root {", ...rootVars, "}");
+      // Make shiki theme background colors available as CSS variables
+      const shikiThemes =
+        config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes;
+
+      const [lightTheme, darkTheme] = (
+        await Promise.all<ThemeRegistration>([
+          import(`@shikijs/themes/${shikiThemes.light}`).then((m) => m.default),
+          import(`@shikijs/themes/${shikiThemes.dark}`).then((m) => m.default),
+        ])
+      ).map(normalizeTheme);
+
+      rootVars.push(
+        `  --shiki-light: ${lightTheme?.fg ?? "#000"};`,
+        `  --shiki-dark: ${darkTheme?.fg ?? "#fff"};`,
+        `  --shiki-light-bg: ${lightTheme?.bg ?? "#fff"};`,
+        `  --shiki-dark-bg: ${darkTheme?.bg ?? "#000"};`,
+      );
+
+      themeCss.push(`:root {\n${rootVars.join("\n")}\n}`);
 
       return themeCss.join("\n");
     },

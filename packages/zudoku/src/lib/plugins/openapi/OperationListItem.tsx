@@ -23,9 +23,11 @@ export type ParameterGroup = (typeof PARAM_GROUPS)[number];
 export const OperationListItem = ({
   operationFragment,
   globalSelectedServer,
+  shouldLazyHighlight,
 }: {
   operationFragment: FragmentType<typeof OperationsFragment>;
   globalSelectedServer?: string;
+  shouldLazyHighlight?: boolean;
 }) => {
   const operation = useFragment(OperationsFragment, operationFragment);
   const groupedParameters = groupBy(
@@ -173,6 +175,7 @@ export const OperationListItem = ({
             onSelectResponse={setSelectedResponse}
             operation={operation}
             globalSelectedServer={globalSelectedServer}
+            shouldLazyHighlight={shouldLazyHighlight}
           />
         ))}
       </div>

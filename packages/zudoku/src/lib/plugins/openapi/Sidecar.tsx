@@ -1,14 +1,14 @@
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
-import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
-import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
+import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import { useOasConfig } from "./context.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
@@ -51,11 +51,13 @@ export const Sidecar = ({
   selectedResponse,
   onSelectResponse,
   globalSelectedServer,
+  shouldLazyHighlight,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
   globalSelectedServer?: string;
+  shouldLazyHighlight?: boolean;
 }) => {
   const { options } = useOasConfig();
   const auth = useAuthState();
@@ -104,7 +106,7 @@ export const Sidecar = ({
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
-  const code = useMemo(() => {
+  const code = useMemo<string | undefined>(() => {
     const exampleBody =
       selectedExample ??
       (transformedRequestBodyContent?.[0]?.schema
@@ -150,7 +152,7 @@ export const Sidecar = ({
     >
       <SidecarBox.Root>
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
-          <span className="font-mono break-words leading-6">
+          <span className="font-mono wrap-break-word leading-6">
             <span className={cn("font-semibold", methodTextColor)}>
               {operation.method.toUpperCase()}
             </span>
@@ -165,47 +167,49 @@ export const Sidecar = ({
             />
           )}
         </SidecarBox.Head>
-        {isOnScreen && (
-          <>
-            <SidecarBox.Body className="p-0">
-              <CollapsibleCode>
-                <SyntaxHighlight
-                  embedded
-                  language={selectedLang}
-                  noBackground
-                  className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
-                  // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
-                  code={code!}
-                />
-              </CollapsibleCode>
-            </SidecarBox.Body>
-            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
-              <span>Show example in</span>
-              <SimpleSelect
-                className="self-start max-w-[150px]"
-                value={selectedLang}
-                onChange={(e) => {
-                  startTransition(() => {
-                    setSearchParams((prev) => {
-                      prev.set("lang", e.target.value);
-                      return prev;
-                    });
-                  });
-                }}
-                options={EXAMPLE_LANGUAGES}
-              />
-            </SidecarBox.Footer>
-          </>
-        )}
+        <SidecarBox.Body className="p-0">
+          {shouldLazyHighlight && !isOnScreen ? (
+            <NonHighlightedCode code={code ?? ""} />
+          ) : (
+            <SyntaxHighlight
+              embedded
+              language={selectedLang}
+              noBackground
+              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
+              // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
+              code={code!}
+            />
+          )}
+        </SidecarBox.Body>
+        <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
+          <span>Show example in</span>
+          <SimpleSelect
+            className="self-start max-w-[150px]"
+            value={selectedLang}
+            onChange={(e) => {
+              startTransition(() => {
+                setSearchParams((prev) => {
+                  prev.set("lang", e.target.value);
+                  return prev;
+                });
+              });
+            }}
+            options={EXAMPLE_LANGUAGES}
+          />
+        </SidecarBox.Footer>
       </SidecarBox.Root>
-      {isOnScreen && transformedRequestBodyContent && (
+      {transformedRequestBodyContent && (
         <RequestBodySidecarBox
           content={transformedRequestBodyContent}
           onExampleChange={setSelectedExample}
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
         />
       )}
-      {isOnScreen && operation.responses.length > 0 && (
+      {operation.responses.length > 0 && (
         <ResponsesSidecarBox
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
           selectedResponse={selectedResponse}
           onSelectResponse={onSelectResponse}
           responses={operation.responses.map((response) => ({
