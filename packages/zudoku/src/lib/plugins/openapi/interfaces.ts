@@ -1,4 +1,3 @@
-import type { HTTPSnippet } from "@zudoku/httpsnippet";
 import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
@@ -43,10 +42,15 @@ export type TransformExamplesFn = (options: {
   type: "request" | "response";
 }) => Content[];
 
-export type GenerateCodeSnippetFn = (
-  httpSnippet: HTTPSnippet,
-  lang: string,
-) => string | false;
+export type GenerateCodeSnippetFn = (options: {
+  selectedLang: string;
+  selectedServer: string;
+  context: ZudokuContext;
+  auth: AuthState;
+  operation: OperationsFragmentFragment;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
+  example?: any | null;
+}) => string | false;
 
 type BaseOasConfig = {
   server?: string;

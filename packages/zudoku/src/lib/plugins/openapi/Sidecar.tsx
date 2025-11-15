@@ -67,8 +67,14 @@ export const Sidecar = ({
   const [, startTransition] = useTransition();
   const [selectedExample, setSelectedExample] = useState<unknown>();
 
-  const selectedLang =
+  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+
+  let selectedLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
+
+  if (!supportedLanguages.some((l) => l.value === selectedLang)) {
+    selectedLang = supportedLanguages[0]?.value ?? selectedLang;
+  }
 
   const requestBodyContent = operation.requestBody?.content;
 
@@ -113,19 +119,30 @@ export const Sidecar = ({
           )
         : undefined);
 
-    const snippet = createHttpSnippet({
-      operation,
+    const converted = options?.generateCodeSnippet?.({
+      selectedLang,
       selectedServer,
-      exampleBody: exampleBody
-        ? {
-            mimeType: "application/json",
-            text: JSON.stringify(exampleBody, null, 2),
-          }
-        : { mimeType: "application/json" },
+      context,
+      operation,
+      example: exampleBody,
+      auth,
     });
 
-    const converted = options?.generateCodeSnippet?.(snippet, selectedLang);
-    return converted ? converted : getConverted(snippet, selectedLang);
+    if (converted) {
+      return converted;
+    } else {
+      const snippet = createHttpSnippet({
+        operation,
+        selectedServer,
+        exampleBody: exampleBody
+          ? {
+              mimeType: "application/json",
+              text: JSON.stringify(exampleBody, null, 2),
+            }
+          : { mimeType: "application/json" },
+      });
+      return getConverted(snippet, selectedLang);
+    }
   }, [
     selectedExample,
     transformedRequestBodyContent,
@@ -133,6 +150,8 @@ export const Sidecar = ({
     selectedServer,
     selectedLang,
     options,
+    auth,
+    context,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
@@ -143,11 +162,6 @@ export const Sidecar = ({
       (operation.extensions["x-explorer-enabled"] === undefined &&
         operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
-
-  let supportedLanguages = EXAMPLE_LANGUAGES;
-  if (options?.supportedLanguages) {
-    supportedLanguages = options?.supportedLanguages;
-  }
 
   return (
     <aside
