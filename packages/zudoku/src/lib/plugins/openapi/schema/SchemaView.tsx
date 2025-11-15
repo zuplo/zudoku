@@ -85,7 +85,9 @@ export const SchemaView = ({
       ([propertyName, property]) => {
         return property.deprecated
           ? "deprecated"
-          : schema.required?.includes(propertyName)
+          : schema.required &&
+              Array.isArray(schema.required) &&
+              schema.required?.includes(propertyName)
             ? "required"
             : "optional";
       },
