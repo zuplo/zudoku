@@ -92,7 +92,9 @@ export const flattenAllOf = (
   for (const key of ["anyOf", "oneOf"] as const) {
     const arr = merged[key];
     if (!Array.isArray(arr)) continue;
-    merged[key] = arr.map((v) => (typeof v === "object" ? flattenAllOf(v) : v));
+    merged[key] = arr.map((v) =>
+      typeof v === "object" && v != null ? flattenAllOf(v) : v,
+    );
   }
 
   return merged;
