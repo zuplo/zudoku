@@ -339,6 +339,35 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignOut: z.string().optional(),
   }),
   z.object({
+    type: z.literal("firebase"),
+    apiKey: z.string(),
+    authDomain: z.string(),
+    projectId: z.string(),
+    storageBucket: z.string().optional(),
+    messagingSenderId: z.string().optional(),
+    appId: z.string(),
+    measurementId: z.string().optional(),
+    providers: z
+      .array(
+        z.enum([
+          "google",
+          "facebook",
+          "twitter",
+          "github",
+          "microsoft",
+          "apple",
+          "yahoo",
+          "password",
+          "phone",
+          "emailLink",
+        ]),
+      )
+      .optional(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
+  z.object({
     type: z.literal("openid"),
     clientId: z.string(),
     issuer: z.string(),
@@ -359,6 +388,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
   }),
+
   z.object({
     type: z.literal("auth0"),
     clientId: z.string(),
@@ -576,6 +606,7 @@ export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
+export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 
 // Use `z.input` type for flexibility with transforms,
 // but override navigation with `z.infer` for strict validation
