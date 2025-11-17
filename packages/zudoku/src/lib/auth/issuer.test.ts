@@ -99,6 +99,19 @@ describe("getIssuer", () => {
     expect(result).toBe("https://project.supabase.co");
   });
 
+  it("should return workos issuer URL for workos authentication", async () => {
+    const config: ZudokuConfig = {
+      authentication: {
+        type: "workos",
+        environment: "workos-staging",
+        clientId: "test-client-id",
+      },
+    };
+
+    const result = await getIssuer(config);
+    expect(result).toBe("https://workos-staging.workos.com/");
+  });
+
   it("should return undefined for no authentication", async () => {
     const config: ZudokuConfig = {};
 
