@@ -6,7 +6,6 @@ import { useCopyToClipboard } from "../util/useCopyToClipboard.js";
 
 export type CodeBlockProps = {
   className?: string;
-  noBackground?: boolean;
   wrapLines?: boolean;
   showLanguageIndicator?: boolean;
   language?: string;

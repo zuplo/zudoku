@@ -5,7 +5,6 @@ import { cn } from "../util/cn.js";
 
 export type CodeBlockProps = {
   className?: string;
-  noBackground?: boolean;
   wrapLines?: boolean;
   showLanguageIndicator?: boolean;
   language?: string;

@@ -82,7 +82,6 @@ export const SidecarExamples = ({
           <SyntaxHighlight
             embedded
             language={language}
-            noBackground
             className="[--scrollbar-color:gray] rounded-none max-h-[200px] text-xs overflow-auto"
             code={formattedExample}
           />

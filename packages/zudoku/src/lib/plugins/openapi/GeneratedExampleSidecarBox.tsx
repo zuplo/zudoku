@@ -21,23 +21,30 @@ export const GeneratedExampleSidecarBox = ({
   return (
     <SidecarBox.Root>
       <SidecarBox.Head className="text-xs flex justify-between items-center">
-        <span className="font-mono">
+        <div className="flex items-center gap-1.5 font-mono">
           Request Body Example
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
-                <InfoIcon />
+              <TooltipTrigger asChild>
+                <InfoIcon size={13} />
               </TooltipTrigger>
-              <TooltipContent>This is a generated example.</TooltipContent>
+              <TooltipContent>
+                This example is auto-generated from the schema.
+              </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </span>
+        </div>
       </SidecarBox.Head>
       <SidecarBox.Body className="p-0">
         {shouldLazyHighlight && !isOnScreen ? (
           <NonHighlightedCode code={code} />
         ) : (
-          <SyntaxHighlight embedded language="json" noBackground code={code} />
+          <SyntaxHighlight
+            embedded
+            language="json"
+            code={code}
+            className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
+          />
         )}
       </SidecarBox.Body>
     </SidecarBox.Root>

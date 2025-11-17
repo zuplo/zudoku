@@ -180,7 +180,6 @@ export const Sidecar = ({
             <SyntaxHighlight
               embedded
               language={selectedLang}
-              noBackground
               className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
               // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
               code={httpSnippetCode!}
