@@ -6,6 +6,7 @@ import { Markdown } from "../../components/Markdown.js";
 import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
+import { AuthorizationList } from "./AuthorizationList.js";
 import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
 import { useOasConfig } from "./context.js";
@@ -101,6 +102,13 @@ export const OperationListItem = ({
               <Markdown
                 className="max-w-full prose-img:max-w-prose"
                 content={operation.description}
+              />
+            )}
+            {operation.security && operation.security.length > 0 && (
+              <AuthorizationList
+                summary={operation.summary ?? undefined}
+                security={operation.security}
+                id={operation.slug}
               />
             )}
             {operation.parameters &&

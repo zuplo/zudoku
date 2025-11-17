@@ -1,6 +1,8 @@
+import { CheckIcon, CopyIcon } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
+import { Button } from "zudoku/ui/Button.js";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
@@ -17,9 +19,63 @@ import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
+import { useSecurityState } from "./state/securityState.js";
+import { generateAuthHeader } from "./util/authHelpers.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
+
+const CodeWithMasking = ({
+  displayCode,
+  copyCode,
+  language,
+}: {
+  displayCode: string;
+  copyCode: string;
+  language: string;
+}) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  return (
+    <div className="code-block-wrapper relative group bg-muted/50">
+      <SyntaxHighlight
+        embedded
+        language={language}
+        noBackground
+        className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
+        code={displayCode}
+      />
+      <span className="absolute top-1.5 end-3 !text-[11px] font-mono text-muted-foreground transition group-hover:opacity-0">
+        {language}
+      </span>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon-xs"
+        aria-label="Copy code"
+        title="Copy code"
+        className="absolute top-2 end-2 p-2 transition hover:shadow-xs active:shadow-none active:inset-shadow-xs hover:outline outline-border rounded-md text-sm text-muted-foreground opacity-0 group-hover:opacity-100"
+        disabled={isCopied}
+        onClick={() => {
+          setIsCopied(true);
+          void navigator.clipboard.writeText(copyCode);
+          setTimeout(() => setIsCopied(false), 2000);
+        }}
+      >
+        {isCopied ? (
+          <CheckIcon
+            className="text-emerald-600"
+            size={16}
+            strokeWidth={2.5}
+            absoluteStrokeWidth
+          />
+        ) : (
+          <CopyIcon size={16} />
+        )}
+      </Button>
+    </div>
+  );
+};
 
 export const GetServerQuery = graphql(/* GraphQL */ `
   query getServerQuery($input: JSON!, $type: SchemaType!) {
@@ -70,6 +126,15 @@ export const Sidecar = ({
   const selectedLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
+  // Get selected auth for this operation (using slug to match AuthorizationList)
+  // Use Zustand selector to reactively subscribe to changes
+  const selectedAuth = useSecurityState(
+    (state) => state.selectedSchemes[operation.slug],
+  );
+
+  // Also subscribe to credentials to get real-time updates
+  const credentials = useSecurityState((state) => state.credentials);
+
   const requestBodyContent = operation.requestBody?.content;
 
   const transformedRequestBodyContent =
@@ -104,7 +169,7 @@ export const Sidecar = ({
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
-  const code = useMemo(() => {
+  const { displayCode, copyCode } = useMemo(() => {
     const exampleBody =
       selectedExample ??
       (transformedRequestBodyContent?.[0]?.schema
@@ -113,7 +178,37 @@ export const Sidecar = ({
           )
         : undefined);
 
-    const snippet = createHttpSnippet({
+    // Generate auth header based on selected security scheme
+    // Use the latest credential value from the credentials store
+    const credentialValue = selectedAuth
+      ? credentials[selectedAuth.name]
+      : undefined;
+
+    // Generate real auth header for copying
+    const realAuthHeader = generateAuthHeader(
+      selectedAuth ?? null,
+      credentialValue,
+    );
+
+    // Generate masked auth header for display
+    const maskedValue = "••••••••";
+    const maskedAuthHeader = realAuthHeader
+      ? {
+          ...realAuthHeader,
+          value: realAuthHeader.value.replace(/[^:\s]+/g, (match) => {
+            // Don't mask prefixes like "Bearer ", "Basic ", etc.
+            if (match.match(/^(Bearer|Basic|Digest|OAuth)$/i)) return match;
+            // For Cookie header, mask values after "="
+            if (realAuthHeader.name === "Cookie") {
+              return match.replace(/=([^;]+)/g, `=${maskedValue}`);
+            }
+            // Mask the actual credential value
+            return maskedValue;
+          }),
+        }
+      : undefined;
+
+    const realSnippet = createHttpSnippet({
       operation,
       selectedServer,
       exampleBody: exampleBody
@@ -122,15 +217,33 @@ export const Sidecar = ({
             text: JSON.stringify(exampleBody, null, 2),
           }
         : { mimeType: "application/json" },
+      authHeader: realAuthHeader,
     });
 
-    return getConverted(snippet, selectedLang);
+    const maskedSnippet = createHttpSnippet({
+      operation,
+      selectedServer,
+      exampleBody: exampleBody
+        ? {
+            mimeType: "application/json",
+            text: JSON.stringify(exampleBody, null, 2),
+          }
+        : { mimeType: "application/json" },
+      authHeader: maskedAuthHeader,
+    });
+
+    return {
+      displayCode: getConverted(maskedSnippet, selectedLang),
+      copyCode: getConverted(realSnippet, selectedLang),
+    };
   }, [
     selectedExample,
     transformedRequestBodyContent,
     operation,
     selectedServer,
     selectedLang,
+    selectedAuth,
+    credentials,
   ]);
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
@@ -169,13 +282,10 @@ export const Sidecar = ({
           <>
             <SidecarBox.Body className="p-0">
               <CollapsibleCode>
-                <SyntaxHighlight
-                  embedded
+                <CodeWithMasking
+                  displayCode={displayCode}
+                  copyCode={copyCode}
                   language={selectedLang}
-                  noBackground
-                  className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
-                  // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
-                  code={code!}
                 />
               </CollapsibleCode>
             </SidecarBox.Body>

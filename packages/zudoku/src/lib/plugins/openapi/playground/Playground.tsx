@@ -23,8 +23,17 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type {
+  MediaTypeObject,
+  SecurityRequirement,
+} from "../graphql/graphql.js";
+import {
+  type SecuritySchemeSelection,
+  useSecurityState,
+} from "../state/securityState.js";
 import { useSelectedServer } from "../state.js";
+import { applyAuth } from "../util/authHelpers.js";
+import { AuthorizationSelector } from "./AuthorizationSelector.js";
 import BodyPanel from "./BodyPanel.js";
 import {
   CollapsibleHeader,
@@ -121,6 +130,8 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  security?: SecurityRequirement[];
+  operationId?: string;
 };
 
 export const Playground = ({
@@ -136,6 +147,8 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  security = [],
+  operationId = "",
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -150,6 +163,17 @@ export const Playground = ({
   const abortControllerRef = useRef<AbortController | undefined>(undefined);
   const latestSetRememberedIdentity = useLatest(setRememberedIdentity);
   const formRef = useRef<HTMLFormElement>(null);
+  const [selectedAuth, setSelectedAuth] =
+    useState<SecuritySchemeSelection | null>(null);
+  const { getSelectedScheme } = useSecurityState();
+  const lastAppliedAuthRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const saved = getSelectedScheme(operationId);
+    if (saved) {
+      setSelectedAuth(saved);
+    }
+  }, [operationId, getSelectedScheme]);
 
   const { label: hotkeyLabel } = useHotkey("meta+enter", () => {
     formRef.current?.requestSubmit();
@@ -160,6 +184,21 @@ export const Playground = ({
   const sortedPathParams = [...pathParams].sort(
     (a, b) => pathParamOrder.indexOf(a.name) - pathParamOrder.indexOf(b.name),
   );
+
+  const initialAuth = getSelectedScheme(operationId);
+  const initialAuthHeaders = useMemo(() => {
+    if (!initialAuth) return [];
+
+    const authApplication = applyAuth(initialAuth, initialAuth.value);
+    if (authApplication?.headers) {
+      return Object.entries(authApplication.headers).map(([name, value]) => ({
+        name,
+        value,
+        active: true,
+      }));
+    }
+    return [];
+  }, [initialAuth]);
 
   const { register, control, handleSubmit, watch, setValue, ...form } =
     useForm<PlaygroundForm>({
@@ -187,18 +226,23 @@ export const Playground = ({
         })),
         headers:
           headers.length > 0
-            ? headers.map((header) => ({
-                name: header.name,
-                value: header.defaultValue ?? "",
-                active: header.defaultActive ?? false,
-              }))
-            : [
-                {
-                  name: "",
-                  value: "",
-                  active: false,
-                },
-              ],
+            ? [
+                ...headers.map((header) => ({
+                  name: header.name,
+                  value: header.defaultValue ?? "",
+                  active: header.defaultActive ?? false,
+                })),
+                ...initialAuthHeaders,
+              ]
+            : initialAuthHeaders.length > 0
+              ? initialAuthHeaders
+              : [
+                  {
+                    name: "",
+                    value: "",
+                    active: false,
+                  },
+                ],
         identity: getRememberedIdentity([
           NO_IDENTITY,
           ...(identities.data?.map((i) => i.id) ?? []),
@@ -212,11 +256,82 @@ export const Playground = ({
     [identities.data, identity],
   );
 
+  const lockedHeaders = useMemo(() => {
+    const headers = [...(authorizationFields?.headers ?? [])];
+
+    if (selectedAuth) {
+      const authApplication = applyAuth(selectedAuth, selectedAuth.value);
+      if (authApplication?.headers) {
+        headers.push(...Object.keys(authApplication.headers));
+      }
+    }
+
+    return headers;
+  }, [authorizationFields, selectedAuth]);
+
   useEffect(() => {
     if (identity) {
       latestSetRememberedIdentity.current(identity);
     }
   }, [latestSetRememberedIdentity, identity]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: form is stable and we only want to run when selectedAuth changes
+  useEffect(() => {
+    if (!selectedAuth) return;
+
+    const authKey = `${selectedAuth.name}-${selectedAuth.value || ""}`;
+
+    if (lastAppliedAuthRef.current === authKey) return;
+    lastAppliedAuthRef.current = authKey;
+
+    const authApplication = applyAuth(selectedAuth, selectedAuth.value);
+    if (authApplication) {
+      const currentHeaders = form.getValues("headers");
+
+      const commonAuthHeaders = [
+        "Authorization",
+        "Cookie",
+        "X-API-Key",
+        "X-Api-Key",
+        "api_key",
+      ];
+      const filteredHeaders = currentHeaders.filter(
+        (h) =>
+          !commonAuthHeaders.some(
+            (ah) => ah.toLowerCase() === h.name.toLowerCase(),
+          ),
+      );
+
+      const newAuthHeaders: Array<{
+        name: string;
+        value: string;
+        active: boolean;
+      }> = [];
+
+      if (authApplication.headers) {
+        newAuthHeaders.push(
+          ...Object.entries(authApplication.headers).map(([name, value]) => ({
+            name,
+            value,
+            active: true,
+          })),
+        );
+      }
+
+      if (authApplication.cookies) {
+        const cookieValue = Object.entries(authApplication.cookies)
+          .map(([name, value]) => `${name}=${value}`)
+          .join("; ");
+        newAuthHeaders.push({
+          name: "Cookie",
+          value: cookieValue,
+          active: true,
+        });
+      }
+
+      setValue("headers", [...filteredHeaders, ...newAuthHeaders]);
+    }
+  }, [selectedAuth, setValue]);
 
   const queryMutation = useMutation({
     gcTime: 0,
@@ -229,14 +344,36 @@ export const Playground = ({
           .map((header) => [header.name, header.value]),
       ]);
 
-      const request = new Request(
-        createUrl(server ?? selectedServer, url, data),
-        {
-          method: method.toUpperCase(),
-          headers,
-          body: data.body ? data.body : undefined,
-        },
-      );
+      const authApplication = applyAuth(selectedAuth, selectedAuth?.value);
+      if (authApplication?.headers) {
+        Object.assign(headers, authApplication.headers);
+      }
+
+      const requestUrl = createUrl(server ?? selectedServer, url, data);
+      if (authApplication?.queryParams) {
+        for (const [name, value] of Object.entries(
+          authApplication.queryParams,
+        )) {
+          requestUrl.searchParams.set(name, value);
+        }
+      }
+
+      const request = new Request(requestUrl, {
+        method: method.toUpperCase(),
+        headers,
+        body: data.body ? data.body : undefined,
+      });
+
+      if (authApplication?.cookies) {
+        const cookies = Object.entries(authApplication.cookies)
+          .map(([name, value]) => `${name}=${value}`)
+          .join("; ");
+        const existingCookie = request.headers.get("Cookie");
+        request.headers.set(
+          "Cookie",
+          existingCookie ? `${existingCookie}; ${cookies}` : cookies,
+        );
+      }
 
       if (data.identity !== NO_IDENTITY) {
         await identities.data
@@ -476,7 +613,7 @@ export const Playground = ({
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} />
                     <CollapsibleHeader className="col-span-2">
-                      Authentication
+                      Authentication (Plugin)
                     </CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
@@ -484,6 +621,24 @@ export const Playground = ({
                       value={identity}
                       identities={identities.data ?? []}
                       setValue={(value) => setValue("identity", value)}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {security.length > 0 && (
+                <Collapsible defaultOpen>
+                  <CollapsibleHeaderTrigger>
+                    <IdCardLanyardIcon size={16} />
+                    <CollapsibleHeader className="col-span-2">
+                      Authorization
+                    </CollapsibleHeader>
+                  </CollapsibleHeaderTrigger>
+                  <CollapsibleContent className="CollapsibleContent">
+                    <AuthorizationSelector
+                      operationId={operationId}
+                      security={security}
+                      onAuthChange={setSelectedAuth}
                     />
                   </CollapsibleContent>
                 </Collapsible>
@@ -508,7 +663,7 @@ export const Playground = ({
               <Headers
                 control={control}
                 schemaHeaders={headers}
-                lockedHeaders={authorizationFields?.headers}
+                lockedHeaders={lockedHeaders}
               />
               {isBodySupported && <BodyPanel content={examples} />}
             </div>

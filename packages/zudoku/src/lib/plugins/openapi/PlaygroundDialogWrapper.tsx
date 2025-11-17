@@ -57,6 +57,8 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
+      security={operation.security ?? []}
+      operationId={operation.slug}
     />
   );
 };

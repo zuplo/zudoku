@@ -96,6 +96,10 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         schema
       }
     }
+    security {
+      name
+      scopes
+    }
   }
 `);
 

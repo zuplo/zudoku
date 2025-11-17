@@ -5,6 +5,7 @@ export const createHttpSnippet = ({
   operation,
   selectedServer,
   exampleBody,
+  authHeader,
 }: {
   operation: OperationsFragmentFragment;
   selectedServer: string;
@@ -12,6 +13,7 @@ export const createHttpSnippet = ({
     mimeType: string;
     text?: string;
   };
+  authHeader?: { name: string; value: string };
 }) => {
   return new HTTPSnippet({
     method: operation.method.toUpperCase(),
@@ -22,6 +24,7 @@ export const createHttpSnippet = ({
       ...(exampleBody.text
         ? [{ name: "Content-Type", value: exampleBody.mimeType }]
         : []),
+      ...(authHeader ? [authHeader] : []),
       ...(operation.parameters
         ?.filter((p) => p.in === "header" && p.required === true)
         .map((p) => ({
