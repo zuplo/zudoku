@@ -726,6 +726,7 @@
                 "simple": {
                   "summary": "Simple domestic shipment",
                   "value": {
+                    "recipientEmail": "test@example.com",
                     "recipientAddress": {
                       "street": "123 Delivery St",
                       "city": "Shiptown",
@@ -805,6 +806,7 @@
                     "summary": "Domestic shipment response",
                     "value": {
                       "id": "123e4567-e89b-12d3-a456-426614174000",
+                      "recipientEmail": "test@example.com",
                       "recipientAddress": {
                         "street": "123 Delivery St",
                         "city": "Shiptown",
@@ -875,6 +877,12 @@
                     }
                   }
                 }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                },
+                "example": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<shipment>\n  <id>123e4567-e89b-12d3-a456-426614174000</id>\n  <recipientAddress>\n    <street>123 Delivery St</street>\n    <city>Shiptown</city>\n    <state>ST</state>\n    <country>US</country>\n    <postalCode>12345</postalCode>\n  </recipientAddress>\n  <senderAddress>\n    <street>456 Sender Ave</street>\n    <city>Packageville</city>\n    <state>ST</state>\n    <country>US</country>\n    <postalCode>67890</postalCode>\n  </senderAddress>\n  <packages>\n    <package>\n      <weight>2.5</weight>\n      <dimensions>\n        <length>30</length>\n        <width>20</width>\n        <height>15</height>\n      </dimensions>\n    </package>\n  </packages>\n  <status>CREATED</status>\n  <trackingNumber>SH123456789</trackingNumber>\n  <createdAt>2025-01-09T12:00:00Z</createdAt>\n</shipment>"
               }
             }
           },
@@ -981,6 +989,7 @@
                 },
                 "example": {
                   "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "recipientEmail": "test@example.com",
                   "recipientAddress": {
                     "street": "123 Delivery St",
                     "city": "Shiptown",

@@ -5,7 +5,6 @@ import { cn } from "../util/cn.js";
 
 export type CodeBlockProps = {
   className?: string;
-  noBackground?: boolean;
   wrapLines?: boolean;
   showLanguageIndicator?: boolean;
   language?: string;
@@ -42,7 +41,7 @@ export const EmbeddedCodeBlock = ({
     >
       <div
         className={cn(
-          "code-block text-sm not-prose scrollbar [&>pre]:overflow-x-auto [&>pre]:p-2",
+          "code-block text-sm not-prose scrollbar [&>pre]:overflow-x-auto [&_code]:p-2",
           fullHeight && "h-full [&>pre]:h-full",
           props.className,
         )}

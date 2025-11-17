@@ -85,16 +85,14 @@ export const generateSchemaExample = (
     return schema.enum[0];
   }
 
-  if (schema.oneOf) {
-    const randomIndex = Math.floor(Math.random() * schema.oneOf.length);
-    return generateSchemaExample(schema.oneOf[randomIndex] as SchemaObject);
+  if (schema.oneOf && schema.oneOf.length > 0) {
+    return generateSchemaExample(schema.oneOf[0]);
   }
 
-  if (schema.anyOf) {
+  if (schema.anyOf && schema.anyOf.length > 0) {
     // Should likely be expanded to return a partial set of values, but it would require
     // detection if being used within an array or a string type.
-    const randomIndex = Math.floor(Math.random() * schema.anyOf.length);
-    return generateSchemaExample(schema.anyOf[randomIndex] as SchemaObject);
+    return generateSchemaExample(schema.anyOf[0]);
   }
 
   // Check for property-level examples
@@ -103,8 +101,7 @@ export const generateSchemaExample = (
     Array.isArray(schema.examples) &&
     schema.examples.length > 0
   ) {
-    const randomIndex = Math.floor(Math.random() * schema.examples.length);
-    return schema.examples[randomIndex];
+    return schema.examples[0];
   }
 
   switch (schema.type) {

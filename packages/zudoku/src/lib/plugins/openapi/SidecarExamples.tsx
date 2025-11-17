@@ -1,11 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
-import type { SchemaObject } from "../../oas/parser/index.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
-import { CollapsibleCode } from "./CollapsibleCode.js";
+import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SimpleSelect } from "./SimpleSelect.js";
-import { generateSchemaExample } from "./util/generateSchemaExample.js";
 
 const formatForDisplay = (value: unknown): string => {
   if (value == null) return "No example";
@@ -35,47 +32,35 @@ const getLanguage = (mediaType?: string): string => {
 export type SidecarExamplesProps = {
   content: MediaTypeObject[];
   description?: string;
-  onExampleChange?: (example: unknown) => void;
+  selectedContentIndex: number;
+  selectedExampleIndex: number;
+  onExampleChange?: ({
+    contentTypeIndex,
+    exampleIndex,
+  }: {
+    contentTypeIndex: number;
+    exampleIndex: number;
+  }) => void;
+  isOnScreen: boolean;
+  shouldLazyHighlight?: boolean;
 };
 
 export const SidecarExamples = ({
   content,
   description,
   onExampleChange,
+  selectedContentIndex,
+  selectedExampleIndex,
+  isOnScreen,
+  shouldLazyHighlight,
 }: SidecarExamplesProps) => {
-  const [selectedContentTypeIndex, setSelectedContentTypeIndex] = useState(0);
-  const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-
-  // Get the effective content (handle single item array case)
-  const effectiveContent =
-    Array.isArray(content) && content.length === 1
-      ? content[0]
-      : content[selectedContentTypeIndex];
-
   // Get example value, with fallback to schema-generated example
-  const examples = effectiveContent?.examples ?? [];
-  const selectedExample = examples[selectedExampleIndex];
+  const selectedContent = content[selectedContentIndex];
+  const examples = selectedContent?.examples ?? [];
+  const selectedExample = examples?.[selectedExampleIndex];
 
-  const exampleValue = useMemo(() => {
-    if (selectedExample) {
-      // If it's a wrapped example with a value field, use that
-      return "value" in selectedExample
-        ? selectedExample.value
-        : selectedExample;
-    } else if (effectiveContent?.schema) {
-      // No example provided, generate one from schema
-      return generateSchemaExample(effectiveContent.schema as SchemaObject);
-    }
-  }, [selectedExample, effectiveContent?.schema]);
-
-  useEffect(() => {
-    if (!exampleValue) return;
-
-    onExampleChange?.(exampleValue);
-  }, [exampleValue, onExampleChange]);
-
-  const formattedExample = formatForDisplay(exampleValue);
-  const language = getLanguage(effectiveContent?.mediaType);
+  const formattedExample = formatForDisplay(selectedExample?.value);
+  const language = getLanguage(selectedContent?.mediaType);
 
   return (
     <>
@@ -91,16 +76,15 @@ export const SidecarExamples = ({
               View External Example →
             </a>
           </div>
+        ) : shouldLazyHighlight && !isOnScreen ? (
+          <NonHighlightedCode code={formattedExample} />
         ) : (
-          <CollapsibleCode>
-            <SyntaxHighlight
-              embedded
-              language={language}
-              noBackground
-              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
-              code={formattedExample}
-            />
-          </CollapsibleCode>
+          <SyntaxHighlight
+            embedded
+            language={language}
+            className="[--scrollbar-color:gray] rounded-none max-h-[200px] text-xs overflow-auto"
+            code={formattedExample}
+          />
         )}
         {selectedExample?.description && (
           <div className="border-t text-xs px-3 py-1.5 text-muted-foreground">
@@ -120,9 +104,12 @@ export const SidecarExamples = ({
               {content.length > 1 ? (
                 <SimpleSelect
                   className="max-w-[200px]"
-                  value={selectedContentTypeIndex.toString()}
+                  value={selectedContentIndex.toString()}
                   onChange={(e) =>
-                    setSelectedContentTypeIndex(Number(e.target.value))
+                    onExampleChange?.({
+                      contentTypeIndex: Number(e.target.value),
+                      exampleIndex: 0,
+                    })
                   }
                   options={content.map((c, index) => ({
                     value: index.toString(),
@@ -141,7 +128,10 @@ export const SidecarExamples = ({
                   className="max-w-[180px]"
                   value={selectedExampleIndex.toString()}
                   onChange={(e) =>
-                    setSelectedExampleIndex(Number(e.target.value))
+                    onExampleChange?.({
+                      contentTypeIndex: selectedContentIndex,
+                      exampleIndex: Number(e.target.value),
+                    })
                   }
                   options={examples.map((example, index) => ({
                     value: index.toString(),

@@ -210,18 +210,18 @@ const config: ZudokuConfig = {
       categories: [{ label: "General", tags: ["Shipments"] }],
       options: {
         transformExamples: ({ content, auth }) => {
-          if (!auth) {
+          if (!auth.isAuthenticated) {
             return content;
           }
           return content.map((c) => ({
             ...c,
             examples: c.examples?.map((e) => {
-              if (e.name === "domestic") {
+              if (e.name === "domestic" || e.name === "simple") {
                 return {
                   ...e,
                   value: {
-                    recipientEmail: auth?.profile?.email,
                     ...e.value,
+                    recipientEmail: auth?.profile?.email,
                   },
                 };
               }
