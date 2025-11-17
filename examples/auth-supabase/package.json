@@ -1,5 +1,5 @@
 {
-  "name": "supabase",
+  "name": "auth-supabase",
   "version": "0.0.1",
   "type": "module",
   "scripts": {

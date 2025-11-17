@@ -1,9 +1,18 @@
-import type { Provider, SupabaseClient } from "@supabase/supabase-js";
+import {
+  type FirebaseApp,
+  type FirebaseOptions,
+  initializeApp,
+} from "firebase/app";
 import {
   type Auth,
+  createUserWithEmailAndPassword,
   getAuth,
+  isSignInWithEmailLink,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithEmailLink,
   signInWithPopup,
+  signOut,
   type User,
 } from "firebase/auth";
 import type {
@@ -20,26 +29,18 @@ import type {
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
-import {
-  type AuthProviderType,
-  ZudokuLoginUi,
-  ZudokuSignUpUi,
-} from "../ui/ZudokuAuthUi.js";
+import { ZudokuSignInUi, ZudokuSignUpUi } from "../ui/ZudokuAuthUi.js";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
   implements AuthenticationPlugin
 {
-  private readonly client: SupabaseClient;
-  private readonly providers: Provider[];
-  private readonly config: FirebaseAuthenticationConfig;
-
   private readonly app: FirebaseApp;
   private readonly auth: Auth;
+  private readonly providers: string[];
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
-    this.config = config;
 
     const firebaseConfig: FirebaseOptions = {
       apiKey: config.apiKey,
@@ -53,25 +54,20 @@ class FirebaseAuthenticationProvider
 
     this.app = initializeApp(firebaseConfig);
     this.auth = getAuth(this.app);
+    this.providers = config.providers ?? [];
 
     // Listen to auth state changes
-    onAuthStateChanged(this.auth, async (user: User | null) => {
-      if (user) {
-        await this.updateUserState(user);
-      } else {
-        useAuthState.getState().setLoggedOut();
-      }
-    });
+    onAuthStateChanged(this.auth, async (user: User | null) => {});
   }
 
   async getAccessToken(): Promise<string> {
-    const { data, error } = await this.client.auth.getSession();
+    const user = this.auth.currentUser;
 
-    if (error || !data.session) {
+    if (!user) {
       throw new AuthorizationError("User is not authenticated");
     }
 
-    return data.session.access_token;
+    return await user.getIdToken();
   }
 
   async signRequest(request: Request): Promise<Request> {
@@ -107,21 +103,37 @@ class FirebaseAuthenticationProvider
       {
         path: "/signin",
         element: (
-          <ZudokuLoginUi
+          <ZudokuSignInUi
+            providers={this.providers}
             onOAuthSignIn={async (providerId: string) => {
-              try {
-                const provider = await getProviderForId(providerId);
-                if (!provider) {
-                  throw new Error(`Unknown provider: ${providerId}`);
-                }
-                await signInWithPopup(this.auth, provider);
-              } 
+              useAuthState.setState({ isPending: true });
+              const provider = await getProviderForId(providerId);
+              if (!provider) {
+                throw new AuthorizationError(
+                  `Provider ${providerId} not found`,
+                );
+              }
+              const result = await signInWithPopup(this.auth, provider);
+              useAuthState.setState({ isPending: false });
+              useAuthState.getState().setLoggedIn({
+                providerData: { user: result.user },
+                profile: {
+                  sub: result.user.uid,
+                  email: result.user.email ?? undefined,
+                  name: result.user.displayName ?? undefined,
+                  emailVerified: result.user.emailVerified,
+                  pictureUrl: result.user.photoURL ?? undefined,
+                },
+              });
             }}
-            onUsernamePasswordSignIn={async (email: string, password: string) => {
+            onUsernamePasswordSignIn={async (
+              email: string,
+              password: string,
+            ) => {
               try {
                 await signInWithEmailAndPassword(this.auth, email, password);
-              } catch (err) {
-                setError(err);
+              } catch (error) {
+                throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
             }}
           />
@@ -129,7 +141,20 @@ class FirebaseAuthenticationProvider
       },
       {
         path: "/signup",
-        element: <ZudokuSignUpUi />,
+        element: (
+          <ZudokuSignUpUi
+            providers={this.providers}
+            onOAuthSignUp={async (providerId: string) => {
+              await signInWithPopup(this.auth, { providerId });
+            }}
+            onUsernamePasswordSignUp={async (
+              email: string,
+              password: string,
+            ) => {
+              await createUserWithEmailAndPassword(this.auth, email, password);
+            }}
+          />
+        ),
       },
       {
         path: "/signout",
@@ -139,14 +164,7 @@ class FirebaseAuthenticationProvider
   };
 
   signOut = async () => {
-    await new Promise<void>((resolve) => {
-      const { data } = this.client.auth.onAuthStateChange(async (event) => {
-        if (event !== "SIGNED_OUT") return;
-        data.subscription.unsubscribe();
-        resolve();
-      });
-      void this.client.auth.signOut();
-    });
+    await signOut(this.auth);
 
     useAuthState.setState({
       isAuthenticated: false,
@@ -157,12 +175,49 @@ class FirebaseAuthenticationProvider
   };
 
   onPageLoad = async () => {
-    const { data, error } = await this.client.auth.getSession();
+    // Check if the user is signing in with an email link
+    if (isSignInWithEmailLink(this.auth, window.location.href)) {
+      // Get the email from localStorage
+      const email = window.localStorage.getItem("emailForSignIn");
+      if (email) {
+        try {
+          await signInWithEmailLink(this.auth, email, window.location.href);
+          // Clear the email from storage
+          window.localStorage.removeItem("emailForSignIn");
+          // The onAuthStateChanged listener will handle updating the state
+        } catch {
+          // Failed to sign in with email link
+          useAuthState.setState({ isPending: false });
+        }
+      } else {
+        // Email not found, user needs to enter it
+        useAuthState.setState({ isPending: false });
+      }
+    } else {
+      // Firebase Auth automatically handles session restoration
+      // via onAuthStateChanged listener
+      const user = this.auth.currentUser;
 
-    if (!error && data.session) {
-      await this.updateUserState(data.session);
+      if (user) {
+        await this.updateUserState(user);
+      } else {
+        useAuthState.setState({ isPending: false });
+      }
     }
   };
+
+  private async updateUserState(user: User) {
+    useAuthState.getState().setLoggedIn({
+      profile: {
+        sub: user.uid,
+        email: user.email ?? undefined,
+        name: user.displayName ?? undefined,
+        emailVerified: user.emailVerified,
+        pictureUrl: user.photoURL ?? undefined,
+      },
+      providerData: { user },
+    });
+  }
 }
 
 const supabaseAuth: AuthenticationProviderInitializer<
@@ -171,9 +226,7 @@ const supabaseAuth: AuthenticationProviderInitializer<
 
 export default supabaseAuth;
 
-const getProviderForId = async (
-  providerId: string,
-): Promise<AuthProviderType | null> => {
+const getProviderForId = async (providerId: string) => {
   switch (providerId) {
     case "google": {
       const { GoogleAuthProvider } = await import("firebase/auth");
@@ -203,7 +256,67 @@ const getProviderForId = async (
       const { OAuthProvider } = await import("firebase/auth");
       return new OAuthProvider("yahoo.com");
     }
+  }
+
+  throw new AuthorizationError(`Provider ${providerId} not found`);
+};
+
+const getFirebaseErrorMessage = (error: unknown): string => {
+  if (!(error instanceof Error)) {
+    return "An unexpected error occurred. Please try again.";
+  }
+
+  const errorCode = (error as { code?: string }).code;
+
+  switch (errorCode) {
+    case "auth/email-already-in-use":
+      return "The email address is already used by another account.";
+    case "auth/invalid-email":
+      return "That email address isn't correct.";
+    case "auth/operation-not-allowed":
+      return "This sign-in method is not enabled. Please contact support.";
+    case "auth/weak-password":
+      return "The password must be at least 6 characters long.";
+    case "auth/user-disabled":
+      return "This account has been disabled. Please contact support.";
+    case "auth/user-not-found":
+      return "That email address doesn't match an existing account.";
+    case "auth/wrong-password":
+      return "The email and password you entered don't match.";
+    case "auth/too-many-requests":
+      return "You have entered an incorrect password too many times. Please try again in a few minutes.";
+    case "auth/popup-blocked":
+      return "The sign-in popup was blocked by your browser. Please allow popups and try again.";
+    case "auth/popup-closed-by-user":
+      return "The sign-in popup was closed before completing. Please try again.";
+    case "auth/network-request-failed":
+      return "A network error has occurred. Please check your connection and try again.";
+    case "auth/requires-recent-login":
+      return "Please login again to perform this operation.";
+    case "auth/invalid-credential":
+      return "The credential is invalid or has expired. Please try again.";
+    case "auth/account-exists-with-different-credential":
+      return "An account already exists with the same email address but different sign-in credentials.";
+    case "auth/credential-already-in-use":
+      return "This credential is already associated with a different user account.";
+    case "auth/invalid-verification-code":
+      return "Wrong code. Try again.";
+    case "auth/invalid-verification-id":
+      return "The verification ID is invalid.";
+    case "auth/missing-verification-code":
+      return "Please enter the verification code.";
+    case "auth/user-cancelled":
+      return "Please authorize the required permissions to sign in.";
+    case "auth/expired-action-code":
+      return "This code has expired.";
+    case "auth/invalid-action-code":
+      return "The action code is invalid. This can happen if the code is malformed or has already been used.";
+    case "auth/unauthorized-domain":
+      return "This domain is not authorized for OAuth operations.";
     default:
-      return null;
+      return (
+        error.message ||
+        "An error occurred during authentication. Please try again."
+      );
   }
 };

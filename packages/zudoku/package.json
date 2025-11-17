@@ -331,6 +331,7 @@
     "@supabase/auth-ui-react": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
+    "firebase": "^12.6.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
@@ -351,6 +352,9 @@
       "optional": true
     },
     "@supabase/auth-ui-shared": {
+      "optional": true
+    },
+    "firebase": {
       "optional": true
     }
   }

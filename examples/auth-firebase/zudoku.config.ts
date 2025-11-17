@@ -47,7 +47,15 @@ const config: ZudokuConfig = {
     measurementId: "G-12W6TTNR75",
     // Optional: specify which providers to show
     // See: https://firebase.google.com/docs/auth/web/start
-    providers: ["password", "github"],
+    providers: [
+      "github",
+      "google",
+      "facebook",
+      "twitter",
+      "microsoft",
+      "apple",
+      "yahoo",
+    ],
     // Optional: configure redirect path after sign in
     redirectToAfterSignIn: "/documentation/introduction",
   },

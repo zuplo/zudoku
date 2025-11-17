@@ -129,6 +129,28 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
+  examples/auth-supabase:
+    dependencies:
+      '@supabase/auth-ui-react':
+        specifier: ^0.4.7
+        version: 0.4.7(@supabase/supabase-js@2.76.1)
+      '@supabase/auth-ui-shared':
+        specifier: ^0.1.8
+        version: 0.1.8(@supabase/supabase-js@2.76.1)
+      '@supabase/supabase-js':
+        specifier: ^2.76.1
+        version: 2.76.1
+    devDependencies:
+      react:
+        specifier: 19.2.0
+        version: 19.2.0
+      react-dom:
+        specifier: 19.2.0
+        version: 19.2.0(react@19.2.0)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+
   examples/cosmo-cargo:
     dependencies:
       '@clerk/clerk-js':
@@ -172,28 +194,6 @@ importers:
       playwright:
         specifier: 1.56.1
         version: 1.56.1
-      react:
-        specifier: 19.2.0
-        version: 19.2.0
-      react-dom:
-        specifier: 19.2.0
-        version: 19.2.0(react@19.2.0)
-      zudoku:
-        specifier: workspace:*
-        version: link:../../packages/zudoku
-
-  examples/supabase:
-    dependencies:
-      '@supabase/auth-ui-react':
-        specifier: ^0.4.7
-        version: 0.4.7(@supabase/supabase-js@2.76.1)
-      '@supabase/auth-ui-shared':
-        specifier: ^0.1.8
-        version: 0.1.8(@supabase/supabase-js@2.76.1)
-      '@supabase/supabase-js':
-        specifier: ^2.76.1
-        version: 2.76.1
-    devDependencies:
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -540,6 +540,9 @@ importers:
       fast-equals:
         specifier: 5.2.2
         version: 5.2.2
+      firebase:
+        specifier: ^12.6.0
+        version: 12.6.0
       glob:
         specifier: 11.0.3
         version: 11.0.3
