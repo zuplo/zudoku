@@ -726,6 +726,7 @@
                 "simple": {
                   "summary": "Simple domestic shipment",
                   "value": {
+                    "recipientEmail": "test@example.com",
                     "recipientAddress": {
                       "street": "123 Delivery St",
                       "city": "Shiptown",
@@ -805,6 +806,7 @@
                     "summary": "Domestic shipment response",
                     "value": {
                       "id": "123e4567-e89b-12d3-a456-426614174000",
+                      "recipientEmail": "test@example.com",
                       "recipientAddress": {
                         "street": "123 Delivery St",
                         "city": "Shiptown",
@@ -981,6 +983,7 @@
                 },
                 "example": {
                   "id": "123e4567-e89b-12d3-a456-426614174000",
+                  "recipientEmail": "test@example.com",
                   "recipientAddress": {
                     "street": "123 Delivery St",
                     "city": "Shiptown",

@@ -4,12 +4,12 @@ import { useZudoku } from "zudoku/hooks";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
-import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
 import { ColorizedParam } from "./ColorizedParam.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import { useOasConfig } from "./context.js";
+import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
@@ -67,13 +67,8 @@ export const Sidecar = ({
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
-  const [selectedExample, setSelectedExample] = useState<unknown>();
-
-  const selectedLang =
-    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
   const requestBodyContent = operation.requestBody?.content;
-
   const transformedRequestBodyContent =
     requestBodyContent && options?.transformExamples
       ? options.transformExamples({
@@ -84,6 +79,30 @@ export const Sidecar = ({
           context,
         })
       : requestBodyContent;
+
+  const [selectedRequestExample, setSelectedRequestExample] = useState<{
+    contentTypeIndex: number;
+    exampleIndex: number;
+  }>({
+    contentTypeIndex: 0,
+    exampleIndex: 0,
+  });
+
+  const selectedContent = transformedRequestBodyContent?.at(
+    selectedRequestExample.contentTypeIndex,
+  );
+  const currentExample = selectedContent?.examples?.at(
+    selectedRequestExample.exampleIndex,
+  );
+
+  const selectedLang =
+    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
+
+  const currentExampleCode = currentExample
+    ? (currentExample?.value ?? currentExample)
+    : selectedContent?.schema
+      ? generateSchemaExample(selectedContent?.schema)
+      : undefined;
 
   const path = (
     <PathRenderer
@@ -106,34 +125,21 @@ export const Sidecar = ({
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
-  const code = useMemo<string | undefined>(() => {
-    const exampleBody =
-      selectedExample ??
-      (transformedRequestBodyContent?.[0]?.schema
-        ? generateSchemaExample(
-            transformedRequestBodyContent[0].schema as SchemaObject,
-          )
-        : undefined);
-
+  const httpSnippetCode = useMemo<string | undefined>(() => {
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
-      exampleBody: exampleBody
+      exampleBody: currentExampleCode
         ? {
             mimeType: "application/json",
-            text: JSON.stringify(exampleBody, null, 2),
+            text: JSON.stringify(currentExampleCode, null, 2),
           }
         : { mimeType: "application/json" },
     });
 
     return getConverted(snippet, selectedLang);
-  }, [
-    selectedExample,
-    transformedRequestBodyContent,
-    operation,
-    selectedServer,
-    selectedLang,
-  ]);
+  }, [operation, selectedServer, selectedLang, currentExampleCode]);
+
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
   const showPlayground =
@@ -169,7 +175,7 @@ export const Sidecar = ({
         </SidecarBox.Head>
         <SidecarBox.Body className="p-0">
           {shouldLazyHighlight && !isOnScreen ? (
-            <NonHighlightedCode code={code ?? ""} />
+            <NonHighlightedCode code={httpSnippetCode ?? ""} />
           ) : (
             <SyntaxHighlight
               embedded
@@ -177,7 +183,7 @@ export const Sidecar = ({
               noBackground
               className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
               // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
-              code={code!}
+              code={httpSnippetCode!}
             />
           )}
         </SidecarBox.Body>
@@ -198,14 +204,26 @@ export const Sidecar = ({
           />
         </SidecarBox.Footer>
       </SidecarBox.Root>
-      {transformedRequestBodyContent && (
+
+      {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
           content={transformedRequestBodyContent}
-          onExampleChange={setSelectedExample}
+          onExampleChange={(selected) => {
+            setSelectedRequestExample(selected);
+          }}
+          selectedContentIndex={selectedRequestExample.contentTypeIndex}
+          selectedExampleIndex={selectedRequestExample.exampleIndex}
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
         />
-      )}
+      ) : transformedRequestBodyContent && currentExampleCode ? (
+        <GeneratedExampleSidecarBox
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
+          code={JSON.stringify(currentExampleCode, null, 2)}
+        />
+      ) : null}
+
       {operation.responses.length > 0 && (
         <ResponsesSidecarBox
           isOnScreen={isOnScreen}
