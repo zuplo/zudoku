@@ -1,5 +1,5 @@
 import * as Tabs from "@radix-ui/react-tabs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "../../util/cn.js";
 import type { ResponseItem } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
@@ -20,6 +20,13 @@ export const ResponsesSidecarBox = ({
 }) => {
   const [selectedContentIndex, setSelectedContentIndex] = useState(0);
   const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
+
+  useEffect(() => {
+    if (!selectedResponse) return;
+
+    setSelectedContentIndex(0);
+    setSelectedExampleIndex(0);
+  }, [selectedResponse]);
 
   return (
     <SidecarBox.Root>
