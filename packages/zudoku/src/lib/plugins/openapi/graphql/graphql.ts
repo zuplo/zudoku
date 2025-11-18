@@ -192,6 +192,7 @@ export type Server = {
   __typename?: "Server";
   description?: Maybe<Scalars["String"]["output"]>;
   url: Scalars["String"]["output"];
+  variables?: Maybe<Scalars["JSONObject"]["output"]>;
 };
 
 export type TagItem = {
@@ -211,7 +212,11 @@ export type ServersQueryQuery = {
   schema: {
     __typename?: "Schema";
     url?: string | null;
-    servers: Array<{ __typename?: "Server"; url: string }>;
+    servers: Array<{
+      __typename?: "Server";
+      url: string;
+      variables?: any | null;
+    }>;
   };
 };
 
@@ -230,6 +235,7 @@ export type OperationsFragmentFragment = {
     __typename?: "Server";
     url: string;
     description?: string | null;
+    variables?: any | null;
   }>;
   parameters?: Array<{
     __typename?: "ParameterItem";
@@ -316,7 +322,11 @@ export type OperationsForTagQuery = {
     title: string;
     url?: string | null;
     version: string;
-    servers: Array<{ __typename?: "Server"; url: string }>;
+    servers: Array<{
+      __typename?: "Server";
+      url: string;
+      variables?: any | null;
+    }>;
     tag?: {
       __typename?: "SchemaTag";
       name?: string | null;
@@ -379,7 +389,11 @@ export type GetServerQueryQuery = {
   schema: {
     __typename?: "Schema";
     url?: string | null;
-    servers: Array<{ __typename?: "Server"; url: string }>;
+    servers: Array<{
+      __typename?: "Server";
+      url: string;
+      variables?: any | null;
+    }>;
   };
 };
 
@@ -449,6 +463,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   servers {
     url
     description
+    variables
   }
   parameters {
     name
@@ -513,6 +528,7 @@ export const ServersQueryDocument = new TypedDocumentString(`
     url
     servers {
       url
+      variables
     }
   }
 }
@@ -535,6 +551,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   schema(input: $input, type: $type) {
     servers {
       url
+      variables
     }
     description
     summary
@@ -575,6 +592,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   servers {
     url
     description
+    variables
   }
   parameters {
     name
@@ -658,6 +676,7 @@ export const GetServerQueryDocument = new TypedDocumentString(`
     url
     servers {
       url
+      variables
     }
   }
 }

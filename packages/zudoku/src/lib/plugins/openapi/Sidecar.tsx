@@ -20,6 +20,7 @@ import { SimpleSelect } from "./SimpleSelect.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
+import { resolveServerVariables } from "./util/resolveServerVariables.js";
 
 export const GetServerQuery = graphql(/* GraphQL */ `
   query getServerQuery($input: JSON!, $type: SchemaType!) {
@@ -27,6 +28,7 @@ export const GetServerQuery = graphql(/* GraphQL */ `
       url
       servers {
         url
+        variables
       }
     }
   }
@@ -122,8 +124,12 @@ export const Sidecar = ({
 
   // Manual server selection takes precedence over the server hierarchy.
   // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
-  const selectedServer =
-    globalSelectedServer || operation.servers.at(0)?.url || "";
+  const firstServer = operation.servers.at(0);
+  const selectedServerUrl = globalSelectedServer || firstServer?.url || "";
+  const selectedServer = resolveServerVariables(
+    selectedServerUrl,
+    firstServer?.variables,
+  );
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
     const snippet = createHttpSnippet({
@@ -167,7 +173,9 @@ export const Sidecar = ({
           </span>
           {showPlayground && (
             <PlaygroundDialogWrapper
-              servers={operation.servers.map((server) => server.url)}
+              servers={operation.servers.map((server) =>
+                resolveServerVariables(server.url, server.variables),
+              )}
               operation={operation}
               examples={requestBodyContent ?? undefined}
             />
