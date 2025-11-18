@@ -101,6 +101,47 @@ authentication: {
 }
 ```
 
+### Customizing the Prompt Parameter
+
+By default, Zudoku does not include the `prompt` parameter in the Auth0 authorization request, which
+means users will be silently authenticated if they have a valid session. You can customize this
+behavior using the `options.prompt` configuration:
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+  audience: "https://your-domain.com/api",
+  options: {
+    prompt: "login", // Force users to log in every time
+  },
+}
+```
+
+Valid values for the `prompt` parameter include:
+
+- `"login"` - Force users to re-enter their credentials even if they have a valid session
+- `"consent"` - Force users to consent to authorization even if they previously consented
+- `"select_account"` - Force users to select an account (useful for multi-account scenarios)
+- `"none"` - No prompt is shown; silent authentication only
+- `""` (empty string) - Omit the prompt parameter (default behavior)
+
+For backward compatibility, you can also use the `alwaysPromptLogin` option (deprecated):
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+  options: {
+    alwaysPromptLogin: true, // Equivalent to prompt: "login"
+  },
+}
+```
+
+:::note The `prompt` option takes precedence over `alwaysPromptLogin` if both are specified. :::
+
 ## Troubleshooting
 
 ### Common Issues
