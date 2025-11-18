@@ -7,18 +7,13 @@ import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
-  isSignInWithEmailLink,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithEmailLink,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
-import type {
-  FirebaseAuthenticationConfig,
-  SupabaseAuthenticationConfig,
-} from "../../../config/config.js";
+import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
@@ -175,34 +170,12 @@ class FirebaseAuthenticationProvider
   };
 
   onPageLoad = async () => {
-    // Check if the user is signing in with an email link
-    if (isSignInWithEmailLink(this.auth, window.location.href)) {
-      // Get the email from localStorage
-      const email = window.localStorage.getItem("emailForSignIn");
-      if (email) {
-        try {
-          await signInWithEmailLink(this.auth, email, window.location.href);
-          // Clear the email from storage
-          window.localStorage.removeItem("emailForSignIn");
-          // The onAuthStateChanged listener will handle updating the state
-        } catch {
-          // Failed to sign in with email link
-          useAuthState.setState({ isPending: false });
-        }
-      } else {
-        // Email not found, user needs to enter it
-        useAuthState.setState({ isPending: false });
-      }
-    } else {
-      // Firebase Auth automatically handles session restoration
-      // via onAuthStateChanged listener
-      const user = this.auth.currentUser;
+    const user = this.auth.currentUser;
 
-      if (user) {
-        await this.updateUserState(user);
-      } else {
-        useAuthState.setState({ isPending: false });
-      }
+    if (user) {
+      await this.updateUserState(user);
+    } else {
+      useAuthState.setState({ isPending: false });
     }
   };
 
@@ -221,7 +194,7 @@ class FirebaseAuthenticationProvider
 }
 
 const supabaseAuth: AuthenticationProviderInitializer<
-  SupabaseAuthenticationConfig
+  FirebaseAuthenticationConfig
 > = (options) => new FirebaseAuthenticationProvider(options);
 
 export default supabaseAuth;

@@ -54,10 +54,7 @@ const config: ZudokuConfig = {
       "twitter",
       "microsoft",
       "apple",
-      "yahoo",
     ],
-    // Optional: configure redirect path after sign in
-    redirectToAfterSignIn: "/documentation/introduction",
   },
   apis: {
     type: "url",

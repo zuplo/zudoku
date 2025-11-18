@@ -1,12 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button, type ButtonProps } from "zudoku/ui/Button.js";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
-import { Heading } from "../../components/Heading.js";
+import { Separator } from "zudoku/ui/Separator.js";
 import {
   Form,
   FormControl,
@@ -14,6 +21,8 @@ import {
   FormLabel,
   FormMessage,
 } from "../../ui/Form.js";
+import { cn } from "../../util/cn.js";
+import createVariantComponent from "../../util/createVariantComponent.js";
 import AppleIcon from "./icons/Apple.js";
 import FacebookIcon from "./icons/Facebook.js";
 import GithubIcon from "./icons/Github.js";
@@ -44,6 +53,18 @@ const ProviderIcons = {
   microsoft: MicrosoftIcon,
   yahoo: React.Fragment,
 } as const;
+
+const isValidAuthProviderId = (
+  provider: string,
+): provider is AuthProviderId => {
+  return provider in ProviderIcons;
+};
+
+const isAuthProviderIdArray = (
+  providers: string[],
+): providers is AuthProviderId[] => {
+  return providers.every(isValidAuthProviderId);
+};
 
 const AuthProviderButton = ({
   providerId,
@@ -87,7 +108,7 @@ const EmailPasswordForm = ({
         className="flex flex-col gap-2"
       >
         <FormItem>
-          <FormLabel>Email</FormLabel>
+          <FormLabel>E-Mail</FormLabel>
           <FormControl>
             <Input placeholder="Email" {...form.register("email")} />
           </FormControl>
@@ -117,18 +138,24 @@ export const ZudokuSignInUi = ({
   onOAuthSignIn,
   onUsernamePasswordSignIn,
 }: {
-  providers: AuthProviderId[];
+  providers: string[];
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
+
+  if (!isAuthProviderIdArray(providers)) {
+    throw new Error("Invalid auth provider IDs");
+  }
 
   const signInUsernameMutation = useMutation({
     mutationFn: async ({ email, password }: FormFields) => {
       await onUsernamePasswordSignIn(email, password);
     },
     onSuccess: () => {
-      void navigate("/");
+      void navigate(redirectTo ?? "/");
     },
   });
   const signInByProviderMutation = useMutation({
@@ -136,7 +163,7 @@ export const ZudokuSignInUi = ({
       await onOAuthSignIn(providerId);
     },
     onSuccess: () => {
-      void navigate("/");
+      void navigate(redirectTo ?? "/");
     },
   });
 
@@ -153,18 +180,12 @@ export const ZudokuSignInUi = ({
   const error = signInUsernameMutation.error ?? signInByProviderMutation.error;
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="max-w-md w-full mt-10 flex flex-col gap-2">
-        <Heading level={1}>Sign in</Heading>
-        {providers.map((provider) => (
-          <AuthProviderButton
-            key={provider}
-            providerId={provider}
-            onClick={() =>
-              void signInByProviderMutation.mutate({ providerId: provider })
-            }
-          />
-        ))}
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Sign in</CardTitle>
+        <CardDescription>Sign in to your account to continue.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
@@ -182,11 +203,18 @@ export const ZudokuSignInUi = ({
           submitLabel="Sign in"
           isPending={pending}
         />
+        <ProviderSeparator providers={providers} />
+        <ProviderButtons
+          providers={providers}
+          onClick={(providerId) =>
+            signInByProviderMutation.mutate({ providerId })
+          }
+        />
         <Link to="/signup" className="text-sm text-muted-foreground">
-          Don't have an account? Sign up
+          Don't have an account? Sign up.
         </Link>
-      </div>
-    </div>
+      </CardContent>
+    </AuthCard>
   );
 };
 
@@ -195,10 +223,14 @@ export const ZudokuSignUpUi = ({
   onOAuthSignUp,
   onUsernamePasswordSignUp,
 }: {
-  providers: AuthProviderId[];
+  providers: string[];
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
+  if (!isAuthProviderIdArray(providers)) {
+    throw new Error("Invalid auth provider IDs");
+  }
+
   const signUpUsernameMutation = useMutation({
     mutationFn: async ({ email, password }: FormFields) => {
       await onUsernamePasswordSignUp(email, password);
@@ -224,24 +256,19 @@ export const ZudokuSignUpUi = ({
   const error = signUpUsernameMutation.error ?? signUpByProviderMutation.error;
 
   return (
-    <div className="flex items-center justify-center">
-      <div className="max-w-md w-full mt-10 flex flex-col gap-2">
-        <Heading level={1}>Sign up</Heading>
-        {providers.map((provider) => (
-          <AuthProviderButton
-            key={provider}
-            providerId={provider}
-            onClick={() =>
-              void signUpByProviderMutation.mutate({ providerId: provider })
-            }
-          />
-        ))}
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Sign up</CardTitle>
+        <CardDescription>Sign up to your account to continue.</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
         {error && (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
+
         <EmailPasswordForm
           form={form}
           onSubmit={(data) =>
@@ -253,10 +280,56 @@ export const ZudokuSignUpUi = ({
           submitLabel="Sign up"
           isPending={pending}
         />
+        <ProviderSeparator providers={providers} />
+        <ProviderButtons
+          providers={providers}
+          onClick={(providerId) =>
+            signUpByProviderMutation.mutate({ providerId })
+          }
+        />
         <Link to="/signin" className="text-sm text-muted-foreground">
-          Already have an account? Sign in
+          Already have an account? Sign in.
         </Link>
-      </div>
+      </CardContent>
+    </AuthCard>
+  );
+};
+
+const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");
+
+const ProviderButtons = ({
+  providers,
+  onClick,
+}: {
+  providers: AuthProviderId[];
+  onClick: (providerId: string) => void;
+}) => {
+  return (
+    <div
+      className={cn(
+        "grid grid-cols-2 gap-2",
+        providers.length % 2 === 0 ? "grid-cols-2" : "grid-cols-1",
+      )}
+    >
+      {providers.map((provider) => (
+        <AuthProviderButton
+          key={provider}
+          providerId={provider}
+          onClick={() => onClick(provider)}
+        />
+      ))}
     </div>
+  );
+};
+
+const ProviderSeparator = ({ providers }: { providers: AuthProviderId[] }) => {
+  return (
+    providers.length > 0 && (
+      <Separator className="my-3 relative">
+        <span className="bg-card text-muted-foreground text-sm px-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          or continue with
+        </span>
+      </Separator>
+    )
   );
 };
