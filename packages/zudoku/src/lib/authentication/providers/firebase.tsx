@@ -45,18 +45,11 @@ class FirebaseAuthenticationProvider
     this.providers = config.providers ?? [];
   }
 
-  async getAccessToken(): Promise<string> {
-    const user = this.auth.currentUser;
-
-    if (!user) {
+  async signRequest(request: Request): Promise<Request> {
+    const accessToken = await this.auth.currentUser?.getIdToken();
+    if (!accessToken) {
       throw new AuthorizationError("User is not authenticated");
     }
-
-    return await user.getIdToken();
-  }
-
-  async signRequest(request: Request): Promise<Request> {
-    const accessToken = await this.getAccessToken();
     request.headers.set("Authorization", `Bearer ${accessToken}`);
     return request;
   }
