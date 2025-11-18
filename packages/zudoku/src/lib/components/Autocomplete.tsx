@@ -11,12 +11,14 @@ import { Popover, PopoverContent } from "zudoku/ui/Popover.js";
 import { cn } from "../util/cn.js";
 
 type AutocompleteProps = {
-  value: string;
+  value?: string | number | readonly string[] | undefined;
   options: readonly string[];
   onChange: (e: string) => void;
+  onSelect?: (e: string) => void;
   className?: string;
   placeholder?: string;
   onEnterPress?: (e: KeyboardEvent<HTMLInputElement>) => void;
+  onKeyDown?: (e: KeyboardEvent<HTMLInputElement>) => void;
   ref?: Ref<HTMLInputElement>;
   shouldFilter?: boolean;
 };
@@ -28,7 +30,9 @@ const AutocompletePopover = ({
   className,
   placeholder = "Value",
   onEnterPress,
+  onKeyDown,
   ref,
+  onSelect,
 }: AutocompleteProps) => {
   const [open, setOpen] = useState(false);
   const [dontClose, setDontClose] = useState(false);
@@ -48,7 +52,7 @@ const AutocompletePopover = ({
               ref.current = el;
             }
           }}
-          value={value}
+          value={value ? String(value) : undefined}
           placeholder={placeholder}
           className={cn("h-9 bg-transparent", className)}
           onFocus={() => setOpen(true)}
@@ -59,6 +63,10 @@ const AutocompletePopover = ({
             setOpen(false);
           }}
           onKeyDown={(e) => {
+            onKeyDown?.(e);
+
+            if (e.defaultPrevented) return;
+
             if (e.key === "Enter") {
               setOpen(false);
               inputRef.current?.blur();
@@ -91,6 +99,7 @@ const AutocompletePopover = ({
               key={enumValue}
               value={enumValue}
               onSelect={(selected) => {
+                onSelect?.(selected);
                 onChange(selected);
                 setOpen(false);
               }}

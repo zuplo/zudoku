@@ -17,7 +17,7 @@ export function ErrorAlert({ error }: { error: unknown }) {
   const stringError = cause instanceof Error ? String(cause.stack) : stack;
 
   return (
-    <Typography className="grid grid-cols-1 !max-w-none pt-(--padding-content-top)">
+    <Typography className="grid grid-cols-1 max-w-none! pt-(--padding-content-top)">
       <Heading level={1}>{title}</Heading>
       Error: {message}
       {hint && <DeveloperHint className="mb-4">{hint}</DeveloperHint>}
