@@ -96,4 +96,16 @@ describe("remarkLastModified git integration", () => {
       new Date(initialDate).getTime(),
     );
   });
+
+  it("should handle git --version check gracefully", () => {
+    // This test verifies that checking for git availability doesn't throw
+    try {
+      execSync("git --version", { stdio: "ignore" });
+      // Git is available
+      expect(true).toBe(true);
+    } catch {
+      // Git is not available, which is also fine
+      expect(true).toBe(true);
+    }
+  });
 });

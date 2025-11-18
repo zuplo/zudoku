@@ -5,23 +5,47 @@ import { visit } from "unist-util-visit";
 import type { VFile } from "vfile";
 import { parse, stringify } from "yaml";
 
+let isGitAvailable: boolean | null = null;
+
+/**
+ * Check if git is available in the environment.
+ */
+const checkGitAvailable = (): boolean => {
+  if (isGitAvailable !== null) {
+    return isGitAvailable;
+  }
+
+  try {
+    execSync("git --version", {
+      stdio: "ignore",
+    });
+    isGitAvailable = true;
+  } catch {
+    isGitAvailable = false;
+  }
+
+  return isGitAvailable;
+};
+
 /**
  * Get the last modified date for a file by checking git history first,
  * then falling back to file system mtime.
  */
 const getLastModifiedDate = async (filePath: string): Promise<Date> => {
-  // Try to get the date from git history first
-  try {
-    const gitDate = execSync(`git log -1 --format=%aI -- "${filePath}"`, {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "ignore"],
-    }).trim();
+  // Try to get the date from git history first, but only if git is available
+  if (checkGitAvailable()) {
+    try {
+      const gitDate = execSync(`git log -1 --format=%aI -- "${filePath}"`, {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "ignore"],
+      }).trim();
 
-    if (gitDate) {
-      return new Date(gitDate);
+      if (gitDate) {
+        return new Date(gitDate);
+      }
+    } catch {
+      // Git command failed, fall back to file system
     }
-  } catch {
-    // Git command failed, fall back to file system
   }
 
   // Fall back to file system mtime
