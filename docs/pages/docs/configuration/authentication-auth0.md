@@ -1,5 +1,5 @@
 ---
-title: Auth0 Authentication Setup
+title: Auth0 Setup
 sidebar_label: Auth0
 description:
   Learn how to set up Auth0 authentication for Zudoku, including application configuration and

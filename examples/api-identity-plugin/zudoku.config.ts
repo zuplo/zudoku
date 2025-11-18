@@ -42,12 +42,7 @@ const config: ZudokuConfig = {
           id: "api",
           label: "Demo Key",
           authorizeRequest: async (request) => {
-            const token = await context.authentication?.getAccessToken();
-            if (!token) {
-              throw new Error("No token found");
-            }
-            request.headers.set("Authorization", `Bearer ${token}`);
-            return request;
+            return await context.authentication?.signRequest(request);
           },
         },
       ],

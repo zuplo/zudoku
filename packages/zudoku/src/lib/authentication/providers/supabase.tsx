@@ -1,6 +1,5 @@
 import {
   createClient,
-  type Provider,
   type Session,
   type SupabaseClient,
 } from "@supabase/supabase-js";
@@ -22,16 +21,12 @@ class SupabaseAuthenticationProvider
   implements AuthenticationPlugin
 {
   private readonly client: SupabaseClient;
-  private readonly providers: Provider[];
   private readonly config: SupabaseAuthenticationConfig;
 
   constructor(config: SupabaseAuthenticationConfig) {
-    const { provider, providers, supabaseUrl, supabaseKey } = config;
+    const { supabaseUrl, supabaseKey } = config;
     super();
-    this.providers = providers ?? (provider ? [provider] : []);
-    if (this.providers.length === 0) {
-      throw new Error("At least one provider must be provided");
-    }
+
     this.client = createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: true,

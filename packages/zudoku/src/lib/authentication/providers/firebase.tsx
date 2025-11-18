@@ -1,13 +1,8 @@
-import {
-  type FirebaseApp,
-  type FirebaseOptions,
-  initializeApp,
-} from "firebase/app";
+import { type FirebaseApp, initializeApp } from "firebase/app";
 import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
-  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -37,7 +32,7 @@ class FirebaseAuthenticationProvider
   constructor(config: FirebaseAuthenticationConfig) {
     super();
 
-    const firebaseConfig: FirebaseOptions = {
+    this.app = initializeApp({
       apiKey: config.apiKey,
       authDomain: config.authDomain,
       projectId: config.projectId,
@@ -45,14 +40,9 @@ class FirebaseAuthenticationProvider
       messagingSenderId: config.messagingSenderId,
       appId: config.appId,
       measurementId: config.measurementId,
-    };
-
-    this.app = initializeApp(firebaseConfig);
+    });
     this.auth = getAuth(this.app);
     this.providers = config.providers ?? [];
-
-    // Listen to auth state changes
-    onAuthStateChanged(this.auth, async (user: User | null) => {});
   }
 
   async getAccessToken(): Promise<string> {
