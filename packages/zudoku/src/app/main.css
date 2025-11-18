@@ -81,7 +81,7 @@
   }
 
   header:has(h1) {
-    & ~ p {
+    & + p {
       @apply my-0;
     }
   }

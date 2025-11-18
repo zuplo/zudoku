@@ -38,8 +38,7 @@ const config: ZudokuConfig = {
       primaryForeground: "#FFFFFF",
     },
     dark: {
-      primary: "#7362ef",
-      primaryForeground: "#000000",
+      background: "#1b1919",
     },
   },
   metadata: {

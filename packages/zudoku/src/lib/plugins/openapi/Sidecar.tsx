@@ -1,15 +1,15 @@
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
+import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
-import type { SchemaObject } from "../../oas/parser/index.js";
-import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
-import { CollapsibleCode } from "./CollapsibleCode.js";
 import { ColorizedParam } from "./ColorizedParam.js";
+import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import { useOasConfig } from "./context.js";
+import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
@@ -51,11 +51,13 @@ export const Sidecar = ({
   selectedResponse,
   onSelectResponse,
   globalSelectedServer,
+  shouldLazyHighlight,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
   globalSelectedServer?: string;
+  shouldLazyHighlight?: boolean;
 }) => {
   const { options } = useOasConfig();
   const auth = useAuthState();
@@ -65,7 +67,6 @@ export const Sidecar = ({
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
-  const [selectedExample, setSelectedExample] = useState<unknown>();
 
   const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
 
@@ -77,7 +78,6 @@ export const Sidecar = ({
   }
 
   const requestBodyContent = operation.requestBody?.content;
-
   const transformedRequestBodyContent =
     requestBodyContent && options?.transformExamples
       ? options.transformExamples({
@@ -88,6 +88,27 @@ export const Sidecar = ({
           context,
         })
       : requestBodyContent;
+
+  const [selectedRequestExample, setSelectedRequestExample] = useState<{
+    contentTypeIndex: number;
+    exampleIndex: number;
+  }>({
+    contentTypeIndex: 0,
+    exampleIndex: 0,
+  });
+
+  const selectedContent = transformedRequestBodyContent?.at(
+    selectedRequestExample.contentTypeIndex,
+  );
+  const currentExample = selectedContent?.examples?.at(
+    selectedRequestExample.exampleIndex,
+  );
+
+  const currentExampleCode = currentExample
+    ? (currentExample?.value ?? currentExample)
+    : selectedContent?.schema
+      ? generateSchemaExample(selectedContent?.schema)
+      : undefined;
 
   const path = (
     <PathRenderer
@@ -110,21 +131,13 @@ export const Sidecar = ({
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
-  const code = useMemo(() => {
-    const exampleBody =
-      selectedExample ??
-      (transformedRequestBodyContent?.[0]?.schema
-        ? generateSchemaExample(
-            transformedRequestBodyContent[0].schema as SchemaObject,
-          )
-        : undefined);
-
+  const httpSnippetCode = useMemo<string | undefined>(() => {
     const converted = options?.generateCodeSnippet?.({
       selectedLang,
       selectedServer,
       context,
       operation,
-      example: exampleBody,
+      example: currentExampleCode,
       auth,
     });
 
@@ -134,18 +147,18 @@ export const Sidecar = ({
       const snippet = createHttpSnippet({
         operation,
         selectedServer,
-        exampleBody: exampleBody
+        exampleBody: currentExampleCode
           ? {
               mimeType: "application/json",
-              text: JSON.stringify(exampleBody, null, 2),
+              text: JSON.stringify(currentExampleCode, null, 2),
             }
           : { mimeType: "application/json" },
       });
+
       return getConverted(snippet, selectedLang);
     }
   }, [
-    selectedExample,
-    transformedRequestBodyContent,
+    currentExampleCode,
     operation,
     selectedServer,
     selectedLang,
@@ -153,6 +166,7 @@ export const Sidecar = ({
     auth,
     context,
   ]);
+
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
   const showPlayground =
@@ -171,7 +185,7 @@ export const Sidecar = ({
     >
       <SidecarBox.Root>
         <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
-          <span className="font-mono break-words leading-6">
+          <span className="font-mono wrap-break-word leading-6">
             <span className={cn("font-semibold", methodTextColor)}>
               {operation.method.toUpperCase()}
             </span>
@@ -186,47 +200,60 @@ export const Sidecar = ({
             />
           )}
         </SidecarBox.Head>
-        {isOnScreen && (
-          <>
-            <SidecarBox.Body className="p-0">
-              <CollapsibleCode>
-                <SyntaxHighlight
-                  embedded
-                  language={selectedLang}
-                  noBackground
-                  className="[--scrollbar-color:gray] rounded-none text-xs max-h-[500px]"
-                  // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
-                  code={code!}
-                />
-              </CollapsibleCode>
-            </SidecarBox.Body>
-            <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
-              <span>Show example in</span>
-              <SimpleSelect
-                className="self-start max-w-[150px]"
-                value={selectedLang}
-                onChange={(e) => {
-                  startTransition(() => {
-                    setSearchParams((prev) => {
-                      prev.set("lang", e.target.value);
-                      return prev;
-                    });
-                  });
-                }}
-                options={supportedLanguages}
-              />
-            </SidecarBox.Footer>
-          </>
-        )}
+        <SidecarBox.Body className="p-0">
+          {shouldLazyHighlight && !isOnScreen ? (
+            <NonHighlightedCode code={httpSnippetCode ?? ""} />
+          ) : (
+            <SyntaxHighlight
+              embedded
+              language={selectedLang}
+              className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
+              // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
+              code={httpSnippetCode!}
+            />
+          )}
+        </SidecarBox.Body>
+        <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
+          <span>Show example in</span>
+          <SimpleSelect
+            className="self-start max-w-[150px]"
+            value={selectedLang}
+            onChange={(e) => {
+              startTransition(() => {
+                setSearchParams((prev) => {
+                  prev.set("lang", e.target.value);
+                  return prev;
+                });
+              });
+            }}
+            options={supportedLanguages}
+          />
+        </SidecarBox.Footer>
       </SidecarBox.Root>
-      {isOnScreen && transformedRequestBodyContent && (
+
+      {transformedRequestBodyContent && currentExample ? (
         <RequestBodySidecarBox
           content={transformedRequestBodyContent}
-          onExampleChange={setSelectedExample}
+          onExampleChange={(selected) => {
+            setSelectedRequestExample(selected);
+          }}
+          selectedContentIndex={selectedRequestExample.contentTypeIndex}
+          selectedExampleIndex={selectedRequestExample.exampleIndex}
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
         />
-      )}
-      {isOnScreen && operation.responses.length > 0 && (
+      ) : transformedRequestBodyContent && currentExampleCode ? (
+        <GeneratedExampleSidecarBox
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
+          code={JSON.stringify(currentExampleCode, null, 2)}
+        />
+      ) : null}
+
+      {operation.responses.length > 0 && (
         <ResponsesSidecarBox
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
           selectedResponse={selectedResponse}
           onSelectResponse={onSelectResponse}
           responses={operation.responses.map((response) => ({

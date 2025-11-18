@@ -1,4 +1,5 @@
 import * as Tabs from "@radix-ui/react-tabs";
+import { useEffect, useState } from "react";
 import { cn } from "../../util/cn.js";
 import type { ResponseItem } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
@@ -8,11 +9,25 @@ export const ResponsesSidecarBox = ({
   responses,
   selectedResponse,
   onSelectResponse,
+  isOnScreen,
+  shouldLazyHighlight,
 }: {
   responses: ResponseItem[];
   selectedResponse?: string;
   onSelectResponse: (response: string) => void;
+  isOnScreen: boolean;
+  shouldLazyHighlight?: boolean;
 }) => {
+  const [selectedContentIndex, setSelectedContentIndex] = useState(0);
+  const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
+
+  useEffect(() => {
+    if (!selectedResponse) return;
+
+    setSelectedContentIndex(0);
+    setSelectedExampleIndex(0);
+  }, [selectedResponse]);
+
   return (
     <SidecarBox.Root>
       <Tabs.Root
@@ -40,7 +55,17 @@ export const ResponsesSidecarBox = ({
         </SidecarBox.Head>
         {responses.map((response) => (
           <Tabs.Content key={response.statusCode} value={response.statusCode}>
-            <SidecarExamples content={response.content ?? []} />
+            <SidecarExamples
+              selectedContentIndex={selectedContentIndex}
+              selectedExampleIndex={selectedExampleIndex}
+              onExampleChange={(selected) => {
+                setSelectedContentIndex(selected.contentTypeIndex);
+                setSelectedExampleIndex(selected.exampleIndex);
+              }}
+              content={response.content ?? []}
+              isOnScreen={isOnScreen}
+              shouldLazyHighlight={shouldLazyHighlight}
+            />
           </Tabs.Content>
         ))}
       </Tabs.Root>

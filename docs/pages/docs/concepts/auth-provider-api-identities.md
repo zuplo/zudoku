@@ -99,11 +99,7 @@ export default {
           authorizeRequest: (request) => {
             // We get the access token from the
             // authentication provider (Auth0) and add it to the request headers
-            const token = context.authentication?.getAccessToken();
-            if (token) {
-              request.headers.set("Authorization", `Bearer ${token}`);
-            }
-            return request;
+            return context.authentication?.signRequest(request);
           },
         },
       ],

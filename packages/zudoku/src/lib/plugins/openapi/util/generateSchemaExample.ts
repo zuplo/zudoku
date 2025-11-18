@@ -85,23 +85,23 @@ export const generateSchemaExample = (
     return schema.enum[0];
   }
 
-  if (schema.oneOf) {
-    const randomIndex = Math.floor(Math.random() * schema.oneOf.length);
-    return generateSchemaExample(schema.oneOf[randomIndex] as SchemaObject);
+  if (schema.oneOf && schema.oneOf.length > 0) {
+    return generateSchemaExample(schema.oneOf[0]);
   }
 
-  if (schema.anyOf) {
+  if (schema.anyOf && schema.anyOf.length > 0) {
     // Should likely be expanded to return a partial set of values, but it would require
     // detection if being used within an array or a string type.
-    const randomIndex = Math.floor(Math.random() * schema.anyOf.length);
-    return generateSchemaExample(schema.anyOf[randomIndex] as SchemaObject);
+    return generateSchemaExample(schema.anyOf[0]);
   }
 
-  if (schema.allOf) {
-    // https://swagger.io/docs/specification/v3_0/data-models/oneof-anyof-allof-not/#allof
-    return schema.allOf.reduce((acc, allOfSchema) => {
-      return { ...acc, ...generateSchemaExample(allOfSchema as SchemaObject) };
-    }, {});
+  // Check for property-level examples
+  if (
+    schema.examples &&
+    Array.isArray(schema.examples) &&
+    schema.examples.length > 0
+  ) {
+    return schema.examples[0];
   }
 
   switch (schema.type) {
