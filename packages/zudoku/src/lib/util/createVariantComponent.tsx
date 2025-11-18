@@ -1,94 +1,61 @@
-import type { cva, VariantProps } from "class-variance-authority";
+import { Slot } from "@radix-ui/react-slot";
+import type { cva } from "class-variance-authority";
 import type { ClassValue } from "clsx";
+import type { HTMLElementType, JSX } from "react";
 import * as React from "react";
-import type { JSX } from "react/jsx-runtime";
 import { cn } from "./cn.js";
 
-type CVAFn = ReturnType<typeof cva>;
+type ComponentOrElement =
+  | HTMLElementType
+  // biome-ignore lint/suspicious/noExplicitAny: Need to accept any component type
+  | React.ComponentType<any>
+  // biome-ignore lint/suspicious/noExplicitAny: Need to accept any component type
+  | React.ForwardRefExoticComponent<any>;
 
-// Overload for HTML tag with CVA function
-function createVariantComponent<
-  E extends keyof JSX.IntrinsicElements,
-  C extends CVAFn,
+type PropsOf<T> = T extends HTMLElementType
+  ? JSX.IntrinsicElements[T]
+  : T extends React.ComponentType<infer P>
+    ? P
+    : T extends React.ForwardRefExoticComponent<infer P>
+      ? P
+      : never;
+
+type RefOf<T> = T extends HTMLElementType
+  ? T extends keyof HTMLElementTagNameMap
+    ? HTMLElementTagNameMap[T]
+    : HTMLElement
+  : T extends React.ForwardRefExoticComponent<React.RefAttributes<infer R>>
+    ? R
+    : HTMLElement;
+
+const createVariantComponent = <
+  E extends ComponentOrElement,
+  C extends ReturnType<typeof cva>,
 >(
   tag: E,
-  cvx: C,
-): (
-  props: JSX.IntrinsicElements[E] & {
-    className?: ClassValue;
-  } & VariantProps<C>,
-) => React.ReactElement;
+  cvx: ClassValue | C,
+  // variantProps: Array<keyof VariantProps<C>> = [],
+) => {
+  const MyVariant = React.forwardRef<
+    RefOf<E>,
+    PropsOf<E> & { className?: ClassValue; asChild?: boolean }
+  >(({ className, asChild, ...props }, ref) => {
+    const Comp = asChild ? Slot : tag;
 
-// Overload for HTML tag with ClassValue
-function createVariantComponent<E extends keyof JSX.IntrinsicElements>(
-  tag: E,
-  cvx: ClassValue,
-): (
-  props: JSX.IntrinsicElements[E] & { className?: ClassValue },
-) => React.ReactElement;
-
-// Overload for React component with CVA function
-function createVariantComponent<
-  T extends React.ComponentType<Record<string, unknown>>,
-  C extends CVAFn,
->(
-  Component: T,
-  cvx: C,
-): (
-  props: React.ComponentProps<T> & {
-    className?: ClassValue;
-  } & VariantProps<C>,
-) => React.ReactElement;
-
-// Overload for React component with ClassValue
-function createVariantComponent<
-  T extends React.ComponentType<Record<string, unknown>>,
->(
-  Component: T,
-  cvx: ClassValue,
-): (
-  props: React.ComponentProps<T> & { className?: ClassValue },
-) => React.ReactElement;
-
-// Implementation
-function createVariantComponent<
-  E extends
-    | keyof JSX.IntrinsicElements
-    | React.ComponentType<Record<string, unknown>>,
->(tagOrComponent: E, cvx: ClassValue | CVAFn) {
-  const MyVariant = ({
-    className,
-    ...props
-  }: Record<string, unknown> & { className?: ClassValue }) => {
-    const computedClassName =
-      typeof cvx === "function"
-        ? (
-            cvx as (
-              p?: Record<string, unknown> & {
-                className?: ClassValue;
-                class?: ClassValue;
-              },
-            ) => string
-          )({
-            ...(props as Record<string, unknown>),
-            className,
-          })
-        : cn(cvx, className);
-
-    return React.createElement(tagOrComponent as React.ElementType, {
+    return React.createElement(Comp, {
       ...props,
-      className: computedClassName,
+      ref: ref as React.Ref<HTMLElement>,
+      className:
+        typeof cvx === "function" ? cvx({ className }) : cn(cvx, className),
     });
-  };
+  });
 
-  const displayName =
-    typeof tagOrComponent === "string"
-      ? `VariantComponent(${tagOrComponent})`
-      : `VariantComponent(${(tagOrComponent as React.ComponentType).displayName ?? (tagOrComponent as React.ComponentType).name ?? "Component"})`;
-
-  MyVariant.displayName = displayName;
+  MyVariant.displayName =
+    typeof tag === "string"
+      ? `VariantComponent(${tag})`
+      : `VariantComponent(${tag.displayName || tag.name || "Component"})`;
 
   return MyVariant;
-}
+};
 
 export default createVariantComponent;
