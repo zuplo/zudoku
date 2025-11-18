@@ -123,7 +123,13 @@ class FirebaseAuthenticationProvider
           <ZudokuSignUpUi
             providers={this.providers}
             onOAuthSignUp={async (providerId: string) => {
-              await signInWithPopup(this.auth, { providerId });
+              const provider = await getProviderForId(providerId);
+              if (!provider) {
+                throw new AuthorizationError(
+                  `Provider ${providerId} not found`,
+                );
+              }
+              await signInWithPopup(this.auth, provider);
             }}
             onUsernamePasswordSignUp={async (
               email: string,
