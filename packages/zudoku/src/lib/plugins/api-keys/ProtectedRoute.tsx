@@ -11,15 +11,19 @@ export const ProtectedRoute = () => {
     return null;
   }
 
+  if (!auth.isAuthEnabled) {
+    return (
+      <div className="flex flex-col justify-center gap-2 items-center h-1/2">
+        <DeveloperHint className="max-w-[600px]">
+          Authentication needs to be enabled for API keys to work. Enable it in
+          your Zudoku configuration under <code>authentication</code>.
+        </DeveloperHint>
+      </div>
+    );
+  }
+
   return auth.isAuthenticated ? (
     <Outlet />
-  ) : !auth.isAuthEnabled ? (
-    <div className="flex flex-col justify-center gap-2 items-center h-1/2">
-      <DeveloperHint className="max-w-[600px]">
-        Authentication needs to be enabled for API keys to work. Enable it in
-        your Zudoku configuration under <code>authentication</code>.
-      </DeveloperHint>
-    </div>
   ) : (
     <div className="flex flex-col justify-center gap-2 items-center h-1/2">
       Please login first to view this page

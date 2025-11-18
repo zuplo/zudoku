@@ -70,11 +70,19 @@ export const docs: Navigation = [
     items: [
       "docs/configuration/authentication",
       "docs/configuration/protected-routes",
-      "docs/configuration/authentication-auth0",
-      "docs/configuration/authentication-clerk",
-      "docs/configuration/authentication-azure-ad",
-      "docs/configuration/authentication-pingfederate",
-      "docs/configuration/authentication-supabase",
+      {
+        type: "category",
+        label: "Supported Providers",
+        icon: "plug",
+        items: [
+          "docs/configuration/authentication-auth0",
+          "docs/configuration/authentication-clerk",
+          "docs/configuration/authentication-azure-ad",
+          "docs/configuration/authentication-pingfederate",
+          "docs/configuration/authentication-supabase",
+          "docs/configuration/authentication-firebase",
+        ],
+      },
     ],
   },
   {

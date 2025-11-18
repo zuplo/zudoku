@@ -205,6 +205,7 @@
     "@radix-ui/react-radio-group": "1.3.8",
     "@radix-ui/react-scroll-area": "1.2.10",
     "@radix-ui/react-select": "2.2.6",
+    "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slider": "1.3.6",
     "@radix-ui/react-slot": "1.2.4",
     "@radix-ui/react-switch": "1.2.6",
@@ -331,6 +332,7 @@
     "@supabase/auth-ui-react": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
+    "firebase": "^12.6.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
@@ -351,6 +353,9 @@
       "optional": true
     },
     "@supabase/auth-ui-shared": {
+      "optional": true
+    },
+    "firebase": {
       "optional": true
     }
   }

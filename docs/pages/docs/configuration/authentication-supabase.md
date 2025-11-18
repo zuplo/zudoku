@@ -1,5 +1,5 @@
 ---
-title: Supabase Authentication Setup
+title: Supabase Setup
 sidebar_label: Supabase
 description:
   Learn how to set up Supabase authentication for Zudoku, leveraging Supabase's built-in auth
