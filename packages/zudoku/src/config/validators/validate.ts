@@ -417,6 +417,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     options: z
       .object({
         alwaysPromptLogin: z.boolean().optional(),
+        prompt: z.string().optional(),
       })
       .optional(),
   }),

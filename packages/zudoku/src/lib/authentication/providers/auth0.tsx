@@ -28,9 +28,18 @@ class Auth0AuthenticationProvider
     url: URL,
     { isSignUp }: { isSignUp: boolean },
   ) => {
-    if (this.options?.alwaysPromptLogin !== false) {
+    // New prompt option takes precedence over alwaysPromptLogin
+    if (this.options?.prompt !== undefined) {
+      // If prompt is a non-empty string, set it; if empty string, omit the parameter
+      if (this.options.prompt !== "") {
+        url.searchParams.set("prompt", this.options.prompt);
+      }
+    } else if (this.options?.alwaysPromptLogin === true) {
+      // Backward compatibility: alwaysPromptLogin=true sets prompt="login"
       url.searchParams.set("prompt", "login");
     }
+    // Otherwise, the prompt parameter is omitted (which is the new default behavior)
+
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
     }
