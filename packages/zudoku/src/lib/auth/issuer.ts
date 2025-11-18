@@ -31,6 +31,9 @@ export const getIssuer = async (config: ZudokuConfig) => {
     case "azureb2c": {
       return config.authentication.issuer;
     }
+    case "firebase": {
+      return config.authentication.authDomain;
+    }
     case undefined: {
       return undefined;
     }
