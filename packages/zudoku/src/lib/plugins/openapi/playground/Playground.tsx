@@ -218,9 +218,9 @@ export const Playground = ({
       const start = performance.now();
 
       const headers = new window.Headers(
-        data.headers.flatMap((h) =>
-          h.name && h.active ? [[h.name, h.value]] : [],
-        ),
+        data.headers
+          .filter((h) => h.name && h.active)
+          .map<[string, string]>((h) => [h.name, h.value]),
       );
 
       let body: string | FormData | File | undefined;
