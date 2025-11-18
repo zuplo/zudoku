@@ -103,9 +103,9 @@ authentication: {
 
 ### Customizing the Prompt Parameter
 
-By default, Zudoku does not include the `prompt` parameter in the Auth0 authorization request, which
-means users will be silently authenticated if they have a valid session. You can customize this
-behavior using the `options.prompt` configuration:
+By default, Zudoku sets `prompt="login"` in the Auth0 authorization request, which forces users to
+re-enter their credentials even if they have a valid session. You can customize this behavior using
+the `options.prompt` configuration:
 
 ```typescript
 authentication: {
@@ -114,20 +114,26 @@ authentication: {
   clientId: "<your-auth0-client-id>",
   audience: "https://your-domain.com/api",
   options: {
-    prompt: "login", // Force users to log in every time
+    prompt: "", // Omit the prompt parameter to allow silent authentication
   },
 }
 ```
 
 Valid values for the `prompt` parameter include:
 
-- `"login"` - Force users to re-enter their credentials even if they have a valid session
+- `"login"` - Force users to re-enter their credentials even if they have a valid session (default)
 - `"consent"` - Force users to consent to authorization even if they previously consented
 - `"select_account"` - Force users to select an account (useful for multi-account scenarios)
 - `"none"` - No prompt is shown; silent authentication only
-- `""` (empty string) - Omit the prompt parameter (default behavior)
+- `""` (empty string) - Omit the prompt parameter, allowing Auth0 to handle authentication based on
+  session state
 
-For backward compatibility, you can also use the `alwaysPromptLogin` option (deprecated):
+When the prompt parameter is omitted (empty string), Auth0 will:
+
+- Silently authenticate the user if they have a valid session
+- Redirect to the login page if no valid session exists
+
+For backward compatibility, you can also use the `alwaysPromptLogin` option:
 
 ```typescript
 authentication: {
@@ -135,7 +141,7 @@ authentication: {
   domain: "your-domain.us.auth0.com",
   clientId: "<your-auth0-client-id>",
   options: {
-    alwaysPromptLogin: true, // Equivalent to prompt: "login"
+    alwaysPromptLogin: false, // Omit the prompt parameter
   },
 }
 ```

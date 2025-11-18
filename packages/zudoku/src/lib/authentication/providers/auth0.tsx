@@ -34,11 +34,12 @@ class Auth0AuthenticationProvider
       if (this.options.prompt !== "") {
         url.searchParams.set("prompt", this.options.prompt);
       }
-    } else if (this.options?.alwaysPromptLogin === true) {
-      // Backward compatibility: alwaysPromptLogin=true sets prompt="login"
+    } else if (this.options?.alwaysPromptLogin !== false) {
+      // Backward compatibility: keep the original default behavior
+      // If alwaysPromptLogin is not explicitly set to false, default to prompt="login"
       url.searchParams.set("prompt", "login");
     }
-    // Otherwise, the prompt parameter is omitted (which is the new default behavior)
+    // If prompt is empty string or alwaysPromptLogin is false, the prompt parameter is omitted
 
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
