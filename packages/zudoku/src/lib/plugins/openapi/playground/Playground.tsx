@@ -517,9 +517,7 @@ export const Playground = ({
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} />
-                    <CollapsibleHeader className="col-span-2">
-                      Authentication
-                    </CollapsibleHeader>
+                    <CollapsibleHeader>Authentication</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <IdentitySelector
