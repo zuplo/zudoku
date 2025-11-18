@@ -1,13 +1,7 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
-import {
-  Tooltip,
-  TooltipArrow,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "zudoku/ui/Tooltip.js";
+import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { cn } from "../../util/cn.js";
@@ -47,19 +41,12 @@ const TruncatedLabel = ({
         {label}
       </span>
       {isTruncated && (
-        <TooltipProvider delayDuration={500}>
-          <Tooltip disableHoverableContent>
-            <TooltipTrigger className="absolute inset-0 z-10" />
-            <TooltipContent
-              className="max-w-64 rounded-lg"
-              side="bottom"
-              align="center"
-            >
-              <TooltipArrow />
-              {label}
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip disableHoverableContent>
+          <TooltipTrigger className="absolute inset-0 z-10" />
+          <TooltipContent className="max-w-64" side="bottom" align="center">
+            {label}
+          </TooltipContent>
+        </Tooltip>
       )}
     </>
   );

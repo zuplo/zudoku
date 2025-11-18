@@ -2,6 +2,7 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { cn } from "../util/cn.js";
+import { Button } from "./Button.js";
 
 export type CodeBlockProps = {
   className?: string;
@@ -39,20 +40,22 @@ export const EmbeddedCodeBlock = ({
         fullHeight && "h-full",
       )}
     >
-      <div
-        className={cn(
-          "code-block text-sm not-prose scrollbar [&>pre]:overflow-x-auto [&_code]:p-2",
-          fullHeight && "h-full [&>pre]:h-full",
-          props.className,
-        )}
-        ref={ref}
-      >
-        {children}
+      <div className="relative overflow-auto">
+        <div
+          className={cn(
+            "code-block text-sm not-prose scrollbar [&>pre]:overflow-x-auto [&_code]:p-2",
+            fullHeight && "h-full [&>pre]:h-full",
+            props.className,
+          )}
+          ref={ref}
+        >
+          {children}
+        </div>
       </div>
       {showLanguageIndicator && (
         <span
           className={cn(
-            "absolute top-1.5 end-3 text-[11px]! font-mono text-muted-foreground transition group-hover:opacity-0",
+            "absolute top-1.5 end-3 text-[11px]! font-mono text-muted-foreground transition group-hover:opacity-0 pointer-events-none",
             showCopy === "always" && "hidden",
           )}
         >
@@ -60,12 +63,12 @@ export const EmbeddedCodeBlock = ({
         </span>
       )}
       {showCopy !== "never" && (
-        <button
+        <Button
           type="button"
-          aria-label="Copy code"
-          title="Copy code"
+          variant="outline"
+          size="icon-xs"
           className={cn(
-            "absolute top-2 end-2 p-2 transition hover:shadow-xs active:shadow-none active:inset-shadow-xs hover:outline outline-border rounded-md text-sm text-muted-foreground",
+            "absolute top-2 end-2 p-2",
             showCopy === "hover" && "opacity-0 group-hover:opacity-100",
             showCopyText && "flex gap-2 items-center font-medium",
           )}
@@ -80,16 +83,16 @@ export const EmbeddedCodeBlock = ({
         >
           {isCopied ? (
             <CheckIcon
-              className="text-emerald-600"
-              size={16}
+              className="shrink-0 text-emerald-600 dark:text-emerald-300"
+              size={13}
               strokeWidth={2.5}
               absoluteStrokeWidth
             />
           ) : (
-            <CopyIcon size={16} />
+            <CopyIcon className="shrink-0" size={13} />
           )}
           {showCopyText && "Copy"}
-        </button>
+        </Button>
       )}
     </div>
   );

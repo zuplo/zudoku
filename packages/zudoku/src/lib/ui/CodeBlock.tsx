@@ -34,12 +34,12 @@ export const CodeBlock = ({
   return (
     <div
       className={cn(
-        "border code-block-wrapper relative group rounded-md overflow-hidden",
+        "border code-block-wrapper relative group rounded-xl overflow-hidden",
         showLineNumbers && "line-numbers",
         props.className,
       )}
     >
-      <div className="border-b flex items-center h-10 font-sans bg-black/2">
+      <div className="border-b flex items-center py-1 font-sans bg-black/2">
         <div className="flex items-center gap-1.5 flex-1 text-sm w-full px-3">
           <LanguageIcon language={language} />
           {title}
@@ -50,7 +50,7 @@ export const CodeBlock = ({
             aria-label="Copy code"
             title="Copy code"
             className={cn(
-              "transition px-2 py-2 mx-1 rounded-sm",
+              "transition p-1.5 mx-1 rounded-lg",
               !isCopied && "hover:bg-accent hover:brightness-95",
             )}
             disabled={isCopied}

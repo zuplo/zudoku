@@ -1,13 +1,14 @@
 import * as Collapsible from "@radix-ui/react-collapsible";
 import { MinusIcon, PlusIcon, RefreshCcwDotIcon } from "lucide-react";
 import { useState } from "react";
+import { Item, ItemActions, ItemContent, ItemTitle } from "zudoku/ui/Item.js";
 import { InlineCode } from "../../../components/InlineCode.js";
 import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
+import { cn } from "../../../util/cn.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
-import { SelectOnClick } from "../components/SelectOnClick.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaView } from "./SchemaView.js";
@@ -21,7 +22,7 @@ import {
 
 const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
   <InlineCode
-    className="inline-flex items-center gap-1.5 italic text-xs translate-y-0.5"
+    className="inline-flex items-center gap-1.5 text-xs translate-y-0.5"
     selectOnClick={false}
   >
     <RefreshCcwDotIcon size={13} />
@@ -46,18 +47,26 @@ export const SchemaPropertyItem = ({
 
   if (isCircularRef(schema)) {
     return (
-      <li className="p-4 bg-border/20 hover:bg-border/30">
-        <div className="flex flex-col gap-2.5 justify-between text-sm">
-          <div className="space-x-2 rtl:space-x-reverse">
-            <code>{name}</code>
+      <Item>
+        <ItemContent className="gap-y-2">
+          <div>
+            <ItemTitle className="inline me-2">
+              <code>{name}</code>
+            </ItemTitle>
             <ParamInfos
+              className="inline"
               schema={schema}
-              extraItems={[<RecursiveIndicator key="circular-ref" />]}
+              extraItems={[
+                group !== "optional" && (
+                  <span className="text-primary">required</span>
+                ),
+                <RecursiveIndicator key="circular-ref" />,
+              ]}
             />
           </div>
           <SchemaExampleAndDefault schema={schema} />
-        </div>
-      </li>
+        </ItemContent>
+      </Item>
     );
   }
 
@@ -73,14 +82,34 @@ export const SchemaPropertyItem = ({
       !isArrayCircularRef(schema),
   );
 
+  const shouldRenderDescription = Boolean(
+    schema.description ||
+      ("items" in schema && schema.items?.enum) ||
+      schema.const ||
+      schema.enum ||
+      schema.example !== undefined ||
+      schema.default !== undefined,
+  );
+
   return (
-    <li className="p-4 bg-border/20 hover:bg-border/30">
-      <div className="flex flex-col gap-2.5 justify-between text-sm">
-        <div className="space-x-2 rtl:space-x-reverse">
-          <SelectOnClick asChild>
-            <code>{name}</code>
-          </SelectOnClick>
+    <Item>
+      <ItemContent className="gap-y-2">
+        <div>
+          <ItemTitle className="inline me-2">
+            {isCollapsible ? (
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                type="button"
+                className="hover:underline"
+              >
+                <code>{name}</code>
+              </button>
+            ) : (
+              <code>{name}</code>
+            )}
+          </ItemTitle>
           <ParamInfos
+            className="inline"
             schema={schema}
             extraItems={[
               group !== "optional" && (
@@ -94,45 +123,52 @@ export const SchemaPropertyItem = ({
             ]}
           />
         </div>
-        {schema.description && (
-          <Markdown
-            className="text-sm leading-normal"
-            content={schema.description}
-          />
-        )}
-        {schema.type === "array" && "items" in schema && schema.items.enum && (
-          <EnumValues values={schema.items.enum} />
-        )}
-        {schema.const && <ConstValue schema={schema} hideDescription />}
-        {schema.enum && <EnumValues values={schema.enum} />}
-        <SchemaExampleAndDefault schema={schema} />
-
-        {isCollapsible && (
-          <Collapsible.Root
-            defaultOpen={defaultOpen}
-            open={isOpen}
-            onOpenChange={() => setIsOpen(!isOpen)}
-          >
-            {showCollapseButton && (
-              <Collapsible.Trigger asChild>
-                <Button variant="expand" size="sm">
-                  {isOpen ? <MinusIcon size={12} /> : <PlusIcon size={12} />}
-                  {!isOpen ? "Show properties" : "Hide properties"}
-                </Button>
-              </Collapsible.Trigger>
+        {shouldRenderDescription && (
+          <div className="flex flex-col gap-1.5">
+            {schema.description && (
+              <Markdown className="prose-sm" content={schema.description} />
             )}
-            <Collapsible.Content>
-              <div className="mt-2">
-                {schema.anyOf || schema.oneOf || schema.type === "object" ? (
-                  <SchemaView schema={schema} />
-                ) : isArrayType(schema) && "items" in schema ? (
-                  <SchemaView schema={schema.items} />
-                ) : null}
-              </div>
-            </Collapsible.Content>
-          </Collapsible.Root>
+            {"items" in schema && schema.items?.enum && (
+              <EnumValues values={schema.items.enum} />
+            )}
+            {schema.const && <ConstValue schema={schema} hideDescription />}
+            {schema.enum && <EnumValues values={schema.enum} />}
+            <SchemaExampleAndDefault schema={schema} />
+          </div>
         )}
-      </div>
-    </li>
+      </ItemContent>
+
+      {isCollapsible && showCollapseButton && (
+        <ItemActions className="self-start">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            {isOpen ? <MinusIcon size={16} /> : <PlusIcon size={16} />}
+          </Button>
+        </ItemActions>
+      )}
+
+      {isCollapsible && (
+        <Collapsible.Root
+          defaultOpen={defaultOpen}
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className={cn("w-full", !isOpen && "contents")}
+        >
+          <Collapsible.Content asChild>
+            <ItemContent>
+              {schema.anyOf || schema.oneOf || schema.type === "object" ? (
+                <SchemaView schema={schema} />
+              ) : isArrayType(schema) && "items" in schema ? (
+                <SchemaView schema={schema.items} />
+              ) : null}
+            </ItemContent>
+          </Collapsible.Content>
+        </Collapsible.Root>
+      )}
+    </Item>
   );
 };

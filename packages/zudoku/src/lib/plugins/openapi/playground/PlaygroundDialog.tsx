@@ -1,6 +1,8 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { PlayIcon } from "lucide-react";
 import { type PropsWithChildren, useState } from "react";
 import { useAuth } from "zudoku/hooks";
+import { Button } from "zudoku/ui/Button.js";
 import {
   Dialog,
   DialogContent,
@@ -43,13 +45,21 @@ const PlaygroundDialog = (props: PlaygroundDialogProps) => {
     <Dialog onOpenChange={(open) => setOpen(open)}>
       <DialogTrigger asChild>
         {props.children ?? (
-          <button
-            type="button"
-            className="flex gap-1 items-center px-2 py-1 rounded-md transition text-xs bg-primary  text-primary-foreground shadow-xs hover:bg-primary/80"
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="group"
+            // className="flex gap-1 items-center px-2 py-1 rounded-md transition text-xs bg-primary  text-primary-foreground shadow-xs hover:bg-primary/80"
           >
-            Test
-            <HeroPlayIcon size={14} />
-          </button>
+            {/* Test */}
+            <PlayIcon
+              className="fill-muted-foreground group-hover:fill-foreground transition"
+              // className="[&_path]:stroke-primary [&_path]:fill-primary"
+              size={16}
+              strokeWidth={1.5}
+            />
+            {/* <HeroPlayIcon size={16} /> */}
+          </Button>
         )}
       </DialogTrigger>
 

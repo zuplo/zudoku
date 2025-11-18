@@ -1,7 +1,14 @@
 import { InfoIcon } from "lucide-react";
+import { Fragment } from "react";
+import {
+  Frame,
+  FrameDescription,
+  FrameHeader,
+  FramePanel,
+} from "zudoku/ui/Frame.js";
+import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { Card } from "../../../ui/Card.js";
 import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
@@ -22,19 +29,30 @@ const renderMarkdown = (content?: string) =>
 const renderBasicSchema = (
   schema: SchemaObject,
   cardHeader?: React.ReactNode,
-) => (
-  <Card className="overflow-hidden">
-    {cardHeader}
-    <div className="p-4 space-y-2">
+  embedded?: boolean,
+) => {
+  const content = (
+    <>
       <span className="text-sm text-muted-foreground">
         <ParamInfos schema={schema} />
       </span>
       {schema.enum && <EnumValues values={schema.enum} />}
       {renderMarkdown(schema.description)}
       <SchemaExampleAndDefault schema={schema} />
-    </div>
-  </Card>
-);
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-2 p-4">{content}</div>;
+  }
+
+  return (
+    <Frame>
+      {cardHeader}
+      <FramePanel className="space-y-2">{content}</FramePanel>
+    </Frame>
+  );
+};
 
 export const SchemaView = ({
   schema,
@@ -49,12 +67,14 @@ export const SchemaView = ({
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
-      <Card className="overflow-hidden">
+      <Frame>
         {cardHeader}
-        <div className="text-sm text-muted-foreground italic p-4">
-          No data returned
-        </div>
-      </Card>
+        <FramePanel>
+          <div className="text-sm text-muted-foreground italic">
+            No data returned
+          </div>
+        </FramePanel>
+      </Frame>
     );
   }
 
@@ -67,7 +87,7 @@ export const SchemaView = ({
   }
 
   if (isBasicType(schema.type)) {
-    return renderBasicSchema(schema, cardHeader);
+    return renderBasicSchema(schema, cardHeader, embedded);
   }
 
   if (schema.type === "array" && typeof schema.items === "object") {
@@ -91,7 +111,7 @@ export const SchemaView = ({
       typeof schema.additionalProperties === "object" ? (
         <SchemaView schema={schema.additionalProperties} embedded />
       ) : schema.additionalProperties === true ? (
-        <div className="text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1">
+        <div className="text-sm p-4 flex items-center gap-1">
           <span>Additional properties are allowed</span>
           <a
             className="p-0.5 -m-0.5"
@@ -104,31 +124,43 @@ export const SchemaView = ({
         </div>
       ) : null;
 
-    const Component = embedded ? "div" : Card;
+    const itemsList = groupNames.map(
+      (group) =>
+        groupedProperties[group] && (
+          <ItemGroup key={group} className="overflow-clip">
+            {groupedProperties[group].map(([name, schema]) => (
+              <Fragment key={name}>
+                <SchemaPropertyItem
+                  name={name}
+                  schema={schema}
+                  group={group}
+                  defaultOpen={defaultOpen}
+                />
+                <ItemSeparator />
+              </Fragment>
+            ))}
+          </ItemGroup>
+        ),
+    );
+
+    if (embedded) {
+      return itemsList;
+    }
 
     return (
-      <Component className="divide-y overflow-hidden">
+      <Frame>
         {cardHeader}
-        {groupNames.map(
-          (group) =>
-            groupedProperties[group] && (
-              <ul key={group} className="divide-y">
-                {groupedProperties[group].map(([name, schema]) => (
-                  <SchemaPropertyItem
-                    key={name}
-                    name={name}
-                    schema={schema}
-                    group={group}
-                    defaultOpen={defaultOpen}
-                  />
-                ))}
-              </ul>
-            ),
+        {schema.description && (
+          <FrameHeader>
+            <FrameDescription>{schema.description}</FrameDescription>
+          </FrameHeader>
         )}
-        {additionalProperties}
-      </Component>
+
+        <FramePanel className="p-0!">
+          {itemsList}
+          {additionalProperties}
+        </FramePanel>
+      </Frame>
     );
   }
-
-  return null;
 };

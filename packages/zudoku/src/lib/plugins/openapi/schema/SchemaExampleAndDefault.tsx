@@ -12,7 +12,7 @@ export const SchemaExampleAndDefault = ({
   if (example === undefined && defaultValue === undefined) return null;
 
   return (
-    <div className="flex flex-col gap-1 text-xs">
+    <div className="flex flex-col gap-1">
       {example !== undefined && (
         <div>
           <span className="text-muted-foreground">Example: </span>

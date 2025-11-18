@@ -22,8 +22,8 @@ export const EnumValues = ({
     shouldCollapse && !isOpen ? values.slice(0, maxVisibleValues) : values;
 
   return (
-    <div className={cn("flex flex-wrap gap-1.5 text-xs", className)}>
-      <span className="text-muted-foreground">Enum values: </span>
+    <div className={cn("flex flex-wrap gap-1.5", className)}>
+      <span className="text-muted-foreground">Enum values:</span>
       {visibleValues.map((value) => (
         <div key={value}>
           <SelectOnClick className="border rounded-sm px-1 font-mono">
