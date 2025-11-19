@@ -103,5 +103,9 @@ export const getConverted = (snippet: HTTPSnippet, option: string) => {
       break;
   }
 
-  return converted ? converted[0] : "";
+  const code = converted ? converted[0] : "";
+
+  // Decode URL-encoded curly braces from server variables
+  // e.g., %7Bregion%7D -> {region}
+  return code.replaceAll("%7B", "{").replaceAll("%7D", "}");
 };
