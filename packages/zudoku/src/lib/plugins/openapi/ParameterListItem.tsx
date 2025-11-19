@@ -130,6 +130,7 @@ export const ParameterListItem = ({
             size="icon"
             className="rounded-full"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle parameter"
           >
             {isOpen ? <MinusIcon size={16} /> : <PlusIcon size={16} />}
           </Button>
