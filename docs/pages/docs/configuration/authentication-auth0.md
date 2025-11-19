@@ -133,21 +133,6 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 - Silently authenticate the user if they have a valid session
 - Redirect to the login page if no valid session exists
 
-For backward compatibility, you can also use the `alwaysPromptLogin` option:
-
-```typescript
-authentication: {
-  type: "auth0",
-  domain: "your-domain.us.auth0.com",
-  clientId: "<your-auth0-client-id>",
-  options: {
-    alwaysPromptLogin: false, // Omit the prompt parameter
-  },
-}
-```
-
-:::note The `prompt` option takes precedence over `alwaysPromptLogin` if both are specified. :::
-
 ## Troubleshooting
 
 ### Common Issues
