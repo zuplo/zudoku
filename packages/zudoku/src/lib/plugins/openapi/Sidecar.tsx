@@ -68,6 +68,16 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
 
+  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+
+  const preferredLang =
+    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
+
+  const selectedLang =
+    supportedLanguages.find((lang) => lang.value === preferredLang)?.value ??
+    supportedLanguages.at(0)?.value ??
+    "shell";
+
   const requestBodyContent = operation.requestBody?.content;
   const transformedRequestBodyContent =
     requestBodyContent && options?.transformExamples
@@ -94,9 +104,6 @@ export const Sidecar = ({
   const currentExample = selectedContent?.examples?.at(
     selectedRequestExample.exampleIndex,
   );
-
-  const selectedLang =
-    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
   const currentExampleCode = currentExample
     ? (currentExample?.value ?? currentExample)
@@ -126,6 +133,17 @@ export const Sidecar = ({
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    const converted = options?.generateCodeSnippet?.({
+      selectedLang,
+      selectedServer,
+      context,
+      operation,
+      example: currentExampleCode,
+      auth,
+    });
+
+    if (converted) return converted;
+
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
@@ -138,7 +156,15 @@ export const Sidecar = ({
     });
 
     return getConverted(snippet, selectedLang);
-  }, [operation, selectedServer, selectedLang, currentExampleCode]);
+  }, [
+    currentExampleCode,
+    operation,
+    selectedServer,
+    selectedLang,
+    options,
+    auth,
+    context,
+  ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
@@ -199,7 +225,7 @@ export const Sidecar = ({
                 });
               });
             }}
-            options={EXAMPLE_LANGUAGES}
+            options={supportedLanguages}
           />
         </SidecarBox.Footer>
       </SidecarBox.Root>

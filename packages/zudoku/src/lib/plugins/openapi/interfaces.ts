@@ -42,6 +42,16 @@ export type TransformExamplesFn = (options: {
   type: "request" | "response";
 }) => Content[];
 
+export type GenerateCodeSnippetFn = (options: {
+  selectedLang: string;
+  selectedServer: string;
+  context: ZudokuContext;
+  auth: AuthState;
+  operation: OperationsFragmentFragment;
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
+  example?: any | null;
+}) => string | false;
+
 type BaseOasConfig = {
   server?: string;
   path?: string;
@@ -50,12 +60,14 @@ type BaseOasConfig = {
   schemaImports?: SchemaImports;
   options?: {
     examplesLanguage?: string;
+    supportedLanguages?: { value: string; label: string }[];
     disablePlayground?: boolean;
     disableSidecar?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
     expandApiInformation?: boolean;
     transformExamples?: TransformExamplesFn;
+    generateCodeSnippet?: GenerateCodeSnippetFn;
   };
 };
 

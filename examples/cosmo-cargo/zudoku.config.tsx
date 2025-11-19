@@ -4,6 +4,7 @@ import type {
   ZudokuConfig,
   ZudokuContext,
 } from "zudoku";
+import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
@@ -246,6 +247,26 @@ const config: ZudokuConfig = {
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],
+      options: {
+        supportedLanguages: [
+          { value: "js", label: "JavaScript" },
+          { value: "python", label: "Python" },
+          { value: "java", label: "Java" },
+        ],
+        generateCodeSnippet: ({
+          selectedLang,
+          selectedServer,
+          operation,
+          example,
+        }) => {
+          return generateWebhookCodeSnippet(
+            selectedLang,
+            selectedServer,
+            operation.operationId,
+            example,
+          );
+        },
+      },
     },
     {
       type: "file",
