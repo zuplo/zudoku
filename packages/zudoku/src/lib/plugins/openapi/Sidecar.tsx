@@ -70,12 +70,13 @@ export const Sidecar = ({
 
   const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
 
-  let selectedLang =
+  const preferredLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
 
-  if (!supportedLanguages.some((l) => l.value === selectedLang)) {
-    selectedLang = supportedLanguages[0]?.value ?? selectedLang;
-  }
+  const selectedLang =
+    supportedLanguages.find((lang) => lang.value === preferredLang)?.value ??
+    supportedLanguages.at(0)?.value ??
+    "shell";
 
   const requestBodyContent = operation.requestBody?.content;
   const transformedRequestBodyContent =
@@ -141,22 +142,20 @@ export const Sidecar = ({
       auth,
     });
 
-    if (converted) {
-      return converted;
-    } else {
-      const snippet = createHttpSnippet({
-        operation,
-        selectedServer,
-        exampleBody: currentExampleCode
-          ? {
-              mimeType: "application/json",
-              text: JSON.stringify(currentExampleCode, null, 2),
-            }
-          : { mimeType: "application/json" },
-      });
+    if (converted) return converted;
 
-      return getConverted(snippet, selectedLang);
-    }
+    const snippet = createHttpSnippet({
+      operation,
+      selectedServer,
+      exampleBody: currentExampleCode
+        ? {
+            mimeType: "application/json",
+            text: JSON.stringify(currentExampleCode, null, 2),
+          }
+        : { mimeType: "application/json" },
+    });
+
+    return getConverted(snippet, selectedLang);
   }, [
     currentExampleCode,
     operation,
