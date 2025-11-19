@@ -4,7 +4,7 @@
   "targets": {
     "cli": {
       "dependsOn": ["build:vite"],
-      "command": "node ./cli.js"
+      "command": "node ./packages/zudoku/cli.js"
     },
     "build:ci": {
       "dependsOn": ["build:vite", "build:standalone"],
