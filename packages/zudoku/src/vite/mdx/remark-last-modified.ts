@@ -1,3 +1,4 @@
+// biome-ignore-all lint/suspicious/noConsole: Console output allowed here
 import { spawnSync } from "node:child_process";
 import { stat } from "node:fs/promises";
 import type { Root } from "mdast";
@@ -6,6 +7,7 @@ import type { VFile } from "vfile";
 import { parse, stringify } from "yaml";
 
 let isGitAvailable: boolean;
+let hasWarnedShallowClone = false;
 
 const checkGitAvailable = (): boolean => {
   if (isGitAvailable !== undefined) return isGitAvailable;
@@ -14,6 +16,36 @@ const checkGitAvailable = (): boolean => {
   isGitAvailable = result.status === 0;
 
   return isGitAvailable;
+};
+
+const isShallowRepository = (): boolean => {
+  if (!checkGitAvailable()) return false;
+
+  const result = spawnSync("git", ["rev-parse", "--is-shallow-repository"], {
+    encoding: "utf-8",
+    stdio: ["pipe", "pipe", "ignore"],
+  });
+
+  return result.status === 0 && result.stdout.trim() === "true";
+};
+
+const warnShallowClone = (): void => {
+  if (hasWarnedShallowClone) return;
+  hasWarnedShallowClone = true;
+
+  if (process.env.VERCEL) {
+    console.warn(
+      "The repository is shallow cloned, so the latest modified time may not be accurate. Set the VERCEL_DEEP_CLONE=true environment variable to enable deep cloning.",
+    );
+  } else if (process.env.GITHUB_ACTIONS) {
+    console.warn(
+      "The repository is shallow cloned, so the latest modified time may not be accurate. See https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches to fetch all the history.",
+    );
+  } else {
+    console.warn(
+      "The repository is shallow cloned, so the latest modified time may not be accurate.",
+    );
+  }
 };
 
 const getLastModifiedDate = async (filePath: string) => {
@@ -41,6 +73,11 @@ const getLastModifiedDate = async (filePath: string) => {
 };
 
 export const remarkLastModified = () => {
+  // Check for shallow clone and warn once
+  if (isShallowRepository()) {
+    warnShallowClone();
+  }
+
   return async (tree: Root, vfile: VFile) => {
     const date = await getLastModifiedDate(vfile.path);
     const lastModifiedISO = date.toISOString();
