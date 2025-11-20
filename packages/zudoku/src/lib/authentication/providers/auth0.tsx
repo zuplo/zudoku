@@ -28,9 +28,14 @@ class Auth0AuthenticationProvider
     url: URL,
     { isSignUp }: { isSignUp: boolean },
   ) => {
-    if (this.options?.alwaysPromptLogin !== false) {
+    if (this.options?.prompt !== undefined) {
+      if (this.options.prompt !== "") {
+        url.searchParams.set("prompt", this.options.prompt);
+      }
+    } else if (this.options?.alwaysPromptLogin !== false) {
       url.searchParams.set("prompt", "login");
     }
+
     if (isSignUp) {
       url.searchParams.set("screen_hint", "signup");
     }

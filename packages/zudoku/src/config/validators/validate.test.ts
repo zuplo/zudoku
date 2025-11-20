@@ -190,4 +190,56 @@ describe("validateConfig", () => {
       expect.stringContaining("Domain must be a host only"),
     );
   });
+
+  it("should accept auth0 config with prompt option", () => {
+    const configWithPrompt = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com",
+        options: {
+          prompt: "consent",
+        },
+      },
+    };
+
+    validateConfig(configWithPrompt);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept auth0 config with empty string prompt option", () => {
+    const configWithEmptyPrompt = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com",
+        options: {
+          prompt: "",
+        },
+      },
+    };
+
+    validateConfig(configWithEmptyPrompt);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept auth0 config with both alwaysPromptLogin and prompt options", () => {
+    const configWithBothOptions = {
+      authentication: {
+        type: "auth0" as const,
+        clientId: "client123",
+        domain: "example.auth0.com",
+        options: {
+          alwaysPromptLogin: false,
+          prompt: "select_account",
+        },
+      },
+    };
+
+    validateConfig(configWithBothOptions);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
 });
