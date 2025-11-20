@@ -58,20 +58,22 @@ export const ResponsesSidecarBox = ({
             </CollapsibleTrigger>
             Example Responses
           </div>
-          <NativeSelect
-            className="text-xs h-fit py-1 -my-1 bg-background"
-            value={internalSelectedResponse}
-            onChange={(e) => setInternalSelectedResponse(e.target.value)}
-          >
-            {responses.map((response) => (
-              <NativeSelectOption
-                key={response.statusCode}
-                value={response.statusCode}
-              >
-                {response.statusCode}
-              </NativeSelectOption>
-            ))}
-          </NativeSelect>
+          <div className="group-data-[state=closed]/collapsible:hidden">
+            <NativeSelect
+              className="text-xs h-fit py-1 -my-1 bg-background"
+              value={internalSelectedResponse}
+              onChange={(e) => setInternalSelectedResponse(e.target.value)}
+            >
+              {responses.map((response) => (
+                <NativeSelectOption
+                  key={response.statusCode}
+                  value={response.statusCode}
+                >
+                  {response.statusCode}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
+          </div>
         </SidecarBox.Head>
         <CollapsibleContent>
           <SidecarExamples
