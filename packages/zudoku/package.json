@@ -243,7 +243,7 @@
     "fast-equals": "5.2.2",
     "glob": "11.1.0",
     "glob-parent": "6.0.2",
-    "graphql": "16.11.0",
+    "graphql": "16.12.0",
     "graphql-type-json": "0.3.2",
     "graphql-yoga": "5.16.0",
     "gray-matter": "4.0.3",
