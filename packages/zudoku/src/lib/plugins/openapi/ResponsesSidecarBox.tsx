@@ -1,6 +1,12 @@
-import * as Tabs from "@radix-ui/react-tabs";
+import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { cn } from "../../util/cn.js";
+import { Button } from "zudoku/components";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "zudoku/ui/Collapsible.js";
+import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import type { ResponseItem } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
@@ -8,67 +14,82 @@ import { SidecarExamples } from "./SidecarExamples.js";
 export const ResponsesSidecarBox = ({
   responses,
   selectedResponse,
-  onSelectResponse,
   isOnScreen,
   shouldLazyHighlight,
 }: {
   responses: ResponseItem[];
   selectedResponse?: string;
-  onSelectResponse: (response: string) => void;
   isOnScreen: boolean;
   shouldLazyHighlight?: boolean;
 }) => {
+  const [internalSelectedResponse, setInternalSelectedResponse] = useState(
+    selectedResponse ?? responses[0]?.statusCode,
+  );
   const [selectedContentIndex, setSelectedContentIndex] = useState(0);
   const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
 
   useEffect(() => {
     if (!selectedResponse) return;
 
-    setSelectedContentIndex(0);
-    setSelectedExampleIndex(0);
+    setInternalSelectedResponse(selectedResponse);
   }, [selectedResponse]);
 
+  useEffect(() => {
+    if (!internalSelectedResponse) return;
+
+    setSelectedContentIndex(0);
+    setSelectedExampleIndex(0);
+  }, [internalSelectedResponse]);
+
   return (
-    <SidecarBox.Root>
-      <Tabs.Root
-        defaultValue={responses[0]?.statusCode}
-        value={selectedResponse}
-        onValueChange={(value) => onSelectResponse(value)}
-      >
-        <SidecarBox.Head className="text-xs flex flex-col gap-2 pb-0">
-          <span className="font-mono">Example Responses</span>
-          <Tabs.List className="flex gap-2">
+    <Collapsible className="group/collapsible" defaultOpen>
+      <SidecarBox.Root>
+        <SidecarBox.Head className="text-xs flex justify-between items-center">
+          <div className="flex items-center gap-1 font-medium shrink-0">
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="ghost"
+                className="size-fit px-1 py-1 -my-1"
+                aria-label="Toggle response examples"
+              >
+                <ChevronsDownUpIcon className="size-[1em] group-data-[state=closed]/collapsible:hidden" />
+                <ChevronsUpDownIcon className="size-[1em] group-data-[state=open]/collapsible:hidden" />
+              </Button>
+            </CollapsibleTrigger>
+            Example Responses
+          </div>
+          <NativeSelect
+            className="text-xs h-fit py-1 -my-1 bg-background"
+            value={internalSelectedResponse}
+            onChange={(e) => setInternalSelectedResponse(e.target.value)}
+          >
             {responses.map((response) => (
-              <Tabs.Trigger
+              <NativeSelectOption
                 key={response.statusCode}
                 value={response.statusCode}
-                className={cn(
-                  "text-xs font-mono px-1.5 py-1 pb-px translate-y-px border-b-2 border-transparent rounded-t cursor-pointer",
-                  "data-[state=active]:text-primary data-[state=active]:dark:text-inherit data-[state=active]:border-primary",
-                  "hover:border-accent-foreground/25",
-                )}
               >
                 {response.statusCode}
-              </Tabs.Trigger>
+              </NativeSelectOption>
             ))}
-          </Tabs.List>
+          </NativeSelect>
         </SidecarBox.Head>
-        {responses.map((response) => (
-          <Tabs.Content key={response.statusCode} value={response.statusCode}>
-            <SidecarExamples
-              selectedContentIndex={selectedContentIndex}
-              selectedExampleIndex={selectedExampleIndex}
-              onExampleChange={(selected) => {
-                setSelectedContentIndex(selected.contentTypeIndex);
-                setSelectedExampleIndex(selected.exampleIndex);
-              }}
-              content={response.content ?? []}
-              isOnScreen={isOnScreen}
-              shouldLazyHighlight={shouldLazyHighlight}
-            />
-          </Tabs.Content>
-        ))}
-      </Tabs.Root>
-    </SidecarBox.Root>
+        <CollapsibleContent>
+          <SidecarExamples
+            selectedContentIndex={selectedContentIndex}
+            selectedExampleIndex={selectedExampleIndex}
+            onExampleChange={(selected) => {
+              setSelectedContentIndex(selected.contentTypeIndex);
+              setSelectedExampleIndex(selected.exampleIndex);
+            }}
+            content={
+              responses.find((r) => r.statusCode === internalSelectedResponse)
+                ?.content ?? []
+            }
+            isOnScreen={isOnScreen}
+            shouldLazyHighlight={shouldLazyHighlight}
+          />
+        </CollapsibleContent>
+      </SidecarBox.Root>
+    </Collapsible>
   );
 };

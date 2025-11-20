@@ -1,11 +1,13 @@
+import { ExternalLinkIcon } from "lucide-react";
+import { Badge } from "zudoku/ui/Badge.js";
+import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { NonHighlightedCode } from "./components/NonHighlightedCode.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
-import { SimpleSelect } from "./SimpleSelect.js";
 
-const formatForDisplay = (value: unknown): string => {
-  if (value == null) return "No example";
+const formatForDisplay = (value: unknown): string | undefined => {
+  if (value == null) return;
   if (typeof value === "string") return value.trim();
   return JSON.stringify(value, null, 2);
 };
@@ -66,25 +68,30 @@ export const SidecarExamples = ({
     <>
       <SidecarBox.Body className="p-0">
         {selectedExample?.externalValue ? (
-          <div className="p-2">
+          <div className="p-4">
             <a
               href={selectedExample.externalValue}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-primary hover:underline"
             >
-              View External Example →
+              View External Example
+              <ExternalLinkIcon className="size-3 inline-block ms-1 align-[-0.125em]" />
             </a>
           </div>
-        ) : shouldLazyHighlight && !isOnScreen ? (
+        ) : shouldLazyHighlight && !isOnScreen && formattedExample ? (
           <NonHighlightedCode code={formattedExample} />
-        ) : (
+        ) : formattedExample ? (
           <SyntaxHighlight
             embedded
             language={language}
             className="[--scrollbar-color:gray] rounded-none max-h-[200px] text-xs overflow-auto"
             code={formattedExample}
           />
+        ) : (
+          <div className="grid place-items-center text-xs text-muted-foreground min-h-18">
+            No example specified for this content type
+          </div>
         )}
         {selectedExample?.description && (
           <div className="border-t text-xs px-3 py-1.5 text-muted-foreground">
@@ -92,18 +99,18 @@ export const SidecarExamples = ({
           </div>
         )}
       </SidecarBox.Body>
-      <SidecarBox.Footer className="text-xs p-0 divide-y divide-border">
+      <SidecarBox.Footer className="text-xs">
         {description && (
-          <div className="text-muted-foreground text-xs px-3 py-2">
+          <div className="text-muted-foreground text-xs px-1 py-2">
             {description}
           </div>
         )}
         {(examples.length !== 0 || content.length !== 0) && (
-          <div className="flex items-center gap-2 justify-between min-w-0 px-3 py-2">
-            <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2 justify-between min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
               {content.length > 1 ? (
-                <SimpleSelect
-                  className="max-w-[200px]"
+                <NativeSelect
+                  className="text-xs h-fit py-1 truncate bg-background"
                   value={selectedContentIndex.toString()}
                   onChange={(e) =>
                     onExampleChange?.({
@@ -111,38 +118,53 @@ export const SidecarExamples = ({
                       exampleIndex: 0,
                     })
                   }
-                  options={content.map((c, index) => ({
-                    value: index.toString(),
-                    label: c.mediaType,
-                  }))}
-                />
+                >
+                  {content.map((c, index) => (
+                    <NativeSelectOption
+                      key={c.mediaType}
+                      value={index.toString()}
+                    >
+                      {c.mediaType}
+                    </NativeSelectOption>
+                  ))}
+                </NativeSelect>
               ) : (
-                <span className="font-mono text-[11px]">
+                <Badge
+                  className="text-[11px] font-mono font-normal"
+                  variant="outline"
+                >
                   {content[0]?.mediaType}
-                </span>
+                </Badge>
               )}
             </div>
             {examples.length > 1 && (
-              <div className="flex items-center gap-1">
-                <SimpleSelect
-                  className="max-w-[180px]"
-                  value={selectedExampleIndex.toString()}
-                  onChange={(e) =>
-                    onExampleChange?.({
-                      contentTypeIndex: selectedContentIndex,
-                      exampleIndex: Number(e.target.value),
-                    })
-                  }
-                  options={examples.map((example, index) => ({
-                    value: index.toString(),
-                    label:
+              <NativeSelect
+                className="text-xs h-fit py-1 truncate bg-background"
+                value={selectedExampleIndex.toString()}
+                onChange={(e) =>
+                  onExampleChange?.({
+                    contentTypeIndex: selectedContentIndex,
+                    exampleIndex: Number(e.target.value),
+                  })
+                }
+              >
+                {examples.map((example, index) => (
+                  <NativeSelectOption
+                    key={
                       example.summary ||
                       example.name ||
                       example.description ||
-                      `Example ${index + 1}`,
-                  }))}
-                />
-              </div>
+                      `Example ${index + 1}`
+                    }
+                    value={index.toString()}
+                  >
+                    {example.summary ||
+                      example.name ||
+                      example.description ||
+                      `Example ${index + 1}`}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
             )}
           </div>
         )}

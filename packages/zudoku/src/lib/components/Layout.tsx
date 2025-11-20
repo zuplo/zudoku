@@ -1,5 +1,6 @@
 import { type ReactNode, Suspense, useEffect } from "react";
 import { Outlet } from "react-router";
+import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { cn } from "../util/cn.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
 import { useScrollToTop } from "../util/useScrollToTop.js";
@@ -28,7 +29,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
   }, [authentication]);
 
   return (
-    <>
+    <TooltipProvider>
       <Slot.Target name="layout-before-head" />
       <Header />
       <Slot.Target name="layout-after-head" />
@@ -45,6 +46,6 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
         </Suspense>
       </div>
       <Footer />
-    </>
+    </TooltipProvider>
   );
 };

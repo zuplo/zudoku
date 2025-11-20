@@ -146,6 +146,8 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
   }
 `);
 
+const LAZY_OPERATION_LIST_THRESHOLD = 30;
+
 export const OperationList = ({
   tag,
   untagged,
@@ -202,7 +204,7 @@ export const OperationList = ({
 
   // Simple heuristic to determine if we should lazy highlight the code
   // This is to avoid the performance issues when there are a lot of operations
-  const shouldLazyHighlight = operations.length > 30;
+  const shouldLazyHighlight = operations.length > LAZY_OPERATION_LIST_THRESHOLD;
 
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
