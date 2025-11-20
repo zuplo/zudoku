@@ -1,9 +1,7 @@
-import fs from "node:fs/promises";
 import path from "node:path";
 import { glob } from "glob";
-import matter from "gray-matter";
 import type { LucideIcon } from "lucide-react";
-import { yamlEngine } from "../../lib/util/yamlEngine.js";
+import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
   InputNavigationCategory,
@@ -106,10 +104,7 @@ export class NavigationResolver {
       );
     }
 
-    const fileContent = await fs.readFile(foundMatches);
-    const { data, content } = matter(fileContent, {
-      engines: { yaml: yamlEngine },
-    });
+    const { data, content } = await readFrontmatter(foundMatches);
 
     const label =
       data.navigation_label ??
