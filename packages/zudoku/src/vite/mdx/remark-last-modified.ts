@@ -20,7 +20,7 @@ const getLastModifiedDate = async (filePath: string) => {
   if (checkGitAvailable()) {
     const result = spawnSync(
       "git",
-      ["log", "-1", "--format=%aI", "--", filePath],
+      ["log", "-1", "--format=%cI", "--", filePath],
       { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] },
     );
 
