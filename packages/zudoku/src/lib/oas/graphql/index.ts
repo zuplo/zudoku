@@ -269,6 +269,11 @@ const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
     url: t.exposeString("url"),
     description: t.exposeString("description", { nullable: true }),
+    variables: t.field({
+      type: JSONObjectScalar,
+      nullable: true,
+      resolve: (server) => server.variables ?? null,
+    }),
   }),
 });
 

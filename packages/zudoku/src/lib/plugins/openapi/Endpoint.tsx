@@ -8,6 +8,7 @@ import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/index.js";
 import { SimpleSelect } from "./SimpleSelect.js";
 import { useSelectedServer } from "./state.js";
+import { resolveServerVariables } from "./util/resolveServerVariables.js";
 
 const ServersQuery = graphql(/* GraphQL */ `
   query ServersQuery($input: JSON!, $type: SchemaType!) {
@@ -15,6 +16,7 @@ const ServersQuery = graphql(/* GraphQL */ `
       url
       servers {
         url
+        variables
       }
     }
   }
@@ -48,9 +50,14 @@ export const Endpoint = () => {
   const query = useCreateQuery(ServersQuery, { input, type });
   const result = useSuspenseQuery(query);
   const [, startTransition] = useTransition();
-  const { selectedServer, setSelectedServer } = useSelectedServer(
-    result.data.schema.servers,
-  );
+
+  // Resolve server variables for all servers
+  const resolvedServers = result.data.schema.servers.map((server) => ({
+    url: resolveServerVariables(server.url, server.variables),
+  }));
+
+  const { selectedServer, setSelectedServer } =
+    useSelectedServer(resolvedServers);
 
   const { servers } = result.data.schema;
 
@@ -58,14 +65,19 @@ export const Endpoint = () => {
 
   if (!firstServer) return null;
 
+  const firstServerUrl = resolveServerVariables(
+    firstServer.url,
+    firstServer.variables,
+  );
+
   if (servers.length === 1) {
     return (
       <div className="flex items-center gap-2">
         <span className="font-medium text-sm">Endpoint:</span>
         <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
-          {firstServer.url}
+          {firstServerUrl}
         </InlineCode>
-        <CopyButton url={firstServer.url} />
+        <CopyButton url={firstServerUrl} />
       </div>
     );
   }
@@ -81,10 +93,16 @@ export const Endpoint = () => {
         }
         value={selectedServer}
         showChevrons={servers.length > 1}
-        options={servers.map((server) => ({
-          value: server.url,
-          label: server.url,
-        }))}
+        options={servers.map((server) => {
+          const resolvedUrl = resolveServerVariables(
+            server.url,
+            server.variables,
+          );
+          return {
+            value: resolvedUrl,
+            label: resolvedUrl,
+          };
+        })}
       />
       <CopyButton url={selectedServer} />
     </div>

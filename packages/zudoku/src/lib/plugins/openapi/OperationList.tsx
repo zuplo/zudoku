@@ -26,6 +26,7 @@ import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
+import { resolveServerVariables } from "./util/resolveServerVariables.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
@@ -42,6 +43,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     servers {
       url
       description
+      variables
     }
     parameters {
       name
@@ -117,6 +119,7 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
     schema(input: $input, type: $type) {
       servers {
         url
+        variables
       }
       description
       summary
@@ -165,10 +168,13 @@ export const OperationList = ({
   const {
     data: { schema },
   } = result;
+  // Resolve server variables for all servers
+  const resolvedServers = schema.servers.map((server) => ({
+    url: resolveServerVariables(server.url, server.variables),
+  }));
   // Global server selection for the dropdown UI
-  const { selectedServer: globalSelectedServer } = useSelectedServer(
-    schema.servers,
-  );
+  const { selectedServer: globalSelectedServer } =
+    useSelectedServer(resolvedServers);
   const title = schema.title;
   const summary = schema.summary;
   const description = schema.description;
