@@ -56,3 +56,20 @@ npx wrangler pages deploy ./dist
 ```
 
 Within a few seconds the site will be live and viewable at `<your-project-name>.pages.dev`.
+
+## Accurate Last Modified Dates
+
+If you have enabled the [`showLastModified`](/docs/configuration/docs#showlastmodified) option,
+Zudoku automatically tracks the last modified date of your documentation pages using Git history.
+However, Cloudflare Pages performs shallow clones by default, which can result in inaccurate "Last
+Modified" dates for pages that haven't been updated recently.
+
+To ensure accurate last modified dates when using Git integration with Cloudflare Pages, modify your
+build command to fetch the full history before building:
+
+```bash
+git fetch --unshallow && npm run build
+```
+
+This command converts the shallow clone to a full clone before running your build, ensuring all
+pages show their correct last modified dates.

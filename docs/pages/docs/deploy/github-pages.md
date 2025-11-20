@@ -29,3 +29,22 @@ const config: ZudokuConfig = {
   //...
 };
 ```
+
+## Accurate Last Modified Dates
+
+If you have enabled the [`showLastModified`](/docs/configuration/docs#showlastmodified) option,
+Zudoku automatically tracks the last modified date of your documentation pages using Git history.
+However, GitHub Actions performs shallow clones by default, which can result in inaccurate "Last
+Modified" dates for pages that haven't been updated recently.
+
+To ensure accurate last modified dates, configure the `actions/checkout` step to fetch the full
+history:
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0 # Fetch all history for all branches and tags
+```
+
+For more details, see the
+[actions/checkout documentation](https://github.com/actions/checkout#fetch-all-history-for-all-tags-and-branches).

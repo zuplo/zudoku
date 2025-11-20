@@ -41,7 +41,7 @@ can answer however you like for these.
 
 When you get to this step:
 
-```bash
+```ansi
 No framework detected. Default Project Settings:
 - Build Command: `npm run vercel-build` or `npm run build`
 - Development Command: None
@@ -55,7 +55,7 @@ Answer _Yes_ and select to modify the Output Directory.
 By default Vercel looks for a directory named `public`, but the Zudoku build will be found in
 `dist`. Set the output directory like this:
 
-```bash
+```ansi
 ? What's your Output Directory? dist
 ```
 
@@ -82,3 +82,22 @@ information.
 This is a current limitation. See [#115](https://github.com/zuplo/zudoku/issues/151).
 
 :::
+
+## Accurate Last Modified Dates
+
+If you have enabled the [`showLastModified`](/docs/configuration/docs#showlastmodified) option,
+Zudoku automatically tracks the last modified date of your documentation pages using Git history.
+However, Vercel performs shallow clones by default (only fetching the last 10 commits), which can
+result in inaccurate "Last Modified" dates for pages that haven't been updated recently.
+
+To ensure accurate last modified dates, add the `VERCEL_DEEP_CLONE` environment variable to your
+Vercel project:
+
+1. Go to your project settings in Vercel
+2. Navigate to "Environment Variables"
+3. Add a new variable: `VERCEL_DEEP_CLONE=true`
+4. Save and redeploy your site
+
+This will enable full Git history during builds, ensuring all pages show their correct last modified
+dates. The impact on build time is minimal (typically 5-20 seconds on the first build), and
+subsequent builds benefit from caching.
