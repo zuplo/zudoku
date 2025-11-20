@@ -6,6 +6,7 @@ import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { yamlEngine } from "../lib/util/yamlEngine.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -23,7 +24,9 @@ const processMarkdownFile = async (
   filePath: string,
 ): Promise<{ content: string; title?: string; description?: string }> => {
   const fileContent = await readFile(filePath, "utf-8");
-  const { content: markdownContent, data: frontmatter } = matter(fileContent);
+  const { content: markdownContent, data: frontmatter } = matter(fileContent, {
+    engines: { yaml: yamlEngine },
+  });
 
   let finalMarkdown = markdownContent;
   if (frontmatter.title) {

@@ -3,6 +3,7 @@ import { glob } from "glob";
 import matter from "gray-matter";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
+import { yamlEngine } from "../lib/util/yamlEngine.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
@@ -23,7 +24,7 @@ export const viteFrontmatterPlugin = (): Plugin => ({
       await Promise.all(
         files.map(async (file) => {
           const content = await readFile(file, "utf-8");
-          const fm = matter(content);
+          const fm = matter(content, { engines: { yaml: yamlEngine } });
           return [file, fm.data] as const;
         }),
       ),
@@ -33,7 +34,9 @@ export const viteFrontmatterPlugin = (): Plugin => ({
       if (event !== "change" && event !== "add") return;
 
       if (/\.mdx?$/.test(filePath)) {
-        const fm = matter(await readFile(filePath, "utf-8"));
+        const fm = matter(await readFile(filePath, "utf-8"), {
+          engines: { yaml: yamlEngine },
+        });
         const prevFm = frontmatterMap.get(filePath);
 
         if (!prevFm || JSON.stringify(prevFm) !== JSON.stringify(fm.data)) {
