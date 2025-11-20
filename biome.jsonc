@@ -14,6 +14,8 @@
     "ignoreUnknown": true,
     "includes": [
       "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css}",
+      // TODO: remove when Biome supports all of Tailwinds syntax
+      "!packages/zudoku/src/app/main.css",
       "!**/*.{md,mdx}",
       "!**/node_modules",
       "!.nx",
@@ -24,8 +26,7 @@
       "!packages/zudoku/lib",
       "!examples/many-apis/apis",
       "!packages/zudoku/standalone",
-      "!packages/zudoku/src/lib/plugins/openapi/graphql",
-      "!packages/zudoku/src/app/main.css"
+      "!packages/zudoku/src/lib/plugins/openapi/graphql"
     ]
   },
   "formatter": {
@@ -51,6 +52,9 @@
       },
       "performance": {
         "noAccumulatingSpread": "off"
+      },
+      "complexity": {
+        "noImportantStyles": "off"
       },
       "correctness": {
         "noUnusedImports": {
