@@ -1,6 +1,6 @@
 import type { Argv } from "yargs";
 import { captureEvent } from "../common/analytics/lib.js";
-import { type Arguments, dev } from "../dev/handler.js";
+import { type Arguments, dev } from "../handlers/dev.js";
 
 export default {
   desc: "Runs locally",

@@ -1,4 +1,5 @@
 import type { Argv } from "yargs";
+import { examplesHandler } from "../handlers/generate-examples.js";
 
 export default {
   desc: "Generate additions to the OpenAPI schema manually or using AI",
@@ -51,10 +52,3 @@ const examplesSubCommand = {
     await examplesHandler(argv as ExamplesArguments);
   },
 };
-
-async function examplesHandler(argv: ExamplesArguments) {
-  console.log("GENERATE");
-  console.log(argv.schema);
-  console.log(argv.paths);
-  console.log(argv.mode);
-}
