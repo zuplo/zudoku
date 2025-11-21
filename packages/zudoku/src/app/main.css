@@ -104,7 +104,9 @@
     --top-nav-height: 50px;
     --banner-height: 35px;
     --header-height: calc(
-      var(--top-header-height) + var(--top-nav-height) + var(--banner-height)
+      var(--top-header-height) +
+      var(--top-nav-height) +
+      var(--banner-height)
     );
     --scroll-padding: calc(var(--header-height) + 10px);
     --side-nav-width: --spacing(72);
@@ -130,8 +132,10 @@
     @apply h-full overscroll-none;
   }
 
+  /* biome-ignore lint/correctness/noUnknownTypeSelector: Should be allowed */
   ::view-transition-old(root),
-  ::view-transition-new(root) {
+  /* biome-ignore lint/correctness/noUnknownTypeSelector: Should be allowed */
+    ::view-transition-new(root) {
     animation: none;
   }
 
@@ -173,7 +177,6 @@
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
-
 
   .shiki {
     counter-reset: line;
@@ -319,17 +322,17 @@
       #0000 calc(99% - var(--b)), #000 calc(101% - var(--b)) 99%, #0000 101%;
     mask:
       radial-gradient(
-          var(--R) at left 50% bottom calc(-1 * var(--m) * var(--s)),
-          var(--_g)
-        )
-        calc(50% - 2 * var(--s)) calc(50% - var(--s) / 2 - var(--b) / 2) /
-        calc(4 * var(--s)) calc(var(--s) + var(--b)) repeat-x,
+        var(--R) at left 50% bottom calc(-1 * var(--m) * var(--s)),
+        var(--_g)
+      )
+      calc(50% - 2 * var(--s)) calc(50% - var(--s) / 2 - var(--b) / 2) /
+      calc(4 * var(--s)) calc(var(--s) + var(--b)) repeat-x,
       radial-gradient(
-          var(--R) at left 50% top calc(-1 * var(--m) * var(--s)),
-          var(--_g)
-        )
-        50% calc(50% + var(--s) / 2 + var(--b) / 2) / calc(4 * var(--s))
-        calc(var(--s) + var(--b)) repeat-x;
+        var(--R) at left 50% top calc(-1 * var(--m) * var(--s)),
+        var(--_g)
+      )
+      50% calc(50% + var(--s) / 2 + var(--b) / 2) / calc(4 * var(--s))
+      calc(var(--s) + var(--b)) repeat-x;
   }
 }
 
