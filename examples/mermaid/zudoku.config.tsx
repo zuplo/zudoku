@@ -19,7 +19,7 @@ const config: ZudokuConfig = {
         {
           type: "category",
           label: "Mermaid",
-          items: ["setup", "mermaid"],
+          items: ["index", "build-time", "client-side", "mermaid"],
         },
       ],
     },

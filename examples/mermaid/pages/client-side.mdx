@@ -1,0 +1,194 @@
+---
+title: Client-Side Rendering
+---
+
+Render Mermaid diagrams dynamically in the browser using the `<Mermaid />` component.
+
+## Setup
+
+To use client-side rendering, you need to:
+
+<Stepper>
+
+1. Install the `mermaid` package:
+
+   ```bash
+   npm install mermaid
+   ```
+
+2. Import the `Mermaid` component from `zudoku/mermaid`:
+
+   ```tsx
+   import { Mermaid } from "zudoku/mermaid";
+   ```
+
+</Stepper>
+
+## Basic Example
+
+import { Mermaid } from "zudoku/mermaid";
+
+<Mermaid
+  chart={`graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;`}
+/>
+
+<details>
+  <summary>See code</summary>
+  <SyntaxHighlight
+    language="tsx"
+    code={`<Mermaid
+  chart={\`graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;\`}
+/>`}
+  />
+</details>
+
+## Flowchart
+
+<Mermaid
+  chart={`
+  flowchart TB
+    c1-->a2
+    subgraph one
+    a1-->a2
+    end
+    subgraph two
+    b1-->b2
+    end
+    subgraph three
+    c1-->c2
+  end`}
+/>
+
+<details>
+  <summary>See code</summary>
+  <SyntaxHighlight
+    language="tsx"
+    code={`<Mermaid
+  chart={\`
+  flowchart TB
+    c1-->a2
+    subgraph one
+    a1-->a2
+    end
+    subgraph two
+    b1-->b2
+    end
+    subgraph three
+    c1-->c2
+  end\`}
+/>`}
+  />
+</details>
+
+## Styling
+
+You can apply custom styles using standard HTML attributes:
+
+<Mermaid
+  className="border max-w-xl rounded-lg p-4 bg-muted/25"
+  chart={`
+---
+config:
+  theme: 'forest'
+---
+  pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15`}
+/>
+
+<details>
+  <summary>See code</summary>
+  <SyntaxHighlight
+    language="tsx"
+    code={`<Mermaid
+  className="border max-w-xl rounded-lg p-4 bg-muted/25"
+  chart={\`
+---
+config:
+  theme: 'forest'
+---
+  pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
+  \`}
+/>`}
+  />
+</details>
+
+## Custom Theme
+
+You can customize the theme of the diagram using the `config` prop in the frontmatter:
+
+<Mermaid
+  chart={`---
+config:
+  theme: 'base'
+  themeVariables:
+    primaryColor: '#BB2528'
+    primaryTextColor: '#fff'
+    primaryBorderColor: '#7C0000'
+    lineColor: '#F8B229'
+    secondaryColor: '#006100'
+    tertiaryColor: '#fff'
+---
+        graph TD
+          A[Christmas] -->|Get money| B(Go shopping)
+          B --> C{Let me think}
+          B --> G[/Another/]
+          C ==>|One| D[Laptop]
+          C -->|Two| E[iPhone]
+          C -->|Three| F[fa:fa-car Car]
+          subgraph section
+            C
+            D
+            E
+            F
+            G
+          end
+          `}
+/>
+
+<details>
+  <summary>See code</summary>
+  <SyntaxHighlight
+    language="tsx"
+    code={`<Mermaid
+      chart={\`---
+config:
+  theme: 'base'
+  themeVariables:
+    primaryColor: '#BB2528'
+    primaryTextColor: '#fff'
+    primaryBorderColor: '#7C0000'
+    lineColor: '#F8B229'
+    secondaryColor: '#006100'
+    tertiaryColor: '#fff'
+---
+graph TD
+  A[Christmas] -->|Get money| B(Go shopping)
+  B --> C{Let me think}
+  B --> G[/Another/]
+  C ==>|One| D[Laptop]
+  C -->|Two| E[iPhone]
+  C -->|Three| F[fa:fa-car Car]
+  subgraph section
+    C
+    D
+    E
+    F
+    G
+  end
+\`}
+/>`}
+  />
+</details>

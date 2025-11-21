@@ -3,6 +3,7 @@ import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
+import { Mermaid } from "../components/Mermaid.js";
 import { HIGHLIGHT_CODE_BLOCK_CLASS } from "../shiki.js";
 import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
@@ -76,6 +77,7 @@ export const MdxComponents = {
   Button,
   Callout,
   Stepper,
+  Mermaid,
   SyntaxHighlight,
   tip: (props) => <Callout type="tip" {...props} />,
   info: (props) => <Callout type="info" {...props} />,
