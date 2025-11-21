@@ -32,6 +32,14 @@ export const DisplaySchema = z
   .default("always")
   .optional();
 
+const InputNavigationPluginSchema = z.object({
+  type: z.literal("plugin"),
+  icon: IconSchema.optional(),
+  path: z.string(),
+  label: z.string(),
+  display: DisplaySchema,
+});
+
 const InputNavigationDocSchema = z.union([
   z.string(),
   z.object({
@@ -84,6 +92,9 @@ export type InputNavigationItem =
   | z.infer<typeof InputNavigationCustomPageSchema>
   | (z.infer<typeof BaseInputNavigationCategorySchema> & {
       items: InputNavigationItem[];
+    })
+  | (z.infer<typeof InputNavigationPluginSchema> & {
+      items: InputNavigationItem[];
     });
 
 const InputNavigationCategorySchema: z.ZodType<
@@ -115,4 +126,7 @@ export type InputNavigationCategoryLinkDoc = z.infer<
   typeof InputNavigationCategoryLinkDocSchema
 >;
 
+export type InputNavigationPlugin = z.infer<
+  typeof InputNavigationPluginSchema
+> & { items: InputNavigationItem[] };
 export type InputNavigation = z.infer<typeof InputNavigationSchema>;

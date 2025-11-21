@@ -11,6 +11,7 @@ import type {
   InputNavigationDoc,
   InputNavigationItem,
   InputNavigationLink,
+  InputNavigationPlugin,
 } from "./InputNavigationSchema.js";
 import { DocsConfigSchema } from "./validate.js";
 
@@ -28,6 +29,11 @@ type FinalNavigationCategoryLinkDoc = Extract<
 export type NavigationDoc = ReplaceFields<
   FinalNavigationDoc,
   { label: string; categoryLabel?: string; path: string } & ResolvedIcon
+>;
+
+export type NavigationPluginItem = ReplaceFields<
+  InputNavigationPlugin,
+  { items: NavigationItem[]; path: string } & ResolvedIcon
 >;
 
 export type NavigationLink = ReplaceFields<InputNavigationLink, ResolvedIcon>;
@@ -50,7 +56,8 @@ export type NavigationItem =
   | NavigationDoc
   | NavigationLink
   | NavigationCategory
-  | NavigationCustomPage;
+  | NavigationCustomPage
+  | NavigationPluginItem;
 
 export type Navigation = NavigationItem[];
 
@@ -178,6 +185,7 @@ export class NavigationResolver {
       case "link":
       case "custom-page":
         return item;
+      case "plugin":
       case "category": {
         const categoryItem = item;
 
@@ -189,15 +197,22 @@ export class NavigationResolver {
           )
         ).filter(isNavigationItem);
 
-        const resolvedLink = categoryItem.link
-          ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
-          : undefined;
+        if (categoryItem.type === "category") {
+          const resolvedLink = categoryItem.link
+            ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
+            : undefined;
 
-        return {
-          ...categoryItem,
-          items,
-          link: resolvedLink,
-        };
+          return {
+            ...categoryItem,
+            items,
+            link: resolvedLink,
+          };
+        } else {
+          return {
+            ...categoryItem,
+            items,
+          };
+        }
       }
     }
   }

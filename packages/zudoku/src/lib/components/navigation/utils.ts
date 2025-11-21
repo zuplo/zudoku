@@ -3,6 +3,7 @@ import { useLocation } from "react-router";
 import type {
   NavigationCategory,
   NavigationItem,
+  NavigationPluginItem,
 } from "../../../config/validators/NavigationSchema.js";
 import type { UseAuthReturn } from "../../authentication/hook.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
@@ -32,7 +33,7 @@ export const traverseNavigationItem = <T>(
   const result = callback(item, parentCategories);
   if (result !== undefined) return result;
 
-  if (item.type === "category") {
+  if (item.type === "category" || item.type === "plugin") {
     for (const child of item.items) {
       const childResult = traverseNavigationItem(child, callback, [
         ...parentCategories,
@@ -54,11 +55,15 @@ export const useCurrentItem = () => {
   });
 };
 
-export const useIsCategoryOpen = (category: NavigationCategory) => {
+export const useIsCategoryOpen = (
+  category: NavigationCategory | NavigationPluginItem,
+) => {
   const location = useLocation();
 
   return traverseNavigationItem(category, (item) => {
     switch (item.type) {
+      case "plugin":
+        return joinUrl(item.path) === location.pathname ? true : undefined;
       case "category":
         if (!item.link) {
           return undefined;
@@ -87,7 +92,7 @@ export const usePrevNext = (): {
 
   traverseNavigation(navigation, (item) => {
     const itemId =
-      item.type === "doc"
+      item.type === "doc" || item.type === "plugin"
         ? joinUrl(item.path)
         : item.type === "category" && item.link
           ? joinUrl(item.link.path)

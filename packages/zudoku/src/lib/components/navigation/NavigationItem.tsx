@@ -11,6 +11,7 @@ import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { useZudoku } from "../context/ZudokuContext.js";
 import { NavigationBadge } from "./NavigationBadge.js";
 import { NavigationCategory } from "./NavigationCategory.js";
+import { NavigationPlugin } from "./NavigationPlugin.js";
 import { navigationListItem, shouldShowItem } from "./utils.js";
 
 const TruncatedLabel = ({
@@ -75,6 +76,8 @@ export const NavigationItem = ({
       return (
         <NavigationCategory category={item} onRequestClose={onRequestClose} />
       );
+    case "plugin":
+      return <NavigationPlugin plugin={item} onRequestClose={onRequestClose} />;
     case "doc":
       return (
         <NavLink

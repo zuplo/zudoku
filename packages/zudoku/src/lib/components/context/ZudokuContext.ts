@@ -49,6 +49,8 @@ const getItemPath = (item: NavigationItem) => {
       return item.to;
     case "custom-page":
       return joinUrl(item.path);
+    case "plugin":
+      return joinUrl(item.path);
     default:
       return undefined;
   }
@@ -62,7 +64,7 @@ const extractAllPaths = (items: NavigationItem[]) => {
       const itemPath = getItemPath(item)?.split("?").at(0)?.split("#").at(0);
 
       if (itemPath) paths.add(itemPath);
-      if (item.type === "category") {
+      if (item.type === "category" || item.type === "plugin") {
         collectPaths(item.items);
       }
     }
@@ -75,6 +77,8 @@ const extractAllPaths = (items: NavigationItem[]) => {
 export const useCurrentNavigation = () => {
   const { getPluginNavigation, navigation } = useZudoku();
   const location = useLocation();
+
+  console.log("navigation context", navigation);
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
     if (getItemPath(item) === location.pathname) {
@@ -106,9 +110,14 @@ export const useCurrentNavigation = () => {
       })?.item;
   }
 
+  console.log("topNavItem", topNavItem.items);
+
   return {
     navigation: [
-      ...(navItem?.type === "category" ? navItem.items : []),
+      ...(topNavItem?.type === "plugin" ? topNavItem.items : []),
+      ...(navItem?.type === "category" || navItem?.type === "plugin"
+        ? navItem.items
+        : []),
       ...data,
     ],
     topNavItem,

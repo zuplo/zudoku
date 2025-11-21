@@ -41,6 +41,8 @@ export const TopNavigation = () => {
 const getPathForItem = (item: NavigationItem): string => {
   switch (item.type) {
     case "doc":
+    case "custom-page":
+    case "plugin":
       return joinUrl(item.path);
     case "link":
       return item.to;
@@ -57,8 +59,6 @@ const getPathForItem = (item: NavigationItem): string => {
         }) ?? ""
       );
     }
-    case "custom-page":
-      return item.path;
   }
 };
 
