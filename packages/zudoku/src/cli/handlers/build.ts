@@ -4,7 +4,7 @@ import { runBuild } from "../../vite/build.js";
 import type { Arguments } from "../cmds/build.js";
 import { logger } from "../common/logger.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
-import { preview as runPreview } from "../preview/handler.js";
+import { preview as runPreview } from "./preview.js";
 
 export async function build(argv: Arguments) {
   printDiagnosticsToConsole(`Starting Zudoku build v${packageJson.version}`);
