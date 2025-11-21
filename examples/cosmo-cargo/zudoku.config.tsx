@@ -164,17 +164,41 @@ const config: ZudokuConfig = {
         },
       ],
     },
-    {
-      type: "link",
-      icon: "ship",
-      to: "/api-shipments/shipment-management",
-      label: "Shipments",
-    },
+    // {
+    //   type: "link",
+    //   icon: "ship",
+    //   to: "/api-shipments/shipment-management",
+    //   label: "Shipments",
+    // },
     {
       type: "link",
       icon: "square-library",
       to: "/catalog",
       label: "API Catalog",
+    },
+    {
+      type: "plugin",
+      label: "PLUGIN",
+      path: "/api-shipments",
+      items: [
+        {
+          type: "category",
+          label: "Authorization",
+          collapsed: false,
+          items: [
+            {
+              type: "doc",
+              file: "api-shipments/authorization",
+              label: "Authorization",
+            },
+            {
+              type: "link",
+              to: "/api-shipments/authorization",
+              label: "Authorization 2",
+            },
+          ],
+        },
+      ],
     },
     {
       type: "custom-page",
