@@ -128,15 +128,15 @@ export const SchemaView = ({
       (group) =>
         groupedProperties[group] && (
           <ItemGroup key={group} className="overflow-clip">
-            {groupedProperties[group].map(([name, schema]) => (
+            {groupedProperties[group].map(([name, schema], index) => (
               <Fragment key={name}>
+                {index > 0 && <ItemSeparator />}
                 <SchemaPropertyItem
                   name={name}
                   schema={schema}
                   group={group}
                   defaultOpen={defaultOpen}
                 />
-                <ItemSeparator />
               </Fragment>
             ))}
           </ItemGroup>
