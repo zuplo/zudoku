@@ -15,13 +15,25 @@ export async function examplesHandler(argv: ExamplesArguments) {
     // - "example" object with properties (not necessarily have to be inline w schema)
     // - "examples" with named keys (eg { "domestic": {...}, "international": {...} })
 
-    const withoutExamples: { path: string, method: Method, type: string, schema: Schema }[] = [];
+    // 1. find endpoints without explicit example(s)
+    const withoutExamples: ({ path: string, method: Method, side: "req" | "res", type: string } & ({ ref: string } | { type: string }))[] = [];
     Object.entries(paths).map(([path, endpoints]) => {
       Object.entries(endpoints as Record<Method, any>).map(([method, config]) => {
         if (config.requestBody) {
           Object.entries(config.requestBody.content as Record<string, any>).map(([type, content]: [type: string, content: ConfigContent]) => {
             if (!(content?.example || content?.examples)) {
-              withoutExamples.push({ path, method: method as Method, type, schema: content.schema });
+              withoutExamples.push({ path, method: method as Method, side: "req", type, ...content.schema });
+            }
+          })
+        }
+        if (config.responses) {
+          Object.entries(config.responses as Record<string, any>).map(([code, info]: [code: string, info: Record<string, any>]) => {
+            if (info.content) {
+              Object.entries(info.content as Record<string, any>).map(([type, content]: [type: string, content: ConfigContent]) => {
+                if (!(content?.example || content?.examples)) {
+                  withoutExamples.push({ path, method: method as Method, side: "res", type, ...content.schema });
+                }
+              })
             }
           })
         }
