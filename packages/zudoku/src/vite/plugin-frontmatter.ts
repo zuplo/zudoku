@@ -1,8 +1,7 @@
-import { readFile } from "node:fs/promises";
 import { glob } from "glob";
-import matter from "gray-matter";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
@@ -22,8 +21,7 @@ export const viteFrontmatterPlugin = (): Plugin => ({
     const frontmatterMap = new Map<string, object>(
       await Promise.all(
         files.map(async (file) => {
-          const content = await readFile(file, "utf-8");
-          const fm = matter(content);
+          const fm = await readFrontmatter(file);
           return [file, fm.data] as const;
         }),
       ),
@@ -33,7 +31,7 @@ export const viteFrontmatterPlugin = (): Plugin => ({
       if (event !== "change" && event !== "add") return;
 
       if (/\.mdx?$/.test(filePath)) {
-        const fm = matter(await readFile(filePath, "utf-8"));
+        const fm = await readFrontmatter(filePath);
         const prevFm = frontmatterMap.get(filePath);
 
         if (!prevFm || JSON.stringify(prevFm) !== JSON.stringify(fm.data)) {

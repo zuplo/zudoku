@@ -1,11 +1,11 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import matter from "gray-matter";
 import { matchPath } from "react-router";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { ProtectedRoutesSchema } from "../config/validators/ProtectedRoutesSchema.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import {
   globMarkdownFiles,
   resolveCustomNavigationPaths,
@@ -22,8 +22,8 @@ export type MarkdownFileInfo = {
 const processMarkdownFile = async (
   filePath: string,
 ): Promise<{ content: string; title?: string; description?: string }> => {
-  const fileContent = await readFile(filePath, "utf-8");
-  const { content: markdownContent, data: frontmatter } = matter(fileContent);
+  const { content: markdownContent, data: frontmatter } =
+    await readFrontmatter(filePath);
 
   let finalMarkdown = markdownContent;
   if (frontmatter.title) {

@@ -1,0 +1,13 @@
+import { readFile } from "node:fs/promises";
+import matter from "gray-matter";
+import { parse, stringify } from "yaml";
+
+export const yaml = {
+  parse: (input: string) => parse(input) ?? {},
+  stringify: (obj: object) => stringify(obj),
+};
+
+export const readFrontmatter = async (filePath: string) => {
+  const content = await readFile(filePath, "utf-8");
+  return matter(content, { engines: { yaml } });
+};
