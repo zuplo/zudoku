@@ -15,8 +15,13 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@types/mdast": "4.0.4",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@types/unist": "^3.0.3",
+    "mdast-util-directive": "^3.1.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "5.0.0",
     "zudoku": "workspace:*"
   },
   "packageManager": "pnpm@10.10.0"

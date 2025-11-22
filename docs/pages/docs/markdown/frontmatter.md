@@ -108,7 +108,7 @@ lastModifiedTime: 2025-11-20T10:30:00.000Z
 ---
 ```
 
-<ConditionalContent mode="opensource">
+::if{mode=opensource}
 
 :::info
 
@@ -118,7 +118,7 @@ for configuration details.
 
 :::
 
-</ConditionalContent>
+::
 
 ## Complete Example
 
