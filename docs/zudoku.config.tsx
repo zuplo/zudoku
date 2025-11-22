@@ -2,6 +2,7 @@ import { lazy } from "react";
 import type { ZudokuConfig } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
+import ConditionalContent from "./src/components/ConditionalContent";
 import DiscordIcon from "./src/DiscordIcon";
 import GithubIcon from "./src/GithubIcon";
 
@@ -138,6 +139,11 @@ const config: ZudokuConfig = {
         </Button>
       </div>
     ),
+  },
+  mdx: {
+    components: {
+      ConditionalContent,
+    },
   },
 } satisfies ZudokuConfig;
 

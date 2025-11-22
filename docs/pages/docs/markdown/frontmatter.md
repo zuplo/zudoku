@@ -108,6 +108,8 @@ lastModifiedTime: 2025-11-20T10:30:00.000Z
 ---
 ```
 
+<ConditionalContent mode="opensource">
+
 :::info
 
 For accurate last modified dates in deployment environments, ensure full Git history is available
@@ -115,6 +117,8 @@ during builds. See the [Vercel deployment guide](/docs/deploy/vercel#accurate-la
 for configuration details.
 
 :::
+
+</ConditionalContent>
 
 ## Complete Example
 
