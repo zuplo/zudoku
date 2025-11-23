@@ -184,7 +184,10 @@ export async function getViteConfig(
               ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
               : "zudoku/app/entry.client.tsx"
             : undefined,
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        external: [
+          joinUrl(config.basePath, "/pagefind/pagefind.js"),
+          "mermaid",
+        ],
       },
       chunkSizeWarningLimit: 1500,
     },

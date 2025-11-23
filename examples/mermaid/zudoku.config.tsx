@@ -11,6 +11,7 @@ const config: ZudokuConfig = {
   theme: {
     customCss: `.dark svg[id^="mermaid-"] { filter: invert(1); }`,
   },
+  redirects: [{ from: "/", to: "/index" }],
   navigation: [
     {
       type: "category",
