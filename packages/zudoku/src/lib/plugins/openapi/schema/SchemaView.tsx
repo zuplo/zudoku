@@ -3,6 +3,7 @@ import { Fragment } from "react";
 import {
   Frame,
   FrameDescription,
+  FrameFooter,
   FrameHeader,
   FramePanel,
 } from "zudoku/ui/Frame.js";
@@ -107,39 +108,28 @@ export const SchemaView = ({
     );
     const groupNames = ["required", "optional", "deprecated"] as const;
 
-    const additionalProperties =
-      typeof schema.additionalProperties === "object" ? (
-        <SchemaView schema={schema.additionalProperties} embedded />
-      ) : schema.additionalProperties === true ? (
-        <div className="text-sm p-4 flex items-center gap-1">
-          <span>Additional properties are allowed</span>
-          <a
-            className="p-0.5 -m-0.5"
-            href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <InfoIcon size={14} />
-          </a>
-        </div>
-      ) : null;
+    const additionalObjectProperties = typeof schema.additionalProperties ===
+      "object" && <SchemaView schema={schema.additionalProperties} embedded />;
 
     const itemsList = groupNames.map(
-      (group) =>
+      (group, index) =>
         groupedProperties[group] && (
-          <ItemGroup key={group} className="overflow-clip">
-            {groupedProperties[group].map(([name, schema], index) => (
-              <Fragment key={name}>
-                {index > 0 && <ItemSeparator />}
-                <SchemaPropertyItem
-                  name={name}
-                  schema={schema}
-                  group={group}
-                  defaultOpen={defaultOpen}
-                />
-              </Fragment>
-            ))}
-          </ItemGroup>
+          <Fragment key={group}>
+            {index > 0 && <ItemSeparator />}
+            <ItemGroup className="overflow-clip">
+              {groupedProperties[group].map(([name, schema], index) => (
+                <Fragment key={name}>
+                  {index > 0 && <ItemSeparator />}
+                  <SchemaPropertyItem
+                    name={name}
+                    schema={schema}
+                    group={group}
+                    defaultOpen={defaultOpen}
+                  />
+                </Fragment>
+              ))}
+            </ItemGroup>
+          </Fragment>
         ),
     );
 
@@ -155,11 +145,23 @@ export const SchemaView = ({
             <FrameDescription>{schema.description}</FrameDescription>
           </FrameHeader>
         )}
-
         <FramePanel className="p-0!">
           {itemsList}
-          {additionalProperties}
+          {additionalObjectProperties}
         </FramePanel>
+        {schema.additionalProperties === true && (
+          <FrameFooter>
+            <a
+              className="text-sm flex items-center gap-1 hover:underline"
+              href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Additional properties are allowed
+              <InfoIcon size={14} />
+            </a>
+          </FrameFooter>
+        )}
       </Frame>
     );
   }
