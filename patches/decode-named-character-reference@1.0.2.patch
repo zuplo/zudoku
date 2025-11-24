@@ -1,0 +1,14 @@
+diff --git a/index.dom.js b/index.dom.js
+index 5d0abe28bc8341a32470810212417a7546a3dac4..ea5417e417090dee784b3cfba47615859e6da6bd 100644
+--- a/index.dom.js
++++ b/index.dom.js
+@@ -2,7 +2,8 @@
+ 
+ /* eslint-env browser */
+ 
+-const element = document.createElement('i')
++const element =
++  typeof document !== 'undefined' ? document.createElement('i') : null
+ 
+ /**
+  * @param {string} value

@@ -38,6 +38,9 @@ patchedDependencies:
   decode-named-character-reference:
     hash: 2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b
     path: patches/decode-named-character-reference.patch
+  decode-named-character-reference@1.0.2:
+    hash: 8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49
+    path: patches/decode-named-character-reference@1.0.2.patch
 
 importers:
 
@@ -13722,7 +13725,7 @@ snapshots:
     dependencies:
       ms: 2.1.3
 
-  decode-named-character-reference@1.0.2(patch_hash=2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b):
+  decode-named-character-reference@1.0.2(patch_hash=8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49):
     dependencies:
       character-entities: 2.0.2
 
@@ -15084,7 +15087,7 @@ snapshots:
     dependencies:
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
-      decode-named-character-reference: 1.0.2(patch_hash=2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b)
+      decode-named-character-reference: 1.0.2(patch_hash=8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49)
       devlop: 1.1.0
       mdast-util-to-string: 4.0.0
       micromark: 4.0.0
@@ -15362,7 +15365,7 @@ snapshots:
 
   micromark-core-commonmark@2.0.0:
     dependencies:
-      decode-named-character-reference: 1.0.2(patch_hash=2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b)
+      decode-named-character-reference: 1.0.2(patch_hash=8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49)
       devlop: 1.1.0
       micromark-factory-destination: 2.0.0
       micromark-factory-label: 2.0.0
@@ -15660,7 +15663,7 @@ snapshots:
 
   micromark-util-decode-string@2.0.0:
     dependencies:
-      decode-named-character-reference: 1.0.2(patch_hash=2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b)
+      decode-named-character-reference: 1.0.2(patch_hash=8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49)
       micromark-util-character: 2.1.1
       micromark-util-decode-numeric-character-reference: 2.0.1
       micromark-util-symbol: 2.0.0
@@ -15758,7 +15761,7 @@ snapshots:
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.4.3
-      decode-named-character-reference: 1.0.2(patch_hash=2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b)
+      decode-named-character-reference: 1.0.2(patch_hash=8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49)
       devlop: 1.1.0
       micromark-core-commonmark: 2.0.0
       micromark-factory-space: 2.0.1
@@ -16098,7 +16101,7 @@ snapshots:
       character-entities: 2.0.2
       character-entities-legacy: 3.0.0
       character-reference-invalid: 2.0.1
-      decode-named-character-reference: 1.0.2(patch_hash=2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b)
+      decode-named-character-reference: 1.0.2(patch_hash=8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49)
       is-alphanumerical: 2.0.1
       is-decimal: 2.0.1
       is-hexadecimal: 2.0.1
