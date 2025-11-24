@@ -13,6 +13,7 @@ import {
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/__internal";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
+import type { SpecRouteHandler } from "../lib/plugins/openapi/util/specRoute.js";
 import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
@@ -42,6 +43,12 @@ export const render = async ({
       ? baseRequest
       : createFetchRequest(baseRequest, response);
 
+  // Specification requests bypass the React render pipeline completely so they
+  // can be streamed directly and avoid unnecessary work.
+  if (await maybeHandleSpecRoute(request, response, routes)) {
+    return;
+  }
+
   const context = await query(request);
   let status = 200;
 
@@ -53,7 +60,8 @@ export const render = async ({
       );
     }
 
-    throw context;
+    await sendFetchResponse(response, context);
+    return;
   } else if (context.errors) {
     // when throwing a Response from a loader it will be caught here
     // unfortunately it is not `instanceof Response` for some reason
@@ -189,3 +197,158 @@ export function createFetchRequest(
 
   return new Request(url.href, init);
 }
+
+// Normalizes incoming URLs so both `/foo` and `/foo/` resolve to the same spec
+// route entry when we compare paths later.
+const normalizePathname = (value: string) => {
+  if (value.length <= 1) {
+    return value;
+  }
+  return value.replace(/\/+$/, "");
+};
+
+type SpecRouteMatcher = (specRoute: SpecRouteHandler) => boolean;
+
+// Walks every route (including children) until we find one matching the
+// provided predicate. The matcher lets us re-use the search for both canonical
+// `~spec` paths and aliases.
+const findSpecRoute = (
+  routes: RouteObject[],
+  matcher: SpecRouteMatcher,
+): SpecRouteHandler | undefined => {
+  for (const route of routes) {
+    const handle = route.handle;
+    const specRoute = handle?.specRoute;
+    if (specRoute && matcher(specRoute)) {
+      return specRoute;
+    }
+    if (route.children) {
+      const child = findSpecRoute(route.children, matcher);
+      if (child) {
+        return child;
+      }
+    }
+  }
+};
+
+const findSpecRouteHandler = (
+  routes: RouteObject[],
+  pathname: string,
+): SpecRouteHandler | undefined =>
+  findSpecRoute(
+    routes,
+    (specRoute) => normalizePathname(specRoute.path) === pathname,
+  );
+
+// Supports requests hitting `/spec` by mapping them back to the `~spec`
+// canonical route registered for the same base path. This means we can expose a
+// clean button URL while still reserving `/spec` for aliases.
+const matchesSpecAlias = (specPath: string, pathname: string) => {
+  if (!pathname.endsWith("/spec")) {
+    return false;
+  }
+  const normalizedSpecPath = normalizePathname(specPath);
+  if (!normalizedSpecPath.endsWith("~spec")) {
+    return false;
+  }
+  const base = normalizedSpecPath.replace(/\/~spec$/, "");
+  if (!base || base === "/") {
+    return false;
+  }
+  const prefix = base.endsWith("/") ? base : `${base}/`;
+  return pathname.startsWith(prefix);
+};
+
+const findSpecRouteAlias = (
+  routes: RouteObject[],
+  pathname: string,
+): SpecRouteHandler | undefined =>
+  findSpecRoute(routes, (specRoute) =>
+    matchesSpecAlias(specRoute.path, pathname),
+  );
+
+const isExpressResponse = (
+  res: express.Response | PrerenderResponse,
+): res is express.Response => {
+  return "setHeader" in res;
+};
+
+// Applies the outgoing spec response to either an express response or the
+// prerender shim. Everything funnels through here so headers/status handling is
+// consistent.
+const sendSpecResponse = async (
+  target: express.Response | PrerenderResponse,
+  specResponse: Response,
+) => {
+  const headers = Object.fromEntries(specResponse.headers.entries());
+  if (isExpressResponse(target)) {
+    target.set(headers);
+  } else {
+    target.set();
+  }
+
+  target.status(specResponse.status);
+
+  if (!specResponse.body) {
+    const result = target.end();
+    if (result instanceof Promise) {
+      await result;
+    }
+    return;
+  }
+
+  const body = await specResponse.text();
+  const sendResult = target.send(body);
+  if (sendResult instanceof Promise) {
+    await sendResult;
+  }
+};
+
+const maybeHandleSpecRoute = async (
+  request: Request,
+  response: express.Response | PrerenderResponse,
+  routes: RouteObject[],
+) => {
+  // Try exact matches first (`~spec`), then handle the `/spec` alias the UI
+  // links to. Either path short-circuits the main render pipeline.
+  const pathname = normalizePathname(new URL(request.url).pathname);
+  let specRoute = findSpecRouteHandler(routes, pathname);
+  if (!specRoute && pathname.endsWith("/spec")) {
+    specRoute = findSpecRouteAlias(routes, pathname);
+  }
+  if (!specRoute) {
+    return false;
+  }
+
+  const specResponse = await specRoute.createResponse();
+  await sendSpecResponse(response, specResponse);
+  return true;
+};
+
+// Writes a standard Fetch API `Response` to either an express response or the
+// prerender shim. React Router loaders/actions can return these directly, so we
+// centralize the conversion logic to keep `render` tidy.
+const sendFetchResponse = async (
+  target: express.Response | PrerenderResponse,
+  response: Response,
+) => {
+  const headers = Object.fromEntries(response.headers.entries());
+  target.status(response.status);
+  if (Object.keys(headers).length > 0) {
+    target.set(headers);
+  }
+
+  if (!response.body) {
+    const result = target.end();
+    if (result instanceof Promise) {
+      await result;
+    }
+    return;
+  }
+
+  const body = await response.text();
+  const sendResult = target.send(body);
+  if (sendResult instanceof Promise) {
+    await sendResult;
+  }
+};

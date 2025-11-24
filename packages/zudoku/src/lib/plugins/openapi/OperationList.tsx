@@ -1,7 +1,8 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
+import { useMemo } from "react";
+import { useLocation, useNavigate, useParams } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,6 +20,8 @@ import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
+import { Button } from "../../ui/Button.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { Endpoint } from "./Endpoint.js";
@@ -175,6 +178,12 @@ export const OperationList = ({
   const summary = schema.summary;
   const description = schema.description;
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const specUrl = useMemo(
+    () => joinUrl(location.pathname, "spec"),
+    [location.pathname],
+  );
 
   // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
   const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
@@ -281,7 +290,19 @@ export const OperationList = ({
               </Heading>
               <Endpoint />
             </div>
-            <div className="flex flex-col gap-4 sm:items-end">
+            <div className="flex flex-col gap-4 sm:items-end w-full sm:w-auto">
+              {specUrl && (
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 justify-between sm:justify-center"
+                >
+                  <a href={specUrl} target="_blank" rel="noreferrer">
+                    API Specification
+                  </a>
+                </Button>
+              )}
               {showVersions && (
                 <Select
                   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined

@@ -17,6 +17,7 @@ import {
   UNTAGGED_PATH,
 } from "../index.js";
 import type { OasPluginConfig } from "../interfaces.js";
+import { createSpecResponse, type SpecRouteHandler } from "./specRoute.js";
 
 // Creates the main provider route that wraps operation routes.
 const createOasProvider = (opts: {
@@ -111,27 +112,63 @@ const createNonTagPagesRoute = ({ path }: { path: string }): RouteObject => ({
   },
 });
 
-const createAdditionalRoutes = (basePath: string) => [
-  // Category without tagged operations
-  createRoute({
-    path: joinUrl(basePath, UNTAGGED_PATH),
-    untagged: true,
-  }),
-  // Schema list route
-  {
-    path: joinUrl(basePath, "~schemas"),
-    lazy: async () => {
-      const { SchemaList } = await import("../SchemaList.js");
-      return { element: <SchemaList /> };
+const createAdditionalRoutes = ({
+  basePath,
+  version,
+  config,
+}: {
+  basePath: string;
+  version?: string;
+  config: OpenApiPluginOptions;
+}) => {
+  // `~spec` is the canonical location for the serialized OpenAPI document.
+  // Every version shares the same route shape but the loader needs access to
+  // the current version/config so we close over them here.
+  const specPath = joinUrl(basePath, "~spec");
+  const getSpecResponse = () => createSpecResponse({ config, version });
+  const specRouteHandle: SpecRouteHandler = {
+    path: specPath,
+    createResponse: getSpecResponse,
+  };
+
+  return [
+    // Category without tagged operations
+    createRoute({
+      path: joinUrl(basePath, UNTAGGED_PATH),
+      untagged: true,
+    }),
+    // Schema list route
+    {
+      path: joinUrl(basePath, "~schemas"),
+      lazy: async () => {
+        const { SchemaList } = await import("../SchemaList.js");
+        return { element: <SchemaList /> };
+      },
     },
-  },
-];
+    {
+      path: specPath,
+      loader: getSpecResponse,
+      handle: {
+        layout: "none",
+        skipPrerender: true,
+        specRoute: specRouteHandle,
+      },
+    },
+  ];
+};
 
 // Creates routes for a specific version, including tag-based routes and the untagged operations route.
-const createVersionRoutes = (
-  versionPath: string,
-  tagPages: string[],
-): RouteObject[] => {
+const createVersionRoutes = ({
+  versionPath,
+  tagPages,
+  version,
+  config,
+}: {
+  versionPath: string;
+  tagPages: string[];
+  version?: string;
+  config: OpenApiPluginOptions;
+}): RouteObject[] => {
   const firstTagRoute = joinUrl(versionPath, tagPages.at(0) ?? UNTAGGED_PATH);
 
   return [
@@ -144,7 +181,9 @@ const createVersionRoutes = (
         tag,
       }),
     ),
-    ...createAdditionalRoutes(versionPath),
+    // Attach shared helper routes (untagged, schema browser, spec download)
+    // that are version-aware.
+    ...createAdditionalRoutes({ basePath: versionPath, version, config }),
   ];
 };
 
@@ -171,7 +210,7 @@ export const getRoutes = ({
         routePath: basePath,
         routes: [
           createNonTagPagesRoute({ path: `${basePath}/:tag?` }),
-          ...createAdditionalRoutes(basePath),
+          ...createAdditionalRoutes({ basePath, config }),
         ],
         client,
         config,
@@ -190,7 +229,7 @@ export const getRoutes = ({
       basePath,
       version,
       routePath: versionPath,
-      routes: createVersionRoutes(versionPath, tagPages),
+      routes: createVersionRoutes({ versionPath, tagPages, version, config }),
       client,
       config,
     });
