@@ -35,12 +35,12 @@ overrides:
   react-dom: 19.2.0
 
 patchedDependencies:
-  decode-named-character-reference:
-    hash: 2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b
-    path: patches/decode-named-character-reference.patch
   decode-named-character-reference@1.0.2:
     hash: 8595612582b1833f8b24c21dd296e0f9bc66aa6bbd7b0df2d3926f0645575f49
     path: patches/decode-named-character-reference@1.0.2.patch
+  decode-named-character-reference@1.2.0:
+    hash: 2298147f3cbdebede259acef9af62f260ca1b07a1211c3ad6441209c35ebd12b
+    path: patches/decode-named-character-reference@1.2.0.patch
 
 importers:
 
