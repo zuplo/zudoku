@@ -247,7 +247,11 @@ export const Playground = ({
 
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
-        { method, headers, body },
+        {
+          method,
+          headers,
+          body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
+        },
       );
 
       if (data.identity !== NO_IDENTITY) {
