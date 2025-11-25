@@ -3,7 +3,7 @@ import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import type { SchemaImports } from "../../oas/graphql/index.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 
-type DynamicInput = () => Promise<unknown>;
+export type DynamicInput = () => Promise<unknown>;
 
 type OasSource =
   | { type: "url"; input: string }

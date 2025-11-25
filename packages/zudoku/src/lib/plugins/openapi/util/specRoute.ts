@@ -1,5 +1,5 @@
 import type { OpenApiPluginOptions } from "../index.js";
-import type { ContextOasSource } from "../interfaces.js";
+import type { ContextOasSource, DynamicInput } from "../interfaces.js";
 import { loadSpecification } from "../specification.js";
 
 // Shared shape for anything that can emit a spec response. We keep the path so
@@ -21,21 +21,21 @@ const resolveSourceFromConfig = ({
   version?: string;
 }): ContextOasSource => {
   if (config.type === "file") {
-    const inputs = config.input as Record<string, ContextOasSource["input"]>;
+    const inputs = config.input as Record<string, DynamicInput>;
     const versions = Object.keys(inputs);
 
     const resolvedVersion = version ?? versions.at(0);
     if (!resolvedVersion) {
       throw new Response("Specification version is missing", { status: 404 });
     }
-
     const inputValue = inputs[resolvedVersion];
-    return { type: "file", input: inputValue as ContextOasSource["input"] };
+
+    return { type: "file", input: inputValue };
   }
 
   return {
     type: config.type,
-    input: config.input as ContextOasSource["input"],
+    input: config.input as string,
   };
 };
 
