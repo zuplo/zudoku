@@ -241,7 +241,7 @@ export const Playground = ({
           break;
         }
         default:
-          body = data.body ?? undefined;
+          body = data.body || undefined;
           break;
       }
 
