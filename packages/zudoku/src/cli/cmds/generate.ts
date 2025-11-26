@@ -8,6 +8,7 @@ export default {
     return yargs.command(examplesSubCommand);
     // add more options for generation as sub commands
   },
+  handler: () => {},
 };
 
 export interface ExamplesArguments {
