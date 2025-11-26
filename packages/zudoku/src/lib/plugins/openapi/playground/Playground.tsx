@@ -227,7 +227,7 @@ export const Playground = ({
 
       switch (data.bodyMode) {
         case "file":
-          body = data.file ?? undefined;
+          body = data.file || undefined;
           headers.delete("Content-Type");
           break;
         case "multipart": {
