@@ -296,16 +296,9 @@ export const Sidecar = ({
             ...response,
             content: response.content?.map((content) => ({
               ...content,
-              examples:
-                content.schema &&
-                (!content.examples || content.examples.length === 0)
-                  ? [
-                      {
-                        name: "Generated Example",
-                        value: generateSchemaExample(content.schema),
-                      },
-                    ]
-                  : content.examples,
+              examples: content.schema
+                ? [{ name: "", value: generateSchemaExample(content.schema) }]
+                : content.examples,
             })),
           }))}
         />
