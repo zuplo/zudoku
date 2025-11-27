@@ -4,6 +4,7 @@ import {
   DownloadIcon,
   ExternalLinkIcon,
 } from "lucide-react";
+import type { MouseEventHandler } from "react";
 import { Button } from "zudoku/components";
 import { ButtonGroup } from "zudoku/ui/ButtonGroup.js";
 import {
@@ -23,6 +24,32 @@ export const DownloadSchemaButton = ({
 }) => {
   const [, copyToClipboard] = useCopyToClipboard();
 
+  const handleDownload: MouseEventHandler<HTMLAnchorElement> = async (e) => {
+    const isExternal = downloadUrl.includes("://");
+
+    if (!isExternal) return;
+
+    e.preventDefault();
+    try {
+      const response = await fetch(downloadUrl);
+      if (!response.ok)
+        throw new Error(`Failed to fetch: ${response.statusText}`);
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = downloadUrl.split("/").pop() || "schema.json";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      // biome-ignore lint/suspicious/noConsole: Logging error
+      console.error("Failed to download schema:", error);
+    }
+  };
+
   return (
     <ButtonGroup>
       <Button
@@ -31,7 +58,7 @@ export const DownloadSchemaButton = ({
         className="flex items-center gap-1.5"
         asChild
       >
-        <a href={downloadUrl} download>
+        <a href={downloadUrl} download onClick={handleDownload}>
           <DownloadIcon size={14} />
           Download schema
         </a>
@@ -44,7 +71,7 @@ export const DownloadSchemaButton = ({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem asChild>
-            <a href={downloadUrl} target="_blank">
+            <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLinkIcon size={14} />
               Open in new tab
             </a>

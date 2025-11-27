@@ -227,7 +227,7 @@ export class SchemaManager {
         const reqPath = joinUrl(
           this.config.basePath,
           apiConfig.path,
-          schemas.length > 1 ? schema.version : undefined,
+          schema.version,
           filename,
         );
         map.set(reqPath, schema.inputPath);

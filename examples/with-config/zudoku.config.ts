@@ -58,6 +58,13 @@ const config: ZudokuConfig = {
       path: "api/adyen-balance",
     },
   ],
+  defaults: {
+    apis: {
+      schemaDownload: {
+        enabled: true,
+      },
+    },
+  },
   docs: {
     files: "/pages/**/*.mdx",
   },

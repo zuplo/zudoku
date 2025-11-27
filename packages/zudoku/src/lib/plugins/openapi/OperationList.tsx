@@ -19,6 +19,7 @@ import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
@@ -156,7 +157,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { input, type, versions, version, options } = useOasConfig();
+  const { path, input, type, versions, version, options } = useOasConfig();
   const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
@@ -246,7 +247,11 @@ export const OperationList = ({
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
   const downloadUrl =
-    typeof input === "string" ? input.split("/").pop() : undefined;
+    typeof input === "string"
+      ? type === "url"
+        ? input
+        : joinUrl(path, version, input.split("/").pop())
+      : undefined;
 
   return (
     <div
