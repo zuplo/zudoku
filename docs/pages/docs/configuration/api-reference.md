@@ -57,8 +57,10 @@ hosting the document has the correct CORS policy in place to allow the Zudoku si
 
 ## Versioning
 
-When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API
-documentation:
+### File-based Versioning
+
+When using `type: "file"`, you can provide an array of file paths to create versioned API
+documentation. Version metadata is automatically extracted from each OpenAPI schema at build time:
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -73,6 +75,39 @@ const config = {
   },
 };
 ```
+
+### URL-based Versioning
+
+When using `type: "url"`, you can provide an array of version configurations. Since URL-based
+schemas cannot be processed at build time, you must explicitly specify the version identifier and
+optional label:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "url",
+    input: [
+      {
+        path: "v2",
+        label: "Version 2.0",
+        input: "https://api.example.com/openapi-v2.json",
+      },
+      {
+        path: "v1",
+        label: "Version 1.0",
+        input: "https://api.example.com/openapi-v1.json",
+      },
+    ],
+    path: "/api",
+  },
+};
+```
+
+Each URL version object requires:
+
+- `path`: Version identifier used in the URL path (e.g., `/api/v2`)
+- `input`: URL to the OpenAPI document
+- `label`: Optional display name for the version selector (defaults to `path` if not provided)
 
 ## Options
 

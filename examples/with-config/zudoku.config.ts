@@ -23,16 +23,41 @@ const config: ZudokuConfig = {
     },
     {
       type: "link",
-      to: "https://rickandmorty.zuplo.io",
+      to: "/api/rick-and-morty",
       label: "Rick & Morty API",
+    },
+    {
+      type: "link",
+      to: "/api/adyen-balance/v2",
+      label: "Versioned API",
     },
   ],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
-  apis: {
-    type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
-    path: "api",
-  },
+  apis: [
+    {
+      type: "url",
+      input: "https://rickandmorty.zuplo.io/openapi.json",
+      path: "api/rick-and-morty",
+    },
+    {
+      type: "url",
+      input: [
+        {
+          path: "v2",
+          label: "v2 (latest)",
+          input:
+            "https://api.apis.guru/v2/specs/adyen.com/BalancePlatformService/2/openapi.json",
+        },
+        {
+          path: "v1",
+          label: "v1",
+          input:
+            "https://api.apis.guru/v2/specs/adyen.com/BalancePlatformService/1/openapi.json",
+        },
+      ],
+      path: "api/adyen-balance",
+    },
+  ],
   docs: {
     files: "/pages/**/*.mdx",
   },

@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ReactElement } from "react";
+import type { ReactNode } from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRoutesSchema.js";
@@ -64,7 +64,7 @@ export interface CommonPlugin {
   initialize?: (
     context: ZudokuContext,
   ) => Promise<void | boolean> | void | boolean;
-  getHead?: ({ location }: { location: Location }) => ReactElement | undefined;
+  getHead?: (args: { location: Location }) => ReactNode | undefined;
   getMdxComponents?: () => MdxComponentsType;
 }
 

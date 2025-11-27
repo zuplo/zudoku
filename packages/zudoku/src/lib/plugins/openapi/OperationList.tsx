@@ -21,6 +21,7 @@ import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
+import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 import { Endpoint } from "./Endpoint.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
@@ -244,6 +245,9 @@ export const OperationList = ({
   const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
+  const downloadUrl =
+    typeof input === "string" ? input.split("/").pop() : undefined;
+
   return (
     <div
       className="pt-(--padding-content-top)"
@@ -262,7 +266,7 @@ export const OperationList = ({
           className="w-full"
           defaultOpen={options?.expandApiInformation}
         >
-          <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
+          <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex flex-col flex-1 gap-2">
               <CategoryHeading>{title}</CategoryHeading>
               <Heading
@@ -282,25 +286,32 @@ export const OperationList = ({
               <Endpoint />
             </div>
             <div className="flex flex-col gap-4 sm:items-end">
-              {showVersions && (
-                <Select
-                  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-                  onValueChange={(version) => navigate(versions[version]!)}
-                  defaultValue={version}
-                  disabled={!hasMultipleVersions}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(versions).map(([version]) => (
-                      <SelectItem key={version} value={version}>
-                        {version}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <div className="flex gap-2 items-center">
+                {showVersions && (
+                  <Select
+                    onValueChange={(version) =>
+                      // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
+                      navigate(versions[version]!.path)
+                    }
+                    defaultValue={version}
+                    disabled={!hasMultipleVersions}
+                  >
+                    <SelectTrigger className="w-[180px]" size="sm">
+                      <SelectValue placeholder="Select version" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(versions).map(([version, { label }]) => (
+                        <SelectItem key={version} value={version}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {options?.schemaDownload?.enabled && downloadUrl && (
+                  <DownloadSchemaButton downloadUrl={downloadUrl} />
+                )}
+              </div>
               {schema.description && (
                 <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
                   <span>API information</span>

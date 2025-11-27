@@ -148,8 +148,18 @@ const createVersionRoutes = (
   ];
 };
 
-export const getVersions = (config: OasPluginConfig) =>
-  config.type === "file" ? Object.keys(config.input) : [];
+export const getVersionMetadata = (config: OasPluginConfig) => {
+  if (config.type === "raw" || !Array.isArray(config.input)) {
+    return { versions: [], labels: {} };
+  }
+
+  return {
+    versions: config.input.map((v) => v.path),
+    labels: Object.fromEntries(
+      config.input.map((v) => [v.path, v.label ?? v.path]),
+    ),
+  };
+};
 
 export const getRoutes = ({
   basePath,
@@ -161,10 +171,33 @@ export const getRoutes = ({
   basePath: string;
 }): RouteObject[] => {
   const tagPages = config.tagPages;
+  const { versions } = getVersionMetadata(config);
 
   // If the config does not provide tag pages the catch-all
   // route handles all operations on a single page
   if (!tagPages) {
+    // If there are versions, create versioned routes even without tag pages
+    if (versions.length > 0) {
+      const versionsInPath =
+        versions.length > 1 ? [undefined, ...versions] : [undefined];
+
+      return versionsInPath.map((version) => {
+        const versionPath = joinUrl(basePath, version);
+        return createOasProvider({
+          basePath,
+          version,
+          routePath: versionPath,
+          routes: [
+            createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),
+            ...createAdditionalRoutes(versionPath),
+          ],
+          client,
+          config,
+        });
+      });
+    }
+
+    // No versions, single route
     return [
       createOasProvider({
         basePath,
@@ -179,7 +212,6 @@ export const getRoutes = ({
     ];
   }
 
-  const versions = getVersions(config);
   // The latest version always is added as index path
   const versionsInPath =
     versions.length > 1 ? [undefined, ...versions] : [undefined];

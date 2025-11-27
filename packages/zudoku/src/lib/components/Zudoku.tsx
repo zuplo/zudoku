@@ -74,16 +74,13 @@ const ZudokuInner = memo(
 
     zudokuContext ??= new ZudokuContext(props, queryClient);
 
-    const heads = props.plugins
-      ?.flatMap((plugin) =>
-        hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
-      )
-      // biome-ignore lint/suspicious/noArrayIndexKey: No other key is available
-      .map((entry, i) => <Helmet key={i}>{entry}</Helmet>);
+    const heads = props.plugins?.flatMap((plugin) =>
+      hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
+    );
 
     return (
       <>
-        {heads}
+        <Helmet>{heads}</Helmet>
         <StaggeredRenderContext.Provider value={staggeredValue}>
           <ZudokuProvider context={zudokuContext}>
             <RouterEventsEmitter />
