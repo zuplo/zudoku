@@ -976,6 +976,52 @@
           }
         },
         "required": ["routeId", "configuration"]
+      },
+      "FuelStation": {
+        "type": "object",
+        "description": "A fuel station along interplanetary routes",
+        "required": ["stationId", "name", "location"],
+        "properties": {
+          "stationId": {
+            "type": "string",
+            "format": "uuid",
+            "readOnly": true,
+            "description": "Unique identifier for the fuel station"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the fuel station"
+          },
+          "location": {
+            "type": "string",
+            "enum": [
+              "Earth Orbit",
+              "Mars Orbit",
+              "Venus Orbit",
+              "Jupiter Orbit",
+              "Asteroid Belt"
+            ],
+            "description": "Orbital location of the station"
+          },
+          "fuelTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["ION", "CHEMICAL", "SOLAR", "NUCLEAR"]
+            },
+            "description": "Available fuel types at this station"
+          },
+          "capacity": {
+            "type": "number",
+            "description": "Maximum fuel capacity in metric tons"
+          },
+          "currentAvailability": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Current fuel availability percentage"
+          }
+        }
       }
     }
   },
@@ -1225,6 +1271,55 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Error" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interplanetary/fuel-stations": {
+      "get": {
+        "tags": ["Interplanetary"],
+        "summary": "List fuel stations",
+        "description": "Returns all available fuel stations along interplanetary routes",
+        "operationId": "listFuelStations",
+        "parameters": [
+          {
+            "name": "location",
+            "in": "query",
+            "description": "Filter by orbital location",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Earth Orbit",
+                "Mars Orbit",
+                "Venus Orbit",
+                "Jupiter Orbit",
+                "Asteroid Belt"
+              ]
+            }
+          },
+          {
+            "name": "fuelType",
+            "in": "query",
+            "description": "Filter by available fuel type",
+            "schema": {
+              "type": "string",
+              "enum": ["ION", "CHEMICAL", "SOLAR", "NUCLEAR"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of fuel stations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FuelStation"
+                  }
+                }
               }
             }
           }

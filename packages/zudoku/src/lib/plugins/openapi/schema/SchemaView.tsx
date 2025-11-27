@@ -17,7 +17,7 @@ import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { UnionView } from "./UnionView.js";
-import { isBasicType } from "./utils.js";
+import { isArrayType, isBasicType } from "./utils.js";
 
 const renderMarkdown = (content?: string) =>
   content && (
@@ -91,9 +91,19 @@ export const SchemaView = ({
     return renderBasicSchema(schema, cardHeader, embedded);
   }
 
-  if (schema.type === "array" && typeof schema.items === "object") {
-    return <SchemaView schema={schema.items} cardHeader={cardHeader} />;
+  if (isArrayType(schema) && typeof schema.items === "object") {
+    const wrappedSchema: SchemaObject = {
+      type: "object",
+      properties: { "": schema },
+    };
+
+    return (
+      <SchemaView schema={wrappedSchema} cardHeader={cardHeader} defaultOpen />
+    );
   }
+
+  const additionalObjectProperties = typeof schema.additionalProperties ===
+    "object" && <SchemaView schema={schema.additionalProperties} embedded />;
 
   if (schema.type === "object") {
     const groupedProperties = groupBy(
@@ -106,32 +116,31 @@ export const SchemaView = ({
             : "optional";
       },
     );
+
     const groupNames = ["required", "optional", "deprecated"] as const;
+    const groups = groupNames.flatMap((group) => {
+      const properties = groupedProperties[group];
+      return properties ? { group, properties } : [];
+    });
 
-    const additionalObjectProperties = typeof schema.additionalProperties ===
-      "object" && <SchemaView schema={schema.additionalProperties} embedded />;
-
-    const itemsList = groupNames.map(
-      (group, index) =>
-        groupedProperties[group] && (
-          <Fragment key={group}>
-            {index > 0 && <ItemSeparator />}
-            <ItemGroup className="overflow-clip">
-              {groupedProperties[group].map(([name, schema], index) => (
-                <Fragment key={name}>
-                  {index > 0 && <ItemSeparator />}
-                  <SchemaPropertyItem
-                    name={name}
-                    schema={schema}
-                    group={group}
-                    defaultOpen={defaultOpen}
-                  />
-                </Fragment>
-              ))}
-            </ItemGroup>
-          </Fragment>
-        ),
-    );
+    const itemsList = groups.map(({ group, properties }, index) => (
+      <Fragment key={group}>
+        {index > 0 && <ItemSeparator />}
+        <ItemGroup className="overflow-clip">
+          {properties.map(([name, schema], index) => (
+            <Fragment key={name}>
+              {index > 0 && <ItemSeparator />}
+              <SchemaPropertyItem
+                name={name}
+                schema={schema}
+                group={group}
+                defaultOpen={defaultOpen}
+              />
+            </Fragment>
+          ))}
+        </ItemGroup>
+      </Fragment>
+    ));
 
     if (embedded) {
       return itemsList;
