@@ -99,7 +99,7 @@ export const docs: Navigation = [
       "docs/guides/static-files",
       "docs/guides/environment-variables",
       "docs/guides/custom-pages",
-      "docs/guides/navigation-migration",
+      "docs/guides/mermaid",
       "docs/guides/using-multiple-apis",
       "docs/guides/managing-api-keys-and-identities",
       "docs/guides/transforming-examples",
@@ -151,6 +151,7 @@ export const components: Navigation = [
     type: "category",
     label: "Documentation",
     items: [
+      "docs/components/mermaid",
       "docs/components/playground",
       "docs/components/secret",
       "docs/components/stepper",

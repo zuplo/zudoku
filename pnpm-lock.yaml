@@ -206,6 +206,9 @@ importers:
 
   examples/mermaid:
     dependencies:
+      mermaid:
+        specifier: ^11.0.0
+        version: 11.12.1
       rehype-mermaid:
         specifier: ^3.0.0
         version: 3.0.0(playwright@1.56.1)
@@ -604,6 +607,9 @@ importers:
       lucide-react:
         specifier: 0.548.0
         version: 0.548.0(react@19.2.0)
+      mermaid:
+        specifier: ^11.0.0
+        version: 11.12.1
       motion:
         specifier: 12.23.12
         version: 12.23.12(@emotion/is-prop-valid@0.8.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

@@ -41,6 +41,7 @@
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
     "./components": "./src/lib/components/index.ts",
+    "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
     "./__internal": "./src/lib/core/__internal.tsx",
     "./icons": "./src/lib/icons.ts",
@@ -134,6 +135,10 @@
       "./components": {
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
+      },
+      "./mermaid": {
+        "import": "./lib/zudoku.mermaid.js",
+        "types": "./dist/lib/components/Mermaid.d.ts"
       },
       "./__internal": {
         "import": "./lib/zudoku.__internal.js",
@@ -333,6 +338,7 @@
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
     "firebase": "^12.6.0",
+    "mermaid": "^11.0.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
@@ -356,6 +362,9 @@
       "optional": true
     },
     "firebase": {
+      "optional": true
+    },
+    "mermaid": {
       "optional": true
     }
   }
