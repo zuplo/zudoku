@@ -35,14 +35,14 @@ export const ParameterList = ({
       <Frame>
         <FramePanel className="p-0!">
           <ItemGroup className="overflow-clip">
-            {sortedParameters.map((parameter) => (
+            {sortedParameters.map((parameter, index) => (
               <Fragment key={`${parameter.name}-${parameter.in}`}>
+                {index > 0 && <ItemSeparator />}
                 <ParameterListItem
                   parameter={parameter}
                   id={id}
                   group={group}
                 />
-                <ItemSeparator />
               </Fragment>
             ))}
           </ItemGroup>

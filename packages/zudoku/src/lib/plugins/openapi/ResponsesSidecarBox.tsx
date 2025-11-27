@@ -1,4 +1,4 @@
-import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
+import { ChevronsDownUpIcon, ChevronsUpDownIcon, InfoIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "zudoku/components";
 import {
@@ -7,6 +7,12 @@ import {
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "zudoku/ui/Tooltip.js";
 import type { ResponseItem } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
@@ -16,11 +22,13 @@ export const ResponsesSidecarBox = ({
   selectedResponse,
   isOnScreen,
   shouldLazyHighlight,
+  isGenerated,
 }: {
   responses: ResponseItem[];
   selectedResponse?: string;
   isOnScreen: boolean;
   shouldLazyHighlight?: boolean;
+  isGenerated?: boolean;
 }) => {
   const [internalSelectedResponse, setInternalSelectedResponse] = useState(
     selectedResponse ?? responses[0]?.statusCode,
@@ -57,8 +65,20 @@ export const ResponsesSidecarBox = ({
               </Button>
             </CollapsibleTrigger>
             Example Responses
+            {isGenerated && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <InfoIcon size={13} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    This example is auto-generated from the schema.
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
-          <div className="group-data-[state=closed]/collapsible:hidden">
+          <div className="group-data-[state=closed]/collapsible:invisible">
             <NativeSelect
               className="text-xs h-fit py-1 -my-1 bg-background"
               value={internalSelectedResponse}
