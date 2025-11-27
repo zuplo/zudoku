@@ -303,14 +303,9 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
       if (process.env.NODE_ENV !== "production") return;
 
-      for (const [downloadUrl, inputPath] of pathMap) {
+      for (const [urlPath, inputPath] of pathMap) {
         const content = await fs.readFile(inputPath, "utf-8");
-        const outputPath = path.join(
-          config.__meta.rootDir,
-          "dist",
-          config.basePath ?? "",
-          downloadUrl,
-        );
+        const outputPath = path.join(config.__meta.rootDir, "dist", urlPath);
 
         await fs.mkdir(path.dirname(outputPath), { recursive: true });
         await fs.writeFile(outputPath, content, "utf-8");
