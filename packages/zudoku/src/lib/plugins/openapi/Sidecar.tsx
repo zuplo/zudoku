@@ -267,7 +267,7 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {hasResponseExamples && (
+      {hasResponseExamples ? (
         <ResponsesSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
@@ -284,6 +284,29 @@ export const Sidecar = ({
                     content: response.content,
                   })
                 : response.content,
+          }))}
+        />
+      ) : (
+        <ResponsesSidecarBox
+          isGenerated
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
+          selectedResponse={selectedResponse}
+          responses={operation.responses.map((response) => ({
+            ...response,
+            content: response.content?.map((content) => ({
+              ...content,
+              examples:
+                content.schema &&
+                (!content.examples || content.examples.length === 0)
+                  ? [
+                      {
+                        name: "Generated Example",
+                        value: generateSchemaExample(content.schema),
+                      },
+                    ]
+                  : content.examples,
+            })),
           }))}
         />
       )}
