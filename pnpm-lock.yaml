@@ -286,8 +286,8 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
       rollup-plugin-visualizer:
-        specifier: 6.0.3
-        version: 6.0.3(rollup@4.52.5)
+        specifier: 6.0.5
+        version: 6.0.5(rollup@4.52.5)
       zudoku:
         specifier: workspace:*
         version: link:../../packages/zudoku
@@ -804,8 +804,8 @@ importers:
         specifier: 19.2.0
         version: 19.2.0(react@19.2.0)
       rollup-plugin-visualizer:
-        specifier: 6.0.3
-        version: 6.0.3(rollup@4.52.5)
+        specifier: 6.0.5
+        version: 6.0.5(rollup@4.52.5)
       tsx:
         specifier: 4.20.6
         version: 4.20.6
@@ -7604,8 +7604,8 @@ packages:
   robust-predicates@3.0.2:
     resolution: {integrity: sha512-IXgzBWvWQwE6PrDI05OvmXUIruQTcoMDzRsOd5CDvHCVLcLHMTSYvOK5Cm46kWqlV3yAbuSpBZdJ5oP5OUoStg==}
 
-  rollup-plugin-visualizer@6.0.3:
-    resolution: {integrity: sha512-ZU41GwrkDcCpVoffviuM9Clwjy5fcUxlz0oMoTXTYsK+tcIFzbdacnrr2n8TXcHxbGKKXtOdjxM2HUS4HjkwIw==}
+  rollup-plugin-visualizer@6.0.5:
+    resolution: {integrity: sha512-9+HlNgKCVbJDs8tVtjQ43US12eqaiHyyiLMdBwQ7vSZPiHMysGNo2E88TAp1si5wx8NAoYriI2A5kuKfIakmJg==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
@@ -7788,6 +7788,10 @@ packages:
   source-map@0.7.4:
     resolution: {integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==}
     engines: {node: '>= 8'}
+
+  source-map@0.7.6:
+    resolution: {integrity: sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==}
+    engines: {node: '>= 12'}
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
@@ -10733,7 +10737,7 @@ snapshots:
       remark-mdx: 3.0.1
       remark-parse: 11.0.0
       remark-rehype: 11.1.2
-      source-map: 0.7.4
+      source-map: 0.7.6
       unified: 11.0.5
       unist-util-position-from-estree: 2.0.0
       unist-util-stringify-position: 4.0.0
@@ -14001,7 +14005,7 @@ snapshots:
     dependencies:
       '@types/estree-jsx': 1.0.5
       astring: 1.8.6
-      source-map: 0.7.4
+      source-map: 0.7.6
 
   estree-util-value-to-estree@3.4.1:
     dependencies:
@@ -16748,11 +16752,11 @@ snapshots:
 
   robust-predicates@3.0.2: {}
 
-  rollup-plugin-visualizer@6.0.3(rollup@4.52.5):
+  rollup-plugin-visualizer@6.0.5(rollup@4.52.5):
     dependencies:
       open: 8.4.2
-      picomatch: 4.0.2
-      source-map: 0.7.4
+      picomatch: 4.0.3
+      source-map: 0.7.6
       yargs: 17.7.2
     optionalDependencies:
       rollup: 4.52.5
@@ -16978,6 +16982,8 @@ snapshots:
   source-map@0.6.1: {}
 
   source-map@0.7.4: {}
+
+  source-map@0.7.6: {}
 
   space-separated-tokens@2.0.2: {}
 
