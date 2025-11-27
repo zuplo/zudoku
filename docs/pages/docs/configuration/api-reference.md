@@ -125,6 +125,7 @@ const config = {
       disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
+      schemaDownload: { enabled: true }, // Enable schema download button
     },
   },
 };
@@ -139,6 +140,9 @@ Available options:
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
+- `schemaDownload`: Enable schema download functionality with `{ enabled: boolean }`. When enabled,
+  displays a button allowing users to download the OpenAPI schema, copy it to clipboard, open in a
+  new tab, or use it with AI tools like Claude and ChatGPT.
 
 ## Default Options
 
@@ -153,6 +157,7 @@ const config = {
       disablePlayground: false, // Disable the interactive API playground
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
+      schemaDownload: { enabled: true }, // Enable schema download button
     },
   },
   apis: {
