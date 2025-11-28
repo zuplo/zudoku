@@ -1,4 +1,5 @@
 import type { Navigation, ZudokuConfig } from "zudoku";
+import { defaultLanguages } from "zudoku";
 import apis from "./apis/_apis.json";
 import navigation from "./apis/_navigation.json";
 
@@ -13,11 +14,17 @@ const config: ZudokuConfig = {
   navigation: [
     {
       type: "category",
-      label: "Overview",
+      label: "List of APIs",
+      link: "overview",
       items: navigation as Navigation,
     },
   ],
-
+  syntaxHighlighting: {
+    languages: [...defaultLanguages, "csv"],
+  },
+  search: {
+    type: "pagefind",
+  },
   redirects: [{ from: "/", to: "/overview" }],
   apis: apis as ZudokuConfig["apis"],
   defaults: {

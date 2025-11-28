@@ -188,7 +188,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const versionedInput = schemas.map((s) => ({
               path: s.version,
-              label: s.schema.info.version,
+              label: s.schema.info?.version,
               input: s.inputPath,
             }));
 
