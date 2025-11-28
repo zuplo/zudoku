@@ -32,6 +32,15 @@ const config = {
 
 ## URL Reference
 
+:::danger{title="Recommendation"}
+
+We strongly recommend using `type: "file"` for your OpenAPI schemas. When using URL based
+references, all schema processing occurs at runtime in the browser. This can cause noticeable
+performance issues with large OpenAPI documents and some features may not be fully supported due to
+the added complexity of runtime processing.
+
+:::
+
 If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing
 the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document
 if you want to test and play around):
