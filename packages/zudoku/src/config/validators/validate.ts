@@ -66,6 +66,7 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     expandApiInformation: z.boolean(),
+    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),
@@ -84,10 +85,16 @@ const ApiConfigSchema = z
   })
   .partial();
 
+const UrlVersionConfigSchema = z.object({
+  path: z.string(),
+  input: z.string(),
+  label: z.string().optional(),
+});
+
 const ApiSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("url"),
-    input: z.string(),
+    input: z.union([z.string(), z.array(UrlVersionConfigSchema)]),
     ...ApiConfigSchema.shape,
   }),
   z.object({

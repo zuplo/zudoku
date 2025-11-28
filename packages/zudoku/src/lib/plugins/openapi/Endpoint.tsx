@@ -32,7 +32,7 @@ const CopyButton = ({ url }: { url: string }) => {
         });
       }}
       variant="ghost"
-      size="icon"
+      size="icon-xs"
     >
       {isCopied ? (
         <CheckIcon className="text-green-600" size={14} />
@@ -53,40 +53,33 @@ export const Endpoint = () => {
   );
 
   const { servers } = result.data.schema;
-
   const firstServer = servers.at(0);
 
   if (!firstServer) return null;
 
-  if (servers.length === 1) {
-    return (
-      <div className="flex items-center gap-2">
-        <span className="font-medium text-sm">Endpoint:</span>
+  return (
+    <div className="flex items-center gap-1.5 flex-nowrap">
+      <span className="font-medium text-sm">Endpoint</span>
+      {servers.length > 1 ? (
+        <SimpleSelect
+          className="font-mono text-xs border-input bg-transparent dark:bg-input/30 dark:hover:bg-input/50 py-1.5 max-w-[450px] truncate"
+          onChange={(e) =>
+            startTransition(() => setSelectedServer(e.target.value))
+          }
+          value={selectedServer}
+          showChevrons={servers.length > 1}
+          options={servers.map((server) => ({
+            value: server.url,
+            label: server.url,
+          }))}
+        />
+      ) : (
         <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
           {firstServer.url}
         </InlineCode>
-        <CopyButton url={firstServer.url} />
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <span className="font-medium text-sm">Endpoint</span>
-
-      <SimpleSelect
-        className="font-mono text-xs bg-border/50 dark:bg-border/70 py-1.5 max-w-[450px] truncate"
-        onChange={(e) =>
-          startTransition(() => setSelectedServer(e.target.value))
-        }
-        value={selectedServer}
-        showChevrons={servers.length > 1}
-        options={servers.map((server) => ({
-          value: server.url,
-          label: server.url,
-        }))}
-      />
-      <CopyButton url={selectedServer} />
+      <CopyButton url={servers.length > 1 ? selectedServer : firstServer.url} />
     </div>
   );
 };

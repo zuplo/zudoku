@@ -13,7 +13,7 @@ import type { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
-import { getRoutes, getVersions } from "./util/getRoutes.js";
+import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
 
 export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
@@ -54,14 +54,19 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
   return {
     getHead: () => {
       if (config.type === "url" && !config.skipPreload) {
-        return (
+        const urls = Array.isArray(config.input)
+          ? config.input.map((v) => v.input)
+          : [config.input];
+
+        return urls.map((url) => (
           <link
+            key={url}
+            href={url}
             rel="preload"
-            href={config.input}
             as="fetch"
             crossOrigin="anonymous"
           />
-        );
+        ));
       }
 
       if (config.server) {
@@ -111,10 +116,14 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
       try {
         const versionParam = match?.params.version;
-        const version = versionParam ?? getVersions(config).at(0);
+        const { versions } = getVersionMetadata(config);
+        const version = versionParam ?? versions.at(0);
         const { type } = config;
-        // biome-ignore lint/style/noNonNullAssertion: version is guaranteed to be defined
-        const input = type === "file" ? config.input[version!] : config.input;
+
+        const input = Array.isArray(config.input)
+          ? (config.input.find((v) => v.path === version)?.input ??
+            config.input[0]?.input)
+          : config.input;
 
         const query = createQuery(client, GetNavigationOperationsQuery, {
           type,
