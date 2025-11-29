@@ -86,6 +86,8 @@ export const usePrevNext = (): {
   let foundCurrent = false;
 
   traverseNavigation(navigation, (item) => {
+    if (item.type === "separator") return;
+
     const itemId =
       item.type === "doc"
         ? joinUrl(item.path)

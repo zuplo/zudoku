@@ -68,6 +68,11 @@ const InputNavigationCustomPageSchema = z.object({
   layout: z.enum(["default", "none"]).optional(),
 });
 
+const InputNavigationSeparatorSchema = z.object({
+  type: z.literal("separator"),
+  display: DisplaySchema,
+});
+
 // Base category schema without items
 const BaseInputNavigationCategorySchema = z.object({
   type: z.literal("category"),
@@ -83,6 +88,7 @@ export type InputNavigationItem =
   | z.infer<typeof InputNavigationDocSchema>
   | z.infer<typeof InputNavigationLinkSchema>
   | z.infer<typeof InputNavigationCustomPageSchema>
+  | z.infer<typeof InputNavigationSeparatorSchema>
   | (z.infer<typeof BaseInputNavigationCategorySchema> & {
       items: InputNavigationItem[];
     });
@@ -99,6 +105,7 @@ const InputNavigationItemSchema: z.ZodType<InputNavigationItem> = z.union([
   InputNavigationDocSchema,
   InputNavigationLinkSchema,
   InputNavigationCustomPageSchema,
+  InputNavigationSeparatorSchema,
   InputNavigationCategorySchema,
 ]);
 
@@ -108,6 +115,9 @@ export type InputNavigationDoc = z.infer<typeof InputNavigationDocSchema>;
 export type InputNavigationLink = z.infer<typeof InputNavigationLinkSchema>;
 export type InputNavigationCustomPage = z.infer<
   typeof InputNavigationCustomPageSchema
+>;
+export type InputNavigationSeparator = z.infer<
+  typeof InputNavigationSeparatorSchema
 >;
 export type InputNavigationCategory = z.infer<
   typeof BaseInputNavigationCategorySchema
