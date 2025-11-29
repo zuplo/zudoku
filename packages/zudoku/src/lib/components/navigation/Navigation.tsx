@@ -30,7 +30,7 @@ export const Navigation = ({
       <Slot.Target name="navigation-after" />
     </NavigationWrapper>
     <DrawerContent
-      className="lg:hidden h-[100dvh] start-0 w-[320px] rounded-none"
+      className="lg:hidden h-dvh start-0 w-[320px] rounded-none"
       aria-describedby={undefined}
     >
       <div className="p-4 overflow-y-auto overscroll-none">

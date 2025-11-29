@@ -136,6 +136,7 @@ const config: ZudokuConfig = {
           items: ["shipping-process", "tracking"],
         },
         "global",
+        { type: "separator" },
         {
           type: "category",
           icon: "library-big",
@@ -165,6 +166,7 @@ const config: ZudokuConfig = {
         },
       ],
     },
+    { type: "separator" },
     {
       type: "link",
       icon: "ship",

@@ -1,6 +1,7 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
+import { Separator } from "zudoku/ui/Separator.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
@@ -75,6 +76,8 @@ export const NavigationItem = ({
       return (
         <NavigationCategory category={item} onRequestClose={onRequestClose} />
       );
+    case "separator":
+      return <Separator />;
     case "doc":
       return (
         <NavLink

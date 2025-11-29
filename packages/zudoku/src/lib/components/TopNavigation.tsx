@@ -2,6 +2,7 @@ import { cx } from "class-variance-authority";
 import { deepEqual } from "fast-equals";
 import { Suspense } from "react";
 import { NavLink, type NavLinkProps } from "react-router";
+import { Separator } from "zudoku/ui/Separator.js";
 import type { NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
 import { joinUrl } from "../util/joinUrl.js";
@@ -24,11 +25,17 @@ export const TopNavigation = () => {
       <div className="items-center justify-between px-8 h-(--top-nav-height) hidden lg:flex text-sm relative">
         <nav className="text-sm">
           <ul className="flex flex-row items-center gap-8">
-            {filteredItems.map((item) => (
-              <li key={item.label + item.type}>
-                <TopNavItem {...item} />
-              </li>
-            ))}
+            {filteredItems.map((item) =>
+              item.type === "separator" ? (
+                <li key={item.label} className="-mx-4 h-7">
+                  <Separator orientation="vertical" />
+                </li>
+              ) : (
+                <li key={item.label + item.type}>
+                  <TopNavItem {...item} />
+                </li>
+              ),
+            )}
           </ul>
         </nav>
         <Slot.Target name="top-navigation-side" />
@@ -51,7 +58,7 @@ const getPathForItem = (item: NavigationItem): string => {
 
       return (
         traverseNavigationItem(item, (child) => {
-          if (child.type !== "category") {
+          if (child.type !== "category" && child.type !== "separator") {
             return getPathForItem(child);
           }
         }) ?? ""
@@ -59,6 +66,8 @@ const getPathForItem = (item: NavigationItem): string => {
     }
     case "custom-page":
       return item.path;
+    case "separator":
+      return "";
   }
 };
 
@@ -97,7 +106,9 @@ export const TopNavLink = ({
   );
 };
 
-export const TopNavItem = (item: NavigationItem) => {
+export const TopNavItem = (
+  item: Exclude<NavigationItem, { type: "separator" }>,
+) => {
   const currentNav = useCurrentNavigation();
   const isActiveTopNavItem = deepEqual(currentNav.topNavItem, item);
 
