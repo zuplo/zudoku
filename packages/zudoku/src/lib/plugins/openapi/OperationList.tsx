@@ -19,6 +19,7 @@ import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
@@ -259,6 +260,7 @@ export const OperationList = ({
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
+      <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
       <Helmet>
         {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (

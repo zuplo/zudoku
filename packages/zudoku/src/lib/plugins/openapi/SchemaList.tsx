@@ -16,6 +16,7 @@ import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Toc } from "../../components/navigation/Toc.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { graphql } from "./graphql/gql.js";
@@ -70,6 +71,7 @@ export function SchemaList() {
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
+      <PagefindSearchMeta name="category">{data.schema.title}</PagefindSearchMeta>
       <Helmet>
         <title>Schemas {showVersions ? version : ""}</title>
         <meta name="description" content="List of schemas used by the API." />
