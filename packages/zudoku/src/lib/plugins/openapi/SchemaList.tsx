@@ -71,7 +71,9 @@ export function SchemaList() {
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
-      <PagefindSearchMeta name="category">{data.schema.title}</PagefindSearchMeta>
+      <PagefindSearchMeta name="category">
+        {data.schema.title}
+      </PagefindSearchMeta>
       <Helmet>
         <title>Schemas {showVersions ? version : ""}</title>
         <meta name="description" content="List of schemas used by the API." />
