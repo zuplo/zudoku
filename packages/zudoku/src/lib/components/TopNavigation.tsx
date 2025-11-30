@@ -30,11 +30,11 @@ export const TopNavigation = () => {
                 <li key={item.label} className="-mx-4 h-7">
                   <Separator orientation="vertical" />
                 </li>
-              ) : (
+              ) : item.type !== "section" ? (
                 <li key={item.label + item.type}>
                   <TopNavItem {...item} />
                 </li>
-              ),
+              ) : null,
             )}
           </ul>
         </nav>
@@ -58,7 +58,11 @@ const getPathForItem = (item: NavigationItem): string => {
 
       return (
         traverseNavigationItem(item, (child) => {
-          if (child.type !== "category" && child.type !== "separator") {
+          if (
+            child.type !== "category" &&
+            child.type !== "separator" &&
+            child.type !== "section"
+          ) {
             return getPathForItem(child);
           }
         }) ?? ""
@@ -67,6 +71,7 @@ const getPathForItem = (item: NavigationItem): string => {
     case "custom-page":
       return item.path;
     case "separator":
+    case "section":
       return "";
   }
 };
@@ -107,7 +112,7 @@ export const TopNavLink = ({
 };
 
 export const TopNavItem = (
-  item: Exclude<NavigationItem, { type: "separator" }>,
+  item: Exclude<NavigationItem, { type: "separator" } | { type: "section" }>,
 ) => {
   const currentNav = useCurrentNavigation();
   const isActiveTopNavItem = deepEqual(currentNav.topNavItem, item);
