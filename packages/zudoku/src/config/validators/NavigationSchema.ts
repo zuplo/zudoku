@@ -8,6 +8,7 @@ import type {
   InputNavigationCategoryLinkDoc,
   InputNavigationCustomPage,
   InputNavigationDoc,
+  InputNavigationFilter,
   InputNavigationItem,
   InputNavigationLink,
   InputNavigationSection,
@@ -51,13 +52,16 @@ export type NavigationSeparator = InputNavigationSeparator & { label: string };
 
 export type NavigationSection = InputNavigationSection;
 
+export type NavigationFilter = InputNavigationFilter & { label: string };
+
 export type NavigationItem =
   | NavigationDoc
   | NavigationLink
   | NavigationCategory
   | NavigationCustomPage
   | NavigationSeparator
-  | NavigationSection;
+  | NavigationSection
+  | NavigationFilter;
 
 export type Navigation = NavigationItem[];
 
@@ -75,7 +79,7 @@ export class NavigationResolver {
   private globPatterns: string[];
   private globFiles: string[] = [];
   private items: InputNavigationItem[] = [];
-  private separatorIndex = 0;
+  private itemIndex = 0;
 
   constructor(config: ConfigWithMeta) {
     this.rootDir = config.__meta.rootDir;
@@ -192,7 +196,9 @@ export class NavigationResolver {
       case "section":
         return item;
       case "separator":
-        return { ...item, label: `separator-${this.separatorIndex++}` };
+        return { ...item, label: `separator-${this.itemIndex++}` };
+      case "filter":
+        return { ...item, label: `filter-${this.itemIndex++}` };
       case "category": {
         const categoryItem = item;
 

@@ -6,6 +6,7 @@ import type { Navigation } from "zudoku";
  */
 
 export const docs: Navigation = [
+  { type: "filter", placeholder: "Filter documentation" },
   "docs/quickstart",
   // {
   //   type: "category",

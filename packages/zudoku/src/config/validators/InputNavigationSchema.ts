@@ -79,6 +79,12 @@ const InputNavigationSectionSchema = z.object({
   display: DisplaySchema,
 });
 
+const InputNavigationFilterSchema = z.object({
+  type: z.literal("filter"),
+  placeholder: z.string().optional(),
+  display: DisplaySchema,
+});
+
 // Base category schema without items
 const BaseInputNavigationCategorySchema = z.object({
   type: z.literal("category"),
@@ -96,6 +102,7 @@ export type InputNavigationItem =
   | z.infer<typeof InputNavigationCustomPageSchema>
   | z.infer<typeof InputNavigationSeparatorSchema>
   | z.infer<typeof InputNavigationSectionSchema>
+  | z.infer<typeof InputNavigationFilterSchema>
   | (z.infer<typeof BaseInputNavigationCategorySchema> & {
       items: InputNavigationItem[];
     });
@@ -114,6 +121,7 @@ const InputNavigationItemSchema: z.ZodType<InputNavigationItem> = z.union([
   InputNavigationCustomPageSchema,
   InputNavigationSeparatorSchema,
   InputNavigationSectionSchema,
+  InputNavigationFilterSchema,
   InputNavigationCategorySchema,
 ]);
 
@@ -130,6 +138,7 @@ export type InputNavigationSeparator = z.infer<
 export type InputNavigationSection = z.infer<
   typeof InputNavigationSectionSchema
 >;
+export type InputNavigationFilter = z.infer<typeof InputNavigationFilterSchema>;
 export type InputNavigationCategory = z.infer<
   typeof BaseInputNavigationCategorySchema
 > & { items: InputNavigationItem[] };
