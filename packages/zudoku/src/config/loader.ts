@@ -31,6 +31,7 @@ const zudokuConfigFiles = [
   "zudoku.config.ts",
   "zudoku.config.tsx",
   "zudoku.config.mjs",
+  "zudoku.config.cjs",
 ];
 
 async function getConfigFilePath(rootDir: string) {
