@@ -39,7 +39,6 @@ const zudokuBuildConfigFiles = [
   "zudoku.build.ts",
   "zudoku.build.tsx",
   "zudoku.build.mjs",
-  "zudoku.build.cjs",
 ];
 
 async function getBuildConfigFilePath(rootDir: string) {
