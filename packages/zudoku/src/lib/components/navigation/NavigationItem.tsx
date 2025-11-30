@@ -78,6 +78,12 @@ export const NavigationItem = ({
       );
     case "separator":
       return <Separator />;
+    case "section":
+      return (
+        <div className="mt-4 mb-2 px-(--padding-nav-item) text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {item.label}
+        </div>
+      );
     case "doc":
       return (
         <NavLink

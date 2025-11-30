@@ -10,6 +10,7 @@ import type {
   InputNavigationDoc,
   InputNavigationItem,
   InputNavigationLink,
+  InputNavigationSection,
   InputNavigationSeparator,
 } from "./InputNavigationSchema.js";
 import { DocsConfigSchema } from "./validate.js";
@@ -48,12 +49,15 @@ export type NavigationCustomPage = ReplaceFields<
 
 export type NavigationSeparator = InputNavigationSeparator & { label: string };
 
+export type NavigationSection = InputNavigationSection;
+
 export type NavigationItem =
   | NavigationDoc
   | NavigationLink
   | NavigationCategory
   | NavigationCustomPage
-  | NavigationSeparator;
+  | NavigationSeparator
+  | NavigationSection;
 
 export type Navigation = NavigationItem[];
 
@@ -185,6 +189,7 @@ export class NavigationResolver {
         return this.resolveNavigationItemDoc(item, categoryLabel);
       case "link":
       case "custom-page":
+      case "section":
         return item;
       case "separator":
         return { ...item, label: `separator-${this.separatorIndex++}` };

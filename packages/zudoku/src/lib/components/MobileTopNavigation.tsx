@@ -88,13 +88,13 @@ export const MobileTopNavigation = () => {
               {filteredItems.map((item) =>
                 item.type === "separator" ? (
                   <Separator className="w-full" key={item.label} />
-                ) : (
+                ) : item.type !== "section" ? (
                   <li key={item.label}>
                     <button type="button" onClick={() => setDrawerOpen(false)}>
                       <TopNavItem {...item} />
                     </button>
                   </li>
-                ),
+                ) : null,
               )}
               {isAuthEnabled && isAuthenticated && accountItems.length > 0 && (
                 <ClientOnly
