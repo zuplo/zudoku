@@ -86,7 +86,7 @@ export const usePrevNext = (): {
   let foundCurrent = false;
 
   traverseNavigation(navigation, (item) => {
-    if (item.type === "separator") return;
+    if (item.type === "separator" || item.type === "section") return;
 
     const itemId =
       item.type === "doc"
