@@ -2,6 +2,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { DrawerContent, DrawerTitle } from "../../ui/Drawer.js";
 import { Slot } from "../Slot.js";
+import { NavigationFilterProvider } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
 import { NavigationWrapper } from "./NavigationWrapper.js";
 
@@ -12,7 +13,7 @@ export const Navigation = ({
   onRequestClose?: () => void;
   navigation: NavigationItemType[];
 }) => (
-  <>
+  <NavigationFilterProvider>
     <NavigationWrapper>
       <Slot.Target name="navigation-before" />
       {navigation.map((item) => (
@@ -46,5 +47,5 @@ export const Navigation = ({
         ))}
       </div>
     </DrawerContent>
-  </>
+  </NavigationFilterProvider>
 );
