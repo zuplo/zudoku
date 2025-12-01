@@ -86,11 +86,13 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
         message: "Connection lost during indexing",
       });
     };
+
+    return () => eventSource.close();
   }, []);
 
   useEffect(() => {
     if (indexingState.status !== "idle") return;
-    startIndexing();
+    return startIndexing();
   }, [indexingState.status, startIndexing]);
 
   const handleDone = () => {

@@ -119,7 +119,13 @@ export class DevServer {
       );
 
       if (currentConfig.search?.type !== "pagefind") {
-        res.status(400).json({ error: "Pagefind search is not enabled" });
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.write(
+          `data: ${JSON.stringify({ type: "complete", success: false, indexed: 0, error: "Pagefind search is not enabled" })}\n\n`,
+        );
+        res.end();
         return;
       }
 

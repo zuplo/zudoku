@@ -10,7 +10,7 @@ export const routesToPaths = (routes: RouteObject[]) => {
       }
 
       // skip status pages
-      if (route.path && /\d+/.test(route.path)) {
+      if (route.path && /^\d+$/.test(route.path)) {
         continue;
       }
 
