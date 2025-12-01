@@ -267,7 +267,7 @@
     "pagefind": "1.4.0",
     "picocolors": "1.1.1",
     "piscina": "5.1.4",
-    "posthog-node": "5.7.0",
+    "posthog-node": "5.14.1",
     "react-error-boundary": "6.0.0",
     "react-hook-form": "7.66.0",
     "react-is": "catalog:",
