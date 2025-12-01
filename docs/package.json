@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.2",
-    "motion": "12.23.12",
+    "motion": "12.23.24",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
