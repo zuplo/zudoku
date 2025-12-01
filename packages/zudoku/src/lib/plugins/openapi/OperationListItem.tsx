@@ -1,9 +1,9 @@
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
@@ -134,9 +134,9 @@ export const OperationListItem = ({
                     id={`${operation.slug}/request-body`}
                   >
                     {operation.summary && (
-                      <VisuallyHidden>
+                      <PagefindSearchMeta>
                         {operation.summary} &rsaquo;{" "}
-                      </VisuallyHidden>
+                      </PagefindSearchMeta>
                     )}
                     Request Body{" "}
                     {operation.requestBody?.required === false ? (
@@ -154,9 +154,9 @@ export const OperationListItem = ({
               <>
                 <Heading level={3} id={`${operation.slug}/responses`}>
                   {operation.summary && (
-                    <VisuallyHidden>
+                    <PagefindSearchMeta>
                       {operation.summary} &rsaquo;{" "}
-                    </VisuallyHidden>
+                    </PagefindSearchMeta>
                   )}
                   Responses
                 </Heading>
