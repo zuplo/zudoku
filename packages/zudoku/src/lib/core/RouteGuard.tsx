@@ -101,7 +101,7 @@ export const RouteGuard = () => {
 
   return (
     <>
-      {shouldBypass && (
+      {shouldBypass && isProtectedRoute && (
         <Helmet>
           <meta
             name="pagefind"

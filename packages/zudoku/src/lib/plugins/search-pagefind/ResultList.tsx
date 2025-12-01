@@ -35,9 +35,9 @@ export const ResultList = ({
   const navigate = useNavigate();
   const commandListRef = useRef<HTMLDivElement | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only scroll to top when search term changes
   useLayoutEffect(() => {
-    requestIdleCallback(() => {
+    if (!searchTerm) return;
+    requestAnimationFrame(() => {
       commandListRef.current?.scrollTo({ top: 0 });
     });
   }, [searchTerm]);

@@ -14,30 +14,10 @@ import invariant from "../../lib/util/invariant.js";
 import type { MarkdownFileInfo } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
+import { routesToPaths } from "./utils.js";
 import type { StaticWorkerData, WorkerData } from "./worker.js";
 
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
-
-const routesToPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
-  const paths: string[] = [];
-  const addPaths = (routes: ReturnType<typeof getRoutesByConfig>) => {
-    for (const route of routes) {
-      // skip catch-all routes
-      if (route.path?.includes("*") || route.path?.includes(":")) {
-        continue;
-      }
-
-      if (route.path) {
-        paths.push(route.path.startsWith("/") ? route.path : `/${route.path}`);
-      }
-      if (route.children) {
-        addPaths(route.children);
-      }
-    }
-  };
-  addPaths(routes);
-  return paths;
-};
 
 export type WorkerResult = {
   outputPath: string;
