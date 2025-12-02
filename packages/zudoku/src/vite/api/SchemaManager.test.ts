@@ -3,6 +3,9 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { LoadedConfig } from "../../config/config.js";
+import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
+import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
+import invariant from "../../lib/util/invariant.js";
 import { SchemaManager } from "./SchemaManager.js";
 
 const mockSchema = {
@@ -125,5 +128,77 @@ describe("SchemaManager", () => {
 
     expect(manager.getAllTrackedFiles().length).toBeGreaterThan(0);
     expect(manager.getAllTrackedFiles()).toContain(schemaPath);
+  });
+
+  it("should preserve $refs outside allOf while flattening allOf", async () => {
+    const schemaWithRefs = {
+      openapi: "3.0.0",
+      info: { title: "Test API", version: "1.0.0" },
+      paths: {
+        "/items": {
+          get: {
+            responses: {
+              "200": {
+                description: "Success",
+                content: {
+                  "application/json": {
+                    // This $ref should be preserved (not inside allOf)
+                    schema: { $ref: "#/components/schemas/Item" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          Base: { type: "object", properties: { id: { type: "string" } } },
+          Item: {
+            // allOf with $ref should be flattened
+            allOf: [
+              { $ref: "#/components/schemas/Base" },
+              { type: "object", properties: { name: { type: "string" } } },
+            ],
+          },
+          Container: {
+            type: "object",
+            // This $ref should be preserved (not inside allOf)
+            properties: { item: { $ref: "#/components/schemas/Base" } },
+          },
+        },
+      },
+    } as OpenAPIDocument;
+
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(schemaWithRefs));
+
+    const config: LoadedConfig = {
+      __meta: {
+        rootDir: tempDir,
+        moduleDir: path.join(tempDir, "node_modules"),
+        mode: "module",
+        dependencies: [],
+        configPath: path.join(tempDir, "zudoku.config.ts"),
+      },
+      apis: [{ type: "file", path: "test-api", input: schemaPath }],
+    };
+
+    const manager = new SchemaManager({
+      storeDir,
+      config,
+      processors: [flattenAllOfProcessor],
+    });
+
+    await manager.processAllSchemas();
+    const processedFile = manager.schemaMap.get(schemaPath);
+
+    invariant(processedFile, "Processed file not found");
+    const generatedCode = await fs.readFile(processedFile.filePath, "utf-8");
+
+    expect(generatedCode).toContain("__refMap");
+    expect(generatedCode).toContain("#/components/schemas/Base");
+    expect(generatedCode).toContain("#/components/schemas/Item");
+    expect(generatedCode).not.toContain('"allOf"');
   });
 });

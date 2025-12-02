@@ -81,6 +81,7 @@ export async function getViteConfig(
   // These dependencies are listed explicitly to prevent cascading page reloads that occur during auto-discovery
   const zudokuIncludeOptimizedDeps = [
     "@sindresorhus/slugify",
+    "@apidevtools/json-schema-ref-parser",
     "@x0k/json-schema-merge",
     "@x0k/json-schema-merge/lib/array",
     "react-hook-form",
@@ -106,7 +107,6 @@ export async function getViteConfig(
     "yaml",
     "@clerk/clerk-js",
     "@scalar/openapi-parser",
-    "allof-merge",
     ...(config.syntaxHighlighting?.languages ?? defaultLanguages).map(
       (lang) => `@shikijs/langs/${lang}`,
     ),
