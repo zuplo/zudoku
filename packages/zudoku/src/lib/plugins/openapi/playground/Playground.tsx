@@ -72,16 +72,20 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
+  bodyMode?: "text" | "file" | "multipart";
+  file?: File | null;
+  multipartFormFields: Array<{
+    name: string;
+    value: File | string;
+    active: boolean;
+  }>;
   queryParams: Array<{
     name: string;
     value: string;
     active: boolean;
     enum?: string[];
   }>;
-  pathParams: Array<{
-    name: string;
-    value: string;
-  }>;
+  pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
     name: string;
     value: string;
@@ -165,6 +169,9 @@ export const Playground = ({
     useForm<PlaygroundForm>({
       defaultValues: {
         body: defaultBody,
+        bodyMode: "text",
+        file: null,
+        multipartFormFields: [],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -173,14 +180,7 @@ export const Playground = ({
                 active: param.defaultActive ?? false,
                 enum: param.enum ?? [],
               }))
-            : [
-                {
-                  name: "",
-                  value: "",
-                  active: false,
-                  enum: [],
-                },
-              ],
+            : [{ name: "", value: "", active: false, enum: [] }],
         pathParams: sortedPathParams.map((param) => ({
           name: param.name,
           value: param.defaultValue ?? "",
@@ -192,13 +192,7 @@ export const Playground = ({
                 value: header.defaultValue ?? "",
                 active: header.defaultActive ?? false,
               }))
-            : [
-                {
-                  name: "",
-                  value: "",
-                  active: false,
-                },
-              ],
+            : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
           ...(identities.data?.map((i) => i.id) ?? []),
@@ -223,18 +217,40 @@ export const Playground = ({
     mutationFn: async (data: PlaygroundForm) => {
       const start = performance.now();
 
-      const headers = Object.fromEntries([
-        ...data.headers
+      const headers = new window.Headers(
+        data.headers
           .filter((h) => h.name && h.active)
-          .map((header) => [header.name, header.value]),
-      ]);
+          .map<[string, string]>((h) => [h.name, h.value]),
+      );
+
+      let body: string | FormData | File | undefined;
+
+      switch (data.bodyMode) {
+        case "file":
+          body = data.file || undefined;
+          headers.delete("Content-Type");
+          break;
+        case "multipart": {
+          const formData = new FormData();
+          data.multipartFormFields
+            ?.filter((field) => field.name && field.active)
+            .forEach((field) => formData.append(field.name, field.value));
+
+          body = formData;
+          headers.delete("Content-Type");
+          break;
+        }
+        default:
+          body = data.body || undefined;
+          break;
+      }
 
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
-          method: method.toUpperCase(),
+          method,
           headers,
-          body: data.body ? data.body : undefined,
+          body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
         },
       );
 
@@ -283,6 +299,31 @@ export const Playground = ({
 
         const responseSize = response.headers.get("content-length");
 
+        let requestBody = "";
+
+        switch (data.bodyMode) {
+          case "text":
+            requestBody = data.body;
+            break;
+          case "file":
+            requestBody = `[File: ${data.file?.name ?? "Unknown"}]`;
+            break;
+          case "multipart":
+            requestBody = "[Multipart Form Data]\n";
+            requestBody += data.multipartFormFields
+              ?.filter((f) => f.name && f.active)
+              .map((f) =>
+                f.value instanceof File
+                  ? `${f.name}: [File: ${f.value.name}]`
+                  : `${f.name}: ${f.value}`,
+              )
+              .join("\n");
+            break;
+          default:
+            requestBody = data.body;
+            break;
+        }
+
         return {
           status: response.status,
           headers: responseHeaders,
@@ -300,7 +341,7 @@ export const Playground = ({
               ["User-Agent", "Zudoku Playground"],
               ...Array.from(request.headers.entries()),
             ],
-            body: data.body ? data.body : undefined,
+            body: requestBody,
           },
         } satisfies PlaygroundResult;
       } catch (error) {
@@ -375,6 +416,11 @@ export const Playground = ({
       <TooltipProvider delayDuration={150}>
         <form
           ref={formRef}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && e.target instanceof HTMLInputElement) {
+              e.preventDefault();
+            }
+          }}
           onSubmit={handleSubmit((data) => {
             if (identities.data?.length === 0 || data.identity) {
               queryMutation.mutate(data);
@@ -475,9 +521,7 @@ export const Playground = ({
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} />
-                    <CollapsibleHeader className="col-span-2">
-                      Authentication
-                    </CollapsibleHeader>
+                    <CollapsibleHeader>Authentication</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <IdentitySelector
@@ -493,9 +537,7 @@ export const Playground = ({
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <ShapesIcon size={16} />
-                    <CollapsibleHeader className="col-span-2">
-                      Path Parameters
-                    </CollapsibleHeader>
+                    <CollapsibleHeader>Path Parameters</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <PathParams url={url} control={control} />

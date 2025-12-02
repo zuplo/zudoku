@@ -1,5 +1,5 @@
 ---
-title: PingFederate Authentication Setup
+title: PingFederate Setup
 sidebar_label: PingFederate
 description:
   Learn how to set up PingFederate authentication for Zudoku using OpenID Connect for

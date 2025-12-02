@@ -81,6 +81,8 @@ export async function getViteConfig(
   // These dependencies are listed explicitly to prevent cascading page reloads that occur during auto-discovery
   const zudokuIncludeOptimizedDeps = [
     "@sindresorhus/slugify",
+    "@x0k/json-schema-merge",
+    "@x0k/json-schema-merge/lib/array",
     "react-hook-form",
     "cmdk",
     "@radix-ui/react-tabs",
@@ -91,6 +93,7 @@ export async function getViteConfig(
     "@radix-ui/react-label",
     "@radix-ui/react-radio-group",
     "@radix-ui/react-slot",
+    "@radix-ui/react-separator",
     "@envelop/core",
     "@pothos/core",
     "graphql-yoga",
@@ -184,7 +187,10 @@ export async function getViteConfig(
               ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
               : "zudoku/app/entry.client.tsx"
             : undefined,
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        external: [
+          joinUrl(config.basePath, "/pagefind/pagefind.js"),
+          "mermaid",
+        ],
       },
       chunkSizeWarningLimit: 1500,
     },

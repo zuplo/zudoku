@@ -1,7 +1,15 @@
 import { InfoIcon } from "lucide-react";
+import { Fragment } from "react";
+import {
+  Frame,
+  FrameDescription,
+  FrameFooter,
+  FrameHeader,
+  FramePanel,
+} from "zudoku/ui/Frame.js";
+import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { Card } from "../../../ui/Card.js";
 import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
@@ -9,7 +17,7 @@ import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { UnionView } from "./UnionView.js";
-import { isBasicType } from "./utils.js";
+import { isArrayType, isBasicType } from "./utils.js";
 
 const renderMarkdown = (content?: string) =>
   content && (
@@ -22,19 +30,30 @@ const renderMarkdown = (content?: string) =>
 const renderBasicSchema = (
   schema: SchemaObject,
   cardHeader?: React.ReactNode,
-) => (
-  <Card className="overflow-hidden">
-    {cardHeader}
-    <div className="p-4 space-y-2">
+  embedded?: boolean,
+) => {
+  const content = (
+    <>
       <span className="text-sm text-muted-foreground">
         <ParamInfos schema={schema} />
       </span>
       {schema.enum && <EnumValues values={schema.enum} />}
       {renderMarkdown(schema.description)}
       <SchemaExampleAndDefault schema={schema} />
-    </div>
-  </Card>
-);
+    </>
+  );
+
+  if (embedded) {
+    return <div className="space-y-2 p-4">{content}</div>;
+  }
+
+  return (
+    <Frame>
+      {cardHeader}
+      <FramePanel className="space-y-2">{content}</FramePanel>
+    </Frame>
+  );
+};
 
 export const SchemaView = ({
   schema,
@@ -49,12 +68,14 @@ export const SchemaView = ({
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
-      <Card className="overflow-hidden">
+      <Frame>
         {cardHeader}
-        <div className="text-sm text-muted-foreground italic p-4">
-          No data returned
-        </div>
-      </Card>
+        <FramePanel>
+          <div className="text-sm text-muted-foreground italic">
+            No data returned
+          </div>
+        </FramePanel>
+      </Frame>
     );
   }
 
@@ -67,12 +88,22 @@ export const SchemaView = ({
   }
 
   if (isBasicType(schema.type)) {
-    return renderBasicSchema(schema, cardHeader);
+    return renderBasicSchema(schema, cardHeader, embedded);
   }
 
-  if (schema.type === "array" && typeof schema.items === "object") {
-    return <SchemaView schema={schema.items} cardHeader={cardHeader} />;
+  if (isArrayType(schema) && typeof schema.items === "object") {
+    const wrappedSchema: SchemaObject = {
+      type: "object",
+      properties: { "": schema },
+    };
+
+    return (
+      <SchemaView schema={wrappedSchema} cardHeader={cardHeader} defaultOpen />
+    );
   }
+
+  const additionalObjectProperties = typeof schema.additionalProperties ===
+    "object" && <SchemaView schema={schema.additionalProperties} embedded />;
 
   if (schema.type === "object") {
     const groupedProperties = groupBy(
@@ -85,50 +116,62 @@ export const SchemaView = ({
             : "optional";
       },
     );
+
     const groupNames = ["required", "optional", "deprecated"] as const;
+    const groups = groupNames.flatMap((group) => {
+      const properties = groupedProperties[group];
+      return properties ? { group, properties } : [];
+    });
 
-    const additionalProperties =
-      typeof schema.additionalProperties === "object" ? (
-        <SchemaView schema={schema.additionalProperties} embedded />
-      ) : schema.additionalProperties === true ? (
-        <div className="text-sm p-4 bg-border/20 hover:bg-border/30 flex items-center gap-1">
-          <span>Additional properties are allowed</span>
-          <a
-            className="p-0.5 -m-0.5"
-            href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
-            rel="noopener noreferrer"
-            target="_blank"
-          >
-            <InfoIcon size={14} />
-          </a>
-        </div>
-      ) : null;
+    const itemsList = groups.map(({ group, properties }, index) => (
+      <Fragment key={group}>
+        {index > 0 && <ItemSeparator />}
+        <ItemGroup className="overflow-clip">
+          {properties.map(([name, schema], index) => (
+            <Fragment key={name}>
+              {index > 0 && <ItemSeparator />}
+              <SchemaPropertyItem
+                name={name}
+                schema={schema}
+                group={group}
+                defaultOpen={defaultOpen}
+              />
+            </Fragment>
+          ))}
+        </ItemGroup>
+      </Fragment>
+    ));
 
-    const Component = embedded ? "div" : Card;
+    if (embedded) {
+      return itemsList;
+    }
 
     return (
-      <Component className="divide-y overflow-hidden">
+      <Frame>
         {cardHeader}
-        {groupNames.map(
-          (group) =>
-            groupedProperties[group] && (
-              <ul key={group} className="divide-y">
-                {groupedProperties[group].map(([name, schema]) => (
-                  <SchemaPropertyItem
-                    key={name}
-                    name={name}
-                    schema={schema}
-                    group={group}
-                    defaultOpen={defaultOpen}
-                  />
-                ))}
-              </ul>
-            ),
+        {schema.description && (
+          <FrameHeader>
+            <FrameDescription>{schema.description}</FrameDescription>
+          </FrameHeader>
         )}
-        {additionalProperties}
-      </Component>
+        <FramePanel className="p-0!">
+          {itemsList}
+          {additionalObjectProperties}
+        </FramePanel>
+        {schema.additionalProperties === true && (
+          <FrameFooter>
+            <a
+              className="text-sm flex items-center gap-1 hover:underline"
+              href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Additional properties are allowed
+              <InfoIcon size={14} />
+            </a>
+          </FrameFooter>
+        )}
+      </Frame>
     );
   }
-
-  return null;
 };

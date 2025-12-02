@@ -1,6 +1,8 @@
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
 import { useZudoku } from "zudoku/hooks";
+import { Badge } from "zudoku/ui/Badge.js";
+import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
@@ -16,7 +18,6 @@ import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
-import { SimpleSelect } from "./SimpleSelect.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
@@ -49,13 +50,11 @@ const EXAMPLE_LANGUAGES = [
 export const Sidecar = ({
   operation,
   selectedResponse,
-  onSelectResponse,
   globalSelectedServer,
   shouldLazyHighlight,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
-  onSelectResponse: (response: string) => void;
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
 }) => {
@@ -67,6 +66,16 @@ export const Sidecar = ({
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
+
+  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+
+  const preferredLang =
+    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
+
+  const selectedLang =
+    supportedLanguages.find((lang) => lang.value === preferredLang)?.value ??
+    supportedLanguages.at(0)?.value ??
+    "shell";
 
   const requestBodyContent = operation.requestBody?.content;
   const transformedRequestBodyContent =
@@ -95,9 +104,6 @@ export const Sidecar = ({
     selectedRequestExample.exampleIndex,
   );
 
-  const selectedLang =
-    searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
-
   const currentExampleCode = currentExample
     ? (currentExample?.value ?? currentExample)
     : selectedContent?.schema
@@ -111,6 +117,7 @@ export const Sidecar = ({
         <ColorizedParam
           name={name}
           backgroundOpacity="0"
+          className="py-px px-0.5"
           // same as in `ParameterListItem`
           slug={`${operation.slug}-${name}`}
         >
@@ -126,6 +133,17 @@ export const Sidecar = ({
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    const converted = options?.generateCodeSnippet?.({
+      selectedLang,
+      selectedServer,
+      context,
+      operation,
+      example: currentExampleCode,
+      auth,
+    });
+
+    if (converted) return converted;
+
     const snippet = createHttpSnippet({
       operation,
       selectedServer,
@@ -138,7 +156,15 @@ export const Sidecar = ({
     });
 
     return getConverted(snippet, selectedLang);
-  }, [operation, selectedServer, selectedLang, currentExampleCode]);
+  }, [
+    currentExampleCode,
+    operation,
+    selectedServer,
+    selectedLang,
+    options,
+    auth,
+    context,
+  ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
 
@@ -150,30 +176,64 @@ export const Sidecar = ({
         operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
 
+  const hasResponseExamples = operation.responses.some((response) =>
+    response.content?.some((content) => (content.examples?.length ?? 0) > 0),
+  );
+
   return (
     <aside
       ref={ref}
-      className="flex flex-col overflow-hidden sticky top-(--scroll-padding) gap-4"
+      className="flex flex-col sticky top-(--scroll-padding) gap-4"
       data-pagefind-ignore="all"
     >
       <SidecarBox.Root>
-        <SidecarBox.Head className="flex justify-between items-center flex-nowrap py-2.5 gap-2 text-xs">
-          <span className="font-mono wrap-break-word leading-6">
-            <span className={cn("font-semibold", methodTextColor)}>
-              {operation.method.toUpperCase()}
+        <SidecarBox.Head className="py-1.5">
+          <div className="flex items-center flex-wrap gap-2 justify-between w-full">
+            <span className="font-mono wrap-break-word leading-6 space-x-1">
+              <Badge
+                variant="outline"
+                className={cn(
+                  methodTextColor,
+                  "px-1.5 rounded-md border-none bg-current/7 dark:bg-current/15",
+                )}
+              >
+                {operation.method.toUpperCase()}
+              </Badge>
+              {path}
             </span>
-            &nbsp;
-            {path}
-          </span>
-          {showPlayground && (
-            <PlaygroundDialogWrapper
-              servers={operation.servers.map((server) => server.url)}
-              operation={operation}
-              examples={requestBodyContent ?? undefined}
-            />
-          )}
+            <div className="flex items-center gap-1">
+              <NativeSelect
+                className="py-0.5 h-fit max-w-32 truncate bg-background"
+                value={selectedLang}
+                onChange={(e) => {
+                  startTransition(() => {
+                    setSearchParams((prev) => {
+                      prev.set("lang", e.target.value);
+                      return prev;
+                    });
+                  });
+                }}
+              >
+                {supportedLanguages.map((language) => (
+                  <NativeSelectOption
+                    key={language.value}
+                    value={language.value}
+                  >
+                    {language.label}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+              {showPlayground && (
+                <PlaygroundDialogWrapper
+                  servers={operation.servers.map((server) => server.url)}
+                  operation={operation}
+                  examples={requestBodyContent ?? undefined}
+                />
+              )}
+            </div>
+          </div>
         </SidecarBox.Head>
-        <SidecarBox.Body className="p-0">
+        <SidecarBox.Body>
           {shouldLazyHighlight && !isOnScreen ? (
             <NonHighlightedCode code={httpSnippetCode ?? ""} />
           ) : (
@@ -186,22 +246,6 @@ export const Sidecar = ({
             />
           )}
         </SidecarBox.Body>
-        <SidecarBox.Footer className="flex items-center text-xs gap-2 justify-end py-2.5">
-          <span>Show example in</span>
-          <SimpleSelect
-            className="self-start max-w-[150px]"
-            value={selectedLang}
-            onChange={(e) => {
-              startTransition(() => {
-                setSearchParams((prev) => {
-                  prev.set("lang", e.target.value);
-                  return prev;
-                });
-              });
-            }}
-            options={EXAMPLE_LANGUAGES}
-          />
-        </SidecarBox.Footer>
       </SidecarBox.Root>
 
       {transformedRequestBodyContent && currentExample ? (
@@ -223,12 +267,11 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {operation.responses.length > 0 && (
+      {hasResponseExamples ? (
         <ResponsesSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
           selectedResponse={selectedResponse}
-          onSelectResponse={onSelectResponse}
           responses={operation.responses.map((response) => ({
             ...response,
             content:
@@ -241,6 +284,22 @@ export const Sidecar = ({
                     content: response.content,
                   })
                 : response.content,
+          }))}
+        />
+      ) : (
+        <ResponsesSidecarBox
+          isGenerated
+          isOnScreen={isOnScreen}
+          shouldLazyHighlight={shouldLazyHighlight}
+          selectedResponse={selectedResponse}
+          responses={operation.responses.map((response) => ({
+            ...response,
+            content: response.content?.map((content) => ({
+              ...content,
+              examples: content.schema
+                ? [{ name: "", value: generateSchemaExample(content.schema) }]
+                : content.examples,
+            })),
           }))}
         />
       )}

@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.64.1",
+  "version": "0.65.3",
   "type": "module",
   "homepage": "https://zudoku.dev",
   "repository": {
@@ -41,6 +41,7 @@
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
     "./components": "./src/lib/components/index.ts",
+    "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
     "./__internal": "./src/lib/core/__internal.tsx",
     "./icons": "./src/lib/icons.ts",
@@ -135,6 +136,10 @@
         "import": "./lib/zudoku.components.js",
         "types": "./dist/lib/components/index.d.ts"
       },
+      "./mermaid": {
+        "import": "./lib/zudoku.mermaid.js",
+        "types": "./dist/lib/components/Mermaid.d.ts"
+      },
       "./__internal": {
         "import": "./lib/zudoku.__internal.js",
         "types": "./dist/lib/__internal.d.ts"
@@ -205,6 +210,7 @@
     "@radix-ui/react-radio-group": "1.3.8",
     "@radix-ui/react-scroll-area": "1.2.10",
     "@radix-ui/react-select": "2.2.6",
+    "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slider": "1.3.6",
     "@radix-ui/react-slot": "1.2.4",
     "@radix-ui/react-switch": "1.2.6",
@@ -215,11 +221,11 @@
     "@radix-ui/react-visually-hidden": "1.2.4",
     "@scalar/openapi-parser": "0.23.2",
     "@sentry/node": "9.26.0",
-    "@shikijs/engine-javascript": "3.15.0",
-    "@shikijs/langs": "3.15.0",
-    "@shikijs/rehype": "3.15.0",
-    "@shikijs/themes": "3.15.0",
-    "@shikijs/transformers": "3.15.0",
+    "@shikijs/engine-javascript": "3.17.0",
+    "@shikijs/langs": "3.17.0",
+    "@shikijs/rehype": "3.17.0",
+    "@shikijs/themes": "3.17.0",
+    "@shikijs/transformers": "3.17.0",
     "@sindresorhus/slugify": "3.0.0",
     "@stefanprobst/rehype-extract-toc": "3.0.0",
     "@tailwindcss/typography": "0.5.19",
@@ -240,9 +246,9 @@
     "estree-util-value-to-estree": "3.4.1",
     "express": "5.1.0",
     "fast-equals": "5.2.2",
-    "glob": "11.0.3",
+    "glob": "13.0.0",
     "glob-parent": "6.0.2",
-    "graphql": "16.11.0",
+    "graphql": "16.12.0",
     "graphql-type-json": "0.3.2",
     "graphql-yoga": "5.16.0",
     "gray-matter": "4.0.3",
@@ -253,15 +259,15 @@
     "json-schema-to-typescript-lite": "15.0.0",
     "loglevel": "1.9.2",
     "lucide-react": "0.548.0",
-    "motion": "12.23.12",
+    "motion": "12.23.24",
     "nanoevents": "^9.1.0",
     "next-themes": "0.4.6",
     "oauth4webapi": "2.17.0",
     "openapi-types": "12.1.3",
-    "pagefind": "1.4.0-alpha.1",
+    "pagefind": "1.4.0",
     "picocolors": "1.1.1",
-    "piscina": "5.1.3",
-    "posthog-node": "5.7.0",
+    "piscina": "5.1.4",
+    "posthog-node": "5.14.1",
     "react-error-boundary": "6.0.0",
     "react-hook-form": "7.66.0",
     "react-is": "catalog:",
@@ -278,7 +284,7 @@
     "remark-mdx-frontmatter": "5.2.0",
     "rollup": "4.52.5",
     "semver": "7.7.2",
-    "shiki": "3.15.0",
+    "shiki": "3.17.0",
     "sitemap": "9.0.0",
     "strip-ansi": "7.1.2",
     "tailwind-merge": "3.3.1",
@@ -295,13 +301,13 @@
     "zustand": "5.0.8"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "6.0.1",
+    "@graphql-codegen/cli": "6.1.0",
     "@inkeep/cxkit-types": "0.5.101",
     "@testing-library/dom": "10.4.1",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "16.3.0",
     "@types/estree": "1.0.8",
-    "@types/express": "5.0.3",
+    "@types/express": "5.0.5",
     "@types/glob-parent": "5.1.3",
     "@types/har-format": "1.2.16",
     "@types/hast": "^3.0.4",
@@ -312,15 +318,15 @@
     "@types/react-is": "catalog:",
     "@types/semver": "7.7.0",
     "@types/unist": "^3.0.3",
-    "@types/yargs": "17.0.33",
+    "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "3.2.4",
-    "esbuild": "0.25.11",
+    "esbuild": "0.27.0",
     "happy-dom": "20.0.10",
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "rollup-plugin-visualizer": "6.0.3",
-    "tsx": "4.20.4",
+    "rollup-plugin-visualizer": "6.0.5",
+    "tsx": "4.20.6",
     "typescript": "5.9.3",
     "vitest": "4.0.6"
   },
@@ -331,6 +337,8 @@
     "@supabase/auth-ui-react": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
+    "firebase": "^12.6.0",
+    "mermaid": "^11.0.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
@@ -351,6 +359,12 @@
       "optional": true
     },
     "@supabase/auth-ui-shared": {
+      "optional": true
+    },
+    "firebase": {
+      "optional": true
+    },
+    "mermaid": {
       "optional": true
     }
   }

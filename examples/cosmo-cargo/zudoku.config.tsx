@@ -4,6 +4,7 @@ import type {
   ZudokuConfig,
   ZudokuContext,
 } from "zudoku";
+import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
@@ -197,6 +198,9 @@ const config: ZudokuConfig = {
   defaults: {
     apis: {
       examplesLanguage: "js",
+      schemaDownload: {
+        enabled: true,
+      },
     },
   },
   search: {
@@ -246,6 +250,26 @@ const config: ZudokuConfig = {
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
       categories: [{ label: "General", tags: ["Developer"] }],
+      options: {
+        supportedLanguages: [
+          { value: "js", label: "JavaScript" },
+          { value: "python", label: "Python" },
+          { value: "java", label: "Java" },
+        ],
+        generateCodeSnippet: ({
+          selectedLang,
+          selectedServer,
+          operation,
+          example,
+        }) => {
+          return generateWebhookCodeSnippet(
+            selectedLang,
+            selectedServer,
+            operation.operationId,
+            example,
+          );
+        },
+      },
     },
     {
       type: "file",
@@ -281,28 +305,28 @@ const config: ZudokuConfig = {
     light: {
       background: "0 0% 100%",
       foreground: "20 14.3% 4.1%",
-      card: "0 0% 100%",
-      cardForeground: "20 14.3% 4.1%",
+      card: "#fff",
+      cardForeground: "#262626",
       popover: "0 0% 100%",
       popoverForeground: "20 14.3% 4.1%",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
       secondary: "60 4.8% 95.9%",
       secondaryForeground: "24 9.8% 10%",
-      muted: "60 4.8% 95.9%",
-      mutedForeground: "25 5.3% 44.7%",
+      muted: "#f5f5f5",
+      mutedForeground: "var(--color-zinc-500)",
       accent: "60 4.8% 95.9%",
       accentForeground: "24 9.8% 10%",
       destructive: "0 84.2% 60.2%",
       destructiveForeground: "60 9.1% 97.8%",
       border: "20 5.9% 90%",
       input: "20 5.9% 90%",
-      ring: "20 14.3% 4.1%",
+      ring: "oklch(0.708 0 0)",
     },
     dark: {
       background: "#1a1a18",
       foreground: "60 9.1% 97.8%",
-      card: "20 14.3% 4.1%",
+      card: "#151518",
       cardForeground: "60 9.1% 97.8%",
       popover: "20 14.3% 4.1%",
       popoverForeground: "60 9.1% 97.8%",
@@ -310,14 +334,14 @@ const config: ZudokuConfig = {
       primaryForeground: "#0f1719",
       secondary: "12 6.5% 15.1%",
       secondaryForeground: "60 9.1% 97.8%",
-      muted: "14 9% 9%",
-      mutedForeground: "24 5.4% 63.9%",
+      muted: "#222",
+      mutedForeground: "var(--color-zinc-400)",
       accent: "12 6.5% 15.1%",
       accentForeground: "60 9.1% 97.8%",
       destructive: "0 62.8% 30.6%",
       destructiveForeground: "60 9.1% 97.8%",
       border: "hsl(12deg 4.75% 24.84%)",
-      input: "12 6.5% 15.1%",
+      input: "hsl(12deg 4.88% 29.61%)",
       ring: "35.5 91.7% 32.9%",
     },
   },

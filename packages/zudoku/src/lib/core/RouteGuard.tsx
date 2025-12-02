@@ -38,6 +38,14 @@ export const RouteGuard = () => {
   const needsToSignIn =
     isProtectedRoute && !authCheckFn({ auth, context: zudoku });
 
+  if (isProtectedRoute && !auth.isAuthEnabled) {
+    throw new ZudokuError("Authentication is not enabled", {
+      title: "Authentication is not enabled",
+      developerHint:
+        "To use protectedRoutes you need authentication to be enabled",
+    });
+  }
+
   if (needsToSignIn && auth.isPending && typeof window !== "undefined") {
     return null;
   }
@@ -91,17 +99,9 @@ export const RouteGuard = () => {
     );
   }
 
-  if (isProtectedRoute && !auth.isAuthEnabled) {
-    throw new ZudokuError("Authentication is not enabled", {
-      title: "Authentication is not enabled",
-      developerHint:
-        "To use protectedRoutes you need authentication to be enabled",
-    });
-  }
-
   return (
     <>
-      {shouldBypass && (
+      {shouldBypass && isProtectedRoute && (
         <Helmet>
           <meta
             name="pagefind"

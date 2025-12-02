@@ -1,14 +1,15 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { ListPlusIcon } from "lucide-react";
+import { lazy, useEffect, useRef, useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
-import { Callout } from "zudoku/ui/Callout.js";
 import {
   CommandDialog,
   CommandEmpty,
   CommandInput,
 } from "zudoku/ui/Command.js";
 import { DialogTitle } from "zudoku/ui/Dialog.js";
+import { Kbd, KbdGroup } from "zudoku/ui/Kbd.js";
 import { useAuthState } from "../../authentication/state.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { SEARCH_PROTECTED_SECTION } from "../../core/RouteGuard.js";
@@ -17,6 +18,8 @@ import { getResults } from "./get-results.js";
 import type { PagefindOptions } from "./index.js";
 import { ResultList } from "./ResultList.js";
 import type { Pagefind } from "./types.js";
+
+const IndexingDialog = lazy(() => import("./IndexingDialog.js"));
 
 const DEFAULT_RANKING = {
   // Slightly lower than default because API docs tend to have repetitive terms (parameter names, HTTP methods, etc.)
@@ -81,6 +84,7 @@ export const PagefindSearch = ({
 }) => {
   const { pagefind, error, isError } = usePagefind(options);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedValue, setSelectedValue] = useState<string>("");
   const auth = useAuthState();
   const context = useZudoku();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,9 +104,24 @@ export const PagefindSearch = ({
     enabled: !!pagefind && !!searchTerm,
   });
 
+  useEffect(() => {
+    if (!searchResults?.length) return;
+
+    const firstResult = searchResults.at(0);
+    if (!firstResult) return;
+
+    const firstValue = `${firstResult.meta.title}-${firstResult.url}`;
+    setSelectedValue(firstValue);
+  }, [searchResults]);
+
   return (
     <CommandDialog
-      command={{ shouldFilter: false }}
+      command={{
+        shouldFilter: false,
+        loop: true,
+        value: selectedValue,
+        onValueChange: setSelectedValue,
+      }}
       content={{ className: "max-w-[750px]" }}
       open={isOpen}
       onOpenChange={onClose}
@@ -135,28 +154,48 @@ export const PagefindSearch = ({
           "Start typing to search"
         )}
       </CommandEmpty>
-      {isError ? (
+      {isError && error.message !== "NOT_BUILT_YET" ? (
         <div className="p-4 text-sm">
-          {error.message === "NOT_BUILT_YET" ? (
-            <Callout type="info">
-              Search is currently not available in development mode by default.
-              <br />
-              To still use search in development, run <code>zudoku build</code>{" "}
-              and copy the <code>dist/pagefind</code> directory to your{" "}
-              <code>public</code> directory.
-            </Callout>
-          ) : (
-            "An error occurred while loading search."
-          )}
+          An error occurred while loading search.
         </div>
       ) : (
-        <ResultList
-          basePath={context.options.basePath}
-          searchResults={searchResults ?? []}
-          searchTerm={searchTerm}
-          onClose={onClose}
-          maxSubResults={options.maxSubResults}
-        />
+        <>
+          <ResultList
+            basePath={context.options.basePath}
+            searchResults={searchResults ?? []}
+            searchTerm={searchTerm}
+            onClose={onClose}
+            maxSubResults={options.maxSubResults}
+          />
+          <div className="flex justify-between p-2 items-center">
+            <div className="flex items-center text-xs text-muted-foreground">
+              <KbdGroup className="ms-0 me-1">
+                <Kbd>↑</Kbd>
+                <Kbd>↓</Kbd>
+              </KbdGroup>
+              Navigate
+              <KbdGroup className="ms-4 me-1">
+                <Kbd>↵</Kbd>
+              </KbdGroup>
+              Select
+              <KbdGroup className="ms-4 me-1">
+                <Kbd>Esc</Kbd>
+              </KbdGroup>
+              Close dialog
+            </div>
+            {import.meta.env.DEV && (
+              <IndexingDialog>
+                <Button
+                  variant="outline"
+                  className="h-7 text-xs text-muted-foreground"
+                >
+                  <ListPlusIcon />
+                  Build Search Index
+                </Button>
+              </IndexingDialog>
+            )}
+          </div>
+        </>
       )}
     </CommandDialog>
   );

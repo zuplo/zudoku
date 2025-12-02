@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Badge } from "../../../ui/Badge.js";
-import { Card } from "../../../ui/Card.js";
+import { Frame, FramePanel } from "../../../ui/Frame.js";
 import { cn } from "../../../util/cn.js";
 import { SchemaView } from "./SchemaView.js";
 import {
@@ -67,17 +67,6 @@ const DecisionTable = ({
   );
 };
 
-const VariantPanel = ({ variant }: { variant: SchemaObject }) => {
-  return (
-    <div className="space-y-2">
-      {variant.description && (
-        <p className="text-sm text-muted-foreground">{variant.description}</p>
-      )}
-      <SchemaView schema={variant} />
-    </div>
-  );
-};
-
 export const UnionView = ({
   schema,
   cardHeader,
@@ -119,9 +108,9 @@ export const UnionView = ({
     currentVariantIndex >= 0 ? variants[currentVariantIndex] : null;
 
   return (
-    <Card className="overflow-hidden text-sm">
+    <Frame>
       {cardHeader}
-      <div className="flex flex-col gap-4 p-4">
+      <FramePanel className="text-sm flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <Badge variant="outline">{mode}</Badge>
           <div className="flex-1 p-2">
@@ -136,8 +125,8 @@ export const UnionView = ({
           onSelectVariant={setSelectedVariant}
         />
         <strong>Properties for {selectedVariant}:</strong>
-        {currentVariant && <VariantPanel variant={currentVariant} />}
-      </div>
-    </Card>
+        {currentVariant && <SchemaView schema={currentVariant} />}
+      </FramePanel>
+    </Frame>
   );
 };

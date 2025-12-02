@@ -21,7 +21,7 @@ export interface AuthenticationPlugin {
   /**
    * @deprecated use signRequest instead
    */
-  getAccessToken(): Promise<string>;
+  getAccessToken?(): Promise<string>;
   onPageLoad?(): void;
   signRequest(request: Request): Promise<Request>;
 }

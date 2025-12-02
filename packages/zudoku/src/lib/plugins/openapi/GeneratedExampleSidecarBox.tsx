@@ -21,8 +21,8 @@ export const GeneratedExampleSidecarBox = ({
   return (
     <SidecarBox.Root>
       <SidecarBox.Head className="text-xs flex justify-between items-center">
-        <div className="flex items-center gap-1.5 font-mono">
-          Request Body Example
+        <div className="flex items-center gap-1.5">
+          <span className="font-medium">Example Request Body</span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

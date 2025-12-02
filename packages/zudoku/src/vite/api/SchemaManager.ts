@@ -11,6 +11,7 @@ import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
+import { joinUrl } from "../../lib/util/joinUrl.js";
 import { generateCode } from "./schema-codegen.js";
 
 type ProcessedSchema = {
@@ -198,7 +199,43 @@ export class SchemaManager {
 
   public getLatestSchema = (path: string) => this.processedSchemas[path]?.at(0);
 
+  public getBySchemaFilepath = (schemaPath: string) =>
+    this.schemaMap.get(path.resolve(this.config.__meta.rootDir, schemaPath));
+
   public getSchemasForPath = (path: string) => this.processedSchemas[path];
+
+  public getUrlToFilePathMap = () => {
+    const map = new Map<string, string>();
+
+    const apis = ensureArray(this.config.apis ?? []);
+    for (const apiConfig of apis) {
+      if (apiConfig.type !== "file" || !apiConfig.path) continue;
+
+      const downloadEnabled =
+        apiConfig.options?.schemaDownload?.enabled ??
+        this.config.defaults?.apis?.schemaDownload?.enabled ??
+        false;
+
+      if (!downloadEnabled) continue;
+
+      const schemas = this.processedSchemas[apiConfig.path];
+
+      if (!schemas) continue;
+
+      for (const schema of schemas) {
+        const filename = path.basename(schema.inputPath);
+        const reqPath = joinUrl(
+          this.config.basePath,
+          apiConfig.path,
+          schema.version,
+          filename,
+        );
+        map.set(reqPath, schema.inputPath);
+      }
+    }
+
+    return map;
+  };
 
   private validateSchema = async (
     schema: JSONSchema,

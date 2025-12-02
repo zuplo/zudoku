@@ -1,5 +1,5 @@
 ---
-title: Auth0 Authentication Setup
+title: Auth0 Setup
 sidebar_label: Auth0
 description:
   Learn how to set up Auth0 authentication for Zudoku, including application configuration and
@@ -100,6 +100,38 @@ authentication: {
   scopes: ["openid", "profile", "email", "read:api", "write:api"],
 }
 ```
+
+### Customizing the Prompt Parameter
+
+By default, Zudoku sets `prompt="login"` in the Auth0 authorization request, which forces users to
+re-enter their credentials even if they have a valid session. You can customize this behavior using
+the `options.prompt` configuration:
+
+```typescript
+authentication: {
+  type: "auth0",
+  domain: "your-domain.us.auth0.com",
+  clientId: "<your-auth0-client-id>",
+  audience: "https://your-domain.com/api",
+  options: {
+    prompt: "", // Omit the prompt parameter to allow silent authentication
+  },
+}
+```
+
+Valid values for the `prompt` parameter include:
+
+- `"login"` - Force users to re-enter their credentials even if they have a valid session (default)
+- `"consent"` - Force users to consent to authorization even if they previously consented
+- `"select_account"` - Force users to select an account (useful for multi-account scenarios)
+- `"none"` - No prompt is shown; silent authentication only
+- `""` (empty string) - Omit the prompt parameter, allowing Auth0 to handle authentication based on
+  session state
+
+When the prompt parameter is omitted (empty string), Auth0 will:
+
+- Silently authenticate the user if they have a valid session
+- Redirect to the login page if no valid session exists
 
 ## Troubleshooting
 

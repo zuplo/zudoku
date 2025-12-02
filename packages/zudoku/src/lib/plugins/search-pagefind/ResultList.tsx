@@ -35,9 +35,9 @@ export const ResultList = ({
   const navigate = useNavigate();
   const commandListRef = useRef<HTMLDivElement | null>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Only scroll to top when search term changes
   useLayoutEffect(() => {
-    requestIdleCallback(() => {
+    if (!searchTerm) return;
+    requestAnimationFrame(() => {
       commandListRef.current?.scrollTo({ top: 0 });
     });
   }, [searchTerm]);
@@ -77,6 +77,11 @@ export const ResultList = ({
                 ) : (
                   <FileTextIcon />
                 )}
+                {result.meta.category && (
+                  <span className="text-muted-foreground">
+                    {result.meta.category} &rsaquo;{" "}
+                  </span>
+                )}
                 {result.meta.title}
               </Link>
             </CommandItem>
@@ -98,7 +103,7 @@ export const ResultList = ({
                     <div className="flex flex-col items-start gap-2 ms-2.5 ps-5 border-l border-muted-foreground/50">
                       <span className="font-bold">{subResult.title}</span>
                       <span
-                        className="text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
+                        className="line-clamp-2 text-[13px] [&_mark]:bg-primary [&_mark]:text-primary-foreground"
                         // biome-ignore lint/security/noDangerouslySetInnerHtml: Pagefind provides sanitized HTML
                         dangerouslySetInnerHTML={{ __html: subResult.excerpt }}
                       />

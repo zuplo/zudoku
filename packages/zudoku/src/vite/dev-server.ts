@@ -23,6 +23,7 @@ import {
 } from "./config.js";
 import { errorMiddleware } from "./error-handler.js";
 import { getDevHtml } from "./html.js";
+import { buildPagefindDevIndex } from "./pagefind-dev-index.js";
 
 const DEFAULT_DEV_PORT = 3000;
 
@@ -110,6 +111,43 @@ export class DevServer {
     });
 
     app.use(graphql.graphqlEndpoint, graphql);
+
+    app.get("/__z/pagefind-reindex", async (_req, res) => {
+      const { config: currentConfig } = await loadZudokuConfig(
+        configEnv,
+        this.options.dir,
+      );
+
+      if (currentConfig.search?.type !== "pagefind") {
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+        res.write(
+          `data: ${JSON.stringify({ type: "complete", success: false, indexed: 0, error: "Pagefind search is not enabled" })}\n\n`,
+        );
+        res.end();
+        return;
+      }
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+
+      try {
+        for await (const event of buildPagefindDevIndex(vite, currentConfig)) {
+          res.write(`data: ${JSON.stringify(event)}\n\n`);
+        }
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        res.write(
+          `data: ${JSON.stringify({ type: "complete", success: false, indexed: 0, error: message })}\n\n`,
+        );
+      }
+
+      res.end();
+    });
+
     app.use(proxiedEntryClientPath, async (_req, res) => {
       const transformed = await vite.environments.client.transformRequest(
         getAppClientEntryPath(),

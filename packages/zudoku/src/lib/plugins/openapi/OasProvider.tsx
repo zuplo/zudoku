@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 import { Outlet } from "react-router";
-import { joinPath } from "../../util/joinPath.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type { GraphQLClient } from "./client/GraphQLClient.js";
 import { GraphQLProvider } from "./client/GraphQLContext.js";
 import { OasConfigProvider } from "./context.js";
 import type { OasPluginConfig } from "./interfaces.js";
-import { getVersions } from "./util/getRoutes.js";
+import { getVersionMetadata } from "./util/getRoutes.js";
 
 export const OasProvider = ({
   basePath,
@@ -19,25 +19,38 @@ export const OasProvider = ({
   client: GraphQLClient;
 }) => {
   const value = useMemo(() => {
-    const versions = getVersions(config);
-    const firstVersion = Object.values(config.input).at(0);
-    const input =
-      config.type === "file"
-        ? {
-            type: config.type,
-            // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-            input: version ? config.input[version]! : firstVersion!,
-          }
-        : { type: config.type, input: config.input };
+    const { versions: availableVersions, labels } = getVersionMetadata(config);
+    const currentVersion = version ?? availableVersions.at(0);
+
+    const versionLinks = Object.fromEntries(
+      availableVersions.map((id) => [
+        id,
+        { path: joinUrl(basePath, id), label: labels[id] ?? id },
+      ]),
+    );
+
+    const resolveInput = (): string | (() => Promise<unknown>) => {
+      if (!Array.isArray(config.input)) {
+        return config.input;
+      }
+
+      const versionConfig = currentVersion
+        ? config.input.find((v) => v.path === currentVersion)
+        : config.input[0];
+
+      if (!versionConfig) {
+        throw new Error(`No input found for version: ${currentVersion}`);
+      }
+
+      return versionConfig.input;
+    };
 
     return {
       config: {
         ...config,
-        version: version ?? versions.at(0),
-        versions: Object.fromEntries(
-          versions.map((version) => [version, joinPath(basePath, version)]),
-        ),
-        ...input,
+        version: currentVersion,
+        versions: versionLinks,
+        input: resolveInput(),
       },
     };
   }, [config, basePath, version]);

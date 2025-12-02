@@ -32,6 +32,15 @@ const config = {
 
 ## URL Reference
 
+:::danger{title="Recommendation"}
+
+We strongly recommend using `type: "file"` for your OpenAPI schemas. When using URL based
+references, all schema processing occurs at runtime in the browser. This can cause noticeable
+performance issues with large OpenAPI documents and some features may not be fully supported due to
+the added complexity of runtime processing.
+
+:::
+
 If your OpenAPI document is accessible elsewhere via URL you can use this configuration, changing
 the `input` value to the URL of your own OpenAPI document (you can use the Rick & Morty API document
 if you want to test and play around):
@@ -57,8 +66,10 @@ hosting the document has the correct CORS policy in place to allow the Zudoku si
 
 ## Versioning
 
-When using `type: "file"`, you can provide an array of OpenAPI documents to create versioned API
-documentation:
+### File-based Versioning
+
+When using `type: "file"`, you can provide an array of file paths to create versioned API
+documentation. Version metadata is automatically extracted from each OpenAPI schema at build time:
 
 ```ts title=zudoku.config.ts
 const config = {
@@ -73,6 +84,39 @@ const config = {
   },
 };
 ```
+
+### URL-based Versioning
+
+When using `type: "url"`, you can provide an array of version configurations. Since URL-based
+schemas cannot be processed at build time, you must explicitly specify the version identifier and
+optional label:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "url",
+    input: [
+      {
+        path: "v2",
+        label: "Version 2.0",
+        input: "https://api.example.com/openapi-v2.json",
+      },
+      {
+        path: "v1",
+        label: "Version 1.0",
+        input: "https://api.example.com/openapi-v1.json",
+      },
+    ],
+    path: "/api",
+  },
+};
+```
+
+Each URL version object requires:
+
+- `path`: Version identifier used in the URL path (e.g., `/api/v2`)
+- `input`: URL to the OpenAPI document
+- `label`: Optional display name for the version selector (defaults to `path` if not provided)
 
 ## Options
 
@@ -90,6 +134,7 @@ const config = {
       disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
+      schemaDownload: { enabled: true }, // Enable schema download button
     },
   },
 };
@@ -104,6 +149,9 @@ Available options:
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
+- `schemaDownload`: Enable schema download functionality with `{ enabled: boolean }`. When enabled,
+  displays a button allowing users to download the OpenAPI schema, copy it to clipboard, open in a
+  new tab, or use it with AI tools like Claude and ChatGPT.
 
 ## Default Options
 
@@ -118,6 +166,7 @@ const config = {
       disablePlayground: false, // Disable the interactive API playground
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
+      schemaDownload: { enabled: true }, // Enable schema download button
     },
   },
   apis: {

@@ -18,7 +18,7 @@ jobs:
       ZUDOKU_INTERNAL_DEV: true
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - uses: pnpm/action-setup@v4
@@ -56,7 +56,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Build Examples
-        run: nx run-many -t build --projects=tag:example --exclude=mermaid
+        run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
 
         # Check if the stats file exists, if zudoku doesn't change in the PR
         # the stats file won't exist and we don't need to upload it
@@ -69,7 +69,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
         with:
           run_install: false
@@ -93,16 +93,24 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: .lycheecache
-          key: cache-lychee-v3-${{ github.sha }}
-          restore-keys: cache-lychee-v2-
+          key: cache-lychee-v4-${{ github.sha }}
+          restore-keys: cache-lychee-v4-
 
       - name: Link Checker
         uses: lycheeverse/lychee-action@v2
         with:
-          args: --fallback-extensions html --cache --max-cache-age 1d --config ./docs/lychee.toml --root-dir $PWD/docs/dist --include-fragments ./docs/dist
+          args: >-
+            --config ./docs/lychee.toml
+            --remap "https://zudoku.dev file://${{ github.workspace }}/docs/dist"
+            --fallback-extensions html
+            --cache
+            --max-cache-age 1d
+            --root-dir $PWD/docs/dist
+            --include-fragments
+            ./docs/dist
       - name: Save lychee cache
         if: always()
         uses: actions/cache/save@v4
         with:
           path: .lycheecache
-          key: cache-lychee-v3-${{ github.sha }}
+          key: ${{ steps.restore-cache.outputs.cache-primary-key }}

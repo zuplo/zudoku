@@ -18,9 +18,12 @@ import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Pagination } from "../../components/Pagination.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
+import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 import { Endpoint } from "./Endpoint.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
@@ -146,6 +149,8 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
   }
 `);
 
+const LAZY_OPERATION_LIST_THRESHOLD = 30;
+
 export const OperationList = ({
   tag,
   untagged,
@@ -153,7 +158,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { input, type, versions, version, options } = useOasConfig();
+  const { path, input, type, versions, version, options } = useOasConfig();
   const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
@@ -202,7 +207,7 @@ export const OperationList = ({
 
   // Simple heuristic to determine if we should lazy highlight the code
   // This is to avoid the performance issues when there are a lot of operations
-  const shouldLazyHighlight = operations.length > 30;
+  const shouldLazyHighlight = operations.length > LAZY_OPERATION_LIST_THRESHOLD;
 
   // The summary property is preferable here as it is a short description of
   // the API, whereas the description property is typically longer and supports
@@ -242,12 +247,20 @@ export const OperationList = ({
   const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
+  const downloadUrl =
+    typeof input === "string"
+      ? type === "url"
+        ? input
+        : joinUrl(path, version, input.split("/").pop())
+      : undefined;
+
   return (
     <div
       className="pt-(--padding-content-top)"
       data-pagefind-filter="section:openapi"
       data-pagefind-meta="section:openapi"
     >
+      <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
       <Helmet>
         {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (
@@ -260,7 +273,7 @@ export const OperationList = ({
           className="w-full"
           defaultOpen={options?.expandApiInformation}
         >
-          <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">
+          <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex flex-col flex-1 gap-2">
               <CategoryHeading>{title}</CategoryHeading>
               <Heading
@@ -280,25 +293,32 @@ export const OperationList = ({
               <Endpoint />
             </div>
             <div className="flex flex-col gap-4 sm:items-end">
-              {showVersions && (
-                <Select
-                  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-                  onValueChange={(version) => navigate(versions[version]!)}
-                  defaultValue={version}
-                  disabled={!hasMultipleVersions}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <SelectValue placeholder="Select version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(versions).map(([version]) => (
-                      <SelectItem key={version} value={version}>
-                        {version}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
+              <div className="flex gap-2 items-center">
+                {showVersions && (
+                  <Select
+                    onValueChange={(version) =>
+                      // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
+                      navigate(versions[version]!.path)
+                    }
+                    defaultValue={version}
+                    disabled={!hasMultipleVersions}
+                  >
+                    <SelectTrigger className="w-[180px]" size="sm">
+                      <SelectValue placeholder="Select version" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(versions).map(([version, { label }]) => (
+                        <SelectItem key={version} value={version}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {options?.schemaDownload?.enabled && downloadUrl && (
+                  <DownloadSchemaButton downloadUrl={downloadUrl} />
+                )}
+              </div>
               {schema.description && (
                 <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
                   <span>API information</span>

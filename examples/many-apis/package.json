@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "zudoku dev",
-    "build": "echo 'Not implemented yet'",
-    "disabled_build": "zudoku build",
+    "build": "pnpm run download && NODE_OPTIONS='--max-old-space-size=32768' zudoku build",
     "download": "node download.js",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },

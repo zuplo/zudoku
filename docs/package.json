@@ -6,17 +6,22 @@
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview",
-    "check:links": "lychee --config ./lychee.toml --fallback-extensions html --root-dir $PWD/dist --include-fragments ./dist"
+    "check:links": "lychee --config ./lychee.toml --remap \"https://zudoku.dev file://$PWD/dist\" --fallback-extensions html --root-dir $PWD/dist --include-fragments ./dist"
   },
   "dependencies": {
     "@joshwooding/vite-plugin-react-docgen-typescript": "^0.6.2",
-    "motion": "12.23.12",
+    "motion": "12.23.24",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@types/mdast": "4.0.4",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@types/unist": "^3.0.3",
+    "mdast-util-directive": "^3.1.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "5.0.0",
     "zudoku": "workspace:*"
   },
   "packageManager": "pnpm@10.10.0"

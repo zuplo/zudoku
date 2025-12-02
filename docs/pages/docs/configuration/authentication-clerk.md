@@ -1,5 +1,5 @@
 ---
-title: Clerk Authentication Setup
+title: Clerk Setup
 sidebar_label: Clerk
 description:
   Learn how to set up Clerk authentication for Zudoku, providing a seamless authentication

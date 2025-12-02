@@ -63,6 +63,31 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         .forEach((file) => this.addWatchFile(file));
     },
     configureServer(server) {
+      // Serve original OpenAPI schema files
+      server.middlewares.use(async (req, res, next) => {
+        if (req.method !== "GET" || !req.url) return next();
+        if (
+          !req.url.toLowerCase().endsWith(".json") &&
+          !req.url.toLowerCase().endsWith(".yaml")
+        ) {
+          return next();
+        }
+
+        const pathMap = schemaManager.getUrlToFilePathMap();
+
+        const inputPath = pathMap.get(req.url);
+        if (!inputPath) return next();
+
+        const content = await fs.readFile(inputPath, "utf-8");
+        const mimeType =
+          path.extname(inputPath).toLowerCase() === ".json"
+            ? "application/json"
+            : "application/x-yaml";
+
+        res.setHeader("Content-Type", `${mimeType}; charset=utf-8`);
+        return res.end(content);
+      });
+
       server.watcher.on("change", async (id) => {
         const mainFiles = schemaManager.getFilesToReprocess(id);
         if (mainFiles.length === 0) return;
@@ -153,7 +178,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                     const slugs = getAllSlugs(operations);
                     return getAllTags(schema, slugs.tags);
                   })
-                  .map(({ slug }) => slug),
+                  .flatMap(({ slug }) => slug ?? []),
               ),
             );
 
@@ -161,24 +186,29 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               schemaManager.schemaMap.entries(),
             );
 
+            const versionedInput = schemas.map((s) => ({
+              path: s.version,
+              label: s.schema.info?.version,
+              input: s.inputPath,
+            }));
+
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
               `  type: "file",`,
-              `  input: ${JSON.stringify(
-                Object.fromEntries(
-                  schemas.map((s) => [s.version, s.inputPath]),
-                ),
-              )},`,
+              `  input: ${JSON.stringify(versionedInput)},`,
               `  path: ${JSON.stringify(apiConfig.path)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
               `  options: {`,
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
               `    expandApiInformation: config.defaults?.apis?.expandApiInformation ?? false,`,
+              `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
+              `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
               `  schemaImports: {`,
@@ -195,10 +225,12 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `  ...${JSON.stringify(apiConfig)},`,
               "  options: {",
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
+              `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,
               `    disablePlayground: config.defaults?.apis?.disablePlayground,`,
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
+              `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               "  },",
               "}));",
@@ -262,6 +294,22 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       );
 
       return code.join("\n");
+    },
+    async closeBundle() {
+      if (this.environment.name === "ssr") return;
+
+      const config = getCurrentConfig();
+      const pathMap = schemaManager.getUrlToFilePathMap();
+
+      if (process.env.NODE_ENV !== "production") return;
+
+      for (const [urlPath, inputPath] of pathMap) {
+        const content = await fs.readFile(inputPath, "utf-8");
+        const outputPath = path.join(config.__meta.rootDir, "dist", urlPath);
+
+        await fs.mkdir(path.dirname(outputPath), { recursive: true });
+        await fs.writeFile(outputPath, content, "utf-8");
+      }
     },
   };
 };

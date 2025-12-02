@@ -11,7 +11,10 @@ import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
 import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
-import type { TransformExamplesFn } from "../../lib/plugins/openapi/interfaces.js";
+import type {
+  GenerateCodeSnippetFn,
+  TransformExamplesFn,
+} from "../../lib/plugins/openapi/interfaces.js";
 import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/types.js";
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
@@ -49,15 +52,25 @@ const ApiCatalogCategorySchema = z.object({
   tags: z.array(z.string()),
 });
 
+const LanguageOption = z.object({
+  value: z.string().min(1),
+  label: z.string().min(1),
+});
+
 const ApiOptionsSchema = z
   .object({
     examplesLanguage: z.string(),
+    supportedLanguages: z.array(LanguageOption),
     disablePlayground: z.boolean(),
     disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     expandApiInformation: z.boolean(),
+    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
     transformExamples: z.custom<TransformExamplesFn>(
+      (val) => typeof val === "function",
+    ),
+    generateCodeSnippet: z.custom<GenerateCodeSnippetFn>(
       (val) => typeof val === "function",
     ),
   })
@@ -72,10 +85,16 @@ const ApiConfigSchema = z
   })
   .partial();
 
+const UrlVersionConfigSchema = z.object({
+  path: z.string(),
+  input: z.string(),
+  label: z.string().optional(),
+});
+
 const ApiSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("url"),
-    input: z.string(),
+    input: z.union([z.string(), z.array(UrlVersionConfigSchema)]),
     ...ApiConfigSchema.shape,
   }),
   z.object({
@@ -339,7 +358,37 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignOut: z.string().optional(),
   }),
   z.object({
+    type: z.literal("firebase"),
+    apiKey: z.string(),
+    authDomain: z.string(),
+    projectId: z.string(),
+    storageBucket: z.string().optional(),
+    messagingSenderId: z.string().optional(),
+    appId: z.string(),
+    measurementId: z.string().optional(),
+    providers: z
+      .array(
+        z.enum([
+          "google",
+          "facebook",
+          "twitter",
+          "github",
+          "microsoft",
+          "apple",
+          "yahoo",
+          "password",
+          "phone",
+          "emailLink",
+        ]),
+      )
+      .optional(),
+    redirectToAfterSignUp: z.string().optional(),
+    redirectToAfterSignIn: z.string().optional(),
+    redirectToAfterSignOut: z.string().optional(),
+  }),
+  z.object({
     type: z.literal("openid"),
+    basePath: z.string().optional(),
     clientId: z.string(),
     issuer: z.string(),
     audience: z.string().optional(),
@@ -350,6 +399,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("azureb2c"),
+    basePath: z.string().optional(),
     clientId: z.string(),
     tenantName: z.string(),
     policyName: z.string(),
@@ -359,6 +409,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     redirectToAfterSignIn: z.string().optional(),
     redirectToAfterSignOut: z.string().optional(),
   }),
+
   z.object({
     type: z.literal("auth0"),
     clientId: z.string(),
@@ -385,11 +436,13 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
     options: z
       .object({
         alwaysPromptLogin: z.boolean().optional(),
+        prompt: z.string().optional(),
       })
       .optional(),
   }),
   z.object({
     type: z.literal("supabase"),
+    basePath: z.string().optional(),
     supabaseUrl: z.string(),
     supabaseKey: z.string(),
     provider: z.string().optional(),
@@ -576,6 +629,7 @@ export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;
 export type ZudokuRedirect = z.infer<typeof Redirect>;
+export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 
 // Use `z.input` type for flexibility with transforms,
 // but override navigation with `z.infer` for strict validation

@@ -95,6 +95,31 @@ disable_pager: true
 ---
 ```
 
+### `lastModifiedTime`
+
+The last modified timestamp for the page. This property is automatically set by Zudoku during the
+build process based on the Git commit history. You generally should not set this manually.
+
+If you need to override the automatically detected date, you can set it explicitly:
+
+```md
+---
+lastModifiedTime: 2025-11-20T10:30:00.000Z
+---
+```
+
+::if{mode=opensource}
+
+:::info
+
+For accurate last modified dates in deployment environments, ensure full Git history is available
+during builds. See the [Vercel deployment guide](/docs/deploy/vercel#accurate-last-modified-dates)
+for configuration details.
+
+:::
+
+::
+
 ## Complete Example
 
 Here's an example showing multiple frontmatter properties used together:

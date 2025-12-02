@@ -1,5 +1,5 @@
 ---
-title: Azure AD Authentication Setup
+title: Azure AD Setup
 sidebar_label: Azure AD
 description:
   Learn how to set up Azure Active Directory (Microsoft Entra ID) authentication for Zudoku,

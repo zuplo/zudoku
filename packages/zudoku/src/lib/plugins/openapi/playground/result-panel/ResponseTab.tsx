@@ -184,9 +184,7 @@ export const ResponseTab = ({
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
           <CornerDownRightIcon size={14} />
-          <CollapsibleHeader className="col-span-2">
-            Request Headers
-          </CollapsibleHeader>
+          <CollapsibleHeader>Request Headers</CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-[2fr_3fr] gap-x-6 text-sm">
@@ -231,9 +229,7 @@ export const ResponseTab = ({
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
           <CornerDownLeftIcon size={14} />
-          <CollapsibleHeader className="col-span-2">
-            Response Headers
-          </CollapsibleHeader>
+          <CollapsibleHeader>Response Headers</CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-[2fr_3fr] gap-x-6 text-sm">

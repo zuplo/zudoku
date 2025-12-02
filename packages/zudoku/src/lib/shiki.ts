@@ -25,18 +25,27 @@ export const HIGHLIGHT_CODE_BLOCK_CLASS =
   "overflow-x-auto scrollbar not-inline";
 
 const engine = createJavaScriptRegexEngine({ forgiving: true });
-export const highlighter = await createHighlighterCore({
-  engine,
-  langAlias: {
-    markup: "html",
-    svg: "xml",
-    mathml: "xml",
-    atom: "xml",
-    ssml: "xml",
-    rss: "xml",
-    webmanifest: "json",
-  },
-});
+
+const shikiPromise = import.meta.hot?.data.shiki
+  ? import.meta.hot.data.shiki
+  : createHighlighterCore({
+      engine,
+      langAlias: {
+        markup: "html",
+        svg: "xml",
+        mathml: "xml",
+        atom: "xml",
+        ssml: "xml",
+        rss: "xml",
+        webmanifest: "json",
+      },
+    });
+
+if (import.meta.hot) {
+  import.meta.hot.data.shiki = shikiPromise;
+}
+
+export const highlighter = await shikiPromise;
 
 type ThemesRecord = CodeOptionsMultipleThemes<BundledTheme>["themes"];
 

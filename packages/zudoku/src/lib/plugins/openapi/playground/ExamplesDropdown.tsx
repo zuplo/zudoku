@@ -24,9 +24,10 @@ const ExamplesDropdown = ({
         <Button
           variant="ghost"
           size="sm"
-          className="hover:bg-accent hover:brightness-95"
+          className="hover:bg-accent hover:brightness-95 gap-2"
         >
-          Use Example <PlusCircleIcon size={16} className="ml-2" />
+          Use Example
+          <PlusCircleIcon size={14} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="max-w-72">

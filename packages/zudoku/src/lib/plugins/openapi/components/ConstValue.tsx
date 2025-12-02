@@ -9,7 +9,7 @@ export const ConstValue = ({
   hideDescription?: boolean;
 }) => {
   return (
-    <div className="flex flex-col gap-1 text-xs">
+    <div className="flex flex-col gap-1">
       <div>
         <span className="text-muted-foreground">Const value: </span>
         <SelectOnClick className="border rounded px-1 font-mono">

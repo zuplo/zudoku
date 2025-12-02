@@ -1,8 +1,9 @@
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useState } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
+import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { cn } from "../../util/cn.js";
 import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
@@ -120,19 +121,22 @@ export const OperationListItem = ({
                   []
                 ),
               )}
+            {renderIf(operation.requestBody?.content?.at(0)?.schema, () => (
+              <Separator className="my-4" />
+            ))}
             {renderIf(
               operation.requestBody?.content?.at(0)?.schema,
               (schema) => (
-                <div className="mt-4 flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
                   <Heading
                     level={3}
                     className="capitalize flex items-center gap-2"
                     id={`${operation.slug}/request-body`}
                   >
                     {operation.summary && (
-                      <VisuallyHidden>
+                      <PagefindSearchMeta>
                         {operation.summary} &rsaquo;{" "}
-                      </VisuallyHidden>
+                      </PagefindSearchMeta>
                     )}
                     Request Body{" "}
                     {operation.requestBody?.required === false ? (
@@ -145,17 +149,14 @@ export const OperationListItem = ({
                 </div>
               ),
             )}
+            <Separator className="my-4" />
             {operation.responses.length > 0 && (
               <>
-                <Heading
-                  level={3}
-                  className="capitalize mt-8 pt-8 border-t"
-                  id={`${operation.slug}/responses`}
-                >
+                <Heading level={3} id={`${operation.slug}/responses`}>
                   {operation.summary && (
-                    <VisuallyHidden>
+                    <PagefindSearchMeta>
                       {operation.summary} &rsaquo;{" "}
-                    </VisuallyHidden>
+                    </PagefindSearchMeta>
                   )}
                   Responses
                 </Heading>
@@ -172,7 +173,6 @@ export const OperationListItem = ({
         {renderIf(!options?.disableSidecar && !isMCPEndpoint, () => (
           <Sidecar
             selectedResponse={selectedResponse}
-            onSelectResponse={setSelectedResponse}
             operation={operation}
             globalSelectedServer={globalSelectedServer}
             shouldLazyHighlight={shouldLazyHighlight}

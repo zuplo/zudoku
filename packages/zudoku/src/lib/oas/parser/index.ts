@@ -25,6 +25,8 @@ export type TagObject = DeepOmitReference<OpenAPIV3_1.TagObject>;
 export type ExampleObject = DeepOmitReference<OpenAPIV3_1.ExampleObject>;
 export type EncodingObject = DeepOmitReference<OpenAPIV3_1.EncodingObject>;
 export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
+export type ArraySchemaObject =
+  DeepOmitReference<OpenAPIV3_1.ArraySchemaObject>;
 export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject>;
 
 export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
