@@ -220,7 +220,7 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@radix-ui/react-visually-hidden": "1.2.4",
     "@scalar/openapi-parser": "0.23.2",
-    "@sentry/node": "9.26.0",
+    "@sentry/node": "10.27.0",
     "@shikijs/engine-javascript": "3.17.0",
     "@shikijs/langs": "3.17.0",
     "@shikijs/rehype": "3.17.0",
@@ -333,7 +333,7 @@
   "peerDependencies": {
     "@azure/msal-browser": "^4.13.0",
     "@clerk/clerk-js": "^5.63.1",
-    "@sentry/react": "^9.12.0",
+    "@sentry/react": "^10.0.0",
     "@supabase/auth-ui-react": "^0.4.0",
     "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
