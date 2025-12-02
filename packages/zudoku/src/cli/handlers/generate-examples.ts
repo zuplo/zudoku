@@ -1,21 +1,28 @@
 import * as fs from "node:fs";
 import type { ExamplesArguments } from "../cmds/generate.js";
-import { generateSchemaExample } from "../../lib/plugins/openapi/util/generateSchemaExample.js";
-
-type Method = "get" | "post" | "put" | "delete";
-type Schema = { $ref: string } | { type: string, [key: string]: any};
-
-interface ConfigContent {
-  schema: Schema;
-  example?: any;
-  examples?: any;
-}
+import { RecordAny, traverse } from "../../lib/util/traverse.js";
 
 export async function examplesHandler(argv: ExamplesArguments) {
   const { schema: schemaFile, paths, mode } = argv;
-  console.log({ schemaFile, paths, mode }); if (schemaFile.endsWith(".json")) {
+  console.log({ schemaFile, paths, mode });
+
+  const needsExamplePaths: { node: RecordAny, path: string[] }[] = []
+  function needsExample(node: RecordAny, path: string[]) {
+    // check if the path has a request body or responses
+    if (path.includes("requestBody") || path.includes("responses")) {
+      // check if the current [1] endpoint and [2] http method is accounted for
+      if (!(needsExamplePaths.filter((p) => p.path[1] === path[1] && p.path[2] === path[2]).length > 0)) {
+        // check if current node path has a schema to work on
+        if (path.includes("schema")) {
+          needsExamplePaths.push({ node, path });
+        }
+      }
+    }
+  }
+
+  if (schemaFile.endsWith(".json")) {
     const json = fs.readFileSync(schemaFile, "utf-8");
-    const { paths, components } = JSON.parse(json);
+    const schema = JSON.parse(json);
 
     // Multiple ways to have examples show up to RequestBody via "content.type"
     // - having a schema with $ref to a component that has example defined per property
@@ -23,48 +30,15 @@ export async function examplesHandler(argv: ExamplesArguments) {
     // - "examples" with named keys (eg { "domestic": {...}, "international": {...} })
 
     // 1. find endpoints without explicit example(s)
-    const withoutExamples: ({ path: string, method: Method, side: "req" | "res", type: string, schema: Schema })[] = [];
-    Object.entries(paths).map(([path, endpoints]) => {
-      Object.entries(endpoints as Record<Method, any>).map(([method, config]) => {
-        if (config.requestBody) {
-          Object.entries(config.requestBody.content as Record<string, any>).map(([type, content]: [type: string, content: ConfigContent]) => {
-            if (!(content?.example || content?.examples)) {
-              withoutExamples.push({ path, method: method as Method, side: "req", type, schema: content.schema });
-            }
-          })
-        }
-        if (config.responses) {
-          Object.entries(config.responses as Record<string, any>).map(([code, info]: [code: string, info: Record<string, any>]) => {
-            if (info.content) {
-              Object.entries(info.content as Record<string, any>).map(([type, content]: [type: string, content: ConfigContent]) => {
-                if (!(content?.example || content?.examples)) {
-                  withoutExamples.push({ path, method: method as Method, side: "res", type, schema: content.schema });
-                }
-              })
-            }
-          })
-        }
-      })
-    });
-
-
-    // 2. per route without example...
-    withoutExamples.map((route) => {
-      // get the current schema
-      let currentSchema = route.schema;
-      if (route.schema.$ref) {
-        const [componentName] = route.schema.$ref.match(/[^\/]+$/);
-        const componentSchema = components.schemas[componentName];
-        currentSchema = componentSchema;
+    traverse(schema, (node, path) => {
+      // if the current node is a path
+      if (path?.includes("paths")) {
+        needsExample(node, path)
       }
-
-      // generate based on given schema
-      // TODO: remove @ts-ignore
-      // @ts-ignore
-      const example = generateSchemaExample(currentSchema); // TODO: replace generateSchemaExample algo w faker/OpenAI
-      console.log({ currentSchema, example });
-
-      // add example to current route
+      return node;
     });
+
+
+    console.log(needsExamplePaths);
   }
 }

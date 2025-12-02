@@ -6,6 +6,7 @@
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview",
+    "generate": "zudoku generate examples --schema ./schema/shipments.json",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "nx": {
