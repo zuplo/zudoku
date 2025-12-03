@@ -106,6 +106,28 @@ disable_pager: true
 ---
 ```
 
+### `draft`
+
+Marks a document as a draft. Draft documents are only visible when running in development mode and
+are excluded from production builds. This is useful for working on content that isn't ready to be
+published.
+
+```md
+---
+draft: true
+---
+```
+
+:::info
+
+When `draft: true` is set:
+
+- The document will be visible when running `zudoku dev`
+- The document will be excluded from builds created with `zudoku build`
+- The document won't appear in the navigation or be accessible via URL in production
+
+:::
+
 ### `lastModifiedTime`
 
 The last modified timestamp for the page. This property is automatically set by Zudoku during the
@@ -144,6 +166,7 @@ navigation_label: Advanced Config
 navigation_icon: settings
 toc: true
 disable_pager: false
+draft: false
 ---
 
 This page content follows the frontmatter...
