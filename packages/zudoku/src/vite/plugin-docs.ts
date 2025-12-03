@@ -35,6 +35,8 @@ export const globMarkdownFiles = async (
 
     for (const file of globbedFiles) {
       // Skip draft documents in production mode
+      // Note: This reads frontmatter for all files during build, which is acceptable
+      // since it's a one-time cost at build time (not runtime)
       if (!isDevelopment) {
         const absolutePath = path.resolve(config.__meta.rootDir, file);
         const { data } = await readFrontmatter(absolutePath);
