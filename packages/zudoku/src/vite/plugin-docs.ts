@@ -7,6 +7,7 @@ import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import { DocsConfigSchema } from "../config/validators/validate.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const ensureLeadingSlash = joinUrl;
@@ -18,10 +19,11 @@ export const globMarkdownFiles = async (
 ): Promise<Record<string, string>> => {
   const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
   const fileMapping: Record<string, string> = {};
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   for (const globPattern of docsConfig.files) {
     const globbedFiles = await glob(globPattern, {
-      root: config.__meta.rootDir,
+      cwd: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
       // Always glob with relative paths to avoid issues on different OS
       absolute: false,
@@ -32,6 +34,15 @@ export const globMarkdownFiles = async (
     const parent = globParent(globPattern).replace(/^\.?\//, "");
 
     for (const file of globbedFiles) {
+      // Skip draft documents in production mode
+      if (!isDevelopment) {
+        const absolutePath = path.resolve(config.__meta.rootDir, file);
+        const { data } = await readFrontmatter(absolutePath);
+        if (data.draft === true) {
+          continue;
+        }
+      }
+
       const relativePath = path.posix.relative(parent, file);
       const routePath = ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
       // Resolve to absolute path if requested, using path.resolve to handle cross-platform paths
