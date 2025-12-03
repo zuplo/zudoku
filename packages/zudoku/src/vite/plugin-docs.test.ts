@@ -32,6 +32,8 @@ describe("plugin-docs", () => {
       rootDir,
       mode: "internal" as const,
       moduleDir: "",
+      configPath: "",
+      dependencies: [],
     },
   });
 
