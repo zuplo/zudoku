@@ -387,7 +387,7 @@ export const Playground = ({
             value={selectedServer}
             defaultValue={selectedServer}
           >
-            <SelectTrigger className="p-0 border-none flex-row-reverse bg-transparent text-xs gap-0.5 h-auto translate-y-[4px]">
+            <SelectTrigger className="p-0 h-fit shadow-none border-none flex-row-reverse bg-transparent text-xs gap-0.5 translate-y-[4px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
