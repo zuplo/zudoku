@@ -146,8 +146,18 @@ export const ZudokuSignInUi = ({
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
+  const invalidProviders = providers.filter(
+    (provider) => !isValidAuthProviderId(provider),
+  );
+
+  if (invalidProviders.length > 0) {
+    throw new Error(
+      `Unsupported auth provider: ${invalidProviders.join(", ")}`,
+    );
+  }
+
   if (!isAuthProviderIdArray(providers)) {
-    throw new Error("Invalid auth provider IDs");
+    throw new Error(`Unsupported auth provider: ${providers.join(", ")}`);
   }
 
   const signInUsernameMutation = useMutation({

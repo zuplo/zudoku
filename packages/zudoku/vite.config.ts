@@ -12,6 +12,7 @@ const entries: Record<string, string> = {
   "auth-openid": "./src/lib/authentication/providers/openid.tsx",
   "auth-azureb2c": "./src/lib/authentication/providers/azureb2c.tsx",
   "auth-supabase": "./src/lib/authentication/providers/supabase.tsx",
+  "auth-firebase": "./src/lib/authentication/providers/firebase.tsx",
   plugins: "./src/lib/core/plugins.ts",
   hooks: "./src/lib/hooks/index.ts",
   router: "./src/lib/core/router.ts",
