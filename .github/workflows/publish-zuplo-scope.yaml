@@ -1,0 +1,56 @@
+name: Publish @zuplo/zudoku
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Git tag to publish (e.g. v0.66.1)"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    name: Publish @zuplo/zudoku
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.tag }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".tool-versions"
+          registry-url: "https://registry.npmjs.org"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm install nx --global
+
+      - run: nx run-many -t build:ci
+
+      - name: Copy readme
+        run: cp README.md packages/zudoku
+
+      - name: Update package name and version
+        run: |
+          cd packages/zudoku
+          VERSION="${{ inputs.tag }}"
+          VERSION="${VERSION#v}"  # Remove 'v' prefix if present
+          jq --arg version "$VERSION" '.name = "@zuplo/zudoku" | .version = $version' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      - name: Publish @zuplo/zudoku
+        run: pnpm publish --provenance --filter "@zuplo/zudoku" --no-git-checks --tag latest
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
