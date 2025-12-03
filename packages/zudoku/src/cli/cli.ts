@@ -6,8 +6,8 @@ import { hideBin } from "yargs/helpers";
 import yargs from "yargs/yargs";
 import build from "./cmds/build.js";
 import dev from "./cmds/dev.js";
-import generate from "./cmds/generate.js";
 import preview from "./cmds/preview.js";
+import schema from "./cmds/schema.js";
 import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
@@ -64,7 +64,7 @@ if (gte(process.versions.node, MIN_NODE_VERSION)) {
     .command(build)
     .command(dev)
     .command(preview)
-    .command(generate)
+    .command(schema)
     .demandCommand()
     .strictCommands()
     .version(packageJson?.version)

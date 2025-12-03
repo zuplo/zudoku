@@ -14,7 +14,7 @@ export default {
 export interface ExamplesArguments {
   schema: string;
   paths?: string[];
-  mode?: "ai" | "local" | "manual";
+  mode?: "ai" | "manual";
 }
 
 const examplesSubCommand = {
@@ -38,7 +38,8 @@ const examplesSubCommand = {
       .option("mode", {
         type: "string",
         alias: "m",
-        choices: ["ai", "local", "manual"],
+        default: "manual",
+        choices: ["ai", "manual"],
         describe:
           "How Zudoku will generate the examples (AI, local code generation, manual user input)",
       });

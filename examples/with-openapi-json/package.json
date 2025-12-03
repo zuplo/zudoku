@@ -6,7 +6,7 @@
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview",
-    "generate": "zudoku generate examples --schema ./openapi.json --paths /pet -m manual",
+    "generate": "zudoku schema generate examples --schema ./openapi.json --paths /pet -m manual",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "nx": {

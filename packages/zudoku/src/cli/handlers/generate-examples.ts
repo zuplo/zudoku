@@ -1,19 +1,17 @@
 import * as fs from "node:fs";
+import { intro, multiselect, outro } from "@clack/prompts";
 import type { SchemaObject } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 import type { ExamplesArguments } from "../cmds/generate.js";
 
 export async function examplesHandler(argv: ExamplesArguments) {
-  const { schema: schemaFile, paths, mode } = argv;
-  console.log({ schemaFile, paths, mode });
+  // --- Utilities
 
   const needsExamplePaths: { node: RecordAny; path: string[] }[] = [];
-
   type TraverseTransformProps = {
     node: RecordAny;
     path: string[] | undefined;
   };
-
   function needsExample({
     node,
     path,
@@ -65,6 +63,7 @@ export async function examplesHandler(argv: ExamplesArguments) {
     schema: RecordAny;
   };
 
+  // generates an explicit 'example' object
   function generateExample({ node, key, schema }: GenerateExampleProps): any {
     if (node.$ref) {
       const reference = (node.$ref as string)
@@ -74,6 +73,7 @@ export async function examplesHandler(argv: ExamplesArguments) {
           return current?.[key];
         }, schema);
       return generateExample({ node: reference, key, schema });
+      // return "TODO: better $ref handling, stack overflow";
     }
 
     if (node.type === "object" && node.properties) {
@@ -93,12 +93,11 @@ export async function examplesHandler(argv: ExamplesArguments) {
 
     if (node.type === "array" && node.items) {
       // go through each items key and recursively run this fn twice
-      return [
-        generateExample({ node: node.items, key, schema }),
-        generateExample({ node: node.items, key, schema }),
-      ];
+      const example = generateExample({ node: node.items, key, schema });
+      return [example, example];
     }
 
+    // primitives
     switch (node.type) {
       case "null":
         return null;
@@ -114,23 +113,63 @@ export async function examplesHandler(argv: ExamplesArguments) {
     }
   }
 
+  // --- CLI
+
+  const { schema: schemaFile, paths, mode } = argv;
+  console.log({ schemaFile, paths, mode });
+
+  let schema: RecordAny = {};
   if (schemaFile.endsWith(".json")) {
     const json = fs.readFileSync(schemaFile, "utf-8");
-    const schema = JSON.parse(json);
-
-    traverse(schema, (node, path) => {
-      if (path?.includes("paths")) {
-        if (needsExample({ node, path, schema })) {
-          const example = generateExample({ node, key: "example", schema });
-          console.log(
-            JSON.stringify(example),
-            "\n|",
-            JSON.stringify(node),
-            "\n",
-          );
-        }
-      }
-      return node;
-    });
+    schema = JSON.parse(json);
   }
+
+  // TODO: yaml parsing
+
+  intro("Zudoku: Schema Generate");
+
+  const pathsNeedsExample: TraverseTransformProps[] = [];
+  traverse(schema, (node, path) => {
+    if (path?.includes("paths")) {
+      if (needsExample({ node, path, schema })) {
+        pathsNeedsExample.push({ node, path });
+      }
+    }
+    return node;
+  });
+
+  const confirmedPaths = (await multiselect({
+    message: `Found ${pathsNeedsExample.length} paths. Select to generate:`,
+    options: pathsNeedsExample.map(({ node, path }, i) => {
+      if (path) {
+        const methodIndex = path.findIndex(
+          (v) =>
+            v.toLowerCase() === "put" ||
+            v.toLowerCase() === "post" ||
+            v.toLowerCase() === "get" ||
+            v.toLowerCase() === "delete",
+        );
+        const endpoint = path.slice(1, methodIndex);
+        const type = path.find((v) => v === "requestBody" || v === "responses");
+        return {
+          value: i,
+          label: `${path[methodIndex]?.toUpperCase()} ${endpoint} (${type === "requestBody" ? "Request Body" : "Response"})`,
+        };
+      }
+      return { value: i, label: path };
+    }),
+  })) as number[];
+
+  for (const i of confirmedPaths) {
+    if (pathsNeedsExample[i]) {
+      const example = generateExample({
+        node: pathsNeedsExample?.[i].node,
+        key: "example",
+        schema,
+      });
+      console.log({ example });
+    }
+  }
+
+  outro("All done");
 }
