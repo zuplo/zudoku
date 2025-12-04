@@ -1,5 +1,6 @@
 import * as fs from "node:fs";
 import { intro, multiselect, outro } from "@clack/prompts";
+import colors from "picocolors";
 import type { SchemaObject } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 import type { ExamplesArguments } from "../cmds/generate.js";
@@ -126,7 +127,7 @@ export async function examplesHandler(argv: ExamplesArguments) {
 
   // TODO: yaml parsing
 
-  intro("Zudoku: Schema Generate");
+  intro(colors.magenta("🧮 Zudoku: Schema Generate"));
 
   const pathsNeedsExample: TraverseTransformProps[] = [];
   traverse(schema, (node, path) => {
@@ -153,7 +154,7 @@ export async function examplesHandler(argv: ExamplesArguments) {
         const type = path.find((v) => v === "requestBody" || v === "responses");
         return {
           value: i,
-          label: `${path[methodIndex]?.toUpperCase()} ${endpoint} (${type === "requestBody" ? "Request Body" : "Response"})`,
+          label: `${colors.blue(path[methodIndex]?.toUpperCase())} ${endpoint} ${colors.dim(type === "requestBody" ? "(Request Body)" : "(Response)")}`,
         };
       }
       return { value: i, label: path };
@@ -171,5 +172,5 @@ export async function examplesHandler(argv: ExamplesArguments) {
     }
   }
 
-  outro("All done");
+  outro(colors.magenta("All done. Enjoy Zudoku 🧮"));
 }
