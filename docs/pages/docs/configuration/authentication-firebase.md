@@ -50,7 +50,7 @@ export default {
     measurementId: "G-12W6TTNR75",
     // Optional: specify which providers to show in the sign-in UI
     // Available providers: "google", "github", "facebook", "twitter",
-    // "microsoft", "apple", "yahoo", "password", "phone", "emailLink"
+    // "microsoft", "apple", "yahoo", "password", "phone"
     // If not specified, all enabled providers in Firebase will be available
     providers: ["google", "github", "password"],
     // Optional: configure redirect URLs after authentication

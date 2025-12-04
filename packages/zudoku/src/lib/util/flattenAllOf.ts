@@ -1,3 +1,4 @@
+import { $RefParser } from "@apidevtools/json-schema-ref-parser";
 import {
   createComparator,
   createMerger,
@@ -12,15 +13,14 @@ import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { OpenAPIDocument } from "../oas/parser/index.js";
 import { type RecordAny, traverse } from "./traverse.js";
 
-export const flattenAllOfProcessor: Processor = async ({
-  schema,
-  file,
-  dereference,
-}) => {
+export const flattenAllOfProcessor: Processor = async ({ schema, file }) => {
   try {
-    const dereferenced = await dereference(schema);
+    // Resolve refs once - creates a lookup table without modifying the schema
+    const parser = new $RefParser();
+    await parser.resolve(schema);
+    const $refs = parser.$refs;
 
-    const flattened = traverse(dereferenced, (spec) => {
+    const flattened = traverse(schema, (spec) => {
       if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
         return spec;
       }
@@ -32,7 +32,28 @@ export const flattenAllOfProcessor: Processor = async ({
         "anyOf" in spec ||
         "oneOf" in spec;
 
-      return isSchemaObject ? (flattenAllOf(spec) as RecordAny) : spec;
+      if (!isSchemaObject) return spec;
+
+      if ("allOf" in spec && Array.isArray(spec.allOf)) {
+        const resolvedAllOf = spec.allOf.map((item) => {
+          if (
+            item &&
+            typeof item === "object" &&
+            "$ref" in item &&
+            typeof item.$ref === "string"
+          ) {
+            try {
+              return $refs.get(item.$ref) ?? item;
+            } catch {
+              return item;
+            }
+          }
+          return item;
+        });
+        return flattenAllOf({ ...spec, allOf: resolvedAllOf }) as RecordAny;
+      }
+
+      return flattenAllOf(spec) as RecordAny;
     }) as OpenAPIDocument;
 
     return flattened;
