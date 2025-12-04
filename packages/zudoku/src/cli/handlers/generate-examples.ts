@@ -1,5 +1,16 @@
 import * as fs from "node:fs";
-import { intro, multiselect, outro } from "@clack/prompts";
+import {
+  cancel,
+  confirm,
+  intro,
+  isCancel,
+  log,
+  multiselect,
+  note,
+  outro,
+  select,
+  text,
+} from "@clack/prompts";
 import colors from "picocolors";
 import type { SchemaObject } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
@@ -114,6 +125,114 @@ export async function examplesHandler(argv: ExamplesArguments) {
     }
   }
 
+  // if `--mode manual`, runs with user prompts for each property
+  async function manualGenerateExample({
+    node,
+    key,
+    schema,
+  }: GenerateExampleProps): Promise<any> {
+    if (node.$ref) {
+      const reference = (node.$ref as string)
+        .split("/")
+        .toSpliced(0, 1)
+        .reduce((current, key) => {
+          return current?.[key];
+        }, schema);
+      return await manualGenerateExample({ node: reference, key, schema });
+      // return "TODO: better $ref handling, stack overflow";
+    }
+
+    if (node.type === "object" && node.properties) {
+      // go through each property key and recursively run this fn
+      const result: RecordAny = {};
+      if (key !== "example") {
+        log.info(
+          `${colors.bgRed("START")} ${colors.bgGreen(colors.black(key))}: object`,
+        );
+      }
+      for (const [prop, propSchema] of Object.entries(node.properties)) {
+        if (typeof propSchema === "object") {
+          result[prop] = await manualGenerateExample({
+            node: propSchema,
+            key: prop,
+            schema,
+          });
+        }
+      }
+      if (key !== "example") {
+        log.info(
+          `${colors.bgRed("END")} ${colors.bgGreen(colors.black(key))}: object`,
+        );
+      }
+      return result;
+    }
+
+    if (node.type === "array" && node.items) {
+      // go through each items key and recursively run this fn twice
+      log.info(
+        `${colors.bgRed("START")} ${colors.bgGreen(colors.black(key))}: array`,
+      );
+      const examples = [];
+      let repeat = true;
+      while (repeat) {
+        const example = await manualGenerateExample({
+          node: node.items,
+          key,
+          schema,
+        });
+        examples.push(example);
+        repeat = (await confirm({ message: "Create more?" })) as boolean;
+      }
+      log.info(
+        `${colors.bgRed("END")} ${colors.bgGreen(colors.black(key))}: array`,
+      );
+      return examples;
+    }
+
+    const message = `${colors.green(key)}: ${node.type}`;
+    let value: any;
+    // primitives
+    switch (node.type) {
+      case "null":
+        value = null;
+        break;
+      case "boolean":
+        value = await confirm({ message, active: "true", inactive: "false" });
+        break;
+      case "number":
+      case "integer":
+        value = await text({
+          message,
+          validate: (text: string) => {
+            if (Number.isNaN(text)) return new Error("Value is not a number");
+          },
+        });
+        break;
+      case "string":
+        if (node.enum) {
+          value = await select({
+            message: "Select from available choices:",
+            options: (node.enum as string[]).map((choice) => {
+              return { value: choice, label: choice };
+            }),
+          });
+          break;
+        }
+        value = await text({ message });
+        break;
+      default:
+        value = await text({ message });
+        break;
+    }
+
+    if (isCancel(value)) {
+      cancel("Generation cancelled. Goodbye!");
+      process.exit(0);
+    }
+
+    return value;
+  }
+
   // --- CLI
 
   const { schema: schemaFile, paths, mode } = argv;
@@ -139,22 +258,15 @@ export async function examplesHandler(argv: ExamplesArguments) {
     return node;
   });
 
+  // TODO: skip confirmedPaths select if `--paths` is defined
+
   const confirmedPaths = (await multiselect({
     message: `Found ${pathsNeedsExample.length} paths. Select to generate:`,
     options: pathsNeedsExample.map(({ node, path }, i) => {
       if (path) {
-        const methodIndex = path.findIndex(
-          (v) =>
-            v.toLowerCase() === "put" ||
-            v.toLowerCase() === "post" ||
-            v.toLowerCase() === "get" ||
-            v.toLowerCase() === "delete",
-        );
-        const endpoint = path.slice(1, methodIndex);
-        const type = path.find((v) => v === "requestBody" || v === "responses");
         return {
           value: i,
-          label: `${colors.blue(path[methodIndex]?.toUpperCase())} ${endpoint} ${colors.dim(type === "requestBody" ? "(Request Body)" : "(Response)")}`,
+          label: formatPathOption(path),
         };
       }
       return { value: i, label: path };
@@ -163,14 +275,34 @@ export async function examplesHandler(argv: ExamplesArguments) {
 
   for (const i of confirmedPaths) {
     if (pathsNeedsExample[i]) {
-      const example = generateExample({
+      const example = await (mode === "manual"
+        ? manualGenerateExample
+        : generateExample)({
         node: pathsNeedsExample?.[i].node,
         key: "example",
         schema,
       });
-      console.log({ example });
+
+      note(
+        JSON.stringify(example),
+        `Example for ${formatPathOption(pathsNeedsExample[i].path as string[])}`,
+      );
     }
   }
 
   outro(colors.magenta("All done. Enjoy Zudoku 🧮"));
+}
+
+function formatPathOption(path: string[]) {
+  const methodIndex = path.findIndex(
+    (v) =>
+      v.toLowerCase() === "put" ||
+      v.toLowerCase() === "post" ||
+      v.toLowerCase() === "get" ||
+      v.toLowerCase() === "delete",
+  );
+  const endpoint = path.slice(1, methodIndex);
+  const type = path.find((v) => v === "requestBody" || v === "responses");
+
+  return `${colors.blue(path[methodIndex]?.toUpperCase())} ${endpoint} ${colors.dim(type === "requestBody" ? "(Request Body)" : "(Response)")}`;
 }
