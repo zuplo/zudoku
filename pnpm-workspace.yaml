@@ -6,10 +6,10 @@ packages:
   - "docs"
 
 catalog:
-  react: 19.2.0
-  react-dom: 19.2.0
-  react-is: 19.2.0
+  react: 19.2.1
+  react-dom: 19.2.1
+  react-is: 19.2.1
   "@types/react": 19.2.7
-  "@types/react-dom": 19.2.0
+  "@types/react-dom": 19.2.3
   "@types/react-is": 19.2.0
-  "@types/node": 22.13.5
+  "@types/node": 22.19.1
