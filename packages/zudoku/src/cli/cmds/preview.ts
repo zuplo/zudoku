@@ -1,6 +1,6 @@
 import type { Argv } from "yargs";
 import { captureEvent } from "../common/analytics/lib.js";
-import { preview } from "../preview/handler.js";
+import { preview } from "../handlers/preview.js";
 
 export type Arguments = {
   dir: string;

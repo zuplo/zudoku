@@ -46,7 +46,14 @@
           "description": "Update an existent pet in the store",
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/Pet" }
+              "schema": { "$ref": "#/components/schemas/Pet" },
+              "example": {
+                "name": "Jeremy",
+                "photoUrls": [
+                  "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fjooinn.com%2Fimages%2Fdog-67.jpg&f=1&nofb=1&ipt=eefaf288694e06bdd2e57a0b4cc1e118583692685e6880e582f6ddfc13636c35"
+                ],
+                "test": "lmao"
+              }
             },
             "application/xml": {
               "schema": { "$ref": "#/components/schemas/Pet" }
