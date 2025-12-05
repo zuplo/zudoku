@@ -516,7 +516,7 @@ importers:
         version: 2.50.0
       '@tailwindcss/typography':
         specifier: 0.5.19
-        version: 0.5.19(tailwindcss@4.1.16)
+        version: 0.5.19(tailwindcss@4.1.17)
       '@tailwindcss/vite':
         specifier: 4.1.16
         version: 4.1.16(vite@6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))
@@ -701,8 +701,8 @@ importers:
         specifier: 3.3.1
         version: 3.3.1
       tailwindcss:
-        specifier: 4.1.16
-        version: 4.1.16
+        specifier: 4.1.17
+        version: 4.1.17
       tw-animate-css:
         specifier: 1.4.0
         version: 1.4.0
@@ -8162,6 +8162,9 @@ packages:
   tailwindcss@4.1.16:
     resolution: {integrity: sha512-pONL5awpaQX4LN5eiv7moSiSPd/DLDzKVRJz8Q9PgzmAdd1R4307GQS2ZpfiN7ZmekdQrfhZZiSE5jkLR4WNaA==}
 
+  tailwindcss@4.1.17:
+    resolution: {integrity: sha512-j9Ee2YjuQqYT9bbRTfTZht9W/ytp5H+jJpZKiYdP/bpnXARAuELt9ofP0lPnmHjbga7SNQIxdTAXCmtKVYjN+Q==}
+
   tapable@2.2.1:
     resolution: {integrity: sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==}
     engines: {node: '>=6'}
@@ -12930,10 +12933,10 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.1.16
       '@tailwindcss/oxide-win32-x64-msvc': 4.1.16
 
-  '@tailwindcss/typography@0.5.19(tailwindcss@4.1.16)':
+  '@tailwindcss/typography@0.5.19(tailwindcss@4.1.17)':
     dependencies:
       postcss-selector-parser: 6.0.10
-      tailwindcss: 4.1.16
+      tailwindcss: 4.1.17
 
   '@tailwindcss/vite@4.1.16(vite@6.4.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
@@ -17607,6 +17610,8 @@ snapshots:
   tailwind-merge@3.3.1: {}
 
   tailwindcss@4.1.16: {}
+
+  tailwindcss@4.1.17: {}
 
   tapable@2.2.1: {}
 
