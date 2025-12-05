@@ -6,6 +6,7 @@ import {
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import slugify from "@sindresorhus/slugify";
+import { compare } from "semver";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
@@ -220,21 +221,52 @@ export class SchemaManager {
 
       const schemas = this.processedSchemas[apiConfig.path];
 
-      if (!schemas) continue;
+      if (!schemas || schemas.length === 0) continue;
+
+      // Find the latest schema
+      const latestSchema = schemas.reduce((latest, current) => {
+        // Handle fallback version - treat any real version as higher
+        if (current.version === FALLBACK_VERSION) return latest;
+        if (latest.version === FALLBACK_VERSION) return current;
+
+        return compare(current.version, latest.version) > 0 ? current : latest;
+      });
 
       for (const schema of schemas) {
-        const filename = path.basename(schema.inputPath);
-        const reqPath = joinUrl(
-          this.config.basePath,
+        const reqPath = this.createSchemaPath(
+          schema,
           apiConfig.path,
           schema.version,
-          filename,
         );
         map.set(reqPath, schema.inputPath);
+
+        // Also add "latest" path if this schema is the latest version
+        if (schema === latestSchema) {
+          const latestPath = this.createSchemaPath(
+            schema,
+            apiConfig.path,
+            "latest",
+          );
+          map.set(latestPath, schema.inputPath);
+        }
       }
     }
 
     return map;
+  };
+
+  private createSchemaPath = (
+    schema: ProcessedSchema,
+    apiPath: string,
+    versionPath: string,
+  ) => {
+    const extension = path.extname(schema.inputPath);
+    return joinUrl(
+      this.config.basePath,
+      apiPath,
+      versionPath,
+      `schema${extension}`,
+    );
   };
 
   private validateSchema = async (
