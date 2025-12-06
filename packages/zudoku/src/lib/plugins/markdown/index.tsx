@@ -17,6 +17,7 @@ export type Frontmatter = {
   title?: string;
   description?: string;
   category?: string;
+  draft?: boolean;
   toc?: boolean;
   disablePager?: boolean;
   disable_pager?: boolean;
