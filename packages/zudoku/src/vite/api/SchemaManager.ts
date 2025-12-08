@@ -240,8 +240,11 @@ export class SchemaManager {
         );
         map.set(reqPath, schema.inputPath);
 
-        // Also add "latest" path if this schema is the latest version
-        if (schema === latestSchema) {
+        // Also add "latest" path if this schema is the latest version, and the latest schema has a version
+        if (
+          schema === latestSchema &&
+          latestSchema.version !== FALLBACK_VERSION
+        ) {
           const latestPath = this.createSchemaPath(
             schema,
             apiConfig.path,
