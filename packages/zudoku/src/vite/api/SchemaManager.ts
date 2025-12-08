@@ -6,7 +6,7 @@ import {
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import slugify from "@sindresorhus/slugify";
-import { compare } from "semver";
+import { compare, valid } from "semver";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
@@ -229,6 +229,16 @@ export class SchemaManager {
         if (current.version === FALLBACK_VERSION) return latest;
         if (latest.version === FALLBACK_VERSION) return current;
 
+        // Check if both versions are valid semver before comparing
+        const currentValid = valid(current.version);
+        const latestValid = valid(latest.version);
+
+        // If current is invalid, keep latest
+        if (!currentValid) return latest;
+        // If latest is invalid but current is valid, use current
+        if (!latestValid) return current;
+
+        // Both are valid, compare them
         return compare(current.version, latest.version) > 0 ? current : latest;
       });
 
@@ -240,11 +250,8 @@ export class SchemaManager {
         );
         map.set(reqPath, schema.inputPath);
 
-        // Also add "latest" path if this schema is the latest version, and the latest schema has a version
-        if (
-          schema === latestSchema &&
-          latestSchema.version !== FALLBACK_VERSION
-        ) {
+        // Also add "latest" path if this schema is the latest version and has a valid semver version
+        if (schema === latestSchema && valid(latestSchema.version)) {
           const latestPath = this.createSchemaPath(
             schema,
             apiConfig.path,
