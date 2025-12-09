@@ -86,7 +86,7 @@ class FirebaseAuthenticationProvider
         element: (
           <ZudokuSignInUi
             providers={this.providers}
-            allowUsernamePassword={this.enableUsernamePassword}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -126,7 +126,7 @@ class FirebaseAuthenticationProvider
         element: (
           <ZudokuSignUpUi
             providers={this.providers}
-            allowUsernamePassword={this.enableUsernamePassword}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {

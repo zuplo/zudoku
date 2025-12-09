@@ -137,10 +137,10 @@ export const ZudokuSignInUi = ({
   providers,
   onOAuthSignIn,
   onUsernamePasswordSignIn,
-  allowUsernamePassword,
+  enableUsernamePassword,
 }: {
   providers: string[];
-  allowUsernamePassword: boolean;
+  enableUsernamePassword: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
@@ -204,7 +204,7 @@ export const ZudokuSignInUi = ({
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
-        {allowUsernamePassword && (
+        {enableUsernamePassword && (
           <EmailPasswordForm
             form={form}
             onSubmit={(data) =>
@@ -217,15 +217,17 @@ export const ZudokuSignInUi = ({
             isPending={pending}
           />
         )}
-        {allowUsernamePassword && providers.length > 0 && (
+        {enableUsernamePassword && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
         )}
-        <ProviderButtons
-          providers={providers}
-          onClick={(providerId) =>
-            signInByProviderMutation.mutate({ providerId })
-          }
-        />
+        {providers.length > 0 && (
+          <ProviderButtons
+            providers={providers}
+            onClick={(providerId) =>
+              signInByProviderMutation.mutate({ providerId })
+            }
+          />
+        )}
         <Link to="/signup" className="text-sm text-muted-foreground">
           Don't have an account? Sign up.
         </Link>
@@ -236,12 +238,12 @@ export const ZudokuSignInUi = ({
 
 export const ZudokuSignUpUi = ({
   providers,
-  allowUsernamePassword,
+  enableUsernamePassword,
   onOAuthSignUp,
   onUsernamePasswordSignUp,
 }: {
   providers: string[];
-  allowUsernamePassword: boolean;
+  enableUsernamePassword: boolean;
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
@@ -287,7 +289,7 @@ export const ZudokuSignUpUi = ({
           </Alert>
         )}
 
-        {allowUsernamePassword && (
+        {enableUsernamePassword && (
           <EmailPasswordForm
             form={form}
             onSubmit={(data) =>
@@ -300,15 +302,17 @@ export const ZudokuSignUpUi = ({
             isPending={pending}
           />
         )}
-        {allowUsernamePassword && providers.length > 0 && (
+        {enableUsernamePassword && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
         )}
-        <ProviderButtons
-          providers={providers}
-          onClick={(providerId) =>
-            signUpByProviderMutation.mutate({ providerId })
-          }
-        />
+        {providers.length > 0 && (
+          <ProviderButtons
+            providers={providers}
+            onClick={(providerId) =>
+              signUpByProviderMutation.mutate({ providerId })
+            }
+          />
+        )}
         <Link to="/signin" className="text-sm text-muted-foreground">
           Already have an account? Sign in.
         </Link>
