@@ -51,6 +51,7 @@ const config: ZudokuConfig = {
       "github",
       "google",
       "facebook",
+      "password",
       "twitter",
       "microsoft",
       "apple",
