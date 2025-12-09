@@ -137,8 +137,10 @@ export const ZudokuSignInUi = ({
   providers,
   onOAuthSignIn,
   onUsernamePasswordSignIn,
+  allowUsernamePassword,
 }: {
   providers: string[];
+  allowUsernamePassword: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
@@ -202,18 +204,22 @@ export const ZudokuSignInUi = ({
             <AlertDescription>{error?.message}</AlertDescription>
           </Alert>
         )}
-        <EmailPasswordForm
-          form={form}
-          onSubmit={(data) =>
-            void signInUsernameMutation.mutate({
-              email: data.email,
-              password: data.password,
-            })
-          }
-          submitLabel="Sign in"
-          isPending={pending}
-        />
-        <ProviderSeparator providers={providers} />
+        {allowUsernamePassword && (
+          <EmailPasswordForm
+            form={form}
+            onSubmit={(data) =>
+              void signInUsernameMutation.mutate({
+                email: data.email,
+                password: data.password,
+              })
+            }
+            submitLabel="Sign in"
+            isPending={pending}
+          />
+        )}
+        {allowUsernamePassword && providers.length > 0 && (
+          <ProviderSeparator providers={providers} />
+        )}
         <ProviderButtons
           providers={providers}
           onClick={(providerId) =>
@@ -230,10 +236,12 @@ export const ZudokuSignInUi = ({
 
 export const ZudokuSignUpUi = ({
   providers,
+  allowUsernamePassword,
   onOAuthSignUp,
   onUsernamePasswordSignUp,
 }: {
   providers: string[];
+  allowUsernamePassword: boolean;
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
@@ -279,18 +287,22 @@ export const ZudokuSignUpUi = ({
           </Alert>
         )}
 
-        <EmailPasswordForm
-          form={form}
-          onSubmit={(data) =>
-            void signUpUsernameMutation.mutate({
-              email: data.email,
-              password: data.password,
-            })
-          }
-          submitLabel="Sign up"
-          isPending={pending}
-        />
-        <ProviderSeparator providers={providers} />
+        {allowUsernamePassword && (
+          <EmailPasswordForm
+            form={form}
+            onSubmit={(data) =>
+              void signUpUsernameMutation.mutate({
+                email: data.email,
+                password: data.password,
+              })
+            }
+            submitLabel="Sign up"
+            isPending={pending}
+          />
+        )}
+        {allowUsernamePassword && providers.length > 0 && (
+          <ProviderSeparator providers={providers} />
+        )}
         <ProviderButtons
           providers={providers}
           onClick={(providerId) =>
