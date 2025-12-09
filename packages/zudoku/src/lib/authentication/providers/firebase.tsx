@@ -28,6 +28,7 @@ class FirebaseAuthenticationProvider
   private readonly app: FirebaseApp;
   private readonly auth: Auth;
   private readonly providers: string[];
+  private readonly enableUsernamePassword: boolean;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
@@ -42,7 +43,9 @@ class FirebaseAuthenticationProvider
       measurementId: config.measurementId,
     });
     this.auth = getAuth(this.app);
-    this.providers = config.providers ?? [];
+    this.providers = config.providers?.filter((p) => p !== "password") ?? [];
+    this.enableUsernamePassword =
+      config.providers?.includes("password") ?? false;
   }
 
   async signRequest(request: Request): Promise<Request> {
@@ -83,6 +86,7 @@ class FirebaseAuthenticationProvider
         element: (
           <ZudokuSignInUi
             providers={this.providers}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -122,6 +126,7 @@ class FirebaseAuthenticationProvider
         element: (
           <ZudokuSignUpUi
             providers={this.providers}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {
