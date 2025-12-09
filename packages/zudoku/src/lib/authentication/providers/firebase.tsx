@@ -113,7 +113,13 @@ class FirebaseAuthenticationProvider
               password: string,
             ) => {
               try {
-                await signInWithEmailAndPassword(this.auth, email, password);
+                useAuthState.setState({ isPending: false });
+                const result = await signInWithEmailAndPassword(
+                  this.auth,
+                  email,
+                  password,
+                );
+                await this.setUserLoggedIn(result.user);
               } catch (error) {
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
@@ -140,7 +146,13 @@ class FirebaseAuthenticationProvider
               email: string,
               password: string,
             ) => {
-              await createUserWithEmailAndPassword(this.auth, email, password);
+              useAuthState.setState({ isPending: true });
+              const createUser = await createUserWithEmailAndPassword(
+                this.auth,
+                email,
+                password,
+              );
+              await this.setUserLoggedIn(createUser.user);
             }}
           />
         ),
@@ -167,13 +179,13 @@ class FirebaseAuthenticationProvider
     const user = this.auth.currentUser;
 
     if (user) {
-      await this.updateUserState(user);
+      await this.setUserLoggedIn(user);
     } else {
       useAuthState.setState({ isPending: false });
     }
   };
 
-  private async updateUserState(user: User) {
+  private async setUserLoggedIn(user: User) {
     useAuthState.getState().setLoggedIn({
       profile: {
         sub: user.uid,
