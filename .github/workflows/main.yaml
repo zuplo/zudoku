@@ -17,6 +17,11 @@ on:
     tags-ignore:
       - "*"
 
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
 # Only one of these can run at a time because it pushes to main
 # kill any other running jobs and the latest one wins
 concurrency:
