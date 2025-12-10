@@ -9,6 +9,8 @@ concurrency:
 jobs:
   prerelease:
     name: Prerelease
+    runs-on:
+      group: ubuntu-large-runners
     permissions:
       actions: read
       contents: write
