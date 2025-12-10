@@ -148,6 +148,8 @@ export const ZudokuSignInUi = ({
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
+  const relativeRedirectTo = redirectTo?.replace(window.location.origin, "");
+
   const invalidProviders = providers.filter(
     (provider) => !isValidAuthProviderId(provider),
   );
@@ -167,7 +169,7 @@ export const ZudokuSignInUi = ({
       await onUsernamePasswordSignIn(email, password);
     },
     onSuccess: () => {
-      void navigate(redirectTo ?? "/");
+      void navigate(relativeRedirectTo ?? "/");
     },
   });
   const signInByProviderMutation = useMutation({
@@ -175,7 +177,7 @@ export const ZudokuSignInUi = ({
       await onOAuthSignIn(providerId);
     },
     onSuccess: () => {
-      void navigate(redirectTo ?? "/");
+      void navigate(relativeRedirectTo ?? "/");
     },
   });
 
@@ -247,6 +249,12 @@ export const ZudokuSignUpUi = ({
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
+
+  const relativeRedirectTo = redirectTo?.replace(window.location.origin, "");
+
   if (!isAuthProviderIdArray(providers)) {
     throw new Error("Invalid auth provider IDs");
   }
@@ -255,11 +263,17 @@ export const ZudokuSignUpUi = ({
     mutationFn: async ({ email, password }: FormFields) => {
       await onUsernamePasswordSignUp(email, password);
     },
+    onSuccess: () => {
+      void navigate(relativeRedirectTo ?? "/");
+    },
   });
 
   const signUpByProviderMutation = useMutation({
     mutationFn: async ({ providerId }: { providerId: string }) => {
       await onOAuthSignUp(providerId);
+    },
+    onSuccess: () => {
+      void navigate(relativeRedirectTo ?? "/");
     },
   });
 

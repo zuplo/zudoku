@@ -1,5 +1,6 @@
 import { KeyRoundIcon } from "lucide-react";
 import type { RouteObject } from "react-router";
+import type { ApiKeysOptions } from "../../../config/validators/validate.js";
 import type { UseAuthReturn } from "../../authentication/hook.js";
 import type {
   ApiIdentityPlugin,
@@ -175,13 +176,24 @@ const createDefaultHandler = (
 export const createApiKeyService = <T extends ApiKeyService>(service: T): T =>
   service;
 
-export const apiKeyPlugin = (
-  options: ApiKeyPluginOptions,
-): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
-  const service: ApiKeyService =
-    "deploymentName" in options
-      ? createDefaultHandler(options.deploymentName, options)
-      : options;
+export const apiKeyPlugin = ({
+  deploymentName,
+  ...options
+}: Omit<ApiKeysOptions, "enabled"> & {
+  deploymentName?: string;
+}): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
+  const service = deploymentName
+    ? createDefaultHandler(deploymentName, { deploymentName, ...options })
+    : options;
+
+  if (!service.getConsumers) {
+    throw new Error("getConsumers is required when using the apiKeyPlugin");
+  }
+
+  const verifiedService: ApiKeyService = {
+    ...service,
+    getConsumers: service.getConsumers,
+  };
 
   return {
     getProfileMenuItems: () => [
@@ -195,7 +207,7 @@ export const apiKeyPlugin = (
 
     getIdentities: async (context) => {
       try {
-        const consumers = await service.getConsumers(context);
+        const consumers = await verifiedService.getConsumers(context);
 
         return consumers.map((consumer) => ({
           authorizeRequest: (request) => {
@@ -220,7 +232,7 @@ export const apiKeyPlugin = (
           children: [
             {
               path: "/settings/api-keys",
-              element: <SettingsApiKeys service={service} />,
+              element: <SettingsApiKeys service={verifiedService} />,
             },
           ],
         },
