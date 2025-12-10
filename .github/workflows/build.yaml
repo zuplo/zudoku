@@ -52,8 +52,6 @@ jobs:
 
       - name: Publish Modules
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
