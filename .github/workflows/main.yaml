@@ -85,8 +85,6 @@ jobs:
 
       - name: Publish Modules
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - run: echo "ZUDOKU_VERSION=$(node --print 'require(`./packages/zudoku/package.json`).version')" >> $GITHUB_ENV
 
