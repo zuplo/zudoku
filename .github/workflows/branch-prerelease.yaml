@@ -9,8 +9,6 @@ concurrency:
 jobs:
   prerelease:
     name: Prerelease
-    runs-on:
-      group: ubuntu-large-runners
     permissions:
       actions: read
       contents: write
@@ -62,5 +60,3 @@ jobs:
 
       - name: Publish Modules
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag dev
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
