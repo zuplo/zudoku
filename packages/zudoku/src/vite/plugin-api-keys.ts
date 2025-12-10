@@ -1,6 +1,7 @@
 import type { Plugin } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getCurrentConfig } from "../config/loader.js";
+import { getZuploSystemConfigurations } from "./zuplo.js";
 
 const viteApiKeysPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-api-keys-plugin";
@@ -22,7 +23,8 @@ const viteApiKeysPlugin = (): Plugin => {
 
         const deploymentName =
           ZuploEnv.buildConfig?.deploymentName ||
-          ZuploEnv.systemConfigurations?.__ZUPLO_DEPLOYMENT_NAME;
+          getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
+            ?.__ZUPLO_DEPLOYMENT_NAME;
 
         const code = [
           `import config from "virtual:zudoku-config";`,
