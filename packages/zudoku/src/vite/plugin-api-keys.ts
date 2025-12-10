@@ -20,7 +20,10 @@ const viteApiKeysPlugin = (): Plugin => {
           return `export const configuredApiKeysPlugin = undefined;`;
         }
 
-        const deploymentName = ZuploEnv.buildConfig?.deploymentName;
+        const deploymentName =
+          ZuploEnv.buildConfig?.deploymentName ||
+          ZuploEnv.systemConfigurations?.__ZUPLO_DEPLOYMENT_NAME;
+
         const code = [
           `import config from "virtual:zudoku-config";`,
           config.__meta.mode === "internal"
