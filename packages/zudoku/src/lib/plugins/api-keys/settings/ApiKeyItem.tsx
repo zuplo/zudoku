@@ -20,6 +20,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
+import {
+  Frame,
+  FrameDescription,
+  FrameHeader,
+  FramePanel,
+  FrameTitle,
+} from "zudoku/ui/Frame.js";
 import { Input } from "zudoku/ui/Input.js";
 import { useZudoku } from "../../../components/context/ZudokuContext.js";
 import type { ZudokuContext } from "../../../core/ZudokuContext.js";
