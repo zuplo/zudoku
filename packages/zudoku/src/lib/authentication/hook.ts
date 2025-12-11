@@ -52,5 +52,21 @@ export const useAuth = () => {
         },
       );
     },
+    supportsEmailVerification:
+      typeof authentication?.requestEmailVerification === "function",
+
+    requestEmailVerification: async (options?: AuthActionOptions) => {
+      if (!isAuthEnabled) {
+        throw new Error("Authentication is not enabled.");
+      }
+
+      await authentication.requestEmailVerification?.(
+        { navigate },
+        {
+          ...options,
+          redirectTo: options?.redirectTo ?? window.location.href,
+        },
+      );
+    },
   };
 };

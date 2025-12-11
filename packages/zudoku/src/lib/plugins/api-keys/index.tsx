@@ -8,9 +8,7 @@ import type {
   ZudokuPlugin,
 } from "../../core/plugins.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
-import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
-import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
@@ -224,19 +222,18 @@ export const apiKeyPlugin = ({
         return [];
       }
     },
+
     getRoutes: (): RouteObject[] => {
       return [
         {
-          element: <ProtectedRoute />,
-          errorElement: <RouterError />,
-          children: [
-            {
-              path: "/settings/api-keys",
-              element: <SettingsApiKeys service={verifiedService} />,
-            },
-          ],
+          path: "/settings/api-keys",
+          element: <SettingsApiKeys service={verifiedService} />,
         },
       ];
+    },
+
+    getProtectedRoutes: () => {
+      return ["/settings/api-keys"];
     },
   };
 };

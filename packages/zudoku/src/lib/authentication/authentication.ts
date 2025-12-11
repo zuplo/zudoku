@@ -6,6 +6,7 @@ export type AuthActionOptions = { redirectTo?: string; replace?: boolean };
 
 export interface AuthenticationPlugin {
   initialize?(context: ZudokuContext): Promise<void>;
+  onPageLoad?(): void;
   setNavigate?(navigate: NavigateFunction): void;
 
   signUp(
@@ -18,12 +19,17 @@ export interface AuthenticationPlugin {
   ): Promise<void>;
 
   signOut({ navigate }: AuthActionContext): Promise<void>;
+
+  signRequest(request: Request): Promise<Request>;
+  requestEmailVerification?(
+    { navigate }: AuthActionContext,
+    options?: AuthActionOptions,
+  ): Promise<void>;
+
   /**
    * @deprecated use signRequest instead
    */
   getAccessToken?(): Promise<string>;
-  onPageLoad?(): void;
-  signRequest(request: Request): Promise<Request>;
 }
 
 export type AuthenticationProviderInitializer<TConfig> = (

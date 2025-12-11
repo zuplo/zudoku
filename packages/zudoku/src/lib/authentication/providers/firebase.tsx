@@ -3,12 +3,15 @@ import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
+import { ZudokuError } from "../../util/invariant.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
@@ -19,7 +22,12 @@ import type {
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
-import { ZudokuSignInUi, ZudokuSignUpUi } from "../ui/ZudokuAuthUi.js";
+import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
+import {
+  ZudokuPasswordResetUi,
+  ZudokuSignInUi,
+  ZudokuSignUpUi,
+} from "../ui/ZudokuAuthUi.js";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -46,6 +54,10 @@ class FirebaseAuthenticationProvider
     this.providers = config.providers?.filter((p) => p !== "password") ?? [];
     this.enableUsernamePassword =
       config.providers?.includes("password") ?? false;
+  }
+
+  async initialize() {
+    await this.auth.authStateReady();
   }
 
   async signRequest(request: Request): Promise<Request> {
@@ -79,8 +91,71 @@ class FirebaseAuthenticationProvider
     );
   };
 
+  requestEmailVerification = async (
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
+  ) => {
+    if (!this.auth.currentUser) {
+      throw new ZudokuError("User is not authenticated", {
+        title: "User not authenticated",
+      });
+    }
+
+    await sendEmailVerification(this.auth.currentUser);
+    void navigate(
+      redirectTo
+        ? `/verify-email?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/verify-email`,
+    );
+  };
+
   getRoutes = () => {
     return [
+      {
+        path: "/verify-email",
+        element: (
+          <EmailVerificationUi
+            onResendVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await sendEmailVerification(this.auth.currentUser);
+            }}
+            onCheckVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await this.auth.currentUser.reload();
+              const isVerified = this.auth.currentUser.emailVerified;
+
+              if (isVerified) {
+                await this.auth.currentUser.getIdToken(true);
+                await this.setUserLoggedIn(this.auth.currentUser);
+              }
+
+              return isVerified;
+            }}
+          />
+        ),
+      },
+      {
+        path: "/reset-password",
+        element: (
+          <ZudokuPasswordResetUi
+            onPasswordReset={async (email: string) => {
+              try {
+                await sendPasswordResetEmail(this.auth, email);
+              } catch (error) {
+                throw Error(getFirebaseErrorMessage(error), { cause: error });
+              }
+            }}
+          />
+        ),
+      },
       {
         path: "/signin",
         element: (
