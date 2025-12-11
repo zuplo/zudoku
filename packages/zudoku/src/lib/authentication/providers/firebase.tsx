@@ -3,12 +3,14 @@ import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
+import { ZudokuError } from "../../util/invariant.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
@@ -79,8 +81,23 @@ class FirebaseAuthenticationProvider
     );
   };
 
+  requestEmailVerification = async ({ navigate }: AuthActionContext) => {
+    if (!this.auth.currentUser) {
+      throw new ZudokuError("User is not authenticated", {
+        title: "User not authenticated",
+      });
+    }
+
+    await sendEmailVerification(this.auth.currentUser);
+    void navigate("/verify-email");
+  };
+
   getRoutes = () => {
     return [
+      {
+        path: "/verify-email",
+        element: <div>Verify your email</div>,
+      },
       {
         path: "/signin",
         element: (
