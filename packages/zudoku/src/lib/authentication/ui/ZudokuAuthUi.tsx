@@ -23,6 +23,7 @@ import {
 } from "../../ui/Form.js";
 import { cn } from "../../util/cn.js";
 import createVariantComponent from "../../util/createVariantComponent.js";
+import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 import AppleIcon from "./icons/Apple.js";
 import FacebookIcon from "./icons/Facebook.js";
 import GithubIcon from "./icons/Github.js";
@@ -148,7 +149,7 @@ export const ZudokuSignInUi = ({
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
-  const relativeRedirectTo = redirectTo?.replace(window.location.origin, "");
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
   const invalidProviders = providers.filter(
     (provider) => !isValidAuthProviderId(provider),
@@ -169,7 +170,7 @@ export const ZudokuSignInUi = ({
       await onUsernamePasswordSignIn(email, password);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
   const signInByProviderMutation = useMutation({
@@ -177,7 +178,7 @@ export const ZudokuSignInUi = ({
       await onOAuthSignIn(providerId);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
 

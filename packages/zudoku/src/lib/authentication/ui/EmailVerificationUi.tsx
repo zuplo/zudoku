@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "zudoku/ui/Card.js";
 import createVariantComponent from "../../util/createVariantComponent.js";
+import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
 
 export const EmailVerificationUi = ({
   onResendVerification,
@@ -22,9 +23,7 @@ export const EmailVerificationUi = ({
 }) => {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
-
-  const relativeRedirectTo =
-    redirectTo?.replace(window.location.origin, "") ?? "/";
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
   const resendMutation = useMutation({
     mutationFn: async () => {
