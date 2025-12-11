@@ -46,8 +46,8 @@ const ApiKeyItem = ({
     context: ZudokuContext,
   ) => Promise<void>;
 }) => {
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingLabel, setEditingLabel] = useState<string>("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingLabel, setEditingLabel] = useState(consumer.label);
   const queryClient = useQueryClient();
   const context = useZudoku();
 
@@ -156,9 +156,9 @@ const ApiKeyItem = ({
     },
   });
 
-  const handleStartEdit = (currentLabel: string) => {
+  const handleStartEdit = () => {
     setIsEditing(true);
-    setEditingLabel(currentLabel);
+    setEditingLabel(consumer.label);
   };
 
   const handleSaveEdit = () => {
@@ -169,12 +169,6 @@ const ApiKeyItem = ({
       });
     }
     setIsEditing(false);
-    setEditingLabel("");
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setEditingLabel("");
   };
 
   return (
@@ -214,7 +208,7 @@ const ApiKeyItem = ({
                       if (e.key === "Enter") {
                         handleSaveEdit();
                       } else if (e.key === "Escape") {
-                        handleCancelEdit();
+                        setIsEditing(false);
                       }
                     }}
                     className="text-lg font-medium"
@@ -232,7 +226,7 @@ const ApiKeyItem = ({
                     <Button
                       size="icon"
                       variant="ghost"
-                      onClick={handleCancelEdit}
+                      onClick={() => setIsEditing(false)}
                     >
                       <XIcon size={16} />
                     </Button>
@@ -263,7 +257,7 @@ const ApiKeyItem = ({
             {onUpdate && (
               <Button
                 variant="ghost"
-                onClick={() => setIsEditing(true)}
+                onClick={handleStartEdit}
                 className={cn(
                   "flex gap-2",
                   isEditing && "opacity-0! pointer-events-none",

@@ -37,7 +37,6 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       <p>Create, manage, and monitor your API keys</p>
 
       <Slot.Target name="api-keys-list-page-before-keys" />
-      <div className="h-8"></div>
       {auth.profile?.emailVerified === false ? (
         <Item variant="outline">
           <ItemContent>
