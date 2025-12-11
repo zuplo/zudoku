@@ -47,11 +47,7 @@ export const ApiKeyList = ({ service }: { service: ApiKeyService }) => {
           )}
         </div>
       ) : (
-        <ul
-          className={cn(
-            "grid grid-cols-[1fr_min-content] divide-y divide-border col-span-6",
-          )}
-        >
+        <ul className={cn("grid grid-cols-[1fr_min-content] col-span-6")}>
           {data.map((consumer) => (
             <ApiKeyItem
               key={consumer.id}
