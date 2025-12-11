@@ -56,6 +56,10 @@ class FirebaseAuthenticationProvider
       config.providers?.includes("password") ?? false;
   }
 
+  async initialize() {
+    await this.auth.authStateReady();
+  }
+
   async signRequest(request: Request): Promise<Request> {
     const accessToken = await this.auth.currentUser?.getIdToken();
     if (!accessToken) {
