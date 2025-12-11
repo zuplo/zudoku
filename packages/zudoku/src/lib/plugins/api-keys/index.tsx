@@ -153,6 +153,9 @@ const createDefaultHandler = (
             id: string;
             label?: string;
             subject?: string;
+            createdOn?: string;
+            updatedOn?: string;
+            expiresOn?: string;
             apiKeys: {
               data: ApiKey[];
             };
@@ -162,6 +165,9 @@ const createDefaultHandler = (
 
       return data.data.map((consumer) => ({
         id: consumer.id,
+        createdOn: consumer.createdOn,
+        updatedOn: consumer.updatedOn,
+        expiresOn: consumer.expiresOn,
         label: consumer.label || consumer.subject || "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),

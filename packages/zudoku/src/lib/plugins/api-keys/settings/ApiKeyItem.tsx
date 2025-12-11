@@ -7,10 +7,9 @@ import {
   XIcon,
 } from "lucide-react";
 import { AnimatePresence } from "motion/react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Alert, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
-import { Card, CardHeader } from "zudoku/ui/Card.js";
 import {
   Dialog,
   DialogClose,
@@ -21,6 +20,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
+import {
+  Frame,
+  FrameDescription,
+  FrameHeader,
+  FramePanel,
+  FrameTitle,
+} from "zudoku/ui/Frame.js";
 import { Input } from "zudoku/ui/Input.js";
 import { useZudoku } from "../../../components/context/ZudokuContext.js";
 import type { ZudokuContext } from "../../../core/ZudokuContext.js";
@@ -191,55 +197,49 @@ const ApiKeyItem = ({
           <AlertTitle>{deleteKeyMutation.error.message}</AlertTitle>
         </Alert>
       )}
-      <Card
+      <Frame
         className="grid grid-cols-subgrid col-span-full items-center mb-4 group"
         key={consumer.id}
       >
-        <CardHeader className="border-b col-span-full grid-cols-subgrid grid">
-          <div className="h-10 flex flex-col text-sm justify-center">
-            <div className="font-medium text-lg flex items-center gap-2">
-              {isEditing ? (
-                <div className="flex items-center gap-2 w-full">
-                  <Input
-                    maxLength={32}
-                    value={editingLabel}
-                    onChange={(e) => setEditingLabel(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleSaveEdit();
-                      } else if (e.key === "Escape") {
-                        setIsEditing(false);
-                      }
-                    }}
-                    className="text-lg font-medium"
-                    autoFocus
-                  />
-                  <div className="flex items-center">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={handleSaveEdit}
-                      disabled={!editingLabel.trim()}
-                    >
-                      <CheckIcon size={16} />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => setIsEditing(false)}
-                    >
-                      <XIcon size={16} />
-                    </Button>
-                  </div>
+        <FrameHeader className="col-span-full flex-row items-start justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            {isEditing ? (
+              <div className="flex items-center gap-2">
+                <Input
+                  maxLength={32}
+                  value={editingLabel}
+                  onChange={(e) => setEditingLabel(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleSaveEdit();
+                    } else if (e.key === "Escape") {
+                      setIsEditing(false);
+                    }
+                  }}
+                  autoFocus
+                />
+                <div className="flex items-center">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={handleSaveEdit}
+                    disabled={!editingLabel.trim()}
+                  >
+                    <CheckIcon size={16} />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    <XIcon size={16} />
+                  </Button>
                 </div>
-              ) : (
-                consumer.label
-              )}
-              <div className="text-muted-foreground text-xs">
-                {consumer.createdOn}
               </div>
-            </div>
-            <div className="text-muted-foreground text-xs">
+            ) : (
+              <FrameTitle>{consumer.label}</FrameTitle>
+            )}
+            <FrameDescription>
               {consumer.createdOn && (
                 <div>
                   Created on {new Date(consumer.createdOn).toLocaleDateString()}
@@ -250,10 +250,10 @@ const ApiKeyItem = ({
                   Expires on {new Date(consumer.expiresOn).toLocaleDateString()}
                 </div>
               )}
-            </div>
+            </FrameDescription>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex gap-1">
             {onUpdate && (
               <Button
                 variant="ghost"
@@ -311,32 +311,30 @@ const ApiKeyItem = ({
               </Dialog>
             )}
           </div>
-        </CardHeader>
-        <div className="col-span-full grid-cols-subgrid grid">
+        </FrameHeader>
+        <FramePanel className="p-0 grid grid-cols-subgrid col-span-full divide-y divide-border">
           <AnimatePresence>
             {consumer.apiKeys.map((apiKey) => (
-              <React.Fragment key={apiKey.id}>
-                <RevealApiKey
-                  apiKey={apiKey}
-                  onDeleteKey={() => {
-                    deleteKeyMutation.mutate({
-                      consumerId: consumer.id,
-                      keyId: apiKey.id,
-                    });
-                  }}
-                  className={
-                    deleteKeyMutation.variables?.keyId === apiKey.id &&
-                    deleteKeyMutation.isPending
-                      ? "opacity-10!"
-                      : undefined
-                  }
-                />
-                <div className="col-span-full h-px bg-border"></div>
-              </React.Fragment>
+              <RevealApiKey
+                key={apiKey.id}
+                apiKey={apiKey}
+                onDeleteKey={() => {
+                  deleteKeyMutation.mutate({
+                    consumerId: consumer.id,
+                    keyId: apiKey.id,
+                  });
+                }}
+                className={
+                  deleteKeyMutation.variables?.keyId === apiKey.id &&
+                  deleteKeyMutation.isPending
+                    ? "opacity-10!"
+                    : undefined
+                }
+              />
             ))}
           </AnimatePresence>
-        </div>
-      </Card>
+        </FramePanel>
+      </Frame>
     </>
   );
 };
