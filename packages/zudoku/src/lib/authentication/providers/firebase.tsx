@@ -21,6 +21,7 @@ import type {
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
 import { ZudokuSignInUi, ZudokuSignUpUi } from "../ui/ZudokuAuthUi.js";
 
 class FirebaseAuthenticationProvider
@@ -81,7 +82,10 @@ class FirebaseAuthenticationProvider
     );
   };
 
-  requestEmailVerification = async ({ navigate }: AuthActionContext) => {
+  requestEmailVerification = async (
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
+  ) => {
     if (!this.auth.currentUser) {
       throw new ZudokuError("User is not authenticated", {
         title: "User not authenticated",
@@ -89,14 +93,45 @@ class FirebaseAuthenticationProvider
     }
 
     await sendEmailVerification(this.auth.currentUser);
-    void navigate("/verify-email");
+    void navigate(
+      redirectTo
+        ? `/verify-email?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/verify-email`,
+    );
   };
 
   getRoutes = () => {
     return [
       {
         path: "/verify-email",
-        element: <div>Verify your email</div>,
+        element: (
+          <EmailVerificationUi
+            onResendVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await sendEmailVerification(this.auth.currentUser);
+            }}
+            onCheckVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await this.auth.currentUser.reload();
+              const isVerified = this.auth.currentUser.emailVerified;
+
+              if (isVerified) {
+                await this.auth.currentUser.getIdToken(true);
+                await this.setUserLoggedIn(this.auth.currentUser);
+              }
+
+              return isVerified;
+            }}
+          />
+        ),
       },
       {
         path: "/signin",
