@@ -208,17 +208,25 @@ export const ZudokuSignInUi = ({
           </Alert>
         )}
         {enableUsernamePassword && (
-          <EmailPasswordForm
-            form={form}
-            onSubmit={(data) =>
-              void signInUsernameMutation.mutate({
-                email: data.email,
-                password: data.password,
-              })
-            }
-            submitLabel="Sign in"
-            isPending={pending}
-          />
+          <>
+            <EmailPasswordForm
+              form={form}
+              onSubmit={(data) =>
+                void signInUsernameMutation.mutate({
+                  email: data.email,
+                  password: data.password,
+                })
+              }
+              submitLabel="Sign in"
+              isPending={pending}
+            />
+            <Link
+              to="/reset-password"
+              className="text-sm text-muted-foreground text-right -mt-2"
+            >
+              Forgot password?
+            </Link>
+          </>
         )}
         {enableUsernamePassword && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
@@ -372,5 +380,98 @@ const ProviderSeparator = ({ providers }: { providers: AuthProviderId[] }) => {
         </span>
       </Separator>
     )
+  );
+};
+
+export const ZudokuPasswordResetUi = ({
+  onPasswordReset,
+}: {
+  onPasswordReset: (email: string) => Promise<void>;
+}) => {
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+
+  const passwordResetMutation = useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      await onPasswordReset(email);
+    },
+    onSuccess: () => {
+      setIsSubmitted(true);
+    },
+  });
+
+  const form = useForm<{ email: string }>({
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const error = passwordResetMutation.error;
+
+  return (
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Reset password</CardTitle>
+        <CardDescription>
+          {isSubmitted
+            ? "Check your email for a password reset link."
+            : "Enter your email address and we'll send you a link to reset your password."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error?.message}</AlertDescription>
+          </Alert>
+        )}
+        {isSubmitted ? (
+          <div className="flex flex-col gap-4">
+            <Alert>
+              <AlertTitle>Email sent</AlertTitle>
+              <AlertDescription>
+                If an account exists with that email address, you will receive a
+                password reset link shortly.
+              </AlertDescription>
+            </Alert>
+            <Link to="/signin">
+              <Button variant="outline" className="w-full">
+                Back to sign in
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit((data) =>
+                  passwordResetMutation.mutate({ email: data.email }),
+                )}
+                className="flex flex-col gap-2"
+              >
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="you@example.com"
+                      {...form.register("email")}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+                <ActionButton
+                  type="submit"
+                  isPending={passwordResetMutation.isPending}
+                >
+                  Reset password
+                </ActionButton>
+              </form>
+            </Form>
+            <Link to="/signin" className="text-sm text-muted-foreground">
+              Sign in
+            </Link>
+          </>
+        )}
+      </CardContent>
+    </AuthCard>
   );
 };

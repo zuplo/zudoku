@@ -4,6 +4,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -22,7 +23,11 @@ import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
 import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
-import { ZudokuSignInUi, ZudokuSignUpUi } from "../ui/ZudokuAuthUi.js";
+import {
+  ZudokuPasswordResetUi,
+  ZudokuSignInUi,
+  ZudokuSignUpUi,
+} from "../ui/ZudokuAuthUi.js";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -129,6 +134,20 @@ class FirebaseAuthenticationProvider
               }
 
               return isVerified;
+            }}
+          />
+        ),
+      },
+      {
+        path: "/reset-password",
+        element: (
+          <ZudokuPasswordResetUi
+            onPasswordReset={async (email: string) => {
+              try {
+                await sendPasswordResetEmail(this.auth, email);
+              } catch (error) {
+                throw Error(getFirebaseErrorMessage(error), { cause: error });
+              }
             }}
           />
         ),
