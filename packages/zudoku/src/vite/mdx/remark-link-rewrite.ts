@@ -20,6 +20,6 @@ export const remarkLinkRewrite =
         node.url = path.join("../", node.url);
       }
 
-      node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
+      node.url = node.url.replace(/\.mdx?(#.*)?$/, "$1");
     });
   };
