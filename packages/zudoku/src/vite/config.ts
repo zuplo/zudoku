@@ -202,11 +202,11 @@ export async function getViteConfig(
     experimental: {
       renderBuiltUrl(filename) {
         if (cdnUrl?.base && [".js", ".css"].includes(path.extname(filename))) {
-          return joinUrl(cdnUrl.base, filename);
+          return joinUrl(cdnUrl.base,config.basePath, filename);
         }
 
         if (cdnUrl?.media && MEDIA_REGEX.test(filename)) {
-          return joinUrl(cdnUrl.media, filename);
+          return joinUrl(cdnUrl.media,config.basePath, filename);
         }
 
         return { relative: true };
