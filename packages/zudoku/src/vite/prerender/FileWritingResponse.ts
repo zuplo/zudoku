@@ -31,7 +31,7 @@ export class FileWritingResponse implements PrerenderResponse {
     this.statusCode = status;
     if (this.options.writeRedirects) {
       this.write(
-        `<!doctype html><script>window.location.href='${url}';</script>`,
+        `<!doctype html><script>window.location.href=${JSON.stringify(url)};</script>`,
       );
     } else {
       this.dontSave = true;
