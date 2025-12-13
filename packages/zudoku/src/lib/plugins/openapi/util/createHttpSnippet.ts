@@ -1,6 +1,23 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
 
+const toFormDataParams = (text?: string) => {
+  const stringify = (v: unknown) =>
+    typeof v === "string" ? v : JSON.stringify(v);
+
+  try {
+    const obj = text && JSON.parse(text);
+    if (typeof obj !== "object" || !obj) return [];
+
+    return Object.entries(obj).flatMap(([name, value]) => {
+      const values = Array.isArray(value) ? value : [value];
+      return values.map((v) => ({ name, value: stringify(v) }));
+    });
+  } catch {
+    return [];
+  }
+};
+
 export const createHttpSnippet = ({
   operation,
   selectedServer,
@@ -13,11 +30,22 @@ export const createHttpSnippet = ({
     text?: string;
   };
 }) => {
+  const isMultipart =
+    exampleBody.mimeType === "multipart/form-data" ||
+    exampleBody.mimeType === "application/x-www-form-urlencoded";
+
+  const postData = isMultipart
+    ? {
+        mimeType: exampleBody.mimeType,
+        params: toFormDataParams(exampleBody.text),
+      }
+    : exampleBody;
+
   return new HTTPSnippet({
     method: operation.method.toUpperCase(),
     url:
       selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
-    postData: exampleBody,
+    postData,
     headers: [
       ...(exampleBody.text
         ? [{ name: "Content-Type", value: exampleBody.mimeType }]
