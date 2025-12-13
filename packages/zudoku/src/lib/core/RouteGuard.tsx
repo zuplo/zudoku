@@ -27,16 +27,16 @@ export const RouteGuard = () => {
   const shouldBypass = use(BypassProtectedRoutesContext);
   const { protectedRoutes } = zudoku.options;
 
-  const authCheckFn =
-    !shouldBypass && protectedRoutes
-      ? Object.entries(protectedRoutes).find(([path]) =>
-          matchPath({ path, end: true }, location.pathname),
-        )?.[1]
-      : undefined;
+  const protectedRouteEntry = protectedRoutes
+    ? Object.entries(protectedRoutes).find(([path]) =>
+        matchPath({ path, end: true }, location.pathname),
+      )
+    : undefined;
 
-  const isProtectedRoute = authCheckFn !== undefined;
+  const isProtectedRoute = protectedRouteEntry !== undefined;
+  const authCheckFn = !shouldBypass ? protectedRouteEntry?.[1] : undefined;
   const needsToSignIn =
-    isProtectedRoute && !authCheckFn({ auth, context: zudoku });
+    isProtectedRoute && authCheckFn && !authCheckFn({ auth, context: zudoku });
 
   if (isProtectedRoute && !auth.isAuthEnabled) {
     throw new ZudokuError("Authentication is not enabled", {
@@ -91,7 +91,7 @@ export const RouteGuard = () => {
                 )
               }
             >
-              Login{" "}
+              Login
             </Button>
           </DialogFooter>
         </DialogContent>

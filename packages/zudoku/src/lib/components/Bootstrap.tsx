@@ -34,13 +34,13 @@ const Bootstrap = ({
     <QueryClientProvider client={queryClient}>
       {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
-        <BypassProtectedRoutesContext value={false}>
+        <BypassProtectedRoutesContext.Provider value={false}>
           <HelmetProvider>
             <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
               <RouterProvider router={router} />
             </StaggeredRenderContext.Provider>
           </HelmetProvider>
-        </BypassProtectedRoutesContext>
+        </BypassProtectedRoutesContext.Provider>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
@@ -62,9 +62,9 @@ const BootstrapStatic = ({
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <HelmetProvider context={helmetContext}>
-        <BypassProtectedRoutesContext value={bypassProtection}>
+        <BypassProtectedRoutesContext.Provider value={bypassProtection}>
           <StaticRouterProvider router={router} context={context} />
-        </BypassProtectedRoutesContext>
+        </BypassProtectedRoutesContext.Provider>
       </HelmetProvider>
     </QueryClientProvider>
   </StrictMode>
