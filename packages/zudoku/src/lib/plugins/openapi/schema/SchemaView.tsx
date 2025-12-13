@@ -154,10 +154,12 @@ export const SchemaView = ({
             <FrameDescription>{schema.description}</FrameDescription>
           </FrameHeader>
         )}
-        <FramePanel className="p-0!">
-          {itemsList}
-          {additionalObjectProperties}
-        </FramePanel>
+        {(itemsList.length > 0 || additionalObjectProperties) && (
+          <FramePanel className="p-0!">
+            {itemsList}
+            {additionalObjectProperties}
+          </FramePanel>
+        )}
         {schema.additionalProperties === true && (
           <FrameFooter>
             <a

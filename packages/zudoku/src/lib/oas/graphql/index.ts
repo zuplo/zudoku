@@ -473,7 +473,9 @@ const OperationItem = builder
                     name,
                     ...(typeof value === "string" ? { value } : value),
                   }))
-                : [],
+                : content.example !== undefined
+                  ? [{ name: "", value: content.example }]
+                  : [],
               encoding: Object.entries(content.encoding ?? {}).map(
                 ([name, value]) => ({ name, ...value }),
               ),
@@ -490,7 +492,7 @@ const OperationItem = builder
               statusCode,
               description: response.description,
               content: Object.entries(response.content ?? {}).map(
-                ([mediaType, { schema, examples }]) => ({
+                ([mediaType, { schema, examples, example }]) => ({
                   mediaType,
                   schema,
                   examples: examples
@@ -498,7 +500,9 @@ const OperationItem = builder
                         name,
                         ...(typeof value === "string" ? { value } : value),
                       }))
-                    : [],
+                    : example !== undefined
+                      ? [{ name: "", value: example }]
+                      : [],
                 }),
               ),
               headers: response.headers,
