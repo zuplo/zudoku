@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
+import { useLatest } from "../../util/useLatest.js";
 import { useAuth } from "../hook.js";
 
 export const SignIn = () => {
@@ -15,12 +16,14 @@ export const SignIn = () => {
   const [search] = useSearchParams();
   const redirectTo = search.get("redirect") ?? undefined;
 
+  const login = useLatest(auth.login);
+
   useEffect(() => {
-    void auth.login({
+    void login.current({
       redirectTo,
       replace: true,
     });
-  }, [auth, redirectTo]);
+  }, [login, redirectTo]);
 
   return (
     <div className="flex items-center justify-center mt-8">

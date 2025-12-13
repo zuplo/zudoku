@@ -7,14 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
+import { useLatest } from "../../util/useLatest.js";
 import { useAuth } from "../hook.js";
 
 export const SignUp = () => {
   const auth = useAuth();
 
+  const signup = useLatest(auth.signup);
+
   useEffect(() => {
-    void auth.signup();
-  }, [auth]);
+    void signup.current();
+  }, [signup]);
 
   return (
     <div className="flex items-center justify-center mt-8">
