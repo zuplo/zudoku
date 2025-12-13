@@ -2,7 +2,7 @@ import type { RouteObject } from "react-router";
 
 export const routesToPaths = (routes: RouteObject[]) => {
   const paths: string[] = [];
-  const addPaths = (routes: RouteObject[]) => {
+  const addPaths = (routes: RouteObject[], parentPath = "") => {
     for (const route of routes) {
       // skip catch-all routes and dynamic segments
       if (route.path?.includes("*") || route.path?.includes(":")) {
@@ -15,10 +15,15 @@ export const routesToPaths = (routes: RouteObject[]) => {
       }
 
       if (route.path) {
-        paths.push(route.path.startsWith("/") ? route.path : `/${route.path}`);
-      }
-      if (route.children) {
-        addPaths(route.children);
+        const fullPath = route.path.startsWith("/")
+          ? route.path
+          : parentPath + "/" + route.path;
+        paths.push(fullPath.startsWith("/") ? fullPath : `/${fullPath}`);
+        if (route.children) {
+          addPaths(route.children, fullPath);
+        }
+      } else if (route.children) {
+        addPaths(route.children, parentPath);
       }
     }
   };
