@@ -22,8 +22,8 @@ const viteAuthPlugin = (): Plugin => {
         // TODO: Validate that the authConfig.type is a valid authentication provider
         return [
           `const config = {
-            ...${JSON.stringify(config.authentication, null, 2)},
             basePath: ${config.basePath ? JSON.stringify(config.basePath) : "undefined"},
+            ...${JSON.stringify(config.authentication, null, 2)},
           };`,
           config.__meta.mode === "internal"
             ? `import authProvider from "${config.__meta.moduleDir}/src/lib/authentication/providers/${config.authentication.type}.tsx";`
