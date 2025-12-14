@@ -136,7 +136,18 @@ export const enrichWithZuploMcpServerData = ({
       for (const fileConfig of handler.options.files) {
         if (!fileConfig.path || !fileConfig.operationIds) continue;
 
+        // Resolve path and validate to prevent path traversal attacks
+        const safeBoundary = path.resolve(rootDir, "..");
         const resolvedPath = path.resolve(rootDir, "../", fileConfig.path);
+        const relativePath = path.relative(safeBoundary, resolvedPath);
+
+        // Ensure resolved path is within the safe boundary
+        if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+          throw new Error(
+            `Security: Path "${fileConfig.path}" resolves outside safe boundary`,
+          );
+        }
+
         const fileContent = await fs.readFile(resolvedPath, "utf-8");
         const document = JSON.parse(fileContent);
 
