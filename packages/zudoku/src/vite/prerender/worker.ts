@@ -69,6 +69,12 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       bypassResponse.isSent(),
     ]);
 
+    if (bypassResponse.statusCode >= 500) {
+      throw new Error(
+        `SSR failed (bypass render) with status ${bypassResponse.statusCode} for path: ${urlPath}`,
+      );
+    }
+
     html = bypassResponse.buffer;
   } else {
     await server.render({ ...sharedOpts, response: fileResponse });
@@ -77,6 +83,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
     html = fileResponse.buffer;
   }
 
+  // Check fileResponse status for both protected and non-protected routes
   if (fileResponse.statusCode >= 500) {
     throw new Error(
       `SSR failed with status ${fileResponse.statusCode} for path: ${urlPath}`,
