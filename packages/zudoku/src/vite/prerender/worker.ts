@@ -83,7 +83,6 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
     html = fileResponse.buffer;
   }
 
-  // Check fileResponse status for both protected and non-protected routes
   if (fileResponse.statusCode >= 500) {
     throw new Error(
       `SSR failed with status ${fileResponse.statusCode} for path: ${urlPath}`,
