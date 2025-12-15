@@ -40,6 +40,7 @@ const getSchemaInfos = (schema?: SchemaObject) => {
     schema.enum && "enum",
     schema.const && "const",
     schema.format,
+    schema.type === "array" && schema.items?.contentMediaType,
     schema.minimum !== undefined && `min: ${schema.minimum}`,
     schema.maximum !== undefined && `max: ${schema.maximum}`,
     schema.minLength !== undefined && `minLength: ${schema.minLength}`,
