@@ -1,7 +1,7 @@
 import type { Argv } from "yargs";
-import { build } from "../build/handler.js";
 import { captureEvent } from "../common/analytics/lib.js";
-import { DEFAULT_PREVIEW_PORT } from "../preview/handler.js";
+import { build } from "../handlers/build.js";
+import { DEFAULT_PREVIEW_PORT } from "../handlers/preview.js";
 
 export type Arguments = {
   dir: string;
