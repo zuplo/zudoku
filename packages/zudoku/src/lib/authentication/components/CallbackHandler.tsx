@@ -11,15 +11,11 @@ export function CallbackHandler({
   handleCallback: () => Promise<string>;
 }) {
   const { options } = useZudoku();
-
-  // Capture URL once to prevent re-reading after navigation and ensure unique cache key
-  const callbackUrl = window.location.href;
-
   const executeCallback = useSuspenseQuery({
     retry: false,
-    queryKey: ["oauth-callback", callbackUrl],
+    queryKey: ["oauth-callback", window.location.search],
     queryFn: async () => {
-      const url = new URL(callbackUrl);
+      const url = new URL(window.location.href);
 
       const errorParam = url.searchParams.get("error");
       const errorDescription =
@@ -42,7 +38,7 @@ export function CallbackHandler({
           options.basePath,
         ),
       );
-    }
+    },
   });
 
   return <Navigate to={executeCallback.data} replace />;
