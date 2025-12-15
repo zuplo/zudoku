@@ -92,9 +92,7 @@ const createDefaultHandler = (
           method: "DELETE",
         },
       );
-      const response = await fetch(
-        await context.signRequest(request),
-      );
+      const response = await fetch(await context.signRequest(request));
       await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
