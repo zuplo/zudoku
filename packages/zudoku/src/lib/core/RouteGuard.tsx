@@ -34,9 +34,24 @@ export const RouteGuard = () => {
     : undefined;
 
   const isProtectedRoute = protectedRouteEntry !== undefined;
-  const authCheckFn = !shouldBypass ? protectedRouteEntry?.[1] : undefined;
-  const needsToSignIn =
-    isProtectedRoute && authCheckFn && !authCheckFn({ auth, context: zudoku });
+
+  // SSR/prerendering mode: render content with search meta tag, skip all auth
+  if (shouldBypass) {
+    return (
+      <>
+        {isProtectedRoute && (
+          <Helmet>
+            <meta
+              name="pagefind"
+              data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
+              content="true"
+            />
+          </Helmet>
+        )}
+        <Outlet />
+      </>
+    );
+  }
 
   if (isProtectedRoute && !auth.isAuthEnabled) {
     throw new ZudokuError("Authentication is not enabled", {
@@ -45,6 +60,10 @@ export const RouteGuard = () => {
         "To use protectedRoutes you need authentication to be enabled",
     });
   }
+
+  const authCheckFn = protectedRouteEntry?.[1];
+  const needsToSignIn =
+    isProtectedRoute && !authCheckFn?.({ auth, context: zudoku });
 
   if (needsToSignIn && auth.isPending && typeof window !== "undefined") {
     return null;
@@ -99,18 +118,5 @@ export const RouteGuard = () => {
     );
   }
 
-  return (
-    <>
-      {shouldBypass && isProtectedRoute && (
-        <Helmet>
-          <meta
-            name="pagefind"
-            data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
-            content="true"
-          />
-        </Helmet>
-      )}
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 };
