@@ -42,9 +42,7 @@ export function CallbackHandler({
           options.basePath,
         ),
       );
-    },
-    staleTime: Infinity,
-    gcTime: 0,
+    }
   });
 
   return <Navigate to={executeCallback.data} replace />;
