@@ -92,8 +92,7 @@ const createDefaultHandler = (
           method: "DELETE",
         },
       );
-      await context.signRequest(request);
-      const response = await fetch(request);
+      const response = await fetch(await context.signRequest(request));
       await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
@@ -135,7 +134,7 @@ const createDefaultHandler = (
         ),
       );
       await throwIfProblemJson(response);
-      invariant(response.ok, "Failed to delete API key");
+      invariant(response.ok, "Failed to roll API key");
     },
     getConsumers: async (context) => {
       const request = new Request(
