@@ -26,7 +26,7 @@ const handleCircularRefs = (
   if (obj === null || typeof obj !== "object") return obj;
 
   const refPath = obj.__$ref;
-  
+
   // Check if this object has a __$ref marker (set during schema code generation)
   // If we've already fully processed this ref path, return a reference marker
   // instead of the full data to avoid JSON.stringify serializing duplicates
