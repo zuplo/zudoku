@@ -1,4 +1,7 @@
-import { CIRCULAR_REF } from "../../../oas/graphql/circular.js";
+import {
+  CIRCULAR_REF,
+  SCHEMA_REF_PREFIX,
+} from "../../../oas/graphql/circular.js";
 import type {
   ArraySchemaObject,
   SchemaObject,
@@ -25,7 +28,8 @@ export const isComplexType = (value?: SchemaObject) =>
       (!value.items.type || value.items.type === "object")));
 
 export const isCircularRef = (schema: unknown): schema is string =>
-  typeof schema === "string" && schema.startsWith(CIRCULAR_REF);
+  typeof schema === "string" &&
+  (schema.startsWith(CIRCULAR_REF) || schema.startsWith(SCHEMA_REF_PREFIX));
 
 export const isArrayCircularRef = (
   schema: SchemaObject,
@@ -34,5 +38,12 @@ export const isArrayCircularRef = (
 
 export const extractCircularRefInfo = (
   ref?: string | SchemaObject,
-): string | undefined =>
-  typeof ref === "string" ? ref.split(":")[1] : undefined;
+): string | undefined => {
+  if (typeof ref !== "string") return undefined;
+
+  if (ref.startsWith(SCHEMA_REF_PREFIX)) {
+    return ref.slice(SCHEMA_REF_PREFIX.length).split("/").pop();
+  }
+
+  return ref.split(":")[1];
+};
