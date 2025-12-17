@@ -1,0 +1,165 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "E-Commerce API",
+    "version": "1.0.0",
+    "description": "REST surface with an embedded GraphQL endpoint."
+  },
+  "servers": [{ "url": "https://api.example.com" }],
+  "paths": {
+    "/products": {
+      "get": {
+        "operationId": "listProducts",
+        "summary": "List products",
+        "tags": ["Products"],
+        "description": "Returns a paginated list of products.",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by category.",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of results.",
+            "schema": { "type": "integer", "default": 20, "maximum": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Product" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProduct",
+        "summary": "Create a product",
+        "tags": ["Products"],
+        "description": "Adds a new product to the catalog.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ProductInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The created product",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "getProduct",
+        "summary": "Get a product",
+        "tags": ["Products"],
+        "description": "Fetch a single product by its id.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The product id.",
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The product",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Product" }
+              }
+            }
+          },
+          "404": { "description": "Product not found" }
+        }
+      }
+    },
+    "/graphql": {
+      "post": {
+        "operationId": "graphqlQuery",
+        "summary": "GraphQL endpoint",
+        "tags": ["Products"],
+        "description": "Query the e-commerce API via GraphQL. See [the full documentation →](/graphql)",
+        "x-graphql": { "schema": "./schema.graphql" },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string" },
+                  "variables": { "type": "object" }
+                },
+                "required": ["query"]
+              },
+              "examples": {
+                "list-products": {
+                  "summary": "List products",
+                  "value": {
+                    "query": "query ListProducts($category: String) {\n  products(category: $category) {\n    id\n    name\n    price\n  }\n}",
+                    "variables": { "category": "electronics" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "GraphQL response" }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Product": {
+        "type": "object",
+        "required": ["id", "name", "price"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number", "format": "float" },
+          "category": {
+            "type": "string",
+            "enum": ["electronics", "books", "clothing"]
+          },
+          "inStock": { "type": "boolean", "default": true }
+        }
+      },
+      "ProductInput": {
+        "type": "object",
+        "required": ["name", "price"],
+        "properties": {
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "price": { "type": "number", "format": "float" },
+          "category": {
+            "type": "string",
+            "enum": ["electronics", "books", "clothing"]
+          }
+        }
+      }
+    }
+  }
+}

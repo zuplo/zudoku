@@ -10,6 +10,7 @@ import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
+import * as SidecarBox from "../../ui/SidecarBox.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
@@ -28,7 +29,6 @@ import { useSecurityCredentialsStore } from "./playground/securityCredentialsSto
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
-import * as SidecarBox from "./SidecarBox.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 import {

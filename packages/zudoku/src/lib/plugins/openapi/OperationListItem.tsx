@@ -45,7 +45,8 @@ export const OperationListItem = ({
   const first = operation.responses.at(0);
   const [selectedResponse, setSelectedResponse] = useState(first?.statusCode);
   const isMCPEndpoint = operation.extensions?.["x-mcp-server"] !== undefined;
-  const isGraphQLEndpoint = getGraphQLEndpoint(operation) !== undefined;
+  const graphqlEndpoint = getGraphQLEndpoint(operation);
+  const isGraphQLEndpoint = graphqlEndpoint !== undefined;
 
   const heading = (
     <Heading
@@ -112,6 +113,12 @@ export const OperationListItem = ({
             {heading}
             {methodPathBlock}
             {description}
+            {/* {graphqlEndpoint?.schemaId && (
+              <GraphQLInlineSections
+                schemaId={graphqlEndpoint.schemaId}
+                slug={operation.slug}
+              />
+            )} */}
           </div>
         ) : (
           <>

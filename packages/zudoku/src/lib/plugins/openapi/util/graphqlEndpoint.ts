@@ -5,10 +5,18 @@ const GraphQLExtensionSchema = z.union([
   z.literal(true),
   z.object({
     endpoint: z.optional(z.string()),
+    // Path to an SDL file. When absent, the endpoint is introspected at build.
+    schema: z.optional(z.string()),
+    // Set during build: key into the bundled introspected schemas module.
+    schemaId: z.optional(z.string()),
   }),
 ]);
 
-export type GraphQLEndpointConfig = { endpoint?: string };
+export type GraphQLEndpointConfig = {
+  endpoint?: string;
+  schema?: string;
+  schemaId?: string;
+};
 
 export const getGraphQLEndpoint = (
   operation: OperationsFragmentFragment,

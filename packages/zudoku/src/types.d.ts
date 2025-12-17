@@ -19,6 +19,11 @@ declare module "virtual:zudoku-api-plugins" {
   export const configuredApiCatalogPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
 }
 
+declare module "virtual:zudoku-graphql-schemas" {
+  const schemas: Record<string, import("graphql").IntrospectionQuery>;
+  export default schemas;
+}
+
 declare module "virtual:zudoku-search-plugin" {
   export const configuredSearchPlugin:
     | import("./lib/core/plugins.ts").ZudokuPlugin

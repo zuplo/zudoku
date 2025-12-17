@@ -26,6 +26,12 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   const virtualModuleId = "virtual:zudoku-api-plugins";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
+  // Introspected GraphQL schemas for `x-graphql` operations. Kept on its own
+  // module so the heavy introspection only loads on operation routes, never in
+  // the navigation query.
+  const graphqlSchemasModuleId = "virtual:zudoku-graphql-schemas";
+  const resolvedGraphqlSchemasModuleId = `\0${graphqlSchemasModuleId}`;
+
   const initialConfig = getCurrentConfig();
 
   // Load Zuplo-specific processors if in Zuplo environment
@@ -109,8 +115,14 @@ const viteApiPlugin = async (): Promise<Plugin> => {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId;
       }
+      if (id === graphqlSchemasModuleId) {
+        return resolvedGraphqlSchemasModuleId;
+      }
     },
     async load(id) {
+      if (id === resolvedGraphqlSchemasModuleId) {
+        return `export default ${JSON.stringify(schemaManager.getGraphQLSchemas())};`;
+      }
       if (id !== resolvedVirtualModuleId) return;
 
       const config = getCurrentConfig();

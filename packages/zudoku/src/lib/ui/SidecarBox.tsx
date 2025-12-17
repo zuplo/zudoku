@@ -1,5 +1,5 @@
 import type { PropsWithChildren } from "react";
-import { cn } from "../../util/cn.js";
+import { cn } from "../util/cn.js";
 
 type BaseComponentProps<T = unknown> = PropsWithChildren<
   T & { className?: string }

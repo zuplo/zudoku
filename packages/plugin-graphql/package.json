@@ -1,0 +1,33 @@
+{
+  "name": "@zudoku/plugin-graphql",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "files": [
+    "src",
+    "vite.config.ts",
+    "vite-plugin.ts"
+  ],
+  "scripts": {},
+  "dependencies": {
+    "graphql": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "catalog:",
+    "zudoku": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0",
+    "zudoku": "*"
+  }
+}
