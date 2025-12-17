@@ -11,6 +11,9 @@ updates:
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/"
+    cooldown:
+      # See https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference#cooldown-
+      default-days: 3
     schedule:
       interval: "cron"
       cronjob: "0 0 * * 1,4"
