@@ -28,11 +28,20 @@ export const warnPackageVersionMismatch = async () => {
   const packageJson = getPackageJson(
     fileURLToPath(new URL("../../../package.json", import.meta.url)),
   );
-  const nodeModulesPath = fileURLToPath(
-    new URL("../../../..", import.meta.url),
-  );
-  const reactPath = path.join(nodeModulesPath, "react/package.json");
-  const reactDomPath = path.join(nodeModulesPath, "react-dom/package.json");
+
+  // Try to resolve React packages from the current working directory
+  // This works better in monorepo setups with pnpm
+  let reactPath: string;
+  let reactDomPath: string;
+
+  try {
+    reactPath = require.resolve("react/package.json", { paths: [process.cwd()] });
+    reactDomPath = require.resolve("react-dom/package.json", { paths: [process.cwd()] });
+  } catch {
+    // Fallback: Skip version check if React can't be resolved
+    // This happens in development/monorepo scenarios
+    return;
+  }
 
   const required = packageJson.peerDependencies;
   const installed = {
