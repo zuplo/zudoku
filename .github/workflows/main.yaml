@@ -23,10 +23,10 @@ permissions:
   contents: read
   id-token: write
 
-# Only one release can run at a time because it pushes to main
-# Branch prereleases get their own concurrency group to allow parallel runs
+# Releases and prereleases are grouped separately so that pushes to main
+# (which trigger dev releases) don't cancel in-progress manual releases
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}${{ github.event.inputs.releaseType == 'prerelease' && format('-{0}', github.ref_name) || '' }}
+  group: ${{ github.workflow }}-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:
@@ -110,8 +110,9 @@ jobs:
         run: git push origin main --follow-tags
 
       - uses: actions/github-script@v8
-        name: ${{ github.event_name == 'workflow_dispatch' && 'Create Release' || 'Create Pre-release' }}
+        name: ${{ env.IS_RELEASE == 'true' && 'Create Release' || 'Create Pre-release' }}
         id: create-release
+        if: github.ref == 'refs/heads/main'
         with:
           result-encoding: string
           retries: 3
@@ -120,6 +121,7 @@ jobs:
             await release({ github, context, core })
 
       - name: Authenticate to Google Cloud
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/auth@v3
         with:
           token_format: access_token
@@ -128,6 +130,7 @@ jobs:
           access_token_lifetime: 300s
 
       - name: Upload CSS
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -139,6 +142,7 @@ jobs:
             content-type: text/css
 
       - name: Upload Javascript
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -187,6 +191,7 @@ jobs:
             cache-control: public,max-age=31536000,immutable
 
       - name: Upload Artifacts
+        if: github.ref == 'refs/heads/main'
         uses: google-github-actions/upload-cloud-storage@v3
         with:
           process_gcloudignore: false
@@ -206,12 +211,14 @@ jobs:
           --data '{ "purge_everything": true }'
 
       - name: Write Summary
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
 
       - name: Generate a token
+        if: env.IS_RELEASE == 'true'
         id: app-token
         uses: actions/create-github-app-token@v2
         with:
