@@ -23,10 +23,10 @@ permissions:
   contents: read
   id-token: write
 
-# Only one of these can run at a time because it pushes to main
-# kill any other running jobs and the latest one wins
+# Only one release can run at a time because it pushes to main
+# Branch prereleases get their own concurrency group to allow parallel runs
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event_name }}
+  group: ${{ github.workflow }}-${{ github.event_name }}${{ github.event.inputs.releaseType == 'prerelease' && format('-{0}', github.ref_name) || '' }}
   cancel-in-progress: true
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
       pull-requests: read
 
     # Regular releases can only be triggered from main, prereleases can be from any branch
-    if: github.ref == 'refs/heads/main' || github.event.inputs.releaseType == 'prerelease'
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType == 'prerelease')
 
     env:
       IS_RELEASE: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType != 'prerelease' }}
@@ -93,7 +93,7 @@ jobs:
         run: nx release version --specifier ${{ github.event.inputs.releaseType }} --git-commit --git-tag=true
 
       - name: Version (Branch Prerelease)
-        if: github.event.inputs.releaseType == 'prerelease'
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.releaseType == 'prerelease'
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.branch_safe }}.${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Version (Dev Prerelease)
