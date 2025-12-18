@@ -13,7 +13,7 @@ export function CallbackHandler({
   const { options } = useZudoku();
   const executeCallback = useSuspenseQuery({
     retry: false,
-    queryKey: ["oauth-callback"],
+    queryKey: ["oauth-callback", window.location.search],
     queryFn: async () => {
       const url = new URL(window.location.href);
 

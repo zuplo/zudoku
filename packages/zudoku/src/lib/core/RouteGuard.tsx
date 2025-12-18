@@ -27,16 +27,31 @@ export const RouteGuard = () => {
   const shouldBypass = use(BypassProtectedRoutesContext);
   const { protectedRoutes } = zudoku.options;
 
-  const authCheckFn =
-    !shouldBypass && protectedRoutes
-      ? Object.entries(protectedRoutes).find(([path]) =>
-          matchPath({ path, end: true }, location.pathname),
-        )?.[1]
-      : undefined;
+  const protectedRouteEntry = protectedRoutes
+    ? Object.entries(protectedRoutes).find(([path]) =>
+        matchPath({ path, end: true }, location.pathname),
+      )
+    : undefined;
 
-  const isProtectedRoute = authCheckFn !== undefined;
-  const needsToSignIn =
-    isProtectedRoute && !authCheckFn({ auth, context: zudoku });
+  const isProtectedRoute = protectedRouteEntry !== undefined;
+
+  // SSR/prerendering mode: render content with search meta tag, skip all auth
+  if (shouldBypass) {
+    return (
+      <>
+        {isProtectedRoute && (
+          <Helmet>
+            <meta
+              name="pagefind"
+              data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
+              content="true"
+            />
+          </Helmet>
+        )}
+        <Outlet />
+      </>
+    );
+  }
 
   if (isProtectedRoute && !auth.isAuthEnabled) {
     throw new ZudokuError("Authentication is not enabled", {
@@ -45,6 +60,10 @@ export const RouteGuard = () => {
         "To use protectedRoutes you need authentication to be enabled",
     });
   }
+
+  const authCheckFn = protectedRouteEntry?.[1];
+  const needsToSignIn =
+    isProtectedRoute && !authCheckFn?.({ auth, context: zudoku });
 
   if (needsToSignIn && auth.isPending && typeof window !== "undefined") {
     return null;
@@ -91,7 +110,7 @@ export const RouteGuard = () => {
                 )
               }
             >
-              Login{" "}
+              Login
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -99,18 +118,5 @@ export const RouteGuard = () => {
     );
   }
 
-  return (
-    <>
-      {shouldBypass && isProtectedRoute && (
-        <Helmet>
-          <meta
-            name="pagefind"
-            data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
-            content="true"
-          />
-        </Helmet>
-      )}
-      <Outlet />
-    </>
-  );
+  return <Outlet />;
 };
