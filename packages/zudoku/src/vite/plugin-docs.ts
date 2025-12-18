@@ -7,6 +7,7 @@ import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import { DocsConfigSchema } from "../config/validators/validate.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const ensureLeadingSlash = joinUrl;
@@ -18,10 +19,11 @@ export const globMarkdownFiles = async (
 ): Promise<Record<string, string>> => {
   const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
   const fileMapping: Record<string, string> = {};
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   for (const globPattern of docsConfig.files) {
     const globbedFiles = await glob(globPattern, {
-      root: config.__meta.rootDir,
+      cwd: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
       absolute: options.absolute,
       posix: true,
@@ -36,6 +38,19 @@ export const globMarkdownFiles = async (
     };
 
     for (const file of globbedFiles) {
+      // Skip draft documents in production mode
+      // Note: This reads frontmatter for all files during build, which is acceptable
+      // since it's a one-time cost at build time (not runtime)
+      if (!isDevelopment) {
+        const absolutePath = options.absolute
+          ? file
+          : path.join(config.__meta.rootDir, file);
+        const { data } = await readFrontmatter(absolutePath);
+        if (data.draft === true) {
+          continue;
+        }
+      }
+
       const routePath = toRoutePath(file);
       fileMapping[routePath] = file;
     }
