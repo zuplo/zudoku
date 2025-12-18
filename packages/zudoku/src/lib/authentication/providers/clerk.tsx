@@ -29,32 +29,6 @@ const clerkAuth: AuthenticationProviderInitializer<
 
     await clerkApi.load();
 
-    if (clerkApi.user) {
-      const verifiedEmail = clerkApi.user.emailAddresses.find(
-        (email) => email.verification.status === "verified",
-      );
-      useAuthState.getState().setLoggedIn({
-        profile: {
-          sub: clerkApi.user.id,
-          name: clerkApi.user.fullName ?? undefined,
-          email:
-            verifiedEmail?.emailAddress ??
-            clerkApi.user.emailAddresses[0]?.emailAddress,
-          emailVerified: verifiedEmail !== undefined,
-          pictureUrl: clerkApi.user.imageUrl,
-        },
-        providerData: {
-          user: {
-            publicMetadata: clerkApi.user.publicMetadata,
-            id: clerkApi.user.id,
-            emailAddresses: clerkApi.user.emailAddresses,
-            imageUrl: clerkApi.user.imageUrl,
-            fullName: clerkApi.user.fullName,
-          },
-        },
-      });
-    }
-
     return clerkApi;
   })();
 
