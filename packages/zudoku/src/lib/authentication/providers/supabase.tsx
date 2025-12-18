@@ -129,21 +129,9 @@ class SupabaseAuthenticationProvider
   };
 
   signOut = async () => {
-    await new Promise<void>((resolve) => {
-      const { data } = this.client.auth.onAuthStateChange(async (event) => {
-        if (event !== "SIGNED_OUT") return;
-        data.subscription.unsubscribe();
-        resolve();
-      });
-      void this.client.auth.signOut();
-    });
+    await this.client.auth.signOut();
 
-    useAuthState.setState({
-      isAuthenticated: false,
-      isPending: false,
-      profile: undefined,
-      providerData: undefined,
-    });
+    useAuthState.getState().setLoggedOut();
   };
 
   onPageLoad = async () => {
