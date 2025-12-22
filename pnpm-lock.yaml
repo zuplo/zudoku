@@ -177,7 +177,7 @@ importers:
     dependencies:
       '@clerk/clerk-js':
         specifier: ^5.102.1
-        version: 5.102.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.1.12)
+        version: 5.102.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.2.1)
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -245,7 +245,7 @@ importers:
     devDependencies:
       '@clerk/clerk-js':
         specifier: ^5.102.1
-        version: 5.102.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.1.12)
+        version: 5.102.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.2.1)
       react:
         specifier: 19.2.3
         version: 19.2.3
@@ -734,8 +734,8 @@ importers:
         specifier: 18.0.0
         version: 18.0.0
       zod:
-        specifier: 4.1.12
-        version: 4.1.12
+        specifier: 4.2.1
+        version: 4.2.1
       zustand:
         specifier: 5.0.8
         version: 5.0.8(@types/react@19.2.7)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
@@ -8797,8 +8797,8 @@ packages:
   zod@4.1.11:
     resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
 
-  zod@4.1.12:
-    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+  zod@4.2.1:
+    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
   zustand@5.0.3:
     resolution: {integrity: sha512-14fwWQtU3pH4dE0dOpdMiWjddcH+QzKIgk1cl8epwSE7yag43k/AD/m4L6+K7DytAOr9gGBe3/EXj9g7cdostg==}
@@ -9630,15 +9630,15 @@ snapshots:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@base-org/account@2.0.1(@types/react@19.2.7)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.1.12)':
+  '@base-org/account@2.0.1(@types/react@19.2.7)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.2.1)':
     dependencies:
       '@noble/hashes': 1.4.0
       clsx: 1.2.1
       eventemitter3: 5.0.1
       idb-keyval: 6.2.1
-      ox: 0.6.9(typescript@5.9.3)(zod@4.1.12)
+      ox: 0.6.9(typescript@5.9.3)(zod@4.2.1)
       preact: 10.24.2
-      viem: 2.38.3(typescript@5.9.3)(zod@4.1.12)
+      viem: 2.38.3(typescript@5.9.3)(zod@4.2.1)
       zustand: 5.0.3(@types/react@19.2.7)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
     transitivePeerDependencies:
       - '@types/react'
@@ -9706,9 +9706,9 @@ snapshots:
 
   '@chevrotain/utils@11.0.3': {}
 
-  '@clerk/clerk-js@5.102.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.1.12)':
+  '@clerk/clerk-js@5.102.1(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.2.1)':
     dependencies:
-      '@base-org/account': 2.0.1(@types/react@19.2.7)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.1.12)
+      '@base-org/account': 2.0.1(@types/react@19.2.7)(react@19.2.3)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@19.2.3))(zod@4.2.1)
       '@clerk/localizations': 3.26.3
       '@clerk/shared': 3.28.3(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@clerk/types': 4.95.1
@@ -13572,15 +13572,15 @@ snapshots:
 
   '@zxcvbn-ts/language-common@3.0.4': {}
 
-  abitype@1.1.0(typescript@5.9.3)(zod@4.1.12):
+  abitype@1.1.0(typescript@5.9.3)(zod@4.2.1):
     optionalDependencies:
       typescript: 5.9.3
-      zod: 4.1.12
+      zod: 4.2.1
 
-  abitype@1.1.1(typescript@5.9.3)(zod@4.1.12):
+  abitype@1.1.1(typescript@5.9.3)(zod@4.2.1):
     optionalDependencies:
       typescript: 5.9.3
-      zod: 4.1.12
+      zod: 4.2.1
 
   accepts@2.0.0:
     dependencies:
@@ -16681,21 +16681,21 @@ snapshots:
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
 
-  ox@0.6.9(typescript@5.9.3)(zod@4.1.12):
+  ox@0.6.9(typescript@5.9.3)(zod@4.2.1):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@4.1.12)
+      abitype: 1.1.1(typescript@5.9.3)(zod@4.2.1)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
     transitivePeerDependencies:
       - zod
 
-  ox@0.9.6(typescript@5.9.3)(zod@4.1.12):
+  ox@0.9.6(typescript@5.9.3)(zod@4.2.1):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
@@ -16703,7 +16703,7 @@ snapshots:
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.1(typescript@5.9.3)(zod@4.1.12)
+      abitype: 1.1.1(typescript@5.9.3)(zod@4.2.1)
       eventemitter3: 5.0.1
     optionalDependencies:
       typescript: 5.9.3
@@ -18008,15 +18008,15 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.2
 
-  viem@2.38.3(typescript@5.9.3)(zod@4.1.12):
+  viem@2.38.3(typescript@5.9.3)(zod@4.2.1):
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
-      abitype: 1.1.0(typescript@5.9.3)(zod@4.1.12)
+      abitype: 1.1.0(typescript@5.9.3)(zod@4.2.1)
       isows: 1.0.7(ws@8.18.3)
-      ox: 0.9.6(typescript@5.9.3)(zod@4.1.12)
+      ox: 0.9.6(typescript@5.9.3)(zod@4.2.1)
       ws: 8.18.3
     optionalDependencies:
       typescript: 5.9.3
@@ -18281,7 +18281,7 @@ snapshots:
 
   zod@4.1.11: {}
 
-  zod@4.1.12: {}
+  zod@4.2.1: {}
 
   zustand@5.0.3(@types/react@19.2.7)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)):
     optionalDependencies:
