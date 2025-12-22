@@ -146,7 +146,12 @@ export class NavigationResolver {
 
     const doc = await this.resolveDoc(item.file);
     return doc
-      ? { ...item, label: doc.label, icon: doc.icon, path: doc.path }
+      ? {
+          ...item,
+          label: doc.label,
+          icon: doc.icon,
+          path: item.path ?? doc.path,
+        }
       : undefined;
   }
 
