@@ -303,12 +303,29 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
       if (process.env.NODE_ENV !== "production") return;
 
-      for (const [urlPath, inputPath] of pathMap) {
-        const content = await fs.readFile(inputPath, "utf-8");
-        const outputPath = path.join(config.__meta.rootDir, "dist", urlPath);
+      //Keeps track of where schema a given schema has been written in build output
+      const writtenSchemas = new Map<string, string>();
 
+      for (const [urlPath, inputPath] of pathMap) {
+        const outputPath = path.join(config.__meta.rootDir, "dist", urlPath);
         await fs.mkdir(path.dirname(outputPath), { recursive: true });
-        await fs.writeFile(outputPath, content, "utf-8");
+
+        //Get previous build output for given schema
+        const primaryOutputPath = writtenSchemas.get(inputPath);
+
+        if (!primaryOutputPath) {
+          //No previous build output for schema - copy to build output path
+          await fs.copyFile(inputPath, outputPath);
+          writtenSchemas.set(inputPath, outputPath);
+          continue;
+        }
+
+        //There is a previous build output for schema - create a relative symlink in output path which points to previous output
+        const symlinkTarget = path.relative(
+          path.dirname(outputPath),
+          primaryOutputPath,
+        );
+        await fs.symlink(symlinkTarget, outputPath, "file");
       }
     },
   };
