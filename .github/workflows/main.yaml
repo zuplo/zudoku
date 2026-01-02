@@ -17,6 +17,11 @@ on:
     tags-ignore:
       - "*"
 
+permissions:
+  actions: read
+  contents: read
+  id-token: write
+
 # Only one of these can run at a time because it pushes to main
 # kill any other running jobs and the latest one wins
 concurrency:
@@ -54,6 +59,8 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
+      - run: npm install -g npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -85,8 +92,6 @@ jobs:
 
       - name: Publish Modules
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --no-git-checks --tag ${{ github.event_name == 'push' && 'dev' || 'latest' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
 
       - run: echo "ZUDOKU_VERSION=$(node --print 'require(`./packages/zudoku/package.json`).version')" >> $GITHUB_ENV
 

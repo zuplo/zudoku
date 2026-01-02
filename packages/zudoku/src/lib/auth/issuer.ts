@@ -32,7 +32,7 @@ export const getIssuer = async (config: ZudokuConfig) => {
       return config.authentication.issuer;
     }
     case "firebase": {
-      return config.authentication.authDomain;
+      return `https://securetoken.google.com/${config.authentication.projectId}`;
     }
     case undefined: {
       return undefined;

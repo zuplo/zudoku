@@ -3,12 +3,15 @@ import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
+  sendEmailVerification,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
+import { ZudokuError } from "../../util/invariant.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
@@ -19,7 +22,12 @@ import type {
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
-import { ZudokuSignInUi, ZudokuSignUpUi } from "../ui/ZudokuAuthUi.js";
+import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
+import {
+  ZudokuPasswordResetUi,
+  ZudokuSignInUi,
+  ZudokuSignUpUi,
+} from "../ui/ZudokuAuthUi.js";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -28,6 +36,7 @@ class FirebaseAuthenticationProvider
   private readonly app: FirebaseApp;
   private readonly auth: Auth;
   private readonly providers: string[];
+  private readonly enableUsernamePassword: boolean;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
@@ -42,7 +51,13 @@ class FirebaseAuthenticationProvider
       measurementId: config.measurementId,
     });
     this.auth = getAuth(this.app);
-    this.providers = config.providers ?? [];
+    this.providers = config.providers?.filter((p) => p !== "password") ?? [];
+    this.enableUsernamePassword =
+      config.providers?.includes("password") ?? false;
+  }
+
+  async initialize() {
+    await this.auth.authStateReady();
   }
 
   async signRequest(request: Request): Promise<Request> {
@@ -76,13 +91,77 @@ class FirebaseAuthenticationProvider
     );
   };
 
+  requestEmailVerification = async (
+    { navigate }: AuthActionContext,
+    { redirectTo }: AuthActionOptions,
+  ) => {
+    if (!this.auth.currentUser) {
+      throw new ZudokuError("User is not authenticated", {
+        title: "User not authenticated",
+      });
+    }
+
+    await sendEmailVerification(this.auth.currentUser);
+    void navigate(
+      redirectTo
+        ? `/verify-email?redirectTo=${encodeURIComponent(redirectTo)}`
+        : `/verify-email`,
+    );
+  };
+
   getRoutes = () => {
     return [
+      {
+        path: "/verify-email",
+        element: (
+          <EmailVerificationUi
+            onResendVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await sendEmailVerification(this.auth.currentUser);
+            }}
+            onCheckVerification={async () => {
+              if (!this.auth.currentUser) {
+                throw new ZudokuError("User is not authenticated", {
+                  title: "User not authenticated",
+                });
+              }
+              await this.auth.currentUser.reload();
+              const isVerified = this.auth.currentUser.emailVerified;
+
+              if (isVerified) {
+                await this.auth.currentUser.getIdToken(true);
+                await this.setUserLoggedIn(this.auth.currentUser);
+              }
+
+              return isVerified;
+            }}
+          />
+        ),
+      },
+      {
+        path: "/reset-password",
+        element: (
+          <ZudokuPasswordResetUi
+            onPasswordReset={async (email: string) => {
+              try {
+                await sendPasswordResetEmail(this.auth, email);
+              } catch (error) {
+                throw Error(getFirebaseErrorMessage(error), { cause: error });
+              }
+            }}
+          />
+        ),
+      },
       {
         path: "/signin",
         element: (
           <ZudokuSignInUi
             providers={this.providers}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -109,7 +188,13 @@ class FirebaseAuthenticationProvider
               password: string,
             ) => {
               try {
-                await signInWithEmailAndPassword(this.auth, email, password);
+                useAuthState.setState({ isPending: false });
+                const result = await signInWithEmailAndPassword(
+                  this.auth,
+                  email,
+                  password,
+                );
+                await this.setUserLoggedIn(result.user);
               } catch (error) {
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
@@ -122,6 +207,7 @@ class FirebaseAuthenticationProvider
         element: (
           <ZudokuSignUpUi
             providers={this.providers}
+            enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {
@@ -135,7 +221,13 @@ class FirebaseAuthenticationProvider
               email: string,
               password: string,
             ) => {
-              await createUserWithEmailAndPassword(this.auth, email, password);
+              useAuthState.setState({ isPending: true });
+              const createUser = await createUserWithEmailAndPassword(
+                this.auth,
+                email,
+                password,
+              );
+              await this.setUserLoggedIn(createUser.user);
             }}
           />
         ),
@@ -162,13 +254,13 @@ class FirebaseAuthenticationProvider
     const user = this.auth.currentUser;
 
     if (user) {
-      await this.updateUserState(user);
+      await this.setUserLoggedIn(user);
     } else {
       useAuthState.setState({ isPending: false });
     }
   };
 
-  private async updateUserState(user: User) {
+  private async setUserLoggedIn(user: User) {
     useAuthState.getState().setLoggedIn({
       profile: {
         sub: user.uid,

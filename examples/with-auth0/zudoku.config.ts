@@ -32,9 +32,6 @@ const config: ZudokuConfig = {
     clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
     audience: "https://api.example.com/",
   },
-  apiKeys: {
-    enabled: true,
-  },
   apis: {
     type: "url",
     input: "https://rickandmorty.zuplo.io/openapi.json",

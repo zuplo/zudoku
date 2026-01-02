@@ -1,5 +1,6 @@
 import { KeyRoundIcon } from "lucide-react";
 import type { RouteObject } from "react-router";
+import type { ApiKeysOptions } from "../../../config/validators/validate.js";
 import type { UseAuthReturn } from "../../authentication/hook.js";
 import type {
   ApiIdentityPlugin,
@@ -7,9 +8,7 @@ import type {
   ZudokuPlugin,
 } from "../../core/plugins.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
-import { RouterError } from "../../errors/RouterError.js";
 import invariant from "../../util/invariant.js";
-import { ProtectedRoute } from "./ProtectedRoute.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
@@ -93,8 +92,7 @@ const createDefaultHandler = (
           method: "DELETE",
         },
       );
-      await context.signRequest(request);
-      const response = await fetch(request);
+      const response = await fetch(await context.signRequest(request));
       await throwIfProblemJson(response);
       invariant(response.ok, "Failed to delete API key");
     },
@@ -136,7 +134,7 @@ const createDefaultHandler = (
         ),
       );
       await throwIfProblemJson(response);
-      invariant(response.ok, "Failed to delete API key");
+      invariant(response.ok, "Failed to roll API key");
     },
     getConsumers: async (context) => {
       const request = new Request(
@@ -154,6 +152,9 @@ const createDefaultHandler = (
             id: string;
             label?: string;
             subject?: string;
+            createdOn?: string;
+            updatedOn?: string;
+            expiresOn?: string;
             apiKeys: {
               data: ApiKey[];
             };
@@ -163,6 +164,9 @@ const createDefaultHandler = (
 
       return data.data.map((consumer) => ({
         id: consumer.id,
+        createdOn: consumer.createdOn,
+        updatedOn: consumer.updatedOn,
+        expiresOn: consumer.expiresOn,
         label: consumer.label || consumer.subject || "API Key",
         apiKeys: consumer.apiKeys.data,
         key: consumer.apiKeys.data.at(0),
@@ -175,13 +179,24 @@ const createDefaultHandler = (
 export const createApiKeyService = <T extends ApiKeyService>(service: T): T =>
   service;
 
-export const apiKeyPlugin = (
-  options: ApiKeyPluginOptions,
-): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
-  const service: ApiKeyService =
-    "deploymentName" in options
-      ? createDefaultHandler(options.deploymentName, options)
-      : options;
+export const apiKeyPlugin = ({
+  deploymentName,
+  ...options
+}: Omit<ApiKeysOptions, "enabled"> & {
+  deploymentName?: string;
+}): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
+  const service = deploymentName
+    ? createDefaultHandler(deploymentName, { deploymentName, ...options })
+    : options;
+
+  if (!service.getConsumers) {
+    throw new Error("getConsumers is required when using the apiKeyPlugin");
+  }
+
+  const verifiedService: ApiKeyService = {
+    ...service,
+    getConsumers: service.getConsumers,
+  };
 
   return {
     getProfileMenuItems: () => [
@@ -195,7 +210,7 @@ export const apiKeyPlugin = (
 
     getIdentities: async (context) => {
       try {
-        const consumers = await service.getConsumers(context);
+        const consumers = await verifiedService.getConsumers(context);
 
         return consumers.map((consumer) => ({
           authorizeRequest: (request) => {
@@ -212,19 +227,18 @@ export const apiKeyPlugin = (
         return [];
       }
     },
+
     getRoutes: (): RouteObject[] => {
       return [
         {
-          element: <ProtectedRoute />,
-          errorElement: <RouterError />,
-          children: [
-            {
-              path: "/settings/api-keys",
-              element: <SettingsApiKeys service={service} />,
-            },
-          ],
+          path: "/settings/api-keys",
+          element: <SettingsApiKeys service={verifiedService} />,
         },
       ];
+    },
+
+    getProtectedRoutes: () => {
+      return ["/settings/api-keys"];
     },
   };
 };

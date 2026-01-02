@@ -69,6 +69,12 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       bypassResponse.isSent(),
     ]);
 
+    if (bypassResponse.statusCode >= 500) {
+      throw new Error(
+        `SSR failed (bypass render) with status ${bypassResponse.statusCode} for path: ${urlPath}`,
+      );
+    }
+
     html = bypassResponse.buffer;
   } else {
     await server.render({ ...sharedOpts, response: fileResponse });

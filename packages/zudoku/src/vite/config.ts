@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import colors from "picocolors";
 import {
   type ConfigEnv,
@@ -122,6 +123,13 @@ export async function getViteConfig(
       value,
     ]),
   );
+
+  if (ZuploEnv.isZuplo) {
+    dotenv.config({
+      path: path.resolve(config.__meta.rootDir, "../.env.zuplo"),
+      quiet: true,
+    });
+  }
 
   const viteConfig: InlineConfig = {
     root: dir,
