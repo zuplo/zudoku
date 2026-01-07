@@ -1,4 +1,5 @@
 import type { Auth0AuthenticationConfig } from "../../../config/config.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type {
   AuthActionContext,
   AuthenticationPlugin,
@@ -43,7 +44,10 @@ class Auth0AuthenticationProvider
 
   signOut = async (_: AuthActionContext): Promise<void> => {
     const as = await this.getAuthServer();
-    const idToken = await this.getAccessToken();
+
+    // biome-ignore lint/suspicious/noExplicitAny: We don't have a good way for typing provider-data yet.
+    const providerData = useAuthState.getState().providerData as any;
+    const idToken = providerData?.idToken;
 
     useAuthState.setState({
       isAuthenticated: false,
@@ -53,15 +57,18 @@ class Auth0AuthenticationProvider
     });
 
     const redirectUrl = new URL(window.location.origin);
-    redirectUrl.pathname = this.redirectToAfterSignOut;
+    redirectUrl.pathname = joinUrl(
+      import.meta.env.BASE_URL,
+      this.redirectToAfterSignOut,
+    );
 
     // SEE: https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0
     // For Auth0 tenants created on or after 14 November 2023, RP-Initiated
     // Logout End Session Endpoint Discovery is enabled by default.
     // Otherwise we fallback to the old non-compliant logout
 
-    // The endSessionEndpoint is set, the IdP supports some form of logout,
-    // so we use the IdP logout. Otherwise, just redirect the user to home
+    // The end_session_endpoint is set, the IdP supports some form of logout,
+    // so we use auth0 logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
       const logoutUrl = new URL(as.end_session_endpoint);
       if (idToken) {
@@ -72,12 +79,11 @@ class Auth0AuthenticationProvider
         redirectUrl.toString(),
       );
 
-      // window.location.href = logoutUrl.toString();
+      window.location.href = logoutUrl.toString();
     } else {
-      const _logoutUrl = new URL(
-        `${this.issuer.replace(/\/$/, "")}/oidc/logout`,
-      );
-      // window.location.href = logoutUrl.toString();
+      // const logoutUrl = new URL(`${this.issuer.replace(/\/$/, "")}/v2/logout`);
+      // logoutUrl.searchParams.set("returnTo", redirectUrl.toString());
+      // don't support the deprecated logout today
     }
   };
 }

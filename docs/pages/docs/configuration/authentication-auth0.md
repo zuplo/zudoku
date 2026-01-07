@@ -101,6 +101,24 @@ authentication: {
 }
 ```
 
+### Enabling Logout
+
+Zudoku supports logout functionality for Auth0 tenants. For tenants created **on or after November
+14, 2023**, logout is automatically enabled through the OIDC
+[RP-Initiated Logout](https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0)
+endpoint.
+
+To enable logout for your Auth0 application:
+
+1. Ensure your **Allowed Logout URLs** are configured in Auth0 (see
+   [Configure Auth0 Application](#setup-steps) above)
+2. The logout URL should match your callback URL pattern (e.g., `https://your-site.com/` for
+   production)
+
+For older tenants, you may need to enable **RP-Initiated Logout** in your tenant settings. See the
+[Auth0 logout documentation](https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0)
+for details.
+
 ### Customizing the Prompt Parameter
 
 By default, Zudoku sets `prompt="login"` in the Auth0 authorization request, which forces users to

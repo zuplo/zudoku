@@ -98,7 +98,7 @@ export const MyApiKeyService = createApiKeyService({
    * - Archive deleted keys
    * - Add validation for protected keys
    */
-  deleteKey: async (consumerId, keyId, _context) => {
+  deleteKey: async (_consumerId, keyId, _context) => {
     keys = keys.filter((key) => key.id !== keyId);
   },
 
@@ -107,7 +107,7 @@ export const MyApiKeyService = createApiKeyService({
    * This is useful when a key might have been compromised.
    * The key ID stays the same but gets a new value.
    */
-  rollKey: async (consumerId, _context) => {
+  rollKey: async (_consumerId, _context) => {
     keys.unshift({
       id: crypto.randomUUID(),
       description: "New API Key",
@@ -123,7 +123,7 @@ export const MyApiKeyService = createApiKeyService({
    * - Finding and updating specific keys
    * - Maintaining update timestamps
    */
-  updateKeyDescription: async (apiKey, context) => {
+  updateKeyDescription: async (apiKey, _context) => {
     const key = keys.find((k) => k.id === apiKey.id);
     if (key) {
       key.description = apiKey.description;
