@@ -33,6 +33,7 @@ const viteApiKeysPlugin = (): Plugin => {
             : `import { apiKeyPlugin } from "zudoku/plugins/api-keys";`,
           `export const configuredApiKeysPlugin = apiKeyPlugin({
             ...config.apiKeys,
+            isZuplo: ${ZuploEnv.isZuplo},
             ${deploymentName ? `deploymentName: "${deploymentName}"` : ""}
           });`,
         ];
