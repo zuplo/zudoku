@@ -1,4 +1,3 @@
-import type { OAuth2Error } from "oauth4webapi";
 import { ZudokuError, type ZudokuErrorOptions } from "../util/invariant.js";
 
 export class AuthorizationError extends Error {}
@@ -6,7 +5,7 @@ export class AuthorizationError extends Error {}
 export class OAuthAuthorizationError extends ZudokuError {
   constructor(
     message: string,
-    public error: OAuth2Error,
+    public error?: unknown,
     options?: ZudokuErrorOptions,
   ) {
     super(message, options);

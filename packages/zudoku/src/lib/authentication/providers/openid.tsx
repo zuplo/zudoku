@@ -1,4 +1,3 @@
-import logger from "loglevel";
 import * as oauth from "oauth4webapi";
 import { ErrorBoundary } from "react-error-boundary";
 import type { NavigateFunction } from "react-router";
@@ -14,7 +13,7 @@ import type {
 } from "../authentication.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
-import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
+import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
@@ -93,14 +92,7 @@ export class OpenIDAuthenticationProvider
    * Sets the tokens from various OAuth responses
    * @param response
    */
-  protected setTokensFromResponse(
-    response: oauth.TokenEndpointResponse | oauth.OAuth2Error,
-  ) {
-    if (oauth.isOAuth2Error(response)) {
-      logger.error("Bad Token Response", response);
-      throw new OAuthAuthorizationError("Bad Token Response", response);
-    }
-
+  protected setTokensFromResponse(response: oauth.TokenEndpointResponse) {
     if (!response.expires_in) {
       throw new AuthorizationError("No expires_in in response");
     }
@@ -265,25 +257,26 @@ export class OpenIDAuthenticationProvider
         throw new AuthorizationError("No refresh token found");
       }
 
-      const request = await oauth.refreshTokenGrantRequest(
+      const response = await oauth.refreshTokenGrantRequest(
         as,
         this.client,
+        oauth.None(),
         tokenState.refreshToken,
       );
-      const response = await oauth.processRefreshTokenResponse(
+      const result = await oauth.processRefreshTokenResponse(
         as,
         this.client,
-        request,
+        response,
       );
 
-      if (!response.access_token) {
+      if (!result.access_token) {
         setLoggedOut();
         throw new AuthorizationError("No access token in response");
       }
 
-      this.setTokensFromResponse(response);
+      this.setTokensFromResponse(result);
 
-      return response.access_token.toString();
+      return result.access_token.toString();
     } else {
       return tokenState.accessToken;
     }
@@ -352,22 +345,23 @@ export class OpenIDAuthenticationProvider
 
       try {
         const as = await this.getAuthServer();
-        const request = await oauth.refreshTokenGrantRequest(
+        const response = await oauth.refreshTokenGrantRequest(
           as,
           this.client,
+          oauth.None(),
           tokenState.refreshToken,
         );
-        const response = await oauth.processRefreshTokenResponse(
+        const result = await oauth.processRefreshTokenResponse(
           as,
           this.client,
-          request,
+          response,
         );
 
-        if (!response.access_token) {
+        if (!result.access_token) {
           throw new AuthorizationError("No access token in response");
         }
 
-        this.setTokensFromResponse(response);
+        this.setTokensFromResponse(result);
       } catch {
         useAuthState.setState({
           isAuthenticated: false,
@@ -408,13 +402,6 @@ export class OpenIDAuthenticationProvider
       url.searchParams,
       state ?? undefined,
     );
-    if (oauth.isOAuth2Error(params)) {
-      logger.error("Error validating OAuth response", params);
-      throw new OAuthAuthorizationError(
-        "Error validating OAuth response",
-        params,
-      );
-    }
 
     const redirectUrl = new URL(url);
     redirectUrl.pathname = this.callbackUrlPath;
@@ -424,20 +411,13 @@ export class OpenIDAuthenticationProvider
     const response = await oauth.authorizationCodeGrantRequest(
       authServer,
       this.client,
+      oauth.None(),
       params,
       redirectUrl.toString(),
       codeVerifier,
     );
 
-    // TODO: do we need to do these
-    // const challenges = oauth.parseWwwAuthenticateChallenges(response);
-    // if (challenges) {
-    //   for (const challenge of challenges) {
-    //     console.error("WWW-Authenticate Challenge", challenge);
-    //   }
-    //   throw new Error(); // Handle WWW-Authenticate Challenges as needed
-    // }
-    const oauthResult = await oauth.processAuthorizationCodeOpenIDResponse(
+    const oauthResult = await oauth.processAuthorizationCodeResponse(
       authServer,
       this.client,
       response,
