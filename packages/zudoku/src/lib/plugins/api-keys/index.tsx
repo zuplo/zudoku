@@ -37,9 +37,11 @@ export type ApiKeyService = {
   }) => Promise<void>;
 };
 
-export type ApiKeyPluginOptions =
-  | ApiKeyService
-  | ({ deploymentName: string } & Partial<ApiKeyService>);
+export type ApiKeyPluginOptions = ApiKeyService | DefaultApiKeyServiceOptions;
+
+type DefaultApiKeyServiceOptions = {
+  deploymentName?: string;
+} & Partial<ApiKeyService>;
 
 export interface ApiKey {
   id: string;
@@ -79,12 +81,19 @@ const throwIfProblemJson = async (response: Response) => {
   }
 };
 
-const createDefaultHandler = (
-  deploymentName: string,
-  options: ApiKeyPluginOptions,
-): ApiKeyService => {
+const developerHintOptions = {
+  developerHint:
+    "This project is not linked to a Zuplo deployment. Run `zuplo link` to get started with API Keys.",
+  title: "Not linked to a Zuplo deployment",
+};
+
+const createZuploService = ({
+  deploymentName,
+  ...options
+}: DefaultApiKeyServiceOptions): ApiKeyService => {
   return {
     deleteKey: async (consumerId, keyId, context) => {
+      invariant(deploymentName, "Cannot delete API key.", developerHintOptions);
       const request = new Request(
         DEFAULT_API_KEY_ENDPOINT +
           `/${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
@@ -97,11 +106,15 @@ const createDefaultHandler = (
       invariant(response.ok, "Failed to delete API key");
     },
     updateConsumer: async (consumer, context) => {
+      invariant(
+        deploymentName,
+        "Cannot update API key description.",
+        developerHintOptions,
+      );
       const response = await fetch(
         await context.signRequest(
           new Request(
-            DEFAULT_API_KEY_ENDPOINT +
-              `/${deploymentName}/consumers/${consumer.id}`,
+            `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers/${consumer.id}`,
             {
               method: "PATCH",
               headers: {
@@ -118,11 +131,11 @@ const createDefaultHandler = (
       invariant(response.ok, "Failed to update API key description");
     },
     rollKey: async (consumerId, context) => {
+      invariant(deploymentName, "Cannot roll API key.", developerHintOptions);
       const response = await fetch(
         await context.signRequest(
           new Request(
-            DEFAULT_API_KEY_ENDPOINT +
-              `/${deploymentName}/consumers/${consumerId}/roll-key`,
+            `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers/${consumerId}/roll-key`,
             {
               method: "POST",
               headers: {
@@ -137,6 +150,7 @@ const createDefaultHandler = (
       invariant(response.ok, "Failed to roll API key");
     },
     getConsumers: async (context) => {
+      invariant(deploymentName, "Cannot get API keys.", developerHintOptions);
       const request = new Request(
         `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers`,
       );
@@ -179,14 +193,30 @@ const createDefaultHandler = (
 export const createApiKeyService = <T extends ApiKeyService>(service: T): T =>
   service;
 
+type InternalApiKeyPluginOptions = {
+  // The name of the Zuplo deployment
+  deploymentName?: string;
+  // Indicates that the plugin is running in Zuplo "mode"
+  isZuplo?: boolean;
+};
+
 export const apiKeyPlugin = ({
   deploymentName,
+  isZuplo,
   ...options
-}: Omit<ApiKeysOptions, "enabled"> & {
-  deploymentName?: string;
-}): ZudokuPlugin & ApiIdentityPlugin & ProfileMenuPlugin => {
-  const service = deploymentName
-    ? createDefaultHandler(deploymentName, { deploymentName, ...options })
+}: Omit<ApiKeysOptions, "enabled"> &
+  InternalApiKeyPluginOptions): ZudokuPlugin &
+  ApiIdentityPlugin &
+  ProfileMenuPlugin => {
+  if (isZuplo && !deploymentName) {
+    // biome-ignore lint/suspicious/noConsole: Important warning
+    console.warn(
+      "This project is not linked to a Zuplo deployment. Run `zuplo link` to get started.",
+    );
+  }
+
+  const service = isZuplo
+    ? createZuploService({ deploymentName, ...options })
     : options;
 
   if (!service.getConsumers) {
