@@ -629,8 +629,8 @@ importers:
         specifier: 0.4.6
         version: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       oauth4webapi:
-        specifier: 2.17.0
-        version: 2.17.0
+        specifier: 3.8.3
+        version: 3.8.3
       openapi-types:
         specifier: 12.1.3
         version: 12.1.3
@@ -7313,8 +7313,8 @@ packages:
       '@swc/core':
         optional: true
 
-  oauth4webapi@2.17.0:
-    resolution: {integrity: sha512-lbC0Z7uzAFNFyzEYRIC+pkSVvDHJTbEW+dYlSBAlCYDe6RxUkJ26bClhk8ocBZip1wfI9uKTe0fm4Ib4RHn6uQ==}
+  oauth4webapi@3.8.3:
+    resolution: {integrity: sha512-pQ5BsX3QRTgnt5HxgHwgunIRaDXBdkT23tf8dfzmtTIL2LTpdmxgbpbBm0VgFWAIDlezQvQCTgnVIUmHupXHxw==}
 
   object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -16626,7 +16626,7 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  oauth4webapi@2.17.0: {}
+  oauth4webapi@3.8.3: {}
 
   object-assign@4.1.1: {}
 
