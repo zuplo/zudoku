@@ -87,6 +87,11 @@ export type ZudokuContextOptions = {
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
   site?: Site;
+  page?: {
+    disableHeader?: boolean;
+    disableTopNavigation?: boolean;
+    disableFooter?: boolean;
+  };
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
   plugins?: ZudokuPlugin[];

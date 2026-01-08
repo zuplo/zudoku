@@ -18,7 +18,10 @@ const LoadingFallback = () => (
 );
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
-  const { authentication } = useZudoku();
+  const { authentication, options } = useZudoku();
+  const disableHeader = options.page?.disableHeader === true;
+  const disableTopNavigation = options.page?.disableTopNavigation === true;
+  const disableFooter = options.page?.disableFooter === true;
 
   useScrollToAnchor();
   useScrollToTop();
@@ -30,8 +33,13 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
 
   return (
     <TooltipProvider>
+      {(disableHeader || disableTopNavigation) && (
+        <style>
+          {`:root { ${disableHeader ? "--top-header-height: 0px; --banner-height: 0px;" : ""} --top-nav-height: 0px; }`}
+        </style>
+      )}
       <Slot.Target name="layout-before-head" />
-      <Header />
+      {!disableHeader && <Header />}
       <Slot.Target name="layout-after-head" />
 
       <div
@@ -45,7 +53,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
           <Main>{children ?? <Outlet />}</Main>
         </Suspense>
       </div>
-      <Footer />
+      {!disableFooter && <Footer />}
     </TooltipProvider>
   );
 };

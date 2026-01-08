@@ -162,6 +162,15 @@ const LogoSchema = z.object({
   href: z.string().optional(),
 });
 
+const PageSchema = z
+  .object({
+    disableHeader: z.boolean(),
+    disableTopNavigation: z.boolean(),
+    disableFooter: z.boolean(),
+  })
+  .partial()
+  .optional();
+
 export const FooterSocialIcons = [
   "reddit",
   "discord",
@@ -595,6 +604,7 @@ const BaseConfigSchema = z.object({
       ca: z.string().optional(),
     })
     .optional(),
+  page: PageSchema,
   site: SiteSchema,
   navigation: InputNavigationSchema,
   theme: ThemeConfigSchema,
