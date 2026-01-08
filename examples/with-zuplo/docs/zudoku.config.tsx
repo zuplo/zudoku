@@ -74,10 +74,27 @@ const config: ZudokuConfig = {
     files: "/pages/**/*.mdx",
   },
   authentication: {
-    type: "auth0",
-    domain: "auth.zuplo.io",
-    clientId: "v0cOpST3pX6NIs1VGLVvNjaN3mSBomKk",
-    audience: "https://api.example.com/",
+    type: "firebase",
+    // Replace these with your Firebase project configuration
+    // Get these values from Firebase Console > Project Settings
+    apiKey: "AIzaSyDQ9VFPwbe32RyZmDiqPDyDq3BitymujDw",
+    authDomain: "testing-fa0bf.firebaseapp.com",
+    projectId: "testing-fa0bf",
+    storageBucket: "testing-fa0bf.firebasestorage.app",
+    messagingSenderId: "296819355813",
+    appId: "1:296819355813:web:91d29f11cac6f073595d4c",
+    measurementId: "G-12W6TTNR75",
+    // Optional: specify which providers to show
+    // See: https://firebase.google.com/docs/auth/web/start
+    providers: [
+      "github",
+      "google",
+      "facebook",
+      "password",
+      "twitter",
+      "microsoft",
+      "apple",
+    ],
   },
   apiKeys: {
     enabled: true,
