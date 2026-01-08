@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router";
 
-import { joinUrl } from "../../lib/util/joinUrl.js";
+import { joinUrl } from "../../lib/util/joinUrl.ts";
 
 export const routesToPaths = (routes: RouteObject[]) => {
   const paths: string[] = [];
