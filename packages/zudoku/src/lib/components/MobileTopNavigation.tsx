@@ -24,6 +24,8 @@ export const MobileTopNavigation = () => {
   const authState = useAuth();
 
   const { navigation, options, getProfileMenuItems } = context;
+  if (options.site?.disableTopNavigation) return null;
+
   const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 

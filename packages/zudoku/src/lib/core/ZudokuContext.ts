@@ -64,6 +64,9 @@ type Metadata = Partial<{
 type Site = Partial<{
   dir?: "ltr" | "rtl";
   showPoweredBy?: boolean;
+  disableHeader?: boolean;
+  disableTopNavigation?: boolean;
+  disableFooter?: boolean;
   title?: string;
   logo?: {
     src: {
