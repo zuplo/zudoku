@@ -19,8 +19,10 @@ import { ClaudeLogo } from "../markdown/assets/ClaudeLogo.js";
 
 export const DownloadSchemaButton = ({
   downloadUrl,
+  downloadUrlLatest,
 }: {
   downloadUrl: string;
+  downloadUrlLatest: string;
 }) => {
   const [, copyToClipboard] = useCopyToClipboard();
 
@@ -85,6 +87,18 @@ export const DownloadSchemaButton = ({
           >
             <CopyIcon size={14} />
             Copy to clipboard
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={async () => {
+              const absoluteUrl = new URL(
+                downloadUrlLatest,
+                window.location.href,
+              ).href;
+              copyToClipboard(absoluteUrl);
+            }}
+          >
+            <CopyIcon size={14} />
+            Copy latest URL
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {

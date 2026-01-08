@@ -156,6 +156,22 @@ const getFileExtension = (filename: string): string => {
   return lastDotIndex !== -1 ? filename.slice(lastDotIndex) : "";
 };
 
+function getDownloadUrl(
+  input: string | (() => Promise<unknown>),
+  type: "url" | "file" | "raw",
+  path: string | undefined,
+  version: string | undefined,
+) {
+  return typeof input === "string"
+    ? type === "url"
+      ? input
+      : (() => {
+          const extension = getFileExtension(input);
+          return joinUrl(path, version, `schema${extension}`);
+        })()
+    : undefined;
+}
+
 export const OperationList = ({
   tag,
   untagged,
@@ -251,16 +267,8 @@ export const OperationList = ({
 
   const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
-
-  const downloadUrl =
-    typeof input === "string"
-      ? type === "url"
-        ? input
-        : (() => {
-            const extension = getFileExtension(input);
-            return joinUrl(path, version, `schema${extension}`);
-          })()
-      : undefined;
+  const downloadUrl = getDownloadUrl(input, type, path, version);
+  const downloadUrlLatest = getDownloadUrl(input, type, path, "latest");
 
   return (
     <div
@@ -323,9 +331,14 @@ export const OperationList = ({
                     </SelectContent>
                   </Select>
                 )}
-                {options?.schemaDownload?.enabled && downloadUrl && (
-                  <DownloadSchemaButton downloadUrl={downloadUrl} />
-                )}
+                {options?.schemaDownload?.enabled &&
+                  downloadUrl &&
+                  downloadUrlLatest && (
+                    <DownloadSchemaButton
+                      downloadUrl={downloadUrl}
+                      downloadUrlLatest={downloadUrlLatest}
+                    />
+                  )}
               </div>
               {schema.description && (
                 <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
