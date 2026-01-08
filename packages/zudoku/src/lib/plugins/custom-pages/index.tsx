@@ -22,6 +22,11 @@ export const customPagesPlugin = (
           element: item.element,
           handle: {
             layout: item.layout ?? "default",
+            page: {
+              disableHeader: item.disableHeader,
+              disableTopNavigation: item.disableTopNavigation,
+              disableFooter: item.disableFooter,
+            },
           },
         });
       }

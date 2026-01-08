@@ -1,8 +1,6 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(cat:*)"
-    ],
+    "allow": ["Bash(cat:*)"],
     "deny": [],
     "ask": []
   }

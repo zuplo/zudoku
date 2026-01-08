@@ -1,5 +1,5 @@
 import { type ReactNode, Suspense, useEffect } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useMatches } from "react-router";
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { cn } from "../util/cn.js";
 import { useScrollToAnchor } from "../util/useScrollToAnchor.js";
@@ -11,6 +11,12 @@ import { Main } from "./Main.js";
 import { Slot } from "./Slot.js";
 import { Spinner } from "./Spinner.js";
 
+type PageUiOptions = {
+  disableHeader?: boolean;
+  disableTopNavigation?: boolean;
+  disableFooter?: boolean;
+};
+
 const LoadingFallback = () => (
   <main className="col-span-full row-span-full grid place-items-center">
     <Spinner />
@@ -19,6 +25,21 @@ const LoadingFallback = () => (
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
   const { authentication } = useZudoku();
+  const matches = useMatches();
+  const pageUiOptions = matches.reduceRight<PageUiOptions | undefined>(
+    (acc, match) => {
+      if (acc) return acc;
+      const handle = match.handle;
+      if (!handle || typeof handle !== "object") return undefined;
+      if (!("page" in handle)) return undefined;
+      return (handle as { page?: PageUiOptions }).page;
+    },
+    undefined,
+  );
+  const disableHeader = pageUiOptions?.disableHeader === true;
+  const disableTopNavigation =
+    disableHeader || pageUiOptions?.disableTopNavigation === true;
+  const disableFooter = pageUiOptions?.disableFooter === true;
 
   useScrollToAnchor();
   useScrollToTop();
@@ -31,7 +52,13 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
   return (
     <TooltipProvider>
       <Slot.Target name="layout-before-head" />
-      <Header />
+      {disableHeader ? (
+        <style>
+          {`:root { --top-header-height: 0px; --top-nav-height: 0px; --banner-height: 0px; }`}
+        </style>
+      ) : (
+        <Header disableTopNavigation={disableTopNavigation} />
+      )}
       <Slot.Target name="layout-after-head" />
 
       <div
@@ -45,7 +72,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
           <Main>{children ?? <Outlet />}</Main>
         </Suspense>
       </div>
-      <Footer />
+      {!disableFooter && <Footer />}
     </TooltipProvider>
   );
 };

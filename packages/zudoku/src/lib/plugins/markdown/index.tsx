@@ -20,6 +20,12 @@ export type Frontmatter = {
   toc?: boolean;
   disablePager?: boolean;
   disable_pager?: boolean;
+  disableHeader?: boolean;
+  disable_header?: boolean;
+  disableTopNavigation?: boolean;
+  disable_top_navigation?: boolean;
+  disableFooter?: boolean;
+  disable_footer?: boolean;
   showLastModified?: boolean;
   lastModifiedTime?: number;
   suggestEdit?: { url: string; text?: string } | false;
@@ -53,6 +59,19 @@ export const markdownPlugin = (
                 defaultOptions={options.defaultOptions}
               />
             ),
+            handle: {
+              page: {
+                disableHeader:
+                  props.frontmatter?.disableHeader ??
+                  props.frontmatter?.disable_header,
+                disableTopNavigation:
+                  props.frontmatter?.disableTopNavigation ??
+                  props.frontmatter?.disable_top_navigation,
+                disableFooter:
+                  props.frontmatter?.disableFooter ??
+                  props.frontmatter?.disable_footer,
+              },
+            },
           };
         },
       }),

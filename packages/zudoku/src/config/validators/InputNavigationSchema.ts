@@ -65,6 +65,9 @@ const InputNavigationCustomPageSchema = z.object({
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
   layout: z.enum(["default", "none"]).optional(),
+  disableHeader: z.boolean().optional(),
+  disableTopNavigation: z.boolean().optional(),
+  disableFooter: z.boolean().optional(),
 });
 
 // Base category schema without items
