@@ -19,6 +19,7 @@ const InputNavigationCategoryLinkDocSchema = z.union([
     type: z.literal("doc"),
     file: z.string(),
     label: z.string().optional(),
+    path: z.string().optional(),
   }),
 ]);
 
