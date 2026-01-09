@@ -151,6 +151,11 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
 
 const LAZY_OPERATION_LIST_THRESHOLD = 30;
 
+const getFileExtension = (filename: string): string => {
+  const lastDotIndex = filename.lastIndexOf(".");
+  return lastDotIndex !== -1 ? filename.slice(lastDotIndex) : "";
+};
+
 export const OperationList = ({
   tag,
   untagged,
@@ -251,7 +256,7 @@ export const OperationList = ({
     typeof input === "string"
       ? type === "url"
         ? input
-        : joinUrl(path, version, input.split("/").pop())
+        : joinUrl(path, version, `schema${getFileExtension(input)}`)
       : undefined;
 
   return (

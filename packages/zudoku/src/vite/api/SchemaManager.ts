@@ -220,21 +220,41 @@ export class SchemaManager {
 
       const schemas = this.processedSchemas[apiConfig.path];
 
-      if (!schemas) continue;
+      if (!schemas || schemas.length === 0) continue;
+
+      const latestSchema = this.getLatestSchema(apiConfig.path)!;
+      const latestPath = this.createSchemaPath(
+        latestSchema,
+        apiConfig.path,
+        "latest",
+      );
+      map.set(latestPath, latestSchema.inputPath);
 
       for (const schema of schemas) {
-        const filename = path.basename(schema.inputPath);
-        const reqPath = joinUrl(
-          this.config.basePath,
+        const reqPath = this.createSchemaPath(
+          schema,
           apiConfig.path,
           schema.version,
-          filename,
         );
         map.set(reqPath, schema.inputPath);
       }
     }
 
     return map;
+  };
+
+  private createSchemaPath = (
+    schema: ProcessedSchema,
+    apiPath: string,
+    versionPath: string,
+  ) => {
+    const extension = path.extname(schema.inputPath);
+    return joinUrl(
+      this.config.basePath,
+      apiPath,
+      versionPath,
+      `schema${extension}`,
+    );
   };
 
   private validateSchema = async (
