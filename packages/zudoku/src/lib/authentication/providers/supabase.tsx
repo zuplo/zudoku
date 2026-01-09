@@ -129,8 +129,11 @@ class SupabaseAuthenticationProvider
   };
 
   signOut = async () => {
-    await this.client.auth.signOut();
-
+    const { error } = await this.client.auth.signOut({ scope: "local" });
+    if (error) {
+      // biome-ignore lint/suspicious: Logging is better than not doing anything
+      console.error("Error signing out", error);
+    }
     useAuthState.getState().setLoggedOut();
   };
 
