@@ -256,10 +256,7 @@ export const OperationList = ({
     typeof input === "string"
       ? type === "url"
         ? input
-        : (() => {
-            const extension = getFileExtension(input);
-            return joinUrl(path, version, `schema${extension}`);
-          })()
+        : joinUrl(path, version, `schema${getFileExtension(input)}`)
       : undefined;
 
   return (
