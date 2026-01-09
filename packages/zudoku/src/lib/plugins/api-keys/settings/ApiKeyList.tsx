@@ -15,6 +15,9 @@ export const ApiKeyList = ({ service }: { service: ApiKeyService }) => {
       try {
         return await service.getConsumers(context);
       } catch (error) {
+        if (error instanceof ZudokuError) {
+          throw error;
+        }
         throw new ZudokuError("Cannot get API keys", {
           cause: error,
           title: "Error getting API keys",
