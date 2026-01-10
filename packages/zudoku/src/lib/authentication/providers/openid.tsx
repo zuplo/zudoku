@@ -274,10 +274,11 @@ export class OpenIDAuthenticationProvider
 
     const as = await this.getAuthServer();
 
-    const redirectUrl = new URL(
-      window.location.origin + this.redirectToAfterSignOut,
+    const redirectUrl = new URL(window.location.origin);
+    redirectUrl.pathname = joinUrl(
+      import.meta.env.BASE_URL,
+      this.redirectToAfterSignOut,
     );
-    redirectUrl.pathname = this.callbackUrlPath;
 
     let logoutUrl: URL;
     // The endSessionEndpoint is set, the IdP supports some form of logout,
@@ -296,6 +297,8 @@ export class OpenIDAuthenticationProvider
     } else {
       logoutUrl = redirectUrl;
     }
+
+    window.location.href = logoutUrl.toString();
   };
 
   onPageLoad = async () => {
