@@ -44,6 +44,7 @@
     "./components": "./src/lib/components/index.ts",
     "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
+    "./react-query": "./src/lib/core/react-query.ts",
     "./__internal": "./src/lib/core/__internal.tsx",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/plugin.ts",
@@ -152,6 +153,10 @@
       "./router": {
         "import": "./lib/zudoku.router.js",
         "types": "./dist/lib/core/router.d.ts"
+      },
+      "./react-query": {
+        "import": "./lib/zudoku.react-query.js",
+        "types": "./dist/lib/core/react-query.d.ts"
       },
       "./processors/*": {
         "import": "./lib/processors/*.js",
