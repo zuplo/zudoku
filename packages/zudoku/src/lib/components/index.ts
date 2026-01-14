@@ -11,6 +11,7 @@ import {
   useCache as useCacheImport,
 } from "./cache.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
+import { Heading as HeadingImport } from "./Heading.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
 import { Slot as SlotImport } from "./Slot.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
@@ -18,6 +19,7 @@ import { Typography as TypographyImport } from "./Typography.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
 
 export const Head = /*@__PURE__*/ Helmet;
+export const Heading = /*@__PURE__*/ HeadingImport;
 export const Callout = /*@__PURE__*/ CalloutImport;
 export const Markdown = /*@__PURE__*/ MarkdownImport;
 export const Spinner = /*@__PURE__*/ SpinnerImport;
