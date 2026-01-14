@@ -26,9 +26,11 @@ export const NavigationFilterInput = ({
         onChange={(e) => setQuery(e.target.value)}
       />
       {query && (
-        <InputGroupButton onClick={() => setQuery("")}>
-          <XIcon className="size-3" />
-        </InputGroupButton>
+        <InputGroupAddon align="inline-end">
+          <InputGroupButton size="icon-xs" onClick={() => setQuery("")}>
+            <XIcon className="size-3" />
+          </InputGroupButton>
+        </InputGroupAddon>
       )}
     </InputGroup>
   );
