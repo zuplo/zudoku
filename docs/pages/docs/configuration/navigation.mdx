@@ -2,9 +2,9 @@
 title: Navigation
 sidebar_icon: compass
 description:
-  Learn how to configure the navigation in Zudoku, including links, categories, documents, and
-  custom pages. Understand the structure of the navigation array and how to use icons, labels, and
-  paths.
+  Learn how to configure the navigation in Zudoku, including links, categories, documents, custom
+  pages, separators, sections, and filters. Understand the structure of the navigation array and how
+  to use icons, labels, and paths.
 ---
 
 import { Book, Code, FileText } from "zudoku/icons";
@@ -58,13 +58,17 @@ one of several types. At the simplest level you may only have links and categori
 
 ## Navigation Items
 
-Navigation items can be of these types: `category`, `doc`, `link`, or `custom-page`.
+Navigation items can be of these types: `category`, `doc`, `link`, `custom-page`, `separator`,
+`section`, or `filter`.
 
 - `link`: A direct link to a page or external URL.
 - `category`: A group of links that can be expanded or collapsed.
 - `doc`: A reference to a document by it's file path: `file`.
-- `custom-pages`: A custom page that is made of a React component, see
+- `custom-page`: A custom page that is made of a React component, see
   [Custom Pages](../guides/custom-pages.md)
+- `separator`: A horizontal line to visually separate groups of items.
+- `section`: A label/header to group items without nesting them in a category.
+- `filter`: A search input that filters navigation items by their label.
 
 ### `type: link`
 
@@ -92,7 +96,12 @@ type NavigationLink = {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
   target?: "_self" | "_blank";
 };
 ```
@@ -131,7 +140,12 @@ type NavigationCategory = {
   collapsible?: boolean;
   collapsed?: boolean;
   link?: string | { type: "doc"; file: string; label?: string };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -164,7 +178,12 @@ type NavigationDoc = {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -237,15 +256,131 @@ type NavigationCustomPage = {
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
     invert?: boolean;
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
 </details>
 
+### `type: separator`
+
+A separator renders a horizontal line in the sidebar to visually divide groups of navigation items.
+
+```json
+{
+  "type": "separator"
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationSeparator = {
+  type: "separator";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
+};
+```
+
+</details>
+
+### `type: section`
+
+A section displays a label/header that groups items without nesting them in a collapsible category.
+Useful for organizing the sidebar into logical groups while keeping items flat.
+
+```json
+{
+  "type": "section",
+  "label": "Guides"
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationSection = {
+  type: "section";
+  label: string;
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
+};
+```
+
+</details>
+
+### `type: filter`
+
+A filter adds a search input to the sidebar that filters navigation items by their label. When users
+type in the filter, only matching items are displayed.
+
+```json
+{
+  "type": "filter",
+  "placeholder": "Filter documentation"
+}
+```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationFilter = {
+  type: "filter";
+  placeholder?: string;
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
+};
+```
+
+</details>
+
+### Using sections, separators, and filters
+
+Here's a complete example showing how these items work together:
+
+```tsx
+{
+  type: "category",
+  label: "Documentation",
+  items: [
+    { type: "filter", placeholder: "Filter documentation" },
+    { type: "section", label: "Operations" },
+    "shipping-process",
+    "tracking",
+    { type: "separator" },
+    { type: "section", label: "Guides" },
+    "interstellar",
+    "intergalactic"
+  ]
+}
+```
+
 ## Display Control
 
-All navigation items support a `display` property that controls when the item should be visible:
+All navigation items support a `display` property that controls when the item should be visible.
+This can be a preset string or a custom function for more complex logic.
+
+### Preset values
 
 - `"always"` (default): Always visible
 - `"auth"`: Only visible when user is authenticated
@@ -260,6 +395,28 @@ All navigation items support a `display` property that controls when the item sh
   "display": "auth"
 }
 ```
+
+### Custom function
+
+For more complex visibility logic, you can provide a function that receives the current context and
+authentication state:
+
+```tsx
+{
+  type: "link",
+  label: "Beta Features",
+  to: "/beta",
+  display: ({ context, auth }) => {
+    // Show only to authenticated users with beta access
+    return auth.isAuthenticated && auth.profile?.betaAccess === true;
+  }
+}
+```
+
+The function receives an object with:
+
+- `context`: The `ZudokuContext` instance
+- `auth`: The authentication state from `UseAuthReturn`
 
 ## Badges
 
