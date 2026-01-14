@@ -150,13 +150,16 @@ const createVersionRoutes = (
 
 export const getVersionMetadata = (config: OasPluginConfig) => {
   if (config.type === "raw" || !Array.isArray(config.input)) {
-    return { versions: [], labels: {} };
+    return { versions: [], labels: {}, downloadUrls: {} };
   }
 
   return {
-    versions: config.input.map((v) => v.path),
+    versions: config.input.map((v) => v.version),
     labels: Object.fromEntries(
-      config.input.map((v) => [v.path, v.label ?? v.path]),
+      config.input.map((v) => [v.version, v.label ?? v.version]),
+    ),
+    downloadUrls: Object.fromEntries(
+      config.input.map((v) => [v.version, v.downloadUrl]),
     ),
   };
 };

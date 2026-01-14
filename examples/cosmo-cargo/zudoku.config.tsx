@@ -238,9 +238,13 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: [
-        "./schema/label-v3.json",
-        "./schema/label-v2.json",
-        "./schema/label-v1.json",
+        {
+          input: "./schema/label-v3.json",
+          path: "latest",
+          label: "Latest (3.0.0)",
+        },
+        { input: "./schema/label-v2.json" },
+        { input: "./schema/label-v1.json" },
       ],
       path: "/catalog/api-label",
       categories: [{ label: "General", tags: ["Labels"] }],

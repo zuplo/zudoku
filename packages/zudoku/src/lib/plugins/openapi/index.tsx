@@ -121,7 +121,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         const { type } = config;
 
         const input = Array.isArray(config.input)
-          ? (config.input.find((v) => v.path === version)?.input ??
+          ? (config.input.find((v) => v.version === version)?.input ??
             config.input[0]?.input)
           : config.input;
 

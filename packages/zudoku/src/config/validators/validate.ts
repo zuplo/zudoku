@@ -91,6 +91,12 @@ const UrlVersionConfigSchema = z.object({
   label: z.string().optional(),
 });
 
+const FileVersionConfigSchema = z.object({
+  input: z.string(),
+  path: z.string().optional(),
+  label: z.string().optional(),
+});
+
 const ApiSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("url"),
@@ -99,7 +105,11 @@ const ApiSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("file"),
-    input: z.union([z.string(), z.array(z.string())]),
+    input: z.union([
+      z.string(),
+      z.array(z.string()),
+      z.array(FileVersionConfigSchema),
+    ]),
     ...ApiConfigSchema.shape,
   }),
   z.object({

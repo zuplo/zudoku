@@ -101,6 +101,59 @@ describe("SchemaManager", () => {
     expect(schemas?.[1]?.version).toBe("1.0.0"); // v1 second
   });
 
+  it("should handle multiple versions of the same schema with overriden path and label", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    const schemaPathV2 = path.join(tempDir, "openapi-v2.json");
+
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    await fs.writeFile(
+      schemaPathV2,
+      JSON.stringify({
+        ...mockSchema,
+        info: { ...mockSchema.info, version: "2.0.0" },
+      }),
+    );
+
+    const config: LoadedConfig = {
+      __meta: {
+        rootDir: tempDir,
+        moduleDir: path.join(tempDir, "node_modules"),
+        mode: "module",
+        dependencies: [],
+        configPath: path.join(tempDir, "zudoku.config.ts"),
+      },
+      apis: [
+        {
+          type: "file",
+          path: "test-api",
+          input: [
+            {
+              input: schemaPathV2,
+              label: "2.0.0 (latest)",
+              path: "latest",
+            },
+            {
+              input: schemaPath,
+            },
+          ],
+        },
+      ],
+    };
+
+    const manager = new SchemaManager({ storeDir, config, processors: [] });
+
+    await manager.processAllSchemas();
+
+    const schemas = manager.getSchemasForPath("test-api");
+    expect(schemas).toHaveLength(2);
+    expect(schemas?.[0]?.version).toBe("2.0.0"); // v2 first
+    expect(schemas?.[0]?.label).toBe("2.0.0 (latest)");
+    expect(schemas?.[0]?.path).toBe("latest");
+    expect(schemas?.[1]?.version).toBe("1.0.0"); // v1 second
+    expect(schemas?.[1]?.label).toBeUndefined(); // v1 second
+    expect(schemas?.[1]?.path).toBe("1.0.0"); // v1 second
+  });
+
   it("should track processed files", async () => {
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(mockSchema));

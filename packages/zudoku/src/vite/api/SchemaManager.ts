@@ -8,6 +8,7 @@ import { upgrade, validate } from "@scalar/openapi-parser";
 import slugify from "@sindresorhus/slugify";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
+import type { ZudokuApiConfig } from "../../config/validators/validate.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
@@ -17,7 +18,10 @@ import { generateCode } from "./schema-codegen.js";
 type ProcessedSchema = {
   schema: OpenAPIDocument;
   version: string;
+  path: string;
+  label?: string;
   inputPath: string;
+  downloadUrl: string;
 };
 const FALLBACK_VERSION = "default";
 
@@ -62,8 +66,8 @@ export class SchemaManager {
     for (const apiConfig of apis) {
       if (!apiConfig || apiConfig.type !== "file" || !apiConfig.path) continue;
 
-      const inputs = ensureArray(apiConfig.input).map((i) =>
-        path.resolve(this.config.__meta.rootDir, i),
+      const inputs = this.parseApiFileConfig(apiConfig).map((i) =>
+        path.resolve(this.config.__meta.rootDir, i.input),
       );
       if (inputs.includes(filePath)) {
         this.fileToPath.set(filePath, apiConfig.path);
@@ -131,12 +135,6 @@ export class SchemaManager {
       processedTime,
     });
 
-    const processed = {
-      schema: processedSchema,
-      version: processedSchema.info.version || FALLBACK_VERSION,
-      inputPath: filePath,
-    } satisfies ProcessedSchema;
-
     const schemas = this.processedSchemas[configuredPath];
 
     if (!schemas) {
@@ -144,6 +142,23 @@ export class SchemaManager {
     }
 
     const index = schemas.findIndex((s) => s.inputPath === filePath);
+    const existingSchema = schemas[index];
+
+    const schemaVersion = processedSchema.info.version ?? FALLBACK_VERSION;
+
+    const versionPath =
+      existingSchema?.path != null && existingSchema?.path.length > 0
+        ? existingSchema.path
+        : schemaVersion;
+    const processed = {
+      schema: processedSchema,
+      label: existingSchema?.label,
+      path: versionPath,
+      version: schemaVersion,
+      inputPath: filePath,
+      downloadUrl: this.createSchemaPath(filePath, versionPath, configuredPath),
+    } satisfies ProcessedSchema;
+
     if (index > -1) {
       schemas[index] = processed;
     }
@@ -172,17 +187,20 @@ export class SchemaManager {
     for (const apiConfig of apis) {
       if (apiConfig.type !== "file" || !apiConfig.path) continue;
 
-      const inputs = ensureArray(apiConfig.input);
+      const inputs = this.parseApiFileConfig(apiConfig);
       if (inputs.length === 0) throw new Error("No schema found");
 
       this.processedSchemas[apiConfig.path] = inputs.map((input) => ({
         schema: {} as OpenAPIDocument,
         version: "",
-        inputPath: path.resolve(this.config.__meta.rootDir, input),
+        path: input.path ?? "",
+        label: input.label,
+        inputPath: path.resolve(this.config.__meta.rootDir, input.input),
+        downloadUrl: "",
       }));
 
       const results = await Promise.allSettled(
-        inputs.map((input) => this.processSchema(input)),
+        inputs.map((input) => this.processSchema(input.input)),
       );
 
       const errors = results.flatMap((r) =>
@@ -222,33 +240,32 @@ export class SchemaManager {
 
       if (!schemas || schemas.length === 0) continue;
 
-      const latestSchema = this.getLatestSchema(apiConfig.path)!;
-      const latestPath = this.createSchemaPath(
-        latestSchema,
-        apiConfig.path,
-        "latest",
-      );
-      map.set(latestPath, latestSchema.inputPath);
-
       for (const schema of schemas) {
-        const reqPath = this.createSchemaPath(
-          schema,
-          apiConfig.path,
-          schema.version,
-        );
-        map.set(reqPath, schema.inputPath);
+        map.set(schema.downloadUrl, schema.inputPath);
       }
     }
 
     return map;
   };
 
+  private parseApiFileConfig = (
+    apiConfig: ZudokuApiConfig & { type: "file" },
+  ): Array<{ input: string; path?: string; label?: string }> => {
+    if (typeof apiConfig.input === "string") {
+      return [{ input: apiConfig.input }];
+    } else {
+      return apiConfig.input.map((input) =>
+        typeof input === "string" ? { input: input } : input,
+      );
+    }
+  };
+
   private createSchemaPath = (
-    schema: ProcessedSchema,
-    apiPath: string,
+    inputPath: string,
     versionPath: string,
+    apiPath: string,
   ) => {
-    const extension = path.extname(schema.inputPath);
+    const extension = path.extname(inputPath);
     return joinUrl(
       this.config.basePath,
       apiPath,
