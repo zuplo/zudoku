@@ -5,12 +5,14 @@ import { Link as LinkImport } from "react-router";
 import { useAuth as useAuthImport } from "../authentication/hook.js";
 import { Button as ButtonImport } from "../ui/Button.js";
 import { Callout as CalloutImport } from "../ui/Callout.js";
+import { ZudokuError as ZudokuErrorImport } from "../util/invariant.js";
 import { ClientOnly as ClientOnlyImport } from "./ClientOnly.js";
 import {
   CACHE_KEYS as CACHE_KEYS_IMPORT,
   useCache as useCacheImport,
 } from "./cache.js";
 import { useZudoku as useZudokuImport } from "./context/ZudokuContext.js";
+import { Heading as HeadingImport } from "./Heading.js";
 import { Markdown as MarkdownImport } from "./Markdown.js";
 import { Slot as SlotImport } from "./Slot.js";
 import { Spinner as SpinnerImport } from "./Spinner.js";
@@ -18,6 +20,7 @@ import { Typography as TypographyImport } from "./Typography.js";
 import { Zudoku as ZudokuImport } from "./Zudoku.js";
 
 export const Head = /*@__PURE__*/ Helmet;
+export const Heading = /*@__PURE__*/ HeadingImport;
 export const Callout = /*@__PURE__*/ CalloutImport;
 export const Markdown = /*@__PURE__*/ MarkdownImport;
 export const Spinner = /*@__PURE__*/ SpinnerImport;
@@ -27,6 +30,7 @@ export const Link = /*@__PURE__*/ LinkImport;
 export const Zudoku = /*@__PURE__*/ ZudokuImport;
 export const Typography = /*@__PURE__*/ TypographyImport;
 export const Slot = /*@__PURE__*/ SlotImport;
+export const ZudokuError = /*@__PURE__*/ ZudokuErrorImport;
 
 /** @deprecated Import from `zudoku/hooks` instead */
 export const useMDXComponents = /*@__PURE__*/ useMDXComponentsImport;

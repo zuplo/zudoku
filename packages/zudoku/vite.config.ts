@@ -16,6 +16,7 @@ const entries: Record<string, string> = {
   plugins: "./src/lib/core/plugins.ts",
   hooks: "./src/lib/hooks/index.ts",
   router: "./src/lib/core/router.ts",
+  "react-query": "./src/lib/core/react-query.ts",
   __internal: "./src/lib/core/__internal.tsx",
   mermaid: "./src/lib/components/Mermaid.tsx",
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
