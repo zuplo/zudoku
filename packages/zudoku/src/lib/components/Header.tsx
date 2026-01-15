@@ -60,6 +60,7 @@ export const Header = memo(function HeaderInner() {
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
   const { site, plugins, options } = context;
+  const disableTopNavigation = site?.disableTopNavigation === true;
 
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
@@ -120,7 +121,13 @@ export const Header = memo(function HeaderInner() {
           </div>
 
           <div className="flex items-center gap-8">
-            <MobileTopNavigation />
+            {!disableTopNavigation ? (
+              <MobileTopNavigation />
+            ) : (
+              <div className="flex lg:hidden items-center gap-2">
+                <ThemeSwitch />
+              </div>
+            )}
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slot.Target name="head-navigation-start" />
               {isAuthEnabled && (
@@ -184,13 +191,17 @@ export const Header = memo(function HeaderInner() {
           </div>
         </div>
       </div>
-      <div className={cn("hidden lg:block", borderBottom)}>
-        <div className="max-w-screen-2xl mx-auto border-transparent relative">
-          <Slot.Target name="top-navigation-before" />
-          <TopNavigation />
-          <Slot.Target name="top-navigation-after" />
+      {disableTopNavigation ? (
+        <style>{`:root { --top-nav-height: 0px; }`}</style>
+      ) : (
+        <div className={cn("hidden lg:block", borderBottom)}>
+          <div className="max-w-screen-2xl mx-auto border-transparent relative">
+            <Slot.Target name="top-navigation-before" />
+            <TopNavigation />
+            <Slot.Target name="top-navigation-after" />
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 });

@@ -521,6 +521,9 @@ const SiteSchema = z
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
+    disableHeader: z.boolean().optional(),
+    disableTopNavigation: z.boolean().optional(),
+    disableFooter: z.boolean().optional(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
