@@ -28,7 +28,7 @@ export const Pagination = ({
         <Button
           variant="ghost"
           asChild
-          className="min-w-0 max-w-[calc(50%-0.25rem)]"
+          className="min-w-0 max-w-[calc(50%-0.5rem)]"
         >
           <Link to={prev.to} relative="path" className={linkClass}>
             <ArrowLeftIcon size={14} strokeWidth={2.5} className="shrink-0" />
@@ -40,7 +40,7 @@ export const Pagination = ({
         <Button
           variant="ghost"
           asChild
-          className="min-w-0 max-w-[calc(50%-0.25rem)]"
+          className="min-w-0 max-w-[calc(50%-0.5rem)]"
         >
           <Link to={next.to} relative="path" className={linkClass}>
             <span className="text-lg truncate">{next.label}</span>
