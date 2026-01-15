@@ -86,6 +86,13 @@ export const usePrevNext = (): {
   let foundCurrent = false;
 
   traverseNavigation(navigation, (item) => {
+    if (
+      item.type === "separator" ||
+      item.type === "section" ||
+      item.type === "filter"
+    )
+      return;
+
     const itemId =
       item.type === "doc"
         ? joinUrl(item.path)
@@ -133,9 +140,33 @@ export const navigationListItem = cva(
   },
 );
 
+export const itemMatchesFilter = (
+  item: NavigationItem,
+  query: string,
+): boolean => {
+  if (["separator", "section", "filter"].includes(item.type)) {
+    return true;
+  }
+  if (item.label?.toLowerCase().includes(query.toLowerCase())) {
+    return true;
+  }
+
+  if (item.type === "category") {
+    return item.items.some((child) => itemMatchesFilter(child, query));
+  }
+
+  return false;
+};
+
 export const shouldShowItem =
-  (auth: UseAuthReturn, context: ZudokuContext) =>
+  (auth: UseAuthReturn, context: ZudokuContext, filterQuery?: string) =>
   (item: NavigationItem): boolean => {
+    if (item.type === "filter") return true;
+
+    if (filterQuery?.trim() && !itemMatchesFilter(item, filterQuery)) {
+      return false;
+    }
+
     if (typeof item.display === "function") {
       return item.display({ context, auth });
     }
