@@ -14,7 +14,7 @@ const OPENAPI_PROPS = new Set([
   "oneOf",
 ]);
 
-const handleCircularRefs = (
+export const handleCircularRefs = (
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   obj: any,
   visited = new WeakSet(),
@@ -49,8 +49,15 @@ const handleCircularRefs = (
 
   visited.add(obj);
 
+  // Add refPath BEFORE recursing to detect cycles within this branch
+  // This will be removed after processing to allow siblings with the same ref
+  if (typeof refPath === "string") {
+    seenRefPaths.add(refPath);
+  }
+
+  let result: RecordAny | RecordAny[];
   if (Array.isArray(obj)) {
-    const result = obj.map((item, index) =>
+    result = obj.map((item, index) =>
       handleCircularRefs(
         item,
         visited,
@@ -59,24 +66,23 @@ const handleCircularRefs = (
         seenRefPaths,
       ),
     );
-    refs.set(obj, result);
-    return result;
-  }
-
-  const result: RecordAny = {};
-  for (const [key, value] of Object.entries(obj)) {
-    result[key] = handleCircularRefs(
-      value,
-      visited,
-      refs,
-      [...path, key],
-      seenRefPaths,
-    );
+  } else {
+    result = {};
+    for (const [key, value] of Object.entries(obj)) {
+      result[key] = handleCircularRefs(
+        value,
+        visited,
+        refs,
+        [...path, key],
+        seenRefPaths,
+      );
+    }
   }
   refs.set(obj, result);
 
+  // Remove refPath after processing so sibling refs aren't incorrectly marked
   if (typeof refPath === "string") {
-    seenRefPaths.add(refPath);
+    seenRefPaths.delete(refPath);
   }
 
   return result;
