@@ -18,6 +18,7 @@ interfaces:
 - **ApiIdentityPlugin**: Provide API identities for testing
 - **SearchProviderPlugin**: Implement custom search functionality
 - **EventConsumerPlugin**: Handle custom events
+- **ContextProviderPlugin**: Mount custom React context providers into the app
 
 You can find all available plugin interfaces in the
 [Zudoku source code](https://github.com/zuplo/zudoku/blob/main/packages/zudoku/src/lib/core/plugins.ts).
@@ -210,3 +211,32 @@ const eventConsumerPlugin: ZudokuPlugin = {
   },
 };
 ```
+
+### Context Provider Plugin
+
+Use this to mount custom React context providers that wrap your app. Providers have access to
+`useZudoku()` and other Zudoku hooks.
+
+```tsx
+import { createContext, useContext, type PropsWithChildren } from "react";
+import { ZudokuPlugin } from "zudoku";
+
+const MyContext = createContext<{ value: string } | null>(null);
+
+export const useMyContext = () => {
+  const ctx = useContext(MyContext);
+  if (!ctx) throw new Error("useMyContext must be used within MyProvider");
+  return ctx;
+};
+
+const contextProviderPlugin: ZudokuPlugin = {
+  getProvider: () => {
+    const MyProvider = ({ children }: PropsWithChildren) => (
+      <MyContext.Provider value={{ value: "hello" }}>{children}</MyContext.Provider>
+    );
+    return MyProvider;
+  },
+};
+```
+
+If you need multiple providers, you can wrap them around `children` in the returned component.
