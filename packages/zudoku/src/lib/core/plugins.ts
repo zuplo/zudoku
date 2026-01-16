@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import type { ComponentType, PropsWithChildren, ReactNode } from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRoutesSchema.js";
@@ -18,6 +18,7 @@ export type ZudokuPlugin =
   | ApiIdentityPlugin
   | SearchProviderPlugin
   | EventConsumerPlugin
+  | ContextProviderPlugin
   | AuthenticationPlugin;
 
 export type { AuthenticationPlugin, RouteObject };
@@ -72,10 +73,19 @@ export type EventConsumerPlugin<Event extends ZudokuEvents = ZudokuEvents> = {
   events: { [K in keyof Event]?: Event[K] };
 };
 
+export interface ContextProviderPlugin {
+  getProvider: () => ComponentType<PropsWithChildren>;
+}
+
 export const isEventConsumerPlugin = (
   obj: ZudokuPlugin,
 ): obj is EventConsumerPlugin =>
   "events" in obj && typeof obj.events === "object";
+
+export const isContextProviderPlugin = (
+  obj: ZudokuPlugin,
+): obj is ContextProviderPlugin =>
+  "getProvider" in obj && typeof obj.getProvider === "function";
 
 export const isProfileMenuPlugin = (
   obj: ZudokuPlugin,
