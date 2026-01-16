@@ -130,10 +130,15 @@ const config = {
     path: "/api",
     options: {
       examplesLanguage: "shell", // Default language for code examples
+      supportedLanguages: [
+        { label: "cURL", language: "shell" },
+        { label: "JavaScript", language: "javascript" },
+      ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
+      expandApiInformation: false, // Control if API information section is expanded
       schemaDownload: { enabled: true }, // Enable schema download button
     },
   },
@@ -143,15 +148,20 @@ const config = {
 Available options:
 
 - `examplesLanguage`: Set default language for code examples
+- `supportedLanguages`: Array of language options for code examples. Each option has `label` (display name) and `language` (code identifier)
 - `disablePlayground`: Disable the interactive API playground globally
+- `disableSidecar`: Disable the sidecar panel completely
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
+- `expandApiInformation`: Control if the API information section is expanded by default
 - `schemaDownload`: Enable schema download functionality with `{ enabled: boolean }`. When enabled,
   displays a button allowing users to download the OpenAPI schema, copy it to clipboard, open in a
-  new tab, or use it with AI tools like Claude and ChatGPT.
+  new tab, or use it with AI tools like Claude and ChatGPT
+- `transformExamples`: Function to transform request/response examples before rendering
+- `generateCodeSnippet`: Function to generate custom code snippets for the API playground
 
 ## Default Options
 
@@ -164,8 +174,10 @@ const config = {
     apis: {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
+      disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
+      expandApiInformation: false, // Control if API information section is expanded
       schemaDownload: { enabled: true }, // Enable schema download button
     },
   },
