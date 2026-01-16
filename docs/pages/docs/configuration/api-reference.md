@@ -148,7 +148,8 @@ const config = {
 Available options:
 
 - `examplesLanguage`: Set default language for code examples
-- `supportedLanguages`: Array of language options for code examples. Each option has `label` (display name) and `language` (code identifier)
+- `supportedLanguages`: Array of language options for code examples. Each option has `label`
+  (display name) and `language` (code identifier)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
 - `showVersionSelect`: Control version selector visibility
@@ -197,8 +198,8 @@ Individual API options will override these defaults when specified.
 
 ### Custom Code Snippets
 
-Use `generateCodeSnippet` to generate custom code snippets instead of the default HTTP examples. This
-is useful when you want to show SDK usage or language-specific implementations.
+Use `generateCodeSnippet` to generate custom code snippets instead of the default HTTP examples.
+This is useful when you want to show SDK usage or language-specific implementations.
 
 ```tsx title=zudoku.config.tsx
 const config: ZudokuConfig = {
