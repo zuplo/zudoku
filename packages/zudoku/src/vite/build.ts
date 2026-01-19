@@ -13,7 +13,7 @@ import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getViteConfig } from "./config.js";
 import { getBuildHtml } from "./html.js";
-import { writeOutput } from "./output.js";
+import { writeOutput, writeVercelSSROutput } from "./output.js";
 import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
@@ -95,6 +95,11 @@ export async function runBuild(options: BuildOptions) {
       basePath: config.basePath,
     });
     await rm(path.join(clientOutDir, "index.html"), { force: true });
+
+    // For Vercel SSR, generate Build Output API config
+    if (adapter === "vercel") {
+      await writeVercelSSROutput(dir, serverOutDir);
+    }
   } else {
     // SSG: prerender and clean up server
     await runPrerender({

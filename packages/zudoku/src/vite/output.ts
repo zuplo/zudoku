@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { LoadedConfig } from "../config/config.js";
@@ -212,4 +212,35 @@ export async function writeOutput(
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log("Wrote Vercel output to", outputDir);
   }
+}
+
+export async function writeVercelSSROutput(dir: string, serverOutDir: string) {
+  // https://vercel.com/docs/build-output-api
+  const outputDir = path.join(dir, ".vercel/output");
+
+  await cp(path.join(dir, "dist"), path.join(outputDir, "static"), {
+    recursive: true,
+  });
+
+  const funcDir = path.join(outputDir, "functions/render.func");
+  await mkdir(funcDir, { recursive: true });
+  await cp(serverOutDir, funcDir, { recursive: true });
+
+  // Write .vc-config.json for the edge function (see https://vercel.com/docs/build-output-api/primitives#edge-functions)
+  await writeFile(
+    path.join(funcDir, ".vc-config.json"),
+    JSON.stringify({ runtime: "edge", entrypoint: "entry.js" }),
+  );
+
+  await writeFile(
+    path.join(outputDir, "config.json"),
+    JSON.stringify({
+      version: 3,
+      framework: { version: pkgJson.version },
+      routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "/render" }],
+    }),
+  );
+
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log("Wrote Vercel SSR output to", outputDir);
 }
