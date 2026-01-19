@@ -7,8 +7,6 @@ import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
   isRunnableDevEnvironment,
-  mergeConfig,
-  type Plugin,
   type ViteDevServer,
 } from "vite";
 import { logger } from "../cli/common/logger.js";
@@ -76,36 +74,18 @@ export class DevServer {
 
     const server = await this.createNodeServer(config);
 
-    const vite = await createViteServer(
-      mergeConfig(viteConfig, {
-        server: { hmr: { server } },
-        plugins: [
-          {
-            name: "zudoku:entry-client",
-            configureServer(vite) {
-              const entryPath = path.posix.join(
-                vite.config.base,
-                "/__z/entry.client.tsx",
-              );
-              vite.middlewares.use(entryPath, async (_req, res) => {
-                const transformed =
-                  await vite.environments.client.transformRequest(
-                    getAppClientEntryPath(),
-                  );
-                if (!transformed) {
-                  res.writeHead(500);
-                  res.end("Error transforming client entry");
-                  return;
-                }
-                res.writeHead(200, { "Content-Type": "text/javascript" });
-                res.end(transformed.code);
-              });
-            },
-          } satisfies Plugin,
-        ],
-      }),
-    );
+    viteConfig.server = {
+      ...viteConfig.server,
+      hmr: { server },
+    };
+
+    const vite = await createViteServer(viteConfig);
     const graphql = createGraphQLServer({ graphqlEndpoint: "/__z/graphql" });
+
+    const proxiedEntryClientPath = path.posix.join(
+      vite.config.base,
+      "/__z/entry.client.tsx",
+    );
 
     // Handle base path redirect
     vite.middlewares.use((req, res, next) => {
@@ -168,6 +148,20 @@ export class DevServer {
       }
 
       res.end();
+    });
+
+    vite.middlewares.use(proxiedEntryClientPath, async (_req, res) => {
+      const transformed = await vite.environments.client.transformRequest(
+        getAppClientEntryPath(),
+      );
+
+      if (!transformed) {
+        res.writeHead(500);
+        res.end("Error transforming client entry");
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "text/javascript" });
+      res.end(transformed.code);
     });
 
     printDiagnosticsToConsole(
