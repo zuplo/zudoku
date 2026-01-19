@@ -96,7 +96,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         console.log(`Re-processing schema ${id}`);
 
         for (const mainFile of mainFiles) {
-          await schemaManager.processSchema(mainFile);
+          await schemaManager.processSchema({ input: mainFile });
         }
         schemaManager
           .getAllTrackedFiles()
@@ -188,7 +188,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const versionedInput = schemas.map((s) => ({
               path: s.version,
-              label: s.schema.info?.version,
+              label: s.label,
               input: s.inputPath,
             }));
 

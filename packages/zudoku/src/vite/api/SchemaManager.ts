@@ -8,6 +8,7 @@ import { upgrade, validate } from "@scalar/openapi-parser";
 import slugify from "@sindresorhus/slugify";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
+import type { VersionConfig } from "../../config/validators/validate.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
@@ -18,8 +19,16 @@ type ProcessedSchema = {
   schema: OpenAPIDocument;
   version: string;
   inputPath: string;
+  label?: string;
 };
 const FALLBACK_VERSION = "default";
+
+type InputConfig = Partial<VersionConfig> & { input: string };
+
+const normalizeInputs = (
+  inputs: string | InputConfig | Array<string | InputConfig>,
+): InputConfig[] =>
+  ensureArray(inputs).map((i) => (typeof i === "string" ? { input: i } : i));
 
 export class SchemaManager {
   private storeDir: string;
@@ -62,8 +71,8 @@ export class SchemaManager {
     for (const apiConfig of apis) {
       if (!apiConfig || apiConfig.type !== "file" || !apiConfig.path) continue;
 
-      const inputs = ensureArray(apiConfig.input).map((i) =>
-        path.resolve(this.config.__meta.rootDir, i),
+      const inputs = normalizeInputs(apiConfig.input).map((i) =>
+        path.resolve(this.config.__meta.rootDir, i.input),
       );
       if (inputs.includes(filePath)) {
         this.fileToPath.set(filePath, apiConfig.path);
@@ -72,12 +81,12 @@ export class SchemaManager {
     }
   };
 
-  public processSchema = async (input: string) => {
-    const filePath = path.resolve(this.config.__meta.rootDir, input);
+  public processSchema = async (input: InputConfig) => {
+    const filePath = path.resolve(this.config.__meta.rootDir, input.input);
     const configuredPath = this.getPathForFile(filePath);
     if (!configuredPath) {
       // biome-ignore lint/suspicious/noConsole: Logging allowed here
-      console.warn(`No path found for file ${input}`);
+      console.warn(`No path found for file ${input.input}`);
       return;
     }
 
@@ -131,10 +140,20 @@ export class SchemaManager {
       processedTime,
     });
 
+    // On reprocessing, preserve existing overrides
+    const existing = this.processedSchemas[configuredPath]?.find(
+      (s) => s.inputPath === filePath,
+    );
+
     const processed = {
       schema: processedSchema,
-      version: processedSchema.info.version || FALLBACK_VERSION,
+      version:
+        input.path ??
+        existing?.version ??
+        processedSchema.info.version ??
+        FALLBACK_VERSION,
       inputPath: filePath,
+      label: input.label ?? existing?.label ?? processedSchema.info.version,
     } satisfies ProcessedSchema;
 
     const schemas = this.processedSchemas[configuredPath];
@@ -172,13 +191,13 @@ export class SchemaManager {
     for (const apiConfig of apis) {
       if (apiConfig.type !== "file" || !apiConfig.path) continue;
 
-      const inputs = ensureArray(apiConfig.input);
+      const inputs = normalizeInputs(apiConfig.input);
       if (inputs.length === 0) throw new Error("No schema found");
 
       this.processedSchemas[apiConfig.path] = inputs.map((input) => ({
         schema: {} as OpenAPIDocument,
         version: "",
-        inputPath: path.resolve(this.config.__meta.rootDir, input),
+        inputPath: path.resolve(this.config.__meta.rootDir, input.input),
       }));
 
       const results = await Promise.allSettled(
@@ -222,7 +241,9 @@ export class SchemaManager {
 
       if (!schemas || schemas.length === 0) continue;
 
-      const latestSchema = this.getLatestSchema(apiConfig.path)!;
+      const latestSchema = this.getLatestSchema(apiConfig.path);
+      if (!latestSchema) continue;
+
       const latestPath = this.createSchemaPath(
         latestSchema,
         apiConfig.path,
