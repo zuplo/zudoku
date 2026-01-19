@@ -1,9 +1,7 @@
-import { Transform } from "node:stream";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
 import type { HelmetData } from "@zudoku/react-helmet-async";
-import type express from "express";
 import logger from "loglevel";
-import { renderToPipeableStream, renderToStaticMarkup } from "react-dom/server";
+import { renderToReadableStream, renderToStaticMarkup } from "react-dom/server";
 import {
   createStaticHandler,
   createStaticRouter,
@@ -13,52 +11,42 @@ import {
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/__internal";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
-import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
 
-export const render = async ({
+export const handleRequest = async ({
   template,
-  request: baseRequest,
-  response,
+  request,
   routes,
   basePath,
   bypassProtection,
 }: {
   template: string;
-  request: express.Request | Request;
-  response: express.Response | PrerenderResponse;
+  request: Request;
   routes: RouteObject[];
   basePath?: string;
   bypassProtection?: boolean;
-}) => {
+}): Promise<Response> => {
   const { query, dataRoutes } = createStaticHandler(routes, {
     basename: basePath,
   });
   const queryClient = new QueryClient();
 
-  const request =
-    baseRequest instanceof Request
-      ? baseRequest
-      : createFetchRequest(baseRequest, response);
-
   const context = await query(request);
-  let status = 200;
 
   if (context instanceof Response) {
     if ([301, 302, 303, 307, 308].includes(context.status)) {
-      return response.redirect(
-        import.meta.env.PROD ? context.status : 307,
-        context.headers.get("Location") ?? "",
-      );
+      return new Response(null, {
+        status: context.status,
+        headers: { Location: context.headers.get("Location") ?? "" },
+      });
     }
-
     throw context;
-  } else if (context.errors) {
-    // when throwing a Response from a loader it will be caught here
-    // unfortunately it is not `instanceof Response` for some reason
-    const firstError = Object.values(context.errors).find(isRouteErrorResponse);
+  }
 
+  let status = 200;
+  if (context.errors) {
+    const firstError = Object.values(context.errors).find(isRouteErrorResponse);
     if (firstError?.status) {
       status = firstError.status;
     }
@@ -77,115 +65,81 @@ export const render = async ({
     />
   );
 
-  const { pipe } = renderToPipeableStream(App, {
-    onShellError(error) {
-      response.status(500);
-      response.set({ "Content-Type": "text/html" });
-
-      const html = renderToStaticMarkup(<ServerError error={error} />);
-
-      response.send(html);
-    },
-    onAllReady() {
-      response.set({ "Content-Type": "text/html" });
-      response.status(status);
-
-      const transformStream = new Transform({
-        transform(chunk, encoding, callback) {
-          response.write(chunk, encoding);
-          callback();
-        },
-      });
-
-      const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
-
-      if (!htmlStart) {
-        throw new Error("No <!--app-html--> found in template");
-      }
-
-      response.write(
-        htmlStart.replace(
-          "<!--app-helmet-->",
-          [
-            helmetContext.helmet.title.toString(),
-            helmetContext.helmet.meta.toString(),
-            helmetContext.helmet.link.toString(),
-            helmetContext.helmet.style.toString(),
-            helmetContext.helmet.script.toString(),
-          ].join("\n"),
-        ),
-      );
-
-      transformStream.on("finish", () => {
-        const dehydrated = dehydrate(queryClient, {
-          shouldDehydrateQuery: (query) =>
-            !query.queryKey.includes(NO_DEHYDRATE),
-        });
-
-        if (!htmlEnd) return response.end();
-
-        const closingTag = "</body>";
-        const idx = htmlEnd.lastIndexOf(closingTag);
-
-        if (idx === -1) return response.end(htmlEnd);
-
-        const serialized = JSON.stringify(dehydrated)
-          .replace(/</g, "\\u003c")
-          .replace(/>/g, "\\u003e");
-
-        response.write(htmlEnd.slice(0, idx));
-        response.write("<script>window.DATA=");
-        response.write(serialized);
-        response.write("</script>");
-        response.end(htmlEnd.slice(idx));
-      });
-
-      pipe(transformStream);
-    },
-    onError(error) {
-      status = 500;
-      if (import.meta.env.PROD) {
-        throw error;
-      }
-      logger.error(error);
-    },
-  });
-};
-
-export function createFetchRequest(
-  req: express.Request,
-  res: express.Response | PrerenderResponse,
-): Request {
-  const origin = `${req.protocol}://${req.get("host")}`;
-  // Note: This had to take originalUrl into account for presumably vite's proxying
-  const url = new URL(req.originalUrl || req.url, origin);
-
-  const controller = new AbortController();
-  res.on("close", () => controller.abort());
-
-  const headers = new Headers();
-
-  for (const [key, values] of Object.entries(req.headers)) {
-    if (values) {
-      if (Array.isArray(values)) {
-        for (const value of values) {
-          headers.append(key, value);
+  try {
+    const reactStream = await renderToReadableStream(App, {
+      onError(error) {
+        status = 500;
+        if (import.meta.env.PROD) {
+          logger.error("SSR Error:", error);
         }
-      } else {
-        headers.set(key, values);
-      }
+      },
+    });
+
+    await reactStream.allReady;
+
+    const [htmlStart, htmlEnd] = template.split("<!--app-html-->");
+    if (!htmlStart) {
+      throw new Error("No <!--app-html--> found in template");
     }
+
+    const encoder = new TextEncoder();
+    const reader = reactStream.getReader();
+
+    const stream = new ReadableStream<Uint8Array>({
+      async start(controller) {
+        const helmetHtml = [
+          helmetContext.helmet?.title?.toString() ?? "",
+          helmetContext.helmet?.meta?.toString() ?? "",
+          helmetContext.helmet?.link?.toString() ?? "",
+          helmetContext.helmet?.style?.toString() ?? "",
+          helmetContext.helmet?.script?.toString() ?? "",
+        ].join("\n");
+
+        controller.enqueue(
+          encoder.encode(htmlStart.replace("<!--app-helmet-->", helmetHtml)),
+        );
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          controller.enqueue(value);
+        }
+
+        if (htmlEnd) {
+          const dehydrated = dehydrate(queryClient, {
+            shouldDehydrateQuery: (q) => !q.queryKey.includes(NO_DEHYDRATE),
+          });
+          const serialized = JSON.stringify(dehydrated)
+            .replace(/</g, "\\u003c")
+            .replace(/>/g, "\\u003e");
+
+          const closingTag = "</body>";
+          const idx = htmlEnd.lastIndexOf(closingTag);
+
+          if (idx === -1) {
+            controller.enqueue(encoder.encode(htmlEnd));
+          } else {
+            controller.enqueue(encoder.encode(htmlEnd.slice(0, idx)));
+            controller.enqueue(
+              encoder.encode(`<script>window.DATA=${serialized}</script>`),
+            );
+            controller.enqueue(encoder.encode(htmlEnd.slice(idx)));
+          }
+        }
+
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      status,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
+  } catch (error) {
+    const html = renderToStaticMarkup(<ServerError error={error} />);
+    return new Response(html, {
+      status: 500,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    });
   }
-
-  const init: RequestInit = {
-    method: req.method,
-    headers,
-    signal: controller.signal,
-  };
-
-  if (req.method !== "GET" && req.method !== "HEAD") {
-    init.body = req.body;
-  }
-
-  return new Request(url.href, init);
-}
+};
