@@ -148,12 +148,12 @@ export class SchemaManager {
     const processed = {
       schema: processedSchema,
       version:
-        input.path ??
-        existing?.version ??
-        processedSchema.info.version ??
+        input.path ||
+        existing?.version ||
+        processedSchema.info.version ||
         FALLBACK_VERSION,
       inputPath: filePath,
-      label: input.label ?? existing?.label ?? processedSchema.info.version,
+      label: input.label || existing?.label || processedSchema.info.version,
     } satisfies ProcessedSchema;
 
     const schemas = this.processedSchemas[configuredPath];
