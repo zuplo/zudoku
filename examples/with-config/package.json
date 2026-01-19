@@ -21,6 +21,7 @@
     }
   },
   "devDependencies": {
+    "@clerk/clerk-js": "^5.102.1",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"

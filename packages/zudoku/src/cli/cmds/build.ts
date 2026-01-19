@@ -6,6 +6,8 @@ import { DEFAULT_PREVIEW_PORT } from "../preview/handler.js";
 export type Arguments = {
   dir: string;
   preview?: boolean | number;
+  ssr?: boolean;
+  adapter?: string;
 };
 
 export default {
@@ -28,6 +30,17 @@ export default {
           if (value === true) return DEFAULT_PREVIEW_PORT;
           return undefined;
         },
+      })
+      .option("ssr", {
+        type: "boolean",
+        describe: "Build for server-side rendering",
+        default: false,
+      })
+      .option("adapter", {
+        type: "string",
+        describe: "SSR adapter (node, cloudflare, vercel)",
+        choices: ["node", "cloudflare", "vercel"] as const,
+        default: "node",
       }),
   handler: async (argv: Arguments) => {
     process.env.NODE_ENV = "production";
