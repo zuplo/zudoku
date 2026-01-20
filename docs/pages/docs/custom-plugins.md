@@ -165,6 +165,38 @@ const navigationPlugin: ZudokuPlugin = {
 };
 ```
 
+### Wrapping Routes with Context or Layout
+
+You can wrap your plugin's routes with a context provider or custom layout using React Router's
+nested route pattern. The parent route renders an `<Outlet />` where child routes will appear.
+
+```tsx
+import { createContext, useContext } from "react";
+import type { ZudokuPlugin, RouteObject } from "zudoku";
+import { Outlet } from "zudoku/router";
+
+const MyContext = createContext("value");
+
+const pluginWithContext: ZudokuPlugin = {
+  getRoutes: () => [
+    {
+      element: (
+        <MyContext.Provider value="hello">
+          <Outlet />
+        </MyContext.Provider>
+      ),
+      children: [
+        { path: "/custom", element: <CustomPage /> },
+        { path: "/custom/nested", element: <NestedPage /> },
+      ],
+    },
+  ],
+};
+```
+
+All child routes will have access to `MyContext`. This pattern works for any wrapper including
+layouts, error boundaries, or data providers.
+
 ### Dropdown Navigation Plugin
 
 ```tsx
