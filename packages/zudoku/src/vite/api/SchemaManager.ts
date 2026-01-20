@@ -18,8 +18,10 @@ import { generateCode } from "./schema-codegen.js";
 type ProcessedSchema = {
   schema: OpenAPIDocument;
   version: string;
-  inputPath: string;
+  path: string;
   label?: string;
+  inputPath: string;
+  downloadUrl: string;
 };
 const FALLBACK_VERSION = "default";
 
@@ -140,22 +142,6 @@ export class SchemaManager {
       processedTime,
     });
 
-    // On reprocessing, preserve existing overrides
-    const existing = this.processedSchemas[configuredPath]?.find(
-      (s) => s.inputPath === filePath,
-    );
-
-    const processed = {
-      schema: processedSchema,
-      version:
-        input.path ||
-        existing?.version ||
-        processedSchema.info.version ||
-        FALLBACK_VERSION,
-      inputPath: filePath,
-      label: input.label || existing?.label || processedSchema.info.version,
-    } satisfies ProcessedSchema;
-
     const schemas = this.processedSchemas[configuredPath];
 
     if (!schemas) {
@@ -163,6 +149,23 @@ export class SchemaManager {
     }
 
     const index = schemas.findIndex((s) => s.inputPath === filePath);
+    const existingSchema = schemas[index];
+
+    const schemaVersion = processedSchema.info.version ?? FALLBACK_VERSION;
+    const versionPath =
+      existingSchema?.path && existingSchema.path.length > 0
+        ? existingSchema.path
+        : schemaVersion;
+
+    const processed = {
+      schema: processedSchema,
+      version: schemaVersion,
+      path: versionPath,
+      label: existingSchema?.label,
+      inputPath: filePath,
+      downloadUrl: this.createSchemaPath(filePath, versionPath, configuredPath),
+    } satisfies ProcessedSchema;
+
     if (index > -1) {
       schemas[index] = processed;
     }
@@ -197,7 +200,10 @@ export class SchemaManager {
       this.processedSchemas[apiConfig.path] = inputs.map((input) => ({
         schema: {} as OpenAPIDocument,
         version: "",
+        path: input.path ?? "",
+        label: input.label,
         inputPath: path.resolve(this.config.__meta.rootDir, input.input),
+        downloadUrl: "",
       }));
 
       const results = await Promise.allSettled(
@@ -241,23 +247,8 @@ export class SchemaManager {
 
       if (!schemas || schemas.length === 0) continue;
 
-      const latestSchema = this.getLatestSchema(apiConfig.path);
-      if (!latestSchema) continue;
-
-      const latestPath = this.createSchemaPath(
-        latestSchema,
-        apiConfig.path,
-        "latest",
-      );
-      map.set(latestPath, latestSchema.inputPath);
-
       for (const schema of schemas) {
-        const reqPath = this.createSchemaPath(
-          schema,
-          apiConfig.path,
-          schema.version,
-        );
-        map.set(reqPath, schema.inputPath);
+        map.set(schema.downloadUrl, schema.inputPath);
       }
     }
 
@@ -265,11 +256,11 @@ export class SchemaManager {
   };
 
   private createSchemaPath = (
-    schema: ProcessedSchema,
-    apiPath: string,
+    inputPath: string,
     versionPath: string,
+    apiPath: string,
   ) => {
-    const extension = path.extname(schema.inputPath);
+    const extension = path.extname(inputPath);
     return joinUrl(
       this.config.basePath,
       apiPath,
