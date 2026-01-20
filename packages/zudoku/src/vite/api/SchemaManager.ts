@@ -168,6 +168,10 @@ export class SchemaManager {
 
     if (index > -1) {
       schemas[index] = processed;
+    } else {
+      throw new Error(
+        `Schema with input path ${filePath} was not pre-initialized for ${configuredPath}.`,
+      );
     }
     this.fileToPath.set(filePath, configuredPath);
     return processed;

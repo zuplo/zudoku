@@ -147,9 +147,11 @@ describe("SchemaManager", () => {
     expect(schemas?.[0]?.version).toBe("2.0.0");
     expect(schemas?.[0]?.label).toBe("2.0.0 (latest)");
     expect(schemas?.[0]?.path).toBe("latest");
+    expect(schemas?.[0]?.downloadUrl).toBe("/test-api/latest/schema.json");
     expect(schemas?.[1]?.version).toBe("1.0.0");
     expect(schemas?.[1]?.label).toBeUndefined();
     expect(schemas?.[1]?.path).toBe("1.0.0");
+    expect(schemas?.[1]?.downloadUrl).toBe("/test-api/1.0.0/schema.json");
   });
 
   it("should track processed files", async () => {

@@ -7,8 +7,8 @@ type DynamicInput = () => Promise<unknown>;
 
 export type VersionedInput<T> = Array<{
   path: string;
-  version: string;
-  downloadUrl: string;
+  version?: string;
+  downloadUrl?: string;
   label?: string;
   input: T;
 }>;
