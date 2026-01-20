@@ -13,7 +13,11 @@ export async function build(argv: Arguments) {
 
   const dir = path.resolve(process.cwd(), argv.dir);
   try {
-    await runBuild({ dir });
+    await runBuild({
+      dir,
+      ssr: argv.ssr,
+      adapter: argv.adapter as "node" | "cloudflare" | "vercel" | undefined,
+    });
   } catch (error) {
     logger.error("❌ Build failed");
     logger.error(error instanceof Error ? error.message : String(error));

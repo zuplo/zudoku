@@ -1,11 +1,10 @@
+import fs from "node:fs/promises";
 import path from "node:path";
 import Piscina from "piscina";
 import { matchPath } from "react-router";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
-import { FileWritingResponse } from "./FileWritingResponse.js";
-import { InMemoryResponse } from "./InMemoryResponse.js";
 import type { WorkerResult } from "./prerender.js";
 
 type EntryServer = typeof import("../../app/entry.server.js");
@@ -38,12 +37,6 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   const outputPath = path.join(distDir, filename);
 
   const request = new Request(url);
-  const fileResponse = new FileWritingResponse({
-    fileName: outputPath,
-    writeRedirects,
-  });
-
-  const sharedOpts = { template, request, routes, basePath };
 
   const protectedRoutes = ProtectedRoutesSchema.parse(config.protectedRoutes);
   const isProtectedRoute = protectedRoutes
@@ -52,50 +45,68 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       )
     : false;
 
-  let html: string;
+  // Get the main response
+  const response = await server.handleRequest({
+    template,
+    request,
+    routes,
+    basePath,
+  });
 
-  // For protected routes, we need a second render pass with protection bypassed
-  // so we can build a full search index
-  if (isProtectedRoute) {
-    const bypassResponse = new InMemoryResponse();
-    await Promise.all([
-      server.render({ ...sharedOpts, response: fileResponse }),
-      server.render({
-        ...sharedOpts,
-        response: bypassResponse,
-        bypassProtection: true,
-      }),
-      fileResponse.isSent(),
-      bypassResponse.isSent(),
-    ]);
+  // Check for redirects
+  if ([301, 302, 303, 307, 308].includes(response.status)) {
+    const redirectTo = response.headers.get("Location") ?? "";
 
-    if (bypassResponse.statusCode >= 500) {
-      throw new Error(
-        `SSR failed (bypass render) with status ${bypassResponse.statusCode} for path: ${urlPath}`,
-      );
+    if (writeRedirects) {
+      const redirectHtml = `<!doctype html><script>window.location.href='${redirectTo}';</script>`;
+      await fs.mkdir(path.dirname(outputPath), { recursive: true });
+      await fs.writeFile(outputPath, redirectHtml);
     }
 
-    html = bypassResponse.buffer;
-  } else {
-    await server.render({ ...sharedOpts, response: fileResponse });
-    await fileResponse.isSent();
-
-    html = fileResponse.buffer;
+    return {
+      outputPath,
+      redirect: { from: pathname, to: redirectTo },
+      html: "",
+    };
   }
 
-  if (fileResponse.statusCode >= 500) {
+  if (response.status >= 500) {
     throw new Error(
-      `SSR failed with status ${fileResponse.statusCode} for path: ${urlPath}`,
+      `SSR failed with status ${response.status} for path: ${urlPath}`,
     );
   }
 
-  const redirect = fileResponse.redirectedTo
-    ? { from: pathname, to: fileResponse.redirectedTo }
-    : undefined;
+  // Get HTML content for file write
+  const fileContent = response.body ? await response.text() : "";
+
+  // For protected routes, do a second render with protection bypassed for search index
+  let html = fileContent;
+  if (isProtectedRoute) {
+    const bypassRequest = new Request(url);
+    const bypassResponse = await server.handleRequest({
+      template,
+      request: bypassRequest,
+      routes,
+      basePath,
+      bypassProtection: true,
+    });
+
+    if (bypassResponse.status >= 500) {
+      throw new Error(
+        `SSR failed (bypass render) with status ${bypassResponse.status} for path: ${urlPath}`,
+      );
+    }
+
+    html = bypassResponse.body ? await bypassResponse.text() : "";
+  }
+
+  // Write the file
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  await fs.writeFile(outputPath, fileContent);
 
   return {
     outputPath,
-    redirect,
+    redirect: undefined,
     html,
   };
 };

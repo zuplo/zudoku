@@ -6,7 +6,6 @@ import invariant from "../lib/util/invariant.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { getAppServerEntryPath } from "./config.js";
 import { getDevHtml } from "./html.js";
-import { InMemoryResponse } from "./prerender/InMemoryResponse.js";
 import { routesToPaths } from "./prerender/utils.js";
 
 type EntryServerImport = typeof import("../app/entry.server.js");
@@ -63,23 +62,20 @@ export async function* buildPagefindDevIndex(
       const pathname = joinUrl(basePath, urlPath);
       const url = joinUrl("http://localhost", pathname);
       const request = new Request(url);
-      const response = new InMemoryResponse();
 
-      await serverModule.render({
+      const response = await serverModule.handleRequest({
         template: transformedTemplate,
         request,
-        response,
         routes,
         basePath,
         bypassProtection: true,
       });
 
-      await response.isSent();
-
-      if (response.statusCode < 400) {
+      if (response.status < 400 && response.body) {
+        const content = await response.text();
         await pagefindIndex.addHTMLFile({
           url: urlPath,
-          content: response.buffer,
+          content,
         });
         indexed++;
       }
