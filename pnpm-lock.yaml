@@ -320,6 +320,34 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  examples/zuplo-monetization/docs:
+    dependencies:
+      '@zuplo/zudoku-plugin-monetization':
+        specifier: workspace:*
+        version: link:../../../packages/plugin-zuplo-monetization
+      react:
+        specifier: 19.2.3
+        version: 19.2.3
+      react-dom:
+        specifier: 19.2.3
+        version: 19.2.3(react@19.2.3)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../../packages/zudoku
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.1
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.7
+      '@types/react-dom':
+        specifier: 'catalog:'
+        version: 19.2.3(@types/react@19.2.7)
+      typescript:
+        specifier: ^5
+        version: 5.9.3
+
   packages/create-zudoku:
     devDependencies:
       '@types/async-retry':
@@ -382,9 +410,6 @@ importers:
       tinyduration:
         specifier: 3.4.1
         version: 3.4.1
-      zudoku:
-        specifier: workspace:*
-        version: link:../zudoku
     devDependencies:
       '@types/react':
         specifier: 'catalog:'
@@ -401,6 +426,9 @@ importers:
       tsdown:
         specifier: 0.20.0-beta.3
         version: 0.20.0-beta.3(typescript@5.9.3)
+      zudoku:
+        specifier: workspace:*
+        version: link:../zudoku
 
   packages/zudoku:
     dependencies:

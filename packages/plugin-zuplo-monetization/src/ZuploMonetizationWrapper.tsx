@@ -67,7 +67,7 @@ export const client = new QueryClient({
         });
 
         const response = await fetch(
-          q.meta.context ? await q.meta.context.signRequest(request) : request,
+          q.meta?.context ? await q.meta.context.signRequest(request) : request,
         );
 
         if (!response.ok) {

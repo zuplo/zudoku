@@ -1,5 +1,5 @@
+import { enableMonetization } from "@zuplo/zudoku-plugin-monetization";
 import type { ZudokuConfig } from "zudoku";
-import { enableMonetization } from "zudoku/plugins/monetization";
 
 const config: ZudokuConfig = {
   site: {

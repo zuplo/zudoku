@@ -1,5 +1,5 @@
 {
-  "name": "with-zuplo",
+  "name": "zuplo-monetization",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -23,7 +23,8 @@
   "dependencies": {
     "react": "catalog:",
     "react-dom": "catalog:",
-    "zudoku": "workspace:*"
+    "zudoku": "workspace:*",
+    "@zuplo/zudoku-plugin-monetization": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",
