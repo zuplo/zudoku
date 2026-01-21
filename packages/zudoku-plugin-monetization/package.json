@@ -1,0 +1,9 @@
+{
+  "name": "zudoku-plugin-monetization",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "zudoku": "workspace:*"
+  }
+}
