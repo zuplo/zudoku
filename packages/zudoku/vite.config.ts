@@ -27,6 +27,7 @@ const entries: Record<string, string> = {
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
   "plugin-search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
   "plugin-api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
+  "plugin-zuplo-monetization": "./src/lib/plugins/zuplo-monetization/index.tsx",
   ...globEntries("./src/lib/ui/**/*.{ts,tsx}", "ui"),
   ...globEntries("./src/lib/plugins/openapi/processors/*.ts", "processors"),
 };

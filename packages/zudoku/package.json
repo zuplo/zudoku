@@ -41,6 +41,7 @@
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
+    "./plugins/zuplo-monetization": "./src/lib/plugins/zuplo-monetization/index.tsx",
     "./components": "./src/lib/components/index.ts",
     "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
@@ -133,6 +134,10 @@
       "./plugins/search-pagefind": {
         "import": "./lib/zudoku.plugin-search-pagefind.js",
         "types": "./dist/lib/plugins/search-pagefind/index.d.ts"
+      },
+      "./plugins/zuplo-monetization": {
+        "import": "./lib/zudoku.plugin-zuplo-monetization.js",
+        "types": "./dist/lib/plugins/zuplo-monetization/index.d.ts"
       },
       "./hooks": {
         "import": "./lib/zudoku.hooks.js",
