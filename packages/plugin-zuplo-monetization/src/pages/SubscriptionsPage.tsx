@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
 
@@ -15,10 +15,6 @@ const SubscriptionsPage = ({
   const { data } = useSubscriptions(environmentName);
   const { subscriptionId } = useParams();
   const subscriptions = data?.items ?? [];
-
-  useEffect(() => {
-    console.log("SubscriptionsPage mounted");
-  }, []);
 
   const activeSubscription = useMemo(() => {
     if (subscriptions.length === 0) return null;

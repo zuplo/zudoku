@@ -1,25 +1,6 @@
-import { useState } from "react";
-import {
-  ClockIcon,
-  CopyIcon,
-  EyeIcon,
-  EyeOffIcon,
-  Trash2Icon,
-} from "zudoku/icons";
+import { ClockIcon, Trash2Icon } from "zudoku/icons";
 import { Card, CardContent } from "zudoku/ui/Card";
-
-type ConsumerResponse = {
-  id: string;
-  name: string;
-  createdOn: string;
-  updatedOn: string;
-  apiKeys: Array<{
-    id: string;
-    createdOn: string;
-    updatedOn: string;
-    key: string;
-  }>;
-};
+import { Secret } from "zudoku/ui/Secret";
 
 export const ApiKey = ({
   apiKey,
@@ -28,8 +9,6 @@ export const ApiKey = ({
   expiresAt,
   isActive = true,
   label,
-  deploymentName,
-  consumerId,
   apiKeyId,
 }: {
   apiKey: string;
@@ -42,9 +21,6 @@ export const ApiKey = ({
   consumerId: string;
   apiKeyId: string;
 }) => {
-  const [isRevealed, setIsRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
-
   const formatDate = (dateString?: string) => {
     if (!dateString) return "";
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -80,27 +56,10 @@ export const ApiKey = ({
     new Date(expiresAt) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   const isExpired = expiresAt && new Date(expiresAt) < new Date();
 
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(apiKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   const handleDelete = () => {
     // TODO: Implement delete functionality
     // biome-ignore lint/suspicious/noConsole: TODO
     console.log("Delete API Key", apiKeyId);
-  };
-
-  const maskKey = (key: string) => {
-    const parts = key.split("_");
-    if (parts.length >= 2) {
-      const prefix = `${parts[0]}_${parts[1]}`;
-      const masked = "•".repeat(16);
-      const suffix = parts[parts.length - 1].slice(-4);
-      return `${prefix}_${masked}${suffix}`;
-    }
-    return key;
   };
 
   return (
@@ -142,10 +101,19 @@ export const ApiKey = ({
               </div>
               <span>•</span>
               <span>Last used {getTimeAgo(lastUsed)}</span>
-              {expiresAt && !isActive && (
+              {expiresAt}
+              {expiresAt && (
                 <>
                   <span>•</span>
-                  <span className="text-yellow-700 font-medium">
+                  <span
+                    className={
+                      isExpired
+                        ? "text-red-700 font-medium"
+                        : isExpiring
+                          ? "text-yellow-700 font-medium"
+                          : ""
+                    }
+                  >
                     Expires {formatDate(expiresAt)}
                   </span>
                 </>
@@ -153,30 +121,11 @@ export const ApiKey = ({
             </div>
 
             {/* API Key Display */}
-            <div className="flex items-center gap-2 bg-muted/50 p-3 rounded-md font-mono text-sm">
-              <span className="flex-1 select-all">
-                {isRevealed ? apiKey : maskKey(apiKey)}
-              </span>
-              <button
-                onClick={() => setIsRevealed(!isRevealed)}
-                className="text-muted-foreground hover:text-foreground p-1"
-                type="button"
-                aria-label={isRevealed ? "Hide API key" : "Show API key"}
-              >
-                {isRevealed ? (
-                  <EyeOffIcon className="size-4" />
-                ) : (
-                  <EyeIcon className="size-4" />
-                )}
-              </button>
-              <button
-                onClick={handleCopy}
-                className="text-muted-foreground hover:text-foreground p-1"
-                type="button"
-                aria-label="Copy API key"
-              >
-                <CopyIcon className="size-4" />
-              </button>
+            <div className="flex items-center gap-2 rounded-md font-mono text-sm">
+              <Secret
+                secret={apiKey}
+                status={isActive ? "active" : "expiring"}
+              />
               {!isActive && (
                 <button
                   onClick={handleDelete}

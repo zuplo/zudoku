@@ -28,7 +28,7 @@ export const ApiKeysList = ({
 
   const rollKeyMutation = useMutation({
     mutationFn: createMutationFn(
-      `/${deploymentName}/consumers/${consumerId}/roll-key`,
+      `/v2/client/${deploymentName}/consumers/${consumerId}/roll-key`,
       context,
       {
         method: "POST",
@@ -60,12 +60,12 @@ export const ApiKeysList = ({
   });
 
   const activeKey = sortedKeys.find((k) => !k.expiresAt);
-  const expiringKeys = sortedKeys.filter((k) => !!k.expiresAt);
+  const expiringKeys = sortedKeys.filter((k) => !k.expiresAt);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Keys for Production</h3>
+        <h3 className="text-lg font-semibold">API Keys</h3>
         <Button
           onClick={() => rollKeyMutation.mutate()}
           disabled={rollKeyMutation.isPending}
