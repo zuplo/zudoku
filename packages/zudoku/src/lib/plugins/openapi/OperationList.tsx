@@ -20,7 +20,6 @@ import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Pagination } from "../../components/Pagination.js";
-import { joinUrl } from "../../util/joinUrl.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
@@ -151,11 +150,6 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
 
 const LAZY_OPERATION_LIST_THRESHOLD = 30;
 
-const getFileExtension = (filename: string): string => {
-  const lastDotIndex = filename.lastIndexOf(".");
-  return lastDotIndex !== -1 ? filename.slice(lastDotIndex) : "";
-};
-
 export const OperationList = ({
   tag,
   untagged,
@@ -163,7 +157,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { path, input, type, versions, version, options } = useOasConfig();
+  const { input, type, versions, version, options } = useOasConfig();
   const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
@@ -252,11 +246,12 @@ export const OperationList = ({
   const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
+  const currentVersion = version != null ? versions[version] : undefined;
   const downloadUrl =
     typeof input === "string"
       ? type === "url"
         ? input
-        : joinUrl(path, version, `schema${getFileExtension(input)}`)
+        : currentVersion?.downloadUrl
       : undefined;
 
   return (
@@ -291,7 +286,7 @@ export const OperationList = ({
                 {showVersions && (
                   <span className="text-xl text-muted-foreground ms-1.5">
                     {" "}
-                    ({version})
+                    ({schema.version})
                   </span>
                 )}
               </Heading>

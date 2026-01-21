@@ -85,6 +85,56 @@ const config = {
 };
 ```
 
+If you need to override version metadata, you can specify it explicitly:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: [
+      // Order of the array determines the order of the versions
+      {
+        path: "v2",
+        label: "Version 2.0",
+        input: "./openapi-v2.json",
+      },
+      {
+        path: "v1",
+        label: "Version 1.0",
+        input: "./openapi-v1.json",
+      },
+    ],
+    path: "/api",
+  },
+};
+```
+
+You can specify:
+
+- `input`: Path to the OpenAPI document (required)
+- `path`: Version identifier used in the URL path (e.g., `/api/v2`)
+- `label`: Optional display name for the version selector
+
+You can also mix strings and objects in the array - use strings for defaults and objects when you
+need to customize:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: [
+      {
+        path: "latest",
+        label: "Latest (2.0)",
+        input: "./openapi-v2.json",
+      },
+      "./openapi-v1.json", // Uses info.version from the document
+    ],
+    path: "/api",
+  },
+};
+```
+
 ### URL-based Versioning
 
 When using `type: "url"`, you can provide an array of version configurations. Since URL-based
