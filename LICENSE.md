@@ -1,3 +1,13 @@
+NOTE ON LICENSE SCOPE
+
+This repository contains multiple components under different licensing terms.
+
+Unless otherwise noted, files in this repository are licensed under the MIT License below.
+Certain subdirectories contain their own LICENSE files and are licensed under separate terms.
+Those terms apply only to the files in the corresponding directories.
+
+-----
+
 The MIT License (MIT)
 
 Copyright (c) Zuplo, Inc.
