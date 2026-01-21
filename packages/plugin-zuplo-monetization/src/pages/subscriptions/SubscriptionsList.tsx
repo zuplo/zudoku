@@ -1,6 +1,5 @@
 import { cn } from "zudoku";
 import { Link } from "zudoku/router";
-import { Badge } from "zudoku/ui/Badge";
 import { Item, ItemContent, ItemTitle } from "zudoku/ui/Item";
 
 interface Subscription {

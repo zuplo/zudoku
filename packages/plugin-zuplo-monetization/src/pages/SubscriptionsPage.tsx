@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
-import { Progress } from "zudoku/ui/Progress";
 
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { ApiKeysList } from "./subscriptions/ApiKeysList";

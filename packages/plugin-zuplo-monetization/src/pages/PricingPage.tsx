@@ -5,7 +5,7 @@ import { Link } from "zudoku/router";
 import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
 import { usePlans } from "../hooks/usePlans";
-import { Plan } from "../types/PlanType";
+import type { Plan } from "../types/PlanType";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 

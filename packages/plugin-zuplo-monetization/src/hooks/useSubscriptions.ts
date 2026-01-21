@@ -1,4 +1,4 @@
-import { useAuth, useZudoku } from "zudoku/hooks";
+import { useZudoku } from "zudoku/hooks";
 import { useSuspenseQuery } from "zudoku/react-query";
 
 export type SubscriptionsResponse = {
@@ -14,7 +14,7 @@ export type SubscriptionsResponse = {
     currency: string;
     customerId: string;
     id: string;
-    metadata: any;
+    metadata: Record<string, unknown>;
     name: string;
     plan: {
       id: string;
@@ -32,8 +32,8 @@ export type SubscriptionsResponse = {
       name: string;
       createdOn: string;
       updatedOn: string;
-      tags: {};
-      metadata: {};
+      tags: Record<string, unknown>;
+      metadata: Record<string, unknown>;
       apiKeys: Array<{
         id: string;
         createdOn: string;

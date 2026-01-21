@@ -26,7 +26,10 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./ui/*": "./src/lib/ui/*",
+    "./ui/*": {
+      "types": "./src/lib/ui/*.tsx",
+      "default": "./src/lib/ui/*"
+    },
     "./auth/clerk": "./src/lib/authentication/providers/clerk.tsx",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.tsx",
     "./auth/openid": "./src/lib/authentication/providers/openid.tsx",
@@ -355,6 +358,13 @@
     "mermaid": "^11.0.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
+  },
+  "typesVersions": {
+    "*": {
+      "ui/*": [
+        "./src/lib/ui/*"
+      ]
+    }
   },
   "peerDependenciesMeta": {
     "@azure/msal-browser": {

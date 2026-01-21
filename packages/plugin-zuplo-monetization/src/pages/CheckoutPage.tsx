@@ -12,7 +12,7 @@ const CheckoutPage = ({ environmentName }: { environmentName: string }) => {
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();
 
-  const { data } = useQuery({
+  const { data: _data } = useQuery({
     queryKey: ["plan", planId],
     queryFn: async () => {
       if (!auth.profile?.email) {

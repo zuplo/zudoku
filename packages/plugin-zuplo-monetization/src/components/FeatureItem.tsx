@@ -1,7 +1,7 @@
 import { cn } from "zudoku";
 import { CheckIcon } from "zudoku/icons";
 
-import { Feature } from "../types/PlanType";
+import type { Feature } from "../types/PlanType";
 
 export const FeatureItem = ({
   feature,

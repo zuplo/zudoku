@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { useZudoku } from "zudoku/hooks";
-import { ClockIcon, EyeIcon, EyeOffIcon, CopyIcon, Trash2Icon } from "zudoku/icons";
-import { useQuery } from "zudoku/react-query";
+import {
+  ClockIcon,
+  CopyIcon,
+  EyeIcon,
+  EyeOffIcon,
+  Trash2Icon,
+} from "zudoku/icons";
 import { Card, CardContent } from "zudoku/ui/Card";
-import { cn } from "zudoku/util/cn";
 
 type ConsumerResponse = {
   id: string;
@@ -72,7 +75,9 @@ export const ApiKey = ({
     return formatDate(dateString);
   };
 
-  const isExpiring = expiresAt && new Date(expiresAt) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  const isExpiring =
+    expiresAt &&
+    new Date(expiresAt) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   const isExpired = expiresAt && new Date(expiresAt) < new Date();
 
   const handleCopy = async () => {
@@ -83,6 +88,7 @@ export const ApiKey = ({
 
   const handleDelete = () => {
     // TODO: Implement delete functionality
+    // biome-ignore lint/suspicious/noConsole: TODO
     console.log("Delete API Key", apiKeyId);
   };
 
@@ -98,8 +104,16 @@ export const ApiKey = ({
   };
 
   return (
-    <div className={isExpiring && !isExpired ? "border-l-4 border-yellow-500 pl-4" : ""}>
-      <Card className={isExpiring && !isExpired ? "border-yellow-200 bg-yellow-50" : ""}>
+    <div
+      className={
+        isExpiring && !isExpired ? "border-l-4 border-yellow-500 pl-4" : ""
+      }
+    >
+      <Card
+        className={
+          isExpiring && !isExpired ? "border-yellow-200 bg-yellow-50" : ""
+        }
+      >
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* API Key Header */}
@@ -146,6 +160,7 @@ export const ApiKey = ({
               <button
                 onClick={() => setIsRevealed(!isRevealed)}
                 className="text-muted-foreground hover:text-foreground p-1"
+                type="button"
                 aria-label={isRevealed ? "Hide API key" : "Show API key"}
               >
                 {isRevealed ? (
@@ -157,6 +172,7 @@ export const ApiKey = ({
               <button
                 onClick={handleCopy}
                 className="text-muted-foreground hover:text-foreground p-1"
+                type="button"
                 aria-label="Copy API key"
               >
                 <CopyIcon className="size-4" />
@@ -165,6 +181,7 @@ export const ApiKey = ({
                 <button
                   onClick={handleDelete}
                   className="text-red-500 hover:text-red-700 p-1"
+                  type="button"
                   aria-label="Delete API key"
                 >
                   <Trash2Icon className="size-4" />

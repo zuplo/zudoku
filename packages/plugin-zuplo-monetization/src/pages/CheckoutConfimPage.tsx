@@ -2,7 +2,7 @@ import { Button } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ArrowLeftIcon, CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
-import { useSearchParams, useNavigate } from "zudoku/router";
+import { useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
@@ -82,6 +82,7 @@ const CheckoutConfirmPage = ({
       navigate(`/subscriptions/${subscriptionId}`);
     },
     onError: (error) => {
+      // biome-ignore lint/suspicious/noConsole: TODO
       console.error("Error creating subscription:", error);
     },
   });

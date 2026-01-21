@@ -1,8 +1,7 @@
-import { ApiIdentity, ZudokuConfig, ZudokuPlugin } from "zudoku";
+import type { ApiIdentity, ZudokuConfig, ZudokuPlugin } from "zudoku";
 import { StarsIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
-
-import { SubscriptionsResponse } from "./hooks/useSubscriptions";
+import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
 import CheckoutConfirmPage from "./pages/CheckoutConfimPage";
 import CheckoutFailedPage from "./pages/CheckoutFailedPage";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -31,7 +30,7 @@ export const enableMonetization = (
   };
 };
 
-const zuploMonetizationPlugin = (
+export const zuploMonetizationPlugin = (
   options: ZudokuMonetizationPluginOptions,
 ): ZudokuPlugin => {
   return {

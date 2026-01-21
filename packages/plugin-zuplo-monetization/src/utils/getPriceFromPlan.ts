@@ -1,4 +1,4 @@
-import { FlatFeeRateCard, Plan } from "../types/PlanType";
+import type { FlatFeeRateCard, Plan } from "../types/PlanType";
 
 export const getPriceFromPlan = (plan: Plan) => {
   const defaultPhase = plan.phases.at(-1);
