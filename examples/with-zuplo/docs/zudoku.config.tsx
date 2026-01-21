@@ -1,4 +1,5 @@
 import type { ZudokuConfig } from "zudoku";
+import { enableMonetization } from "zudoku/plugins/zuplo-monetization";
 
 const config: ZudokuConfig = {
   site: {
@@ -84,4 +85,6 @@ const config: ZudokuConfig = {
   },
 };
 
-export default config;
+export default enableMonetization(config, {
+  environmentName: "zudoku-monetization-main-b2d8e04",
+});
