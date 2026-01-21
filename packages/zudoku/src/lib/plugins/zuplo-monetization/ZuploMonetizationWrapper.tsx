@@ -1,5 +1,5 @@
-import { ZudokuContext } from "zudoku";
-import { QueryClientProvider, QueryClient } from "zudoku/react-query";
+import type { ZudokuContext } from "zudoku";
+import { QueryClient, QueryClientProvider } from "zudoku/react-query";
 import { Outlet } from "zudoku/router";
 
 declare module "zudoku/react-query" {

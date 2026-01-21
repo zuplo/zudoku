@@ -3,7 +3,7 @@ import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
 import { useSearchParams } from "zudoku/router";
 
-import { useUrlUtils } from "../hooks/useUrlUtils";
+import { useUrlUtils } from "../hooks/useUrlUtils.js";
 
 const CheckoutPage = ({ environmentName }: { environmentName: string }) => {
   const [search] = useSearchParams();

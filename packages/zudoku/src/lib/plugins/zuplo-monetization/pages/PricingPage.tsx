@@ -2,12 +2,12 @@ import { cn } from "zudoku";
 import { Button, Heading } from "zudoku/components";
 import { Link } from "zudoku/router";
 
-import { FeatureItem } from "../components/FeatureItem";
-import { QuotaItem } from "../components/QuotaItem";
-import { usePlans } from "../hooks/usePlans";
-import { Plan } from "../types/PlanType";
-import { categorizeRateCards } from "../utils/categorizeRateCards";
-import { getPriceFromPlan } from "../utils/getPriceFromPlan";
+import { FeatureItem } from "../components/FeatureItem.js";
+import { QuotaItem } from "../components/QuotaItem.js";
+import { usePlans } from "../hooks/usePlans.js";
+import type { Plan } from "../types/PlanType.js";
+import { categorizeRateCards } from "../utils/categorizeRateCards.js";
+import { getPriceFromPlan } from "../utils/getPriceFromPlan.js";
 
 const PricingCard = ({
   plan,

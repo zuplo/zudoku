@@ -1,14 +1,16 @@
-import { ApiIdentity, ZudokuConfig, ZudokuPlugin } from "zudoku";
+import type { ApiIdentity, ZudokuConfig, ZudokuPlugin } from "zudoku";
 import { StarsIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 
-import { SubscriptionsResponse } from "./hooks/useSubscriptions";
-import CheckoutConfirmPage from "./pages/CheckoutConfimPage";
-import CheckoutFailedPage from "./pages/CheckoutFailedPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import PricingPage from "./pages/PricingPage";
-import SubscriptionsPage from "./pages/SubscriptionsPage";
-import ZuploMonetizationWrapper, { client } from "./ZuploMonetizationWrapper";
+import type { SubscriptionsResponse } from "./hooks/useSubscriptions.js";
+import CheckoutConfirmPage from "./pages/CheckoutConfimPage.js";
+import CheckoutFailedPage from "./pages/CheckoutFailedPage.js";
+import CheckoutPage from "./pages/CheckoutPage.js";
+import PricingPage from "./pages/PricingPage.js";
+import SubscriptionsPage from "./pages/SubscriptionsPage.js";
+import ZuploMonetizationWrapper, {
+  client,
+} from "./ZuploMonetizationWrapper.js";
 
 export type ZudokuMonetizationPluginOptions = {
   environmentName: string;

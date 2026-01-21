@@ -1,18 +1,18 @@
 import { Button } from "zudoku/components";
-import { useAuth, useZudoku } from "zudoku/hooks";
 import { ArrowLeftIcon, CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
-import { useSearchParams, useNavigate } from "zudoku/router";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
-import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
-import { Separator } from "zudoku/ui/Separator";
-
-import { FeatureItem } from "../components/FeatureItem";
-import { QuotaItem } from "../components/QuotaItem";
-import { usePlans } from "../hooks/usePlans";
-import { categorizeRateCards } from "../utils/categorizeRateCards";
-import { formatDuration } from "../utils/formatDuration";
-import { getPriceFromPlan } from "../utils/getPriceFromPlan";
+import { useNavigate, useSearchParams } from "zudoku/router";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card.js";
+import { Separator } from "zudoku/ui/Separator.js";
+import { useZudoku } from "../../../components/context/ZudokuContext.js";
+import { useAuth } from "../../../hooks/index.js";
+import { FeatureItem } from "../components/FeatureItem.js";
+import { QuotaItem } from "../components/QuotaItem.js";
+import { usePlans } from "../hooks/usePlans.js";
+import { categorizeRateCards } from "../utils/categorizeRateCards.js";
+import { formatDuration } from "../utils/formatDuration.js";
+import { getPriceFromPlan } from "../utils/getPriceFromPlan.js";
 
 const formatBillingCycle = (duration: string): string => {
   // formatDuration returns: "month", "year", "2 months", "week", "2 weeks", etc.

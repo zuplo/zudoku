@@ -1,5 +1,5 @@
-import { Feature, Quota, RateCard } from "../types/PlanType";
-import { formatDuration } from "./formatDuration";
+import type { Feature, Quota, RateCard } from "../types/PlanType.js";
+import { formatDuration } from "./formatDuration.js";
 
 export const categorizeRateCards = (rateCards: RateCard[]) => {
   const quotas: Quota[] = [];

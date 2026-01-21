@@ -1,4 +1,4 @@
-import { useAuth, useZudoku } from "zudoku/hooks";
+import { useZudoku } from "zudoku/hooks";
 import { useSuspenseQuery } from "zudoku/react-query";
 
 export type SubscriptionsResponse = {

@@ -1,4 +1,4 @@
-import { FlatFeeRateCard, Plan } from "../types/PlanType";
+import type { FlatFeeRateCard, Plan } from "../types/PlanType.js";
 
 export const getPriceFromPlan = (plan: Plan) => {
   const defaultPhase = plan.phases.at(-1);
@@ -9,7 +9,7 @@ export const getPriceFromPlan = (plan: Plan) => {
       rc.type === "flat_fee" && rc.price?.type === "flat",
   );
 
-  const monthlyAmount = flatFeeCard?.price.amount
+  const monthlyAmount = flatFeeCard?.price?.amount
     ? parseInt(flatFeeCard.price.amount, 10)
     : 0;
 

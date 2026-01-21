@@ -1,12 +1,11 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams } from "zudoku/router";
-import { Card, CardContent } from "zudoku/ui/Card";
-import { Progress } from "zudoku/ui/Progress";
+import { Card, CardContent } from "zudoku/ui/Card.js";
 
-import { useSubscriptions } from "../hooks/useSubscriptions";
-import { ApiKeysList } from "./subscriptions/ApiKeysList";
-import { SubscriptionsList } from "./subscriptions/SubscriptionsList";
-import { Usage } from "./subscriptions/Usage";
+import { useSubscriptions } from "../hooks/useSubscriptions.js";
+import { ApiKeysList } from "./subscriptions/ApiKeysList.js";
+import { SubscriptionsList } from "./subscriptions/SubscriptionsList.js";
+import { Usage } from "./subscriptions/Usage.js";
 
 const SubscriptionsPage = ({
   environmentName,
@@ -16,10 +15,6 @@ const SubscriptionsPage = ({
   const { data } = useSubscriptions(environmentName);
   const { subscriptionId } = useParams();
   const subscriptions = data?.items ?? [];
-
-  useEffect(() => {
-    console.log("SubscriptionsPage mounted");
-  }, []);
 
   const activeSubscription = useMemo(() => {
     if (subscriptions.length === 0) return null;

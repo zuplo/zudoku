@@ -709,6 +709,9 @@ importers:
       tailwindcss:
         specifier: 4.1.18
         version: 4.1.18
+      tinyduration:
+        specifier: ^3.4.1
+        version: 3.4.1
       tw-animate-css:
         specifier: 1.4.0
         version: 1.4.0
@@ -8232,6 +8235,9 @@ packages:
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
+
+  tinyduration@3.4.1:
+    resolution: {integrity: sha512-NemFoamVYn7TmtwZKZ3OiliM9fZkr6EWiTM+wKknco6POSy2gS689xx/pXip0JYp40HXpUw6k65CUYHWYUXdaA==}
 
   tinyexec@1.0.2:
     resolution: {integrity: sha512-W/KYk+NFhkmsYpuHq5JykngiOCnxeVL8v8dFnqxSD8qEEdRfXk1SDM6JzNqcERbcGYj9tMrDQBYV9cjgnunFIg==}
@@ -17687,6 +17693,8 @@ snapshots:
   timeout-signal@2.0.0: {}
 
   tinybench@2.9.0: {}
+
+  tinyduration@3.4.1: {}
 
   tinyexec@1.0.2: {}
 
