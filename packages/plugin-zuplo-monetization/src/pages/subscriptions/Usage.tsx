@@ -44,7 +44,7 @@ const UsageItem = ({
   item,
 }: {
   meter: MeteredEntitlement;
-  item: Item;
+  item?: Item;
 }) => {
   return (
     <Card className={cn(meter.overage > 0 && "border-red-400 bg-red-50/50")}>
@@ -71,7 +71,7 @@ const UsageItem = ({
           </div>
         )}
         <CardTitle>
-          {item.name} {item.price?.amount}
+          {item?.name ?? "Limit"} {item?.price?.amount}
         </CardTitle>
         <CardDescription />
       </CardHeader>
@@ -112,7 +112,7 @@ export const Usage = ({
 }: {
   subscriptionId: string;
   environmentName: string;
-  currentItems: Item[];
+  currentItems?: Item[];
 }) => {
   const zudoku = useZudoku();
   const { data: usage } = useSuspenseQuery<UsageResult>({
@@ -124,9 +124,10 @@ export const Usage = ({
     },
   });
 
-  const meteredEntitlements = currentItems.filter(
-    (item) => item.included.entitlement?.type === "metered",
-  );
+  const meteredEntitlements =
+    currentItems?.filter(
+      (item) => item.included.entitlement?.type === "metered",
+    ) ?? [];
 
   return (
     <div>
