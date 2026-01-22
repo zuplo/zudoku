@@ -5,6 +5,7 @@ import { Button } from "zudoku/ui/Button";
 
 import { createMutationFn } from "../../ZuploMonetizationWrapper";
 import { ApiKey } from "./ApiKey";
+import { ApiKeyInfo } from "./ApiKeyInfo";
 
 type ApiKeyData = {
   id: string;
@@ -38,7 +39,10 @@ export const ApiKeysList = ({
     onSuccess: () => {
       // Invalidate and refetch the consumer query to get updated API keys
       queryClient.invalidateQueries({
-        queryKey: [`/${deploymentName}/consumers/${consumerId}`],
+        queryKey: [
+          `/${deploymentName}/consumers/${consumerId}`,
+          `/v3/zudoku-metering/${deploymentName}/subscriptions`,
+        ],
       });
     },
   });
@@ -76,6 +80,8 @@ export const ApiKeysList = ({
           {rollKeyMutation.isPending ? "Rolling..." : "Roll API Key"}
         </Button>
       </div>
+
+      <ApiKeyInfo />
 
       <div className="space-y-4">
         {activeKey && (

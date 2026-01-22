@@ -33,8 +33,8 @@ const CheckoutConfirmPage = ({
 }) => {
   const [search] = useSearchParams();
   const planId = search.get("plan");
-  const auth = useAuth();
   const zudoku = useZudoku();
+  const auth = useAuth();
   const navigate = useNavigate();
 
   const { data: plans } = usePlans(environmentName);

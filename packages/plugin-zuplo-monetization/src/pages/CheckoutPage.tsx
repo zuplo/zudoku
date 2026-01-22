@@ -43,17 +43,6 @@ const CheckoutPage = ({ environmentName }: { environmentName: string }) => {
         ),
       );
 
-      console.log({
-        email: auth.profile?.email,
-        planId,
-        successURL: `${generateUrl(`/checkout-confirm`)}?${
-          planId ? `plan=${planId}` : ""
-        }`,
-        cancelURL: `${generateUrl(`/checkout-failed`)}?${
-          planId ? `plan=${planId}` : ""
-        }`,
-      });
-
       const checkoutRequest = await fetch(request).then((res) => res.json());
 
       if (checkoutRequest.url) {
