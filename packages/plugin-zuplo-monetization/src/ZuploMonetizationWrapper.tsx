@@ -1,4 +1,5 @@
 import type { ZudokuContext } from "zudoku";
+import { ClientOnly } from "zudoku/components";
 import { QueryClient, QueryClientProvider } from "zudoku/react-query";
 import { Outlet } from "zudoku/router";
 
@@ -99,7 +100,9 @@ export const queryClient = new QueryClient({
 export const ZuploMonetizationWrapper = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <ClientOnly>
+        <Outlet />
+      </ClientOnly>
     </QueryClientProvider>
   );
 };
