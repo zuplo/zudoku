@@ -1,22 +1,24 @@
 import createDeepmerge from "@fastify/deepmerge";
 import type { ConfigWithMeta } from "../../config/loader.js";
-import { type ConfigHookContext, isConfigPlugin } from "./plugins.js";
+import { type ConfigHookContext, isTransformConfigPlugin } from "./plugins.js";
 
-const mergeConfig = createDeepmerge();
+const mergeConfig = createDeepmerge({
+  mergeArray: (opt) => (_, source) => opt.clone(source),
+});
 
 export const runTransformConfigHooks = async (
   config: ConfigWithMeta,
 ): Promise<ConfigWithMeta> => {
-  const plugins = config.plugins ?? [];
-  const ctx: ConfigHookContext = {
+  const ctx = {
     mode: config.__meta.mode,
     rootDir: config.__meta.rootDir,
     configPath: config.__meta.configPath,
-  };
+  } satisfies ConfigHookContext;
+  const plugins = config.plugins ?? [];
 
   let result = config;
 
-  for (const plugin of plugins.filter(isConfigPlugin)) {
+  for (const plugin of plugins.filter(isTransformConfigPlugin)) {
     const partial = await plugin.transformConfig?.(result, ctx);
     if (!partial) continue;
 

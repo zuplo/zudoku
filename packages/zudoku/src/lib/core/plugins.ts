@@ -63,7 +63,7 @@ export type ProfileNavigationItem = {
 };
 
 export interface ConfigHookContext {
-  mode: "standalone" | "internal" | "module" | undefined;
+  mode: typeof process.env.ZUDOKU_ENV;
   rootDir: string;
   configPath: string;
 }
@@ -126,7 +126,7 @@ export const isApiIdentityPlugin = (
 ): obj is ApiIdentityPlugin =>
   "getIdentities" in obj && typeof obj.getIdentities === "function";
 
-export const isConfigPlugin = (
+export const isTransformConfigPlugin = (
   obj: ZudokuPlugin,
 ): obj is TransformConfigPlugin =>
   "transformConfig" in obj && typeof obj.transformConfig === "function";
