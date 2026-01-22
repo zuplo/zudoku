@@ -15,7 +15,7 @@ const config: ZudokuConfig = {
       dismissible: true,
     },
   },
-  basePath: "/docs",
+  basePath: "/",
   navigation: [
     {
       type: "category",
@@ -76,8 +76,8 @@ const config: ZudokuConfig = {
   },
   authentication: {
     type: "auth0",
-    domain: "auth.zuplo.io",
-    clientId: "v0cOpST3pX6NIs1VGLVvNjaN3mSBomKk",
+    domain: "auth.zuplo.site",
+    clientId: "f8I87rdsCRo4nU2FHf0fHVwA9P7xi7Ml",
     audience: "https://api.example.com/",
   },
   apiKeys: {
