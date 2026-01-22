@@ -1,11 +1,15 @@
 import { cn } from "zudoku";
 import { Link } from "zudoku/router";
-import { Item, ItemContent, ItemTitle } from "zudoku/ui/Item";
+import { Badge } from "zudoku/ui/Badge";
+import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
+import { formatDurationInterval } from "../../utils/formatDuration";
 
 interface Subscription {
   id: string;
   name: string;
   status: string;
+  activeFrom: string;
+  billingCadence: string;
   plan: {
     key: string;
     version: number;
@@ -16,6 +20,15 @@ interface SubscriptionsListProps {
   subscriptions: Subscription[];
   activeSubscriptionId?: string;
 }
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
 
 export const SubscriptionsList = ({
   subscriptions,
@@ -36,7 +49,16 @@ export const SubscriptionsList = ({
               )}
             >
               <ItemContent>
-                <ItemTitle>{subscription.name}</ItemTitle>
+                <ItemTitle>
+                  {subscription.name}
+                  <Badge className="capitalize">
+                    {formatDurationInterval(subscription.billingCadence)}
+                  </Badge>
+                </ItemTitle>
+
+                <ItemDescription>
+                  Started: {formatDate(subscription.activeFrom)}
+                </ItemDescription>
               </ItemContent>
             </Item>
           </Link>
