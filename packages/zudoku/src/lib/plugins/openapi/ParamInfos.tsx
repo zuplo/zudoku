@@ -28,11 +28,16 @@ const Pattern = ({ pattern }: { pattern: string }) => {
 const getSchemaInfos = (schema?: SchemaObject) => {
   if (!schema) return [];
 
+  const items =
+    schema.type === "array" && typeof schema.items === "object"
+      ? schema.items
+      : undefined;
+
   return [
-    schema.type === "array" && schema.items.type
-      ? Array.isArray(schema.items.type)
-        ? `(${schema.items.type.join(" | ")})[]`
-        : `${schema.items.type}[]`
+    items?.type
+      ? Array.isArray(items.type)
+        ? `(${items.type.join(" | ")})[]`
+        : `${items.type}[]`
       : Array.isArray(schema.type)
         ? schema.type.join(" | ")
         : schema.type,
@@ -40,7 +45,7 @@ const getSchemaInfos = (schema?: SchemaObject) => {
     schema.enum && "enum",
     schema.const && "const",
     schema.format,
-    schema.type === "array" && schema.items?.contentMediaType,
+    items?.contentMediaType,
     schema.minimum !== undefined && `min: ${schema.minimum}`,
     schema.maximum !== undefined && `max: ${schema.maximum}`,
     schema.minLength !== undefined && `minLength: ${schema.minLength}`,
