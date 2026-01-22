@@ -26,6 +26,12 @@ const SubscriptionsPage = ({
     return subscriptions[0];
   }, [subscriptions, subscriptionId]);
 
+  const activePhase = activeSubscription.phases.find(
+    (p) =>
+      new Date(p.activeFrom) <= new Date() &&
+      new Date(p.activeTo) >= new Date(),
+  );
+
   return (
     <div className="w-full py-12">
       <div className="max-w-4xl space-y-8">
@@ -48,6 +54,7 @@ const SubscriptionsPage = ({
           <Usage
             subscriptionId={activeSubscription?.id}
             environmentName={environmentName}
+            currentItems={activePhase?.items}
           />
         )}
 

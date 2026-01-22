@@ -2,7 +2,7 @@ import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import { ArrowLeftIcon, CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
-import { useNavigate, useSearchParams } from "zudoku/router";
+import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
@@ -172,7 +172,9 @@ const CheckoutConfirmPage = ({
                 ? "Processing Payment..."
                 : "Confirm & Subscribe"}
             </Button>
-            <Button variant="outline" className="w-full" asChild></Button>
+            <Button variant="ghost" className="w-full" asChild>
+              <Link to="/pricing">Cancel</Link>
+            </Button>
           </div>
 
           {/* Terms */}

@@ -1,6 +1,9 @@
+import { cn } from "zudoku";
 import { ClockIcon, Trash2Icon } from "zudoku/icons";
+import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Secret } from "zudoku/ui/Secret";
+import ConfirmDeleteKeyAlert from "./ConfirmDeleteKeyAlert";
 
 export const ApiKey = ({
   apiKey,
@@ -60,7 +63,9 @@ export const ApiKey = ({
   return (
     <Card
       className={
-        isExpiring && !isExpired ? "border-yellow-200 bg-yellow-50" : ""
+        isExpiring && !isExpired
+          ? "border-amber-200 bg-amber-50 dark:bg-amber-900/50 dark:border-amber-800"
+          : ""
       }
     >
       <CardContent className="p-6">
@@ -76,7 +81,7 @@ export const ApiKey = ({
                   Active
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                   Expiring
                 </span>
               )}
@@ -99,7 +104,7 @@ export const ApiKey = ({
                     isExpired
                       ? "text-red-700 font-medium"
                       : isExpiring
-                        ? "text-yellow-700 font-medium"
+                        ? "text-amber-700 font-medium"
                         : ""
                   }
                 >
@@ -110,17 +115,28 @@ export const ApiKey = ({
           </div>
 
           {/* API Key Display */}
-          <div className="flex items-center gap-2 rounded-md font-mono text-sm">
-            <Secret secret={apiKey} status={isActive ? "active" : "expiring"} />
+          <div className="flex items-center gap-2 rounded-md font-mono text-sm ">
+            <Secret
+              secret={apiKey}
+              status={isActive ? "active" : "expiring"}
+              className={cn(
+                (isExpired || isExpiring) &&
+                  "bg-amber-100 dark:bg-amber-900 border border-amber-200 dark:border-amber-800",
+              )}
+            />
+
             {!isActive && (
-              <button
-                onClick={onDelete}
-                className="text-red-500 hover:text-red-700 p-1"
-                type="button"
-                aria-label="Delete API key"
-              >
-                <Trash2Icon className="size-4" />
-              </button>
+              <ConfirmDeleteKeyAlert onDelete={onDelete}>
+                <Button
+                  className="text-red-500 hover:text-red-700 p-1"
+                  type="button"
+                  aria-label="Delete API key"
+                  variant="ghost"
+                  size="icon-sm"
+                >
+                  <Trash2Icon className="size-4" />
+                </Button>
+              </ConfirmDeleteKeyAlert>
             )}
           </div>
         </div>

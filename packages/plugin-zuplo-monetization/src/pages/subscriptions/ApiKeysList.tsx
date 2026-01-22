@@ -1,11 +1,12 @@
 import { useZudoku } from "zudoku/hooks";
 import { RefreshCwIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
+import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
-import { Button } from "zudoku/ui/Button";
 import { createMutationFn, queryClient } from "../../ZuploMonetizationWrapper";
 import { ApiKey } from "./ApiKey";
 import { ApiKeyInfo } from "./ApiKeyInfo";
+import ConfirmRollKeyAlert from "./ConfirmRollKeyAlert";
 
 type ApiKeyData = {
   id: string;
@@ -81,15 +82,16 @@ export const ApiKeysList = ({
       <ApiKeyInfo />
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">API Keys</h3>
-        <Button
-          onClick={() => rollKeyMutation.mutateAsync()}
-          disabled={rollKeyMutation.isPending}
-        >
-          <RefreshCwIcon
-            className={`size-4 ${rollKeyMutation.isPending ? "animate-spin" : ""}`}
-          />
-          {rollKeyMutation.isPending ? "Rolling..." : "Roll API Key"}
-        </Button>
+        <ConfirmRollKeyAlert onRollKey={() => rollKeyMutation.mutateAsync()}>
+          <ActionButton isPending={rollKeyMutation.isPending} variant="outline">
+            <div className="flex items-center gap-2">
+              <RefreshCwIcon
+                className={`size-4 ${rollKeyMutation.isPending ? "animate-spin" : ""}`}
+              />
+              Roll API Key
+            </div>
+          </ActionButton>
+        </ConfirmRollKeyAlert>
       </div>
       {deleteKeyMutation.error && (
         <Alert variant="destructive">

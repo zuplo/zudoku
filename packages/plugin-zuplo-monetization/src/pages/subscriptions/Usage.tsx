@@ -3,8 +3,7 @@ import { useZudoku } from "zudoku/hooks";
 import { useSuspenseQuery } from "zudoku/react-query";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
-
-import { usePlans } from "../../hooks/usePlans";
+import type { Item } from "../../hooks/useSubscriptions";
 
 export type UsageResult = {
   $schema: string;
@@ -31,16 +30,44 @@ const isMeteredEntitlement = (
   return "balance" in entitlement;
 };
 
+const UsageItem = ({
+  meter,
+  item,
+}: {
+  meter: MeteredEntitlement;
+  item: Item;
+}) => {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex flex-col gap-2">
+          <span className="text-base font-medium capitalize">{item.name}</span>
+          <span className="text-muted-foreground">
+            {meter.usage.toLocaleString()} used
+          </span>
+        </div>
+        <span className="text-muted-foreground">
+          {meter.balance.toLocaleString()} limit
+        </span>
+      </div>
+      <Progress value={(meter.usage / meter.balance) * 100} className="h-2" />
+      <p className="text-sm text-muted-foreground">
+        {(meter.balance - meter.usage).toLocaleString()} remaining this month
+      </p>
+    </div>
+  );
+};
+
 export const Usage = ({
   subscriptionId,
   environmentName,
+  currentItems,
 }: {
   subscriptionId: string;
   environmentName: string;
+  currentItems: Item[];
 }) => {
   const zudoku = useZudoku();
-  const { data: plans } = usePlans(environmentName);
-
   const { data: usage } = useSuspenseQuery<UsageResult>({
     queryKey: [
       `/v3/zudoku-metering/${environmentName}/subscriptions/${subscriptionId}/usage`,
@@ -49,6 +76,10 @@ export const Usage = ({
       context: zudoku,
     },
   });
+
+  const meteredEntitlements = currentItems.filter(
+    (item) => item.included.entitlement?.type === "metered",
+  );
 
   return (
     <div>
@@ -64,28 +95,12 @@ export const Usage = ({
             .map(([key, metric], index) => (
               <div key={key}>
                 {index > 0 && <div className="my-4 border-t" />}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex flex-col gap-2">
-                      <span className="text-base font-medium capitalize">
-                        {key}
-                      </span>
-                      <span className="text-muted-foreground">
-                        {metric.usage.toLocaleString()} used
-                      </span>
-                    </div>
-                    <span className="text-muted-foreground">
-                      {metric.balance.toLocaleString()} limit
-                    </span>
-                  </div>
-                  <Progress
-                    value={(metric.usage / metric.balance) * 100}
-                    className="h-2"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    {metric.balance - metric.usage} calls remaining this month
-                  </p>
-                </div>
+                <UsageItem
+                  meter={metric}
+                  item={meteredEntitlements.find(
+                    (item) => item.included.entitlement?.featureKey === key,
+                  )}
+                />
               </div>
             ))}
         </CardContent>
