@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import {
   memo,
   type PropsWithChildren,
+  Suspense,
   useContext,
   useEffect,
   useMemo,
@@ -81,8 +82,8 @@ const ZudokuInner = memo(
     return (
       <>
         <Helmet>{heads}</Helmet>
-        <StaggeredRenderContext.Provider value={staggeredValue}>
-          <ZudokuProvider context={zudokuContext}>
+        <ZudokuProvider context={zudokuContext}>
+          <Suspense fallback={<div>Zudoku Loading...</div>}>
             <RouterEventsEmitter />
             <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
               <MDXProvider components={mdxComponents}>
@@ -95,8 +96,8 @@ const ZudokuInner = memo(
                 </ThemeProvider>
               </MDXProvider>
             </SlotProvider>
-          </ZudokuProvider>
-        </StaggeredRenderContext.Provider>
+          </Suspense>
+        </ZudokuProvider>
       </>
     );
   },
