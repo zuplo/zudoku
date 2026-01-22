@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "dev": "tsdown --watch"
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm build"
   },
   "publishConfig": {
     "main": "./dist/index.mjs",
@@ -38,6 +39,6 @@
   "peerDependencies": {
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0",
-    "zudoku": ">=0.67.0"
+    "zudoku": "*"
   }
 }

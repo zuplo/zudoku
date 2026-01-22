@@ -1,4 +1,4 @@
-import type { ApiIdentity, ZudokuConfig, ZudokuPlugin } from "zudoku";
+import { type ApiIdentity, createPlugin, type ZudokuConfig } from "zudoku";
 import { StarsIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
@@ -32,10 +32,8 @@ export const enableMonetization = (
   };
 };
 
-export const zuploMonetizationPlugin = (
-  options: ZudokuMonetizationPluginOptions,
-): ZudokuPlugin => {
-  return {
+export const zuploMonetizationPlugin = createPlugin(
+  (options: ZudokuMonetizationPluginOptions) => ({
     getIdentities: async (context) => {
       const result = await queryClient.fetchQuery<SubscriptionsResponse>({
         queryKey: [
@@ -117,5 +115,6 @@ export const zuploMonetizationPlugin = (
     getProtectedRoutes: () => {
       return ["/checkout", "/checkout-success", "/checkout-failed"];
     },
-  };
-};
+  }),
+  import.meta.url,
+);
