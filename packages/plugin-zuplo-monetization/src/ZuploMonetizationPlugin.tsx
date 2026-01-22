@@ -7,7 +7,9 @@ import CheckoutFailedPage from "./pages/CheckoutFailedPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import PricingPage from "./pages/PricingPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
-import ZuploMonetizationWrapper, { client } from "./ZuploMonetizationWrapper";
+import ZuploMonetizationWrapper, {
+  queryClient,
+} from "./ZuploMonetizationWrapper";
 
 export type ZudokuMonetizationPluginOptions = {
   environmentName: string;
@@ -35,7 +37,7 @@ export const zuploMonetizationPlugin = (
 ): ZudokuPlugin => {
   return {
     getIdentities: async (context) => {
-      const result = await client.fetchQuery<SubscriptionsResponse>({
+      const result = await queryClient.fetchQuery<SubscriptionsResponse>({
         queryKey: [
           `/v3/zudoku-metering/${options.environmentName}/subscriptions`,
         ],

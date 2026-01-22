@@ -12,13 +12,14 @@ declare module "zudoku/react-query" {
 
 const BASE_URL = "https://api.zuploedge.com";
 
-export const createMutationFn = (
-  url: string,
+export const createMutationFn = <G = void>(
+  url: string | ((data: G) => string),
   context?: ZudokuContext,
   init?: RequestInit,
 ) => {
-  return async () => {
-    const request = new Request(`${BASE_URL}${url}`, {
+  return async (data?: G) => {
+    const urlString = typeof url === "function" ? url(data) : url;
+    const request = new Request(`${BASE_URL}${urlString}`, {
       method: "POST",
       ...init,
       headers: {
@@ -32,15 +33,27 @@ export const createMutationFn = (
     );
 
     if (!response.ok) {
+      if (
+        response.headers
+          .get("content-type")
+          ?.includes("application/problem+json")
+      ) {
+        const data = await response.json();
+        throw new Error(data.detail ?? data.title);
+      }
       const errorText = await response.text();
       throw new Error(`Request failed: ${response.status} ${errorText}`);
     }
 
-    return response.json();
+    if (response.headers.get("content-type")?.includes("application/json")) {
+      return response.json();
+    }
+
+    return response.text();
   };
 };
 
-export const client = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
@@ -85,7 +98,7 @@ export const client = new QueryClient({
 
 export const ZuploMonetizationWrapper = () => {
   return (
-    <QueryClientProvider client={client}>
+    <QueryClientProvider client={queryClient}>
       <Outlet />
     </QueryClientProvider>
   );

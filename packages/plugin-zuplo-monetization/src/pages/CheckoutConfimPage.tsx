@@ -1,5 +1,5 @@
 import { Button } from "zudoku/components";
-import { useAuth, useZudoku } from "zudoku/hooks";
+import { useZudoku } from "zudoku/hooks";
 import { ArrowLeftIcon, CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { useNavigate, useSearchParams } from "zudoku/router";
@@ -13,6 +13,7 @@ import { usePlans } from "../hooks/usePlans";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatDuration } from "../utils/formatDuration";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
+import { createMutationFn } from "../ZuploMonetizationWrapper";
 
 const formatBillingCycle = (duration: string): string => {
   // formatDuration returns: "month", "year", "2 months", "week", "2 weeks", etc.
@@ -34,7 +35,6 @@ const CheckoutConfirmPage = ({
   const [search] = useSearchParams();
   const planId = search.get("plan");
   const zudoku = useZudoku();
-  const auth = useAuth();
   const navigate = useNavigate();
 
   const { data: plans } = usePlans(environmentName);
@@ -48,36 +48,16 @@ const CheckoutConfirmPage = ({
     : null;
 
   const createSubscriptionMutation = useMutation({
-    mutationFn: async () => {
-      if (!auth.profile?.email) {
-        throw new Error(
-          "No email found for user. Make sure your Authentication Provider exposes the email address.",
-        );
-      }
-
-      const signedRequest = await zudoku.signRequest(
-        new Request(
-          `https://api.zuploedge.com/v3/zudoku-metering/${environmentName}/subscriptions`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              planId,
-            }),
-          },
-        ),
-      );
-
-      const response = await fetch(signedRequest);
-      const subscription = await response.json();
-      if (!response.ok) {
-        throw new Error(subscription.message);
-      }
-
-      return subscription.id;
-    },
+    mutationFn: createMutationFn(
+      `/v3/zudoku-metering/${environmentName}/subscriptions`,
+      zudoku,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          planId,
+        }),
+      },
+    ),
     onSuccess: (subscriptionId) => {
       navigate(`/subscriptions/${subscriptionId}`);
     },
@@ -92,10 +72,10 @@ const CheckoutConfirmPage = ({
       <div className="max-w-2xl w-full">
         <div className="flex gap-2 text-muted-foreground text-sm items-center pt-4 pb-4">
           <ArrowLeftIcon className="size-4" />
-          Your payment is secured by Stripe
+          Back to Payment Details
         </div>{" "}
         {createSubscriptionMutation.isError && (
-          <Alert className="mb-4">
+          <Alert className="mb-4" variant="destructive">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>
               {createSubscriptionMutation.error.message}
