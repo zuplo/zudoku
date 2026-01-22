@@ -6,7 +6,6 @@ import {
   memo,
   type PropsWithChildren,
   Suspense,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -19,7 +18,6 @@ import {
   type ZudokuContextOptions,
 } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
-import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import "../util/requestIdleCallbackPolyfill.js";
 import {
@@ -57,12 +55,7 @@ const ZudokuInner = memo(
         ...props.mdx?.components,
       };
     }, [props.mdx?.components, props.plugins]);
-    const { stagger } = useContext(StaggeredRenderContext);
     const [didNavigate, setDidNavigate] = useState(false);
-    const staggeredValue = useMemo(
-      () => (didNavigate ? { stagger: true } : { stagger }),
-      [stagger, didNavigate],
-    );
     const navigation = useNavigation();
     const queryClient = useQueryClient();
 
