@@ -92,7 +92,12 @@ type NavigationLink = {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
   target?: "_self" | "_blank";
 };
 ```
@@ -131,7 +136,12 @@ type NavigationCategory = {
   collapsible?: boolean;
   collapsed?: boolean;
   link?: string | { type: "doc"; file: string; label?: string };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -164,7 +174,12 @@ type NavigationDoc = {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -237,7 +252,12 @@ type NavigationCustomPage = {
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
     invert?: boolean;
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -251,6 +271,8 @@ All navigation items support a `display` property that controls when the item sh
 - `"auth"`: Only visible when user is authenticated
 - `"anon"`: Only visible when user is not authenticated
 - `"hide"`: Never visible (useful for temporarily hiding items)
+- **callback function**: For custom logic, pass a function that receives `{ context, auth }` and
+  returns a boolean
 
 ```json
 {
@@ -260,6 +282,27 @@ All navigation items support a `display` property that controls when the item sh
   "display": "auth"
 }
 ```
+
+### Custom Display Logic
+
+For more complex visibility rules, use a callback function:
+
+```tsx
+{
+  type: "link",
+  label: "Premium Features",
+  to: "/premium",
+  display: ({ auth }) => {
+    // Show only for users with premium role
+    return auth.user?.role === "premium";
+  }
+}
+```
+
+The callback receives:
+
+- `context`: The `ZudokuContext` instance
+- `auth`: The authentication state from `UseAuthReturn`, including `user`, `isAuthenticated`, etc.
 
 ## Badges
 

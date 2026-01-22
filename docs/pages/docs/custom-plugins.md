@@ -18,6 +18,7 @@ interfaces:
 - **ApiIdentityPlugin**: Provide API identities for testing
 - **SearchProviderPlugin**: Implement custom search functionality
 - **EventConsumerPlugin**: Handle custom events
+- **TransformConfigPlugin**: Modify configuration at build-time
 
 You can find all available plugin interfaces in the
 [Zudoku source code](https://github.com/zuplo/zudoku/blob/main/packages/zudoku/src/lib/core/plugins.ts).
@@ -242,3 +243,35 @@ const eventConsumerPlugin: ZudokuPlugin = {
   },
 };
 ```
+
+### Transform Config Plugin
+
+The `transformConfig` hook allows plugins to modify the Zudoku configuration at build-time. This is
+useful for dynamically adding navigation items, modifying theme settings, or adjusting any other
+configuration based on external data or conditions.
+
+```tsx
+import { ZudokuPlugin } from "zudoku";
+
+const transformConfigPlugin: ZudokuPlugin = {
+  transformConfig: () => ({
+    navigation: [
+      ...(config.navigation ?? []),
+      {
+        type: "link",
+        label: "System Status",
+        to: "https://status.example.com",
+        icon: "activity",
+      },
+    ],
+  }),
+};
+```
+
+The `transformConfig` function receives:
+
+- **config**: The current Zudoku configuration object
+- **context**: A `ConfigHookContext` with `mode`, `rootDir`, and `configPath`
+
+The function can return a partial configuration object that will be merged with the existing config,
+or `void` to make no changes. The hook can also be async.
