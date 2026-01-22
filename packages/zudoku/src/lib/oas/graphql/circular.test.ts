@@ -156,16 +156,20 @@ describe("handleCircularRefs", () => {
     });
   });
 
-  it("should deduplicate shared object instances with __$ref", () => {
+  it("should handle shared object instances with __$ref without marking circular", () => {
     const shared = { __$ref: "#/components/schemas/Foo", type: "string" };
     const obj = { a: shared, b: shared };
     const result = handleCircularRefs(obj);
 
+    // Both should return the cached result, not mark as circular
     expect(result.a).toEqual({
       __$ref: "#/components/schemas/Foo",
       type: "string",
     });
-    expect(result.b).toBe(`${SCHEMA_REF_PREFIX}#/components/schemas/Foo`);
+    expect(result.b).toEqual({
+      __$ref: "#/components/schemas/Foo",
+      type: "string",
+    });
   });
 
   it("should mark circular ref with property name from path", () => {
@@ -182,5 +186,36 @@ describe("handleCircularRefs", () => {
     const result = handleCircularRefs(parent);
 
     expect(result.properties.child.properties.back).toContain(CIRCULAR_REF);
+  });
+
+  // Exact reproduction of #1869 - shared object instances with __$ref
+  it("should NOT mark shared object instances with __$ref as circular (issue #1869)", () => {
+    // When dereferencing, the SAME object instance is returned for all refs to the same schema
+    const timestampSchema = {
+      __$ref: "#/components/schemas/timestamp",
+      type: "string",
+      format: "date-time",
+    };
+
+    // Both created_at and updated_at point to the SAME object instance
+    const obj = {
+      type: "object",
+      properties: {
+        created_at: timestampSchema,
+        updated_at: timestampSchema,
+      },
+    };
+
+    const result = handleCircularRefs(obj);
+
+    // The first one should be fully expanded
+    expect(result.properties.created_at).toEqual({
+      __$ref: "#/components/schemas/timestamp",
+      type: "string",
+      format: "date-time",
+    });
+    // The second one should ALSO be fully expanded (not marked as circular)
+    expect(typeof result.properties.updated_at).toBe("object");
+    expect(result.properties.updated_at).not.toContain(CIRCULAR_REF);
   });
 });
