@@ -44,9 +44,7 @@ export const SubscriptionsList = ({
               size="sm"
               key={subscription.id}
               variant="outline"
-              className={cn(
-                isActive && "border-primary bg-primary/5 shadow-md",
-              )}
+              className={cn(isActive && "border-primary bg-primary/5")}
             >
               <ItemContent>
                 <ItemTitle>
