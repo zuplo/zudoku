@@ -4,7 +4,7 @@ import colors from "picocolors";
 import type { RollupOutput, RollupWatcher } from "rollup";
 import { type ConfigEnv, runnerImport, loadEnv as viteLoadEnv } from "vite";
 import { logger } from "../cli/common/logger.js";
-import { runTransformConfigHooks } from "../lib/core/hooks.js";
+import { runTransformConfigHooks } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { getModuleDir } from "../vite/config.js";
 import { fileExists } from "./file-exists.js";
