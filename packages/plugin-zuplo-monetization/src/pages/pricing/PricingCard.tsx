@@ -10,9 +10,11 @@ import { getPriceFromPlan } from "../../utils/getPriceFromPlan";
 export const PricingCard = ({
   plan,
   isPopular = false,
+  disabled = false,
 }: {
   plan: Plan;
   isPopular?: boolean;
+  disabled?: boolean;
 }) => {
   const defaultPhase = plan.phases.at(-1);
   if (!defaultPhase) return null;
@@ -74,7 +76,7 @@ export const PricingCard = ({
         )}
       </div>
 
-      <div className="space-y-4 mb-6 flex-grow">
+      <div className="space-y-4 mb-6  grow">
         {quotas.length > 0 && (
           <div className="space-y-2">
             {quotas.map((quota) => (
@@ -92,8 +94,12 @@ export const PricingCard = ({
         )}
       </div>
 
-      <Button variant={isPopular ? "default" : "secondary"} asChild>
-        <Link to={`/checkout?plan=${plan.id}`}>Subscribe</Link>
+      <Button
+        variant={isPopular ? "default" : "secondary"}
+        asChild
+        disabled={disabled}
+      >
+        <Link to={`/checkout/${plan.id}`}>Subscribe</Link>
       </Button>
     </div>
   );

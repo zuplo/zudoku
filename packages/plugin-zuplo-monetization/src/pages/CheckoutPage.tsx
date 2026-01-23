@@ -1,14 +1,13 @@
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
-import { useSearchParams } from "zudoku/router";
+import { useParams } from "zudoku/router";
 
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
 const CheckoutPage = ({ environmentName }: { environmentName: string }) => {
-  const [search] = useSearchParams();
+  const { planId } = useParams();
   const zudoku = useZudoku();
-  const planId = search.get("plan");
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();
 

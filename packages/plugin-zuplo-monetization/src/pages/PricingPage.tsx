@@ -1,18 +1,33 @@
 import { cn } from "zudoku";
 import { Heading } from "zudoku/components";
-import { useSuspenseQuery } from "zudoku/react-query";
+import { useAuth, useZudoku } from "zudoku/hooks";
+import { useQuery, useSuspenseQuery } from "zudoku/react-query";
+import type { SubscriptionsResponse } from "../hooks/useSubscriptions";
 import type { Plan } from "../types/PlanType";
 import { PricingCard } from "./pricing/PricingCard";
 
-const PricingPage = ({ environmentName }: { environmentName: string }) => {
-  const { data: pricingTableData } = useSuspenseQuery<{ items: Plan[] }>({
+const PricingPage = ({
+  environmentName,
+  subtext = "See our pricing options and choose the one that best suits your needs.",
+  title = "Pricing",
+}: {
+  environmentName: string;
+  subtext?: string;
+  title?: string;
+}) => {
+  const { data: pricingTable } = useSuspenseQuery<{ items: Plan[] }>({
     queryKey: [`/v3/zudoku-metering/${environmentName}/pricing-page`],
   });
-
-  const planOrder = ["developer", "startup", "pro", "business", "enterprise"];
-  const sortedPlans = [...pricingTableData.items].sort((a, b) => {
-    return planOrder.indexOf(a.key) - planOrder.indexOf(b.key);
-  });
+  const zudoku = useZudoku();
+  const auth = useAuth();
+  const { data: subscriptions = { items: [] } } =
+    useQuery<SubscriptionsResponse>({
+      meta: {
+        context: zudoku,
+      },
+      queryKey: [`/v3/zudoku-metering/${environmentName}/subscriptions`],
+      enabled: auth.isAuthenticated,
+    });
 
   const getGridCols = (count: number) => {
     if (count === 1) return "lg:grid-cols-1";
@@ -25,24 +40,25 @@ const PricingPage = ({ environmentName }: { environmentName: string }) => {
   return (
     <div className="w-full px-4 py-12">
       <div className="text-center mb-12">
-        <Heading level={1}>Pricing</Heading>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
-          Global live music data, flexible plans for every scale
-        </p>
+        <Heading level={1}>{title}</Heading>
+        <p className="text-lg text-gray-600 dark:text-gray-400">{subtext}</p>
       </div>
 
       <div className="flex justify-center">
         <div
           className={cn(
             "w-full md:w-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:max-w-fit",
-            getGridCols(sortedPlans.length),
+            getGridCols(pricingTable?.items?.length ?? 0),
           )}
         >
-          {sortedPlans.map((plan) => (
+          {pricingTable?.items?.map((plan) => (
             <PricingCard
               key={plan.id}
               plan={plan}
               isPopular={plan.key === "pro"}
+              disabled={subscriptions.items.some(
+                (subscription) => subscription.plan.id === plan.id,
+              )}
             />
           ))}
         </div>

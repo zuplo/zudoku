@@ -13,6 +13,10 @@ import ZuploMonetizationWrapper, {
 
 export type ZudokuMonetizationPluginOptions = {
   environmentName: string;
+  pricing: {
+    subtitle: string;
+    title: string;
+  };
 };
 
 const PRICING_PATH = "/pricing";
@@ -80,10 +84,9 @@ export const zuploMonetizationPlugin = createPlugin(
         },
         children: [
           {
-            path: "/checkout",
+            path: "/checkout/:planId?",
             element: <CheckoutPage environmentName={options.environmentName} />,
           },
-
           {
             path: "/checkout-confirm",
             element: (
@@ -97,7 +100,13 @@ export const zuploMonetizationPlugin = createPlugin(
         children: [
           {
             path: "/pricing",
-            element: <PricingPage environmentName={options.environmentName} />,
+            element: (
+              <PricingPage
+                environmentName={options.environmentName}
+                subtext={options.pricing.subtitle}
+                title={options.pricing.title}
+              />
+            ),
           },
           {
             path: "/checkout-failed",

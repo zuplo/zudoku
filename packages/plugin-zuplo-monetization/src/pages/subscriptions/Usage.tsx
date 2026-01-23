@@ -124,29 +124,24 @@ export const Usage = ({
     },
   });
 
-  const meteredEntitlements =
-    currentItems?.filter(
-      (item) => item.included.entitlement?.type === "metered",
-    ) ?? [];
-
   return (
     <div>
       <Heading level={3} className="mb-4">
         Usage
       </Heading>
-      {Object.entries(usage.entitlements)
-        .filter((entry): entry is [string, MeteredEntitlement] =>
-          isMeteredEntitlement(entry[1]),
-        )
-        .map(([key, metric]) => (
-          <UsageItem
-            key={key}
-            meter={{ ...metric }}
-            item={meteredEntitlements.find(
-              (item) => item.included.entitlement?.featureKey === key,
-            )}
-          />
-        ))}
+      <div className="space-y-4">
+        {Object.entries(usage.entitlements)
+          .filter((entry): entry is [string, MeteredEntitlement] =>
+            isMeteredEntitlement(entry[1]),
+          )
+          .map(([key, metric]) => (
+            <UsageItem
+              key={key}
+              meter={{ ...metric }}
+              item={currentItems?.find((item) => item.featureKey === key)}
+            />
+          ))}
+      </div>
     </div>
   );
 };

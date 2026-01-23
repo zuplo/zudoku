@@ -26,10 +26,10 @@ const SubscriptionsPage = ({
     return subscriptions[0];
   }, [subscriptions, subscriptionId]);
 
-  const activePhase = activeSubscription.phases.find(
+  const activePhase = activeSubscription?.phases.find(
     (p) =>
       new Date(p.activeFrom) <= new Date() &&
-      new Date(p.activeTo) >= new Date(),
+      (!p.activeTo || new Date(p.activeTo) >= new Date()),
   );
 
   return (
