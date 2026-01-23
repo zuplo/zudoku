@@ -23,8 +23,9 @@ const PRICING_PATH = "/pricing";
 
 export const zuploMonetizationPlugin = createPlugin(
   (options?: ZudokuMonetizationPluginOptions) => ({
-    transformConfig: () => {
+    transformConfig: (config) => {
       return {
+        ...config,
         slots: {
           "head-navigation-start": () => {
             return <Link to={PRICING_PATH}>Pricing</Link>;
@@ -59,11 +60,8 @@ export const zuploMonetizationPlugin = createPlugin(
               label: item.name,
               id: apiKey.id,
               authorizeRequest: async (request) => {
-                return new Request(request, {
-                  headers: {
-                    Authorization: `Bearer ${apiKey.key}`,
-                  },
-                });
+                request.headers.set("Authorization", `Bearer ${apiKey.key}`);
+                return request;
               },
               authorizationFields: {
                 headers: ["Authorization"],
