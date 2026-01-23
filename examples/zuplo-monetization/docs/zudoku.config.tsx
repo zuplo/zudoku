@@ -1,4 +1,4 @@
-import { enableMonetization } from "@zuplo/zudoku-plugin-monetization";
+import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
@@ -80,11 +80,7 @@ const config: ZudokuConfig = {
     clientId: "f8I87rdsCRo4nU2FHf0fHVwA9P7xi7Ml",
     audience: "https://api.example.com/",
   },
-  apiKeys: {
-    enabled: true,
-  },
+  plugins: [zuploMonetizationPlugin()],
 };
 
-export default enableMonetization(config, {
-  environmentName: "zudoku-monetization-main-b2d8e04",
-});
+export default config;

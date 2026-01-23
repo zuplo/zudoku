@@ -1,18 +1,16 @@
 import { useMemo } from "react";
+import { useZudoku } from "zudoku/hooks";
 import { useParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
-
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { ApiKeysList } from "./subscriptions/ApiKeysList";
 import { SubscriptionsList } from "./subscriptions/SubscriptionsList";
 import { Usage } from "./subscriptions/Usage";
 
-const SubscriptionsPage = ({
-  environmentName,
-}: {
-  environmentName: string;
-}) => {
-  const { data } = useSubscriptions(environmentName);
+const SubscriptionsPage = () => {
+  const zudoku = useZudoku();
+  const deploymentName = zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME ?? "";
+  const { data } = useSubscriptions(deploymentName);
   const { subscriptionId } = useParams();
   const subscriptions = data?.items ?? [];
 
@@ -53,14 +51,14 @@ const SubscriptionsPage = ({
         {activeSubscription && (
           <Usage
             subscriptionId={activeSubscription?.id}
-            environmentName={environmentName}
+            environmentName={deploymentName}
             currentItems={activePhase?.items}
           />
         )}
 
         {activeSubscription?.consumer?.apiKeys && (
           <ApiKeysList
-            deploymentName={environmentName}
+            deploymentName={deploymentName}
             consumerId={activeSubscription.consumer.id}
             apiKeys={activeSubscription.consumer.apiKeys}
           />

@@ -37,13 +37,16 @@ const getCallerDir = () => {
   return filePath.substring(0, lastSlash);
 };
 
-export const createPlugin = <TOptions, TPlugin extends ZudokuPlugin>(
-  factory: (options: TOptions) => TPlugin,
-): ((options: TOptions) => TPlugin & TransformConfigPlugin) => {
+export const createPlugin = <
+  TOptions extends unknown[],
+  TPlugin extends ZudokuPlugin,
+>(
+  factory: (...options: TOptions) => TPlugin,
+): ((...options: TOptions) => TPlugin & TransformConfigPlugin) => {
   const pluginDir = getCallerDir();
 
-  return (options: TOptions) => {
-    const plugin = factory(options);
+  return (...options: TOptions) => {
+    const plugin = factory(...options);
 
     if (!pluginDir) {
       return plugin as TPlugin & TransformConfigPlugin;

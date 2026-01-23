@@ -32,7 +32,13 @@ import { ZudokuProvider } from "./context/ZudokuProvider.js";
 let zudokuContext: ZudokuContext | undefined;
 
 const ZudokuInner = memo(
-  ({ children, ...props }: PropsWithChildren<ZudokuContextOptions>) => {
+  ({
+    children,
+    env,
+    ...props
+  }: PropsWithChildren<
+    ZudokuContextOptions & { env: Record<string, string> }
+  >) => {
     const components = useMemo(
       () => ({ ...DEFAULT_COMPONENTS, ...props.overrides }),
       [props.overrides],
@@ -66,7 +72,7 @@ const ZudokuInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    zudokuContext ??= new ZudokuContext(props, queryClient);
+    zudokuContext ??= new ZudokuContext(props, queryClient, env);
 
     const heads = props.plugins?.flatMap((plugin) =>
       hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
@@ -98,7 +104,11 @@ const ZudokuInner = memo(
 
 ZudokuInner.displayName = "ZudokuInner";
 
-const Zudoku = (props: ZudokuContextOptions) => {
+const Zudoku = (
+  props: PropsWithChildren<
+    ZudokuContextOptions & { env: Record<string, string> }
+  >,
+) => {
   return (
     <ErrorBoundary FallbackComponent={TopLevelError}>
       <ZudokuInner {...props} />

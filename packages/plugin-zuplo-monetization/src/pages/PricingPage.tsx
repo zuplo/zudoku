@@ -7,25 +7,28 @@ import type { Plan } from "../types/PlanType";
 import { PricingCard } from "./pricing/PricingCard";
 
 const PricingPage = ({
-  environmentName,
   subtitle = "See our pricing options and choose the one that best suits your needs.",
   title = "Pricing",
 }: {
-  environmentName: string;
   subtitle?: string;
   title?: string;
 }) => {
-  const { data: pricingTable } = useSuspenseQuery<{ items: Plan[] }>({
-    queryKey: [`/v3/zudoku-metering/${environmentName}/pricing-page`],
-  });
   const zudoku = useZudoku();
+
+  const { data: pricingTable } = useSuspenseQuery<{ items: Plan[] }>({
+    queryKey: [
+      `/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/pricing-page`,
+    ],
+  });
   const auth = useAuth();
   const { data: subscriptions = { items: [] } } =
     useQuery<SubscriptionsResponse>({
       meta: {
         context: zudoku,
       },
-      queryKey: [`/v3/zudoku-metering/${environmentName}/subscriptions`],
+      queryKey: [
+        `/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/subscriptions`,
+      ],
       enabled: auth.isAuthenticated,
     });
 

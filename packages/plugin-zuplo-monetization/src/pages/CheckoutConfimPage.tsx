@@ -27,17 +27,13 @@ const formatBillingCycle = (duration: string): string => {
   return `every ${duration}`;
 };
 
-const CheckoutConfirmPage = ({
-  environmentName,
-}: {
-  environmentName: string;
-}) => {
+const CheckoutConfirmPage = () => {
   const [search] = useSearchParams();
   const planId = search.get("plan");
   const zudoku = useZudoku();
   const navigate = useNavigate();
-
-  const { data: plans } = usePlans(environmentName);
+  const deploymentName = zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME ?? "";
+  const { data: plans } = usePlans(deploymentName);
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
@@ -49,7 +45,7 @@ const CheckoutConfirmPage = ({
 
   const createSubscriptionMutation = useMutation({
     mutationFn: createMutationFn(
-      `/v3/zudoku-metering/${environmentName}/subscriptions`,
+      `/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/subscriptions`,
       zudoku,
       {
         method: "POST",

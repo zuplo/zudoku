@@ -12,7 +12,7 @@ import ZuploMonetizationWrapper, {
 } from "./ZuploMonetizationWrapper";
 
 export type ZudokuMonetizationPluginOptions = {
-  environmentName: string;
+  environmentName?: string;
   pricing?: {
     subtitle?: string;
     title?: string;
@@ -22,8 +22,8 @@ export type ZudokuMonetizationPluginOptions = {
 const PRICING_PATH = "/pricing";
 
 export const zuploMonetizationPlugin = createPlugin(
-  (options: ZudokuMonetizationPluginOptions) => ({
-    transformConfig: (config) => {
+  (options?: ZudokuMonetizationPluginOptions) => ({
+    transformConfig: () => {
       return {
         slots: {
           "head-navigation-start": () => {
@@ -32,10 +32,20 @@ export const zuploMonetizationPlugin = createPlugin(
         },
       };
     },
+
+    initialize: (context) => {
+      if (
+        !context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME ||
+        options?.environmentName
+      ) {
+        throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
+      }
+    },
+
     getIdentities: async (context) => {
       const result = await queryClient.fetchQuery<SubscriptionsResponse>({
         queryKey: [
-          `/v3/zudoku-metering/${options.environmentName}/subscriptions`,
+          `/v3/zudoku-metering/${context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/subscriptions`,
         ],
         meta: {
           context,
@@ -70,51 +80,48 @@ export const zuploMonetizationPlugin = createPlugin(
         icon: StarsIcon,
       },
     ],
-    getRoutes: () => [
-      {
-        Component: ZuploMonetizationWrapper,
-        handle: {
-          layout: "none",
+    getRoutes: () => {
+      return [
+        {
+          Component: ZuploMonetizationWrapper,
+          handle: {
+            layout: "none",
+          },
+          children: [
+            {
+              path: "/checkout/:planId?",
+              element: <CheckoutPage />,
+            },
+            {
+              path: "/checkout-confirm",
+              element: <CheckoutConfirmPage />,
+            },
+          ],
         },
-        children: [
-          {
-            path: "/checkout/:planId?",
-            element: <CheckoutPage environmentName={options.environmentName} />,
-          },
-          {
-            path: "/checkout-confirm",
-            element: (
-              <CheckoutConfirmPage environmentName={options.environmentName} />
-            ),
-          },
-        ],
-      },
-      {
-        Component: ZuploMonetizationWrapper,
-        children: [
-          {
-            path: "/pricing",
-            element: (
-              <PricingPage
-                environmentName={options.environmentName}
-                subtitle={options.pricing?.subtitle}
-                title={options.pricing?.title}
-              />
-            ),
-          },
-          {
-            path: "/checkout-failed",
-            element: <CheckoutFailedPage />,
-          },
-          {
-            path: "/subscriptions/:subscriptionId?",
-            element: (
-              <SubscriptionsPage environmentName={options.environmentName} />
-            ),
-          },
-        ],
-      },
-    ],
+        {
+          Component: ZuploMonetizationWrapper,
+          children: [
+            {
+              path: "/pricing",
+              element: (
+                <PricingPage
+                  subtitle={options?.pricing?.subtitle}
+                  title={options?.pricing?.title}
+                />
+              ),
+            },
+            {
+              path: "/checkout-failed",
+              element: <CheckoutFailedPage />,
+            },
+            {
+              path: "/subscriptions/:subscriptionId?",
+              element: <SubscriptionsPage />,
+            },
+          ],
+        },
+      ];
+    },
     getProtectedRoutes: () => {
       return ["/checkout/*", "/checkout-success", "/checkout-failed"];
     },

@@ -5,7 +5,7 @@ import { useParams } from "zudoku/router";
 
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
-const CheckoutPage = ({ environmentName }: { environmentName: string }) => {
+const CheckoutPage = () => {
   const { planId } = useParams();
   const zudoku = useZudoku();
   const auth = useAuth();
@@ -22,7 +22,7 @@ const CheckoutPage = ({ environmentName }: { environmentName: string }) => {
 
       const request = await zudoku.signRequest(
         new Request(
-          `https://api.zuploedge.com/v3/zudoku-metering/${environmentName}/stripe/checkout`,
+          `https://api.zuploedge.com/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/stripe/checkout`,
           {
             method: "POST",
             headers: {
