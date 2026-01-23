@@ -1,4 +1,1 @@
-export {
-  enableMonetization,
-  zuploMonetizationPlugin,
-} from "./ZuploMonetizationPlugin";
+export { zuploMonetizationPlugin } from "./ZuploMonetizationPlugin";

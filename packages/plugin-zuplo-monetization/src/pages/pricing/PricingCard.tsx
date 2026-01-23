@@ -94,13 +94,15 @@ export const PricingCard = ({
         )}
       </div>
 
-      <Button
-        variant={isPopular ? "default" : "secondary"}
-        asChild
-        disabled={disabled}
-      >
-        <Link to={`/checkout/${plan.id}`}>Subscribe</Link>
-      </Button>
+      {disabled ? (
+        <Button disabled variant={isPopular ? "default" : "secondary"}>
+          Already subscribed
+        </Button>
+      ) : (
+        <Button variant={isPopular ? "default" : "secondary"} asChild>
+          <Link to={`/checkout/${plan.id}`}>Subscribe</Link>
+        </Button>
+      )}
     </div>
   );
 };

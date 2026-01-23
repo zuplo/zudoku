@@ -1,4 +1,4 @@
-import { type ApiIdentity, createPlugin, type ZudokuConfig } from "zudoku";
+import { type ApiIdentity, createPlugin } from "zudoku";
 import { StarsIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
@@ -13,31 +13,25 @@ import ZuploMonetizationWrapper, {
 
 export type ZudokuMonetizationPluginOptions = {
   environmentName: string;
-  pricing: {
-    subtitle: string;
-    title: string;
+  pricing?: {
+    subtitle?: string;
+    title?: string;
   };
 };
 
 const PRICING_PATH = "/pricing";
 
-export const enableMonetization = (
-  config: ZudokuConfig,
-  options: ZudokuMonetizationPluginOptions,
-): ZudokuConfig => {
-  return {
-    ...config,
-    plugins: [...(config.plugins ?? []), zuploMonetizationPlugin(options)],
-    slots: {
-      "head-navigation-start": () => {
-        return <Link to={PRICING_PATH}>Pricing</Link>;
-      },
-    },
-  };
-};
-
 export const zuploMonetizationPlugin = createPlugin(
   (options: ZudokuMonetizationPluginOptions) => ({
+    transformConfig: (config) => {
+      return {
+        slots: {
+          "head-navigation-start": () => {
+            return <Link to={PRICING_PATH}>Pricing</Link>;
+          },
+        },
+      };
+    },
     getIdentities: async (context) => {
       const result = await queryClient.fetchQuery<SubscriptionsResponse>({
         queryKey: [
@@ -103,8 +97,8 @@ export const zuploMonetizationPlugin = createPlugin(
             element: (
               <PricingPage
                 environmentName={options.environmentName}
-                subtext={options.pricing.subtitle}
-                title={options.pricing.title}
+                subtitle={options.pricing?.subtitle}
+                title={options.pricing?.title}
               />
             ),
           },
@@ -122,7 +116,7 @@ export const zuploMonetizationPlugin = createPlugin(
       },
     ],
     getProtectedRoutes: () => {
-      return ["/checkout", "/checkout-success", "/checkout-failed"];
+      return ["/checkout/*", "/checkout-success", "/checkout-failed"];
     },
   }),
 );

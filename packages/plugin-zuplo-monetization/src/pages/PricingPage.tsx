@@ -8,11 +8,11 @@ import { PricingCard } from "./pricing/PricingCard";
 
 const PricingPage = ({
   environmentName,
-  subtext = "See our pricing options and choose the one that best suits your needs.",
+  subtitle = "See our pricing options and choose the one that best suits your needs.",
   title = "Pricing",
 }: {
   environmentName: string;
-  subtext?: string;
+  subtitle?: string;
   title?: string;
 }) => {
   const { data: pricingTable } = useSuspenseQuery<{ items: Plan[] }>({
@@ -41,7 +41,7 @@ const PricingPage = ({
     <div className="w-full px-4 py-12">
       <div className="text-center mb-12">
         <Heading level={1}>{title}</Heading>
-        <p className="text-lg text-gray-600 dark:text-gray-400">{subtext}</p>
+        <p className="text-lg text-gray-600 dark:text-gray-400">{subtitle}</p>
       </div>
 
       <div className="flex justify-center">

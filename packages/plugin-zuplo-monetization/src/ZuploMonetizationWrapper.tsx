@@ -18,7 +18,7 @@ export const createMutationFn = <G = void>(
   context?: ZudokuContext,
   init?: RequestInit,
 ) => {
-  return async (data?: G) => {
+  return async (data: G) => {
     const urlString = typeof url === "function" ? url(data) : url;
     const request = new Request(`${BASE_URL}${urlString}`, {
       method: "POST",
