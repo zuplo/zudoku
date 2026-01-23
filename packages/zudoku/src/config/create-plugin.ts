@@ -5,14 +5,47 @@ import {
 } from "../lib/core/plugins.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 
+// Regex from stacktrace-parser for Node.js stack traces
+// https://github.com/errwischt/stacktrace-parser
+const NODE_STACK_REGEX =
+  /^\s*at (?:(?:\[object object\])?[^\\/]+(?: \[as \S+\])? )?\(?(.*?):(\d+)(?::(\d+))?\)?\s*$/i;
+
+const getCallerDir = () => {
+  const stack = new Error().stack;
+  if (!stack) return undefined;
+
+  // Stack frames: Error, getCallerDir, createPlugin, <caller>
+  const lines = stack.split("\n");
+  const callerLine = lines[3];
+  if (!callerLine) return undefined;
+
+  const match = callerLine.match(NODE_STACK_REGEX);
+  let filePath = match?.[1];
+  if (!filePath) return undefined;
+
+  if (filePath.startsWith("file://")) {
+    filePath = filePath.slice(7);
+  }
+
+  // Handle both forward and backslashes for cross-platform support
+  const lastSlash = Math.max(
+    filePath.lastIndexOf("/"),
+    filePath.lastIndexOf("\\"),
+  );
+  if (lastSlash === -1) return undefined;
+
+  return filePath.substring(0, lastSlash);
+};
+
 export const createPlugin = <TOptions, TPlugin extends ZudokuPlugin>(
   factory: (options: TOptions) => TPlugin,
-  importMetaUrl?: string,
 ): ((options: TOptions) => TPlugin & TransformConfigPlugin) => {
+  const pluginDir = getCallerDir();
+
   return (options: TOptions) => {
     const plugin = factory(options);
 
-    if (!importMetaUrl) {
+    if (!pluginDir) {
       return plugin as TPlugin & TransformConfigPlugin;
     }
 
@@ -23,9 +56,6 @@ export const createPlugin = <TOptions, TPlugin extends ZudokuPlugin>(
     return {
       ...plugin,
       transformConfig: async (config, ctx) => {
-        const { dirname } = await import("node:path");
-        const { fileURLToPath } = await import("node:url");
-        const pluginDir = dirname(fileURLToPath(importMetaUrl));
         const result = (await originalTransformConfig?.(config, ctx)) ?? {};
 
         return {

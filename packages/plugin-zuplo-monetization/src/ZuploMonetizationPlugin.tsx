@@ -116,5 +116,4 @@ export const zuploMonetizationPlugin = createPlugin(
       return ["/checkout", "/checkout-success", "/checkout-failed"];
     },
   }),
-  import.meta.url,
 );
