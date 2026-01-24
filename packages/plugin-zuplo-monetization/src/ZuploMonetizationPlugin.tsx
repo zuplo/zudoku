@@ -23,7 +23,7 @@ const PRICING_PATH = "/pricing";
 
 export const zuploMonetizationPlugin = createPlugin(
   (options?: ZudokuMonetizationPluginOptions) => ({
-    transformConfig: (config) => {
+    transformConfig: () => {
       return {
         ...config,
         slots: {

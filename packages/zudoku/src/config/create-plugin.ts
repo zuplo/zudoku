@@ -58,8 +58,8 @@ export const createPlugin = <
 
     return {
       ...plugin,
-      transformConfig: async (config, ctx) => {
-        const result = (await originalTransformConfig?.(config, ctx)) ?? {};
+      transformConfig: async (config) => {
+        const result = (await originalTransformConfig?.(config)) ?? {};
 
         return {
           ...result,

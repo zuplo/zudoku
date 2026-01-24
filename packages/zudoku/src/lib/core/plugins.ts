@@ -71,7 +71,6 @@ export interface ConfigHookContext {
 export interface TransformConfigPlugin {
   transformConfig?: (
     config: ZudokuConfig,
-    ctx: ConfigHookContext,
   ) => Partial<ZudokuConfig> | void | Promise<Partial<ZudokuConfig> | void>;
 }
 
