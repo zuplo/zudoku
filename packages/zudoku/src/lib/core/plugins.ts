@@ -68,10 +68,15 @@ export interface ConfigHookContext {
   configPath: string;
 }
 
+export interface TransformConfigContext {
+  config: ZudokuConfig;
+  merge: <T extends Partial<ZudokuConfig>>(partial: T) => ZudokuConfig & T;
+}
+
 export interface TransformConfigPlugin {
   transformConfig?: (
-    config: ZudokuConfig,
-  ) => Partial<ZudokuConfig> | void | Promise<Partial<ZudokuConfig> | void>;
+    context: TransformConfigContext,
+  ) => ZudokuConfig | void | Promise<ZudokuConfig | void>;
 }
 
 export interface CommonPlugin {

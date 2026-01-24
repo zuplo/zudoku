@@ -205,7 +205,6 @@
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "14.1.1",
     "@envelop/core": "5.3.2",
-    "@fastify/deepmerge": "3.1.0",
     "@graphql-typed-document-node/core": "3.2.0",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
     "@mdx-js/react": "3.1.1",

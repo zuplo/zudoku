@@ -3,7 +3,6 @@ import {
   type TransformConfigPlugin,
   type ZudokuPlugin,
 } from "../lib/core/plugins.js";
-import type { ZudokuConfig } from "./validators/validate.js";
 
 // Regex from stacktrace-parser for Node.js stack traces
 // https://github.com/errwischt/stacktrace-parser
@@ -58,17 +57,18 @@ export const createPlugin = <
 
     return {
       ...plugin,
-      transformConfig: async (config) => {
-        const result = (await originalTransformConfig?.(config)) ?? {};
+      transformConfig: async (context) => {
+        const result = await originalTransformConfig?.(context);
+        if (!result) return;
 
         return {
           ...result,
           __tailwindSources: [
-            ...(config.__tailwindSources ?? []),
+            ...(context.config.__tailwindSources ?? []),
             ...(result.__tailwindSources ?? []),
             pluginDir,
           ],
-        } as Partial<ZudokuConfig>;
+        };
       },
     } as TPlugin & TransformConfigPlugin;
   };

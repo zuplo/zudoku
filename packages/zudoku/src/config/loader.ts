@@ -4,7 +4,7 @@ import colors from "picocolors";
 import type { RollupOutput, RollupWatcher } from "rollup";
 import { type ConfigEnv, runnerImport, loadEnv as viteLoadEnv } from "vite";
 import { logger } from "../cli/common/logger.js";
-import { runTransformConfigHooks } from "../lib/core/transform-config.js";
+import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { getModuleDir } from "../vite/config.js";
 import { fileExists } from "./file-exists.js";
@@ -171,7 +171,7 @@ export async function loadZudokuConfig(
 
   try {
     const loadedConfig = await loadZudokuConfigWithMeta(rootDir);
-    config = await runTransformConfigHooks(loadedConfig);
+    config = await runPluginTransformConfig(loadedConfig);
 
     logger.info(
       colors.cyan(`loaded config file `) + colors.dim(config.__meta.configPath),

@@ -444,9 +444,6 @@ importers:
       '@envelop/core':
         specifier: 5.3.2
         version: 5.3.2
-      '@fastify/deepmerge':
-        specifier: 3.1.0
-        version: 3.1.0
       '@graphql-typed-document-node/core':
         specifier: 3.2.0
         version: 3.2.0(graphql@16.12.0)
@@ -2025,9 +2022,6 @@ packages:
 
   '@fastify/busboy@3.2.0':
     resolution: {integrity: sha512-m9FVDXU3GT2ITSe0UaMA5rU3QkfC/UXtCU8y0gSN/GugTqtVldOBWIB5V6V3sbmenVZUIpU6f+mPEO2+m5iTaA==}
-
-  '@fastify/deepmerge@3.1.0':
-    resolution: {integrity: sha512-lCVONBQINyNhM6LLezB6+2afusgEYR4G8xenMsfe+AT+iZ7Ca6upM5Ha8UkZuYSnuMw3GWl/BiPXnLMi/gSxuQ==}
 
   '@firebase/ai@2.6.0':
     resolution: {integrity: sha512-NGyE7NQDFznOv683Xk4+WoUv39iipa9lEfrwvvPz33ChzVbCCiB69FJQTK2BI/11pRtzYGbHo1/xMz7gxWWhJw==}
@@ -10336,8 +10330,6 @@ snapshots:
     optional: true
 
   '@fastify/busboy@3.2.0': {}
-
-  '@fastify/deepmerge@3.1.0': {}
 
   '@firebase/ai@2.6.0(@firebase/app-types@0.9.3)(@firebase/app@0.14.6)':
     dependencies:

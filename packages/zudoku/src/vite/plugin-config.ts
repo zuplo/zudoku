@@ -22,9 +22,9 @@ const viteConfigPlugin = (): Plugin => {
 
       return `
 import rawConfig from "${getCurrentConfig().__meta.configPath}";
-import { runTransformConfigHooks } from "zudoku/__internal";
+import { runPluginTransformConfig } from "zudoku/__internal";
 
-const config = await runTransformConfigHooks(rawConfig);
+const config = await runPluginTransformConfig(rawConfig);
 export default config;
 `;
     },

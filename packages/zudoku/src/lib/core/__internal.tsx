@@ -17,7 +17,7 @@ import { StatusPage as StatusPageImport } from "../components/StatusPage.js";
 import { RouterError as RouterErrorImport } from "../errors/RouterError.js";
 import { ServerError as ServerErrorImport } from "../errors/ServerError.js";
 import { RouteGuard as RouteGuardImport } from "./RouteGuard.js";
-import { runTransformConfigHooks as runTransformConfigHooksImport } from "./transform-config.js";
+import { runPluginTransformConfig as runPluginTransformConfigImport } from "./transform-config.js";
 
 export const Layout = LayoutImport;
 export const RouterError = RouterErrorImport;
@@ -29,4 +29,4 @@ export const Head = Helmet;
 export const StatusPage = StatusPageImport;
 export const BuildCheck = BuildCheckImport;
 export const Meta = MetaImport;
-export const runTransformConfigHooks = runTransformConfigHooksImport;
+export const runPluginTransformConfig = runPluginTransformConfigImport;

@@ -16,6 +16,7 @@ export type {
   ProfileNavigationItem,
   RouteObject,
   SearchProviderPlugin,
+  TransformConfigContext,
   ZudokuPlugin,
 } from "./lib/core/plugins.js";
 export { type ApiIdentity, ZudokuContext } from "./lib/core/ZudokuContext.js";
