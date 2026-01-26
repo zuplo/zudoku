@@ -199,7 +199,7 @@
     "test": "vitest run --typecheck"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "14.1.1",
+    "@apidevtools/json-schema-ref-parser": "15.2.1",
     "@envelop/core": "5.3.2",
     "@fastify/deepmerge": "3.1.0",
     "@graphql-typed-document-node/core": "3.2.0",
