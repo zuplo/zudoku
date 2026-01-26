@@ -1,5 +1,5 @@
 import { isValidElement } from "react";
-import type { ConfigWithMeta } from "../../config/loader.js";
+import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { isTransformConfigPlugin } from "./plugins.js";
 
 export const isPlainObject = (
@@ -43,9 +43,9 @@ export const mergeConfig = <
   return result;
 };
 
-export const runPluginTransformConfig = async (
-  config: ConfigWithMeta,
-): Promise<ConfigWithMeta> => {
+export const runPluginTransformConfig = async <T extends ZudokuConfig>(
+  config: T,
+): Promise<T> => {
   const plugins = config.plugins ?? [];
 
   let result = config;
@@ -60,7 +60,7 @@ export const runPluginTransformConfig = async (
     });
     if (!transformed) continue;
 
-    result = transformed as ConfigWithMeta;
+    result = transformed as T;
   }
 
   return result;
