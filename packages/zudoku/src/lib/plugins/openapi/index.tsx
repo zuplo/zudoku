@@ -2,7 +2,9 @@ import { CirclePlayIcon } from "lucide-react";
 import type { PropsWithChildren } from "react";
 import { matchPath } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
+import { IdentityContextProvider } from "../../components/context/IdentityContext.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
+import type { ApiIdentity } from "../../core/ZudokuContext.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
@@ -14,6 +16,24 @@ import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
+
+export const GetSecuritySchemesQuery = graphql(`
+  query GetSecuritySchemes($input: JSON!, $type: SchemaType!) {
+    schema(input: $input, type: $type) {
+      security {
+        name
+        scopes
+      }
+      components {
+        securitySchemes {
+          name
+          type
+          description
+        }
+      }    
+    }
+  }
+`);
 
 export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
@@ -50,8 +70,54 @@ export const UNTAGGED_PATH = "~endpoints";
 export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
   const basePath = joinUrl(config.path);
   const client = new GraphQLClient(config);
-
+  const uuid = crypto.randomUUID();
   return {
+    getIdentities: async (context, identityContext) => {
+      // Only return identities for this plugin
+      if (identityContext.pluginId !== uuid) {
+        return [];
+      }
+
+      const { versions } = getVersionMetadata(config);
+      const version = versions.at(0);
+      const input = Array.isArray(config.input)
+        ? (config.input.find((v) => v.path === version)?.input ??
+          config.input[0]?.input)
+        : config.input;
+
+      const query = createQuery(client, GetSecuritySchemesQuery, {
+        type: config.type,
+        input,
+      });
+      const data = await context.queryClient.ensureQueryData(query);
+
+      return (
+        data.schema.security?.flatMap((security) => {
+          const scheme = data.schema.components?.securitySchemes?.find(
+            (scheme) => scheme.name === security.name,
+          );
+          if (!scheme) {
+            return [];
+          }
+
+          return {
+            label: security.name,
+            securityScheme: scheme,
+            id: security.name,
+            authorizeRequest: async (request) => {
+              // const header = request.headers.get(scheme.parameterName);
+              // if (!header) {
+              //   return request;
+              // }
+              return request;
+            },
+            authorizationFields: {
+              headers: ["X-API-Key"],
+            },
+          } satisfies ApiIdentity;
+        }) ?? []
+      );
+    },
     getHead: () => {
       if (config.type === "url" && !config.skipPreload) {
         const urls = Array.isArray(config.input)
@@ -227,6 +293,11 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         return [];
       }
     },
-    getRoutes: () => getRoutes({ basePath, config, client }),
+    getRoutes: () => [
+      {
+        element: <IdentityContextProvider value={{ pluginId: uuid }} />,
+        children: getRoutes({ basePath, config, client }),
+      },
+    ],
   };
 };

@@ -7,6 +7,7 @@ import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, useCache } from "../cache.js";
 import { traverseNavigation } from "../navigation/utils.js";
+import { useIdentityContext } from "./IdentityContext.js";
 
 export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
   undefined,
@@ -22,10 +23,17 @@ export const useZudoku = () => {
   return context;
 };
 
-export const useApiIdentities = () => {
+export const useApiIdentities = ({
+  url,
+  pluginId,
+}: {
+  url?: string;
+  pluginId?: string;
+} = {}) => {
   const { getApiIdentities } = useZudoku();
   const { isAuthenticated } = useAuthState();
   const { invalidateCache } = useCache();
+  const identityContext = useIdentityContext();
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -34,8 +42,8 @@ export const useApiIdentities = () => {
   }, [isAuthenticated, invalidateCache]);
 
   return useQuery({
-    queryFn: getApiIdentities,
-    queryKey: CACHE_KEYS.API_IDENTITIES,
+    queryFn: () => getApiIdentities({ url, ...identityContext }),
+    queryKey: [CACHE_KEYS.API_IDENTITIES, url, pluginId],
   });
 };
 

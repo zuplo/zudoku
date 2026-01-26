@@ -38,6 +38,7 @@ export type Scalars = {
 export type Components = {
   __typename?: "Components";
   schemas?: Maybe<Array<SchemaItem>>;
+  securitySchemes?: Maybe<Array<SecuritySchemeItem>>;
 };
 
 export type EncodingItem = {
@@ -67,6 +68,22 @@ export type MediaTypeObject = {
   schema?: Maybe<Scalars["JSONSchema"]["output"]>;
 };
 
+export type OAuthFlowItem = {
+  __typename?: "OAuthFlowItem";
+  authorizationUrl?: Maybe<Scalars["String"]["output"]>;
+  refreshUrl?: Maybe<Scalars["String"]["output"]>;
+  scopes: Scalars["JSONObject"]["output"];
+  tokenUrl?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type OAuthFlowsItem = {
+  __typename?: "OAuthFlowsItem";
+  authorizationCode?: Maybe<OAuthFlowItem>;
+  clientCredentials?: Maybe<OAuthFlowItem>;
+  implicit?: Maybe<OAuthFlowItem>;
+  password?: Maybe<OAuthFlowItem>;
+};
+
 export type OperationItem = {
   __typename?: "OperationItem";
   contentTypes: Array<Scalars["String"]["output"]>;
@@ -79,6 +96,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
+  security?: Maybe<Array<SecurityRequirementItem>>;
   servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
@@ -144,6 +162,7 @@ export type Schema = {
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
+  security?: Maybe<Array<SecurityRequirementItem>>;
   servers: Array<Server>;
   summary?: Maybe<Scalars["String"]["output"]>;
   tag?: Maybe<SchemaTag>;
@@ -187,6 +206,33 @@ export type SchemaTag = {
 };
 
 export type SchemaType = "file" | "raw" | "url";
+
+export type SecurityRequirementItem = {
+  __typename?: "SecurityRequirementItem";
+  name: Scalars["String"]["output"];
+  scopes: Array<Scalars["String"]["output"]>;
+};
+
+export type SecuritySchemeItem = {
+  __typename?: "SecuritySchemeItem";
+  bearerFormat?: Maybe<Scalars["String"]["output"]>;
+  description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  flows?: Maybe<OAuthFlowsItem>;
+  in?: Maybe<Scalars["String"]["output"]>;
+  name: Scalars["String"]["output"];
+  openIdConnectUrl?: Maybe<Scalars["String"]["output"]>;
+  parameterName?: Maybe<Scalars["String"]["output"]>;
+  scheme?: Maybe<Scalars["String"]["output"]>;
+  type: SecuritySchemeType;
+};
+
+export type SecuritySchemeType =
+  | "apiKey"
+  | "http"
+  | "mutualTLS"
+  | "oauth2"
+  | "openIdConnect";
 
 export type Server = {
   __typename?: "Server";
@@ -288,6 +334,11 @@ export type OperationsFragmentFragment = {
       encoding?: Array<{ __typename?: "EncodingItem"; name: string }> | null;
     }> | null;
   }>;
+  security?: Array<{
+    __typename?: "SecurityRequirementItem";
+    name: string;
+    scopes: Array<string>;
+  }> | null;
 } & { " $fragmentName"?: "OperationsFragmentFragment" };
 
 export type SchemaWarmupQueryVariables = Exact<{
@@ -380,6 +431,32 @@ export type GetServerQueryQuery = {
     __typename?: "Schema";
     url?: string | null;
     servers: Array<{ __typename?: "Server"; url: string }>;
+  };
+};
+
+export type GetSecuritySchemesQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type GetSecuritySchemesQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    security?: Array<{
+      __typename?: "SecurityRequirementItem";
+      name: string;
+      scopes: Array<string>;
+    }> | null;
+    components?: {
+      __typename?: "Components";
+      securitySchemes?: Array<{
+        __typename?: "SecuritySchemeItem";
+        name: string;
+        type: SecuritySchemeType;
+        description?: string | null;
+      }> | null;
+    } | null;
   };
 };
 
@@ -502,6 +579,10 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
       }
       schema
     }
+  }
+  security {
+    name
+    scopes
   }
 }
     `,
@@ -629,6 +710,10 @@ export const OperationsForTagDocument = new TypedDocumentString(`
       schema
     }
   }
+  security {
+    name
+    scopes
+  }
 }`) as unknown as TypedDocumentString<
   OperationsForTagQuery,
   OperationsForTagQueryVariables
@@ -664,6 +749,26 @@ export const GetServerQueryDocument = new TypedDocumentString(`
     `) as unknown as TypedDocumentString<
   GetServerQueryQuery,
   GetServerQueryQueryVariables
+>;
+export const GetSecuritySchemesDocument = new TypedDocumentString(`
+    query GetSecuritySchemes($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    security {
+      name
+      scopes
+    }
+    components {
+      securitySchemes {
+        name
+        type
+        description
+      }
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  GetSecuritySchemesQuery,
+  GetSecuritySchemesQueryVariables
 >;
 export const GetNavigationOperationsDocument = new TypedDocumentString(`
     query GetNavigationOperations($input: JSON!, $type: SchemaType!) {

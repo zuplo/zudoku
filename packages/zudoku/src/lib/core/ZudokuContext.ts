@@ -14,10 +14,12 @@ import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
+import type { SecuritySchemeItem } from "../plugins/openapi/graphql/graphql.js";
 import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import { objectEntries } from "../util/objectEntries.js";
 import {
+  type ApiIdentityContext,
   isApiIdentityPlugin,
   isAuthenticationPlugin,
   isEventConsumerPlugin,
@@ -35,6 +37,7 @@ export interface ZudokuEvents {
 }
 
 export interface ApiIdentity {
+  securityScheme?: SecuritySchemeItem;
   authorizeRequest: (request: Request) => Promise<Request> | Request;
   authorizationFields?: {
     headers?: string[];
@@ -186,11 +189,11 @@ export class ZudokuContext {
     );
   };
 
-  getApiIdentities = async () => {
+  getApiIdentities = async (identityContext: ApiIdentityContext) => {
     const keys = await Promise.all(
       this.plugins
         .filter(isApiIdentityPlugin)
-        .map((plugin) => plugin.getIdentities(this)),
+        .map((plugin) => plugin.getIdentities(this, identityContext)),
     );
 
     return keys.flat();

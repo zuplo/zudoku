@@ -38,8 +38,15 @@ export const createProfileMenuPlugin = (
   plugin: ProfileMenuPlugin,
 ): ProfileMenuPlugin => plugin;
 
+export type ApiIdentityContext = {
+  url?: string;
+} & Record<string, string>;
+
 export interface ApiIdentityPlugin {
-  getIdentities: (context: ZudokuContext) => Promise<ApiIdentity[]>;
+  getIdentities: (
+    context: ZudokuContext,
+    identityContext: ApiIdentityContext,
+  ) => Promise<ApiIdentity[]>;
 }
 
 export interface SearchProviderPlugin {

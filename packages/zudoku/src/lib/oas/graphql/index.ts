@@ -15,6 +15,8 @@ import {
   type ParameterObject,
   type PathsObject,
   type SchemaObject,
+  type SecurityRequirementObject,
+  type SecuritySchemeObject,
   type ServerObject,
   type TagObject,
   validate,
@@ -29,6 +31,8 @@ export type {
   ParameterObject,
   PathsObject,
   SchemaObject,
+  SecurityRequirementObject,
+  SecuritySchemeObject,
   TagObject,
 };
 
@@ -359,6 +363,85 @@ const ParameterItem = builder
     }),
   });
 
+const SecuritySchemeType = builder.enumType("SecuritySchemeType", {
+  values: ["apiKey", "http", "mutualTLS", "oauth2", "openIdConnect"] as const,
+});
+
+const OAuthFlowItem = builder
+  .objectRef<{
+    authorizationUrl?: string;
+    tokenUrl?: string;
+    refreshUrl?: string;
+    scopes: Record<string, string>;
+  }>("OAuthFlowItem")
+  .implement({
+    fields: (t) => ({
+      authorizationUrl: t.exposeString("authorizationUrl", { nullable: true }),
+      tokenUrl: t.exposeString("tokenUrl", { nullable: true }),
+      refreshUrl: t.exposeString("refreshUrl", { nullable: true }),
+      scopes: t.expose("scopes", { type: JSONObjectScalar }),
+    }),
+  });
+
+const OAuthFlowsItem = builder
+  .objectRef<{
+    implicit?: any;
+    password?: any;
+    clientCredentials?: any;
+    authorizationCode?: any;
+  }>("OAuthFlowsItem")
+  .implement({
+    fields: (t) => ({
+      implicit: t.expose("implicit", { type: OAuthFlowItem, nullable: true }),
+      password: t.expose("password", { type: OAuthFlowItem, nullable: true }),
+      clientCredentials: t.expose("clientCredentials", {
+        type: OAuthFlowItem,
+        nullable: true,
+      }),
+      authorizationCode: t.expose("authorizationCode", {
+        type: OAuthFlowItem,
+        nullable: true,
+      }),
+    }),
+  });
+
+const SecuritySchemeItem = builder
+  .objectRef<SecuritySchemeObject & { name: string }>("SecuritySchemeItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      type: t.field({
+        type: SecuritySchemeType,
+        resolve: (parent) => parent.type as typeof SecuritySchemeType.$inferType,
+      }),
+      description: t.exposeString("description", { nullable: true }),
+      // apiKey fields
+      parameterName: t.exposeString("name", { nullable: true }),
+      in: t.exposeString("in", { nullable: true }),
+      // http fields
+      scheme: t.exposeString("scheme", { nullable: true }),
+      bearerFormat: t.exposeString("bearerFormat", { nullable: true }),
+      // oauth2 fields
+      flows: t.expose("flows", { type: OAuthFlowsItem, nullable: true }),
+      // openIdConnect fields
+      openIdConnectUrl: t.exposeString("openIdConnectUrl", { nullable: true }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => resolveExtensions(parent),
+        nullable: true,
+      }),
+    }),
+  });
+
+const SecurityRequirementItem = builder
+  .objectRef<{ name: string; scopes: string[] }>("SecurityRequirementItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      scopes: t.exposeStringList("scopes"),
+    }),
+  });
+
 const MediaTypeItem = builder
   .objectRef<{
     mediaType: string;
@@ -521,6 +604,20 @@ const OperationItem = builder
           })),
         nullable: true,
       }),
+      security: t.field({
+        type: [SecurityRequirementItem],
+        resolve: (parent, _, ctx) => {
+          // Operation-level security overrides global security
+          const securityRequirements = parent.security ?? ctx.schema.security ?? [];
+          return securityRequirements.flatMap((requirement) =>
+            Object.entries(requirement).map(([name, scopes]) => ({
+              name,
+              scopes,
+            })),
+          );
+        },
+        nullable: true,
+      }),
       deprecated: t.exposeBoolean("deprecated", { nullable: true }),
       extensions: t.field({
         type: JSONObjectScalar,
@@ -549,6 +646,7 @@ const SchemaItem = builder
 
 const Components = builder.objectRef<{
   schemas?: Record<string, SchemaObject>;
+  securitySchemes?: Record<string, SecuritySchemeObject>;
 }>("Components");
 
 Components.implement({
@@ -561,6 +659,18 @@ Components.implement({
           schema,
           extensions: resolveExtensions(schema),
         }));
+      },
+      nullable: true,
+    }),
+    securitySchemes: t.field({
+      type: [SecuritySchemeItem],
+      resolve: (parent) => {
+        return Object.entries(parent.securitySchemes ?? {}).map(
+          ([name, scheme]) => ({
+            name,
+            ...scheme,
+          }),
+        );
       },
       nullable: true,
     }),
@@ -644,6 +754,19 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
     components: t.field({
       type: Components,
       resolve: (root) => root.components,
+      nullable: true,
+    }),
+    security: t.field({
+      type: [SecurityRequirementItem],
+      resolve: (root) => {
+        const securityRequirements = root.security ?? [];
+        return securityRequirements.flatMap((requirement) =>
+          Object.entries(requirement).map(([name, scopes]) => ({
+            name,
+            scopes,
+          })),
+        );
+      },
       nullable: true,
     }),
     extensions: t.field({

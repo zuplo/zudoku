@@ -28,6 +28,10 @@ export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
 export type ArraySchemaObject =
   DeepOmitReference<OpenAPIV3_1.ArraySchemaObject>;
 export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject>;
+export type SecuritySchemeObject =
+  DeepOmitReference<OpenAPIV3_1.SecuritySchemeObject>;
+export type SecurityRequirementObject =
+  DeepOmitReference<OpenAPIV3_1.SecurityRequirementObject>;
 
 export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
 

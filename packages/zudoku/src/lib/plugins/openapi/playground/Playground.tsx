@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
+import { useIdentityContext } from "../../../components/context/IdentityContext.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
@@ -141,11 +142,12 @@ export const Playground = ({
   onLogin,
   onSignUp,
 }: PlaygroundContentProps) => {
+  const { pluginId } = useIdentityContext();
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
-  const identities = useApiIdentities();
+  const identities = useApiIdentities({ url, pluginId });
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
   const { skipLogin, setSkipLogin } = useRememberSkipLoginDialog();

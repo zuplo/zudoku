@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
-import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
@@ -97,6 +96,10 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         }
         schema
       }
+    }
+    security {
+      name
+      scopes
     }
   }
 `);
@@ -187,7 +190,7 @@ export const OperationList = ({
   });
 
   // Prefetch for Playground
-  useApiIdentities();
+  // useApiIdentities();
 
   if (!schema.tag) {
     return (
