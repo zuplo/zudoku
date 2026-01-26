@@ -23,21 +23,22 @@ export const globMarkdownFiles = async (
     const globbedFiles = await glob(globPattern, {
       root: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
-      absolute: options.absolute,
+      // Always glob with relative paths to avoid issues on different OS
+      absolute: false,
       posix: true,
     });
 
     // Normalize parent by removing leading `./` or `/`
     const parent = globParent(globPattern).replace(/^\.?\//, "");
 
-    const toRoutePath = (file: string) => {
-      const relativePath = path.posix.relative(parent, file);
-      return ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
-    };
-
     for (const file of globbedFiles) {
-      const routePath = toRoutePath(file);
-      fileMapping[routePath] = file;
+      const relativePath = path.posix.relative(parent, file);
+      const routePath = ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
+      // Resolve to absolute path if requested, using path.resolve to handle cross-platform paths
+      const filePath = options.absolute
+        ? path.resolve(config.__meta.rootDir, file)
+        : file;
+      fileMapping[routePath] = filePath;
     }
   }
 
