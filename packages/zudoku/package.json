@@ -18,6 +18,7 @@
     "src/lib",
     "src/app",
     "src/shiki",
+    "src/zuplo",
     "client.d.ts"
   ],
   "bin": {

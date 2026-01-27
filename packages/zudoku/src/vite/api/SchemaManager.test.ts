@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { LoadedConfig } from "../../config/config.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
-import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
+import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import invariant from "../../lib/util/invariant.js";
 import { SchemaManager } from "./SchemaManager.js";
 
