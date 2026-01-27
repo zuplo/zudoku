@@ -18,6 +18,10 @@
     {
       "url": "https://staging-api.cosmocargo.space/ai/v1",
       "description": "Staging AI environment"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development server"
     }
   ],
   "security": [
@@ -575,6 +579,27 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/captain-speaking/welcome": {
+      "get": {
+        "tags": ["AI Operations"],
+        "summary": "Welcome aboard announcement",
+        "description": "Plays the Captain's welcome aboard announcement for passengers embarking on their interstellar journey. This AI-generated audio message provides essential voyage information and safety briefing.\n\n**Note:** Only available on Local development server.",
+        "operationId": "getWelcomeAnnouncement",
+        "responses": {
+          "200": {
+            "description": "Welcome announcement audio",
+            "content": {
+              "audio/mpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
                 }
               }
             }

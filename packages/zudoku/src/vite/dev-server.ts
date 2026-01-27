@@ -112,6 +112,25 @@ export class DevServer {
 
     app.use(graphql.graphqlEndpoint, graphql);
 
+    // Demo endpoint for audio player feature - serves welcome-aboard.mp3
+    app.get("/captain-speaking/welcome", async (_req, res) => {
+      const audioPath = path.join(vite.config.publicDir, "welcome-aboard.mp3");
+
+      try {
+        const audioFile = await fs.readFile(audioPath);
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Content-Length", audioFile.length.toString());
+        res.setHeader(
+          "Content-Disposition",
+          'inline; filename="welcome-aboard.mp3"',
+        );
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.send(audioFile);
+      } catch {
+        res.status(404).json({ error: "Audio file not found" });
+      }
+    });
+
     app.get("/__z/pagefind-reindex", async (_req, res) => {
       const { config: currentConfig } = await loadZudokuConfig(
         configEnv,
