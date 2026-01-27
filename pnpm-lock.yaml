@@ -747,8 +747,8 @@ importers:
         specifier: 6.1.0
         version: 6.1.0(@types/node@22.19.1)(bufferutil@4.1.0)(graphql-sock@1.0.1(graphql@16.12.0))(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@inkeep/cxkit-types':
-        specifier: 0.5.101
-        version: 0.5.101
+        specifier: 0.5.113
+        version: 0.5.113
       '@testing-library/dom':
         specifier: 10.4.1
         version: 10.4.1
@@ -2693,8 +2693,8 @@ packages:
   '@iconify/utils@3.0.2':
     resolution: {integrity: sha512-EfJS0rLfVuRuJRn4psJHtK2A9TqVnkxPpHY6lYHiB9+8eSuudsxbwMiavocG45ujOo6FJ+CIRlRnlOGinzkaGQ==}
 
-  '@inkeep/cxkit-types@0.5.101':
-    resolution: {integrity: sha512-i9abtKMQojhOlqZOP2dyB0krZJfG667zHIzFZJl1v4BUezN9Pkc7wc0Z04oUCcM/lhzbxfTSU5dwsdoOksDTDA==}
+  '@inkeep/cxkit-types@0.5.113':
+    resolution: {integrity: sha512-6TWvTKbYWqYrDMl2JsrSx9xQU563V0oHci/vrfZUUl0F79ZpasoKUPn50N3CNhz9vQr24LGWU1bYsh0R8DUPwA==}
 
   '@inquirer/ansi@1.0.2':
     resolution: {integrity: sha512-S8qNSZiYzFd0wAcyG5AXCvUHC5Sr7xpZ9wZ2py9XR88jUz8wooStVx5M6dRzczbBWjic9NP7+rY0Xi7qqK/aMQ==}
@@ -12274,7 +12274,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@inkeep/cxkit-types@0.5.101': {}
+  '@inkeep/cxkit-types@0.5.113': {}
 
   '@inquirer/ansi@1.0.2': {}
 
