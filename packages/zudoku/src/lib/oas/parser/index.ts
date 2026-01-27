@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql/error/index.js";
 import { OpenAPIV3, type OpenAPIV3_1 } from "openapi-types";
-import { flattenAllOfProcessor } from "../../util/flattenAllOf.js";
+import { flattenAllOf } from "../../util/flattenAllOf.js";
+import { traverse } from "../../util/traverse.js";
 import { dereference, type JSONSchema } from "./dereference/index.js";
 import { upgradeSchema } from "./upgrade/index.js";
 
@@ -104,11 +105,21 @@ export const validate = async (schemaInput: unknown) => {
   const dereferenced = await dereference(schema);
   const upgraded = upgradeSchema(dereferenced);
 
-  const flattened = await flattenAllOfProcessor({
-    schema: upgraded,
-    file: "schema.json",
-    dereference: async (schema) => schema,
-  });
+  const flattened = traverse(upgraded, (spec) => {
+    if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
+      return spec;
+    }
+    const isSchemaObject =
+      "type" in spec ||
+      "properties" in spec ||
+      "allOf" in spec ||
+      "anyOf" in spec ||
+      "oneOf" in spec;
+
+    if (!isSchemaObject) return spec;
+
+    return flattenAllOf(spec) as typeof spec;
+  }) as OpenAPIDocument;
 
   return flattened;
 };

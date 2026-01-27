@@ -1,7 +1,8 @@
 import type { JSONSchema7 } from "json-schema";
 import { describe, expect, it, vi } from "vitest";
 import type { OpenAPIDocument } from "../oas/parser/index.js";
-import { flattenAllOf, flattenAllOfProcessor } from "./flattenAllOf.js";
+import { flattenAllOf } from "./flattenAllOf.js";
+import { flattenAllOfProcessor } from "./flattenAllOfProcessor.js";
 import invariant from "./invariant.js";
 
 describe("flattenAllOf", () => {
