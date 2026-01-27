@@ -4,12 +4,15 @@ import { ZudokuError, type ZudokuErrorOptions } from "../util/invariant.js";
 export class AuthorizationError extends Error {}
 
 export class OAuthAuthorizationError extends ZudokuError {
+  error: OAuth2Error;
+
   constructor(
     message: string,
-    public error: OAuth2Error,
+    error: OAuth2Error,
     options?: ZudokuErrorOptions,
   ) {
     super(message, options);
+    this.error = error;
   }
 }
 
