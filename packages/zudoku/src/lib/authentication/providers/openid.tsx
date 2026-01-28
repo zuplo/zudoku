@@ -424,6 +424,7 @@ export class OpenIDAuthenticationProvider
     const userInfo = await userInfoResponse.json();
 
     const profile: UserProfile = {
+      ...userInfo,
       sub: userInfo.sub,
       email: userInfo.email,
       name: userInfo.name,
