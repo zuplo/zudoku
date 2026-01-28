@@ -12,10 +12,13 @@ export type PathMatchResult = {
 const parsePath = (path: string): PathSegment[] => {
   if (!path || path === "/") return [];
 
-  return path.split("/").map((segment) => {
-    const num = Number(segment);
-    return Number.isInteger(num) ? num : segment;
-  });
+  return path
+    .split("/")
+    .filter((segment) => segment !== "")
+    .map((segment) => {
+      const num = Number(segment);
+      return Number.isInteger(num) ? num : segment;
+    });
 };
 
 const matchesSegment = (

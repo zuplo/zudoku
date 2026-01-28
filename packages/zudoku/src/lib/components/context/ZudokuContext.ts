@@ -94,11 +94,14 @@ export const useCurrentNavigation = () => {
 
   // If navItem is positioned, find the actual top-level category
   if (navItem && isPositionedItem(navItem)) {
-    const targetLabel = navItem.at.path.split("/")[0];
-    navLabel = targetLabel;
-    topNavItem = navigation.find(
-      (item) => item.label?.toLowerCase() === targetLabel?.toLowerCase(),
-    );
+    const targetLabel = navItem.at.path.split("/").filter(Boolean).at(0);
+
+    if (targetLabel) {
+      navLabel = targetLabel;
+      topNavItem = navigation.find(
+        (item) => item.label?.toLowerCase() === targetLabel.toLowerCase(),
+      );
+    }
   } else if (!navItem && data.length > 0) {
     const pluginBasePaths = extractAllPaths(data);
 
