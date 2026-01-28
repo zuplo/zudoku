@@ -1,8 +1,12 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useMemo } from "react";
 import { matchPath, useLocation } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuthState } from "../../authentication/state.js";
+import {
+  isPositionedItem,
+  mergePositionedItems,
+} from "../../navigation/positionItems.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, useCache } from "../cache.js";
 import { traverseNavigation } from "../navigation/utils.js";
@@ -69,7 +73,8 @@ const extractAllPaths = (items: NavigationItem[]) => {
 };
 
 export const useCurrentNavigation = () => {
-  const { getPluginNavigation, navigation } = useZudoku();
+  const context = useZudoku();
+  const { getPluginNavigation, navigation } = context;
   const location = useLocation();
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
@@ -85,7 +90,16 @@ export const useCurrentNavigation = () => {
   });
 
   let topNavItem = navItem;
-  if (!navItem && data.length > 0) {
+  let navLabel = topNavItem?.label;
+
+  // If navItem is positioned, find the actual top-level category
+  if (navItem && isPositionedItem(navItem)) {
+    const targetLabel = navItem.at.path.split("/")[0];
+    navLabel = targetLabel;
+    topNavItem = navigation.find(
+      (item) => item.label?.toLowerCase() === targetLabel?.toLowerCase(),
+    );
+  } else if (!navItem && data.length > 0) {
     const pluginBasePaths = extractAllPaths(data);
 
     topNavItem = navigation
@@ -101,13 +115,20 @@ export const useCurrentNavigation = () => {
             matchPath({ path: basePath, end: false }, path),
         );
       })?.item;
+    navLabel = topNavItem?.label;
   }
 
-  return {
-    navigation: [
-      ...(navItem?.type === "category" ? navItem.items : []),
+  const repositionedNavigation = useMemo(() => {
+    const baseNavigation = [
+      ...(topNavItem?.type === "category" ? topNavItem.items : []),
       ...data,
-    ],
+    ];
+
+    return mergePositionedItems(baseNavigation, navigation, navLabel);
+  }, [topNavItem, data, navigation, navLabel]);
+
+  return {
+    navigation: repositionedNavigation,
     topNavItem,
   };
 };

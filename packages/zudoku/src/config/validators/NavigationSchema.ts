@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
+  AtPosition,
   InputNavigationCategory,
   InputNavigationCategoryLinkDoc,
   InputNavigationCustomPage,
@@ -29,10 +30,18 @@ type FinalNavigationCategoryLinkDoc = Extract<
 
 export type NavigationDoc = ReplaceFields<
   FinalNavigationDoc,
-  { label: string; categoryLabel?: string; path: string } & ResolvedIcon
+  {
+    label: string;
+    categoryLabel?: string;
+    path: string;
+    at?: AtPosition;
+  } & ResolvedIcon
 >;
 
-export type NavigationLink = ReplaceFields<InputNavigationLink, ResolvedIcon>;
+export type NavigationLink = ReplaceFields<
+  InputNavigationLink,
+  { at?: AtPosition } & ResolvedIcon
+>;
 
 export type NavigationCategoryLinkDoc = ReplaceFields<
   FinalNavigationCategoryLinkDoc,
@@ -41,11 +50,15 @@ export type NavigationCategoryLinkDoc = ReplaceFields<
 
 export type NavigationCategory = ReplaceFields<
   InputNavigationCategory,
-  { items: NavigationItem[]; link?: NavigationCategoryLinkDoc } & ResolvedIcon
+  {
+    items: NavigationItem[];
+    link?: NavigationCategoryLinkDoc;
+    at?: AtPosition;
+  } & ResolvedIcon
 >;
 export type NavigationCustomPage = ReplaceFields<
   InputNavigationCustomPage,
-  ResolvedIcon
+  { at?: AtPosition } & ResolvedIcon
 >;
 
 export type NavigationSeparator = InputNavigationSeparator & { label: string };
