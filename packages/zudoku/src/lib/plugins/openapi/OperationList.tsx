@@ -1,5 +1,5 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import {
@@ -261,12 +261,12 @@ export const OperationList = ({
       data-pagefind-meta="section:openapi"
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
-      <Helmet>
+      <Head>
         {helmetTitle && <title>{helmetTitle}</title>}
         {metaDescription && (
           <meta name="description" content={metaDescription} />
         )}
-      </Helmet>
+      </Head>
 
       <div className="mb-8">
         <Collapsible

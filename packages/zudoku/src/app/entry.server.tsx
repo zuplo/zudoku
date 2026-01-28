@@ -1,6 +1,6 @@
 import { Transform } from "node:stream";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
-import type { HelmetData } from "@zudoku/react-helmet-async";
+import { createHead } from "@unhead/react/server";
 import type express from "express";
 import logger from "loglevel";
 import { renderToPipeableStream, renderToStaticMarkup } from "react-dom/server";
@@ -10,6 +10,7 @@ import {
   isRouteErrorResponse,
   type RouteObject,
 } from "react-router";
+import { renderSSRHead } from "unhead/server";
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/__internal";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
@@ -65,14 +66,14 @@ export const render = async ({
   }
 
   const router = createStaticRouter(dataRoutes, context);
-  const helmetContext = {} as HelmetData["context"];
+  const head = createHead();
 
   const App = (
     <BootstrapStatic
       router={router}
       context={context}
       queryClient={queryClient}
-      helmetContext={helmetContext}
+      head={head}
       bypassProtection={bypassProtection}
     />
   );
@@ -86,7 +87,7 @@ export const render = async ({
 
       response.send(html);
     },
-    onAllReady() {
+    async onAllReady() {
       response.set({ "Content-Type": "text/html" });
       response.status(status);
 
@@ -103,18 +104,9 @@ export const render = async ({
         throw new Error("No <!--app-html--> found in template");
       }
 
-      response.write(
-        htmlStart.replace(
-          "<!--app-helmet-->",
-          [
-            helmetContext.helmet.title.toString(),
-            helmetContext.helmet.meta.toString(),
-            helmetContext.helmet.link.toString(),
-            helmetContext.helmet.style.toString(),
-            helmetContext.helmet.script.toString(),
-          ].join("\n"),
-        ),
-      );
+      // Render head tags with Unhead
+      const { headTags } = await renderSSRHead(head);
+      response.write(htmlStart.replace("<!--app-helmet-->", headTags));
 
       transformStream.on("finish", () => {
         const dehydrated = dehydrate(queryClient, {

@@ -1,4 +1,4 @@
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { use } from "react";
 import { matchPath, Outlet, useLocation, useNavigate } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
@@ -40,13 +40,13 @@ export const RouteGuard = () => {
     return (
       <>
         {isProtectedRoute && (
-          <Helmet>
+          <Head>
             <meta
               name="pagefind"
               data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
               content="true"
             />
-          </Helmet>
+          </Head>
         )}
         <Outlet />
       </>

@@ -1,4 +1,4 @@
-export { Helmet as Head } from "@zudoku/react-helmet-async";
+export { Head } from "@unhead/react";
 export { Link } from "react-router";
 export { Button } from "../ui/Button.js";
 export { Callout } from "../ui/Callout.js";

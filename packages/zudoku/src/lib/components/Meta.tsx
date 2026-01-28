@@ -1,4 +1,4 @@
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head, useHead } from "@unhead/react";
 import type { PropsWithChildren } from "react";
 import { useLocation } from "react-router";
 import { joinUrl } from "../util/joinUrl.js";
@@ -8,9 +8,15 @@ export const Meta = ({ children }: PropsWithChildren) => {
   const { meta, options } = useZudoku();
   const location = useLocation();
 
+  // Set title template and default title via useHead hook
+  useHead({
+    ...(meta?.title && { titleTemplate: meta.title }),
+    ...(meta?.defaultTitle && { title: meta.defaultTitle }),
+  });
+
   return (
     <>
-      <Helmet titleTemplate={meta?.title} defaultTitle={meta?.defaultTitle}>
+      <Head>
         {options.canonicalUrlOrigin && (
           <link
             rel="canonical"
@@ -38,7 +44,7 @@ export const Meta = ({ children }: PropsWithChildren) => {
         ))}
         {meta?.creator && <meta name="creator" content={meta.creator} />}
         {meta?.publisher && <meta name="publisher" content={meta.publisher} />}
-      </Helmet>
+      </Head>
       {children}
     </>
   );

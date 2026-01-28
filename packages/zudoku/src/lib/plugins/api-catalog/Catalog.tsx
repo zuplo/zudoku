@@ -1,5 +1,5 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { useMatch } from "react-router";
 import { Link } from "zudoku/components";
 import { useAuthState } from "../../authentication/state.js";
@@ -30,12 +30,12 @@ export const Catalog = ({
 
   return (
     <section className="pt-(--padding-content-top)" {...dataSet}>
-      <Helmet>
+      <Head>
         <title>
           {categoryLabel ? `${categoryLabel} - ` : ""}
           {label}
         </title>
-      </Helmet>
+      </Head>
       <div className="grid gap-4">
         <Heading level={2}>
           {label}

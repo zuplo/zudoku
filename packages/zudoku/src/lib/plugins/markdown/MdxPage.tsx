@@ -1,6 +1,6 @@
 import { useMDXComponents } from "@mdx-js/react";
 import slugify from "@sindresorhus/slugify";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -144,10 +144,10 @@ export const MdxPage = ({
       data-pagefind-filter="section:markdown"
       data-pagefind-meta="section:markdown"
     >
-      <Helmet>
+      <Head>
         <title>{pageTitle}</title>
         {description && <meta name="description" content={description} />}
-      </Helmet>
+      </Head>
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
         {(category || title) && (
           <header className="flex items-start justify-between gap-4">

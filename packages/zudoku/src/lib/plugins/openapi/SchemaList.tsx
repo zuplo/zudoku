@@ -1,6 +1,6 @@
 import slugify from "@sindresorhus/slugify";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import {
   ChevronRightIcon,
   ChevronsDownUpIcon,
@@ -56,10 +56,10 @@ export function SchemaList() {
   if (!schemas.length) {
     return (
       <div>
-        <Helmet>
+        <Head>
           <title>Schemas {showVersions ? version : ""}</title>
           <meta name="description" content="List of schemas used by the API." />
-        </Helmet>
+        </Head>
         No schemas found
       </div>
     );
@@ -74,10 +74,10 @@ export function SchemaList() {
       <PagefindSearchMeta name="category">
         {data.schema.title}
       </PagefindSearchMeta>
-      <Helmet>
+      <Head>
         <title>Schemas {showVersions ? version : ""}</title>
         <meta name="description" content="List of schemas used by the API." />
-      </Helmet>
+      </Head>
       <div className="pt-(--padding-content-top) pb-(--padding-content-bottom)">
         <Collapsible className="w-full">
           <div className="flex flex-col gap-y-4 sm:flex-row justify-around items-start sm:items-end">

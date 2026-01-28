@@ -3,7 +3,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query";
-import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
+import { createHead, type Unhead, UnheadProvider } from "@unhead/react/client";
 import { StrictMode } from "react";
 import {
   type createBrowserRouter,
@@ -23,6 +23,8 @@ const queryClient = new QueryClient({
   },
 });
 
+const head = createHead();
+
 const Bootstrap = ({
   router,
   hydrate = false,
@@ -35,11 +37,11 @@ const Bootstrap = ({
       {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
         <BypassProtectedRoutesContext value={false}>
-          <HelmetProvider>
+          <UnheadProvider head={head}>
             <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
               <RouterProvider router={router} />
             </StaggeredRenderContext.Provider>
-          </HelmetProvider>
+          </UnheadProvider>
         </BypassProtectedRoutesContext>
       </HydrationBoundary>
     </QueryClientProvider>
@@ -50,10 +52,10 @@ const BootstrapStatic = ({
   router,
   context,
   queryClient,
-  helmetContext,
+  head,
   bypassProtection = false,
 }: {
-  helmetContext: HelmetData["context"];
+  head: Unhead;
   context: StaticHandlerContext;
   queryClient: QueryClient;
   router: ReturnType<typeof createStaticRouter>;
@@ -61,11 +63,11 @@ const BootstrapStatic = ({
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <HelmetProvider context={helmetContext}>
+      <UnheadProvider head={head}>
         <BypassProtectedRoutesContext value={bypassProtection}>
           <StaticRouterProvider router={router} context={context} />
         </BypassProtectedRoutesContext>
-      </HelmetProvider>
+      </UnheadProvider>
     </QueryClientProvider>
   </StrictMode>
 );
