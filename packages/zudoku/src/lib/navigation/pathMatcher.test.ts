@@ -114,5 +114,23 @@ describe("pathMatcher", () => {
       expect(result.found).toBe(true);
       expect(result.item?.label).toBe("Second Nested");
     });
+
+    it("should handle paths with trailing slashes", () => {
+      const result = findByPath(mockNavigation, "Shipments/0/");
+      expect(result.found).toBe(true);
+      expect(result.item?.label).toBe("Track a Shipment");
+    });
+
+    it("should handle paths with double slashes", () => {
+      const result = findByPath(mockNavigation, "Shipments//0");
+      expect(result.found).toBe(true);
+      expect(result.item?.label).toBe("Track a Shipment");
+    });
+
+    it("should handle paths with leading slashes", () => {
+      const result = findByPath(mockNavigation, "/Shipments/0");
+      expect(result.found).toBe(true);
+      expect(result.item?.label).toBe("Track a Shipment");
+    });
   });
 });
