@@ -123,6 +123,11 @@ const config: ZudokuConfig = {
       element: <Landingpage />,
     },
     {
+      type: "doc",
+      file: "api-shipments/getting-started",
+      at: { path: "Shipments/0", position: "before" },
+    },
+    {
       type: "category",
       label: "Documentation",
       icon: "book-open",
