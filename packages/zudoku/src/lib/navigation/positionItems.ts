@@ -83,7 +83,7 @@ const filterAndNormalizePaths = (
   items: PositionedItem[],
   topNavLabel?: string,
 ): PositionedItem[] => {
-  if (!topNavLabel) return items;
+  if (!topNavLabel) return [];
 
   const normalizedLabel = topNavLabel.toLowerCase();
 
