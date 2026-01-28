@@ -4,6 +4,10 @@ export function isBinaryContentType(contentType: string) {
   );
 }
 
+export function isAudioContentType(contentType: string) {
+  return /^audio\//i.test(contentType);
+}
+
 export const extractFileName = (
   headers: Array<[string, string]>,
   url: string,
