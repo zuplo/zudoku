@@ -133,6 +133,7 @@ export class NavigationResolver {
       file: filePath,
       label,
       icon,
+      display: data.navigation_display,
       categoryLabel,
       path: fileNoExt,
     } satisfies NavigationDoc;

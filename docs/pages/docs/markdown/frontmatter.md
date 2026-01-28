@@ -73,6 +73,17 @@ navigation_icon: compass
 ---
 ```
 
+### `navigation_display`
+
+Specifies the display property of the navigation item. See the
+[Navigation guide](/docs/configuration/navigation#display-control)
+
+```md
+---
+navigation_display: auth
+---
+```
+
 ### `toc`
 
 Controls whether the table of contents is displayed for the page. Set to `false` to hide the table
