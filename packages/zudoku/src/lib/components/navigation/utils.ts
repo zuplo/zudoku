@@ -6,6 +6,7 @@ import type {
 } from "../../../config/validators/NavigationSchema.js";
 import type { UseAuthReturn } from "../../authentication/hook.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
+import { isPositionedItem } from "../../navigation/positionItems.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { useCurrentNavigation } from "../context/ZudokuContext.js";
 
@@ -118,7 +119,7 @@ export const usePrevNext = (): {
 };
 
 export const navigationListItem = cva(
-  "relative flex items-center gap-2 px-(--padding-nav-item) my-0.5 py-1.5 rounded-lg hover:bg-accent tabular-nums",
+  "relative flex items-center gap-2 px-(--padding-nav-item) my-px py-1.5 rounded-lg hover:bg-accent tabular-nums",
   {
     variants: {
       isActive: {
@@ -159,9 +160,19 @@ export const itemMatchesFilter = (
 };
 
 export const shouldShowItem =
-  (auth: UseAuthReturn, context: ZudokuContext, filterQuery?: string) =>
+  ({
+    auth,
+    context,
+    filterQuery,
+  }: {
+    auth: UseAuthReturn;
+    context: ZudokuContext;
+    filterQuery?: string;
+  }) =>
   (item: NavigationItem): boolean => {
     if (item.type === "filter") return true;
+
+    if (isPositionedItem(item)) return false;
 
     if (filterQuery?.trim() && !itemMatchesFilter(item, filterQuery)) {
       return false;

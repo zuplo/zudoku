@@ -33,6 +33,17 @@ export const DisplaySchema = z
   .default("always")
   .optional();
 
+const AtPositionSchema = z.object({
+  path: z
+    .string()
+    .describe("Target path like 'Shipments/0' or 'Shipments/First Item'"),
+  position: z
+    .enum(["before", "after"])
+    .describe("Where to position relative to target"),
+});
+
+export type AtPosition = z.infer<typeof AtPositionSchema>;
+
 const InputNavigationDocSchema = z.union([
   z.string(),
   z.object({
@@ -44,6 +55,7 @@ const InputNavigationDocSchema = z.union([
     label: z.string().optional(),
     badge: BadgeSchema.optional(),
     display: DisplaySchema,
+    at: AtPositionSchema.optional(),
   }),
 ]);
 
@@ -55,6 +67,7 @@ const InputNavigationLinkSchema = z.object({
   icon: IconSchema.optional(),
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
+  at: AtPositionSchema.optional(),
 });
 
 const InputNavigationCustomPageSchema = z.object({
@@ -66,6 +79,7 @@ const InputNavigationCustomPageSchema = z.object({
   badge: BadgeSchema.optional(),
   display: DisplaySchema,
   layout: z.enum(["default", "none"]).optional(),
+  at: AtPositionSchema.optional(),
 });
 
 const InputNavigationSeparatorSchema = z.object({
@@ -94,6 +108,7 @@ const BaseInputNavigationCategorySchema = z.object({
   collapsed: z.boolean().optional(),
   link: InputNavigationCategoryLinkDocSchema.optional(),
   display: DisplaySchema,
+  at: AtPositionSchema.optional(),
 });
 
 export type InputNavigationItem =

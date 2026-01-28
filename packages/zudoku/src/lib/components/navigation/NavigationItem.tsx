@@ -70,7 +70,7 @@ export const NavigationItem = ({
   const context = useZudoku();
   const { query } = useNavigationFilter();
 
-  if (!shouldShowItem(auth, context, query)(item)) {
+  if (!shouldShowItem({ auth, context, filterQuery: query })(item)) {
     return null;
   }
 
