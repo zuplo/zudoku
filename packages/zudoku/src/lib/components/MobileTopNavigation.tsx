@@ -1,6 +1,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
+import { Separator } from "zudoku/ui/Separator.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import {
@@ -43,7 +44,7 @@ export const MobileTopNavigation = () => {
         <PageProgress />
       </div>
       <DrawerContent
-        className="lg:hidden h-[100dvh] end-0 start-auto w-[320px] rounded-none"
+        className="lg:hidden h-dvh end-0 start-auto w-[320px] rounded-none"
         aria-describedby={undefined}
       >
         <div className="p-4 overflow-y-auto overscroll-none h-full flex flex-col justify-between">
@@ -84,13 +85,17 @@ export const MobileTopNavigation = () => {
                   )}
                 </ClientOnly>
               )}
-              {filteredItems.map((item) => (
-                <li key={item.label}>
-                  <button type="button" onClick={() => setDrawerOpen(false)}>
-                    <TopNavItem {...item} />
-                  </button>
-                </li>
-              ))}
+              {filteredItems.map((item) =>
+                item.type === "separator" ? (
+                  <Separator className="w-full" key={item.label} />
+                ) : item.type !== "section" && item.type !== "filter" ? (
+                  <li key={item.label}>
+                    <button type="button" onClick={() => setDrawerOpen(false)}>
+                      <TopNavItem {...item} />
+                    </button>
+                  </li>
+                ) : null,
+              )}
               {isAuthEnabled && isAuthenticated && accountItems.length > 0 && (
                 <ClientOnly
                   fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}

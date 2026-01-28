@@ -77,6 +77,7 @@ export const useCurrentNavigation = () => {
   const location = useLocation();
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
+    if (item.type === "link") return;
     if (getItemPath(item) === location.pathname) {
       return parentCategories.at(0) ?? item;
     }

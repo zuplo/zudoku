@@ -7,6 +7,7 @@ import { Button } from "zudoku/ui/Button.js";
 import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
 import { navigationListItem, useIsCategoryOpen } from "./utils.js";
 
@@ -20,6 +21,7 @@ const NavigationCategoryInner = ({
   const isCategoryOpen = useIsCategoryOpen(category);
   const [hasInteracted, setHasInteracted] = useState(false);
   const location = useLocation();
+  const { query: filterQuery } = useNavigationFilter();
 
   const isCollapsible = category.collapsible ?? true;
   const isCollapsed = category.collapsed ?? true;
@@ -36,6 +38,13 @@ const NavigationCategoryInner = ({
       setOpen(true);
     }
   }, [isCategoryOpen]);
+
+  // Auto-expand when there's an active filter query
+  useEffect(() => {
+    if (filterQuery.trim()) {
+      setOpen(true);
+    }
+  }, [filterQuery]);
 
   const ToggleButton = isCollapsible && (
     <Button
