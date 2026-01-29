@@ -82,7 +82,7 @@ export const zuploMonetizationPlugin = createPlugin(
           children: [
             {
               path: "/checkout/:planId?",
-              element: <CheckoutPage deploymentName={options?.de} />,
+              element: <CheckoutPage />,
             },
             {
               path: "/checkout-confirm",
