@@ -25,6 +25,13 @@ export const flattenAllOf = (
 ): JSONSchema7Definition => {
   const merged = shallowAllOfMerge(schema);
 
+  // Convert boolean schemas to object form for OpenAPI compatibility
+  // true (accepts anything) → {} (empty schema)
+  // false (rejects everything) → { not: {} } (schema that never validates)
+  if (typeof merged === "boolean") {
+    return merged ? {} : { not: {} };
+  }
+
   if (merged == null || typeof merged !== "object") {
     return merged;
   }

@@ -38,37 +38,12 @@ export const SchemaPropertyItem = ({
   showCollapseButton = true,
 }: {
   name: string;
-  schema: SchemaObject | boolean;
+  schema: SchemaObject;
   group: "required" | "optional" | "deprecated";
   defaultOpen?: boolean;
   showCollapseButton?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
-
-  if (typeof schema === "boolean" || schema == null) {
-    return (
-      <Item>
-        <ItemContent className="gap-y-2">
-          <div>
-            <ItemTitle className="inline me-2">
-              <code>{name}</code>
-            </ItemTitle>
-            <span className="text-muted-foreground">
-              {schema === false ? "never" : "any"}
-            </span>
-            {group !== "optional" && (
-              <span className="text-muted-foreground">
-                <span className="text-muted-foreground/50">
-                  {"\u200B"}&middot;{"\u200B"}
-                </span>
-                <span className="text-primary">required</span>
-              </span>
-            )}
-          </div>
-        </ItemContent>
-      </Item>
-    );
-  }
 
   if (isCircularRef(schema)) {
     return (
