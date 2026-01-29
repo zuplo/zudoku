@@ -12,7 +12,7 @@ const viteBuildMetadata = (): Plugin => {
       const deps = [];
       for (const id of this.getModuleIds()) {
         const m = this.getModuleInfo(id);
-        if (m != null && !m.isExternal) {
+        if (m != null) {
           for (const target of m.importedIds) {
             deps.push({ source: m.id, target });
           }
