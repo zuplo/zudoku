@@ -115,7 +115,7 @@ export const zuploMonetizationPlugin = createPlugin(
       ];
     },
     getProtectedRoutes: () => {
-      return ["/checkout/*", "/checkout-success", "/checkout-failed"];
+      return ["/checkout/*", "/checkout-confirm", "/checkout-failed"];
     },
   }),
 );
