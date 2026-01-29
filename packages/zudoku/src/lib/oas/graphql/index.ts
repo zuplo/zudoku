@@ -6,6 +6,7 @@ import {
 } from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
+import type { OpenAPIV3_1 } from "openapi-types";
 import {
   type EncodingObject,
   type ExampleObject,
@@ -214,6 +215,16 @@ export const getAllOperations = (
 
   return operations;
 };
+
+const SchemaContact = builder
+  .objectRef<OpenAPIV3_1.ContactObject>("SchemaContact")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name", { nullable: true }),
+      url: t.exposeString("url", { nullable: true }),
+      email: t.exposeString("email", { nullable: true }),
+    }),
+  });
 
 const SchemaTag = builder.objectRef<
   Omit<TagObject, "name"> & { name?: string; slug?: string }
@@ -587,6 +598,14 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
     summary: t.string({
       resolve: (root) => root.info.summary,
       nullable: true,
+    }),
+    contact: t.field({
+      type: SchemaContact,
+      resolve: (root) => ({
+        name: root.info.contact?.name,
+        url: root.info.contact?.url,
+        email: root.info.contact?.email,
+      }),
     }),
     paths: t.field({
       type: [PathItem],

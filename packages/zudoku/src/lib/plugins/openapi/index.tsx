@@ -110,13 +110,21 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
       }
 
       const match = matchPath(
-        { path: `${basePath}/:version?/:tag`, end: true },
+        { path: `${basePath}/:version?/:tag?`, end: true },
         path,
       );
 
       try {
-        const versionParam = match?.params.version;
         const { versions } = getVersionMetadata(config);
+
+        // Since both version and tag is nullable, it is hard to know if
+        // :version is the actual version or if it is the :tag. So we check
+        // if it is a valid version, and if it is not, we know it is a tag.
+        let versionParam = match?.params.version;
+        if (versionParam != null && !versions.includes(versionParam)) {
+          versionParam = undefined;
+        }
+
         const version = versionParam ?? versions.at(0);
         const { type } = config;
 
@@ -192,7 +200,14 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
           },
         );
 
+        const informationPath = joinUrl(basePath, versionParam);
+
         const categories: NavigationItem[] = [
+          {
+            type: "link",
+            to: informationPath,
+            label: "Information",
+          },
           ...groupedCategories,
           ...Array.from(tagCategories.entries())
             .filter(([name]) => !groupedTags.has(name))

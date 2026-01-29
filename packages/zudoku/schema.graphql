@@ -110,6 +110,7 @@ type ResponseItem {
 
 type Schema {
   components: Components
+  contact: SchemaContact!
   description: String
   extensions: JSONObject
   openapi: String!
@@ -128,6 +129,12 @@ type Schema {
   title: String!
   url: String
   version: String!
+}
+
+type SchemaContact {
+  email: String
+  name: String
+  url: String
 }
 
 type SchemaItem {
