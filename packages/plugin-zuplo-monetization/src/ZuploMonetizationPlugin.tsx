@@ -3,7 +3,7 @@ import { Button } from "zudoku/components";
 import { StarsIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
-import CheckoutConfirmPage from "./pages/CheckoutConfimPage";
+import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutFailedPage from "./pages/CheckoutFailedPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import PricingPage from "./pages/PricingPage";
@@ -33,17 +33,15 @@ export const zuploMonetizationPlugin = createPlugin(
           ),
         },
       }),
-    initialize: (context) => {
-      if (!context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME) {
-        throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
-      }
-    },
 
     getIdentities: async (context) => {
+      const deploymentName = context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME;
+      if (!deploymentName) {
+        throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
+      }
+
       const result = await queryClient.fetchQuery<SubscriptionsResponse>({
-        queryKey: [
-          `/v3/zudoku-metering/${context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/subscriptions`,
-        ],
+        queryKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
         meta: {
           context,
         },

@@ -9,6 +9,7 @@ import { Separator } from "zudoku/ui/Separator";
 
 import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
+import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatDuration } from "../utils/formatDuration";
@@ -31,8 +32,8 @@ const CheckoutConfirmPage = () => {
   const [search] = useSearchParams();
   const planId = search.get("plan");
   const zudoku = useZudoku();
+  const deploymentName = useDeploymentName();
   const navigate = useNavigate();
-  const deploymentName = zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME ?? "";
   const { data: plans } = usePlans(deploymentName);
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
@@ -45,7 +46,7 @@ const CheckoutConfirmPage = () => {
 
   const createSubscriptionMutation = useMutation({
     mutationFn: createMutationFn(
-      `/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/subscriptions`,
+      `/v3/zudoku-metering/${deploymentName}/subscriptions`,
       zudoku,
       {
         method: "POST",

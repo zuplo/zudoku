@@ -2,6 +2,7 @@ import { cn } from "zudoku";
 import { Heading } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery, useSuspenseQuery } from "zudoku/react-query";
+import { useDeploymentName } from "../hooks/useDeploymentName";
 import type { SubscriptionsResponse } from "../hooks/useSubscriptions";
 import type { Plan } from "../types/PlanType";
 import { PricingCard } from "./pricing/PricingCard";
@@ -14,11 +15,10 @@ const PricingPage = ({
   title?: string;
 }) => {
   const zudoku = useZudoku();
+  const deploymentName = useDeploymentName();
 
   const { data: pricingTable } = useSuspenseQuery<{ items: Plan[] }>({
-    queryKey: [
-      `/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/pricing-page`,
-    ],
+    queryKey: [`/v3/zudoku-metering/${deploymentName}/pricing-page`],
   });
   const auth = useAuth();
   const { data: subscriptions = { items: [] } } =
@@ -26,9 +26,7 @@ const PricingPage = ({
       meta: {
         context: zudoku,
       },
-      queryKey: [
-        `/v3/zudoku-metering/${zudoku.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME}/subscriptions`,
-      ],
+      queryKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
       enabled: auth.isAuthenticated,
     });
 
