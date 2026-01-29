@@ -13,6 +13,7 @@ import {
   queryClient,
 } from "../../ZuploMonetizationWrapper.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
+import { SwitchPlanModal } from "./SwitchPlanModal.js";
 
 export const ManageSubscription = ({
   subscription,
@@ -63,13 +64,15 @@ export const ManageSubscription = ({
               Switch to a different plan or cancel your current subscription.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/pricing">
-                  <RefreshCcw className="w-4 h-4 mr-2" />
-                  New Subscription
-                </Link>
-              </Button>
-
+              {subscription.status === "canceled" && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/pricing">
+                    <RefreshCcw className="w-4 h-4 mr-2" />
+                    New Subscription
+                  </Link>
+                </Button>
+              )}
+              <SwitchPlanModal subscription={subscription} />
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div>

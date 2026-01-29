@@ -67,7 +67,6 @@ const SubscriptionsPage = () => {
         {activeSubscription && activePhase && (
           <ManageSubscription
             subscription={activeSubscription}
-            deploymentName={deploymentName}
             planName={activePhase.name}
           />
         )}
