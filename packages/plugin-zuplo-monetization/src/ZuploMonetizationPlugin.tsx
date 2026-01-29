@@ -13,7 +13,6 @@ import ZuploMonetizationWrapper, {
 } from "./ZuploMonetizationWrapper";
 
 export type ZudokuMonetizationPluginOptions = {
-  environmentName?: string;
   pricing?: {
     subtitle?: string;
     title?: string;
@@ -35,10 +34,7 @@ export const zuploMonetizationPlugin = createPlugin(
         },
       }),
     initialize: (context) => {
-      if (
-        !context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME ||
-        options?.environmentName
-      ) {
+      if (!context.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME) {
         throw new Error("ZUPLO_PUBLIC_DEPLOYMENT_NAME is not set");
       }
     },
@@ -88,7 +84,7 @@ export const zuploMonetizationPlugin = createPlugin(
           children: [
             {
               path: "/checkout/:planId?",
-              element: <CheckoutPage />,
+              element: <CheckoutPage deploymentName={options?.de} />,
             },
             {
               path: "/checkout-confirm",

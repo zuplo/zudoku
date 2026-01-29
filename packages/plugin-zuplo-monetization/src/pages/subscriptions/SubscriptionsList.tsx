@@ -9,6 +9,7 @@ interface Subscription {
   name: string;
   status: string;
   activeFrom: string;
+  activeTo?: string;
   billingCadence: string;
   plan: {
     key: string;
@@ -48,14 +49,27 @@ export const SubscriptionsList = ({
             >
               <ItemContent>
                 <ItemTitle>
-                  {subscription.name}
-                  <Badge className="capitalize">
-                    {formatDurationInterval(subscription.billingCadence)}
-                  </Badge>
+                  <span
+                    className={cn(
+                      subscription.status === "cancelled" && "line-through",
+                    )}
+                  >
+                    {subscription.name}
+                  </span>
+                  {subscription.activeTo ? (
+                    <Badge variant="muted" className="capitalize">
+                      Cancelled
+                    </Badge>
+                  ) : (
+                    <Badge className="capitalize">
+                      {formatDurationInterval(subscription.billingCadence)}
+                    </Badge>
+                  )}
                 </ItemTitle>
 
                 <ItemDescription>
-                  Started: {formatDate(subscription.activeFrom)}
+                  {subscription.activeTo ? "Active until" : "Started on"}:{" "}
+                  {formatDate(subscription.activeTo ?? subscription.activeFrom)}
                 </ItemDescription>
               </ItemContent>
             </Item>

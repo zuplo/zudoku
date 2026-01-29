@@ -4,6 +4,7 @@ import { useParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { useSubscriptions } from "../hooks/useSubscriptions";
 import { ApiKeysList } from "./subscriptions/ApiKeysList";
+import { ManageSubscription } from "./subscriptions/ManageSubscription";
 import { SubscriptionsList } from "./subscriptions/SubscriptionsList";
 import { Usage } from "./subscriptions/Usage";
 
@@ -61,6 +62,19 @@ const SubscriptionsPage = () => {
             deploymentName={deploymentName}
             consumerId={activeSubscription.consumer.id}
             apiKeys={activeSubscription.consumer.apiKeys}
+          />
+        )}
+
+        {activeSubscription && activePhase && (
+          <ManageSubscription
+            deploymentName={deploymentName}
+            subscriptionId={activeSubscription.id}
+            planName={activePhase.name}
+            billingCycleEnd={
+              new Date(
+                activeSubscription.alignment.currentAlignedBillingPeriod.to,
+              )
+            }
           />
         )}
 
