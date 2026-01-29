@@ -1,0 +1,86 @@
+import { zuploMonetizationPlugin } from "@zuplo/zudoku-plugin-monetization";
+import type { ZudokuConfig } from "zudoku";
+
+const config: ZudokuConfig = {
+  site: {
+    title: "My Developer Portal",
+    banner: {
+      message: (
+        <div className="w-full text-center">
+          <strong>Congrats!</strong> 🙌 You just created your first developer
+          portal.
+        </div>
+      ),
+      color: "info",
+      dismissible: true,
+    },
+  },
+  basePath: "/",
+  navigation: [
+    {
+      type: "category",
+      label: "Documentation",
+      items: [
+        {
+          type: "category",
+          label: "Getting Started",
+          icon: "sparkles",
+          items: [
+            "/introduction",
+            {
+              type: "link",
+              icon: "folder-cog",
+              badge: {
+                label: "New",
+                color: "purple",
+              },
+              label: "API Reference",
+              to: "/api",
+            },
+          ],
+        },
+        {
+          type: "category",
+          label: "Useful Links",
+          collapsible: false,
+          icon: "link",
+          items: [
+            {
+              type: "link",
+              label: "Zuplo Docs",
+              to: "https://zuplo.com/docs/dev-portal/introduction",
+            },
+            {
+              type: "link",
+              label: "Developer Portal Docs",
+              to: "https://zuplo.com/docs/dev-portal/introduction",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: "link",
+      to: "/api",
+      label: "API Reference",
+    },
+  ],
+  redirects: [{ from: "/", to: "/introduction" }],
+  apis: {
+    type: "file",
+    input: "../config/routes.oas.json",
+    path: "/api",
+  },
+  docs: {
+    files: "/pages/**/*.mdx",
+  },
+  authentication: {
+    type: "auth0",
+    domain: "auth.zuplo.site",
+    clientId: "f8I87rdsCRo4nU2FHf0fHVwA9P7xi7Ml",
+    audience: "https://api.example.com/",
+  },
+  plugins: [zuploMonetizationPlugin()],
+};
+
+export default config;

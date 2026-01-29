@@ -103,7 +103,7 @@ export const Secret = ({
             setRevealed((prev) => !prev);
             onReveal?.(!revealed);
           }}
-          size="icon"
+          size="icon-sm"
         >
           {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
         </Button>
@@ -114,7 +114,7 @@ export const Secret = ({
           copyToClipboard(secret);
           onCopy?.(secret);
         }}
-        size="icon"
+        size="icon-sm"
       >
         {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
       </Button>

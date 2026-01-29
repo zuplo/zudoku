@@ -38,6 +38,11 @@
 - **Functional**: Prefer immutable functional style, using functions like `Object.fromEntries`,
   `map` and `flatMap` to construct new data
 
+## UI
+
+- Use UI components from the `zudoku/ui` module. (based on shadcn/ui)
+- Use icons from the `zudoku/icons` module (based on Lucide icons)
+
 ## Plugin Architecture
 
 - Plugins live in packages/zudoku/lib/plugins/

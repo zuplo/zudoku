@@ -132,10 +132,15 @@ export class ZudokuContext {
   public readonly getAuthState: () => AuthState;
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
+  public readonly env: Record<string, string | undefined>;
   private readonly navigationPlugins: NavigationPlugin[];
   private emitter = createNanoEvents<ZudokuEvents>();
 
-  constructor(options: ZudokuContextOptions, queryClient: QueryClient) {
+  constructor(
+    options: ZudokuContextOptions,
+    queryClient: QueryClient,
+    env: Record<string, string | undefined>,
+  ) {
     const pluginProtectedRoutes = Object.fromEntries(
       (options.plugins ?? []).flatMap((plugin) => {
         if (!isNavigationPlugin(plugin)) return [];
@@ -152,6 +157,7 @@ export class ZudokuContext {
     };
 
     this.queryClient = queryClient;
+    this.env = env;
     this.options = { ...options, protectedRoutes };
     this.plugins = options.plugins ?? [];
     this.navigation = options.navigation ?? [];

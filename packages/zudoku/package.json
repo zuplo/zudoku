@@ -26,7 +26,10 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./ui/*": "./src/lib/ui/*",
+    "./ui/*": {
+      "types": "./src/lib/ui/*.tsx",
+      "default": "./src/lib/ui/*"
+    },
     "./auth/clerk": "./src/lib/authentication/providers/clerk.tsx",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.tsx",
     "./auth/openid": "./src/lib/authentication/providers/openid.tsx",
@@ -190,7 +193,7 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.app.json",
-    "build:dev": "esbuild './src/**/*.ts' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
+    "build:dev": "esbuild './src/**/*.ts' './src/**/*.tsx' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
     "build:vite": "vite build",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
@@ -202,7 +205,6 @@
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "14.1.1",
     "@envelop/core": "5.3.2",
-    "@fastify/deepmerge": "3.1.0",
     "@graphql-typed-document-node/core": "3.2.0",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
     "@mdx-js/react": "3.1.1",
@@ -355,6 +357,13 @@
     "mermaid": "^11.0.0",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
+  },
+  "typesVersions": {
+    "*": {
+      "ui/*": [
+        "./src/lib/ui/*"
+      ]
+    }
   },
   "peerDependenciesMeta": {
     "@azure/msal-browser": {

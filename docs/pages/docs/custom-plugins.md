@@ -254,24 +254,35 @@ configuration based on external data or conditions.
 import { ZudokuPlugin } from "zudoku";
 
 const transformConfigPlugin: ZudokuPlugin = {
-  transformConfig: () => ({
-    navigation: [
-      ...(config.navigation ?? []),
-      {
-        type: "link",
-        label: "System Status",
-        to: "https://status.example.com",
-        icon: "activity",
+  transformConfig: ({ config, merge }) => {
+    // Option 1: Use merge helper for deep merging
+    return merge({
+      slots: {
+        "head-navigation-start": () => <a href="/pricing">Pricing</a>,
       },
-    ],
-  }),
+    });
+
+    // Option 2: Manual spread for full control
+    return {
+      ...config,
+      navigation: [
+        ...(config.navigation ?? []),
+        {
+          type: "link",
+          label: "System Status",
+          to: "https://status.example.com",
+          icon: "activity",
+        },
+      ],
+    };
+  },
 };
 ```
 
-The `transformConfig` function receives:
+The `transformConfig` function receives an object with:
 
 - **config**: The current Zudoku configuration object
-- **context**: A `ConfigHookContext` with `mode`, `rootDir`, and `configPath`
+- **merge**: A helper function that deep merges a partial config with the current config
 
-The function can return a partial configuration object that will be merged with the existing config,
-or `void` to make no changes. The hook can also be async.
+The function must return a full configuration object (either via `merge()` or manual spreading), or
+`void` to make no changes. The hook can also be async.

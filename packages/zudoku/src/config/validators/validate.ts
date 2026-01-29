@@ -628,6 +628,8 @@ const BaseConfigSchema = z.object({
      */
     examplesLanguage: z.string().optional(),
   }),
+  // Internal: populated by plugins via `transformConfig` to add Tailwind source paths
+  __tailwindSources: z.array(z.string()),
 });
 
 export const ZudokuConfig = BaseConfigSchema.partial();

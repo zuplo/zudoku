@@ -111,7 +111,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   return [
     {
       element: (
-        <Zudoku {...options}>
+        <Zudoku {...options} env={import.meta.env}>
           <BuildCheck
             buildId={import.meta.env.ZUPLO_BUILD_ID}
             environmentType={import.meta.env.ZUPLO_ENVIRONMENT_TYPE}
