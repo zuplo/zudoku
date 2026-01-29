@@ -60,10 +60,9 @@ export const ApiKeysList = ({
     return null;
   }
 
-  // Sort keys: active first, then by creation date
   const sortedKeys = [...apiKeys].sort((a, b) => {
-    const aExpired = new Date(a.expiresOn) < new Date();
-    const bExpired = new Date(b.expiresOn) < new Date();
+    const aExpired = a.expiresOn && new Date(a.expiresOn) < new Date();
+    const bExpired = b.expiresOn && new Date(b.expiresOn) < new Date();
 
     if (aExpired !== bExpired) {
       return aExpired ? 1 : -1;

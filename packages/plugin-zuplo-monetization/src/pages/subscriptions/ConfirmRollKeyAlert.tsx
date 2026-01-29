@@ -25,7 +25,8 @@ const ConfirmRollKeyAlert = ({
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
             This will roll your API key and create a new one. You will need to
-            update use the new key. The old key will be deleted after 7 days.
+            update your API client to use the new key. The old key will be
+            deleted after 7 days.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
