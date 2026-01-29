@@ -195,7 +195,7 @@ const PlanComparisonItem = ({
       context,
       {
         method: "POST",
-        body: JSON.stringify({ planxId: comparison.plan.id }),
+        body: JSON.stringify({ planId: comparison.plan.id }),
       },
     ),
     retry: false,
@@ -217,10 +217,7 @@ const PlanComparisonItem = ({
       {mutation.error && (
         <Alert variant="destructive">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>
-            {JSON.stringify(mutation.error)}
-            {mutation.error?.errors?.at(0)?.message}
-          </AlertDescription>
+          <AlertDescription>{JSON.stringify(mutation.error)}</AlertDescription>
         </Alert>
       )}
       <div className="border rounded-lg p-4">

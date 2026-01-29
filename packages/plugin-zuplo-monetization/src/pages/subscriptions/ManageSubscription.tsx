@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { Link } from "zudoku/components";
-import { useZudoku } from "zudoku/hooks";
 import { ExternalLink, RefreshCcw, Settings } from "zudoku/icons";
-import { useMutation } from "zudoku/react-query";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
-import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
-import {
-  createMutationFn,
-  queryClient,
-} from "../../ZuploMonetizationWrapper.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
 
@@ -23,24 +16,6 @@ export const ManageSubscription = ({
   planName: string;
 }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const context = useZudoku();
-  const deploymentName = useDeploymentName();
-  const cancelSubscriptionMutation = useMutation({
-    mutationFn: createMutationFn(
-      () =>
-        `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscription.id}/cancel`,
-      context,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          timing: "next_billing_cycle",
-        }),
-      },
-    ),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries();
-    },
-  });
 
   return (
     <Card>
@@ -48,8 +23,7 @@ export const ManageSubscription = ({
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         planName={planName}
-        onCancel={() => cancelSubscriptionMutation.mutateAsync()}
-        isPending={cancelSubscriptionMutation.isPending}
+        subscriptionId={subscription.id}
       />
       <CardContent className="p-6">
         <div className="flex gap-4">
