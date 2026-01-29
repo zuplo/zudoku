@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
 import { useParams } from "zudoku/router";
 import { useDeploymentName } from "../hooks/useDeploymentName";
+import { usePlans } from "../hooks/usePlans";
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
 const CheckoutPage = () => {
@@ -11,47 +13,49 @@ const CheckoutPage = () => {
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
+  const plans = usePlans(deploymentName);
+  const selectedPlan = plans.data?.items.find((plan) => plan.id === planId);
 
-  useQuery({
-    queryKey: ["plan", planId],
-    queryFn: async () => {
-      if (!auth.profile?.email) {
-        throw new Error(
-          "No email found for user. Make sure your Authentication Provider exposes the email address.",
-        );
-      }
+  if (!auth.profile?.email) {
+    throw new Error(
+      "No email found for user. Make sure your Authentication Provider exposes the email address.",
+    );
+  }
 
-      const request = await zudoku.signRequest(
-        new Request(
-          `https://api.zuploedge.com/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: auth.profile?.email,
-              planId,
-              successURL:
-                generateUrl(`/checkout-confirm`) +
-                `?${planId ? `plan=${planId}` : ""}`,
-              cancelURL:
-                generateUrl(`/checkout-failed`) +
-                `?${planId ? `plan=${planId}` : ""}`,
-            }),
-          },
-        ),
-      );
+  if (!selectedPlan) {
+    throw new Error(`Invalid plan id: ${planId}`);
+  }
 
-      const checkoutRequest = await fetch(request).then((res) => res.json());
-
-      if (checkoutRequest.url) {
-        window.location.href = checkoutRequest.url;
-      }
-
-      return checkoutRequest;
+  const checkoutLink = useQuery<{ url: string }>({
+    meta: {
+      context: zudoku,
     },
+    queryKey: [
+      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: auth.profile?.email,
+          planId: selectedPlan.id,
+          successURL:
+            generateUrl(`/checkout-confirm`) +
+            `?${selectedPlan.id ? `plan=${selectedPlan.id}` : ""}`,
+          cancelURL:
+            generateUrl(`/checkout-failed`) +
+            `?${selectedPlan.id ? `plan=${selectedPlan.id}` : ""}`,
+        }),
+      },
+    ],
   });
+
+  useEffect(() => {
+    if (checkoutLink.data?.url) {
+      window.location.href = checkoutLink.data.url;
+    }
+  }, [checkoutLink.data]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted">
