@@ -46,7 +46,9 @@ export const ManageSubscription = ({
                   </Link>
                 </Button>
               )}
-              <SwitchPlanModal subscription={subscription} />
+              {subscription.status !== "canceled" && (
+                <SwitchPlanModal subscription={subscription} />
+              )}
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div>
