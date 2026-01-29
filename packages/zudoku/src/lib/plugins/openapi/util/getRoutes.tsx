@@ -3,7 +3,6 @@ import {
   generatePath,
   Navigate,
   type RouteObject,
-  redirect,
   useLocation,
   useParams,
 } from "react-router";
@@ -144,12 +143,17 @@ const createVersionRoutes = ({
   tagPages: string[];
   hasUntaggedOperations?: boolean;
 }): RouteObject[] => {
-  const firstTag =
-    tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
+  const indexRoute = {
+    index: true,
+    path: versionPath,
+    lazy: async () => {
+      const { SchemaInfo } = await import("../SchemaInfo.js");
 
-  const indexRoute: RouteObject = firstTag
-    ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
-    : createRoute({ path: versionPath });
+      return {
+        element: <SchemaInfo />,
+      };
+    },
+  } satisfies RouteObject
 
   return [
     indexRoute,
@@ -216,7 +220,7 @@ export const getRoutes = ({
               basePath: versionPath,
               hasUntaggedOperations,
             }),
-          ],
+        ],
       client,
       config,
     });

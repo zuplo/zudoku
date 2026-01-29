@@ -139,8 +139,11 @@ export type ResponseItem = {
 export type Schema = {
   __typename?: "Schema";
   components?: Maybe<Components>;
+  contact?: Maybe<SchemaContact>;
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  externalDocs?: Maybe<SchemaExternalDocs>;
+  license?: Maybe<SchemaLicense>;
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
@@ -148,6 +151,7 @@ export type Schema = {
   summary?: Maybe<Scalars["String"]["output"]>;
   tag?: Maybe<SchemaTag>;
   tags: Array<SchemaTag>;
+  termsOfService?: Maybe<Scalars["String"]["output"]>;
   title: Scalars["String"]["output"];
   url?: Maybe<Scalars["String"]["output"]>;
   version: Scalars["String"]["output"];
@@ -167,11 +171,31 @@ export type SchemaTagArgs = {
   untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
 };
 
+export type SchemaContact = {
+  __typename?: "SchemaContact";
+  email?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  url?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type SchemaExternalDocs = {
+  __typename?: "SchemaExternalDocs";
+  description?: Maybe<Scalars["String"]["output"]>;
+  url: Scalars["String"]["output"];
+};
+
 export type SchemaItem = {
   __typename?: "SchemaItem";
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   name: Scalars["String"]["output"];
   schema: Scalars["JSONSchema"]["output"];
+};
+
+export type SchemaLicense = {
+  __typename?: "SchemaLicense";
+  identifier?: Maybe<Scalars["String"]["output"]>;
+  name: Scalars["String"]["output"];
+  url?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type SchemaTag = {
@@ -343,6 +367,47 @@ export type OperationsForTagQuery = {
         extensions?: any | null;
       } | null;
     } | null;
+  };
+};
+
+export type SchemaInfoQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type SchemaInfoQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    termsOfService?: string | null;
+    description?: string | null;
+    summary?: string | null;
+    title: string;
+    url?: string | null;
+    version: string;
+    servers: Array<{ __typename?: "Server"; url: string }>;
+    license?: {
+      __typename?: "SchemaLicense";
+      name: string;
+      url?: string | null;
+      identifier?: string | null;
+    } | null;
+    externalDocs?: {
+      __typename?: "SchemaExternalDocs";
+      description?: string | null;
+      url: string;
+    } | null;
+    contact?: {
+      __typename?: "SchemaContact";
+      name?: string | null;
+      url?: string | null;
+      email?: string | null;
+    } | null;
+    tags: Array<{
+      __typename?: "SchemaTag";
+      name?: string | null;
+      description?: string | null;
+    }>;
   };
 };
 
@@ -635,6 +700,42 @@ export const OperationsForTagDocument = new TypedDocumentString(`
 }`) as unknown as TypedDocumentString<
   OperationsForTagQuery,
   OperationsForTagQueryVariables
+>;
+export const SchemaInfoDocument = new TypedDocumentString(`
+    query SchemaInfo($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    servers {
+      url
+    }
+    license {
+      name
+      url
+      identifier
+    }
+    termsOfService
+    externalDocs {
+      description
+      url
+    }
+    contact {
+      name
+      url
+      email
+    }
+    description
+    summary
+    title
+    url
+    version
+    tags {
+      name
+      description
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  SchemaInfoQuery,
+  SchemaInfoQueryVariables
 >;
 export const GetSchemasDocument = new TypedDocumentString(`
     query GetSchemas($input: JSON!, $type: SchemaType!) {

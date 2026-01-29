@@ -6,6 +6,7 @@ import {
 } from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
+import type { OpenAPIV3_1 } from "openapi-types";
 import {
   type EncodingObject,
   type ExampleObject,
@@ -212,6 +213,35 @@ export const getAllOperations = (
 
   return operations;
 };
+
+const SchemaContact = builder
+  .objectRef<OpenAPIV3_1.ContactObject>("SchemaContact")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name", { nullable: true }),
+      url: t.exposeString("url", { nullable: true }),
+      email: t.exposeString("email", { nullable: true }),
+    }),
+  });
+
+const SchemaLicense = builder
+  .objectRef<OpenAPIV3_1.LicenseObject>("SchemaLicense")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      url: t.exposeString("url", { nullable: true }),
+      identifier: t.exposeString("identifier", { nullable: true }),
+    }),
+  });
+
+const SchemaExternalDocs = builder
+  .objectRef<OpenAPIV3_1.ExternalDocumentationObject>("SchemaExternalDocs")
+  .implement({
+    fields: (t) => ({
+      description: t.exposeString("description", { nullable: true }),
+      url: t.exposeString("url"),
+    }),
+  });
 
 const SchemaTag = builder.objectRef<
   Omit<TagObject, "name"> & { name?: string; slug?: string }
@@ -585,6 +615,45 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
     summary: t.string({
       resolve: (root) => root.info.summary,
       nullable: true,
+    }),
+    contact: t.field({
+      type: SchemaContact,
+      nullable: true,
+      resolve: (root) =>
+        root.info.contact != null
+          ? {
+              name: root.info.contact.name,
+              url: root.info.contact.url,
+              email: root.info.contact.email,
+            }
+          : null,
+    }),
+    license: t.field({
+      nullable: true,
+      type: SchemaLicense,
+      resolve: (root) =>
+        root.info.license != null
+          ? {
+              name: root.info.license.name,
+              url: root.info.license.url,
+              identifier: root.info.license.identifier,
+            }
+          : null,
+    }),
+    termsOfService: t.string({
+      resolve: (root) => root.info.termsOfService,
+      nullable: true,
+    }),
+    externalDocs: t.field({
+      nullable: true,
+      type: SchemaExternalDocs,
+      resolve: (root) =>
+        root.externalDocs != null
+          ? {
+              description: root.externalDocs.description,
+              url: root.externalDocs.url,
+            }
+          : null,
     }),
     paths: t.field({
       type: [PathItem],

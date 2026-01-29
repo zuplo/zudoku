@@ -118,13 +118,22 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
       }
 
       const match = matchPath(
-        { path: `${basePath}/:version?/:tag`, end: true },
+        { path: `${basePath}/:version?/:tag?`, end: true },
         path,
       );
 
       try {
-        const versionParam = match?.params.version;
         const { versions } = getVersionMetadata(config);
+
+        // Since both version and tag is nullable, it is hard to know if
+        // :version is the actual version or if it is the :tag. So we check
+        // if it is a valid version, and if it is not, we know it is a tag.
+        let versionParam = match?.params.version;
+        if (versionParam != null && !versions.includes(versionParam)) {
+          versionParam = undefined;
+        }
+
+
         const version = versionParam ?? versions.at(0);
         const { type } = config;
 
@@ -173,11 +182,19 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
             | { name: string; tags: string[] }[]
             | undefined) ?? [];
 
-        const categories: NavigationItem[] = buildTagCategories({
+        const categories: NavigationItem[] = [
+          {
+            type: "link",
+            to: joinUrl(basePath, versionParam),
+            label: "Information",
+          },
+        ]
+
+        categories.push(...buildTagCategories({
           tagCategories,
           tagGroups,
           expandAllTags: config.options?.expandAllTags,
-        });
+        }));
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,
@@ -196,7 +213,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
         if (data.schema.components?.schemas?.length) {
           categories.push({
-            type: "link" as const,
+            type: "link",
             label: "Schemas",
             to: joinUrl(basePath, versionParam, "~schemas"),
           });
