@@ -89,7 +89,7 @@ const CheckoutConfirmPage = () => {
           {/* Title and Message */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-card-foreground mb-3">
-              Review you subscription
+              Review your subscription
             </h1>
             <p className="text-muted-foreground text-base">
               Please confirm the details below before completing your purchase.
