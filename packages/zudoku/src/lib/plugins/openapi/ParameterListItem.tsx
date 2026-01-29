@@ -90,6 +90,7 @@ export const ParameterListItem = ({
               </code>
             )}
           </ItemTitle>
+          {"\u200B"}
           <ParamInfos
             className="inline"
             schema={paramSchema}
