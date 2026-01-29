@@ -42,11 +42,11 @@ export const ManageSubscription = ({
                 <Button variant="outline" size="sm" asChild>
                   <Link to="/pricing">
                     <RefreshCcw className="w-4 h-4 mr-2" />
-                    New Subscription
+                    New subscription
                   </Link>
                 </Button>
               )}
-              {subscription.status !== "canceled" && (
+              {subscription.status === "active" && (
                 <SwitchPlanModal subscription={subscription} />
               )}
               <Tooltip delayDuration={0}>
@@ -57,7 +57,7 @@ export const ManageSubscription = ({
                       size="sm"
                       onClick={() => setCancelDialogOpen(true)}
                       title="You can only cancel your subscription if it is not active."
-                      disabled={subscription.status === "canceled"}
+                      disabled={subscription.status !== "active"}
                     >
                       Cancel subscription
                     </Button>
