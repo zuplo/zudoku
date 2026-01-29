@@ -66,14 +66,9 @@ const SubscriptionsPage = () => {
 
         {activeSubscription && activePhase && (
           <ManageSubscription
+            subscription={activeSubscription}
             deploymentName={deploymentName}
-            subscriptionId={activeSubscription.id}
             planName={activePhase.name}
-            billingCycleEnd={
-              new Date(
-                activeSubscription.alignment.currentAlignedBillingPeriod.to,
-              )
-            }
           />
         )}
 

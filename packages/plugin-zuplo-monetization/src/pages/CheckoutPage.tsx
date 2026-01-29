@@ -12,7 +12,7 @@ const CheckoutPage = () => {
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
 
-  const { data: _data } = useQuery({
+  useQuery({
     queryKey: ["plan", planId],
     queryFn: async () => {
       if (!auth.profile?.email) {

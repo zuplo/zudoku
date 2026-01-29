@@ -58,7 +58,9 @@ const PricingPage = ({
               plan={plan}
               isPopular={plan.key === "pro"}
               disabled={subscriptions.items.some(
-                (subscription) => subscription.plan.id === plan.id,
+                (subscription) =>
+                  subscription.status !== "canceled" &&
+                  subscription.plan.id === plan.id,
               )}
             />
           ))}
