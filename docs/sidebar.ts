@@ -112,6 +112,7 @@ export const docs: Navigation = [
     icon: "cloud-upload",
     link: "docs/deployment",
     items: [
+      "docs/deploy/zuplo",
       "docs/deploy/cloudflare-pages",
       "docs/deploy/github-pages",
       "docs/deploy/vercel",
