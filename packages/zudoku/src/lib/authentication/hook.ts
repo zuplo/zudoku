@@ -1,3 +1,4 @@
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import type { AuthActionOptions } from "./authentication.js";
@@ -10,6 +11,17 @@ export const useAuth = () => {
   const authState = useAuthState();
   const isAuthEnabled = typeof authentication !== "undefined";
   const navigate = useNavigate();
+
+  useQuery({
+    queryKey: ["auth-state"],
+    queryFn: async () => {
+      // keep refreshing the user profile if the email is not verified
+      if (authState.isAuthenticated && !authState.profile?.emailVerified) {
+        await authentication?.refreshUserProfile?.();
+      }
+      return true;
+    },
+  });
 
   return {
     isAuthEnabled,

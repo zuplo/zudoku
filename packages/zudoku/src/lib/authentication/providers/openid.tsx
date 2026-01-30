@@ -145,6 +145,34 @@ export class OpenIDAuthenticationProvider
     });
   }
 
+  public async refreshUserProfile(): Promise<UserProfile | undefined> {
+    const accessToken = await this.getAccessToken();
+    const authServer = await this.getAuthServer();
+
+    const userInfoResponse = await oauth.userInfoRequest(
+      authServer,
+      this.client,
+      accessToken,
+    );
+    const userInfo = await userInfoResponse.json();
+
+    const profile: UserProfile = {
+      sub: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name,
+      emailVerified: userInfo.email_verified ?? false,
+      pictureUrl: userInfo.picture,
+    };
+
+    useAuthState.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile,
+    });
+
+    return profile;
+  }
+
   private async authorize({
     redirectTo,
     isSignUp = false,
@@ -416,29 +444,7 @@ export class OpenIDAuthenticationProvider
     );
 
     this.setTokensFromResponse(oauthResult);
-
-    const accessToken = await this.getAccessToken();
-
-    const userInfoResponse = await oauth.userInfoRequest(
-      authServer,
-      this.client,
-      accessToken,
-    );
-    const userInfo = await userInfoResponse.json();
-
-    const profile: UserProfile = {
-      sub: userInfo.sub,
-      email: userInfo.email,
-      name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? false,
-      pictureUrl: userInfo.picture,
-    };
-
-    useAuthState.setState({
-      isAuthenticated: true,
-      isPending: false,
-      profile,
-    });
+    this.refreshUserProfile();
 
     const redirectTo = sessionStorage.getItem("redirect-to") ?? "/";
     sessionStorage.removeItem("redirect-to");
