@@ -38,7 +38,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
 
       <Slot.Target name="api-keys-list-page-before-keys" />
       {auth.profile?.emailVerified === false ? (
-        <Item variant="outline">
+        <Item variant="outline" className="mt-4">
           <ItemContent>
             <ItemTitle>Verified email required</ItemTitle>
             <ItemDescription>
@@ -46,11 +46,13 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
             </ItemDescription>
           </ItemContent>
 
-          <ItemActions>
-            <Button onClick={() => auth.requestEmailVerification()}>
-              Verify email
-            </Button>
-          </ItemActions>
+          {auth.supportsEmailVerification && (
+            <ItemActions>
+              <Button onClick={() => auth.requestEmailVerification()}>
+                Verify email
+              </Button>
+            </ItemActions>
+          )}
         </Item>
       ) : (
         <ErrorBoundary
