@@ -66,10 +66,6 @@ const CheckoutConfirmPage = () => {
   return (
     <div className="w-full bg-muted min-h-screen flex items-center justify-center px-4 py-12 gap-4">
       <div className="max-w-2xl w-full">
-        <div className="flex gap-2 text-muted-foreground text-sm items-center pt-4 pb-4">
-          <ArrowLeftIcon className="size-4" />
-          Back to Payment Details
-        </div>{" "}
         {createSubscriptionMutation.isError && (
           <Alert className="mb-4" variant="destructive">
             <AlertTitle>Error</AlertTitle>

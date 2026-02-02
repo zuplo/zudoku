@@ -16,7 +16,7 @@ const config: ZudokuConfig = {
     },
   },
   theme: {
-    registryUrl: "https://tweakcn.com/r/themes/caffeine.json",
+    registryUrl: "https://tweakcn.com/r/themes/claude.json",
   },
   basePath: "/",
   navigation: [

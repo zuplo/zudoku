@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "zudoku/components";
+import { Link, useZudoku } from "zudoku/components";
 import { ExternalLink, RefreshCcw, Settings } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
@@ -7,14 +7,27 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
+import { useQuery } from "zudoku/react-query";
 
 export const ManageSubscription = ({
   subscription,
   planName,
+  customerId,
 }: {
+  customerId: string;
   subscription: Subscription;
   planName: string;
 }) => {
+  const zudoku = useZudoku();
+  const stripeLinkQuery = useQuery({
+    queryKey: [`/customers/${customerId}/stripe/portal`],
+    meta: {
+      context: zudoku,
+      request: {
+        method: "POST",
+      },
+    },
+  });
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
 
   return (
