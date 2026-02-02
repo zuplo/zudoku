@@ -10,7 +10,7 @@ import type {
 import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
 import { SignUp } from "../components/SignUp.js";
-import { useAuthState } from "../state.js";
+import { type UserProfile, useAuthState } from "../state.js";
 
 const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
@@ -46,6 +46,46 @@ const clerkAuth: AuthenticationProviderInitializer<
     return response;
   }
 
+  async function getUserProfile(clerk: Clerk): Promise<UserProfile> {
+    const verifiedEmail = clerk.session?.user?.emailAddresses.find(
+      (email) => email.verification.status === "verified",
+    );
+
+    return {
+      sub: clerk.session?.user?.id ?? "",
+      email: clerk.session?.user?.emailAddresses[0]?.emailAddress ?? "",
+      name: clerk.session?.user?.fullName ?? "",
+      emailVerified: !!verifiedEmail?.emailAddress,
+      pictureUrl: clerk.session?.user?.imageUrl ?? "",
+    };
+  }
+
+  async function refreshUserProfile() {
+    const clerk = await ensureLoaded;
+    if (!clerk) {
+      return false;
+    }
+
+    await clerk.session?.user?.reload();
+
+    const profile = await getUserProfile(clerk);
+
+    if (!profile) {
+      return false;
+    }
+
+    useAuthState.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile,
+      providerData: {
+        user: clerk.session?.user,
+      },
+    });
+
+    return true;
+  }
+
   async function signRequest(request: Request): Promise<Request> {
     const response = await getAccessToken();
     request.headers.set("Authorization", `Bearer ${response}`);
@@ -70,6 +110,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       ];
     },
 
+    refreshUserProfile,
+
     getProfileMenuItems() {
       return [
         {
@@ -88,19 +130,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       }
 
       if (clerk.session) {
-        const verifiedEmail = clerk.session.user.emailAddresses.find(
-          (email) => email.verification.status === "verified",
-        );
         useAuthState.getState().setLoggedIn({
-          profile: {
-            sub: clerk.session.user.id,
-            name: clerk.session.user.fullName ?? undefined,
-            email:
-              verifiedEmail?.emailAddress ??
-              clerk.session.user.emailAddresses[0]?.emailAddress,
-            emailVerified: verifiedEmail !== undefined,
-            pictureUrl: clerk.session.user.imageUrl,
-          },
+          profile: await getUserProfile(clerk),
           providerData: {
             user: clerk.session.user,
           },

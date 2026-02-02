@@ -1,4 +1,5 @@
 import type { ZudokuConfig } from "zudoku";
+import VerifiedPage from "./src/VerifiedPage";
 
 const config: ZudokuConfig = {
   site: {
@@ -19,8 +20,15 @@ const config: ZudokuConfig = {
       to: "/api",
       label: "Rick & Morty API",
     },
+    {
+      label: "Verified",
+      type: "custom-page",
+      path: "/verified",
+      element: <VerifiedPage />,
+    },
   ],
-  protectedRoutes: ["/documentation/installation", "/api/*"],
+
+  protectedRoutes: ["/documentation/installation", "/api/*", "/verified"],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
     files: "/pages/**/*.mdx",

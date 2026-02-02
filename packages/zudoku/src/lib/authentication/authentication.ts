@@ -1,6 +1,5 @@
 import type { NavigateFunction } from "react-router";
 import type { ZudokuContext } from "../core/ZudokuContext.js";
-import type { UserProfile } from "./state.js";
 
 export type AuthActionContext = { navigate: NavigateFunction };
 export type AuthActionOptions = { redirectTo?: string; replace?: boolean };
@@ -14,7 +13,7 @@ export interface AuthenticationPlugin {
    *
    * This gets called when the user profile needs to be refreshed (e.g. to check if the email is verified)
    */
-  refreshUserProfile?(): Promise<UserProfile | undefined>;
+  refreshUserProfile?(): Promise<boolean>;
 
   signUp(
     { navigate }: AuthActionContext,

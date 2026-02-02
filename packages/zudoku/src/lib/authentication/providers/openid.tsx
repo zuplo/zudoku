@@ -137,7 +137,7 @@ export class OpenIDAuthenticationProvider
     });
   }
 
-  public async refreshUserProfile(): Promise<UserProfile | undefined> {
+  public async refreshUserProfile(): Promise<boolean> {
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
 
@@ -162,7 +162,7 @@ export class OpenIDAuthenticationProvider
       profile,
     });
 
-    return profile;
+    return true;
   }
 
   private async authorize({
@@ -248,12 +248,7 @@ export class OpenIDAuthenticationProvider
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: null,
-          providerData: null,
-        });
+        useAuthState.getState().setLoggedOut();
         throw new AuthorizationError("No refresh token found");
       }
 
@@ -424,7 +419,7 @@ export class OpenIDAuthenticationProvider
     );
 
     this.setTokensFromResponse(oauthResult);
-    this.refreshUserProfile();
+    await this.refreshUserProfile();
 
     const redirectTo = sessionStorage.getItem("redirect-to") ?? "/";
     sessionStorage.removeItem("redirect-to");
