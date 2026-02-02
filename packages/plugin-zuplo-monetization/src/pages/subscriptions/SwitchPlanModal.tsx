@@ -25,7 +25,6 @@ import type { Subscription } from "../../hooks/useSubscriptions.js";
 import type { Feature, Plan, Quota } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
-import { createMutationFn } from "../../ZuploMonetizationWrapper.js";
 
 type PlanComparison = {
   plan: Plan;
@@ -189,15 +188,16 @@ const PlanComparisonItem = ({
   const context = useZudoku();
 
   const mutation = useMutation({
-    mutationFn: createMutationFn(
-      () =>
-        `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change`,
+    mutationKey: [
+      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change`,
+    ],
+    meta: {
       context,
-      {
+      request: {
         method: "POST",
         body: JSON.stringify({ planId: comparison.plan.id }),
       },
-    ),
+    },
     retry: false,
     onSuccess: () => {
       onRequestClose();

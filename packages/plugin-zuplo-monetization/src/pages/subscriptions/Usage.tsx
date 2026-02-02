@@ -1,9 +1,10 @@
 import { cn } from "zudoku";
 import { Button, Heading } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { AlertTriangleIcon, ArrowUpIcon } from "zudoku/icons";
+import { AlertTriangleIcon, ArrowUpIcon, Grid2x2XIcon } from "zudoku/icons";
 import { useSuspenseQuery } from "zudoku/react-query";
 import { Link } from "zudoku/router";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import {
   Card,
   CardContent,
@@ -119,29 +120,38 @@ export const Usage = ({
     queryKey: [
       `/v3/zudoku-metering/${environmentName}/subscriptions/${subscriptionId}/usage`,
     ],
-    meta: {
-      context: zudoku,
-    },
+    meta: { context: zudoku },
   });
 
+  const hasUsage = Object.values(usage.entitlements).some((value) =>
+    isMeteredEntitlement(value),
+  );
+
   return (
-    <div>
-      <Heading level={3} className="mb-4">
-        Usage
-      </Heading>
-      <div className="space-y-4">
-        {Object.entries(usage.entitlements)
-          .filter((entry): entry is [string, MeteredEntitlement] =>
-            isMeteredEntitlement(entry[1]),
-          )
-          .map(([key, metric]) => (
+    <div className="space-y-4">
+      <Heading level={3}>Usage</Heading>
+
+      {hasUsage ? (
+        Object.entries(usage.entitlements).flatMap(([key, value]) =>
+          isMeteredEntitlement(value) ? (
             <UsageItem
               key={key}
-              meter={{ ...metric }}
+              meter={{ ...value }}
               item={currentItems?.find((item) => item.featureKey === key)}
             />
-          ))}
-      </div>
+          ) : (
+            []
+          ),
+        )
+      ) : (
+        <Alert variant="warning">
+          <Grid2x2XIcon />
+          <AlertTitle>No usage data available</AlertTitle>
+          <AlertDescription>
+            This subscription does not have any usage data.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };

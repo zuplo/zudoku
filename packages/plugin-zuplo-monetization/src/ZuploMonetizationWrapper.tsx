@@ -1,64 +1,36 @@
-import type { ZudokuContext } from "zudoku";
+import { joinUrl, type ZudokuContext } from "zudoku";
 import { ClientOnly } from "zudoku/components";
-import { QueryClient, QueryClientProvider } from "zudoku/react-query";
+import {
+  type MutationFunctionContext,
+  QueryClient,
+  QueryClientProvider,
+  type QueryFunctionContext,
+} from "zudoku/react-query";
 import { Outlet } from "zudoku/router";
 
 declare module "zudoku/react-query" {
   interface Register {
     queryMeta: {
       context?: ZudokuContext;
+      request?: RequestInit;
+    };
+    mutationMeta: {
+      context?: ZudokuContext;
+      request?: RequestInit | ((variables: unknown) => RequestInit);
     };
   }
 }
 
 const BASE_URL = "https://api.zuploedge.com";
 
-export const createMutationFn = <G = void>(
-  url: string | ((data: G) => string),
-  context?: ZudokuContext,
-  init?: RequestInit,
-) => {
-  return async (data: G) => {
-    const urlString = typeof url === "function" ? url(data) : url;
-    const request = new Request(`${BASE_URL}${urlString}`, {
-      method: "POST",
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...init?.headers,
-      },
-    });
-
-    const response = await fetch(
-      context ? await context.signRequest(request) : request,
-    );
-
-    if (!response.ok) {
-      if (
-        response.headers
-          .get("content-type")
-          ?.includes("application/problem+json")
-      ) {
-        const data = await response.json();
-        throw new Error(data.detail ?? data.title);
-      }
-      const errorText = await response.text();
-      throw new Error(`Request failed: ${response.status} ${errorText}`);
-    }
-
-    if (response.headers.get("content-type")?.includes("application/json")) {
-      return response.json();
-    }
-
-    return response.text();
-  };
-};
+const hasVariables = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value != null;
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: false,
-      queryFn: async (q) => {
+      queryFn: async (q: QueryFunctionContext) => {
         if (!Array.isArray(q.queryKey)) {
           throw new Error("Query key must be an array");
         }
@@ -70,13 +42,11 @@ export const queryClient = new QueryClient({
           throw new Error("URL is required");
         }
 
-        const init = q.queryKey[1] ?? ({} as RequestInit);
-
         const request = new Request(`${BASE_URL}${url}`, {
-          ...init,
+          ...q.meta?.request,
           headers: {
             "Content-Type": "application/json",
-            ...init.headers,
+            ...q.meta?.request?.headers,
           },
         });
 
@@ -93,6 +63,80 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       retry: false,
+      mutationFn: async (variables: unknown, m: MutationFunctionContext) => {
+        if (!m.mutationKey || !Array.isArray(m.mutationKey)) {
+          throw new Error("Mutation key must be an array");
+        }
+        if (m.mutationKey.length === 0) {
+          throw new Error("Mutation key must be a non-empty array");
+        }
+
+        let url = m.mutationKey[0];
+
+        if (!url || typeof url !== "string") {
+          throw new Error("URL is required as first element of mutationKey");
+        }
+
+        // Interpolate URL template with variables
+        // e.g., /keys/{keyId} with { keyId: '123' } -> /keys/123
+        if (typeof url === "string" && hasVariables(variables)) {
+          url = url.replace(/{(\w+)}/g, (_, key) => {
+            const value = variables[key];
+            if (value === undefined) {
+              throw new Error(`Missing variable "${key}" for URL template`);
+            }
+
+            return encodeURIComponent(String(value));
+          });
+        }
+
+        // Resolve request - can be static or a function of variables
+        const init =
+          typeof m.meta?.request === "function"
+            ? m.meta.request(variables)
+            : (m.meta?.request ?? {});
+        const method = init.method || "POST";
+        const body =
+          init.body ??
+          (method !== "GET" && method !== "HEAD"
+            ? JSON.stringify(variables)
+            : undefined);
+
+        const request = new Request(joinUrl(BASE_URL, url), {
+          ...init,
+          method,
+          body,
+          headers: {
+            "Content-Type": "application/json",
+            ...init.headers,
+          },
+        });
+
+        const response = await fetch(
+          m.meta?.context ? await m.meta.context.signRequest(request) : request,
+        );
+
+        if (!response.ok) {
+          if (
+            response.headers
+              .get("content-type")
+              ?.includes("application/problem+json")
+          ) {
+            const data = await response.json();
+            throw new Error(data.detail ?? data.title);
+          }
+          const errorText = await response.text();
+          throw new Error(`Request failed: ${response.status} ${errorText}`);
+        }
+
+        if (
+          response.headers.get("content-type")?.includes("application/json")
+        ) {
+          return response.json();
+        }
+
+        return response.text();
+      },
     },
   },
 });

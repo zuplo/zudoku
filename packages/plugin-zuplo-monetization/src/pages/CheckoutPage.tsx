@@ -27,28 +27,23 @@ const CheckoutPage = () => {
   }
 
   const checkoutLink = useQuery<{ url: string }>({
+    queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
     meta: {
       context: zudoku,
-    },
-    queryKey: [
-      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
-      {
+      request: {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           email: auth.profile?.email,
           planId: selectedPlan.id,
           successURL:
             generateUrl(`/checkout-confirm`) +
-            `?${selectedPlan.id ? `plan=${selectedPlan.id}` : ""}`,
+            (selectedPlan.id ? `?plan=${selectedPlan.id}` : ""),
           cancelURL:
             generateUrl(`/checkout-failed`) +
-            `?${selectedPlan.id ? `plan=${selectedPlan.id}` : ""}`,
+            (selectedPlan.id ? `?plan=${selectedPlan.id}` : ""),
         }),
       },
-    ],
+    },
   });
 
   useEffect(() => {

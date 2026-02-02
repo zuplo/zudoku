@@ -15,7 +15,6 @@ import {
 import { Input } from "zudoku/ui/Input";
 import { cn } from "../../../../zudoku/src/lib/util/cn";
 import { useDeploymentName } from "../../hooks/useDeploymentName";
-import { createMutationFn } from "../../ZuploMonetizationWrapper";
 
 export const CancelSubscriptionDialog = ({
   open,
@@ -37,17 +36,16 @@ export const CancelSubscriptionDialog = ({
   const queryClient = useQueryClient();
 
   const cancelSubscriptionMutation = useMutation({
-    mutationFn: createMutationFn(
-      () =>
-        `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/cancel`,
+    mutationKey: [
+      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/cancel`,
+    ],
+    meta: {
       context,
-      {
+      request: {
         method: "POST",
-        body: JSON.stringify({
-          timing: "next_billing_cycle",
-        }),
+        body: JSON.stringify({ timing: "next_billing_cycle" }),
       },
-    ),
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries();
       onOpenChange(false);
@@ -116,7 +114,7 @@ export const CancelSubscriptionDialog = ({
               !isConfirmed || confirmationText !== planName || isPending
             }
             isPending={cancelSubscriptionMutation.isPending}
-            onClick={() => cancelSubscriptionMutation.mutateAsync()}
+            onClick={() => cancelSubscriptionMutation.mutate()}
           >
             Cancel subscription
           </ActionButton>

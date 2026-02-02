@@ -1,3 +1,4 @@
+import type { PropsWithChildren } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,32 +11,28 @@ import {
   AlertDialogTrigger,
 } from "zudoku/ui/AlertDialog";
 
-const ConfirmRollKeyAlert = ({
-  children,
-  onRollKey,
-}: {
-  children: React.ReactNode;
-  onRollKey: () => void;
-}) => {
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This will roll your API key and create a new one. You will need to
-            update your API client to use the new key. The old key will be
-            deleted after 7 days.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onRollKey}>Continue</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
+const ConfirmRollKeyAlert = (
+  props: PropsWithChildren<{ onRollKey: () => void }>,
+) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>{props.children}</AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+        <AlertDialogDescription>
+          This will roll your API key and create a new one. You will need to
+          update your API client to use the new key. The old key will be deleted
+          after 7 days.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={props.onRollKey}>
+          Continue
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
 
 export default ConfirmRollKeyAlert;

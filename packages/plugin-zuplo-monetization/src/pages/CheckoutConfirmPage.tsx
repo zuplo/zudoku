@@ -14,7 +14,6 @@ import { usePlans } from "../hooks/usePlans";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatDuration } from "../utils/formatDuration";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
-import { createMutationFn } from "../ZuploMonetizationWrapper";
 
 const formatBillingCycle = (duration: string): string => {
   // formatDuration returns: "month", "year", "2 months", "week", "2 weeks", etc.
@@ -37,6 +36,8 @@ const CheckoutConfirmPage = () => {
   const { data: plans } = usePlans(deploymentName);
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
+  if (!planId) throw new Error("Parameter `planId` missing");
+
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
   const { quotas, features } = categorizeRateCards(rateCards ?? []);
   const price = selectedPlan ? getPriceFromPlan(selectedPlan) : null;
@@ -44,17 +45,15 @@ const CheckoutConfirmPage = () => {
     ? formatDuration(selectedPlan.billingCadence)
     : null;
 
-  const createSubscriptionMutation = useMutation({
-    mutationFn: createMutationFn(
-      `/v3/zudoku-metering/${deploymentName}/subscriptions`,
-      zudoku,
-      {
+  const createSubscriptionMutation = useMutation<string>({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
+    meta: {
+      context: zudoku,
+      request: {
         method: "POST",
-        body: JSON.stringify({
-          planId,
-        }),
+        body: JSON.stringify({ planId }),
       },
-    ),
+    },
     onSuccess: (subscriptionId) => {
       navigate(`/subscriptions/${subscriptionId}`);
     },
