@@ -22,8 +22,10 @@ import { BentoAuthReady } from "./components/BentoAuthReady";
 import { BentoInstall } from "./components/BentoInstall";
 import BentoInternalTools from "./components/BentoInternalTools";
 import { BentoStaticSite } from "./components/BentoStaticSite";
+import { BetterTogether } from "./components/BetterTogether";
 import { Box } from "./components/Box";
 import { BoxLongshadow } from "./components/BoxLongshadow";
+import { HostingSection } from "./components/HostingSection";
 import PoweredByYou from "./components/PoweredByYou";
 import { Preview } from "./components/Preview";
 import { SparklesText } from "./components/Sparkles";
@@ -335,39 +337,8 @@ const LandingPage = () => {
           <BentoStaticSite />
         </div>
       </div>
-      <div className="mt-16 w-full max-w-screen-lg flex flex-col items-center gap-16">
-        <div className="text-center font-semibold text-5xl capitalize">
-          Host it{" "}
-          <span className=" bg-gradient-to-br from-[#B6A0FB] via-[#7362EF] to-[#D2C6FF] bg-clip-text text-transparent">
-            Anywhere
-          </span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 items-center justify-center lg:grid-cols-4  w-full gap-5">
-          <div className="flex items-center justify-center">
-            <img src="/host/vercel.svg" alt="Vercel" />
-          </div>
-          <div className="flex items-center justify-center">
-            <img src="/host/cloudflare.svg" alt="Cloudflare" />
-          </div>
-          <div className="flex items-center justify-center">
-            <img src="/host/netlify.svg" alt="Netlify" />
-          </div>
-          <div className="flex items-center justify-center">
-            <img src="/host/zuplo.svg" alt="Zuplo" />
-          </div>
-        </div>
-
-        <a
-          href="https://zudoku.dev/docs"
-          className="hover:drop-shadow transition-all duration-300 text-xl rounded-full bg-black text-white px-8 py-3 flex items-center gap-2 w-fit self-center group"
-        >
-          Learn More{" "}
-          <ArrowRightIcon
-            size={20}
-            className="group-hover:translate-x-1 transition-all duration-300"
-          />
-        </a>
-      </div>
+      <BetterTogether />
+      <HostingSection />
       <div
         className="px-10 w-full bg-black rounded-3xl p-10 text-white shadow-[0px_-2px_16px_-4px_rgba(0,_0,_0,_0.5)]"
         style={{

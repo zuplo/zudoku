@@ -1,6 +1,6 @@
 import { useMemo, useReducer } from "react";
 import { cn } from "zudoku";
-import { MoonStarIcon, SunIcon } from "zudoku/icons";
+import { ArrowRightIcon, MoonStarIcon, SunIcon, ZapIcon } from "zudoku/icons";
 import PoweredByYou from "./PoweredByYou";
 
 const tags = [
@@ -30,6 +30,27 @@ const Hero = () => {
         Create clean, consistent API docs with Zudoku — open source, extensible,
         and developer-first
       </p>
+      <div className="flex flex-col sm:flex-row items-center gap-4 mt-4">
+        <a
+          href="/docs/quickstart"
+          className="group font-medium bg-black text-white px-6 py-3 rounded-full flex items-center gap-2 hover:bg-black/90 transition-all"
+        >
+          Get Started
+          <ArrowRightIcon
+            size={18}
+            className="group-hover:translate-x-1 transition-transform"
+          />
+        </a>
+        <a
+          href="https://zuplo.com"
+          target="_blank"
+          rel="noreferrer"
+          className="group font-medium border-2 border-[#7362EF] text-black px-6 py-3 rounded-full flex items-center gap-2 hover:bg-[#7362EF] hover:text-white transition-all"
+        >
+          <ZapIcon size={18} />
+          Try with Zuplo
+        </a>
+      </div>
     </div>
   );
 };
