@@ -66,6 +66,8 @@ const SubscriptionsPage = () => {
 
         {activeSubscription && activePhase && (
           <ManageSubscription
+            deploymentName={deploymentName}
+            customerId={activeSubscription.customerId}
             subscription={activeSubscription}
             planName={activePhase.name}
           />

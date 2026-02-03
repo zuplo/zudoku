@@ -1,37 +1,29 @@
 import { useState } from "react";
-import { Link, useZudoku } from "zudoku/components";
+import { Link } from "zudoku/components";
 import { ExternalLink, RefreshCcw, Settings } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
+import ManagePaymentDialog from "./ManagePaymentDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
-import { useQuery } from "zudoku/react-query";
 
 export const ManageSubscription = ({
   subscription,
   planName,
-  customerId,
 }: {
-  customerId: string;
   subscription: Subscription;
   planName: string;
 }) => {
-  const zudoku = useZudoku();
-  const stripeLinkQuery = useQuery({
-    queryKey: [`/customers/${customerId}/stripe/portal`],
-    meta: {
-      context: zudoku,
-      request: {
-        method: "POST",
-      },
-    },
-  });
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-
+  const [managePaymentDialogOpen, setManagePaymentDialogOpen] = useState(false);
   return (
     <Card>
+      <ManagePaymentDialog
+        open={managePaymentDialogOpen}
+        onOpenChange={setManagePaymentDialogOpen}
+      />
       <CancelSubscriptionDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
@@ -84,17 +76,16 @@ export const ManageSubscription = ({
               </Tooltip>
             </div>
             <div className="flex items-center gap-2 mt-4 pt-4 border-t text-sm text-muted-foreground">
-              <ExternalLink className="w-4 h-4" />
-              <span>
-                Your payment is managed by{" "}
-                <a
-                  href="https://stripe.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
+              <span className="flex items-center gap-1">
+                Your payment is managed by Stripe. You can{" "}
+                <Button
+                  onClick={() => setManagePaymentDialogOpen(true)}
+                  className="flex items-center gap-1 text-primary hover:underline"
+                  type="button"
                 >
-                  Stripe
-                </a>
+                  <ExternalLink className="w-4 h-4" />
+                  manage your payment in Stripe.
+                </Button>
               </span>
             </div>
           </div>
