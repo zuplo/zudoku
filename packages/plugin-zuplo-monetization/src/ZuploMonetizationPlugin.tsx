@@ -4,7 +4,6 @@ import { StarsIcon } from "zudoku/icons";
 import { Link } from "zudoku/router";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
 import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
-import CheckoutFailedPage from "./pages/CheckoutFailedPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import PricingPage from "./pages/PricingPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
@@ -103,10 +102,6 @@ export const zuploMonetizationPlugin = createPlugin(
               ),
             },
             {
-              path: "/checkout-failed",
-              element: <CheckoutFailedPage />,
-            },
-            {
               path: "/subscriptions/:subscriptionId?",
               element: <SubscriptionsPage />,
             },
@@ -115,7 +110,7 @@ export const zuploMonetizationPlugin = createPlugin(
       ];
     },
     getProtectedRoutes: () => {
-      return ["/checkout/*", "/checkout-confirm", "/checkout-failed"];
+      return ["/checkout/*", "/checkout-confirm"];
     },
   }),
 );

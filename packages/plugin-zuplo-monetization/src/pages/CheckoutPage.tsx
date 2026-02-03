@@ -36,11 +36,9 @@ const CheckoutPage = () => {
           email: auth.profile?.email,
           planId: selectedPlan.id,
           successURL:
-            generateUrl(`/checkout-confirm`) +
+            generateUrl("/checkout-confirm") +
             (selectedPlan.id ? `?plan=${selectedPlan.id}` : ""),
-          cancelURL:
-            generateUrl(`/checkout-failed`) +
-            (selectedPlan.id ? `?plan=${selectedPlan.id}` : ""),
+          cancelURL: generateUrl("/pricing"),
         }),
       },
     },
