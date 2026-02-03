@@ -193,7 +193,7 @@
   },
   "scripts": {
     "build": "tsc --project tsconfig.app.json",
-    "build:dev": "esbuild './src/**/*.ts' './src/**/*.tsx' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
+    "build:dev": "esbuild \"./src/**/*.ts\" \"./src/**/*.tsx\" --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
     "build:vite": "vite build",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
