@@ -42,7 +42,7 @@ const ManagePaymentDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Manage you r payment in Stripe</DialogTitle>
+          <DialogTitle>Manage your payment in Stripe</DialogTitle>
           <DialogDescription>
             You can manage your payment in Stripe by clicking the button below.
             You'll be redirected to Stripe to manage your payment.
