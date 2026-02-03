@@ -4,14 +4,13 @@ import { useZudoku } from "zudoku/hooks";
 import { AlertTriangleIcon, ArrowUpIcon, Grid2x2XIcon } from "zudoku/icons";
 import { useSuspenseQuery } from "zudoku/react-query";
 import { Link } from "zudoku/router";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "zudoku/ui/Card";
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "zudoku/ui/Alert";
+import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
 import type { Item } from "../../hooks/useSubscriptions";
 
@@ -47,36 +46,41 @@ const UsageItem = ({
   meter: MeteredEntitlement;
   item?: Item;
 }) => {
-  return (
-    <Card className={cn(meter.overage > 0 && "border-red-400 bg-red-50/50")}>
-      <CardHeader className={cn("pb-2")}>
-        {meter.overage > 0 && (
-          <div className="flex items-start gap-3 p-3 bg-red-100 rounded-lg mb-4">
-            <AlertTriangleIcon className="size-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-800">
-                You've exceeded your monthly quota
-              </p>
-              <p className="text-xs text-red-700 mt-0.5">
-                Additional API calls are being charged at the overage rate
-                ($0.03/call). Upgrade to Enterprise for unlimited calls.
-              </p>
-            </div>
+  const overageTier =
+    item?.price?.tiers?.find((t) => !t.upToAmount) ??
+    item?.price?.tiers?.at(-1);
+  const rate = overageTier?.unitPrice?.amount;
 
-            <Button variant="destructive" size="sm" asChild>
-              <Link to="/pricing">
-                <ArrowUpIcon />
-                Upgrade
-              </Link>
-            </Button>
-          </div>
+  return (
+    <Card
+      className={cn(meter.overage > 0 && "border-destructive bg-destructive/5")}
+    >
+      <CardHeader>
+        {meter.overage > 0 && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
+            <AlertTitle>You've exceeded your monthly quota</AlertTitle>
+            <AlertDescription>
+              Additional usage is being charged at the overage rate
+              {rate ? ` ($${Number(rate).toFixed(2)}/call)` : ""}. Upgrade to a
+              higher plan for more usage.
+            </AlertDescription>
+
+            <AlertAction>
+              <Button variant="destructive" size="sm" asChild>
+                <Link to="/pricing">
+                  <ArrowUpIcon />
+                  Upgrade
+                </Link>
+              </Button>
+            </AlertAction>
+          </Alert>
         )}
         <CardTitle>
           {item?.name ?? "Limit"} {item?.price?.amount}
         </CardTitle>
-        <CardDescription />
       </CardHeader>
-      <CardContent className="pace-y-2">
+      <CardContent className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <div className="flex flex-col gap-2 mb-2">
             <span
