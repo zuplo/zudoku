@@ -45,6 +45,7 @@ export const ManageSubscription = ({
         onOpenChange={setCancelDialogOpen}
         planName={planName}
         subscriptionId={subscription.id}
+        billingPeriodEnd={subscription.alignment.currentAlignedBillingPeriod.to}
       />
       <CardContent className="p-6">
         <div className="flex gap-4">

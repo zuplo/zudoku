@@ -15,6 +15,7 @@ import {
 import { Input } from "zudoku/ui/Input";
 import { cn } from "../../../../zudoku/src/lib/util/cn";
 import { useDeploymentName } from "../../hooks/useDeploymentName";
+import { formatDate } from "./ApiKey";
 
 export const CancelSubscriptionDialog = ({
   open,
@@ -22,12 +23,14 @@ export const CancelSubscriptionDialog = ({
   planName,
   isPending,
   subscriptionId,
+  billingPeriodEnd,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   planName: string;
   isPending?: boolean;
   subscriptionId: string;
+  billingPeriodEnd: string;
 }) => {
   const [confirmationText, setConfirmationText] = useState("");
   const isConfirmed = planName.startsWith(confirmationText);
@@ -67,7 +70,7 @@ export const CancelSubscriptionDialog = ({
               Your plan will be canceled at the end of your billing cycle.
             </AlertTitle>
             <AlertDescription>
-              You'll retain access until February 27, 2026
+              You'll retain access until {formatDate(billingPeriodEnd)}
             </AlertDescription>
           </Alert>
 
