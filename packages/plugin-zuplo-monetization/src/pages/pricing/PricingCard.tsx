@@ -22,12 +22,13 @@ export const PricingCard = ({
   const { quotas, features } = categorizeRateCards(defaultPhase.rateCards);
   const price = getPriceFromPlan(plan);
   const isFree = price.monthly === 0;
+  // TODO: should be determined by the metadata
   const isCustom = plan.key === "enterprise";
 
   return (
     <div
       className={cn(
-        "relative rounded-lg border p-6 flex flex-col min-w-72",
+        "relative rounded-lg border p-6 flex flex-col",
         isPopular && "border-primary border-2",
       )}
     >
