@@ -1,4 +1,8 @@
-import type { AsyncAPIDocument, OperationObject } from "../types.js";
+import type {
+  AsyncAPIDocument,
+  ChannelObject,
+  OperationObject,
+} from "../types.js";
 import { detectProtocols } from "./protocol.js";
 
 export type EnrichedOperation = OperationObject & {
@@ -7,6 +11,17 @@ export type EnrichedOperation = OperationObject & {
   channelId?: string;
   protocols: string[];
   parentTag?: string;
+};
+
+/**
+ * Check if an object is a dereferenced channel (has address property)
+ */
+const isDereferencedChannel = (obj: unknown): obj is ChannelObject => {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    ("address" in obj || "bindings" in obj || "messages" in obj)
+  );
 };
 
 /**
@@ -20,16 +35,32 @@ export const extractOperations = (
   const servers = document.servers ?? {};
 
   return Object.entries(operations).map(([operationId, operation]) => {
-    // Resolve channel reference
-    const channelRef =
-      typeof operation.channel === "string"
-        ? operation.channel
-        : operation.channel?.$ref;
+    let channel: ChannelObject | undefined;
+    let channelId = "";
 
-    const channelId = channelRef?.replace("#/channels/", "") || "";
-    const channel = channels[channelId];
+    // Handle different channel reference formats:
+    // 1. Already dereferenced (channel is the actual channel object)
+    // 2. $ref string (need to look up in channels)
+    // 3. Object with $ref property (need to look up in channels)
+    if (isDereferencedChannel(operation.channel)) {
+      // Channel has been dereferenced - use it directly
+      channel = operation.channel as ChannelObject;
+      // Try to find channel ID by matching address
+      channelId =
+        Object.entries(channels).find(
+          ([, ch]) => ch.address === channel?.address,
+        )?.[0] ?? "";
+    } else if (typeof operation.channel === "string") {
+      // Direct string reference
+      channelId = operation.channel.replace("#/channels/", "");
+      channel = channels[channelId];
+    } else if (operation.channel?.$ref) {
+      // Object with $ref property
+      channelId = operation.channel.$ref.replace("#/channels/", "");
+      channel = channels[channelId];
+    }
 
-    // Detect protocols
+    // Detect protocols from channel bindings and servers
     const protocols = detectProtocols(channel, servers, channel?.servers ?? []);
 
     // Get parent tag (first tag)
@@ -89,7 +120,7 @@ export const groupOperationsByTag = (
     if (!grouped.has(tag)) {
       grouped.set(tag, []);
     }
-    grouped.get(tag)!.push(operation);
+    grouped.get(tag)?.push(operation);
   }
 
   return grouped;
@@ -108,7 +139,7 @@ export const groupOperationsByChannel = (
     if (!grouped.has(channelId)) {
       grouped.set(channelId, []);
     }
-    grouped.get(channelId)!.push(operation);
+    grouped.get(channelId)?.push(operation);
   }
 
   return grouped;
