@@ -21,7 +21,7 @@ const config: ZudokuConfig = {
       label: "Rick & Morty API",
     },
     {
-      label: "Verified",
+      label: "Email Verification",
       type: "custom-page",
       path: "/verified",
       element: <VerifiedPage />,
