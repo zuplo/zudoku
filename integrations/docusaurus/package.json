@@ -1,0 +1,46 @@
+{
+  "name": "@zudoku/docusaurus",
+  "version": "0.1.0",
+  "description": "Docusaurus plugin for Zudoku API documentation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./ZudokuPage": {
+      "import": "./dist/ZudokuPage.js",
+      "types": "./dist/ZudokuPage.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts src/ZudokuPage.tsx --format esm --dts",
+    "dev": "tsup src/index.ts src/ZudokuPage.tsx --format esm --dts --watch"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuplo/zudoku.git",
+    "directory": "integrations/docusaurus"
+  },
+  "dependencies": {
+    "@zudoku/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@docusaurus/types": "^3.0.0",
+    "@docusaurus/utils": "^3.0.0",
+    "@types/react": "^18.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@docusaurus/core": "^3.0.0",
+    "react": "^18.0.0 || ^19.0.0"
+  }
+}

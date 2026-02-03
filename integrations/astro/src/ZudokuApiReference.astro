@@ -1,0 +1,20 @@
+---
+import { getHtmlDocument, type ZudokuApiReferenceConfiguration } from "@zudoku/core";
+
+export interface Props {
+  configuration: ZudokuApiReferenceConfiguration;
+}
+
+const DEFAULT_CONFIGURATION: Partial<ZudokuApiReferenceConfiguration> = {
+  _integration: "astro",
+};
+
+const { configuration } = Astro.props;
+
+const html = getHtmlDocument({
+  ...DEFAULT_CONFIGURATION,
+  ...configuration,
+});
+---
+
+<Fragment set:html={html} />

@@ -1,0 +1,41 @@
+{
+  "name": "@zudoku/nuxt",
+  "version": "0.1.0",
+  "description": "Nuxt module for Zudoku API documentation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts && cp -r src/runtime dist/",
+    "dev": "tsup src/index.ts --format esm --dts --watch"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuplo/zudoku.git",
+    "directory": "integrations/nuxt"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^3.0.0",
+    "@zudoku/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "nuxt": "^3.0.0",
+    "vue": "^3.0.0",
+    "vue-router": "^4.0.0"
+  }
+}

@@ -1,6 +1,7 @@
 packages:
   - scripts
   - packages/*
+  - integrations/*
   - examples/**
   - website
   - docs

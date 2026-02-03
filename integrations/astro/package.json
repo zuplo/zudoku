@@ -1,0 +1,40 @@
+{
+  "name": "@zudoku/astro",
+  "version": "0.1.0",
+  "description": "Astro integration for Zudoku API documentation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./ZudokuApiReference.astro": "./src/ZudokuApiReference.astro"
+  },
+  "files": [
+    "dist",
+    "src/ZudokuApiReference.astro"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuplo/zudoku.git",
+    "directory": "integrations/astro"
+  },
+  "dependencies": {
+    "@zudoku/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "astro": "^4.0.0 || ^5.0.0"
+  }
+}

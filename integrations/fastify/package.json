@@ -1,0 +1,39 @@
+{
+  "name": "@zudoku/fastify",
+  "version": "0.1.0",
+  "description": "Fastify plugin to serve Zudoku API documentation",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts",
+    "dev": "tsup src/index.ts --format esm --dts --watch"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zuplo/zudoku.git",
+    "directory": "integrations/fastify"
+  },
+  "dependencies": {
+    "@zudoku/core": "workspace:*",
+    "fastify-plugin": "^4.5.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "fastify": "^4.0.0 || ^5.0.0"
+  }
+}
