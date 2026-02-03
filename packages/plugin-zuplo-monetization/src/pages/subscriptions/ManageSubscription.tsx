@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { Link } from "zudoku/components";
-import { ExternalLink, RefreshCcw, Settings } from "zudoku/icons";
+import { Link, useZudoku } from "zudoku/components";
+import { CreditCardIcon, RefreshCcw, Settings } from "zudoku/icons";
+import { useMutation } from "zudoku/react-query";
+import { ActionButton } from "zudoku/ui/ActionButton";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
+import { Separator } from "zudoku/ui/Separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
+import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
-import ManagePaymentDialog from "./ManagePaymentDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
 
 export const ManageSubscription = ({
@@ -17,13 +20,26 @@ export const ManageSubscription = ({
   planName: string;
 }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [managePaymentDialogOpen, setManagePaymentDialogOpen] = useState(false);
+  const deploymentName = useDeploymentName();
+  const zudoku = useZudoku();
+
+  const stripeLinkMutation = useMutation<{ url: string }>({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/portal`],
+    meta: {
+      context: zudoku,
+      request: {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          returnUrl: `${window.location.origin}/subscriptions`,
+        }),
+      },
+    },
+    onSuccess: (data) => window.open(data.url, "_blank"),
+  });
+
   return (
     <Card>
-      <ManagePaymentDialog
-        open={managePaymentDialogOpen}
-        onOpenChange={setManagePaymentDialogOpen}
-      />
       <CancelSubscriptionDialog
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
@@ -74,20 +90,24 @@ export const ManageSubscription = ({
                   </TooltipContent>
                 )}
               </Tooltip>
+
+              <ActionButton
+                isPending={stripeLinkMutation.isPending}
+                onClick={() => stripeLinkMutation.mutate()}
+                size="sm"
+                variant="secondary"
+                type="button"
+              >
+                <div className="flex items-center gap-2">
+                  <CreditCardIcon />
+                  Manage payment details
+                </div>
+              </ActionButton>
             </div>
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                Your payment is managed by Stripe. You can{" "}
-                <Button
-                  onClick={() => setManagePaymentDialogOpen(true)}
-                  className="flex items-center gap-1 text-primary hover:underline"
-                  type="button"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  manage your payment in Stripe.
-                </Button>
-              </span>
-            </div>
+            <Separator className="my-4" />
+            <span className="text-sm text-muted-foreground">
+              Your payment is securely managed by Stripe.
+            </span>
           </div>
         </div>
       </CardContent>

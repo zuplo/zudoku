@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Head, Heading } from "zudoku/components";
 import { useParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { useDeploymentName } from "../hooks/useDeploymentName";
@@ -31,14 +32,14 @@ const SubscriptionsPage = () => {
   );
 
   return (
-    <div className="w-full py-12">
+    <div className="w-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
+      <Head>
+        <title>My Subscriptions</title>
+      </Head>
       <div className="max-w-4xl space-y-8">
-        {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            My Subscriptions
-          </h1>
-          <p className="text-base text-muted-foreground">
+          <Heading level={2}>My Subscriptions</Heading>
+          <p className="text-muted-foreground">
             Manage your subscriptions, usage, and API keys
           </p>
         </div>
@@ -66,8 +67,6 @@ const SubscriptionsPage = () => {
 
         {activeSubscription && activePhase && (
           <ManageSubscription
-            deploymentName={deploymentName}
-            customerId={activeSubscription.customerId}
             subscription={activeSubscription}
             planName={activePhase.name}
           />
