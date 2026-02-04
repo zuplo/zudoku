@@ -6,6 +6,23 @@ import {
   ProtocolColorMap,
 } from "./actionColorMap.js";
 
+/**
+ * Groups operations by channel address
+ */
+const groupByChannel = (
+  operations: NavOperationResult[],
+): Map<string, NavOperationResult[]> => {
+  const groups = new Map<string, NavOperationResult[]>();
+
+  for (const op of operations) {
+    const address = op.channelAddress ?? "unknown";
+    const existing = groups.get(address) ?? [];
+    groups.set(address, [...existing, op]);
+  }
+
+  return groups;
+};
+
 export const createNavigationCategory = ({
   label,
   path,
@@ -18,40 +35,47 @@ export const createNavigationCategory = ({
   operations: NavOperationResult[];
   collapsible?: boolean;
   collapsed?: boolean;
-}): NavigationItem => ({
-  type: "category",
-  label,
-  link: {
-    type: "doc" as const,
-    path,
-    file: path,
+}): NavigationItem => {
+  // Group operations by channel address
+  const channelGroups = groupByChannel(operations);
+
+  return {
+    type: "category",
     label,
-  },
-  collapsible,
-  collapsed,
-  items: operations.map((operation) => {
-    // Use the primary protocol for the badge (first detected protocol)
-    const primaryProtocol = operation.protocols[0];
-    const badgeLabel = primaryProtocol
-      ? getProtocolLabel(primaryProtocol)
-      : operation.action.toUpperCase();
-    const badgeColor = primaryProtocol
-      ? (ProtocolColorMap[primaryProtocol.toLowerCase()] ?? "gray")
-      : "gray";
+    link: {
+      type: "doc" as const,
+      path,
+      file: path,
+      label,
+    },
+    collapsible,
+    collapsed,
+    items: Array.from(channelGroups.entries()).map(
+      ([channelAddress, channelOps]) => {
+        // Use the first operation for common data (protocol, slug)
+        const primaryOp = channelOps[0];
+        const primaryProtocol = primaryOp?.protocols[0];
+        const badgeLabel = primaryProtocol
+          ? getProtocolLabel(primaryProtocol)
+          : "API";
+        const badgeColor = primaryProtocol
+          ? (ProtocolColorMap[primaryProtocol.toLowerCase()] ?? "gray")
+          : "gray";
 
-    // Use slug if available, otherwise fall back to operationId
-    const anchor = operation.slug ?? operation.operationId;
+        // Use slug from the first operation (send or receive)
+        const anchor = primaryOp?.slug ?? primaryOp?.operationId ?? "";
 
-    return {
-      type: "link" as const,
-      label:
-        operation.summary ?? operation.channelAddress ?? operation.operationId,
-      to: `${path}#${anchor}`,
-      badge: {
-        label: badgeLabel,
-        color: badgeColor as BadgeColor,
-        invert: true,
+        return {
+          type: "link" as const,
+          label: channelAddress,
+          to: `${path}#${anchor}`,
+          badge: {
+            label: badgeLabel,
+            color: badgeColor as BadgeColor,
+            invert: true,
+          },
+        };
       },
-    };
-  }),
-});
+    ),
+  };
+};

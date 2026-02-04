@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
+import { useMemo } from "react";
 import { useParams } from "react-router";
 import {
   Collapsible,
@@ -11,10 +12,10 @@ import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
+import { ChannelGroup, groupOperationsByChannel } from "./ChannelGroup.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useAsyncApiConfig } from "./context.js";
 import { OperationsForTagQuery } from "./graphql/queries.js";
-import { OperationListItem } from "./OperationListItem.js";
 
 export const UNTAGGED_PATH = "~endpoints";
 
@@ -40,6 +41,12 @@ export const OperationList = ({
   const prev = schema.tag?.prev;
   const tagDescription = schema.tag?.description;
   const tagName = schema.tag?.name;
+
+  // Group operations by channel address
+  const channelGroups = useMemo(
+    () => groupOperationsByChannel(operations),
+    [operations],
+  );
 
   const title = schema.title;
   const tagTitle = tagName ?? "Endpoints";
@@ -152,12 +159,18 @@ export const OperationList = ({
       <hr />
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
       <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
-        {operations.map((operation) => (
-          <div key={operation.slug ?? operation.operationId}>
-            <OperationListItem operation={operation} serverUrl={serverUrl} />
-            <hr className="my-10" />
-          </div>
-        ))}
+        {Array.from(channelGroups.entries()).map(
+          ([channelAddress, channelOps]) => (
+            <div key={channelAddress}>
+              <ChannelGroup
+                channelAddress={channelAddress}
+                operations={channelOps}
+                serverUrl={serverUrl}
+              />
+              <hr className="my-10" />
+            </div>
+          ),
+        )}
         <Pagination className="mb-4" {...paginationProps} />
       </div>
     </div>
