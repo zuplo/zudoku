@@ -1,6 +1,11 @@
 import { Button, Heading } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { CheckCheckIcon, CircleSlashIcon, RefreshCwIcon } from "zudoku/icons";
+import {
+  CheckCheckIcon,
+  CircleSlashIcon,
+  InfoIcon,
+  RefreshCwIcon,
+} from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { ActionButton } from "zudoku/ui/ActionButton";
 import {
@@ -13,6 +18,7 @@ import {
   DismissableAlert,
   DismissableAlertAction,
 } from "zudoku/ui/DismissableAlert";
+import { Item, ItemContent, ItemMedia, ItemTitle } from "zudoku/ui/Item";
 import { queryClient } from "../../ZuploMonetizationWrapper";
 import { ApiKey, formatDate } from "./ApiKey";
 import { ApiKeyInfo } from "./ApiKeyInfo";
@@ -26,11 +32,32 @@ type ApiKeyData = {
   expiresOn?: string;
 };
 
+const KeysUnavailableAlert = ({ children }: { children: React.ReactNode }) => (
+  <div className="relative rounded-lg overflow-hidden">
+    <div>{children}</div>
+    <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+      <Item className="max-w-md bg-muted">
+        <ItemMedia>
+          <InfoIcon className="size-4" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>
+            Your keys will be available once the payment has been successfully
+            processed.
+          </ItemTitle>
+        </ItemContent>
+      </Item>
+    </div>
+  </div>
+);
+
 export const ApiKeysList = ({
+  keysAvailable,
   apiKeys,
   deploymentName,
   consumerId,
 }: {
+  keysAvailable: boolean;
   apiKeys: ApiKeyData[];
   deploymentName: string;
   consumerId: string;
@@ -160,23 +187,42 @@ export const ApiKeysList = ({
       )}
 
       <div className="space-y-4">
-        {activeKey && (
-          <ApiKey
-            deploymentName={deploymentName}
-            consumerId={consumerId}
-            apiKeyId={activeKey.id}
-            key={activeKey.id}
-            apiKey={activeKey.key}
-            createdAt={activeKey.createdOn}
-            lastUsed={activeKey.updatedOn}
-            expiresOn={activeKey.expiresOn}
-            isActive={true}
-            label="Current Key"
-            onDelete={() =>
-              deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
-            }
-          />
-        )}
+        {activeKey &&
+          (keysAvailable ? (
+            <KeysUnavailableAlert>
+              <ApiKey
+                deploymentName={deploymentName}
+                consumerId={consumerId}
+                apiKeyId={activeKey.id}
+                key={activeKey.id}
+                apiKey={activeKey.key}
+                createdAt={activeKey.createdOn}
+                lastUsed={activeKey.updatedOn}
+                expiresOn={activeKey.expiresOn}
+                isActive={true}
+                label="Current Key"
+                onDelete={() =>
+                  deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
+                }
+              />
+            </KeysUnavailableAlert>
+          ) : (
+            <ApiKey
+              deploymentName={deploymentName}
+              consumerId={consumerId}
+              apiKeyId={activeKey.id}
+              key={activeKey.id}
+              apiKey={activeKey.key}
+              createdAt={activeKey.createdOn}
+              lastUsed={activeKey.updatedOn}
+              expiresOn={activeKey.expiresOn}
+              isActive={true}
+              label="Current Key"
+              onDelete={() =>
+                deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
+              }
+            />
+          ))}
 
         {expiringKeys.map((apiKey) => (
           <ApiKey

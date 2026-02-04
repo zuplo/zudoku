@@ -3,7 +3,7 @@ import type * as React from "react";
 import { cn } from "../util/cn.js";
 
 const alertVariants = cva(
-  "grid gap-0.5 rounded-lg border px-2.5 py-2 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
+  "grid gap-0.5 rounded-lg border text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4 w-full relative group/alert",
   {
     variants: {
       variant: {
@@ -14,15 +14,21 @@ const alertVariants = cva(
         warning:
           "text-warning-foreground bg-card bg-warning/5 border-warning/50 *:data-[slot=alert-description]:text-warning-foreground *:[svg]:text-current",
       },
+      fit: {
+        default: "px-2.5 py-2",
+        loose: "p-4",
+      },
     },
     defaultVariants: {
       variant: "default",
+      fit: "default",
     },
   },
 );
 
 function Alert({
   className,
+  fit,
   variant,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
@@ -30,7 +36,7 @@ function Alert({
     <div
       data-slot="alert"
       role="alert"
-      className={cn(alertVariants({ variant }), className)}
+      className={cn(alertVariants({ variant, fit }), className)}
       {...props}
     />
   );

@@ -6,7 +6,7 @@ import {
 } from "zudoku/ui/DismissableAlert";
 
 export const ApiKeyInfo = () => (
-  <DismissableAlert className="p-4 space-y-2">
+  <DismissableAlert className="space-y-2" fit="loose">
     <InfoIcon />
     <AlertTitle>How API key management works</AlertTitle>
     <AlertDescription>

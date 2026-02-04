@@ -1,8 +1,11 @@
 import { cn } from "zudoku";
 import { Button, Heading } from "zudoku/components";
-import { useZudoku } from "zudoku/hooks";
-import { AlertTriangleIcon, ArrowUpIcon, Grid2x2XIcon } from "zudoku/icons";
-import { useSuspenseQuery } from "zudoku/react-query";
+import {
+  AlertTriangleIcon,
+  ArrowUpIcon,
+  Grid2x2XIcon,
+  Loader2Icon,
+} from "zudoku/icons";
 import { Link } from "zudoku/router";
 import {
   Alert,
@@ -20,6 +23,19 @@ export type UsageResult = {
   entitlements: Record<string, Entitlement | MeteredEntitlement>;
   planKey: string;
   subscriptionId: string;
+  paymentStatus: PaymentStatus;
+  annotations?: Annotations;
+};
+
+export type PaymentStatus = {
+  status: string;
+  isFirstPayment?: boolean;
+  lastPaymentSucceededAt?: string;
+  lastPaymentFailedAt?: string;
+};
+
+export type Annotations = {
+  "subscription.previous.id"?: string;
 };
 
 export type Entitlement = {
@@ -111,22 +127,12 @@ const UsageItem = ({
 };
 
 export const Usage = ({
-  subscriptionId,
-  environmentName,
+  usage,
   currentItems,
 }: {
-  subscriptionId: string;
-  environmentName: string;
+  usage: UsageResult;
   currentItems?: Item[];
 }) => {
-  const zudoku = useZudoku();
-  const { data: usage } = useSuspenseQuery<UsageResult>({
-    queryKey: [
-      `/v3/zudoku-metering/${environmentName}/subscriptions/${subscriptionId}/usage`,
-    ],
-    meta: { context: zudoku },
-  });
-
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
@@ -134,7 +140,16 @@ export const Usage = ({
   return (
     <div className="space-y-4">
       <Heading level={3}>Usage</Heading>
-
+      {usage.paymentStatus.status === "pending" && (
+        <Alert fit="loose">
+          <Loader2Icon className="size-5 animate-spin mr-1 ml-1 self-center" />
+          <AlertTitle>Your payment is being processed</AlertTitle>
+          <AlertDescription>
+            Your API keys may take a minute to load. Please wait while we set up
+            your subscription.
+          </AlertDescription>
+        </Alert>
+      )}
       {hasUsage ? (
         Object.entries(usage.entitlements).flatMap(([key, value]) =>
           isMeteredEntitlement(value) ? (

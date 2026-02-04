@@ -9,6 +9,7 @@ import {
   XIcon,
 } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
+import { useNavigate } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import {
@@ -25,6 +26,7 @@ import type { Subscription } from "../../hooks/useSubscriptions.js";
 import type { Feature, Plan, Quota } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
+import { queryClient } from "../../ZuploMonetizationWrapper.js";
 
 type PlanComparison = {
   plan: Plan;
@@ -186,8 +188,8 @@ const PlanComparisonItem = ({
 }) => {
   const deploymentName = useDeploymentName();
   const context = useZudoku();
-
-  const mutation = useMutation({
+  const navigate = useNavigate();
+  const mutation = useMutation<Subscription>({
     mutationKey: [
       `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change`,
     ],
@@ -199,7 +201,13 @@ const PlanComparisonItem = ({
       },
     },
     retry: false,
-    onSuccess: () => {
+    onSuccess: async (subscription) => {
+      await queryClient.invalidateQueries();
+      navigate(`/subscriptions/${subscription.id}`, {
+        state: {
+          upgradeFrom: subscription.annotations?.["subscription.previous.id"],
+        },
+      });
       onRequestClose();
     },
   });

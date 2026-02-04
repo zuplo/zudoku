@@ -141,6 +141,9 @@ export type ItemTimeline = {
 };
 
 export type Subscription = {
+  annotations?: {
+    "subscription.previous.id"?: string;
+  };
   activeFrom: string;
   alignment: {
     billablesMustAlign: boolean;

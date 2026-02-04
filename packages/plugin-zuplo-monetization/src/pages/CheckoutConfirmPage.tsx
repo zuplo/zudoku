@@ -1,6 +1,6 @@
 import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { ArrowLeftIcon, CheckIcon, LockIcon } from "zudoku/icons";
+import { CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
@@ -11,9 +11,11 @@ import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
+import type { Subscription } from "../hooks/useSubscriptions";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatDuration } from "../utils/formatDuration";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
+import { queryClient } from "../ZuploMonetizationWrapper";
 
 const formatBillingCycle = (duration: string): string => {
   // formatDuration returns: "month", "year", "2 months", "week", "2 weeks", etc.
@@ -45,7 +47,7 @@ const CheckoutConfirmPage = () => {
     ? formatDuration(selectedPlan.billingCadence)
     : null;
 
-  const createSubscriptionMutation = useMutation<string>({
+  const createSubscriptionMutation = useMutation<Subscription>({
     mutationKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
     meta: {
       context: zudoku,
@@ -54,12 +56,9 @@ const CheckoutConfirmPage = () => {
         body: JSON.stringify({ planId }),
       },
     },
-    onSuccess: (subscriptionId) => {
-      navigate(`/subscriptions/${subscriptionId}`);
-    },
-    onError: (error) => {
-      // biome-ignore lint/suspicious/noConsole: TODO
-      console.error("Error creating subscription:", error);
+    onSuccess: async (subscription) => {
+      await queryClient.invalidateQueries();
+      navigate(`/subscriptions/${subscription.id}`);
     },
   });
 

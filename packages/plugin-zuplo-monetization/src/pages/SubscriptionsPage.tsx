@@ -4,10 +4,8 @@ import { useParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { useSubscriptions } from "../hooks/useSubscriptions";
-import { ApiKeysList } from "./subscriptions/ApiKeysList";
-import { ManageSubscription } from "./subscriptions/ManageSubscription";
+import ActiveSubscription from "./subscriptions/ActiveSubscription";
 import { SubscriptionsList } from "./subscriptions/SubscriptionsList";
-import { Usage } from "./subscriptions/Usage";
 
 const SubscriptionsPage = () => {
   const deploymentName = useDeploymentName();
@@ -24,12 +22,6 @@ const SubscriptionsPage = () => {
     }
     return subscriptions[0];
   }, [subscriptions, subscriptionId]);
-
-  const activePhase = activeSubscription?.phases.find(
-    (p) =>
-      new Date(p.activeFrom) <= new Date() &&
-      (!p.activeTo || new Date(p.activeTo) >= new Date()),
-  );
 
   return (
     <div className="w-full pt-(--padding-content-top) pb-(--padding-content-bottom)">
@@ -50,29 +42,12 @@ const SubscriptionsPage = () => {
         />
 
         {activeSubscription && (
-          <Usage
-            subscriptionId={activeSubscription?.id}
-            environmentName={deploymentName}
-            currentItems={activePhase?.items}
-          />
-        )}
-
-        {activeSubscription?.consumer?.apiKeys && (
-          <ApiKeysList
-            deploymentName={deploymentName}
-            consumerId={activeSubscription.consumer.id}
-            apiKeys={activeSubscription.consumer.apiKeys}
-          />
-        )}
-
-        {activeSubscription && activePhase && (
-          <ManageSubscription
+          <ActiveSubscription
             subscription={activeSubscription}
-            planName={activePhase.name}
+            deploymentName={deploymentName}
           />
         )}
 
-        {/* Empty state */}
         {subscriptions.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
