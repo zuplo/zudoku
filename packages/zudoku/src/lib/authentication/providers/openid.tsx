@@ -218,8 +218,10 @@ export class OpenIDAuthenticationProvider
 
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
-    const { providerData } = useAuthState.getState();
+    const { providerData, setLoggedOut } = useAuthState.getState();
+
     if (!providerData) {
+      setLoggedOut();
       throw new AuthorizationError("User is not authenticated");
     }
     const tokenState = providerData as OpenIdProviderData;
@@ -232,7 +234,7 @@ export class OpenIDAuthenticationProvider
           profile: null,
           providerData: null,
         });
-        return "";
+        throw new AuthorizationError("No refresh token found");
       }
 
       const request = await oauth.refreshTokenGrantRequest(
@@ -247,6 +249,7 @@ export class OpenIDAuthenticationProvider
       );
 
       if (!response.access_token) {
+        setLoggedOut();
         throw new AuthorizationError("No access token in response");
       }
 
