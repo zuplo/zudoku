@@ -2,7 +2,6 @@ import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown } from "../../components/Markdown.js";
 import { cn } from "../../util/cn.js";
 import type { MediaTypeObject } from "../openapi/graphql/graphql.js";
 import * as SidecarBox from "../openapi/SidecarBox.js";
@@ -28,19 +27,13 @@ export const ChannelGroup = ({
 }: ChannelGroupProps) => {
   const { options } = useAsyncApiConfig();
 
-  const sendOp = operations.find((op) => op.action === "send");
-  const receiveOp = operations.find((op) => op.action === "receive");
-
   // Use the first operation for common data
-  const primaryOp = sendOp ?? receiveOp;
+  const primaryOp = operations[0];
   if (!primaryOp) return null;
 
   const slug = primaryOp.slug ?? primaryOp.operationId;
   const protocols = primaryOp.protocols;
   const channelTitle = primaryOp.channelTitle;
-
-  // Combine descriptions from both operations if different
-  const description = sendOp?.description || receiveOp?.description;
 
   return (
     <div>
@@ -83,34 +76,14 @@ export const ChannelGroup = ({
             options?.disableSidecar && "col-span-full",
           )}
         >
-          {description && (
-            <Markdown
-              className="max-w-full prose-img:max-w-prose"
-              content={description}
-            />
-          )}
-
-          {/* Send Operation */}
-          {sendOp && (
+          {/* Operations */}
+          {operations.map((operation) => (
             <OperationSection
-              operation={sendOp}
+              key={operation.operationId}
+              operation={operation}
               parentSlug={slug}
-              icon={<ArrowUpIcon size={16} />}
-              label="Send"
-              messageLabel="Message to Send"
             />
-          )}
-
-          {/* Receive Operation */}
-          {receiveOp && (
-            <OperationSection
-              operation={receiveOp}
-              parentSlug={slug}
-              icon={<ArrowDownIcon size={16} />}
-              label="Receive"
-              messageLabel="Message to Receive"
-            />
-          )}
+          ))}
         </div>
 
         {/* Sidecar */}
@@ -119,8 +92,7 @@ export const ChannelGroup = ({
             <ChannelSidecar
               channelAddress={channelAddress}
               protocols={protocols}
-              sendOp={sendOp}
-              receiveOp={receiveOp}
+              operations={operations}
             />
           </div>
         )}
@@ -130,22 +102,51 @@ export const ChannelGroup = ({
 };
 
 /**
- * Section for a single operation (send or receive) within a channel
+ * Capitalize first letter of a string
+ */
+const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+
+/**
+ * Get icon for an action type
+ */
+const getActionIcon = (action: string) => {
+  switch (action) {
+    case "send":
+      return <ArrowUpIcon size={16} />;
+    case "receive":
+      return <ArrowDownIcon size={16} />;
+    default:
+      return null;
+  }
+};
+
+/**
+ * Get color classes for an action type
+ */
+const getActionColors = (action: string) => {
+  switch (action) {
+    case "send":
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300";
+    case "receive":
+      return "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300";
+    default:
+      return "bg-gray-100 text-gray-700 dark:bg-gray-900/50 dark:text-gray-300";
+  }
+};
+
+/**
+ * Section for a single operation within a channel
  */
 const OperationSection = ({
   operation,
   parentSlug,
-  icon,
-  label,
-  messageLabel,
 }: {
   operation: OperationResult;
   parentSlug: string;
-  icon: React.ReactNode;
-  label: string;
-  messageLabel: string;
 }) => {
   const sectionId = `${parentSlug}/${operation.action}`;
+  const label = capitalize(operation.action);
+  const icon = getActionIcon(operation.action);
 
   return (
     <div className="border rounded-lg overflow-hidden">
@@ -156,16 +157,13 @@ const OperationSection = ({
           registerNavigationAnchor
           className="flex items-center gap-2 text-base font-semibold"
         >
-          <span
-            className={cn(
-              "p-1 rounded",
-              operation.action === "send"
-                ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
-                : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
-            )}
-          >
-            {icon}
-          </span>
+          {icon && (
+            <span
+              className={cn("p-1 rounded", getActionColors(operation.action))}
+            >
+              {icon}
+            </span>
+          )}
           {label}
           {operation.summary && (
             <span className="font-normal text-muted-foreground">
@@ -176,29 +174,16 @@ const OperationSection = ({
       </div>
 
       <div className="p-4 space-y-4">
-        {operation.description &&
-          operation.description !== operation.summary && (
-            <Markdown
-              className="text-sm text-muted-foreground"
-              content={operation.description}
-            />
-          )}
-
         {/* Messages */}
         {operation.messages.length > 0 && (
-          <div>
-            <h4 className="text-sm font-medium text-muted-foreground mb-3">
-              {messageLabel}
-            </h4>
-            <div className="space-y-3">
-              {operation.messages.map((msg, idx) => (
-                <MessageView
-                  key={msg.name ?? `message-${idx}`}
-                  message={msg}
-                  messageName={msg.name ?? msg.title ?? undefined}
-                />
-              ))}
-            </div>
+          <div className="space-y-3">
+            {operation.messages.map((msg, idx) => (
+              <MessageView
+                key={msg.name ?? `message-${idx}`}
+                message={msg}
+                messageName={msg.name ?? msg.title ?? undefined}
+              />
+            ))}
           </div>
         )}
       </div>
@@ -212,40 +197,32 @@ const OperationSection = ({
 const ChannelSidecar = ({
   channelAddress,
   protocols,
-  sendOp,
-  receiveOp,
+  operations,
 }: {
   channelAddress: string;
   protocols: string[];
-  sendOp?: OperationResult;
-  receiveOp?: OperationResult;
+  operations: OperationResult[];
 }) => {
-  // Collect all messages from both operations
+  // Collect all messages from all operations
   const allMessages = useMemo(() => {
     const messages: Array<{
       message: MessageResult;
-      action: "send" | "receive";
+      action: string;
       label: string;
     }> = [];
 
-    sendOp?.messages.forEach((msg) => {
-      messages.push({
-        message: msg,
-        action: "send",
-        label: `Send: ${msg.title ?? msg.name ?? "Message"}`,
-      });
-    });
-
-    receiveOp?.messages.forEach((msg) => {
-      messages.push({
-        message: msg,
-        action: "receive",
-        label: `Receive: ${msg.title ?? msg.name ?? "Message"}`,
+    operations.forEach((op) => {
+      op.messages.forEach((msg) => {
+        messages.push({
+          message: msg,
+          action: op.action,
+          label: `${capitalize(op.action)}: ${msg.title ?? msg.name ?? "Message"}`,
+        });
       });
     });
 
     return messages;
-  }, [sendOp, receiveOp]);
+  }, [operations]);
 
   const [selectedMessageIndex, setSelectedMessageIndex] = useState(0);
   const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
@@ -365,18 +342,26 @@ const ChannelSidecar = ({
               Actions
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {sendOp && (
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                  <ArrowUpIcon size={12} />
-                  Send
-                </span>
-              )}
-              {receiveOp && (
-                <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300">
-                  <ArrowDownIcon size={12} />
-                  Receive
-                </span>
-              )}
+              {operations.map((op) => {
+                const icon =
+                  op.action === "send" ? (
+                    <ArrowUpIcon size={12} />
+                  ) : op.action === "receive" ? (
+                    <ArrowDownIcon size={12} />
+                  ) : null;
+                return (
+                  <span
+                    key={op.operationId}
+                    className={cn(
+                      "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded",
+                      getActionColors(op.action),
+                    )}
+                  >
+                    {icon}
+                    {capitalize(op.action)}
+                  </span>
+                );
+              })}
             </div>
           </div>
         </div>
