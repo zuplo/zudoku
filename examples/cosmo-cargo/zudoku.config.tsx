@@ -125,6 +125,11 @@ const config: ZudokuConfig = {
           ? true
           : reasonCode.FORBIDDEN,
   },
+  mdx: {
+    components: {
+      Trademark: () => "™",
+    },
+  },
   navigationRules: [
     {
       type: "insert",

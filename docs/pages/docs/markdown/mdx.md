@@ -56,3 +56,13 @@ const config: ZudokuConfig = {
 
 export default config;
 ```
+
+## JSX in Headings
+
+JSX components in headings render in both the sidebar navigation and table of contents:
+
+```mdx
+# My Page <Badge>New</Badge>
+```
+
+Components must be registered via [`mdx.components`](#custom-components) to work in headings.
