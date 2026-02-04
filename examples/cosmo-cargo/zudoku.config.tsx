@@ -116,6 +116,11 @@ const config: ZudokuConfig = {
   },
   plugins: [new CosmoCargoApiIdentityPlugin()],
   protectedRoutes: ["/only-members"],
+  mdx: {
+    components: {
+      Trademark: () => "™",
+    },
+  },
   navigation: [
     {
       type: "custom-page",
