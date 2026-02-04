@@ -8,7 +8,7 @@ const config: ZudokuConfig = {
   redirects: [{ from: "/", to: "/async" }],
   asyncApis: {
     type: "file",
-    input: "./gateway.asyncapi.json",
+    input: "./gateway.asyncapi.yaml",
     path: "/async",
     options: {
       expandApiInformation: true,

@@ -572,10 +572,31 @@ OperationItem.implement({
         }
 
         if (channel?.messages) {
-          return Object.entries(channel.messages).map(([name, msg]) => ({
-            ...msg,
-            name: msg.name ?? name,
-          }));
+          return Object.entries(channel.messages)
+            .map(([name, msg]) => {
+              // If msg is a $ref, resolve it
+              const msgRef = (msg as any)?.$ref ?? (msg as any)?.__$ref;
+              if (msgRef) {
+                const messageName = msgRef.replace(
+                  "#/components/messages/",
+                  "",
+                );
+                const resolvedMsg =
+                  ctx.schema.components?.messages?.[messageName];
+                if (resolvedMsg) {
+                  return {
+                    ...resolvedMsg,
+                    name: resolvedMsg.name ?? name,
+                  };
+                }
+              }
+              // Otherwise use the message directly (already dereferenced)
+              return {
+                ...msg,
+                name: msg.name ?? name,
+              };
+            })
+            .filter((m): m is MessageObject => !!m);
         }
 
         return [];
