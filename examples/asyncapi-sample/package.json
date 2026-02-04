@@ -1,0 +1,27 @@
+{
+  "name": "asyncapi-sample",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "zudoku dev",
+    "build": "zudoku build",
+    "preview": "zudoku preview"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "zudoku": "workspace:*"
+  }
+}

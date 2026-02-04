@@ -17,6 +17,10 @@ declare module "virtual:zudoku-api-plugins" {
   export const configuredApiCatalogPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
 }
 
+declare module "virtual:zudoku-asyncapi-plugins" {
+  export const configuredAsyncApiPlugins: import("./lib/core/plugins.ts").ZudokuPlugin[];
+}
+
 declare module "virtual:zudoku-search-plugin" {
   export const configuredSearchPlugin:
     | import("./lib/core/plugins.ts").ZudokuPlugin

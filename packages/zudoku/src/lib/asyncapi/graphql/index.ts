@@ -11,6 +11,7 @@ import { validate } from "../parser/index.js";
 import type {
   AsyncAPIDocument,
   ChannelObject,
+  MessageExampleObject,
   MessageObject,
   OperationObject,
   ServerObject,
@@ -174,17 +175,34 @@ const detectProtocols = (
     });
   }
 
-  // From server refs
+  // From server refs - handle both dereferenced servers and $ref objects
   serverRefs.forEach((ref) => {
-    const serverName =
-      typeof ref === "string"
-        ? ref.replace("#/servers/", "")
-        : ref.$ref?.replace("#/servers/", "");
-    const server = servers?.[serverName];
-    if (server?.protocol) {
-      protocols.add(server.protocol);
+    // If the server has been dereferenced, it's a ServerObject with protocol
+    if (ref && typeof ref === "object" && "protocol" in ref) {
+      protocols.add(ref.protocol);
+      return;
+    }
+
+    // Otherwise, try to resolve the $ref or __$ref (original ref stored during dereference)
+    const refPath = typeof ref === "string" ? ref : (ref?.$ref ?? ref?.__$ref);
+
+    if (refPath) {
+      const serverName = refPath.replace("#/servers/", "");
+      const server = servers?.[serverName];
+      if (server?.protocol) {
+        protocols.add(server.protocol);
+      }
     }
   });
+
+  // If no protocols detected from bindings or server refs, try all servers
+  if (protocols.size === 0 && servers) {
+    Object.values(servers).forEach((server) => {
+      if (server?.protocol) {
+        protocols.add(server.protocol);
+      }
+    });
+  }
 
   return Array.from(protocols);
 };
@@ -198,13 +216,19 @@ export const getAllOperations = (
   servers?: Record<string, ServerObject>,
 ): GraphQLOperationObject[] => {
   return Object.entries(operations ?? {}).map(([operationId, operation]) => {
-    // Resolve channel reference
-    const channelRef =
-      typeof operation.channel === "string"
-        ? operation.channel.replace("#/channels/", "")
-        : operation.channel.$ref?.replace("#/channels/", "");
+    let channel: ChannelObject | undefined;
 
-    const channel = channels?.[channelRef || ""];
+    // Check if channel has been dereferenced (has address property)
+    const channelValue = operation.channel as any;
+    if (channelValue && "address" in channelValue) {
+      // Channel has been dereferenced - use it directly
+      channel = channelValue as ChannelObject;
+    } else {
+      // Resolve channel reference using $ref or __$ref (stored during dereference)
+      const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+      const channelRef = refPath.replace("#/channels/", "");
+      channel = channels?.[channelRef];
+    }
 
     // Detect protocols
     const protocols = detectProtocols(channel, servers, channel?.servers ?? []);
@@ -235,6 +259,8 @@ const SchemaTag = builder.objectRef<
   }
 >("SchemaTag");
 const Channel = builder.objectRef<ChannelObject>("Channel");
+const MessageExample =
+  builder.objectRef<MessageExampleObject>("MessageExample");
 const Message = builder.objectRef<MessageObject>("Message");
 const OperationItem =
   builder.objectRef<GraphQLOperationObject>("OperationItem");
@@ -303,6 +329,29 @@ SchemaTag.implement({
   }),
 });
 
+MessageExample.implement({
+  fields: (t) => ({
+    name: t.string({
+      nullable: true,
+      resolve: (example) => example.name ?? null,
+    }),
+    summary: t.string({
+      nullable: true,
+      resolve: (example) => example.summary ?? null,
+    }),
+    headers: t.field({
+      type: JSONScalar,
+      nullable: true,
+      resolve: (example) => example.headers ?? null,
+    }),
+    payload: t.field({
+      type: JSONScalar,
+      nullable: true,
+      resolve: (example) => example.payload ?? null,
+    }),
+  }),
+});
+
 Message.implement({
   fields: (t) => ({
     name: t.string({
@@ -335,6 +384,10 @@ Message.implement({
       nullable: true,
       resolve: (message) => message.headers ?? null,
     }),
+    examples: t.field({
+      type: [MessageExample],
+      resolve: (message) => message.examples ?? [],
+    }),
   }),
 });
 
@@ -366,11 +419,14 @@ Channel.implement({
         const serverRefs = channel.servers ?? [];
         return serverRefs
           .map((ref) => {
-            const serverName =
-              typeof ref === "string"
-                ? ref.replace("#/servers/", "")
-                : ref.$ref?.replace("#/servers/", "");
-            return ctx.schema.servers?.[serverName || ""];
+            // If dereferenced, ref is the actual ServerObject
+            if (ref && typeof ref === "object" && "protocol" in ref) {
+              return ref as ServerObject;
+            }
+            // Otherwise resolve the $ref or __$ref
+            const refPath = (ref as any)?.$ref ?? (ref as any)?.__$ref ?? "";
+            const serverName = refPath.replace("#/servers/", "");
+            return ctx.schema.servers?.[serverName];
           })
           .filter((s): s is ServerObject => !!s);
       },
@@ -407,16 +463,55 @@ OperationItem.implement({
     messages: t.field({
       type: [Message],
       resolve: (op, _, ctx) => {
+        // First try to get messages from operation
         const messageRefs = op.messages ?? [];
-        return messageRefs
+        const operationMessages = messageRefs
           .map((ref) => {
-            const messageName =
-              typeof ref === "string"
-                ? ref.replace("#/components/messages/", "")
-                : ref.$ref?.replace("#/components/messages/", "");
-            return ctx.schema.components?.messages?.[messageName || ""];
+            // If dereferenced, ref is the actual MessageObject
+            if (
+              ref &&
+              typeof ref === "object" &&
+              ("payload" in ref || "headers" in ref || "name" in ref)
+            ) {
+              return ref as MessageObject;
+            }
+            // Otherwise resolve the $ref or __$ref
+            const refPath = (ref as any)?.$ref ?? (ref as any)?.__$ref ?? "";
+            const messageName = refPath
+              .replace("#/components/messages/", "")
+              .replace("#/channels/", "")
+              .replace(/\/messages\/.*$/, "");
+            return ctx.schema.components?.messages?.[messageName];
           })
           .filter((m): m is MessageObject => !!m);
+
+        // If operation has messages, return them
+        if (operationMessages.length > 0) {
+          return operationMessages;
+        }
+
+        // Otherwise, try to get messages from the channel
+        const channelValue = op.channel as any;
+        let channel: ChannelObject | undefined;
+
+        if (channelValue && "address" in channelValue) {
+          // Channel has been dereferenced
+          channel = channelValue as ChannelObject;
+        } else {
+          // Resolve channel reference
+          const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+          const channelRef = refPath.replace("#/channels/", "");
+          channel = ctx.schema.channels?.[channelRef];
+        }
+
+        if (channel?.messages) {
+          return Object.entries(channel.messages).map(([name, msg]) => ({
+            ...msg,
+            name: msg.name ?? name,
+          }));
+        }
+
+        return [];
       },
     }),
   }),
@@ -455,7 +550,7 @@ Schema.implement({
           (tag) =>
             tag.slug === args.slug ||
             (args.name && tag.name === args.name) ||
-            (args.slug === undefined && tag.name === undefined),
+            (args.slug == null && tag.name === undefined),
         ) ?? null,
     }),
     operations: t.field({
@@ -500,10 +595,21 @@ builder.queryType({
 /**
  * Create a GraphQL server for querying AsyncAPI documents
  */
+// biome-ignore lint/suspicious/noExplicitAny: Generic yoga options
 export const createGraphQLServer = (
   schemaInputs: unknown | SchemaImports,
-  options?: YogaServerOptions<Context, Context>,
-) => {
+  options?: Omit<YogaServerOptions<any, any>, "schema" | "context">,
+): ReturnType<typeof createYoga> => {
+  // Cache for validated schemas to avoid re-processing on every request
+  let cachedContext:
+    | {
+        schema: AsyncAPIDocument;
+        operations: GraphQLOperationObject[];
+        slugs: ReturnType<typeof getAllSlugs>;
+        tags: ReturnType<typeof getAllTags>;
+      }
+    | undefined;
+
   return createYoga({
     schema: builder.toSchema(),
     ...options,
@@ -527,13 +633,14 @@ export const createGraphQLServer = (
         };
       }
 
-      // If schemaInputs is an object (SchemaImports), use default
+      // If schemaInputs is an object (SchemaImports), get the first import
       if (typeof schemaInputs === "object" && schemaInputs !== null) {
         const imports = schemaInputs as SchemaImports;
-        const defaultImport = imports.default;
+        const importKeys = Object.keys(imports);
+        const firstImportKey = importKeys[0];
 
-        if (defaultImport) {
-          const { schema, slugs } = await defaultImport();
+        if (firstImportKey && imports[firstImportKey]) {
+          const { schema, slugs } = await imports[firstImportKey]();
           const operations = getAllOperations(
             schema.operations,
             schema.channels,
@@ -551,7 +658,15 @@ export const createGraphQLServer = (
         }
       }
 
-      // Otherwise, validate the input directly
+      // Return cached context if available (for raw/direct input)
+      if (cachedContext) {
+        return {
+          ...ctx,
+          ...cachedContext,
+        };
+      }
+
+      // Otherwise, validate the input directly and cache the result
       const schema = await validate(schemaInputs);
       const operations = getAllOperations(
         schema.operations,
@@ -559,13 +674,22 @@ export const createGraphQLServer = (
         schema.servers,
       );
       const slugs = getAllSlugs(operations, schema.info?.tags ?? []);
+      const tags = getAllTags(schema, slugs.tags);
+
+      // Cache the processed context
+      cachedContext = {
+        schema,
+        operations,
+        slugs,
+        tags,
+      };
 
       return {
         ...ctx,
         schema,
         operations,
         slugs,
-        tags: getAllTags(schema, slugs.tags),
+        tags,
       };
     },
   });
