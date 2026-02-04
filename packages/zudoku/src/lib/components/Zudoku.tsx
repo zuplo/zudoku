@@ -31,90 +31,78 @@ import { ZudokuProvider } from "./context/ZudokuProvider.js";
 
 let zudokuContext: ZudokuContext | undefined;
 
-const ZudokuInner = memo(
-  ({
-    children,
-    env,
-    ...props
-  }: PropsWithChildren<
-    ZudokuContextOptions & { env: Record<string, string> }
-  >) => {
-    const components = useMemo(
-      () => ({ ...DEFAULT_COMPONENTS, ...props.overrides }),
-      [props.overrides],
-    );
+type ZudokuProps = PropsWithChildren<
+  ZudokuContextOptions & { env: Record<string, string> }
+>;
 
-    const location = useLocation();
-    const mdxComponents = useMemo(() => {
-      const componentsFromPlugins = (props.plugins ?? [])
-        .filter(isMdxProviderPlugin)
-        .flatMap((plugin) =>
-          plugin.getMdxComponents ? [plugin.getMdxComponents()] : [],
-        );
+const ZudokuInner = memo(({ children, env, ...props }: ZudokuProps) => {
+  const components = useMemo(
+    () => ({ ...DEFAULT_COMPONENTS, ...props.overrides }),
+    [props.overrides],
+  );
 
-      return {
-        ...componentsFromPlugins.reduce(
-          (acc, curr) => ({ ...acc, ...curr }),
-          {},
-        ),
-        ...MdxComponents,
-        ...props.mdx?.components,
-      };
-    }, [props.mdx?.components, props.plugins]);
-    const [didNavigate, setDidNavigate] = useState(false);
-    const navigation = useNavigation();
-    const queryClient = useQueryClient();
+  const location = useLocation();
+  const mdxComponents = useMemo(() => {
+    const componentsFromPlugins = (props.plugins ?? [])
+      .filter(isMdxProviderPlugin)
+      .flatMap((plugin) =>
+        plugin.getMdxComponents ? [plugin.getMdxComponents()] : [],
+      );
 
-    useEffect(() => {
-      if (didNavigate || !navigation.location) {
-        return;
-      }
-      setDidNavigate(true);
-    }, [didNavigate, navigation.location]);
+    return {
+      ...componentsFromPlugins.reduce((acc, curr) => ({ ...acc, ...curr }), {}),
+      ...MdxComponents,
+      ...props.mdx?.components,
+    };
+  }, [props.mdx?.components, props.plugins]);
+  const [didNavigate, setDidNavigate] = useState(false);
+  const navigation = useNavigation();
+  const queryClient = useQueryClient();
 
-    zudokuContext ??= new ZudokuContext(props, queryClient, env);
+  useEffect(() => {
+    if (didNavigate || !navigation.location) {
+      return;
+    }
+    setDidNavigate(true);
+  }, [didNavigate, navigation.location]);
 
-    const heads = props.plugins?.flatMap((plugin) =>
-      hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
-    );
+  // in SSR always create a new context per request
+  if (typeof window === "undefined" || !zudokuContext) {
+    zudokuContext = new ZudokuContext(props, queryClient, env);
+  }
 
-    return (
-      <>
-        <Helmet>{heads}</Helmet>
-        <ZudokuProvider context={zudokuContext}>
-          <Suspense fallback={<div>Zudoku Loading...</div>}>
-            <RouterEventsEmitter />
-            <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
-              <MDXProvider components={mdxComponents}>
-                <ThemeProvider attribute="class" disableTransitionOnChange>
-                  <ComponentsProvider value={components}>
-                    <ViewportAnchorProvider>
-                      {children ?? <Outlet />}
-                    </ViewportAnchorProvider>
-                  </ComponentsProvider>
-                </ThemeProvider>
-              </MDXProvider>
-            </SlotProvider>
-          </Suspense>
-        </ZudokuProvider>
-      </>
-    );
-  },
-);
+  const heads = props.plugins?.flatMap((plugin) =>
+    hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
+  );
+
+  return (
+    <>
+      <Helmet>{heads}</Helmet>
+      <ZudokuProvider context={zudokuContext}>
+        <Suspense fallback={<div>Zudoku Loading...</div>}>
+          <RouterEventsEmitter />
+          <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
+            <MDXProvider components={mdxComponents}>
+              <ThemeProvider attribute="class" disableTransitionOnChange>
+                <ComponentsProvider value={components}>
+                  <ViewportAnchorProvider>
+                    {children ?? <Outlet />}
+                  </ViewportAnchorProvider>
+                </ComponentsProvider>
+              </ThemeProvider>
+            </MDXProvider>
+          </SlotProvider>
+        </Suspense>
+      </ZudokuProvider>
+    </>
+  );
+});
 
 ZudokuInner.displayName = "ZudokuInner";
 
-const Zudoku = (
-  props: PropsWithChildren<
-    ZudokuContextOptions & { env: Record<string, string> }
-  >,
-) => {
-  return (
-    <ErrorBoundary FallbackComponent={TopLevelError}>
-      <ZudokuInner {...props} />
-    </ErrorBoundary>
-  );
-};
+export const Zudoku = (props: ZudokuProps) => (
+  <ErrorBoundary FallbackComponent={TopLevelError}>
+    <ZudokuInner {...props} />
+  </ErrorBoundary>
+);
 Zudoku.displayName = "Zudoku";
-
-export { Zudoku };
