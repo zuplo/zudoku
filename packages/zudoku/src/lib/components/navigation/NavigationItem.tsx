@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { cn } from "../../util/cn.js";
+import { RichText } from "../../util/hastToJsx.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
@@ -112,6 +113,10 @@ export const NavigationItem = ({
               )}
               <NavigationBadge {...item.badge} />
             </>
+          ) : item.rich ? (
+            <span>
+              <RichText>{item.rich}</RichText>
+            </span>
           ) : (
             item.label
           )}
