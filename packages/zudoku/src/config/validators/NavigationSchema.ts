@@ -3,7 +3,7 @@ import { glob } from "glob";
 import type { RootContent } from "hast";
 import type { LucideIcon } from "lucide-react";
 import type { SortableType } from "../../lib/navigation/applyRules.js";
-import type { Heading, PhrasingContent, Text } from "mdast";
+import type { Heading, PhrasingContent } from "mdast";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { mdxFromMarkdown } from "mdast-util-mdx";
 import type { MdxJsxTextElement } from "mdast-util-mdx-jsx";
@@ -94,14 +94,21 @@ export type Navigation = NavigationItem[];
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
 
-// MDX extends PhrasingContent with JSX elements
 type MdxPhrasingContent = PhrasingContent | MdxJsxTextElement;
 
 const isMdxJsxElement = (node: MdxPhrasingContent): node is MdxJsxTextElement =>
   node.type === "mdxJsxTextElement";
 
-const isTextNode = (node: MdxPhrasingContent): node is Text =>
-  node.type === "text";
+const mdastToString = (node: MdxPhrasingContent | Heading): string => {
+  if ("value" in node && typeof node.value === "string") return node.value;
+  if ("children" in node && Array.isArray(node.children)) {
+    return node.children
+      .map((c) => mdastToString(c as MdxPhrasingContent))
+      .join("");
+  }
+
+  return "";
+};
 
 // Extract rich H1 heading content from MDX. Returns AST nodes only when H1 contains JSX elements.
 const extractRichH1 = (content: string) => {
@@ -118,20 +125,15 @@ const extractRichH1 = (content: string) => {
 
     if (!h1) return undefined;
 
-    const hasJsx = h1.children.some(isMdxJsxElement);
+    const children = h1.children as MdxPhrasingContent[];
+    const hasJsx = children.some(isMdxJsxElement);
 
-    // Extract plain text label
-    const plainLabel = h1.children
-      .filter(isTextNode)
-      .map((node) => node.value)
-      .join("")
-      .trim();
+    // Extract all text content including from emphasis/strong/links
+    const label = mdastToString(h1).trim();
 
-    // MDAST text nodes and MDX JSX nodes are structurally compatible with HAST
-    // RichText handles both via toJsxRuntime and custom mdxJsx handling
-    return hasJsx
-      ? { label: plainLabel, rich: h1.children as RootContent[] }
-      : { label: plainLabel };
+    // Note: rich only contains MDAST nodes. RichText handles text and mdxJsxTextElement,
+    // but markdown formatting (strong/emphasis/link) in H1 won't render styled.
+    return hasJsx ? { label, rich: children as RootContent[] } : { label };
   } catch {
     return undefined;
   }
