@@ -1,5 +1,5 @@
 import { Button } from "zudoku/components";
-import { useVerifiedEmail } from "../../../packages/zudoku/src/lib/authentication/hook";
+import { useVerifiedEmail } from "zudoku/hooks";
 
 const VerifiedPage = () => {
   const { isVerified, refresh } = useVerifiedEmail();
