@@ -25,9 +25,18 @@ const convertNode = (
       : Fragment;
 
     const props = Object.fromEntries(
-      node.attributes.flatMap((attr) =>
-        attr.type === "mdxJsxAttribute" ? [[attr.name, attr.value]] : [],
-      ),
+      node.attributes.flatMap((attr): [string, unknown][] => {
+        if (attr.type !== "mdxJsxAttribute") return [];
+        const { name, value } = attr;
+
+        if (value == null) return [[name, true]];
+
+        if (["string", "number", "boolean"].includes(typeof value)) {
+          return [[name, value]];
+        }
+
+        return [];
+      }),
     );
 
     const children = node.children.map((child) =>

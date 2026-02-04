@@ -29,10 +29,13 @@ const rehypeExtractTocWithJsx: Plugin<[]> = () => (tree, vfile) => {
 
     if (!level) return;
 
+    const richChildren = node.children as RootContent[];
+    const hasRichContent = richChildren.some((child) => child.type !== "text");
+
     const heading: TocEntry = {
       depth: level,
       text: hastToString(node),
-      rich: node.children,
+      ...(hasRichContent ? { rich: richChildren } : {}),
     };
 
     if (node.properties?.id) {

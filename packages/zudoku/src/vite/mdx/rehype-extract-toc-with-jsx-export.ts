@@ -1,5 +1,5 @@
 import { name as isIdentifierName } from "estree-util-is-identifier-name";
-import type { Root } from "mdast";
+import type { Root } from "hast";
 import type { Plugin } from "unified";
 import { exportMdxjsConst } from "./utils.js";
 
