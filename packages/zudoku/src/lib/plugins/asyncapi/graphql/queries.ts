@@ -25,6 +25,7 @@ export type OperationResult = {
   operationId: string;
   action: "send" | "receive";
   channelAddress: string | null;
+  channelTitle: string | null;
   slug: string | null;
   summary: string | null;
   description: string | null;
@@ -94,6 +95,7 @@ export type NavOperationResult = {
   operationId: string;
   action: "send" | "receive";
   channelAddress: string | null;
+  channelTitle: string | null;
   slug: string | null;
   summary: string | null;
   protocols: string[];
@@ -125,6 +127,7 @@ export const NavigationQuery = `
           operationId
           action
           channelAddress
+          channelTitle
           slug
           summary
           protocols
@@ -134,6 +137,7 @@ export const NavigationQuery = `
         operationId
         action
         channelAddress
+        channelTitle
         slug
         summary
         protocols
@@ -182,6 +186,7 @@ export const OperationsForTagQuery = `
           operationId
           action
           channelAddress
+          channelTitle
           slug
           summary
           description
@@ -242,6 +247,7 @@ export const AllOperationsQuery = `
         operationId
         action
         channelAddress
+        channelTitle
         slug
         summary
         description

@@ -65,9 +65,13 @@ export const createNavigationCategory = ({
         // Use slug from the first operation (send or receive)
         const anchor = primaryOp?.slug ?? primaryOp?.operationId ?? "";
 
+        // Use channel title if available, otherwise fall back to channel address
+        const navLabel =
+          primaryOp?.channelTitle ?? primaryOp?.summary ?? channelAddress;
+
         return {
           type: "link" as const,
-          label: channelAddress,
+          label: navLabel,
           to: `${path}#${anchor}`,
           badge: {
             label: badgeLabel,

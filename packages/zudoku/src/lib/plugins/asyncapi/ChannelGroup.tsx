@@ -37,6 +37,7 @@ export const ChannelGroup = ({
 
   const slug = primaryOp.slug ?? primaryOp.operationId;
   const protocols = primaryOp.protocols;
+  const channelTitle = primaryOp.channelTitle;
 
   // Combine descriptions from both operations if different
   const description = sendOp?.description || receiveOp?.description;
@@ -55,7 +56,7 @@ export const ChannelGroup = ({
           registerNavigationAnchor
           className="break-all col-span-full"
         >
-          {channelAddress}
+          {channelTitle ?? channelAddress}
         </Heading>
 
         {/* Protocol and Address Row */}
@@ -95,7 +96,7 @@ export const ChannelGroup = ({
               operation={sendOp}
               parentSlug={slug}
               icon={<ArrowUpIcon size={16} />}
-              label="Publish"
+              label="Send"
               messageLabel="Message to Send"
             />
           )}
@@ -106,7 +107,7 @@ export const ChannelGroup = ({
               operation={receiveOp}
               parentSlug={slug}
               icon={<ArrowDownIcon size={16} />}
-              label="Subscribe"
+              label="Receive"
               messageLabel="Message to Receive"
             />
           )}
@@ -367,13 +368,13 @@ const ChannelSidecar = ({
               {sendOp && (
                 <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
                   <ArrowUpIcon size={12} />
-                  Publish
+                  Send
                 </span>
               )}
               {receiveOp && (
                 <span className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300">
                   <ArrowDownIcon size={12} />
-                  Subscribe
+                  Receive
                 </span>
               )}
             </div>

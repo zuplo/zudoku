@@ -76,6 +76,7 @@ const builder = new SchemaBuilder<{
 type GraphQLOperationObject = OperationObject & {
   operationId: string;
   channelAddress?: string;
+  channelTitle?: string;
   slug?: string;
   parentTag?: string;
   protocols?: string[];
@@ -293,6 +294,7 @@ export const getAllOperations = (
       ...operation,
       operationId,
       channelAddress: channel?.address ?? undefined,
+      channelTitle: channel?.title ?? undefined,
       protocols,
       tags,
       parentTag: tags?.[0]?.name,
@@ -501,6 +503,10 @@ OperationItem.implement({
     channelAddress: t.string({
       nullable: true,
       resolve: (op) => op.channelAddress ?? null,
+    }),
+    channelTitle: t.string({
+      nullable: true,
+      resolve: (op) => op.channelTitle ?? null,
     }),
     slug: t.string({
       nullable: true,
