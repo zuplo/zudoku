@@ -1,11 +1,13 @@
 import type { MDXComponents } from "mdx/types.js";
 import { Link } from "zudoku/components";
+import { Alert } from "zudoku/ui/Alert.js";
 import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
 import { Mermaid } from "../components/Mermaid.js";
 import { HIGHLIGHT_CODE_BLOCK_CLASS } from "../shiki.js";
+import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
 import { CodeBlock } from "../ui/CodeBlock.js";
@@ -76,6 +78,8 @@ export const MdxComponents = {
       <a href={href} target="_blank" {...props} rel="noreferrer" />
     ),
   Link,
+  Alert,
+  Badge,
   Button,
   Callout,
   Stepper,

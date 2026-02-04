@@ -1,7 +1,13 @@
 import path from "node:path";
 import { glob } from "glob";
+import type { RootContent } from "hast";
 import type { LucideIcon } from "lucide-react";
 import type { SortableType } from "../../lib/navigation/applyRules.js";
+import type { Heading, PhrasingContent, Text } from "mdast";
+import { fromMarkdown } from "mdast-util-from-markdown";
+import { mdxFromMarkdown } from "mdast-util-mdx";
+import type { MdxJsxTextElement } from "mdast-util-mdx-jsx";
+import { mdxjs } from "micromark-extension-mdxjs";
 import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
@@ -40,6 +46,7 @@ export type NavigationDoc = ReplaceFields<
     label: string;
     categoryLabel?: string;
     path: string;
+    rich?: RootContent[];
   } & ResolvedIcon
 >;
 
@@ -86,6 +93,49 @@ export type Navigation = NavigationItem[];
 
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
+
+// MDX extends PhrasingContent with JSX elements
+type MdxPhrasingContent = PhrasingContent | MdxJsxTextElement;
+
+const isMdxJsxElement = (node: MdxPhrasingContent): node is MdxJsxTextElement =>
+  node.type === "mdxJsxTextElement";
+
+const isTextNode = (node: MdxPhrasingContent): node is Text =>
+  node.type === "text";
+
+// Extract rich H1 heading content from MDX. Returns AST nodes only when H1 contains JSX elements.
+const extractRichH1 = (content: string) => {
+  try {
+    const mdast = fromMarkdown(content, {
+      extensions: [mdxjs()],
+      mdastExtensions: [mdxFromMarkdown()],
+      // biome-ignore lint/suspicious/noExplicitAny: mdast-util-from-markdown has type incompatibilities between versions
+    } as any);
+
+    const h1 = mdast.children.find(
+      (node): node is Heading => node.type === "heading" && node.depth === 1,
+    );
+
+    if (!h1) return undefined;
+
+    const hasJsx = h1.children.some(isMdxJsxElement);
+
+    // Extract plain text label
+    const plainLabel = h1.children
+      .filter(isTextNode)
+      .map((node) => node.value)
+      .join("")
+      .trim();
+
+    // MDAST text nodes and MDX JSX nodes are structurally compatible with HAST
+    // RichText handles both via toJsxRuntime and custom mdxJsx handling
+    return hasJsx
+      ? { label: plainLabel, rich: h1.children as RootContent[] }
+      : { label: plainLabel };
+  } catch {
+    return undefined;
+  }
+};
 
 const isNavigationItem = (item: unknown): item is NavigationItem =>
   item !== undefined;
@@ -175,10 +225,13 @@ export class NavigationResolver {
 
     const { data, content } = await readFrontmatter(foundMatches);
 
+    const richH1 = extractRichH1(content);
+
     const label =
       data.navigation_label ??
       data.sidebar_label ??
       data.title ??
+      richH1?.label ??
       extractTitleFromContent(content) ??
       filePath;
 
@@ -192,6 +245,7 @@ export class NavigationResolver {
       display: data.navigation_display,
       categoryLabel,
       path: fileNoExt,
+      rich: richH1?.rich,
     } satisfies NavigationDoc;
 
     return doc;
