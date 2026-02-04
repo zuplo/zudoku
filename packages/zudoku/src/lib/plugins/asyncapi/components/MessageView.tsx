@@ -72,7 +72,9 @@ export const MessageView = ({
                     Payload
                   </AccordionTrigger>
                   <AccordionContent>
-                    <PayloadSchemaView schema={message.payload} />
+                    <PayloadSchemaView
+                      schema={message.payload as Record<string, unknown>}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -83,7 +85,9 @@ export const MessageView = ({
                     Headers
                   </AccordionTrigger>
                   <AccordionContent>
-                    <PayloadSchemaView schema={message.headers} />
+                    <PayloadSchemaView
+                      schema={message.headers as Record<string, unknown>}
+                    />
                   </AccordionContent>
                 </AccordionItem>
               )}
@@ -109,13 +113,81 @@ export const MessageView = ({
 };
 
 /**
- * Simple schema display component
+ * Simple schema display component with support for oneOf/anyOf schemas
  */
-const PayloadSchemaView = ({ schema }: { schema: Record<string, unknown> }) => {
+const PayloadSchemaView = ({
+  schema,
+  depth = 0,
+}: {
+  schema: Record<string, unknown> | undefined;
+  depth?: number;
+}) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
       <div className="text-sm text-muted-foreground italic">
         No schema defined
+      </div>
+    );
+  }
+
+  // Handle oneOf schemas - display each option separately
+  if (schema.oneOf && Array.isArray(schema.oneOf)) {
+    const options = schema.oneOf as Array<Record<string, unknown>>;
+    return (
+      <div className="space-y-3">
+        <div className="text-xs text-muted-foreground font-medium">
+          One of the following message types:
+        </div>
+        {options.map((option) => {
+          const title = option.title as string | undefined;
+          const description = option.description as string | undefined;
+          const key = title ?? JSON.stringify(option).slice(0, 50);
+          return (
+            <div key={key} className="rounded border bg-card overflow-hidden">
+              {(title || description) && (
+                <div className="px-3 py-2 border-b bg-muted/30">
+                  {title && <div className="font-medium text-sm">{title}</div>}
+                  {description && (
+                    <div className="text-xs text-muted-foreground mt-0.5">
+                      {description}
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="p-3">
+                <PayloadSchemaView schema={option} depth={depth + 1} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Handle anyOf schemas similarly
+  if (schema.anyOf && Array.isArray(schema.anyOf)) {
+    const options = schema.anyOf as Array<Record<string, unknown>>;
+    return (
+      <div className="space-y-3">
+        <div className="text-xs text-muted-foreground font-medium">
+          Any of the following:
+        </div>
+        {options.map((option) => {
+          const title = option.title as string | undefined;
+          const key = title ?? JSON.stringify(option).slice(0, 50);
+          return (
+            <div key={key} className="rounded border bg-card overflow-hidden">
+              {title && (
+                <div className="px-3 py-2 border-b bg-muted/30">
+                  <div className="font-medium text-sm">{title}</div>
+                </div>
+              )}
+              <div className="p-3">
+                <PayloadSchemaView schema={option} depth={depth + 1} />
+              </div>
+            </div>
+          );
+        })}
       </div>
     );
   }
@@ -129,28 +201,48 @@ const PayloadSchemaView = ({ schema }: { schema: Record<string, unknown> }) => {
     const required = (schema.required as string[]) ?? [];
 
     return (
-      <div className="space-y-2 rounded border bg-card p-3">
+      <div className="space-y-2">
         {Object.entries(properties).map(([name, prop]) => (
           <div
             key={name}
             className="border-b border-border last:border-0 pb-2 last:pb-0"
           >
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline gap-2 flex-wrap">
               <code className="text-sm font-mono font-medium">{name}</code>
               {required.includes(name) && (
                 <span className="text-xs text-red-500">required</span>
               )}
-              {prop.type && (
+              {prop.type != null ? (
                 <span className="text-xs text-muted-foreground">
                   {String(prop.type)}
                 </span>
+              ) : prop.const != null ? (
+                <span className="text-xs text-muted-foreground">
+                  const: <code>{JSON.stringify(prop.const)}</code>
+                </span>
+              ) : null}
+              {Array.isArray(prop.enum) && (
+                <span className="text-xs text-muted-foreground">
+                  enum: {(prop.enum as unknown[]).map(String).join(" | ")}
+                </span>
               )}
             </div>
-            {prop.description && (
+            {prop.description != null && (
               <p className="text-xs text-muted-foreground mt-1">
                 {String(prop.description)}
               </p>
             )}
+            {/* Recursively render nested objects */}
+            {String(prop.type) === "object" &&
+              prop.properties != null &&
+              depth < 2 && (
+                <div className="mt-2 ml-4 pl-2 border-l-2 border-border">
+                  <PayloadSchemaView
+                    schema={prop as Record<string, unknown>}
+                    depth={depth + 1}
+                  />
+                </div>
+              )}
           </div>
         ))}
       </div>
@@ -160,13 +252,16 @@ const PayloadSchemaView = ({ schema }: { schema: Record<string, unknown> }) => {
   // For basic types, show type info
   if (schema.type) {
     return (
-      <div className="rounded border bg-card p-3">
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm text-muted-foreground">Type:</span>
-          <code className="text-sm font-mono">{String(schema.type)}</code>
-        </div>
-        {schema.description && (
-          <p className="text-xs text-muted-foreground mt-1">
+      <div className="flex items-baseline gap-2 flex-wrap">
+        <span className="text-sm text-muted-foreground">Type:</span>
+        <code className="text-sm font-mono">{String(schema.type)}</code>
+        {schema.format != null && (
+          <span className="text-xs text-muted-foreground">
+            (format: {String(schema.format)})
+          </span>
+        )}
+        {schema.description != null && (
+          <p className="text-xs text-muted-foreground mt-1 w-full">
             {String(schema.description)}
           </p>
         )}
@@ -174,12 +269,16 @@ const PayloadSchemaView = ({ schema }: { schema: Record<string, unknown> }) => {
     );
   }
 
-  // Fallback: show raw JSON
-  return (
-    <pre className="rounded border bg-card p-3 text-xs font-mono overflow-auto max-h-64">
-      {JSON.stringify(schema, null, 2)}
-    </pre>
-  );
+  // Fallback: show raw JSON (but only at top level to avoid excessive nesting)
+  if (depth === 0) {
+    return (
+      <pre className="rounded border bg-card p-3 text-xs font-mono overflow-auto max-h-64">
+        {JSON.stringify(schema, null, 2)}
+      </pre>
+    );
+  }
+
+  return null;
 };
 
 /**

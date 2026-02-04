@@ -157,6 +157,22 @@ const getOperationSlugKey = (op: GraphQLOperationObject) =>
     .join("-");
 
 /**
+ * Normalize protocol names to standard format (e.g., wss -> ws)
+ */
+const normalizeProtocol = (protocol: string): string => {
+  const normalized = protocol.toLowerCase();
+  const aliases: Record<string, string> = {
+    wss: "ws",
+    websocket: "ws",
+    websockets: "ws",
+    https: "http",
+    mqtts: "mqtt",
+    amqps: "amqp",
+  };
+  return aliases[normalized] || normalized;
+};
+
+/**
  * Detect protocols from channel and server objects
  */
 const detectProtocols = (
@@ -170,7 +186,7 @@ const detectProtocols = (
   if (channel?.bindings) {
     Object.keys(channel.bindings).forEach((protocol) => {
       if (protocol !== "__$ref" && channel.bindings?.[protocol]) {
-        protocols.add(protocol);
+        protocols.add(normalizeProtocol(protocol));
       }
     });
   }
@@ -179,7 +195,7 @@ const detectProtocols = (
   serverRefs.forEach((ref) => {
     // If the server has been dereferenced, it's a ServerObject with protocol
     if (ref && typeof ref === "object" && "protocol" in ref) {
-      protocols.add(ref.protocol);
+      protocols.add(normalizeProtocol(ref.protocol));
       return;
     }
 
@@ -190,7 +206,7 @@ const detectProtocols = (
       const serverName = refPath.replace("#/servers/", "");
       const server = servers?.[serverName];
       if (server?.protocol) {
-        protocols.add(server.protocol);
+        protocols.add(normalizeProtocol(server.protocol));
       }
     }
   });
@@ -199,7 +215,7 @@ const detectProtocols = (
   if (protocols.size === 0 && servers) {
     Object.values(servers).forEach((server) => {
       if (server?.protocol) {
-        protocols.add(server.protocol);
+        protocols.add(normalizeProtocol(server.protocol));
       }
     });
   }
