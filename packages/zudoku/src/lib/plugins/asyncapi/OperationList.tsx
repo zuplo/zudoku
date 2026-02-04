@@ -7,43 +7,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
-import type { EnrichedOperation } from "../../asyncapi/parser/operations.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useAsyncApiConfig } from "./context.js";
-import {
-  type OperationResult,
-  OperationsForTagQuery,
-} from "./graphql/queries.js";
+import { OperationsForTagQuery } from "./graphql/queries.js";
 import { OperationListItem } from "./OperationListItem.js";
 
 export const UNTAGGED_PATH = "~endpoints";
-
-/**
- * Convert GraphQL operation result to EnrichedOperation format
- */
-const toEnrichedOperation = (op: OperationResult): EnrichedOperation => ({
-  action: op.action,
-  operationId: op.operationId,
-  channelAddress: op.channelAddress ?? undefined,
-  channelId: "",
-  protocols: op.protocols,
-  parentTag: undefined,
-  summary: op.summary ?? undefined,
-  description: op.description ?? undefined,
-  messages: op.messages.map((m) => ({
-    name: m.name ?? undefined,
-    title: m.title ?? undefined,
-    summary: m.summary ?? undefined,
-    description: m.description ?? undefined,
-    contentType: m.contentType ?? undefined,
-    payload: m.payload ?? undefined,
-    headers: m.headers ?? undefined,
-  })),
-});
 
 export const OperationList = ({
   tag,
@@ -62,26 +35,11 @@ export const OperationList = ({
   const { data } = useSuspenseQuery(query);
   const { schema } = data;
 
-  if (!schema.tag) {
-    return (
-      <div className="flex flex-col h-full items-center justify-center text-center">
-        <div className="text-muted-foreground font-medium">
-          No operations found
-        </div>
-        <div className="mt-2 text-sm text-muted-foreground">
-          This API doesn&apos;t have any operations defined yet.
-        </div>
-      </div>
-    );
-  }
-
-  const {
-    operations,
-    next,
-    prev,
-    description: tagDescription,
-    name: tagName,
-  } = schema.tag;
+  const operations = schema.tag?.operations ?? [];
+  const next = schema.tag?.next;
+  const prev = schema.tag?.prev;
+  const tagDescription = schema.tag?.description;
+  const tagName = schema.tag?.name;
 
   const title = schema.title;
   const tagTitle = tagName ?? "Endpoints";
@@ -106,6 +64,19 @@ export const OperationList = ({
   const serverUrl = schema.servers[0]
     ? `${schema.servers[0].protocol}://${schema.servers[0].host}${schema.servers[0].pathname ?? ""}`
     : undefined;
+
+  if (!schema.tag) {
+    return (
+      <div className="flex flex-col h-full items-center justify-center text-center">
+        <div className="text-muted-foreground font-medium">
+          No operations found
+        </div>
+        <div className="mt-2 text-sm text-muted-foreground">
+          This API doesn&apos;t have any operations defined yet.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -179,13 +150,11 @@ export const OperationList = ({
         )}
       </div>
       <hr />
+      {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
       <div className="px-6 mt-6 -mx-6 [content-visibility:auto]">
         {operations.map((operation) => (
-          <div key={operation.operationId}>
-            <OperationListItem
-              operation={toEnrichedOperation(operation)}
-              serverUrl={serverUrl}
-            />
+          <div key={operation.slug ?? operation.operationId}>
+            <OperationListItem operation={operation} serverUrl={serverUrl} />
             <hr className="my-10" />
           </div>
         ))}

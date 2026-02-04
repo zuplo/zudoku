@@ -7,7 +7,9 @@ const map = new Map<string, number>();
 /**
  * Creates the GraphQL server for AsyncAPI
  */
-export const createServer = (config: AsyncApiPluginConfig) =>
+export const createServer = (
+  config: AsyncApiPluginConfig,
+): ReturnType<typeof createGraphQLServer> =>
   createGraphQLServer(config.schemaImports ?? config.input, {
     plugins: [
       useLogger({

@@ -195,7 +195,12 @@ export const generateAsyncApiCode = async (
     dereferencedSchema.channels,
     dereferencedSchema.servers,
   );
-  const slugs = getAllSlugs(operations, dereferencedSchema.info?.tags);
+
+  const slugs = getAllSlugs(
+    operations,
+    dereferencedSchema.info?.tags,
+    dereferencedSchema.channels,
+  );
 
   lines.push(`export const slugs = {`);
   lines.push(

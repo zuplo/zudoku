@@ -49,6 +49,30 @@ describe("AsyncAPI Parser", () => {
     expect(doc.info).toBeDefined();
   });
 
+  it("should parse raw YAML string that contains embedded URLs", async () => {
+    const yamlDoc = `
+asyncapi: 3.0.0
+info:
+  title: Test AsyncAPI YAML
+  version: 1.0.0
+  contact:
+    url: https://example.com/support
+channels:
+  updates:
+    address: /updates
+operations:
+  onUpdates:
+    action: receive
+    channel:
+      $ref: '#/channels/updates'
+`;
+
+    const doc = await validate(yamlDoc);
+
+    expect(doc.asyncapi).toBe("3.0.0");
+    expect(doc.info.contact?.url).toBe("https://example.com/support");
+  });
+
   it("should throw error for missing asyncapi version", async () => {
     const invalidDoc = {
       info: { title: "Test", version: "1.0.0" },

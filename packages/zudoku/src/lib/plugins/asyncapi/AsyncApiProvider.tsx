@@ -15,7 +15,7 @@ export type AsyncApiPluginOptions = AsyncApiPluginConfig & {
 };
 
 export const AsyncApiProvider = ({
-  basePath,
+  basePath: _basePath,
   version,
   config,
   client,
@@ -43,10 +43,26 @@ export const AsyncApiProvider = ({
       return versionConfig.input;
     };
 
+    // Build versions record from array input
+    const versions: Record<
+      string,
+      { path: string; label: string; downloadUrl?: string }
+    > = {};
+    if (Array.isArray(config.input)) {
+      for (const v of config.input) {
+        versions[v.path] = {
+          path: v.path,
+          label: v.label ?? v.version ?? v.path,
+          downloadUrl: v.downloadUrl,
+        };
+      }
+    }
+
     return {
       config: {
         ...config,
         version,
+        versions,
         input: resolveInput(),
         options: config.options,
       },

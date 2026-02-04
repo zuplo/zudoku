@@ -59,9 +59,9 @@ describe("extractOperations", () => {
     const ops = extractOperations(testDocument);
 
     expect(ops).toHaveLength(3);
-    expect(ops[0].operationId).toBeDefined();
-    expect(ops[0].channelAddress).toBeDefined();
-    expect(ops[0].protocols).toBeDefined();
+    expect(ops[0]?.operationId).toBeDefined();
+    expect(ops[0]?.channelAddress).toBeDefined();
+    expect(ops[0]?.protocols).toBeDefined();
   });
 
   it("should resolve channel addresses", () => {
@@ -102,7 +102,7 @@ describe("filterOperationsByAction", () => {
     const sendOps = filterOperationsByAction(ops, "send");
 
     expect(sendOps).toHaveLength(1);
-    expect(sendOps[0].operationId).toBe("sendUserUpdate");
+    expect(sendOps[0]?.operationId).toBe("sendUserUpdate");
   });
 
   it("should filter by receive action", () => {
@@ -147,7 +147,7 @@ describe("filterOperationsByProtocol", () => {
     const mqttOps = filterOperationsByProtocol(ops, "mqtt");
 
     expect(mqttOps).toHaveLength(1);
-    expect(mqttOps[0].operationId).toBe("sendUserUpdate");
+    expect(mqttOps[0]?.operationId).toBe("sendUserUpdate");
   });
 });
 
@@ -251,7 +251,7 @@ describe("getUntaggedOperations", () => {
     const untagged = getUntaggedOperations(ops);
 
     expect(untagged).toHaveLength(1);
-    expect(untagged[0].operationId).toBe("untaggedOp");
+    expect(untagged[0]?.operationId).toBe("untaggedOp");
   });
 
   it("should return empty array when all operations are tagged", () => {

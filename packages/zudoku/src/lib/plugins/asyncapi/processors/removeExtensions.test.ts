@@ -2,102 +2,101 @@ import { describe, expect, it } from "vitest";
 import type { AsyncAPIDocument } from "../../../asyncapi/types.js";
 import { removeExtensions } from "./removeExtensions.js";
 
+// biome-ignore lint/suspicious/noExplicitAny: Test document with extensions
 const baseDoc: AsyncAPIDocument = {
   asyncapi: "3.0.0",
   info: {
     title: "Test",
     version: "1.0.0",
     "x-logo": "https://example.com/logo.png",
-  },
+  } as any,
   "x-internal": true,
   "x-audience": "internal",
   channels: {
     userChannel: {
       address: "/users",
       "x-rate-limit": 100,
-    },
+    } as any,
   },
   operations: {
     onUserSignup: {
       action: "receive" as const,
       channel: { $ref: "#/channels/userChannel" },
       "x-handler": "handleUserSignup",
-    },
+    } as any,
   },
 };
 
 describe("removeExtensions", () => {
   it("should remove specified extension from root", () => {
     const processed = removeExtensions({
-      extensions: { "x-internal": true },
+      keys: ["x-internal"],
     })({
       schema: baseDoc,
       file: "/test.json",
       dereference: async (id) => id,
     });
 
-    expect(processed["x-internal"]).toBeUndefined();
-    expect(processed["x-audience"]).toBeDefined();
+    expect((processed as any)["x-internal"]).toBeUndefined();
+    expect((processed as any)["x-audience"]).toBeDefined();
   });
 
   it("should remove multiple extensions", () => {
     const processed = removeExtensions({
-      extensions: {
-        "x-internal": true,
-        "x-audience": true,
-      },
+      keys: ["x-internal", "x-audience"],
     })({
       schema: baseDoc,
       file: "/test.json",
       dereference: async (id) => id,
     });
 
-    expect(processed["x-internal"]).toBeUndefined();
-    expect(processed["x-audience"]).toBeUndefined();
+    expect((processed as any)["x-internal"]).toBeUndefined();
+    expect((processed as any)["x-audience"]).toBeUndefined();
   });
 
   it("should remove extensions from nested objects", () => {
     const processed = removeExtensions({
-      extensions: { "x-logo": true },
+      keys: ["x-logo"],
     })({
       schema: baseDoc,
       file: "/test.json",
       dereference: async (id) => id,
     });
 
-    expect(processed.info["x-logo"]).toBeUndefined();
+    expect((processed.info as any)["x-logo"]).toBeUndefined();
     expect(processed.info.title).toBeDefined();
   });
 
   it("should use shouldRemove callback", () => {
     const processed = removeExtensions({
-      shouldRemove: ({ extension }) => extension.startsWith("x-audience"),
+      shouldRemove: (key) => key.startsWith("x-audience"),
     })({
       schema: baseDoc,
       file: "/test.json",
       dereference: async (id) => id,
     });
 
-    expect(processed["x-audience"]).toBeUndefined();
-    expect(processed["x-internal"]).toBeDefined();
+    expect((processed as any)["x-audience"]).toBeUndefined();
+    expect((processed as any)["x-internal"]).toBeDefined();
   });
 
-  it("should remove extensions based on value", () => {
+  it("should remove all x- extensions when keys is undefined", () => {
     const processed = removeExtensions({
-      shouldRemove: ({ value }) => value === true,
+      keys: undefined,
     })({
       schema: baseDoc,
       file: "/test.json",
       dereference: async (id) => id,
     });
 
-    expect(processed["x-internal"]).toBeUndefined();
-    expect(processed["x-audience"]).toBeDefined(); // "internal" !== true
+    // When keys is undefined, all x- extensions are removed
+    expect((processed as any)["x-internal"]).toBeUndefined();
+    expect((processed as any)["x-audience"]).toBeUndefined();
   });
 
   it("should keep standard properties", () => {
     const processed = removeExtensions({
-      extensions: { "x-internal": true },
+      keys: ["x-internal"],
     })({
       schema: baseDoc,
       file: "/test.json",
@@ -110,14 +109,15 @@ describe("removeExtensions", () => {
   });
 
   it("should handle empty options", () => {
-    const processed = removeExtensions()({
+    const processed = removeExtensions({})({
       schema: baseDoc,
       file: "/test.json",
       dereference: async (id) => id,
     });
 
-    expect(processed["x-internal"]).toBeDefined();
-    expect(processed["x-audience"]).toBeDefined();
+    // Empty options means remove all extensions
+    expect((processed as any)["x-internal"]).toBeUndefined();
+    expect((processed as any)["x-audience"]).toBeUndefined();
   });
 
   it("should handle document without extensions", () => {
@@ -127,7 +127,7 @@ describe("removeExtensions", () => {
     };
 
     const processed = removeExtensions({
-      extensions: { "x-internal": true },
+      keys: ["x-internal"],
     })({
       schema: docWithoutExtensions,
       file: "/test.json",

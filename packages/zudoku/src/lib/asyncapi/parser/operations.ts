@@ -42,17 +42,18 @@ export const extractOperations = (
     // 1. Already dereferenced (channel is the actual channel object)
     // 2. $ref string (need to look up in channels)
     // 3. Object with $ref property (need to look up in channels)
-    if (isDereferencedChannel(operation.channel)) {
+    const channelValue = operation.channel as unknown;
+    if (isDereferencedChannel(channelValue)) {
       // Channel has been dereferenced - use it directly
-      channel = operation.channel as ChannelObject;
+      channel = channelValue as ChannelObject;
       // Try to find channel ID by matching address
       channelId =
         Object.entries(channels).find(
           ([, ch]) => ch.address === channel?.address,
         )?.[0] ?? "";
-    } else if (typeof operation.channel === "string") {
+    } else if (typeof channelValue === "string") {
       // Direct string reference
-      channelId = operation.channel.replace("#/channels/", "");
+      channelId = channelValue.replace("#/channels/", "");
       channel = channels[channelId];
     } else if (operation.channel?.$ref) {
       // Object with $ref property

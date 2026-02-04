@@ -1,38 +1,29 @@
-import type { ProcessorArg } from "../../../../config/validators/BuildSchema.js";
 import type { AsyncAPIDocument } from "../../../asyncapi/types.js";
-import { traverse as baseTraverse } from "../../../util/traverse.js";
+import type { AsyncApiProcessorArg } from "../interfaces.js";
+import { type RecordAny, traverse } from "./traverse.js";
 
 interface RemoveExtensionsOptions {
-  // Extension definitions, e.g., { 'x-internal': true }
-  extensions?: Record<string, boolean>;
-  shouldRemove?: (options: { extension: string; value: unknown }) => boolean;
+  keys?: string[];
+  shouldRemove?: (key: string) => boolean;
 }
 
+// Remove all `x-` prefixed key/value pairs, or filter by names if provided
 export const removeExtensions =
-  ({ extensions = {}, shouldRemove }: RemoveExtensionsOptions = {}) =>
-  ({ schema }: ProcessorArg) =>
-    baseTraverse(schema, (spec) => {
-      if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
-        return spec;
-      }
-
-      const updated: Record<string, unknown> = {};
+  ({ keys, shouldRemove }: RemoveExtensionsOptions = {}) =>
+  ({ schema }: AsyncApiProcessorArg) =>
+    traverse(schema, (spec) => {
+      const result: RecordAny = {};
 
       for (const [key, value] of Object.entries(spec)) {
-        // Skip non-extension properties
-        if (!key.startsWith("x-")) {
-          updated[key] = value;
-          continue;
-        }
+        const isExtension = key.startsWith("x-");
+        const shouldBeRemoved =
+          isExtension &&
+          (keys === undefined || keys.includes(key)) &&
+          (!shouldRemove || shouldRemove(key));
 
-        // If the extension is explicitly marked for removal
-        if (extensions[key] === true) continue;
+        if (shouldBeRemoved) continue;
 
-        // If the extension should be removed via shouldRemove callback
-        if (shouldRemove?.({ extension: key, value })) continue;
-
-        updated[key] = value;
+        result[key] = value;
       }
-
-      return updated;
+      return result;
     }) as AsyncAPIDocument;

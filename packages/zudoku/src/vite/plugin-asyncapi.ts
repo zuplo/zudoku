@@ -142,6 +142,7 @@ const viteAsyncApiPlugin = async (): Promise<Plugin> => {
                     const slugs = getAllSlugs(
                       operations,
                       schema.info?.tags ?? [],
+                      schema.channels,
                     );
                     return getAllTags(schema, slugs.tags);
                   })

@@ -49,7 +49,7 @@ export const detectProtocolsFromBindings = (
  */
 export const detectProtocolFromUrl = (url: string): string | null => {
   const match = url.match(/^(\w+):\/\//);
-  if (!match) return null;
+  if (!match?.[1]) return null;
 
   const scheme = match[1].toLowerCase();
 

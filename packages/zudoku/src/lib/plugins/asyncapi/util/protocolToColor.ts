@@ -1,176 +1,138 @@
 /**
- * Color mappings for AsyncAPI protocols
- * Following Tailwind CSS color classes
+ * Color mappings for AsyncAPI protocols using CSS custom properties.
+ *
+ * Users can customize these colors in their theme by overriding the CSS variables:
+ * - --asyncapi-protocol-ws-bg / --asyncapi-protocol-ws-text
+ * - --asyncapi-protocol-mqtt-bg / --asyncapi-protocol-mqtt-text
+ * - --asyncapi-protocol-kafka-bg / --asyncapi-protocol-kafka-text
+ * - --asyncapi-action-send-bg / --asyncapi-action-send-text
+ * - --asyncapi-action-receive-bg / --asyncapi-action-receive-text
+ * etc.
  */
 
-export const protocolToColor: Record<string, { bg: string; text: string }> = {
-  // WebSocket variants
-  ws: {
-    bg: "bg-purple-100 dark:bg-purple-900/30",
-    text: "text-purple-700 dark:text-purple-300",
-  },
-  wss: {
-    bg: "bg-purple-100 dark:bg-purple-900/30",
-    text: "text-purple-700 dark:text-purple-300",
-  },
-  websocket: {
-    bg: "bg-purple-100 dark:bg-purple-900/30",
-    text: "text-purple-700 dark:text-purple-300",
-  },
+type ProtocolColorKey =
+  | "ws"
+  | "mqtt"
+  | "kafka"
+  | "amqp"
+  | "http"
+  | "nats"
+  | "redis"
+  | "jms"
+  | "sns"
+  | "stomp"
+  | "mercure"
+  | "sse"
+  | "default";
 
-  // MQTT variants
-  mqtt: {
-    bg: "bg-green-100 dark:bg-green-900/30",
-    text: "text-green-700 dark:text-green-300",
-  },
-  "mqtt+ssl": {
-    bg: "bg-green-100 dark:bg-green-900/30",
-    text: "text-green-700 dark:text-green-300",
-  },
-  mqtts: {
-    bg: "bg-green-100 dark:bg-green-900/30",
-    text: "text-green-700 dark:text-green-300",
-  },
-
-  // Kafka
-  kafka: {
-    bg: "bg-orange-100 dark:bg-orange-900/30",
-    text: "text-orange-700 dark:text-orange-300",
-  },
-  "kafka-secure": {
-    bg: "bg-orange-100 dark:bg-orange-900/30",
-    text: "text-orange-700 dark:text-orange-300",
-  },
-
-  // AMQP (RabbitMQ)
-  amqp: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    text: "text-amber-700 dark:text-amber-300",
-  },
-  amqps: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    text: "text-amber-700 dark:text-amber-300",
-  },
-  amqp1: {
-    bg: "bg-amber-100 dark:bg-amber-900/30",
-    text: "text-amber-700 dark:text-amber-300",
-  },
-
-  // HTTP variants (for webhooks)
-  http: {
-    bg: "bg-blue-100 dark:bg-blue-900/30",
-    text: "text-blue-700 dark:text-blue-300",
-  },
-  https: {
-    bg: "bg-blue-100 dark:bg-blue-900/30",
-    text: "text-blue-700 dark:text-blue-300",
-  },
-
-  // NATS
-  nats: {
-    bg: "bg-cyan-100 dark:bg-cyan-900/30",
-    text: "text-cyan-700 dark:text-cyan-300",
-  },
-
-  // Redis
-  redis: {
-    bg: "bg-red-100 dark:bg-red-900/30",
-    text: "text-red-700 dark:text-red-300",
-  },
-
-  // JMS
-  jms: {
-    bg: "bg-indigo-100 dark:bg-indigo-900/30",
-    text: "text-indigo-700 dark:text-indigo-300",
-  },
-
-  // SNS/SQS
-  sns: {
-    bg: "bg-pink-100 dark:bg-pink-900/30",
-    text: "text-pink-700 dark:text-pink-300",
-  },
-  sqs: {
-    bg: "bg-pink-100 dark:bg-pink-900/30",
-    text: "text-pink-700 dark:text-pink-300",
-  },
-
-  // Google Pub/Sub
-  googlepubsub: {
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    text: "text-sky-700 dark:text-sky-300",
-  },
-  pubsub: {
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    text: "text-sky-700 dark:text-sky-300",
-  },
-
-  // STOMP
-  stomp: {
-    bg: "bg-teal-100 dark:bg-teal-900/30",
-    text: "text-teal-700 dark:text-teal-300",
-  },
-  stomps: {
-    bg: "bg-teal-100 dark:bg-teal-900/30",
-    text: "text-teal-700 dark:text-teal-300",
-  },
-
-  // Mercure
-  mercure: {
-    bg: "bg-violet-100 dark:bg-violet-900/30",
-    text: "text-violet-700 dark:text-violet-300",
-  },
-
-  // Server-Sent Events
-  sse: {
-    bg: "bg-rose-100 dark:bg-rose-900/30",
-    text: "text-rose-700 dark:text-rose-300",
-  },
-};
-
-// Default colors for unknown protocols
-const defaultColor = {
-  bg: "bg-gray-100 dark:bg-gray-800/30",
-  text: "text-gray-700 dark:text-gray-300",
+/**
+ * CSS variable names for protocol colors
+ * Maps protocol to its CSS variable prefix
+ */
+const protocolToVarPrefix: Record<string, ProtocolColorKey> = {
+  ws: "ws",
+  wss: "ws",
+  websocket: "ws",
+  mqtt: "mqtt",
+  "mqtt+ssl": "mqtt",
+  mqtts: "mqtt",
+  kafka: "kafka",
+  "kafka-secure": "kafka",
+  amqp: "amqp",
+  amqps: "amqp",
+  amqp1: "amqp",
+  http: "http",
+  https: "http",
+  nats: "nats",
+  redis: "redis",
+  jms: "jms",
+  sns: "sns",
+  sqs: "sns",
+  googlepubsub: "http",
+  pubsub: "http",
+  stomp: "stomp",
+  stomps: "stomp",
+  mercure: "mercure",
+  sse: "sse",
 };
 
 /**
- * Get color classes for a given protocol
+ * Default color values (used as CSS variable fallbacks)
+ * Light mode colors - dark mode handled via CSS
+ */
+const defaultProtocolColors: Record<
+  ProtocolColorKey,
+  { bg: string; text: string }
+> = {
+  ws: { bg: "#f3e8ff", text: "#7c3aed" }, // purple
+  mqtt: { bg: "#dcfce7", text: "#16a34a" }, // green
+  kafka: { bg: "#ffedd5", text: "#ea580c" }, // orange
+  amqp: { bg: "#fef3c7", text: "#d97706" }, // amber
+  http: { bg: "#dbeafe", text: "#2563eb" }, // blue
+  nats: { bg: "#cffafe", text: "#0891b2" }, // cyan
+  redis: { bg: "#fee2e2", text: "#dc2626" }, // red
+  jms: { bg: "#e0e7ff", text: "#4f46e5" }, // indigo
+  sns: { bg: "#fce7f3", text: "#db2777" }, // pink
+  stomp: { bg: "#ccfbf1", text: "#0d9488" }, // teal
+  mercure: { bg: "#ede9fe", text: "#7c3aed" }, // violet
+  sse: { bg: "#ffe4e6", text: "#e11d48" }, // rose
+  default: { bg: "#f3f4f6", text: "#4b5563" }, // gray
+};
+
+/**
+ * Get inline styles for protocol badge colors using CSS variables with fallbacks.
+ * This allows theme customization via CSS custom properties.
  */
 export const getProtocolColor = (
   protocol: string,
-): { bg: string; text: string } => {
+): { bg: string; text: string; style: React.CSSProperties } => {
   const normalizedProtocol = protocol.toLowerCase();
-  return protocolToColor[normalizedProtocol] ?? defaultColor;
+  const varPrefix = protocolToVarPrefix[normalizedProtocol] ?? "default";
+  const defaults = defaultProtocolColors[varPrefix];
+
+  return {
+    bg: "", // Not using Tailwind classes anymore
+    text: "",
+    style: {
+      backgroundColor: `var(--asyncapi-protocol-${varPrefix}-bg, ${defaults.bg})`,
+      color: `var(--asyncapi-protocol-${varPrefix}-text, ${defaults.text})`,
+    },
+  };
 };
 
 /**
- * Action (send/receive) color mapping
+ * Default action colors
  */
-export const actionToColor: Record<string, { bg: string; text: string }> = {
-  send: {
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    text: "text-emerald-700 dark:text-emerald-300",
-  },
-  receive: {
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    text: "text-sky-700 dark:text-sky-300",
-  },
-  publish: {
-    bg: "bg-emerald-100 dark:bg-emerald-900/30",
-    text: "text-emerald-700 dark:text-emerald-300",
-  },
-  subscribe: {
-    bg: "bg-sky-100 dark:bg-sky-900/30",
-    text: "text-sky-700 dark:text-sky-300",
-  },
+const defaultActionColors = {
+  send: { bg: "#dcfce7", text: "#16a34a" }, // emerald/green
+  receive: { bg: "#dbeafe", text: "#0284c7" }, // sky/blue
+  default: { bg: "#f3f4f6", text: "#4b5563" }, // gray
 };
 
 /**
- * Get color classes for an action
+ * Get inline styles for action badge colors using CSS variables with fallbacks.
  */
 export const getActionColor = (
   action: string,
-): { bg: string; text: string } => {
+): { bg: string; text: string; style: React.CSSProperties } => {
   const normalizedAction = action.toLowerCase();
-  return actionToColor[normalizedAction] ?? defaultColor;
+  const actionKey =
+    normalizedAction === "send" || normalizedAction === "publish"
+      ? "send"
+      : normalizedAction === "receive" || normalizedAction === "subscribe"
+        ? "receive"
+        : "default";
+
+  const defaults =
+    defaultActionColors[actionKey as keyof typeof defaultActionColors] ??
+    defaultActionColors.default;
+
+  return {
+    bg: "",
+    text: "",
+    style: {
+      backgroundColor: `var(--asyncapi-action-${actionKey}-bg, ${defaults.bg})`,
+      color: `var(--asyncapi-action-${actionKey}-text, ${defaults.text})`,
+    },
+  };
 };

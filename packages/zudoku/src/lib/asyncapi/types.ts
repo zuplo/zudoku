@@ -24,6 +24,8 @@ export interface AsyncAPIDocument extends WithRef {
   operations?: Record<string, OperationObject>;
   components?: ComponentsObject;
   defaultContentType?: string;
+  // Allow x- extension properties
+  [key: `x-${string}`]: unknown;
 }
 
 // Info Object
@@ -84,6 +86,8 @@ export interface ChannelObject extends WithRef {
   tags?: TagObject[];
   externalDocs?: ExternalDocumentationObject;
   bindings?: ChannelBindingsObject;
+  // Allow x- extension properties
+  [key: `x-${string}`]: unknown;
 }
 
 // Operation Object
@@ -100,6 +104,9 @@ export interface OperationObject extends WithRef {
   traits?: OperationTraitObject[];
   messages?: MessageReferenceObject[];
   reply?: OperationReplyObject;
+  deprecated?: boolean;
+  // Allow x- extension properties
+  [key: `x-${string}`]: unknown;
 }
 
 // Message Object

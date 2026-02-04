@@ -10,13 +10,21 @@ type ProtocolBadgeProps = {
 
 /**
  * Badge component for displaying protocol types (WebSocket, MQTT, Kafka, etc.)
+ *
+ * Colors can be customized via CSS variables in your theme:
+ * - --asyncapi-protocol-ws-bg / --asyncapi-protocol-ws-text (WebSocket)
+ * - --asyncapi-protocol-mqtt-bg / --asyncapi-protocol-mqtt-text (MQTT)
+ * - --asyncapi-protocol-kafka-bg / --asyncapi-protocol-kafka-text (Kafka)
+ * - --asyncapi-protocol-amqp-bg / --asyncapi-protocol-amqp-text (AMQP)
+ * - --asyncapi-protocol-http-bg / --asyncapi-protocol-http-text (HTTP)
+ * etc.
  */
 export const ProtocolBadge = ({
   protocol,
   className,
   size = "md",
 }: ProtocolBadgeProps) => {
-  const { bg, text } = getProtocolColor(protocol);
+  const { style } = getProtocolColor(protocol);
   const displayName = getProtocolDisplayName(protocol);
 
   const sizeClasses = {
@@ -28,12 +36,11 @@ export const ProtocolBadge = ({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded font-medium whitespace-nowrap shrink-0 border border-transparent",
-        bg,
-        text,
+        "inline-flex items-center justify-center rounded font-medium whitespace-nowrap shrink-0",
         sizeClasses[size],
         className,
       )}
+      style={style}
     >
       {displayName}
     </span>

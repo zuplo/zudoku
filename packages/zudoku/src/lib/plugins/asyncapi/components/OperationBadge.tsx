@@ -9,13 +9,17 @@ type OperationBadgeProps = {
 
 /**
  * Badge component for displaying operation actions (SEND, RECEIVE)
+ *
+ * Colors can be customized via CSS variables in your theme:
+ * - --asyncapi-action-send-bg / --asyncapi-action-send-text
+ * - --asyncapi-action-receive-bg / --asyncapi-action-receive-text
  */
 export const OperationBadge = ({
   action,
   className,
   size = "md",
 }: OperationBadgeProps) => {
-  const { bg, text } = getActionColor(action);
+  const { style } = getActionColor(action);
 
   const sizeClasses = {
     sm: "px-1.5 py-0.5 text-[10px]",
@@ -27,11 +31,10 @@ export const OperationBadge = ({
     <span
       className={cn(
         "inline-flex items-center justify-center rounded font-semibold uppercase whitespace-nowrap shrink-0",
-        bg,
-        text,
         sizeClasses[size],
         className,
       )}
+      style={style}
     >
       {action}
     </span>

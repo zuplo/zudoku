@@ -1,6 +1,10 @@
 import type { NavigationItem } from "../../../../config/validators/NavigationSchema.js";
-import type { OperationResult } from "../graphql/queries.js";
-import { ActionColorMap } from "./actionColorMap.js";
+import type { NavOperationResult } from "../graphql/queries.js";
+import {
+  type BadgeColor,
+  getProtocolLabel,
+  ProtocolColorMap,
+} from "./actionColorMap.js";
 
 export const createNavigationCategory = ({
   label,
@@ -11,7 +15,7 @@ export const createNavigationCategory = ({
 }: {
   label: string;
   path: string;
-  operations: OperationResult[];
+  operations: NavOperationResult[];
   collapsible?: boolean;
   collapsed?: boolean;
 }): NavigationItem => ({
@@ -25,15 +29,29 @@ export const createNavigationCategory = ({
   },
   collapsible,
   collapsed,
-  items: operations.map((operation) => ({
-    type: "link" as const,
-    label:
-      operation.summary ?? operation.channelAddress ?? operation.operationId,
-    to: `${path}#${operation.slug}`,
-    badge: {
-      label: operation.action.toUpperCase(),
-      color: ActionColorMap[operation.action.toLowerCase()] ?? "gray",
-      invert: true,
-    },
-  })),
+  items: operations.map((operation) => {
+    // Use the primary protocol for the badge (first detected protocol)
+    const primaryProtocol = operation.protocols[0];
+    const badgeLabel = primaryProtocol
+      ? getProtocolLabel(primaryProtocol)
+      : operation.action.toUpperCase();
+    const badgeColor = primaryProtocol
+      ? (ProtocolColorMap[primaryProtocol.toLowerCase()] ?? "gray")
+      : "gray";
+
+    // Use slug if available, otherwise fall back to operationId
+    const anchor = operation.slug ?? operation.operationId;
+
+    return {
+      type: "link" as const,
+      label:
+        operation.summary ?? operation.channelAddress ?? operation.operationId,
+      to: `${path}#${anchor}`,
+      badge: {
+        label: badgeLabel,
+        color: badgeColor as BadgeColor,
+        invert: true,
+      },
+    };
+  }),
 });

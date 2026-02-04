@@ -92,32 +92,62 @@ const resolveExtensions = (obj: Record<string, any>) =>
 
 /**
  * Get all tags from the AsyncAPI document
+ * Considers tags from: info.tags, operations.tags, and channels.tags
  */
 export const getAllTags = (
   schema: AsyncAPIDocument,
   slugs: ReturnType<typeof getAllSlugs>["tags"],
 ): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.info?.tags ?? [];
+
+  // Collect tags from operations (which now include inherited channel tags)
   const operationTags = new Set(
     Object.values(schema.operations ?? {})
       .flatMap((op) => op.tags ?? [])
       .map((tag) => tag.name),
   );
 
-  const hasUntaggedOperations = Object.values(schema.operations ?? {}).some(
-    (op) => !op.tags?.length,
+  // Also collect tags directly from channels (for completeness)
+  const channelTags = new Set(
+    Object.values(schema.channels ?? {})
+      .flatMap((channel) => channel.tags ?? [])
+      .map((tag) => tag.name),
   );
 
+  // Merge all unique tag names
+  const allTagNames = new Set([...operationTags, ...channelTags]);
+
+  // Check if there are untagged operations (operations without tags AND their channel doesn't have tags)
+  const hasUntaggedOperations = Object.entries(schema.operations ?? {}).some(
+    ([_, op]) => {
+      if (op.tags?.length) return false;
+      // Check if channel has tags
+      const channelValue = op.channel as any;
+      let channel: ChannelObject | undefined;
+      if (channelValue && "address" in channelValue) {
+        channel = channelValue as ChannelObject;
+      } else {
+        const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+        const channelRef = refPath.replace("#/channels/", "");
+        channel = schema.channels?.[channelRef];
+      }
+      return !channel?.tags?.length;
+    },
+  );
+
+  // Sort tags alphabetically for deterministic order
+  const sortedTags = Array.from(allTagNames).sort((a, b) => a.localeCompare(b));
+
   const result = [
-    // Keep root tags that are actually used in operations
+    // Keep root tags that are actually used in operations or channels (in spec order)
     ...rootTags
-      .filter((tag) => operationTags.has(tag.name))
+      .filter((tag) => allTagNames.has(tag.name))
       .map((tag) => ({ ...tag, slug: slugs[tag.name] })),
-    // Add tags found in operations but not defined in root tags
-    ...Array.from(operationTags)
+    // Add tags found in operations/channels but not defined in root tags (sorted alphabetically)
+    ...sortedTags
       .filter((tag) => !rootTags.some((rt) => rt.name === tag))
       .map((tag) => ({ name: tag, slug: slugs[tag] })),
-    // Add untagged operations if there are any
+    // Add untagged operations if there are any (always last)
     ...(hasUntaggedOperations ? [{ name: undefined, slug: undefined }] : []),
   ];
 
@@ -130,13 +160,18 @@ export const getAllTags = (
 export const getAllSlugs = (
   ops: GraphQLOperationObject[],
   schemaTags: TagObject[] = [],
+  channels?: Record<string, ChannelObject>,
 ) => {
   const slugify = slugifyWithCounter();
 
+  // Collect tags from operations, schema, and channels
   const tags = Array.from(
     new Set([
       ...ops.flatMap((op) => op.tags?.map((t) => t.name) ?? []),
       ...schemaTags.map((tag) => tag.name),
+      ...Object.values(channels ?? {}).flatMap(
+        (channel) => channel.tags?.map((t) => t.name) ?? [],
+      ),
     ]),
   );
 
@@ -249,12 +284,18 @@ export const getAllOperations = (
     // Detect protocols
     const protocols = detectProtocols(channel, servers, channel?.servers ?? []);
 
+    // Inherit tags from channel if operation doesn't have tags
+    const tags = operation.tags?.length
+      ? operation.tags
+      : (channel?.tags ?? []);
+
     return {
       ...operation,
       operationId,
       channelAddress: channel?.address ?? undefined,
       protocols,
-      parentTag: operation.tags?.[0]?.name,
+      tags,
+      parentTag: tags?.[0]?.name,
     };
   });
 };
@@ -463,7 +504,11 @@ OperationItem.implement({
     }),
     slug: t.string({
       nullable: true,
-      resolve: (op) => op.slug ?? null,
+      resolve: (op, _, ctx) => {
+        // Look up the slug from the slugs map, like OpenAPI does
+        const slug = ctx.slugs.operations[getOperationSlugKey(op)];
+        return slug ?? null;
+      },
     }),
     summary: t.string({
       nullable: true,
@@ -611,7 +656,6 @@ builder.queryType({
 /**
  * Create a GraphQL server for querying AsyncAPI documents
  */
-// biome-ignore lint/suspicious/noExplicitAny: Generic yoga options
 export const createGraphQLServer = (
   schemaInputs: unknown | SchemaImports,
   options?: Omit<YogaServerOptions<any, any>, "schema" | "context">,
@@ -689,7 +733,11 @@ export const createGraphQLServer = (
         schema.channels,
         schema.servers,
       );
-      const slugs = getAllSlugs(operations, schema.info?.tags ?? []);
+      const slugs = getAllSlugs(
+        operations,
+        schema.info?.tags ?? [],
+        schema.channels,
+      );
       const tags = getAllTags(schema, slugs.tags);
 
       // Cache the processed context

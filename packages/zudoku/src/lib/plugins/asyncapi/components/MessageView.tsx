@@ -11,11 +11,11 @@ import {
   FramePanel,
   FrameTitle,
 } from "zudoku/ui/Frame.js";
-import type { MessageObject } from "../../../asyncapi/types.js";
 import { Markdown } from "../../../components/Markdown.js";
+import type { MessageResult } from "../graphql/queries.js";
 
 type MessageViewProps = {
-  message: MessageObject;
+  message: MessageResult;
   messageName?: string;
   defaultOpen?: boolean;
 };
@@ -92,19 +92,6 @@ export const MessageView = ({
                 </AccordionItem>
               )}
             </Accordion>
-          )}
-
-          {message.tags && message.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {message.tags.map((tag) => (
-                <span
-                  key={tag.name}
-                  className="inline-flex items-center rounded bg-muted px-2 py-0.5 text-xs text-muted-foreground"
-                >
-                  {tag.name}
-                </span>
-              ))}
-            </div>
           )}
         </div>
       </FramePanel>
@@ -288,7 +275,7 @@ export const MessageListItem = ({
   message,
   messageName,
 }: {
-  message: MessageObject;
+  message: MessageResult;
   messageName?: string;
 }) => {
   const title = message.title ?? message.name ?? messageName;

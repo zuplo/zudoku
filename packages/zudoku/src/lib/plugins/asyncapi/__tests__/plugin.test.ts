@@ -29,7 +29,7 @@ describe("asyncApiPlugin", () => {
     });
 
     expect(plugin).toBeDefined();
-    expect(plugin.getRoutes).toBeInstanceOf(Function);
+    expect("getRoutes" in plugin && plugin.getRoutes).toBeInstanceOf(Function);
   });
 
   it("should support versioned input", () => {

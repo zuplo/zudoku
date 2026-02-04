@@ -11,6 +11,14 @@ export type MessageResult = {
   contentType: string | null;
   payload: Record<string, unknown> | null;
   headers: Record<string, unknown> | null;
+  examples: MessageExampleResult[];
+};
+
+export type MessageExampleResult = {
+  name: string | null;
+  summary: string | null;
+  headers: Record<string, unknown> | null;
+  payload: unknown;
 };
 
 export type OperationResult = {
@@ -80,6 +88,61 @@ export const AsyncApiSchemaQuery = `
 ` as TypedDocumentString<AsyncApiSchemaQueryResult, Record<string, never>>;
 
 /**
+ * Navigation operation result (minimal for sidebar)
+ */
+export type NavOperationResult = {
+  operationId: string;
+  action: "send" | "receive";
+  channelAddress: string | null;
+  slug: string | null;
+  summary: string | null;
+  protocols: string[];
+};
+
+/**
+ * Query to fetch tags with operations for navigation sidebar
+ */
+export type NavigationQueryResult = {
+  schema: {
+    title: string;
+    tags: {
+      name: string | null;
+      slug: string | null;
+      operations: NavOperationResult[];
+    }[];
+    operations: NavOperationResult[];
+  };
+};
+
+export const NavigationQuery = `
+  query Navigation {
+    schema {
+      title
+      tags {
+        name
+        slug
+        operations {
+          operationId
+          action
+          channelAddress
+          slug
+          summary
+          protocols
+        }
+      }
+      operations {
+        operationId
+        action
+        channelAddress
+        slug
+        summary
+        protocols
+      }
+    }
+  }
+` as TypedDocumentString<NavigationQueryResult, Record<string, never>>;
+
+/**
  * Query to fetch operations for a specific tag
  */
 export type OperationsForTagQueryResult = {
@@ -131,6 +194,12 @@ export const OperationsForTagQuery = `
             contentType
             payload
             headers
+            examples {
+              name
+              summary
+              headers
+              payload
+            }
           }
         }
         prev {
@@ -185,6 +254,12 @@ export const AllOperationsQuery = `
           contentType
           payload
           headers
+          examples {
+            name
+            summary
+            headers
+            payload
+          }
         }
       }
     }

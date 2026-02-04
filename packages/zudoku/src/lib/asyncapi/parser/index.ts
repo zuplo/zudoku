@@ -4,23 +4,41 @@ import { dereference } from "../../oas/parser/dereference/index.js";
 import { traverse } from "../../util/traverse.js";
 import type { AsyncAPIDocument } from "../types.js";
 
+const isHttpUrl = (value: string): boolean => {
+  const trimmed = value.trim();
+
+  // Raw schemas can contain URLs inside their body; only treat as URL when the
+  // entire string is a single HTTP(S) URL token.
+  if (!trimmed || /\s/.test(trimmed)) return false;
+
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const parseSchemaInput = async (
   schemaInput: unknown,
 ): Promise<JSONSchema & { asyncapi?: string }> => {
   if (typeof schemaInput === "string") {
-    if (schemaInput.trim().startsWith("{")) {
+    const trimmed = schemaInput.trim();
+
+    if (trimmed.startsWith("{")) {
       try {
-        return JSON.parse(schemaInput);
+        return JSON.parse(trimmed);
       } catch (err) {
         throw new GraphQLError("Invalid JSON schema", {
           originalError: err,
         });
       }
     }
-    if (schemaInput.includes("://")) {
+
+    if (isHttpUrl(trimmed)) {
       let response: Response;
       try {
-        response = await fetch(schemaInput, {
+        response = await fetch(trimmed, {
           cache: "force-cache",
         });
       } catch (err) {

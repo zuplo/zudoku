@@ -1,15 +1,17 @@
 import { matchPath } from "react-router";
-import type { NavigationItem } from "../../config/validators/NavigationSchema.js";
+import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { createQuery } from "./client/useCreateQuery.js";
 import {
   AsyncApiSchemaQuery,
-  type AsyncApiSchemaQueryResult,
+  NavigationQuery,
+  type NavigationQueryResult,
   type OperationResult,
 } from "./graphql/queries.js";
 import type { AsyncApiPluginConfig } from "./interfaces.js";
+import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, UNTAGGED_PATH } from "./util/getRoutes.js";
 
 export type AsyncApiPluginOptions = AsyncApiPluginConfig & {
@@ -67,52 +69,45 @@ export const asyncApiPlugin = (config: AsyncApiPluginConfig): ZudokuPlugin => {
       try {
         const versionParam = match?.params.version;
 
-        const query = createQuery(client, AsyncApiSchemaQuery);
+        const query = createQuery(client, NavigationQuery);
         const data = (await context.queryClient.ensureQueryData(
           query,
-        )) as AsyncApiSchemaQueryResult;
+        )) as NavigationQueryResult;
 
-        const tagCategories = new Map(
-          data.schema.tags
-            .filter((tag) => tag.name)
-            .map((tag) => {
-              if (!tag.name) {
-                throw new Error(`Tag ${tag.slug} has no name`);
-              }
+        // Create navigation categories for each tag (following OpenAPI pattern)
+        const categories: NavigationItem[] = data.schema.tags
+          .filter((tag) => tag.name && tag.operations.length > 0)
+          .map((tag) => {
+            if (!tag.name) {
+              throw new Error(`Tag ${tag.slug} has no name`);
+            }
 
-              const categoryPath = joinUrl(basePath, versionParam, tag.slug);
+            const categoryPath = joinUrl(basePath, versionParam, tag.slug);
 
-              const isCollapsed = !config.options?.expandAllTags;
-              const isCollapsible = true;
-
-              return [
-                tag.name,
-                {
-                  type: "category" as const,
-                  label: tag.name,
-                  link: {
-                    type: "doc" as const,
-                    path: categoryPath,
-                    file: categoryPath,
-                    label: tag.name,
-                  },
-                  collapsible: isCollapsible,
-                  collapsed: isCollapsed,
-                  items: [] as NavigationItem[],
-                } satisfies NavigationItem,
-              ];
-            }),
-        );
-
-        const categories: NavigationItem[] = Array.from(tagCategories.values());
-
-        // Add untagged operations link if there are tags
-        if (categories.length > 0) {
-          categories.push({
-            type: "link" as const,
-            label: "Other endpoints",
-            to: joinUrl(basePath, versionParam, UNTAGGED_PATH),
+            return createNavigationCategory({
+              label: tag.name,
+              path: categoryPath,
+              operations: tag.operations,
+              collapsible: true,
+              collapsed: !config.options?.expandAllTags,
+            });
           });
+
+        // Find untagged operations (operations that don't appear in any tag)
+        const untaggedOps = data.schema.tags.find(
+          (tag) => !tag.name,
+        )?.operations;
+
+        if (untaggedOps && untaggedOps.length > 0) {
+          categories.push(
+            createNavigationCategory({
+              label: categories.length === 0 ? "Endpoints" : "Other endpoints",
+              path: joinUrl(basePath, versionParam, UNTAGGED_PATH),
+              operations: untaggedOps,
+              collapsible: true,
+              collapsed: !config.options?.expandAllTags,
+            }),
+          );
         }
 
         return categories;

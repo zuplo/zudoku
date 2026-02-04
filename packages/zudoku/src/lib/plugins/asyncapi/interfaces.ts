@@ -1,6 +1,16 @@
 import type { SchemaImports } from "../../asyncapi/graphql/index.js";
+import type { AsyncAPIDocument } from "../../asyncapi/types.js";
 import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
+
+/**
+ * Processor argument type for AsyncAPI processors
+ */
+export type AsyncApiProcessorArg = {
+  schema: AsyncAPIDocument;
+  file: string;
+  dereference: (schema: AsyncAPIDocument) => Promise<AsyncAPIDocument>;
+};
 
 type DynamicInput = () => Promise<unknown>;
 

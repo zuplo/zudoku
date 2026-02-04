@@ -60,9 +60,11 @@ const createRoute = ({
 const NonTagPagesOperationList = ({
   render,
   path,
+  basePath,
 }: {
   render: (tag: string) => React.ReactNode;
   path: string;
+  basePath: string;
 }) => {
   const { tag: currentTag } = useParams();
   const location = useLocation();
@@ -71,13 +73,26 @@ const NonTagPagesOperationList = ({
     data: { schema },
   } = useSuspenseQuery(query);
 
-  const firstTag = schema.tags.at(0);
+  // Find the first tag that has both a name and a slug (skip untagged)
+  const firstNamedTag = schema.tags.find((tag) => tag.name && tag.slug);
 
-  if (!currentTag && firstTag?.slug) {
+  if (!currentTag && firstNamedTag?.slug) {
     return (
       <Navigate
         to={{
-          pathname: generatePath(path, { tag: firstTag.slug }),
+          pathname: generatePath(path, { tag: firstNamedTag.slug }),
+          search: location.search,
+        }}
+      />
+    );
+  }
+
+  // If no named tags exist, redirect to untagged route
+  if (!currentTag && !firstNamedTag) {
+    return (
+      <Navigate
+        to={{
+          pathname: joinUrl(basePath, UNTAGGED_PATH),
           search: location.search,
         }}
       />
@@ -91,7 +106,13 @@ const NonTagPagesOperationList = ({
   return null;
 };
 
-const createNonTagPagesRoute = ({ path }: { path: string }): RouteObject => ({
+const createNonTagPagesRoute = ({
+  path,
+  basePath,
+}: {
+  path: string;
+  basePath: string;
+}): RouteObject => ({
   path,
   async lazy() {
     const { OperationList } = await import("../OperationList.js");
@@ -99,6 +120,7 @@ const createNonTagPagesRoute = ({ path }: { path: string }): RouteObject => ({
       element: (
         <NonTagPagesOperationList
           path={path}
+          basePath={basePath}
           render={(tag) => <OperationList tag={tag} />}
         />
       ),
@@ -153,7 +175,7 @@ export const getRoutes = ({
         basePath,
         routePath: basePath,
         routes: [
-          createNonTagPagesRoute({ path: `${basePath}/:tag?` }),
+          createNonTagPagesRoute({ path: `${basePath}/:tag?`, basePath }),
           ...createAdditionalRoutes(basePath),
         ],
         client,

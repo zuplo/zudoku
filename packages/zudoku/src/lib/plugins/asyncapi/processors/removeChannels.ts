@@ -1,5 +1,5 @@
-import type { ProcessorArg } from "../../../../config/validators/BuildSchema.js";
 import type { AsyncAPIDocument } from "../../../asyncapi/types.js";
+import type { AsyncApiProcessorArg } from "../interfaces.js";
 import { type RecordAny, traverse } from "./traverse.js";
 
 interface RemoveChannelsOptions {
@@ -13,18 +13,21 @@ interface RemoveChannelsOptions {
 
 export const removeChannels =
   ({ channels = {}, shouldRemove }: RemoveChannelsOptions = {}) =>
-  ({ schema }: ProcessorArg) =>
+  ({ schema }: AsyncApiProcessorArg) =>
     traverse(schema, (spec) => {
       if (!spec.channels) return spec;
 
       const updatedChannels: RecordAny = {};
 
-      for (const [channelId, channel] of Object.entries(spec.channels)) {
+      for (const [channelId, channel] of Object.entries(
+        spec.channels as RecordAny,
+      )) {
         // If the channel is explicitly marked for removal
         if (channels[channelId] === true) continue;
 
         // If the channel should be removed via shouldRemove callback
-        if (shouldRemove?.({ channelId, channel })) continue;
+        if (shouldRemove?.({ channelId, channel: channel as RecordAny }))
+          continue;
 
         updatedChannels[channelId] = channel;
       }
