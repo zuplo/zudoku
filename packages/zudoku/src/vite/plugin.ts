@@ -9,8 +9,8 @@ import viteAliasPlugin from "./plugin-component.js";
 import viteConfigPlugin from "./plugin-config.js";
 import { viteConfigReloadPlugin } from "./plugin-config-reload.js";
 import viteCustomPagesPlugin from "./plugin-custom-pages.js";
+import { viteDocMetadataPlugin } from "./plugin-doc-metadata.js";
 import viteDocsPlugin from "./plugin-docs.js";
-import { viteFrontmatterPlugin } from "./plugin-frontmatter.js";
 import viteMarkdownExportPlugin from "./plugin-markdown-export.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import { viteNavigationPlugin } from "./plugin-navigation.js";
@@ -30,7 +30,7 @@ export default function vitePlugin(): PluginOption {
     viteCustomPagesPlugin(),
     viteAuthPlugin(),
     viteDocsPlugin(),
-    viteFrontmatterPlugin(),
+    viteDocMetadataPlugin(),
     viteNavigationPlugin(),
     viteApiPlugin(),
     viteSearchPlugin(),
