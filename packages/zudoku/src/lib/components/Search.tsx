@@ -30,11 +30,9 @@ export const Search = ({ className }: { className?: string }) => {
     };
   }, [isOpen]);
 
-  const searchPlugin = ctx.plugins.find(isSearchPlugin);
+  const searchPlugin = ctx.options.plugins?.find(isSearchPlugin);
 
-  if (!searchPlugin) {
-    return null;
-  }
+  if (!searchPlugin) return null;
 
   return (
     <div className={className}>
@@ -51,12 +49,7 @@ export const Search = ({ className }: { className?: string }) => {
           <KbdShortcut />
         </ClientOnly>
       </button>
-      <Suspense fallback={null}>
-        {searchPlugin.renderSearch({
-          isOpen,
-          onClose,
-        })}
-      </Suspense>
+      <Suspense>{searchPlugin.renderSearch({ isOpen, onClose })}</Suspense>
     </div>
   );
 };
