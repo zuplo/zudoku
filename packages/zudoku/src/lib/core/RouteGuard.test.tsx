@@ -70,7 +70,6 @@ const createWrapper = ({
     login: vi.fn(),
     logout: vi.fn(),
     signup: vi.fn(),
-    supportsEmailVerification: false,
     requestEmailVerification: vi.fn(),
     ...auth,
   };
