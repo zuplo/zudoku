@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { cn } from "zudoku";
 import { useZudoku } from "zudoku/hooks";
 import { CalendarIcon, CircleAlert } from "zudoku/icons";
 import { useMutation, useQueryClient } from "zudoku/react-query";
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog";
 import { Input } from "zudoku/ui/Input";
-import { cn } from "../../../../zudoku/src/lib/util/cn";
 import { useDeploymentName } from "../../hooks/useDeploymentName";
 import { formatDate } from "./ApiKey";
 
