@@ -203,7 +203,7 @@
     "test": "vitest run --typecheck"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "14.1.1",
+    "@apidevtools/json-schema-ref-parser": "15.2.2",
     "@envelop/core": "5.3.2",
     "@graphql-typed-document-node/core": "3.2.0",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
