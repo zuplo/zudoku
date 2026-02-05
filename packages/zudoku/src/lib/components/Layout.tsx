@@ -18,7 +18,9 @@ const LoadingFallback = () => (
 );
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
-  const { authentication } = useZudoku();
+  const { authentication, site } = useZudoku();
+  const disableHeader = site?.disableHeader === true;
+  const disableFooter = site?.disableFooter === true;
 
   useScrollToAnchor();
   useScrollToTop();
@@ -31,7 +33,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
   return (
     <TooltipProvider>
       <Slot.Target name="layout-before-head" />
-      <Header />
+      {!disableHeader && <Header />}
       <Slot.Target name="layout-after-head" />
 
       <div
@@ -45,7 +47,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
           <Main>{children ?? <Outlet />}</Main>
         </Suspense>
       </div>
-      <Footer />
+      {!disableFooter && <Footer />}
     </TooltipProvider>
   );
 };
