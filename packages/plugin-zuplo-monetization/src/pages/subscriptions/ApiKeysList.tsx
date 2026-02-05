@@ -32,7 +32,11 @@ type ApiKeyData = {
   expiresOn?: string;
 };
 
-const KeysUnavailableAlert = ({ children }: { children: React.ReactNode }) => (
+const PendingFirstPaymentAlert = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
   <div className="relative rounded-lg overflow-hidden">
     <div>{children}</div>
     <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
@@ -52,12 +56,12 @@ const KeysUnavailableAlert = ({ children }: { children: React.ReactNode }) => (
 );
 
 export const ApiKeysList = ({
-  keysAvailable,
+  isPendingFirstPayment,
   apiKeys,
   deploymentName,
   consumerId,
 }: {
-  keysAvailable: boolean;
+  isPendingFirstPayment: boolean;
   apiKeys: ApiKeyData[];
   deploymentName: string;
   consumerId: string;
@@ -188,8 +192,8 @@ export const ApiKeysList = ({
 
       <div className="space-y-4">
         {activeKey &&
-          (keysAvailable ? (
-            <KeysUnavailableAlert>
+          (isPendingFirstPayment ? (
+            <PendingFirstPaymentAlert>
               <ApiKey
                 deploymentName={deploymentName}
                 consumerId={consumerId}
@@ -205,7 +209,7 @@ export const ApiKeysList = ({
                   deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
                 }
               />
-            </KeysUnavailableAlert>
+            </PendingFirstPaymentAlert>
           ) : (
             <ApiKey
               deploymentName={deploymentName}

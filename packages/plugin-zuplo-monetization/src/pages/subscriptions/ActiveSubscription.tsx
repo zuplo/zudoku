@@ -35,7 +35,7 @@ const ActiveSubscription = ({
 
       {subscription?.consumer?.apiKeys && (
         <ApiKeysList
-          keysAvailable={
+          isPendingFirstPayment={
             usage.paymentStatus.status === "pending" &&
             !usage.annotations?.["subscription.previous.id"]
           }
