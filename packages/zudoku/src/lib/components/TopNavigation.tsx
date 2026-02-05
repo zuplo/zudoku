@@ -14,7 +14,7 @@ export const TopNavigation = () => {
   const context = useZudoku();
   const { navigation } = context;
   const auth = useAuth();
-  const filteredItems = navigation.filter(shouldShowItem(auth, context));
+  const filteredItems = navigation.filter(shouldShowItem({ auth, context }));
 
   if (filteredItems.length === 0 || import.meta.env.MODE === "standalone") {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;

@@ -29,7 +29,9 @@ export const MobileTopNavigation = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const accountItems = getProfileMenuItems();
-  const filteredItems = navigation.filter(shouldShowItem(authState, context));
+  const filteredItems = navigation.filter(
+    shouldShowItem({ auth: authState, context }),
+  );
 
   return (
     <Drawer
