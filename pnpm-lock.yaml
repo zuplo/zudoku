@@ -705,8 +705,8 @@ importers:
         specifier: 5.1.4
         version: 5.1.4
       posthog-node:
-        specifier: 5.21.2
-        version: 5.21.2
+        specifier: 5.24.7
+        version: 5.24.7
       react-error-boundary:
         specifier: 6.0.0
         version: 6.0.0(react@19.2.4)
@@ -3474,8 +3474,8 @@ packages:
     peerDependencies:
       typescript: ^3 || ^4 || ^5
 
-  '@posthog/core@1.10.0':
-    resolution: {integrity: sha512-Xk3JQ+cdychsvftrV3G9ZrN9W329lbyFW0pGJXFGKFQf8qr4upw2SgNg9BVorjSrfhoXZRnJGt/uNF4nGFBL5A==}
+  '@posthog/core@1.17.0':
+    resolution: {integrity: sha512-8pDNL+/u9ojzXloA5wILVDXBCV5daJ7w2ipCALQlEEZmL752cCKhRpbyiHn3tjKXh3Hy6aOboJneYa1JdlVHrQ==}
 
   '@pothos/core@4.10.0':
     resolution: {integrity: sha512-spC7v6N80GfDKqt6ZSGELLu7EFDZsuQBb/oCqAtDwAe+HIL5T0STjv220IumLeC8lIAMgTaZMa/WnMNKkawbFg==}
@@ -8624,9 +8624,9 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  posthog-node@5.21.2:
-    resolution: {integrity: sha512-Jehlu0KguL1LLyUczCt86OtA5INmeStK3zcgbv1BSyMcNxs0HP3GQogBrYhwhqHsk6JopiFFVpJyZEoXOUMhGw==}
-    engines: {node: '>=20'}
+  posthog-node@5.24.7:
+    resolution: {integrity: sha512-IJ0Zj+v+eg/JQMZ75n0Hcp4NzuQzWcZjqFjcUQs6RhW2l5FiQIq09sKJMleXX33hYxD6sfjFsDTqugJlgeAohg==}
+    engines: {node: ^20.20.0 || >=22.22.0}
 
   preact@10.28.2:
     resolution: {integrity: sha512-lbteaWGzGHdlIuiJ0l2Jq454m6kcpI1zNje6d8MlGAFlYvP2GO4ibnat7P74Esfz4sPTdM6UxtTwh/d3pwM9JA==}
@@ -13449,7 +13449,7 @@ snapshots:
       esquery: 1.7.0
       typescript: 5.9.3
 
-  '@posthog/core@1.10.0':
+  '@posthog/core@1.17.0':
     dependencies:
       cross-spawn: 7.0.6
 
@@ -19747,9 +19747,9 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
-  posthog-node@5.21.2:
+  posthog-node@5.24.7:
     dependencies:
-      '@posthog/core': 1.10.0
+      '@posthog/core': 1.17.0
 
   preact@10.28.2: {}
 
