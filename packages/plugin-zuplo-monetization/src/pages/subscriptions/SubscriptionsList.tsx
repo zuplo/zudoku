@@ -4,7 +4,6 @@ import { Button } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { Badge } from "zudoku/ui/Badge";
 import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
-import { groupBy } from "../../../../zudoku/src/lib/util/groupBy";
 import { formatDurationInterval } from "../../utils/formatDuration";
 
 interface Subscription {
@@ -39,7 +38,7 @@ export const SubscriptionsList = ({
   activeSubscriptionId,
 }: SubscriptionsListProps) => {
   const groupedSubscriptions = useMemo(() => {
-    return groupBy(
+    return Object.groupBy(
       subscriptions.sort((a, b) => {
         if (a.activeTo && !b.activeTo) return 1;
         if (!a.activeTo && b.activeTo) return -1;
