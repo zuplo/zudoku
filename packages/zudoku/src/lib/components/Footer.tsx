@@ -26,8 +26,9 @@ const SocialIcon = ({
 const isExternalUrl = (href: string) => /^https?:/.test(href);
 
 export const Footer = () => {
-  const { site: page } = useZudoku();
-  const footer = page?.footer;
+  const { options } = useZudoku();
+  const { site } = options;
+  const footer = site?.footer;
 
   if (!footer) return null;
 
@@ -44,7 +45,7 @@ export const Footer = () => {
           <Slot.Target name="footer-before" />
           {footer.columns && (
             <div
-              className="w-full md:max-w-screen-md grid grid-cols-[1fr_1fr] gap-8 md:grid-cols-[repeat(var(--columns),minmax(0,1fr))]"
+              className="w-full md:max-w-3xl grid grid-cols-[1fr_1fr] gap-8 md:grid-cols-[repeat(var(--columns),minmax(0,1fr))]"
               style={{ "--columns": footer.columns.length } as CSSProperties}
             >
               {footer.columns.map((column) => (

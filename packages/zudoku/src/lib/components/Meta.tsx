@@ -5,7 +5,8 @@ import { joinUrl } from "../util/joinUrl.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 export const Meta = ({ children }: PropsWithChildren) => {
-  const { meta, options } = useZudoku();
+  const { options } = useZudoku();
+  const { metadata: meta } = options;
   const location = useLocation();
 
   return (

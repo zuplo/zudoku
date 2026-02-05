@@ -24,7 +24,10 @@ export const MobileTopNavigation = () => {
   const context = useZudoku();
   const authState = useAuth();
 
-  const { navigation, options, getProfileMenuItems } = context;
+  const {
+    options: { navigation = [], site },
+    getProfileMenuItems,
+  } = context;
   const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -33,7 +36,7 @@ export const MobileTopNavigation = () => {
 
   return (
     <Drawer
-      direction={options.site?.dir === "rtl" ? "left" : "right"}
+      direction={site?.dir === "rtl" ? "left" : "right"}
       open={drawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
@@ -117,7 +120,7 @@ export const MobileTopNavigation = () => {
               </li>
             </ul>
           </div>
-          {options.site?.showPoweredBy !== false && (
+          {site?.showPoweredBy !== false && (
             <PoweredByZudoku className="grow-0 justify-center gap-1" />
           )}
         </div>
