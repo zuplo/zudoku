@@ -233,7 +233,7 @@
     "@radix-ui/react-toggle-group": "1.1.11",
     "@radix-ui/react-tooltip": "1.2.8",
     "@radix-ui/react-visually-hidden": "1.2.4",
-    "@scalar/openapi-parser": "0.23.2",
+    "@scalar/openapi-parser": "0.24.6",
     "@sentry/node": "10.27.0",
     "@shikijs/engine-javascript": "3.21.0",
     "@shikijs/langs": "3.21.0",
