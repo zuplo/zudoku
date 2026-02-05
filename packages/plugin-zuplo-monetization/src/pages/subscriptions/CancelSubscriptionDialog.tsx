@@ -21,14 +21,12 @@ export const CancelSubscriptionDialog = ({
   open,
   onOpenChange,
   planName,
-  isPending,
   subscriptionId,
   billingPeriodEnd,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   planName: string;
-  isPending?: boolean;
   subscriptionId: string;
   billingPeriodEnd: string;
 }) => {
@@ -114,9 +112,14 @@ export const CancelSubscriptionDialog = ({
           <ActionButton
             variant="destructive"
             disabled={
-              !isConfirmed || confirmationText !== planName || isPending
+              !isConfirmed ||
+              confirmationText !== planName ||
+              cancelSubscriptionMutation.isPending
             }
-            isPending={cancelSubscriptionMutation.isPending}
+            isPending={
+              cancelSubscriptionMutation.isPending ||
+              cancelSubscriptionMutation.isSuccess
+            }
             onClick={() => cancelSubscriptionMutation.mutate()}
           >
             Cancel subscription

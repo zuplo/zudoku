@@ -15,9 +15,9 @@ import {
   AlertTitle,
 } from "zudoku/ui/Alert";
 import {
-  DismissableAlert,
-  DismissableAlertAction,
-} from "zudoku/ui/DismissableAlert";
+  DismissibleAlert,
+  DismissibleAlertAction,
+} from "zudoku/ui/DismissibleAlert";
 import { Item, ItemContent, ItemMedia, ItemTitle } from "zudoku/ui/Item";
 import { queryClient } from "../../ZuploMonetizationWrapper";
 import { ApiKey, formatDate } from "./ApiKey";
@@ -130,7 +130,7 @@ export const ApiKeysList = ({
       <ApiKeyInfo />
 
       {deleteKeyMutation.isSuccess && deleteKeyMutation.variables && (
-        <DismissableAlert
+        <DismissibleAlert
           variant="info"
           onDismiss={() => deleteKeyMutation.reset()}
         >
@@ -146,12 +146,12 @@ export const ApiKeysList = ({
                 : "The API key has been deleted.";
             })()}
           </AlertDescription>
-          <DismissableAlertAction />
-        </DismissableAlert>
+          <DismissibleAlertAction />
+        </DismissibleAlert>
       )}
 
       {rollKeyMutation.isSuccess && (
-        <DismissableAlert
+        <DismissibleAlert
           variant="info"
           onDismiss={() => rollKeyMutation.reset()}
         >
@@ -161,8 +161,8 @@ export const ApiKeysList = ({
             A new API key has been created and the old one has been set to
             expire in 7 days.
           </AlertDescription>
-          <DismissableAlertAction />
-        </DismissableAlert>
+          <DismissibleAlertAction />
+        </DismissibleAlert>
       )}
 
       {deleteKeyMutation.isError && (

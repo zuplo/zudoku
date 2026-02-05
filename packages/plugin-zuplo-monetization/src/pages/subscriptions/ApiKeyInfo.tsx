@@ -1,12 +1,12 @@
 import { InfoIcon } from "zudoku/icons";
 import { AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import {
-  DismissableAlert,
-  DismissableAlertAction,
-} from "zudoku/ui/DismissableAlert";
+  DismissibleAlert,
+  DismissibleAlertAction,
+} from "zudoku/ui/DismissibleAlert";
 
 export const ApiKeyInfo = () => (
-  <DismissableAlert className="space-y-2" fit="loose">
+  <DismissibleAlert className="space-y-2" fit="loose">
     <InfoIcon />
     <AlertTitle>How API key management works</AlertTitle>
     <AlertDescription>
@@ -19,6 +19,6 @@ export const ApiKeyInfo = () => (
         <li>Expiring keys can be deleted early if you no longer need them</li>
       </ul>
     </AlertDescription>
-    <DismissableAlertAction />
-  </DismissableAlert>
+    <DismissibleAlertAction />
+  </DismissibleAlert>
 );

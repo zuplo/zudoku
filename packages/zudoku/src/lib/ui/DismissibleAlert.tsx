@@ -11,28 +11,19 @@ import { useLatest } from "../util/useLatest.js";
 import { Alert, AlertAction } from "./Alert.js";
 import { Button } from "./Button.js";
 
-type DismissableAlertContextValue = { dismiss: () => void };
+type DismissibleAlertContextValue = { dismiss: () => void };
 
-const DismissableAlertContext = createContext<DismissableAlertContextValue>({
+const DismissibleAlertContext = createContext<DismissibleAlertContextValue>({
   dismiss: () => {},
 });
 
-const useDismissableAlertContext = () => {
-  const context = use(DismissableAlertContext);
-  if (!context) {
-    throw new Error(
-      "DismissableAlert components must be used within DismissableAlertContext",
-    );
-  }
+const useDismissibleAlertContext = () => use(DismissibleAlertContext);
 
-  return context;
-};
-
-type DismissableAlertProps = React.ComponentProps<typeof Alert> & {
+type DismissibleAlertProps = React.ComponentProps<typeof Alert> & {
   onDismiss?: () => void;
 };
 
-const DismissableAlert = ({ onDismiss, ...props }: DismissableAlertProps) => {
+const DismissibleAlert = ({ onDismiss, ...props }: DismissibleAlertProps) => {
   const [isDismissed, setIsDismissed] = useState(false);
   const latestOnDismiss = useLatest(onDismiss);
 
@@ -44,40 +35,40 @@ const DismissableAlert = ({ onDismiss, ...props }: DismissableAlertProps) => {
   if (isDismissed) return null;
 
   return (
-    <DismissableAlertContext value={{ dismiss }}>
+    <DismissibleAlertContext value={{ dismiss }}>
       <Alert {...props} />
-    </DismissableAlertContext>
+    </DismissibleAlertContext>
   );
 };
 
-type DismissableAlertCloseProps = React.ComponentProps<typeof Button> & {
+type DismissibleAlertCloseProps = React.ComponentProps<typeof Button> & {
   asChild?: boolean;
 };
 
-const DismissableAlertCloseButton = ({
+const DismissibleAlertCloseButton = ({
   asChild,
   ...props
-}: DismissableAlertCloseProps) => {
-  const { dismiss } = useDismissableAlertContext();
+}: DismissibleAlertCloseProps) => {
+  const { dismiss } = useDismissibleAlertContext();
   const Comp = asChild ? Slot : Button;
 
   return <Comp onClick={dismiss} {...props} />;
 };
 
-const DismissableAlertAction = ({ children }: PropsWithChildren) => (
+const DismissibleAlertAction = ({ children }: PropsWithChildren) => (
   <AlertAction>
-    <DismissableAlertCloseButton
+    <DismissibleAlertCloseButton
       variant="ghost"
       size="icon-xxs"
       className="hover:text-current hover:bg-[color-mix(in_srgb,currentColor_10%,transparent)]!"
     >
       {children ?? <XIcon className="size-3.5" />}
-    </DismissableAlertCloseButton>
+    </DismissibleAlertCloseButton>
   </AlertAction>
 );
 
 export {
-  DismissableAlert,
-  DismissableAlertCloseButton as DismissableAlertClose,
-  DismissableAlertAction,
+  DismissibleAlert,
+  DismissibleAlertCloseButton as DismissibleAlertClose,
+  DismissibleAlertAction,
 };
