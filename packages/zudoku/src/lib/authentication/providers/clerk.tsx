@@ -53,7 +53,10 @@ const clerkAuth: AuthenticationProviderInitializer<
 
     return {
       sub: clerk.session?.user?.id ?? "",
-      email: clerk.session?.user?.emailAddresses[0]?.emailAddress ?? "",
+      email:
+        verifiedEmail?.emailAddress ??
+        clerk.session?.user?.emailAddresses[0]?.emailAddress ??
+        "",
       name: clerk.session?.user?.fullName ?? "",
       emailVerified: !!verifiedEmail?.emailAddress,
       pictureUrl: clerk.session?.user?.imageUrl ?? "",
