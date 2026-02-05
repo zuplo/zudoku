@@ -59,7 +59,9 @@ export const Header = memo(function HeaderInner() {
   const auth = useAuth();
   const { isAuthenticated, profile, isAuthEnabled } = useAuth();
   const context = useZudoku();
-  const { site, plugins, options } = context;
+  const {
+    options: { plugins = [], site, basePath },
+  } = context;
 
   const accountItems = plugins
     .filter((p) => isProfileMenuPlugin(p))
@@ -69,12 +71,12 @@ export const Header = memo(function HeaderInner() {
   const logoLightSrc = site?.logo
     ? /https?:\/\//.test(site.logo.src.light)
       ? site.logo.src.light
-      : joinUrl(options.basePath, site.logo.src.light)
+      : joinUrl(basePath, site.logo.src.light)
     : undefined;
   const logoDarkSrc = site?.logo
     ? /https?:\/\//.test(site.logo.src.dark)
       ? site.logo.src.dark
-      : joinUrl(options.basePath, site.logo.src.dark)
+      : joinUrl(basePath, site.logo.src.dark)
     : undefined;
 
   const borderBottom = "inset-shadow-[0_-1px_0_0_var(--border)]";

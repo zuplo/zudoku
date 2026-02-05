@@ -69,7 +69,10 @@ const extractAllPaths = (items: NavigationItem[]) => {
 };
 
 export const useCurrentNavigation = () => {
-  const { getPluginNavigation, navigation } = useZudoku();
+  const {
+    getPluginNavigation,
+    options: { navigation = [] },
+  } = useZudoku();
   const location = useLocation();
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {

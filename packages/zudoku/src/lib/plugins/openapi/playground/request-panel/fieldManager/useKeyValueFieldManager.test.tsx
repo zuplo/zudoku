@@ -1,4 +1,5 @@
-import { fireEvent, render, renderHook } from "@testing-library/react";
+import { render, renderHook } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
 import { act, type ReactNode } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { describe, expect, it } from "vitest";
@@ -228,9 +229,9 @@ describe("useKeyValueFieldManager", () => {
       const firstValueInput = getByTestId("value-0") as HTMLInputElement;
 
       // Clear both fields to trigger auto-remove
-      firstNameInput.focus();
-      fireEvent.change(firstNameInput, { target: { value: "" } });
-      fireEvent.change(firstValueInput, { target: { value: "" } });
+      await userEvent.click(firstNameInput);
+      await userEvent.clear(firstNameInput);
+      await userEvent.clear(firstValueInput);
 
       // After auto-remove, focus should be on the name field at index 0
       // (which now contains what was the second row)
@@ -397,7 +398,7 @@ describe("useKeyValueFieldManager", () => {
       const valueInput = getByTestId("value-0");
 
       nameInput.focus();
-      fireEvent.keyDown(nameInput, { key: "Enter" });
+      await userEvent.keyboard("{Enter}");
 
       expect(document.activeElement).toBe(valueInput);
     });
@@ -445,7 +446,7 @@ describe("useKeyValueFieldManager", () => {
       const nextNameInput = getByTestId("name-1");
 
       valueInput.focus();
-      fireEvent.keyDown(valueInput, { key: "Enter" });
+      await userEvent.keyboard("{Enter}");
 
       expect(document.activeElement).toBe(nextNameInput);
     });
@@ -491,7 +492,7 @@ describe("useKeyValueFieldManager", () => {
       const prevValueInput = getByTestId("value-0");
 
       nameInput.focus();
-      fireEvent.keyDown(nameInput, { key: "Backspace" });
+      await userEvent.keyboard("{Backspace}");
 
       expect(document.activeElement).toBe(prevValueInput);
     });
@@ -532,7 +533,7 @@ describe("useKeyValueFieldManager", () => {
       const valueInput = getByTestId("value-0");
 
       valueInput.focus();
-      fireEvent.keyDown(valueInput, { key: "Backspace" });
+      await userEvent.keyboard("{Backspace}");
 
       expect(document.activeElement).toBe(nameInput);
     });
@@ -574,7 +575,7 @@ describe("useKeyValueFieldManager", () => {
 
       nameInput.focus();
       nameInput.setSelectionRange(4, 4); // Move cursor to end of "test"
-      fireEvent.keyDown(nameInput, { key: "ArrowRight" });
+      await userEvent.keyboard("{ArrowRight}");
 
       expect(document.activeElement).toBe(valueInput);
     });
@@ -619,7 +620,7 @@ describe("useKeyValueFieldManager", () => {
 
       nameInput.focus();
       nameInput.setSelectionRange(0, 0); // Move cursor to start
-      fireEvent.keyDown(nameInput, { key: "ArrowLeft" });
+      await userEvent.keyboard("{ArrowLeft}");
 
       expect(document.activeElement).toBe(prevValueInput);
     });
@@ -660,7 +661,7 @@ describe("useKeyValueFieldManager", () => {
 
       nameInput.focus();
       nameInput.setSelectionRange(0, 0);
-      fireEvent.keyDown(nameInput, { key: "ArrowLeft" });
+      await userEvent.keyboard("{ArrowLeft}");
 
       // Should remain focused on the same field
       expect(document.activeElement).toBe(nameInput);
@@ -703,7 +704,7 @@ describe("useKeyValueFieldManager", () => {
 
       valueInput.focus();
       valueInput.setSelectionRange(0, 0);
-      fireEvent.keyDown(valueInput, { key: "ArrowLeft" });
+      await userEvent.keyboard("{ArrowLeft}");
 
       expect(document.activeElement).toBe(nameInput);
     });
@@ -748,7 +749,7 @@ describe("useKeyValueFieldManager", () => {
 
       valueInput.focus();
       valueInput.setSelectionRange(6, 6); // Move cursor to end of "value1"
-      fireEvent.keyDown(valueInput, { key: "ArrowRight" });
+      await userEvent.keyboard("{ArrowRight}");
 
       expect(document.activeElement).toBe(nextNameInput);
     });
@@ -789,13 +790,13 @@ describe("useKeyValueFieldManager", () => {
 
       nameInput.focus();
       nameInput.setSelectionRange(2, 2); // Cursor in middle of "test"
-      fireEvent.keyDown(nameInput, { key: "ArrowLeft" });
+      await userEvent.keyboard("{ArrowLeft}");
 
       // Should remain focused on the same field
       expect(document.activeElement).toBe(nameInput);
 
       nameInput.setSelectionRange(2, 2);
-      fireEvent.keyDown(nameInput, { key: "ArrowRight" });
+      await userEvent.keyboard("{ArrowRight}");
 
       // Should still remain focused on the same field
       expect(document.activeElement).toBe(nameInput);

@@ -12,7 +12,9 @@ import { Slot } from "./Slot.js";
 
 export const TopNavigation = () => {
   const context = useZudoku();
-  const { navigation } = context;
+  const {
+    options: { navigation = [] },
+  } = context;
   const auth = useAuth();
   const filteredItems = navigation.filter(shouldShowItem(auth, context));
 
