@@ -1,3 +1,7 @@
+/**
+ * @vitest-environment happy-dom
+ */
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
@@ -14,6 +18,7 @@ import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
   createMemoryRouter,
+  Link,
   Outlet,
   Route,
   type RouteObject,
@@ -27,11 +32,8 @@ import { useAuthState } from "../authentication/state.js";
 import { BypassProtectedRoutesContext } from "../components/context/BypassProtectedRoutesContext.js";
 import { ZudokuProvider } from "../components/context/ZudokuProvider.js";
 import { ZudokuContext } from "../core/ZudokuContext.js";
+import { ensureArray } from "../util/ensureArray.js";
 import { RouteGuard } from "./RouteGuard.js";
-
-/**
- * @vitest-environment happy-dom
- */
 
 vi.mock("../authentication/hook.js", () => ({
   useAuth: vi.fn(),
@@ -95,7 +97,7 @@ const createWrapper = ({
 };
 
 const render = async (
-  routeConfig: RouteObject,
+  routeObject: RouteObject | RouteObject[],
   options: CreateWrapperOptions = {},
 ) => {
   const {
@@ -118,16 +120,18 @@ const render = async (
     </HelmetProvider>
   );
 
-  const routes = [
-    {
-      element: <Providers />,
-      children: wrapRouteGuard
-        ? [{ element: <RouteGuard />, children: [routeConfig] }]
-        : [routeConfig],
-    },
-  ];
-
-  const router = createMemoryRouter(routes, { initialEntries: [initialPath] });
+  const routes = ensureArray(routeObject);
+  const router = createMemoryRouter(
+    [
+      {
+        element: <Providers />,
+        children: wrapRouteGuard
+          ? [{ element: <RouteGuard />, children: routes }]
+          : routes,
+      },
+    ],
+    { initialEntries: [initialPath] },
+  );
 
   let renderResult: unknown;
   await act(async () => {
@@ -139,6 +143,7 @@ const render = async (
     context,
     mockAuth,
     mockAuthentication,
+    router,
   };
 };
 
@@ -161,9 +166,7 @@ describe("RouteGuard", () => {
         {
           shouldBypass: true,
           initialPath: "/protected",
-          protectedRoutes: {
-            "/protected": () => false,
-          },
+          protectedRoutes: { "/protected": () => false },
         },
       );
 
@@ -179,10 +182,7 @@ describe("RouteGuard", () => {
     it("renders Outlet without meta tag for non-protected routes", async () => {
       await render(
         { path: "/public", element: <div>Public</div> },
-        {
-          shouldBypass: true,
-          initialPath: "/public",
-        },
+        { shouldBypass: true, initialPath: "/public" },
       );
 
       expect(screen.getByText("Public")).toBeInTheDocument();
@@ -196,9 +196,7 @@ describe("RouteGuard", () => {
     it("throws ZudokuError when protected route exists but auth not enabled", async () => {
       const { context, queryClient } = createWrapper({
         auth: { isAuthEnabled: false },
-        protectedRoutes: {
-          "/protected": () => false,
-        },
+        protectedRoutes: { "/protected": () => false },
       });
 
       const Wrapper = ({ children }: PropsWithChildren) => (
@@ -242,9 +240,7 @@ describe("RouteGuard", () => {
             path: "*",
           },
         ],
-        {
-          initialEntries: ["/protected"],
-        },
+        { initialEntries: ["/protected"] },
       );
 
       await act(async () => {
@@ -267,9 +263,7 @@ describe("RouteGuard", () => {
             isPending: true,
             isAuthenticated: false,
           },
-          protectedRoutes: {
-            "/protected": () => false,
-          },
+          protectedRoutes: { "/protected": () => false },
         },
       );
 
@@ -286,9 +280,7 @@ describe("RouteGuard", () => {
             isPending: false,
             isAuthenticated: false,
           },
-          protectedRoutes: {
-            "/protected": () => false,
-          },
+          protectedRoutes: { "/protected": () => false },
         },
       );
 
@@ -318,9 +310,7 @@ describe("RouteGuard", () => {
             isPending: false,
             isAuthenticated: false,
           },
-          protectedRoutes: {
-            "/protected": () => false,
-          },
+          protectedRoutes: { "/protected": () => false },
         },
       );
 
@@ -343,9 +333,7 @@ describe("RouteGuard", () => {
             isPending: false,
             isAuthenticated: false,
           },
-          protectedRoutes: {
-            "/protected": () => false,
-          },
+          protectedRoutes: { "/protected": () => false },
         },
       );
 
@@ -398,9 +386,7 @@ describe("RouteGuard", () => {
             isPending: false,
             isAuthenticated: true,
           },
-          protectedRoutes: {
-            "/protected": authCheckFn,
-          },
+          protectedRoutes: { "/protected": authCheckFn },
         },
       );
 
@@ -420,10 +406,7 @@ describe("RouteGuard", () => {
     it("renders Outlet for public routes", async () => {
       await render(
         { path: "/public", element: <div>Public</div> },
-        {
-          auth: { isAuthEnabled: true },
-          initialPath: "/public",
-        },
+        { auth: { isAuthEnabled: true }, initialPath: "/public" },
       );
 
       expect(screen.getByText("Public")).toBeInTheDocument();
@@ -432,9 +415,7 @@ describe("RouteGuard", () => {
     it("renders Outlet when no protected routes configured", async () => {
       await render(
         { path: "/any", element: <div>Any Content</div> },
-        {
-          initialPath: "/any",
-        },
+        { initialPath: "/any" },
       );
 
       expect(screen.getByText("Any Content")).toBeInTheDocument();
@@ -452,9 +433,7 @@ describe("RouteGuard", () => {
             isPending: false,
             isAuthenticated: false,
           },
-          protectedRoutes: {
-            "/protected/nested": () => false,
-          },
+          protectedRoutes: { "/protected/nested": () => false },
         },
       );
 
@@ -468,13 +447,59 @@ describe("RouteGuard", () => {
         {
           initialPath: "/protected/extra",
           auth: { isAuthEnabled: true },
-          protectedRoutes: {
-            "/protected": () => false,
-          },
+          protectedRoutes: { "/protected": () => false },
         },
       );
 
       // Should render content because path doesn't match exactly
+      expect(screen.getByText("Public")).toBeInTheDocument();
+    });
+  });
+
+  describe("navigation blocking", () => {
+    const navBlockingOptions: CreateWrapperOptions = {
+      auth: { isAuthEnabled: true, isPending: false, isAuthenticated: false },
+      protectedRoutes: { "/protected": () => false },
+      initialPath: "/",
+    };
+
+    const navRoutes: RouteObject[] = [
+      {
+        path: "/",
+        element: (
+          <div>
+            Public <Link to="/protected">Go</Link>
+          </div>
+        ),
+      },
+      { path: "/protected", element: <div>Protected</div> },
+    ];
+
+    it("blocks navigation and shows dialog while keeping current page", async () => {
+      const { mockAuth } = await render(navRoutes, navBlockingOptions);
+
+      expect(screen.getByText("Public")).toBeInTheDocument();
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByText("Go"));
+
+      // Dialog appears, but still on public page
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Public")).toBeInTheDocument();
+
+      await userEvent.click(screen.getByRole("button", { name: "Login" }));
+      expect(mockAuth.login).toHaveBeenCalledWith({ redirectTo: "/protected" });
+    });
+
+    it("resets blocker when cancel clicked", async () => {
+      await render(navRoutes, navBlockingOptions);
+
+      await userEvent.click(screen.getByText("Go"));
+      await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+      await waitFor(() => {
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      });
       expect(screen.getByText("Public")).toBeInTheDocument();
     });
   });
