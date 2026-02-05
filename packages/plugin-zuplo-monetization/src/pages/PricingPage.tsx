@@ -1,5 +1,4 @@
-import { cn } from "zudoku";
-import { Heading } from "zudoku/components";
+import { Head, Heading } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery, useSuspenseQuery } from "zudoku/react-query";
 import { useDeploymentName } from "../hooks/useDeploymentName";
@@ -16,11 +15,11 @@ const PricingPage = ({
 }) => {
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
+  const auth = useAuth();
 
   const { data: pricingTable } = useSuspenseQuery<{ items: Plan[] }>({
     queryKey: [`/v3/zudoku-metering/${deploymentName}/pricing-page`],
   });
-  const auth = useAuth();
   const { data: subscriptions = { items: [] } } =
     useQuery<SubscriptionsResponse>({
       meta: {
@@ -30,41 +29,30 @@ const PricingPage = ({
       enabled: auth.isAuthenticated,
     });
 
-  const getGridCols = (count: number) => {
-    if (count === 1) return "lg:grid-cols-1";
-    if (count === 2) return "lg:grid-cols-2";
-    if (count === 3) return "lg:grid-cols-3";
-    if (count === 4) return "lg:grid-cols-4";
-    return "lg:grid-cols-5";
-  };
-
   return (
-    <div className="w-full px-4 py-12">
-      <div className="text-center mb-12">
+    <div className="w-full px-4 pt-(--padding-content-top) pb-(--padding-content-bottom)">
+      <Head>
+        <title>{title}</title>
+        <meta name="description" content={subtitle} />
+      </Head>
+      <div className="text-center space-y-4 mb-12">
         <Heading level={1}>{title}</Heading>
-        <p className="text-lg text-gray-600 dark:text-gray-400">{subtitle}</p>
+        <p className="text-muted-foreground">{subtitle}</p>
       </div>
-
-      <div className="flex justify-center">
-        <div
-          className={cn(
-            "w-full md:w-auto grid grid-cols-1 md:grid-cols-2 gap-6 md:max-w-fit",
-            getGridCols(pricingTable?.items?.length ?? 0),
-          )}
-        >
-          {pricingTable?.items?.map((plan) => (
-            <PricingCard
-              key={plan.id}
-              plan={plan}
-              isPopular={plan.key === "pro"}
-              disabled={subscriptions.items.some(
-                (subscription) =>
-                  subscription.status !== "canceled" &&
-                  subscription.plan.id === plan.id,
-              )}
-            />
-          ))}
-        </div>
+      <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
+        {pricingTable.items.slice(0, 4).map((plan) => (
+          <PricingCard
+            key={plan.id}
+            plan={plan}
+            // TODO: should be determined by the metadata
+            isPopular={plan.key === "pro"}
+            disabled={subscriptions.items.some(
+              (subscription) =>
+                ["active", "canceled"].includes(subscription.status) &&
+                subscription.plan.id === plan.id,
+            )}
+          />
+        ))}
       </div>
     </div>
   );

@@ -1,10 +1,26 @@
+import { Button, Heading } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { RefreshCwIcon } from "zudoku/icons";
+import {
+  CheckCheckIcon,
+  CircleSlashIcon,
+  InfoIcon,
+  RefreshCwIcon,
+} from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { ActionButton } from "zudoku/ui/ActionButton";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
-import { createMutationFn, queryClient } from "../../ZuploMonetizationWrapper";
-import { ApiKey } from "./ApiKey";
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "zudoku/ui/Alert";
+import {
+  DismissibleAlert,
+  DismissibleAlertAction,
+} from "zudoku/ui/DismissibleAlert";
+import { Item, ItemContent, ItemMedia, ItemTitle } from "zudoku/ui/Item";
+import { queryClient } from "../../ZuploMonetizationWrapper";
+import { ApiKey, formatDate } from "./ApiKey";
 import { ApiKeyInfo } from "./ApiKeyInfo";
 import ConfirmRollKeyAlert from "./ConfirmRollKeyAlert";
 
@@ -16,11 +32,36 @@ type ApiKeyData = {
   expiresOn?: string;
 };
 
+const PendingFirstPaymentAlert = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => (
+  <div className="relative rounded-lg overflow-hidden">
+    <div>{children}</div>
+    <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+      <Item className="max-w-md bg-muted">
+        <ItemMedia>
+          <InfoIcon className="size-4" />
+        </ItemMedia>
+        <ItemContent>
+          <ItemTitle>
+            Your keys will be available once the payment has been successfully
+            processed.
+          </ItemTitle>
+        </ItemContent>
+      </Item>
+    </div>
+  </div>
+);
+
 export const ApiKeysList = ({
+  isPendingFirstPayment,
   apiKeys,
   deploymentName,
   consumerId,
 }: {
+  isPendingFirstPayment: boolean;
   apiKeys: ApiKeyData[];
   deploymentName: string;
   consumerId: string;
@@ -28,29 +69,26 @@ export const ApiKeysList = ({
   const context = useZudoku();
 
   const rollKeyMutation = useMutation({
-    mutationFn: createMutationFn(
+    mutationKey: [
       `/v2/client/${deploymentName}/consumers/${consumerId}/roll-key`,
+    ],
+    meta: {
+      request: { method: "POST", body: "{}" },
       context,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
-      },
-    ),
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries();
     },
   });
 
-  const deleteKeyMutation = useMutation({
-    mutationFn: createMutationFn(
-      ({ keyId }: { keyId: string }) =>
-        `/v2/client/${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
+  const deleteKeyMutation = useMutation<void, Error, { keyId: string }>({
+    mutationKey: [
+      `/v2/client/${deploymentName}/consumers/${consumerId}/keys/{keyId}`,
+    ],
+    meta: {
       context,
-      {
-        method: "DELETE",
-        body: JSON.stringify({}),
-      },
-    ),
+      request: { method: "DELETE" },
+    },
     onSuccess: async () => {
       await queryClient.invalidateQueries();
     },
@@ -78,9 +116,9 @@ export const ApiKeysList = ({
 
   return (
     <div className="space-y-4">
-      <ApiKeyInfo />
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">API Keys</h3>
+        <Heading level={3}>API Keys</Heading>
+
         <ConfirmRollKeyAlert onRollKey={() => rollKeyMutation.mutateAsync()}>
           <ActionButton isPending={rollKeyMutation.isPending} variant="outline">
             <div className="flex items-center gap-2">
@@ -92,36 +130,103 @@ export const ApiKeysList = ({
           </ActionButton>
         </ConfirmRollKeyAlert>
       </div>
-      {deleteKeyMutation.error && (
+
+      <ApiKeyInfo />
+
+      {deleteKeyMutation.isSuccess && deleteKeyMutation.variables && (
+        <DismissibleAlert
+          variant="info"
+          onDismiss={() => deleteKeyMutation.reset()}
+        >
+          <CheckCheckIcon className="size-4" />
+          <AlertTitle>API key was deleted</AlertTitle>
+          <AlertDescription>
+            {(() => {
+              const deletedKey = apiKeys.find(
+                (k) => k.id === deleteKeyMutation.variables?.keyId,
+              );
+              return deletedKey
+                ? `API key created ${formatDate(deletedKey.createdOn)} has been removed.`
+                : "The API key has been deleted.";
+            })()}
+          </AlertDescription>
+          <DismissibleAlertAction />
+        </DismissibleAlert>
+      )}
+
+      {rollKeyMutation.isSuccess && (
+        <DismissibleAlert
+          variant="info"
+          onDismiss={() => rollKeyMutation.reset()}
+        >
+          <CheckCheckIcon className="size-4" />
+          <AlertTitle>API key was rolled</AlertTitle>
+          <AlertDescription>
+            A new API key has been created and the old one has been set to
+            expire in 7 days.
+          </AlertDescription>
+          <DismissibleAlertAction />
+        </DismissibleAlert>
+      )}
+
+      {deleteKeyMutation.isError && (
         <Alert variant="destructive">
+          <CircleSlashIcon className="size-4" />
           <AlertTitle>Could not delete API key</AlertTitle>
           <AlertDescription>{deleteKeyMutation.error.message}</AlertDescription>
+          <AlertAction>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const keyId = deleteKeyMutation.variables?.keyId;
+                if (!keyId) return;
+
+                deleteKeyMutation.mutateAsync({ keyId });
+              }}
+            >
+              Retry
+            </Button>
+          </AlertAction>
         </Alert>
       )}
-      {rollKeyMutation.error && (
-        <Alert variant="destructive">
-          <AlertTitle>Could not roll API key</AlertTitle>
-          <AlertDescription>{rollKeyMutation.error.message}</AlertDescription>
-        </Alert>
-      )}
+
       <div className="space-y-4">
-        {activeKey && (
-          <ApiKey
-            deploymentName={deploymentName}
-            consumerId={consumerId}
-            apiKeyId={activeKey.id}
-            key={activeKey.id}
-            apiKey={activeKey.key}
-            createdAt={activeKey.createdOn}
-            lastUsed={activeKey.updatedOn}
-            expiresOn={activeKey.expiresOn}
-            isActive={true}
-            label="Current Key"
-            onDelete={() =>
-              deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
-            }
-          />
-        )}
+        {activeKey &&
+          (isPendingFirstPayment ? (
+            <PendingFirstPaymentAlert>
+              <ApiKey
+                deploymentName={deploymentName}
+                consumerId={consumerId}
+                apiKeyId={activeKey.id}
+                key={activeKey.id}
+                apiKey={activeKey.key}
+                createdAt={activeKey.createdOn}
+                lastUsed={activeKey.updatedOn}
+                expiresOn={activeKey.expiresOn}
+                isActive={true}
+                label="Current Key"
+                onDelete={() =>
+                  deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
+                }
+              />
+            </PendingFirstPaymentAlert>
+          ) : (
+            <ApiKey
+              deploymentName={deploymentName}
+              consumerId={consumerId}
+              apiKeyId={activeKey.id}
+              key={activeKey.id}
+              apiKey={activeKey.key}
+              createdAt={activeKey.createdOn}
+              lastUsed={activeKey.updatedOn}
+              expiresOn={activeKey.expiresOn}
+              isActive={true}
+              label="Current Key"
+              onDelete={() =>
+                deleteKeyMutation.mutateAsync({ keyId: activeKey.id })
+              }
+            />
+          ))}
 
         {expiringKeys.map((apiKey) => (
           <ApiKey

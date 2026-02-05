@@ -15,6 +15,9 @@ const config: ZudokuConfig = {
       dismissible: true,
     },
   },
+  theme: {
+    registryUrl: "https://tweakcn.com/r/themes/claude.json",
+  },
   basePath: "/",
   navigation: [
     {

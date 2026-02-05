@@ -1,6 +1,5 @@
 import {
   isTransformConfigPlugin,
-  type TransformConfigPlugin,
   type ZudokuPlugin,
 } from "../lib/core/plugins.js";
 
@@ -36,19 +35,16 @@ const getCallerDir = () => {
   return filePath.substring(0, lastSlash);
 };
 
-export const createPlugin = <
-  TOptions extends unknown[],
-  TPlugin extends ZudokuPlugin,
->(
-  factory: (...options: TOptions) => TPlugin,
-): ((...options: TOptions) => TPlugin & TransformConfigPlugin) => {
+export const createPlugin = <TOptions extends unknown[]>(
+  factory: (...options: TOptions) => ZudokuPlugin,
+): ((...options: TOptions) => ZudokuPlugin) => {
   const pluginDir = getCallerDir();
 
   return (...options: TOptions) => {
     const plugin = factory(...options);
 
     if (!pluginDir) {
-      return plugin as TPlugin & TransformConfigPlugin;
+      return plugin;
     }
 
     const originalTransformConfig = isTransformConfigPlugin(plugin)
@@ -70,6 +66,6 @@ export const createPlugin = <
           ],
         };
       },
-    } as TPlugin & TransformConfigPlugin;
+    };
   };
 };

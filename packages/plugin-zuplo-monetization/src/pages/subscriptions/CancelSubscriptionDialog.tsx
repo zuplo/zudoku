@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { cn } from "zudoku";
+import { useZudoku } from "zudoku/hooks";
 import { CalendarIcon, CircleAlert } from "zudoku/icons";
+import { useMutation, useQueryClient } from "zudoku/react-query";
 import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
@@ -11,24 +14,44 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog";
 import { Input } from "zudoku/ui/Input";
-import { cn } from "../../../../zudoku/src/lib/util/cn";
+import { useDeploymentName } from "../../hooks/useDeploymentName";
+import { formatDate } from "./ApiKey";
 
 export const CancelSubscriptionDialog = ({
   open,
   onOpenChange,
   planName,
-  onCancel,
-  isPending,
+  subscriptionId,
+  billingPeriodEnd,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   planName: string;
-  onCancel: () => void;
-  isPending?: boolean;
+  subscriptionId: string;
+  billingPeriodEnd: string;
 }) => {
   const [confirmationText, setConfirmationText] = useState("");
-
   const isConfirmed = planName.startsWith(confirmationText);
+  const deploymentName = useDeploymentName();
+  const context = useZudoku();
+  const queryClient = useQueryClient();
+
+  const cancelSubscriptionMutation = useMutation({
+    mutationKey: [
+      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/cancel`,
+    ],
+    meta: {
+      context,
+      request: {
+        method: "POST",
+        body: JSON.stringify({ timing: "next_billing_cycle" }),
+      },
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries();
+      onOpenChange(false);
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -45,7 +68,7 @@ export const CancelSubscriptionDialog = ({
               Your plan will be canceled at the end of your billing cycle.
             </AlertTitle>
             <AlertDescription>
-              You'll retain access until February 27, 2026
+              You'll retain access until {formatDate(billingPeriodEnd)}
             </AlertDescription>
           </Alert>
 
@@ -89,11 +112,17 @@ export const CancelSubscriptionDialog = ({
           <ActionButton
             variant="destructive"
             disabled={
-              !isConfirmed || confirmationText !== planName || isPending
+              !isConfirmed ||
+              confirmationText !== planName ||
+              cancelSubscriptionMutation.isPending
             }
-            onClick={onCancel}
+            isPending={
+              cancelSubscriptionMutation.isPending ||
+              cancelSubscriptionMutation.isSuccess
+            }
+            onClick={() => cancelSubscriptionMutation.mutate()}
           >
-            {isPending ? "Canceling..." : "Cancel Subscription"}
+            Cancel subscription
           </ActionButton>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Keep my subscription

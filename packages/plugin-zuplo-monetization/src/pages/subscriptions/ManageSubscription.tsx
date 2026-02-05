@@ -1,18 +1,16 @@
 import { useState } from "react";
-import { Link } from "zudoku/components";
-import { useZudoku } from "zudoku/hooks";
-import { ExternalLink, RefreshCcw, Settings } from "zudoku/icons";
+import { Link, useZudoku } from "zudoku/components";
+import { CreditCardIcon, RefreshCcw, Settings } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
+import { ActionButton } from "zudoku/ui/ActionButton";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
+import { Separator } from "zudoku/ui/Separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
 import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
-import {
-  createMutationFn,
-  queryClient,
-} from "../../ZuploMonetizationWrapper.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
+import { SwitchPlanModal } from "./SwitchPlanModal.js";
 
 export const ManageSubscription = ({
   subscription,
@@ -22,23 +20,22 @@ export const ManageSubscription = ({
   planName: string;
 }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const context = useZudoku();
   const deploymentName = useDeploymentName();
-  const cancelSubscriptionMutation = useMutation({
-    mutationFn: createMutationFn(
-      () =>
-        `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscription.id}/cancel`,
-      context,
-      {
+  const zudoku = useZudoku();
+
+  const stripeLinkMutation = useMutation<{ url: string }>({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/portal`],
+    meta: {
+      context: zudoku,
+      request: {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          timing: "next_billing_cycle",
+          returnUrl: `${window.location.origin}/subscriptions`,
         }),
       },
-    ),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries();
     },
+    onSuccess: (data) => window.open(data.url, "_blank"),
   });
 
   return (
@@ -47,8 +44,8 @@ export const ManageSubscription = ({
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         planName={planName}
-        onCancel={() => cancelSubscriptionMutation.mutateAsync()}
-        isPending={cancelSubscriptionMutation.isPending}
+        subscriptionId={subscription.id}
+        billingPeriodEnd={subscription.alignment.currentAlignedBillingPeriod.to}
       />
       <CardContent className="p-6">
         <div className="flex gap-4">
@@ -63,13 +60,17 @@ export const ManageSubscription = ({
               Switch to a different plan or cancel your current subscription.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Button variant="outline" size="sm" asChild>
-                <Link to="/pricing">
-                  <RefreshCcw className="w-4 h-4 mr-2" />
-                  New Subscription
-                </Link>
-              </Button>
-
+              {subscription.status === "canceled" && (
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/pricing">
+                    <RefreshCcw className="w-4 h-4 mr-2" />
+                    New subscription
+                  </Link>
+                </Button>
+              )}
+              {subscription.status === "active" && (
+                <SwitchPlanModal subscription={subscription} />
+              )}
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <div>
@@ -78,7 +79,7 @@ export const ManageSubscription = ({
                       size="sm"
                       onClick={() => setCancelDialogOpen(true)}
                       title="You can only cancel your subscription if it is not active."
-                      disabled={subscription.status === "canceled"}
+                      disabled={subscription.status !== "active"}
                     >
                       Cancel subscription
                     </Button>
@@ -90,21 +91,24 @@ export const ManageSubscription = ({
                   </TooltipContent>
                 )}
               </Tooltip>
+
+              <ActionButton
+                isPending={stripeLinkMutation.isPending}
+                onClick={() => stripeLinkMutation.mutate()}
+                size="sm"
+                variant="secondary"
+                type="button"
+              >
+                <div className="flex items-center gap-2">
+                  <CreditCardIcon />
+                  Manage payment details
+                </div>
+              </ActionButton>
             </div>
-            <div className="flex items-center gap-2 mt-4 pt-4 border-t text-sm text-muted-foreground">
-              <ExternalLink className="w-4 h-4" />
-              <span>
-                Your payment is managed by{" "}
-                <a
-                  href="https://stripe.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  Stripe
-                </a>
-              </span>
-            </div>
+            <Separator className="my-4" />
+            <span className="text-sm text-muted-foreground">
+              Your payment is securely managed by Stripe.
+            </span>
           </div>
         </div>
       </CardContent>

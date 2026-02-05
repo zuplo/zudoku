@@ -1,6 +1,6 @@
 import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { ArrowLeftIcon, CheckIcon, LockIcon } from "zudoku/icons";
+import { CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
@@ -11,10 +11,11 @@ import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
+import type { Subscription } from "../hooks/useSubscriptions";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatDuration } from "../utils/formatDuration";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
-import { createMutationFn } from "../ZuploMonetizationWrapper";
+import { queryClient } from "../ZuploMonetizationWrapper";
 
 const formatBillingCycle = (duration: string): string => {
   // formatDuration returns: "month", "year", "2 months", "week", "2 weeks", etc.
@@ -37,6 +38,8 @@ const CheckoutConfirmPage = () => {
   const { data: plans } = usePlans(deploymentName);
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
+  if (!planId) throw new Error("Parameter `planId` missing");
+
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
   const { quotas, features } = categorizeRateCards(rateCards ?? []);
   const price = selectedPlan ? getPriceFromPlan(selectedPlan) : null;
@@ -44,33 +47,24 @@ const CheckoutConfirmPage = () => {
     ? formatDuration(selectedPlan.billingCadence)
     : null;
 
-  const createSubscriptionMutation = useMutation({
-    mutationFn: createMutationFn(
-      `/v3/zudoku-metering/${deploymentName}/subscriptions`,
-      zudoku,
-      {
+  const createSubscriptionMutation = useMutation<Subscription>({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
+    meta: {
+      context: zudoku,
+      request: {
         method: "POST",
-        body: JSON.stringify({
-          planId,
-        }),
+        body: JSON.stringify({ planId }),
       },
-    ),
-    onSuccess: (subscriptionId) => {
-      navigate(`/subscriptions/${subscriptionId}`);
     },
-    onError: (error) => {
-      // biome-ignore lint/suspicious/noConsole: TODO
-      console.error("Error creating subscription:", error);
+    onSuccess: async (subscription) => {
+      await queryClient.invalidateQueries();
+      navigate(`/subscriptions/${subscription.id}`);
     },
   });
 
   return (
     <div className="w-full bg-muted min-h-screen flex items-center justify-center px-4 py-12 gap-4">
       <div className="max-w-2xl w-full">
-        <div className="flex gap-2 text-muted-foreground text-sm items-center pt-4 pb-4">
-          <ArrowLeftIcon className="size-4" />
-          Back to Payment Details
-        </div>{" "}
         {createSubscriptionMutation.isError && (
           <Alert className="mb-4" variant="destructive">
             <AlertTitle>Error</AlertTitle>

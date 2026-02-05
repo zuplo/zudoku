@@ -141,6 +141,9 @@ export type ItemTimeline = {
 };
 
 export type Subscription = {
+  annotations?: {
+    "subscription.previous.id"?: string;
+  };
   activeFrom: string;
   alignment: {
     billablesMustAlign: boolean;
@@ -215,9 +218,7 @@ export type SubscriptionsResponse = {
 export const useSubscriptions = (environmentName: string) => {
   const zudoku = useZudoku();
   return useSuspenseQuery<SubscriptionsResponse>({
-    meta: {
-      context: zudoku,
-    },
     queryKey: [`/v3/zudoku-metering/${environmentName}/subscriptions`],
+    meta: { context: zudoku },
   });
 };
