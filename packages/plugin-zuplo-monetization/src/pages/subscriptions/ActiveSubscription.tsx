@@ -1,9 +1,20 @@
 import { useZudoku } from "zudoku/hooks";
+import { CheckCheckIcon } from "zudoku/icons";
 import { useSuspenseQuery } from "zudoku/react-query";
+import { useLocation } from "zudoku/router";
+import { AlertDescription, AlertTitle } from "zudoku/ui/Alert";
+import {
+  DismissibleAlert,
+  DismissibleAlertAction,
+} from "zudoku/ui/DismissibleAlert";
 import type { Subscription } from "../../hooks/useSubscriptions";
 import { ApiKeysList } from "./ApiKeysList";
 import { ManageSubscription } from "./ManageSubscription";
 import { Usage, type UsageResult } from "./Usage";
+
+type LocationState = {
+  planSwitched?: { isUpgrade: boolean; newPlanName: string };
+};
 
 const ActiveSubscription = ({
   subscription,
@@ -13,6 +24,9 @@ const ActiveSubscription = ({
   deploymentName: string;
 }) => {
   const zudoku = useZudoku();
+  const location = useLocation();
+  const planSwitched = (location.state as LocationState)?.planSwitched;
+
   const { data: usage } = useSuspenseQuery<UsageResult>({
     queryKey: [
       `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscription.id}/usage`,
@@ -31,6 +45,19 @@ const ActiveSubscription = ({
 
   return (
     <>
+      {planSwitched && (
+        <DismissibleAlert variant="info">
+          <CheckCheckIcon className="size-4" />
+          <AlertTitle>
+            Plan {planSwitched.isUpgrade ? "upgraded" : "downgraded"}
+          </AlertTitle>
+          <AlertDescription>
+            You have successfully switched to {planSwitched.newPlanName}.
+          </AlertDescription>
+          <DismissibleAlertAction />
+        </DismissibleAlert>
+      )}
+
       <Usage currentItems={activePhase?.items} usage={usage} />
 
       {subscription?.consumer?.apiKeys && (

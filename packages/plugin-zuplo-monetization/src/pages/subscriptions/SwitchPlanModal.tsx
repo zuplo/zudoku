@@ -10,6 +10,7 @@ import {
 } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { useNavigate } from "zudoku/router";
+import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import {
@@ -205,7 +206,10 @@ const PlanComparisonItem = ({
       await queryClient.invalidateQueries();
       navigate(`/subscriptions/${subscription.id}`, {
         state: {
-          upgradeFrom: subscription.annotations?.["subscription.previous.id"],
+          planSwitched: {
+            isUpgrade: comparison.isUpgrade,
+            newPlanName: comparison.plan.name,
+          },
         },
       });
       onRequestClose();
@@ -249,14 +253,14 @@ const PlanComparisonItem = ({
               Contact Sales
             </Button>
           ) : (
-            <Button
+            <ActionButton
               variant={comparison.isUpgrade ? "default" : "outline"}
+              isPending={mutation.isPending}
               size="sm"
               onClick={() => mutation.mutate()}
-              disabled={mutation.isPending}
             >
               {comparison.isUpgrade ? "Upgrade" : "Downgrade"}
-            </Button>
+            </ActionButton>
           )}
         </div>
 
