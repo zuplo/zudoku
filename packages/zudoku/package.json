@@ -335,7 +335,7 @@
     "@types/semver": "7.7.0",
     "@types/unist": "^3.0.3",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.0.16",
+    "@vitest/coverage-v8": "4.0.18",
     "esbuild": "0.27.0",
     "happy-dom": "20.0.10",
     "mdast-util-mdx": "3.0.0",
