@@ -120,7 +120,7 @@ export const useAuth = () => {
       if (process.env.NODE_ENV === "development") {
         // biome-ignore lint: We want to warn about the deprecation
         console.warn(
-          "requestEmailVerification is deprecated. Use useVerifiedEmail.",
+          "requestEmailVerification is deprecated on useAuth. Use the requestEmailVerification method from useVerifiedEmail hook instead.",
         );
       }
       if (!isAuthEnabled) {
