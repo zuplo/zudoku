@@ -46,7 +46,13 @@ const clerkAuth: AuthenticationProviderInitializer<
     return response;
   }
 
-  async function getUserProfile(clerk: Clerk): Promise<UserProfile> {
+  async function getUserProfile(
+    clerk: Clerk,
+  ): Promise<UserProfile | undefined> {
+    if (!clerk.session?.user) {
+      return undefined;
+    }
+
     const verifiedEmail = clerk.session?.user?.emailAddresses.find(
       (email) => email.verification.status === "verified",
     );
@@ -133,28 +139,31 @@ const clerkAuth: AuthenticationProviderInitializer<
       }
 
       if (clerk.session) {
+        const profile = await getUserProfile(clerk);
+
+        if (!profile) {
+          useAuthState.getState().setLoggedOut();
+          return;
+        }
+
         useAuthState.getState().setLoggedIn({
-          profile: await getUserProfile(clerk),
+          profile,
           providerData: {
             user: clerk.session.user,
           },
         });
       } else {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: undefined,
-        });
+        useAuthState.getState().setLoggedOut();
       }
     },
     getAccessToken,
     signRequest,
     signOut: async () => {
       await ensureLoaded;
+      useAuthState.getState().setLoggedOut();
       await clerkApi?.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
       });
-      useAuthState.getState().setLoggedOut();
     },
     signIn: async (
       _: AuthActionContext,
