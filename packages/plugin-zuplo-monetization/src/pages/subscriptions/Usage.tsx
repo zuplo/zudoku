@@ -115,15 +115,18 @@ const UsageItem = ({
             </span>
           </div>
           <span className="text-foreground font-medium">
-            {meter.balance.toLocaleString()} limit
+            {(meter.balance + meter.usage - meter.overage).toLocaleString()}{" "}
+            limit
           </span>
         </div>
         <Progress
-          value={(meter.usage / meter.balance) * 100}
+          value={
+            (meter.usage / (meter.balance + meter.usage - meter.overage)) * 100
+          }
           className={cn("mb-3 h-2", meter.overage > 0 && "bg-red-500")}
         />
         <p className="text-xs text-muted-foreground">
-          {(meter.balance - meter.usage).toLocaleString()} remaining this month
+          {meter.balance.toLocaleString()} remaining this month
         </p>
       </CardContent>
     </Card>
