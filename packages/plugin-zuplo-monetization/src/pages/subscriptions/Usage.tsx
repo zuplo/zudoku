@@ -6,7 +6,6 @@ import {
   Grid2x2XIcon,
   Loader2Icon,
 } from "zudoku/icons";
-import { Link } from "zudoku/router";
 import {
   Alert,
   AlertAction,
@@ -15,7 +14,8 @@ import {
 } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
-import type { Item } from "../../hooks/useSubscriptions";
+import type { Item, Subscription } from "../../hooks/useSubscriptions";
+import { SwitchPlanModal } from "./SwitchPlanModal";
 
 export type UsageResult = {
   $schema: string;
@@ -58,9 +58,11 @@ const isMeteredEntitlement = (
 const UsageItem = ({
   meter,
   item,
+  subscription,
 }: {
   meter: MeteredEntitlement;
   item?: Item;
+  subscription?: Subscription;
 }) => {
   const overageTier =
     item?.price?.tiers?.find((t) => !t.upToAmount) ??
@@ -82,14 +84,16 @@ const UsageItem = ({
               higher plan for more usage.
             </AlertDescription>
 
-            <AlertAction>
-              <Button variant="destructive" size="sm" asChild>
-                <Link to="/pricing">
-                  <ArrowUpIcon />
-                  Upgrade
-                </Link>
-              </Button>
-            </AlertAction>
+            {subscription && (
+              <AlertAction>
+                <SwitchPlanModal subscription={subscription}>
+                  <Button variant="destructive" size="sm">
+                    <ArrowUpIcon />
+                    Upgrade
+                  </Button>
+                </SwitchPlanModal>
+              </AlertAction>
+            )}
           </Alert>
         )}
         <CardTitle>
@@ -129,9 +133,11 @@ const UsageItem = ({
 export const Usage = ({
   usage,
   currentItems,
+  subscription,
 }: {
   usage: UsageResult;
   currentItems?: Item[];
+  subscription?: Subscription;
 }) => {
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
@@ -156,6 +162,7 @@ export const Usage = ({
             <UsageItem
               key={key}
               meter={{ ...value }}
+              subscription={subscription}
               item={currentItems?.find((item) => item.featureKey === key)}
             />
           ) : (

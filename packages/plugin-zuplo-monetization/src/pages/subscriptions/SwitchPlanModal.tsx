@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { type PropsWithChildren, useMemo, useState } from "react";
 import { cn } from "zudoku";
 import { useZudoku } from "zudoku/hooks";
 import {
@@ -359,9 +359,10 @@ const PlanComparisonItem = ({
 
 export const SwitchPlanModal = ({
   subscription,
-}: {
+  children,
+}: PropsWithChildren<{
   subscription: Subscription;
-}) => {
+}>) => {
   const [open, setOpen] = useState(false);
   const deploymentName = useDeploymentName();
   const { data: plansData } = usePlans(deploymentName);
@@ -388,9 +389,11 @@ export const SwitchPlanModal = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <ArrowLeftRightIcon /> Switch Plan
-        </Button>
+        {children ?? (
+          <Button variant="outline" size="sm">
+            <ArrowLeftRightIcon /> Switch Plan
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
