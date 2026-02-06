@@ -16,9 +16,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
+import { REASON_CODES } from "../../config/validators/ProtectedRoutesSchema.js";
 import { useAuth } from "../authentication/hook.js";
-import { BypassProtectedRoutesContext } from "../components/context/BypassProtectedRoutesContext.js";
+import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
+import { Layout } from "../components/Layout.js";
 import { ZudokuError } from "../util/invariant.js";
 
 export const SEARCH_PROTECTED_SECTION = "protected";
@@ -71,14 +73,31 @@ const BypassRoute = ({ isProtectedRoute }: { isProtectedRoute: boolean }) => (
   </>
 );
 
+const ForbiddenPage = () => {
+  const renderContext = use(RenderContext);
+  renderContext.status = 403;
+
+  return (
+    <Layout>
+      <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+        <h1 className="text-2xl font-bold">Access Denied</h1>
+        <p className="text-muted-foreground">
+          You don't have permission to access this page.
+        </p>
+      </div>
+    </Layout>
+  );
+};
+
 export const RouteGuard = () => {
   const auth = useAuth();
   const zudoku = useZudoku();
   const navigate = useNavigate();
   const location = useLocation();
-  const shouldBypass = use(BypassProtectedRoutesContext);
+  const renderContext = use(RenderContext);
+  const shouldBypass = renderContext.bypassProtection;
   const authCheckContext = useMemo(
-    () => ({ auth, context: zudoku }),
+    () => ({ auth, context: zudoku, reasonCode: REASON_CODES }),
     [auth, zudoku],
   );
   const { protectedRoutes } = zudoku;
@@ -97,13 +116,20 @@ export const RouteGuard = () => {
 
   const currentAuthCheck = getAuthCheck(location.pathname);
   const isProtectedRoute = currentAuthCheck !== undefined;
-  const isAuthorized = currentAuthCheck?.(authCheckContext) ?? true;
-  const needsToSignIn = isProtectedRoute && !isAuthorized;
+  const rawResult = currentAuthCheck?.(authCheckContext) ?? true;
+  // Normalize: false is equivalent to UNAUTHORIZED
+  const authResult =
+    rawResult === false ? REASON_CODES.UNAUTHORIZED : rawResult;
+  const isForbidden = authResult === REASON_CODES.FORBIDDEN;
+  const needsToSignIn = authResult === REASON_CODES.UNAUTHORIZED;
 
   const blocker = useBlocker(({ nextLocation }) => {
     if (shouldBypass) return false;
     const check = getAuthCheck(nextLocation.pathname);
-    return check !== undefined && !check(authCheckContext);
+    if (!check) return false;
+    const result = check(authCheckContext);
+    // Only block for unauthorized (needs login), not for reason codes like "forbidden"
+    return result === false || result === REASON_CODES.UNAUTHORIZED;
   });
   const isBlocked = blocker.state === "blocked";
   const intendedPath = isBlocked ? blocker.location.pathname : undefined;
@@ -112,7 +138,7 @@ export const RouteGuard = () => {
   useEffect(() => {
     if (!auth.isAuthenticated || !intendedPath) return;
     const check = getAuthCheck(intendedPath);
-    if (!check || check(authCheckContext)) {
+    if (!check || check(authCheckContext) === true) {
       blocker.proceed?.();
     }
   }, [
@@ -122,6 +148,10 @@ export const RouteGuard = () => {
     authCheckContext,
     getAuthCheck,
   ]);
+
+  if (isForbidden) {
+    return <ForbiddenPage />;
+  }
 
   if (shouldBypass) {
     return <BypassRoute isProtectedRoute={isProtectedRoute} />;

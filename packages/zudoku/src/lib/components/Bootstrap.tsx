@@ -4,7 +4,7 @@ import {
   QueryClientProvider,
 } from "@tanstack/react-query";
 import { type HelmetData, HelmetProvider } from "@zudoku/react-helmet-async";
-import { StrictMode } from "react";
+import { StrictMode, useMemo } from "react";
 import {
   type createBrowserRouter,
   type createStaticRouter,
@@ -12,7 +12,10 @@ import {
   StaticRouterProvider,
 } from "react-router";
 import { RouterProvider } from "react-router/dom";
-import { BypassProtectedRoutesContext } from "./context/BypassProtectedRoutesContext.js";
+import {
+  RenderContext,
+  type RenderContextValue,
+} from "./context/RenderContext.js";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,11 +36,9 @@ const Bootstrap = ({
     <QueryClientProvider client={queryClient}>
       {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
-        <BypassProtectedRoutesContext value={false}>
-          <HelmetProvider>
-            <RouterProvider router={router} />
-          </HelmetProvider>
-        </BypassProtectedRoutesContext>
+        <HelmetProvider>
+          <RouterProvider router={router} />
+        </HelmetProvider>
       </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
@@ -49,22 +50,35 @@ const BootstrapStatic = ({
   queryClient,
   helmetContext,
   bypassProtection = false,
+  renderContext,
 }: {
   helmetContext: HelmetData["context"];
   context: StaticHandlerContext;
   queryClient: QueryClient;
   router: ReturnType<typeof createStaticRouter>;
   bypassProtection?: boolean;
-}) => (
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <HelmetProvider context={helmetContext}>
-        <BypassProtectedRoutesContext value={bypassProtection}>
-          <StaticRouterProvider router={router} context={context} />
-        </BypassProtectedRoutesContext>
-      </HelmetProvider>
-    </QueryClientProvider>
-  </StrictMode>
-);
+  renderContext?: Partial<RenderContextValue>;
+}) => {
+  const value = useMemo(
+    () => ({
+      status: 200,
+      bypassProtection,
+      ...renderContext,
+    }),
+    [bypassProtection, renderContext],
+  );
+
+  return (
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <HelmetProvider context={helmetContext}>
+          <RenderContext value={value}>
+            <StaticRouterProvider router={router} context={context} />
+          </RenderContext>
+        </HelmetProvider>
+      </QueryClientProvider>
+    </StrictMode>
+  );
+};
 
 export { Bootstrap, BootstrapStatic };
