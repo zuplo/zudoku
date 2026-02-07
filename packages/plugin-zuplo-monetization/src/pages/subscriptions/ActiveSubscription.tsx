@@ -58,7 +58,11 @@ const ActiveSubscription = ({
         </DismissibleAlert>
       )}
 
-      <Usage currentItems={activePhase?.items} usage={usage} />
+      <Usage
+        currentItems={activePhase?.items}
+        usage={usage}
+        subscription={subscription}
+      />
 
       {subscription?.consumer?.apiKeys && (
         <ApiKeysList
