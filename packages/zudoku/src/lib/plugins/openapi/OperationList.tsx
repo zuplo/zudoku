@@ -1,7 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
+import { Link as RouterLink, useNavigate, useParams } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -275,7 +275,9 @@ export const OperationList = ({
         >
           <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end">
             <div className="flex flex-col flex-1 gap-2">
-              <CategoryHeading>{title}</CategoryHeading>
+              <CategoryHeading>
+                <RouterLink to={"../"}>{title}</RouterLink>
+              </CategoryHeading>
               <Heading
                 level={1}
                 id="description"

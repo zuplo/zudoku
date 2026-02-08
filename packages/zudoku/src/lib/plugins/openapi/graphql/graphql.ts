@@ -139,6 +139,7 @@ export type ResponseItem = {
 export type Schema = {
   __typename?: "Schema";
   components?: Maybe<Components>;
+  contact: SchemaContact;
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   openapi: Scalars["String"]["output"];
@@ -165,6 +166,13 @@ export type SchemaTagArgs = {
   name?: InputMaybe<Scalars["String"]["input"]>;
   slug?: InputMaybe<Scalars["String"]["input"]>;
   untagged?: InputMaybe<Scalars["Boolean"]["input"]>;
+};
+
+export type SchemaContact = {
+  __typename?: "SchemaContact";
+  email?: Maybe<Scalars["String"]["output"]>;
+  name?: Maybe<Scalars["String"]["output"]>;
+  url?: Maybe<Scalars["String"]["output"]>;
 };
 
 export type SchemaItem = {
@@ -342,6 +350,35 @@ export type OperationsForTagQuery = {
         extensions?: any | null;
       } | null;
     } | null;
+  };
+};
+
+export type SchemaInfoQueryVariables = Exact<{
+  input: Scalars["JSON"]["input"];
+  type: SchemaType;
+}>;
+
+export type SchemaInfoQuery = {
+  __typename?: "Query";
+  schema: {
+    __typename?: "Schema";
+    description?: string | null;
+    summary?: string | null;
+    title: string;
+    url?: string | null;
+    version: string;
+    servers: Array<{ __typename?: "Server"; url: string }>;
+    contact: {
+      __typename?: "SchemaContact";
+      name?: string | null;
+      url?: string | null;
+      email?: string | null;
+    };
+    tags: Array<{
+      __typename?: "SchemaTag";
+      name?: string | null;
+      description?: string | null;
+    }>;
   };
 };
 
@@ -632,6 +669,32 @@ export const OperationsForTagDocument = new TypedDocumentString(`
 }`) as unknown as TypedDocumentString<
   OperationsForTagQuery,
   OperationsForTagQueryVariables
+>;
+export const SchemaInfoDocument = new TypedDocumentString(`
+    query SchemaInfo($input: JSON!, $type: SchemaType!) {
+  schema(input: $input, type: $type) {
+    servers {
+      url
+    }
+    contact {
+      name
+      url
+      email
+    }
+    description
+    summary
+    title
+    url
+    version
+    tags {
+      name
+      description
+    }
+  }
+}
+    `) as unknown as TypedDocumentString<
+  SchemaInfoQuery,
+  SchemaInfoQueryVariables
 >;
 export const GetSchemasDocument = new TypedDocumentString(`
     query GetSchemas($input: JSON!, $type: SchemaType!) {
