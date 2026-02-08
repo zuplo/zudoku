@@ -7,6 +7,7 @@ import type { z } from "zod";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type {
   CallbackContext,
+  ProtectedRouteResult,
   ProtectedRoutesInput,
 } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { FooterSchema } from "../../config/validators/validate.js";
@@ -107,7 +108,7 @@ export type ZudokuContextOptions = {
 
 export const normalizeProtectedRoutes = (
   val: ProtectedRoutesInput,
-): Record<string, (c: CallbackContext) => boolean> | undefined => {
+): Record<string, (c: CallbackContext) => ProtectedRouteResult> | undefined => {
   if (!val) return undefined;
 
   if (Array.isArray(val)) {

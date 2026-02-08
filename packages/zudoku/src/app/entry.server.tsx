@@ -66,6 +66,7 @@ export const render = async ({
 
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
+  const renderContext = { status: 200 };
 
   const App = (
     <BootstrapStatic
@@ -74,6 +75,7 @@ export const render = async ({
       queryClient={queryClient}
       helmetContext={helmetContext}
       bypassProtection={bypassProtection}
+      renderContext={renderContext}
     />
   );
 
@@ -88,7 +90,9 @@ export const render = async ({
     },
     onAllReady() {
       response.set({ "Content-Type": "text/html" });
-      response.status(status);
+      response.status(
+        renderContext.status !== 200 ? renderContext.status : status,
+      );
 
       const transformStream = new Transform({
         transform(chunk, encoding, callback) {

@@ -115,7 +115,16 @@ const config: ZudokuConfig = {
     },
   },
   plugins: [new CosmoCargoApiIdentityPlugin()],
-  protectedRoutes: ["/only-members"],
+  protectedRoutes: {
+    "/only-members": ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
+    "/vip-lounge": ({ auth, reasonCode }) =>
+      !auth.isAuthenticated
+        ? reasonCode.UNAUTHORIZED
+        : auth.profile?.email?.endsWith("@zuplo.com")
+          ? true
+          : reasonCode.FORBIDDEN,
+  },
   navigation: [
     {
       type: "custom-page",
@@ -193,6 +202,13 @@ const config: ZudokuConfig = {
       label: "Only members",
       display: "auth",
       element: <div>Only members are allowed in here.</div>,
+    },
+    {
+      type: "custom-page",
+      path: "/vip-lounge",
+      label: "VIP Lounge",
+      display: "auth",
+      element: <div>Welcome to the VIP Lounge, exclusive Zuplo member!</div>,
     },
   ],
   catalogs: {

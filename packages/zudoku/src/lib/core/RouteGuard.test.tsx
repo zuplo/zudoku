@@ -26,10 +26,13 @@ import {
   Routes,
 } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CallbackContext } from "../../config/validators/ProtectedRoutesSchema.js";
+import type {
+  CallbackContext,
+  ProtectedRouteResult,
+} from "../../config/validators/ProtectedRoutesSchema.js";
 import type { UseAuthReturn } from "../authentication/hook.js";
 import { useAuthState } from "../authentication/state.js";
-import { BypassProtectedRoutesContext } from "../components/context/BypassProtectedRoutesContext.js";
+import { RenderContext } from "../components/context/RenderContext.js";
 import { ZudokuProvider } from "../components/context/ZudokuProvider.js";
 import { ZudokuContext } from "../core/ZudokuContext.js";
 import { ensureArray } from "../util/ensureArray.js";
@@ -44,7 +47,7 @@ const mockUseAuth = vi.mocked(useAuth);
 
 type CreateWrapperOptions = {
   auth?: Partial<UseAuthReturn>;
-  protectedRoutes?: Record<string, (c: CallbackContext) => boolean>;
+  protectedRoutes?: Record<string, (c: CallbackContext) => ProtectedRouteResult>;
   shouldBypass?: boolean;
   initialPath?: string;
   wrapRouteGuard?: boolean;
@@ -111,9 +114,9 @@ const render = async (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ZudokuProvider context={context}>
-          <BypassProtectedRoutesContext.Provider value={shouldBypass}>
+          <RenderContext value={{ status: 200, bypassProtection: shouldBypass }}>
             <Outlet />
-          </BypassProtectedRoutesContext.Provider>
+          </RenderContext>
         </ZudokuProvider>
       </QueryClientProvider>
     </HelmetProvider>
@@ -202,9 +205,9 @@ describe("RouteGuard", () => {
         <HelmetProvider>
           <QueryClientProvider client={queryClient}>
             <ZudokuProvider context={context}>
-              <BypassProtectedRoutesContext.Provider value={false}>
+              <RenderContext value={{ status: 200, bypassProtection: false }}>
                 {children}
-              </BypassProtectedRoutesContext.Provider>
+              </RenderContext>
             </ZudokuProvider>
           </QueryClientProvider>
         </HelmetProvider>
