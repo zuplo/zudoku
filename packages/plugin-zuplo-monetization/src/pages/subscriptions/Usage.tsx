@@ -29,7 +29,7 @@ export type UsageResult = {
 };
 
 export type PaymentStatus = {
-  status: string;
+  status: "failed" | "paid" | string;
   isFirstPayment?: boolean;
   lastPaymentSucceededAt?: string;
   lastPaymentFailedAt?: string;

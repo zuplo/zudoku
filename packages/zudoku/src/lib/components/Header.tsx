@@ -44,7 +44,11 @@ const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
       </DropdownMenuPortal>
     </DropdownMenuSub>
   ) : (
-    <Link to={item.path ?? ""}>
+    <Link
+      to={item.path ?? ""}
+      target={item.target}
+      rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+    >
       <DropdownMenuItem key={item.label} className="flex gap-2">
         {item.icon && (
           <item.icon size={16} strokeWidth={1} absoluteStrokeWidth />
