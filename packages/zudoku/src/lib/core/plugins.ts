@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import type { HTMLAttributeAnchorTarget, ReactNode } from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRoutesSchema.js";
@@ -56,7 +56,7 @@ export interface ProfileMenuPlugin {
 export type ProfileNavigationItem = {
   label: string;
   path?: string;
-  target?: string;
+  target?: HTMLAttributeAnchorTarget;
   weight?: number;
   category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];

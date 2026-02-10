@@ -108,6 +108,11 @@ export const MobileTopNavigation = () => {
                       <TopNavLink
                         to={i.path ?? ""}
                         target={i.target}
+                        rel={
+                          i.target === "_blank"
+                            ? "noopener noreferrer"
+                            : undefined
+                        }
                         onClick={() => setDrawerOpen(false)}
                       >
                         {i.label}

@@ -1,4 +1,5 @@
-import { type LucideIcon } from "zudoku/icons";
+import { useEffect } from "react";
+import type { LucideIcon } from "zudoku/icons";
 
 const RedirectPage = ({
   icon: Icon,
@@ -11,9 +12,11 @@ const RedirectPage = ({
   description: string;
   url?: string;
 }) => {
-  if (url) {
-    window.location.href = url;
-  }
+  useEffect(() => {
+    if (url) {
+      window.location.href = url;
+    }
+  }, [url]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted">
