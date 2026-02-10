@@ -47,21 +47,27 @@ export const zuploMonetizationPlugin = createPlugin(
         },
       });
 
-      return result.items.flatMap((item) =>
-        item.consumer.apiKeys.map(
-          (apiKey) =>
-            ({
-              label: item.name,
-              id: apiKey.id,
-              authorizeRequest: async (request) => {
-                request.headers.set("Authorization", `Bearer ${apiKey.key}`);
-                return request;
-              },
-              authorizationFields: {
-                headers: ["Authorization"],
-              },
-            }) satisfies ApiIdentity,
-        ),
+      return result.items.flatMap((sub) =>
+        sub.status !== "active"
+          ? []
+          : sub.consumer.apiKeys.flatMap((apiKey) =>
+              apiKey.expiresOn && new Date(apiKey.expiresOn) < new Date()
+                ? []
+                : ({
+                    label: `${sub.name} (****${apiKey.key.slice(-5)})`,
+                    id: apiKey.id,
+                    authorizeRequest: async (request) => {
+                      request.headers.set(
+                        "Authorization",
+                        `Bearer ${apiKey.key}`,
+                      );
+                      return request;
+                    },
+                    authorizationFields: {
+                      headers: ["Authorization"],
+                    },
+                  } satisfies ApiIdentity),
+            ),
       );
     },
 
