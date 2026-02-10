@@ -137,10 +137,12 @@ export const Usage = ({
   usage,
   currentItems,
   subscription,
+  isPendingFirstPayment,
 }: {
   usage: UsageResult;
   currentItems?: Item[];
   subscription?: Subscription;
+  isPendingFirstPayment: boolean;
 }) => {
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
@@ -149,7 +151,7 @@ export const Usage = ({
   return (
     <div className="space-y-4">
       <Heading level={3}>Usage</Heading>
-      {usage.paymentStatus.status === "pending" && (
+      {isPendingFirstPayment && (
         <Alert fit="loose">
           <Loader2Icon className="size-5 animate-spin mr-1 ml-1 self-center" />
           <AlertTitle>Your payment is being processed</AlertTitle>

@@ -37,6 +37,10 @@ const ActiveSubscription = ({
     meta: { context: zudoku },
   });
 
+  const isPendingFirstPayment =
+    usage.paymentStatus.status === "pending" &&
+    !usage.annotations?.["subscription.previous.id"];
+
   const activePhase = subscription?.phases.find(
     (p) =>
       new Date(p.activeFrom) <= new Date() &&
@@ -62,14 +66,12 @@ const ActiveSubscription = ({
         currentItems={activePhase?.items}
         usage={usage}
         subscription={subscription}
+        isPendingFirstPayment={isPendingFirstPayment}
       />
 
       {subscription?.consumer?.apiKeys && (
         <ApiKeysList
-          isPendingFirstPayment={
-            usage.paymentStatus.status === "pending" &&
-            !usage.annotations?.["subscription.previous.id"]
-          }
+          isPendingFirstPayment={isPendingFirstPayment}
           deploymentName={deploymentName}
           consumerId={subscription.consumer.id}
           apiKeys={subscription.consumer.apiKeys}
