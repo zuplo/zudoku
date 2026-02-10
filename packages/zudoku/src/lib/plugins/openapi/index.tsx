@@ -12,6 +12,7 @@ import { graphql } from "./graphql/index.js";
 import type { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
 
@@ -165,39 +166,12 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
             | { name: string; tags: string[] }[]
             | undefined) ?? [];
 
-        const groupedTags = new Set(
-          tagGroups.flatMap((group) =>
-            group.tags.filter((name) => tagCategories.has(name)),
-          ),
-        );
-
-        const groupedCategories: NavigationItem[] = tagGroups.flatMap(
-          (group) => {
-            const items = group.tags
-              .map((name) => tagCategories.get(name))
-              .filter(Boolean) as NavigationItem[];
-
-            if (items.length === 0) {
-              return [];
-            }
-            return [
-              {
-                type: "category",
-                label: group.name,
-                items,
-                collapsible: true,
-                collapsed: !config.options?.expandAllTags,
-              },
-            ];
-          },
-        );
-
-        const categories: NavigationItem[] = [
-          ...groupedCategories,
-          ...Array.from(tagCategories.entries())
-            .filter(([name]) => !groupedTags.has(name))
-            .map(([, cat]) => cat),
-        ];
+        const categories: NavigationItem[] = buildTagCategories({
+          tagCategories,
+          tagGroups,
+          interleaveTagGroups: config.options?.interleaveTagGroups,
+          expandAllTags: config.options?.expandAllTags,
+        });
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,
