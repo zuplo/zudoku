@@ -18,6 +18,7 @@ import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { usePrevNext } from "../../components/navigation/utils.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Pagination } from "../../components/Pagination.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
@@ -165,11 +166,7 @@ export const OperationList = ({
     tag: tag ?? tagFromParams,
     untagged,
   });
-  const result = useSuspenseQuery(query);
-  const {
-    data: { schema },
-  } = result;
-  // Global server selection for the dropdown UI
+  const schema = useSuspenseQuery(query).data.schema;
   const { selectedServer: globalSelectedServer } = useSelectedServer(
     schema.servers,
   );
@@ -177,6 +174,7 @@ export const OperationList = ({
   const summary = schema.summary;
   const description = schema.description;
   const navigate = useNavigate();
+  const { prev: navPrev, next: navNext } = usePrevNext();
 
   // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
   const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
@@ -231,7 +229,9 @@ export const OperationList = ({
           to: `../${prev.slug}`,
           label: prev.extensions?.["x-displayName"] ?? prev.name,
         }
-      : undefined,
+      : navPrev
+        ? { to: navPrev.id, label: navPrev.label }
+        : undefined,
     next: next
       ? {
           to: `../${next.slug ?? UNTAGGED_PATH}`,
@@ -240,7 +240,9 @@ export const OperationList = ({
             next.name ??
             "Other endpoints",
         }
-      : undefined,
+      : navNext
+        ? { to: navNext.id, label: navNext.label }
+        : undefined,
   };
 
   const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;

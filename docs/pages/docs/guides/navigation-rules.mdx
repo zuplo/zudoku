@@ -1,0 +1,159 @@
+---
+title: Navigation Rules
+sidebar_icon: list-tree
+---
+
+When you add an OpenAPI spec to Zudoku, the sidebar is generated automatically from the schema's
+tags and operations. Navigation rules let you extend or modify that sidebar without changing the
+schema itself. Common use cases include inserting getting-started docs, adding external links, or
+hiding deprecated endpoints.
+
+## Setup
+
+Navigation rules require two things in your `zudoku.config.tsx`:
+
+1. A `navigation` entry that creates a tab linked to your API
+2. A `navigationRules` array with rules that target that tab
+
+```tsx
+import type { ZudokuConfig } from "zudoku";
+
+const config: ZudokuConfig = {
+  apis: [
+    {
+      type: "file",
+      input: "./schema/shipments.json",
+      path: "api-shipments",
+    },
+  ],
+  navigation: [{ type: "link", label: "Shipments", to: "/api-shipments" }],
+  navigationRules: [
+    // rules go here
+  ],
+};
+```
+
+## Inserting docs
+
+Use `type: "insert"` to add items before or after a matched sidebar item. The `match` string uses
+the tab label as the first segment and navigates into the sidebar tree.
+
+```tsx
+navigationRules: [
+  {
+    type: "insert",
+    match: "Shipments/0",
+    position: "before",
+    items: [
+      {
+        type: "doc",
+        file: "api-shipments/getting-started",
+        icon: "plane-takeoff",
+      },
+    ],
+  },
+],
+```
+
+This inserts a "Getting Started" doc before the first item in the Shipments sidebar.
+
+![Inserting a doc before the first sidebar item](/docs/navigation-rules/insert-doc.png)
+
+The MDX file lives at `pages/api-shipments/getting-started.mdx` (under your configured docs
+directory, matching the API's base path).
+
+## Adding links
+
+You can insert external or internal links the same way:
+
+```tsx
+{
+  type: "insert",
+  match: "Shipments/-1",
+  position: "after",
+  items: [
+    {
+      type: "link",
+      label: "System Status",
+      to: "/status",
+      icon: "satellite",
+    },
+  ],
+}
+```
+
+The `-1` index targets the last item, and `position: "after"` places the link at the very end of the
+sidebar.
+
+![Inserting a link after the last sidebar item](/docs/navigation-rules/insert-doc-end.png)
+
+## Modifying items
+
+Use `type: "modify"` to change properties of existing sidebar items like their icon, label, or
+collapsed state:
+
+```tsx
+{
+  type: "modify",
+  match: "Shipments/Shipment Management",
+  set: { icon: "box", collapsed: true },
+}
+```
+
+![Modifying a sidebar item's icon](/docs/navigation-rules/modify-item.png)
+
+## Removing items
+
+`type: "remove"` hides items from the sidebar. This is rarely needed since it's usually better to
+fix the underlying source, but can be useful as a quick workaround:
+
+```tsx
+{
+  type: "remove",
+  match: "Shipments/Deprecated Endpoint",
+}
+```
+
+## Complete example
+
+This is the configuration used in the Cosmo Cargo demo shown above:
+
+```tsx
+navigationRules: [
+  {
+    type: "insert",
+    match: "Shipments/Shipment",
+    position: "before",
+    items: [
+      {
+        type: "doc",
+        file: "api-shipments/getting-started",
+        icon: "plane-takeoff",
+      },
+    ],
+  },
+  {
+    type: "insert",
+    match: "Shipments/-1",
+    position: "after",
+    items: [
+      {
+        type: "link",
+        label: "System Status",
+        to: "/status",
+        icon: "satellite",
+      },
+    ],
+  },
+  {
+    type: "modify",
+    match: "Shipments/1",
+    set: { icon: "box" },
+  },
+],
+```
+
+## Match syntax reference
+
+For the full match syntax including label matching, index selectors, and nested paths, see the
+[Navigation Rules reference](/docs/configuration/navigation#navigation-rules).

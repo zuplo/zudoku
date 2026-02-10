@@ -33,44 +33,52 @@ export const viteNavigationPlugin = (): Plugin => {
       if (id !== resolvedVirtualModuleId) return;
       const config = getCurrentConfig();
 
-      const resolvedNavigation = await new NavigationResolver(config).resolve();
+      const resolver = new NavigationResolver(config);
+      const resolvedNavigation = await resolver.resolve();
+      const resolvedRules = await resolver.resolveRules(
+        config.navigationRules ?? [],
+      );
 
       const collectedIcons = new Set<string>();
       let hasMissingIcon = false;
 
-      // This stringifies functions and takes care of the icon replacement
-      const code = stringify(
-        resolvedNavigation,
-        (value, _indent, next, key) => {
-          // Skip non-serializable React elements
-          if (isElement(value)) return undefined;
+      const stringifyWithIcons = (value: unknown) =>
+        stringify(
+          value,
+          (value, _indent, next, key) => {
+            // Skip non-serializable React elements
+            if (isElement(value)) return undefined;
 
-          if (key === "icon" && typeof value === "string") {
-            const iconName = toPascalCase(value);
+            if (key === "icon" && typeof value === "string") {
+              const iconName = toPascalCase(value);
 
-            if (!IconNames.includes(value as IconNames)) {
-              // biome-ignore lint/suspicious/noConsole: Logging allowed here
-              console.warn(
-                `Icon "${value}" not found, see: https://lucide.dev/icons/`,
-              );
-              hasMissingIcon = true;
-              return "MissingIcon";
-            } else {
-              collectedIcons.add(iconName);
-              return iconName;
+              if (!IconNames.includes(value as IconNames)) {
+                // biome-ignore lint/suspicious/noConsole: Logging allowed here
+                console.warn(
+                  `Icon "${value}" not found, see: https://lucide.dev/icons/`,
+                );
+                hasMissingIcon = true;
+                return "MissingIcon";
+              } else {
+                collectedIcons.add(iconName);
+                return iconName;
+              }
             }
-          }
-          return next(value);
-        },
-        2,
-      );
+            return next(value);
+          },
+          2,
+        );
 
-      invariant(code, "Failed to stringify navigation");
+      const navigationCode = stringifyWithIcons(resolvedNavigation);
+      const rulesCode = stringifyWithIcons(resolvedRules);
+
+      invariant(navigationCode, "Failed to stringify navigation");
+      invariant(rulesCode, "Failed to stringify navigation rules");
 
       await writePluginDebugCode(
         config.__meta.rootDir,
         "navigation-plugin",
-        code,
+        `navigation: ${navigationCode}\nrules: ${rulesCode}`,
         "js",
       );
 
@@ -85,7 +93,8 @@ export const viteNavigationPlugin = (): Plugin => {
 
       return [
         importStatement,
-        `export const configuredNavigation = ${code};`,
+        `export const configuredNavigation = ${navigationCode};`,
+        `export const configuredNavigationRules = ${rulesCode};`,
       ].join("\n");
     },
   };

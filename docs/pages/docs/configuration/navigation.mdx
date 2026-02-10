@@ -18,7 +18,7 @@ entries can be links, document references, categories or custom pages.
 The navigation is defined using the `navigation` array in the Zudoku config file. Each item can be
 one of several types. At the simplest level you may only have links and categories.
 
-```json
+```tsx title="zudoku.config.tsx"
 {
   "navigation": [
     {
@@ -362,3 +362,35 @@ sidebar_label: Short Title
 
 In this example, the document's title remains "My Long Title," but the sidebar displays "Short
 Title."
+
+## Navigation Rules
+
+Plugins automatically generate sidebar navigation (e.g. from OpenAPI tags). Navigation rules let you
+customize that generated sidebar by inserting, modifying, or removing items. To change the top-level
+tabs themselves, use the `navigation` array directly.
+
+For a practical walkthrough with examples, see the [Navigation Rules](/docs/guides/navigation-rules)
+guide.
+
+### Rule Types
+
+Each rule has a `type` and a `match` property that targets a navigation item.
+
+| Type     | Description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `insert` | Add items `before` or `after` a matched item                              |
+| `modify` | Change `label`, `icon`, `badge`, `collapsed`, `collapsible`, or `display` |
+| `remove` | Remove a matched item from the sidebar                                    |
+
+### Match Syntax
+
+The `match` property uses slash-separated segments to target items. The first segment identifies the
+top-level tab by label, and remaining segments navigate into the sidebar tree. Label matching is
+case-insensitive.
+
+```json
+match: "Users/Get User";      // by label
+match: "Users/0";             // first item
+match: "Users/-1";            // last item
+match: "Users/Advanced/0";   // mixed nesting
+```
