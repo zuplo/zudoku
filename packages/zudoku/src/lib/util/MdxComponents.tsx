@@ -1,4 +1,5 @@
 import type { MDXComponents } from "mdx/types.js";
+import { Link } from "zudoku/components";
 import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
@@ -74,6 +75,7 @@ export const MdxComponents = {
     ) : (
       <a href={href} target="_blank" {...props} rel="noreferrer" />
     ),
+  Link,
   Button,
   Callout,
   Stepper,

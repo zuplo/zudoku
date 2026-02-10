@@ -7,6 +7,8 @@ type DynamicInput = () => Promise<unknown>;
 
 export type VersionedInput<T> = Array<{
   path: string;
+  version?: string;
+  downloadUrl?: string;
   label?: string;
   input: T;
 }>;
@@ -85,5 +87,8 @@ export type OasPluginConfig = BaseOasConfig & OasSource;
 export type OasPluginContext = BaseOasConfig &
   ContextOasSource & {
     version?: string;
-    versions: Record<string, { path: string; label: string }>;
+    versions: Record<
+      string,
+      { path: string; label: string; downloadUrl?: string }
+    >;
   };

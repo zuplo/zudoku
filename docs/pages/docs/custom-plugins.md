@@ -18,6 +18,7 @@ interfaces:
 - **ApiIdentityPlugin**: Provide API identities for testing
 - **SearchProviderPlugin**: Implement custom search functionality
 - **EventConsumerPlugin**: Handle custom events
+- **TransformConfigPlugin**: Modify configuration at build-time
 
 You can find all available plugin interfaces in the
 [Zudoku source code](https://github.com/zuplo/zudoku/blob/main/packages/zudoku/src/lib/core/plugins.ts).
@@ -165,6 +166,38 @@ const navigationPlugin: ZudokuPlugin = {
 };
 ```
 
+### Wrapping Routes with Context or Layout
+
+You can wrap your plugin's routes with a context provider or custom layout using React Router's
+nested route pattern. The parent route renders an `<Outlet />` where child routes will appear.
+
+```tsx
+import { createContext, useContext } from "react";
+import type { ZudokuPlugin, RouteObject } from "zudoku";
+import { Outlet } from "zudoku/router";
+
+const MyContext = createContext("value");
+
+const pluginWithContext: ZudokuPlugin = {
+  getRoutes: () => [
+    {
+      element: (
+        <MyContext.Provider value="hello">
+          <Outlet />
+        </MyContext.Provider>
+      ),
+      children: [
+        { path: "/custom", element: <CustomPage /> },
+        { path: "/custom/nested", element: <NestedPage /> },
+      ],
+    },
+  ],
+};
+```
+
+All child routes will have access to `MyContext`. This pattern works for any wrapper including
+layouts, error boundaries, or data providers.
+
 ### Dropdown Navigation Plugin
 
 ```tsx
@@ -210,3 +243,46 @@ const eventConsumerPlugin: ZudokuPlugin = {
   },
 };
 ```
+
+### Transform Config Plugin
+
+The `transformConfig` hook allows plugins to modify the Zudoku configuration at build-time. This is
+useful for dynamically adding navigation items, modifying theme settings, or adjusting any other
+configuration based on external data or conditions.
+
+```tsx
+import { ZudokuPlugin } from "zudoku";
+
+const transformConfigPlugin: ZudokuPlugin = {
+  transformConfig: ({ config, merge }) => {
+    // Option 1: Use merge helper for deep merging
+    return merge({
+      slots: {
+        "head-navigation-start": () => <a href="/pricing">Pricing</a>,
+      },
+    });
+
+    // Option 2: Manual spread for full control
+    return {
+      ...config,
+      navigation: [
+        ...(config.navigation ?? []),
+        {
+          type: "link",
+          label: "System Status",
+          to: "https://status.example.com",
+          icon: "activity",
+        },
+      ],
+    };
+  },
+};
+```
+
+The `transformConfig` function receives an object with:
+
+- **config**: The current Zudoku configuration object
+- **merge**: A helper function that deep merges a partial config with the current config
+
+The function must return a full configuration object (either via `merge()` or manual spreading), or
+`void` to make no changes. The hook can also be async.

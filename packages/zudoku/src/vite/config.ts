@@ -17,6 +17,7 @@ import { CdnUrlSchema } from "../config/validators/validate.js";
 import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import vitePlugin from "./plugin.js";
+import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
@@ -131,6 +132,11 @@ export async function getViteConfig(
     });
   }
 
+  const deploymentName =
+    ZuploEnv.buildConfig?.deploymentName ||
+    getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
+      ?.__ZUPLO_DEPLOYMENT_NAME;
+
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -149,13 +155,13 @@ export async function getViteConfig(
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
+        JSON.stringify(deploymentName),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",
         "ZUPLO_BUILD_CONFIG",
         "ZUPLO_ENVIRONMENT_TYPE",
-        "ZUPLO_ENVIRONMENT_NAME",
-        "ZUPLO_ENVIRONMENT_STAGE",
         "ZUPLO_SERVER_URL",
       ]),
       ...publicVarsProcessEnvDefine,

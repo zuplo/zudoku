@@ -1,0 +1,17 @@
+{
+  "name": "@zuplo/zudoku-plugin-monetization",
+  "$schema": "../../node_modules/nx/schemas/nx-schema.json",
+  "targets": {
+    "build": {
+      "command": "tsdown",
+      "outputs": ["{projectRoot}/dist"],
+      "inputs": [
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/**/*.tsx",
+        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/package.json"
+      ],
+      "cache": true
+    }
+  }
+}

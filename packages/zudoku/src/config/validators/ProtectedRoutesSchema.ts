@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
-import { transformProtectedRoutes } from "../../lib/core/ZudokuContext.js";
+import { normalizeProtectedRoutes } from "../../lib/core/ZudokuContext.js";
 
 export type CallbackContext = { auth: UseAuthReturn; context: ZudokuContext };
 type ProtectedRouteCallback = (c: CallbackContext) => boolean;
@@ -19,5 +19,5 @@ export const ProtectedRoutesInputSchema = z
   .optional();
 
 export const ProtectedRoutesSchema = ProtectedRoutesInputSchema.transform(
-  transformProtectedRoutes,
+  normalizeProtectedRoutes,
 );

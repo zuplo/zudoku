@@ -53,6 +53,7 @@ export const SchemaPropertyItem = ({
             <ItemTitle className="inline me-2">
               <code>{name}</code>
             </ItemTitle>
+            {"\u200B"}
             <ParamInfos
               className="inline"
               schema={schema}
@@ -108,6 +109,7 @@ export const SchemaPropertyItem = ({
               <code>{name}</code>
             )}
           </ItemTitle>
+          {"\u200B"}
           <ParamInfos
             className="inline"
             schema={schema}

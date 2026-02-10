@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRoutesSchema.js";
+import type { ZudokuConfig } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
 import type {
@@ -18,7 +19,8 @@ export type ZudokuPlugin =
   | ApiIdentityPlugin
   | SearchProviderPlugin
   | EventConsumerPlugin
-  | AuthenticationPlugin;
+  | AuthenticationPlugin
+  | TransformConfigPlugin;
 
 export type { AuthenticationPlugin, RouteObject };
 
@@ -59,6 +61,23 @@ export type ProfileNavigationItem = {
   children?: ProfileNavigationItem[];
   icon?: LucideIcon;
 };
+
+export interface ConfigHookContext {
+  mode: typeof process.env.ZUDOKU_ENV;
+  rootDir: string;
+  configPath: string;
+}
+
+export interface TransformConfigContext {
+  config: ZudokuConfig;
+  merge: <T extends Partial<ZudokuConfig>>(partial: T) => ZudokuConfig & T;
+}
+
+export interface TransformConfigPlugin {
+  transformConfig?: (
+    context: TransformConfigContext,
+  ) => ZudokuConfig | void | Promise<ZudokuConfig | void>;
+}
 
 export interface CommonPlugin {
   initialize?: (
@@ -110,3 +129,8 @@ export const isApiIdentityPlugin = (
   obj: ZudokuPlugin,
 ): obj is ApiIdentityPlugin =>
   "getIdentities" in obj && typeof obj.getIdentities === "function";
+
+export const isTransformConfigPlugin = (
+  obj: ZudokuPlugin,
+): obj is TransformConfigPlugin =>
+  "transformConfig" in obj && typeof obj.transformConfig === "function";

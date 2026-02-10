@@ -2,6 +2,7 @@
 title: Managing API Keys and Identities
 sidebar_label: API Keys and Identities
 sidebar_icon: key-square
+zuplo: false
 ---
 
 ## Managing API Keys in UI
@@ -75,6 +76,9 @@ const config = {
 ```
 
 ## Using with any API Key Management System
+
+If you are not using Zuplo's API key management system, you can implement the `ApiKeyService`
+interface to connect to any API key management system.
 
 ```typescript
 interface ApiKeyService {
