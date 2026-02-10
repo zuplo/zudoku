@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Link, useZudoku } from "zudoku/components";
+import { Link } from "zudoku/components";
 import { CreditCardIcon, RefreshCcw, Settings } from "zudoku/icons";
-import { useMutation } from "zudoku/react-query";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
-import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
@@ -19,23 +17,6 @@ export const ManageSubscription = ({
   planName: string;
 }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const deploymentName = useDeploymentName();
-  const zudoku = useZudoku();
-
-  const stripeLinkMutation = useMutation<{ url: string }>({
-    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/portal`],
-    meta: {
-      context: zudoku,
-      request: {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          returnUrl: `${window.location.origin}/subscriptions`,
-        }),
-      },
-    },
-    onSuccess: (data) => window.open(data.url, "_blank"),
-  });
 
   return (
     <Card>
