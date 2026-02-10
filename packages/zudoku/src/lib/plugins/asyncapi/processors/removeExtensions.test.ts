@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import type { AsyncAPIDocument } from "../../../asyncapi/types.js";
 import { removeExtensions } from "./removeExtensions.js";
 
-// biome-ignore lint/suspicious/noExplicitAny: Test document with extensions
 const baseDoc: AsyncAPIDocument = {
   asyncapi: "3.0.0",
   info: {

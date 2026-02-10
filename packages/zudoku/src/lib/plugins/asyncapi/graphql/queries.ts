@@ -21,16 +21,40 @@ export type MessageExampleResult = {
   payload: unknown;
 };
 
+export type ChannelParameterResult = {
+  name: string;
+  description: string | null;
+  enum: string[] | null;
+  default: string | null;
+  examples: string[] | null;
+  location: string | null;
+};
+
+export type SecuritySchemeResult = {
+  name: string;
+  type: string;
+  description: string | null;
+  in: string | null;
+  scheme: string | null;
+  bearerFormat: string | null;
+  openIdConnectUrl: string | null;
+};
+
+export type SecurityRequirementResult = Record<string, string[]>;
+
 export type OperationResult = {
   operationId: string;
   action: "send" | "receive";
   channelAddress: string | null;
   channelTitle: string | null;
+  channelDescription: string | null;
+  channelParameters: ChannelParameterResult[];
   slug: string | null;
   summary: string | null;
   description: string | null;
   protocols: string[];
   messages: MessageResult[];
+  security: SecurityRequirementResult[] | null;
 };
 
 export type SchemaTagResult = {
@@ -57,6 +81,7 @@ export type SchemaResult = {
   description: string | null;
   servers: ServerResult[];
   tags: { name: string | null; slug: string | null }[];
+  securitySchemes: SecuritySchemeResult[];
 };
 
 /**
@@ -84,6 +109,15 @@ export const AsyncApiSchemaQuery = `
         name
         slug
       }
+      securitySchemes {
+        name
+        type
+        description
+        in
+        scheme
+        bearerFormat
+        openIdConnectUrl
+      }
     }
   }
 ` as TypedDocumentString<AsyncApiSchemaQueryResult, Record<string, never>>;
@@ -96,6 +130,7 @@ export type NavOperationResult = {
   action: "send" | "receive";
   channelAddress: string | null;
   channelTitle: string | null;
+  channelDescription: string | null;
   slug: string | null;
   summary: string | null;
   protocols: string[];
@@ -128,6 +163,7 @@ export const NavigationQuery = `
           action
           channelAddress
           channelTitle
+          channelDescription
           slug
           summary
           protocols
@@ -138,6 +174,7 @@ export const NavigationQuery = `
         action
         channelAddress
         channelTitle
+        channelDescription
         slug
         summary
         protocols
@@ -156,6 +193,7 @@ export type OperationsForTagQueryResult = {
     version: string;
     description: string | null;
     servers: ServerResult[];
+    securitySchemes: SecuritySchemeResult[];
     tag: SchemaTagResult | null;
   };
 };
@@ -178,6 +216,15 @@ export const OperationsForTagQuery = `
         pathname
         description
       }
+      securitySchemes {
+        name
+        type
+        description
+        in
+        scheme
+        bearerFormat
+        openIdConnectUrl
+      }
       tag(slug: $tag) {
         name
         slug
@@ -187,10 +234,20 @@ export const OperationsForTagQuery = `
           action
           channelAddress
           channelTitle
+          channelDescription
+          channelParameters {
+            name
+            description
+            enum
+            default
+            examples
+            location
+          }
           slug
           summary
           description
           protocols
+          security
           messages {
             name
             title
@@ -248,10 +305,20 @@ export const AllOperationsQuery = `
         action
         channelAddress
         channelTitle
+        channelDescription
+        channelParameters {
+          name
+          description
+          enum
+          default
+          examples
+          location
+        }
         slug
         summary
         description
         protocols
+        security
         messages {
           name
           title

@@ -2,8 +2,11 @@ import * as RadixCollapsible from "@radix-ui/react-collapsible";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
+  CheckIcon,
+  ChevronDownIcon,
   ChevronsDownUpIcon,
   ChevronsUpDownIcon,
+  CopyIcon,
   MinusIcon,
   PlusIcon,
 } from "lucide-react";
@@ -24,13 +27,16 @@ import {
   ItemTitle,
 } from "zudoku/ui/Item.js";
 import { Heading } from "../../components/Heading.js";
+import { PathRenderer } from "../../components/PathRenderer.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
+import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
-import type { MediaTypeObject } from "../openapi/graphql/graphql.js";
+import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
+import { ColorizedParam } from "../openapi/ColorizedParam.js";
 import { ParamInfos } from "../openapi/ParamInfos.js";
 import * as SidecarBox from "../openapi/SidecarBox.js";
-import { SidecarExamples } from "../openapi/SidecarExamples.js";
 import { SchemaView } from "../openapi/schema/SchemaView.js";
+import { ChannelParametersDisplay } from "./components/ChannelParametersDisplay.js";
 import { ProtocolBadge } from "./components/ProtocolBadge.js";
 import { useAsyncApiConfig } from "./context.js";
 import type { MessageResult, OperationResult } from "./graphql/queries.js";
@@ -38,7 +44,6 @@ import type { MessageResult, OperationResult } from "./graphql/queries.js";
 export type ChannelGroupProps = {
   channelAddress: string;
   operations: OperationResult[];
-  serverUrl?: string;
 };
 
 /**
@@ -47,7 +52,6 @@ export type ChannelGroupProps = {
 export const ChannelGroup = ({
   channelAddress,
   operations,
-  serverUrl,
 }: ChannelGroupProps) => {
   const { options } = useAsyncApiConfig();
 
@@ -58,6 +62,8 @@ export const ChannelGroup = ({
   const slug = primaryOp.slug ?? primaryOp.operationId;
   const protocols = primaryOp.protocols;
   const channelTitle = primaryOp.channelTitle;
+  const channelDescription = primaryOp.channelDescription;
+  const channelParameters = primaryOp.channelParameters ?? [];
 
   return (
     <div>
@@ -81,17 +87,27 @@ export const ChannelGroup = ({
           {protocols.map((protocol) => (
             <ProtocolBadge key={protocol} protocol={protocol} />
           ))}
-          <div className="flex items-center gap-1 max-w-full truncate">
-            {serverUrl && (
-              <span className="text-neutral-400 dark:text-neutral-500 truncate">
-                {serverUrl.replace(/\/$/, "")}
-              </span>
-            )}
-            <span className="text-neutral-900 dark:text-neutral-200">
-              {channelAddress}
-            </span>
-          </div>
+          <span className="text-neutral-900 dark:text-neutral-200">
+            <PathRenderer
+              path={channelAddress}
+              renderParam={({ name }) => (
+                <ColorizedParam
+                  name={name}
+                  backgroundOpacity="15%"
+                  className="px-1"
+                  slug={`${slug}-${name}`}
+                />
+              )}
+            />
+          </span>
         </div>
+
+        {/* Channel Description */}
+        {channelDescription && (
+          <div className="col-span-full">
+            <Markdown className="prose-sm" content={channelDescription} />
+          </div>
+        )}
 
         {/* Main Content */}
         <div
@@ -100,6 +116,14 @@ export const ChannelGroup = ({
             options?.disableSidecar && "col-span-full",
           )}
         >
+          {/* Channel Parameters */}
+          {channelParameters.length > 0 && (
+            <ChannelParametersDisplay
+              parameters={channelParameters}
+              id={slug}
+            />
+          )}
+
           {/* Operations */}
           {operations.map((operation) => (
             <OperationSection
@@ -180,27 +204,36 @@ const OperationSection = ({
   const messageText = messageCount === 1 ? "message" : "messages";
 
   // Flatten messages (expand oneOf schemas)
-  const flattenedMessages = operation.messages.flatMap((msg, msgIdx) => {
-    const payload = msg.payload as SchemaObject | null;
-    if (payload?.oneOf && Array.isArray(payload.oneOf)) {
-      return (payload.oneOf as SchemaObject[]).map((opt, optIdx) => ({
-        key: `${msg.name ?? msgIdx}-${opt.title ?? optIdx}`,
-        title: opt.title ?? "Message",
-        description: opt.description,
-        summary: null as string | null,
-        schema: opt,
-      }));
-    }
-    return [
-      {
-        key: msg.name ?? `message-${msgIdx}`,
-        title: msg.title ?? msg.name ?? "Message",
-        description: null as string | null,
-        summary: msg.summary,
-        schema: payload,
-      },
-    ];
-  });
+  type LocalFlattenedMessage = {
+    key: string;
+    title: string;
+    description: string | null;
+    summary: string | null;
+    schema: SchemaObject | null;
+  };
+  const flattenedMessages: LocalFlattenedMessage[] = operation.messages.flatMap(
+    (msg, msgIdx) => {
+      const payload = msg.payload as SchemaObject | null;
+      if (payload?.oneOf && Array.isArray(payload.oneOf)) {
+        return (payload.oneOf as SchemaObject[]).map((opt, optIdx) => ({
+          key: `${msg.name ?? msgIdx}-${opt.title ?? optIdx}`,
+          title: opt.title ?? "Message",
+          description: opt.description ?? null,
+          summary: null as string | null,
+          schema: opt as SchemaObject | null,
+        }));
+      }
+      return [
+        {
+          key: msg.name ?? `message-${msgIdx}`,
+          title: msg.title ?? msg.name ?? "Message",
+          description: null as string | null,
+          summary: msg.summary,
+          schema: payload,
+        },
+      ];
+    },
+  );
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -432,68 +465,7 @@ const filterMatchingExamples = (
 };
 
 /**
- * Build MediaTypeObject content array for SidecarExamples
- */
-const buildExamplesContent = (
-  item: FlattenedMessageItem,
-): MediaTypeObject[] => {
-  const payload = item.payload;
-  const examples: Array<{
-    name?: string;
-    summary?: string;
-    description?: string;
-    value: unknown;
-  }> = [];
-
-  // Add matching examples from the message
-  if (item.matchingExamples.length > 0) {
-    item.matchingExamples.forEach((ex, idx) => {
-      examples.push({
-        name: ex.name ?? undefined,
-        summary: ex.summary ?? undefined,
-        value: ex.payload,
-      });
-    });
-  }
-
-  // If no matching examples, check schema-level examples
-  if (examples.length === 0 && payload) {
-    if (Array.isArray(payload.examples) && payload.examples.length > 0) {
-      (payload.examples as unknown[]).forEach((ex, idx) => {
-        examples.push({
-          name: `Example ${idx + 1}`,
-          value: ex,
-        });
-      });
-    } else if (payload.example !== undefined) {
-      examples.push({
-        name: "Example",
-        value: payload.example,
-      });
-    }
-  }
-
-  // If still no examples, generate one from schema
-  if (examples.length === 0 && payload) {
-    const generated = generateExampleFromSchema(payload);
-    if (generated !== null) {
-      examples.push({
-        name: "Example",
-        value: generated,
-      });
-    }
-  }
-
-  return [
-    {
-      mediaType: item.contentType ?? "application/json",
-      examples,
-    } as MediaTypeObject,
-  ];
-};
-
-/**
- * Sidecar showing messages with examples, organized by action
+ * Sidecar showing all messages in a flat list
  */
 const MessagesSidecar = ({ operations }: { operations: OperationResult[] }) => {
   // Collect all messages from all operations, flattening oneOf schemas
@@ -547,130 +519,128 @@ const MessagesSidecar = ({ operations }: { operations: OperationResult[] }) => {
     return messages;
   }, [operations]);
 
-  // Group messages by action
-  const messagesByAction = useMemo(() => {
-    const grouped: Record<string, FlattenedMessageItem[]> = {};
-    allMessages.forEach((msg) => {
-      if (!grouped[msg.action]) {
-        grouped[msg.action] = [];
-      }
-      grouped[msg.action].push(msg);
-    });
-    return grouped;
-  }, [allMessages]);
-
-  // Get ordered actions (send first, then receive)
-  const orderedActions = useMemo(() => {
-    const actions = Object.keys(messagesByAction);
-    return actions.sort((a, b) => {
-      if (a === "send") return -1;
-      if (b === "send") return 1;
-      if (a === "receive") return -1;
-      if (b === "receive") return 1;
-      return a.localeCompare(b);
-    });
-  }, [messagesByAction]);
-
   if (allMessages.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {orderedActions.map((action) => (
-        <ActionMessageGroup
-          key={action}
-          action={action}
-          messages={messagesByAction[action]}
-        />
-      ))}
-    </div>
+    <SidecarBox.Root>
+      <SidecarBox.Head className="text-xs">
+        <span className="font-medium">Messages</span>
+      </SidecarBox.Head>
+      <SidecarBox.Body className="p-0">
+        <div className="divide-y divide-border">
+          {allMessages.map((message, index) => (
+            <MessageListItem
+              key={`${message.action}-${message.title}-${index}`}
+              message={message}
+            />
+          ))}
+        </div>
+      </SidecarBox.Body>
+    </SidecarBox.Root>
   );
 };
 
 /**
- * Group of messages for a specific action (send/receive)
+ * Individual message item in the flat list
  */
-const ActionMessageGroup = ({
-  action,
-  messages,
-}: {
-  action: string;
-  messages: FlattenedMessageItem[];
-}) => {
-  const [selectedMessageIndex, setSelectedMessageIndex] = useState(0);
-  const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
+const MessageListItem = ({ message }: { message: FlattenedMessageItem }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
 
-  const selectedMessage = messages[selectedMessageIndex];
-  const content = useMemo(
-    () => (selectedMessage ? buildExamplesContent(selectedMessage) : []),
-    [selectedMessage],
-  );
+  const example = useMemo(() => {
+    // Try matching examples first
+    if (message.matchingExamples.length > 0) {
+      return message.matchingExamples[0]?.payload;
+    }
 
-  const actionLabel =
-    action === "send"
-      ? "Send"
-      : action === "receive"
-        ? "Receive"
-        : capitalize(action);
-  const ActionIcon = action === "send" ? ArrowUpIcon : ArrowDownIcon;
+    // Try schema examples
+    const payload = message.payload;
+    if (payload) {
+      if (Array.isArray(payload.examples) && payload.examples.length > 0) {
+        return payload.examples[0];
+      }
+      if (payload.example !== undefined) return payload.example;
+
+      // Generate from schema
+      return generateExampleFromSchema(payload);
+    }
+
+    return null;
+  }, [message]);
+
+  const exampleJson = example ? JSON.stringify(example, null, 2) : null;
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (exampleJson) {
+      copyToClipboard(exampleJson);
+    }
+  };
 
   return (
-    <Collapsible className="group/collapsible" defaultOpen>
-      <SidecarBox.Root>
-        <SidecarBox.Head className="text-xs flex justify-between items-center">
-          <span className="flex items-center gap-2 font-medium">
-            <CollapsibleTrigger asChild>
-              <Button
-                variant="ghost"
-                className="size-fit px-1 py-1 -my-1"
-                aria-label={`Toggle ${actionLabel} examples`}
-              >
-                <ChevronsDownUpIcon className="size-[1em] group-data-[state=closed]/collapsible:hidden" />
-                <ChevronsUpDownIcon className="size-[1em] group-data-[state=open]/collapsible:hidden" />
-              </Button>
-            </CollapsibleTrigger>
-            <span className={cn("p-1 rounded", getActionColors(action))}>
-              <ActionIcon size={12} />
-            </span>
-            {actionLabel}
-          </span>
-          {messages.length > 1 && (
-            <select
-              value={selectedMessageIndex}
-              onChange={(e) => {
-                setSelectedMessageIndex(Number(e.target.value));
-                setSelectedExampleIndex(0);
-              }}
-              className="text-xs bg-background border rounded px-2 py-1 max-w-[140px] truncate"
-            >
-              {messages.map((msg, idx) => (
-                <option key={`${msg.title}-${idx}`} value={idx}>
-                  {msg.title}
-                </option>
-              ))}
-            </select>
+    <div className="bg-background">
+      <button
+        type="button"
+        className="w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-accent/30 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        {/* Direction indicator */}
+        <span
+          className={cn(
+            "flex items-center justify-center w-5 h-5 rounded-full shrink-0",
+            message.action === "send"
+              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
+              : "bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300",
           )}
-        </SidecarBox.Head>
-        <CollapsibleContent>
-          {messages.length === 1 && (
-            <div className="px-3 py-1.5 border-b text-xs font-medium text-foreground/80">
-              {selectedMessage?.title}
-            </div>
+        >
+          {message.action === "send" ? (
+            <ArrowUpIcon size={12} />
+          ) : (
+            <ArrowDownIcon size={12} />
           )}
-          <SidecarExamples
-            content={content}
-            selectedContentIndex={0}
-            selectedExampleIndex={selectedExampleIndex}
-            onExampleChange={({ exampleIndex }) =>
-              setSelectedExampleIndex(exampleIndex)
-            }
-            isOnScreen
-            description={selectedMessage?.summary ?? undefined}
+        </span>
+
+        {/* Message title */}
+        <span className="flex-1 min-w-0 text-sm font-medium text-foreground truncate">
+          {message.title}
+        </span>
+
+        {/* Actions */}
+        <ChevronDownIcon
+          size={14}
+          className={cn(
+            "text-muted-foreground transition-transform shrink-0",
+            isExpanded && "rotate-180",
+          )}
+        />
+        <button
+          type="button"
+          className="p-1 hover:bg-accent rounded shrink-0"
+          onClick={handleCopy}
+          title="Copy to clipboard"
+        >
+          {isCopied ? (
+            <CheckIcon size={14} className="text-green-500" />
+          ) : (
+            <CopyIcon size={14} className="text-muted-foreground" />
+          )}
+        </button>
+      </button>
+
+      {/* Expanded content */}
+      {isExpanded && exampleJson && (
+        <div className="px-3 pb-3 pt-0">
+          <SyntaxHighlight
+            embedded
+            language="json"
+            className="[--scrollbar-color:gray] rounded max-h-48 text-xs overflow-auto"
+            code={exampleJson}
           />
-        </CollapsibleContent>
-      </SidecarBox.Root>
-    </Collapsible>
+        </div>
+      )}
+    </div>
   );
 };
 

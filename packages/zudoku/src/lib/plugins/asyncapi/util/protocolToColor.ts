@@ -57,46 +57,34 @@ const protocolToVarPrefix: Record<string, ProtocolColorKey> = {
 };
 
 /**
- * Default color values (used as CSS variable fallbacks)
- * Light mode colors - dark mode handled via CSS
+ * Text color classes for protocols (matching OpenAPI method color style)
  */
-const defaultProtocolColors: Record<
-  ProtocolColorKey,
-  { bg: string; text: string }
-> = {
-  ws: { bg: "#f3e8ff", text: "#7c3aed" }, // purple
-  mqtt: { bg: "#dcfce7", text: "#16a34a" }, // green
-  kafka: { bg: "#ffedd5", text: "#ea580c" }, // orange
-  amqp: { bg: "#fef3c7", text: "#d97706" }, // amber
-  http: { bg: "#dbeafe", text: "#2563eb" }, // blue
-  nats: { bg: "#cffafe", text: "#0891b2" }, // cyan
-  redis: { bg: "#fee2e2", text: "#dc2626" }, // red
-  jms: { bg: "#e0e7ff", text: "#4f46e5" }, // indigo
-  sns: { bg: "#fce7f3", text: "#db2777" }, // pink
-  stomp: { bg: "#ccfbf1", text: "#0d9488" }, // teal
-  mercure: { bg: "#ede9fe", text: "#7c3aed" }, // violet
-  sse: { bg: "#ffe4e6", text: "#e11d48" }, // rose
-  default: { bg: "#f3f4f6", text: "#4b5563" }, // gray
+const protocolTextColors: Record<ProtocolColorKey, string> = {
+  ws: "text-purple-600", // purple
+  mqtt: "text-green-600", // green
+  kafka: "text-orange-600", // orange
+  amqp: "text-amber-600", // amber
+  http: "text-sky-600", // blue
+  nats: "text-cyan-600", // cyan
+  redis: "text-red-600", // red
+  jms: "text-indigo-600", // indigo
+  sns: "text-pink-600", // pink
+  stomp: "text-teal-600", // teal
+  mercure: "text-violet-600", // violet
+  sse: "text-rose-600", // rose
+  default: "text-gray-600", // gray
 };
 
 /**
- * Get inline styles for protocol badge colors using CSS variables with fallbacks.
- * This allows theme customization via CSS custom properties.
+ * Get text color class for protocol (matching OpenAPI method color style).
  */
-export const getProtocolColor = (
-  protocol: string,
-): { bg: string; text: string; style: React.CSSProperties } => {
+export const getProtocolColor = (protocol: string): { textClass: string } => {
   const normalizedProtocol = protocol.toLowerCase();
   const varPrefix = protocolToVarPrefix[normalizedProtocol] ?? "default";
-  const defaults = defaultProtocolColors[varPrefix];
+  const textClass = protocolTextColors[varPrefix];
 
   return {
-    bg: "", // Not using Tailwind classes anymore
-    text: "",
-    style: {
-      backgroundColor: `var(--asyncapi-protocol-${varPrefix}-bg, ${defaults.bg})`,
-      color: `var(--asyncapi-protocol-${varPrefix}-text, ${defaults.text})`,
-    },
+    textClass,
   };
 };
 

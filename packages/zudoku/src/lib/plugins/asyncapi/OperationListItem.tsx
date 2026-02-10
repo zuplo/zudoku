@@ -1,12 +1,18 @@
 import { useMemo, useState } from "react";
-import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  CheckIcon,
+  ChevronDownIcon,
+  CopyIcon,
+} from "zudoku/icons";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { cn } from "../../util/cn.js";
-import type { MediaTypeObject } from "../openapi/graphql/graphql.js";
+import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 import * as SidecarBox from "../openapi/SidecarBox.js";
-import { SidecarExamples } from "../openapi/SidecarExamples.js";
 import { MessageView } from "./components/MessageView.js";
 import { OperationBadge } from "./components/OperationBadge.js";
 import { ProtocolBadge } from "./components/ProtocolBadge.js";
@@ -116,7 +122,7 @@ export const OperationListItem = ({
 };
 
 /**
- * Simple sidecar component showing message examples
+ * Sidecar component showing messages in a flat list
  */
 const AsyncAPISidecar = ({
   operation,
@@ -125,77 +131,6 @@ const AsyncAPISidecar = ({
   operation: OperationResult;
   messages: MessageResult[];
 }) => {
-  const [selectedMessageIndex, setSelectedMessageIndex] = useState(0);
-  const [selectedExampleIndex, setSelectedExampleIndex] = useState(0);
-  const selectedMessage = messages[selectedMessageIndex];
-
-  const payload = selectedMessage?.payload as
-    | Record<string, unknown>
-    | undefined;
-  const content = useMemo<MediaTypeObject[]>(() => {
-    if (!selectedMessage) return [];
-
-    const messageExamples =
-      selectedMessage.examples
-        ?.map((example, index) => {
-          const value = example.payload;
-          if (value === undefined) return null;
-
-          return {
-            name: example.name ?? `Example ${index + 1}`,
-            summary: example.summary ?? null,
-            value,
-          };
-        })
-        .filter((example): example is NonNullable<typeof example> =>
-          Boolean(example),
-        ) ?? [];
-
-    const schemaExamples = [
-      ...(Array.isArray(payload?.examples)
-        ? (payload.examples as unknown[]).map((value, index) => ({
-            name: `Schema example ${index + 1}`,
-            summary: null,
-            value,
-          }))
-        : []),
-      ...(payload?.example !== undefined
-        ? [{ name: "Schema example", summary: null, value: payload.example }]
-        : []),
-    ];
-
-    const generatedExample = payload
-      ? generateExampleFromSchema(payload)
-      : undefined;
-
-    const examples =
-      messageExamples.length > 0
-        ? messageExamples
-        : schemaExamples.length > 0
-          ? schemaExamples
-          : generatedExample !== null && generatedExample !== undefined
-            ? [
-                {
-                  name: "Generated example",
-                  summary: "Auto-generated from payload schema",
-                  value: generatedExample,
-                },
-              ]
-            : [];
-
-    return [
-      {
-        mediaType: selectedMessage.contentType ?? "application/json",
-        examples,
-      } as MediaTypeObject,
-    ];
-  }, [payload, selectedMessage]);
-
-  const safeExampleIndex = Math.min(
-    selectedExampleIndex,
-    Math.max((content[0]?.examples?.length ?? 1) - 1, 0),
-  );
-
   return (
     <div className="space-y-4">
       {/* Connection info */}
@@ -214,7 +149,7 @@ const AsyncAPISidecar = ({
             <div className="flex flex-wrap gap-1.5">
               {operation.protocols.length > 0 ? (
                 operation.protocols.map((protocol) => (
-                  <ProtocolBadge key={protocol} protocol={protocol} size="sm" />
+                  <ProtocolBadge key={protocol} protocol={protocol} />
                 ))
               ) : (
                 <span className="text-sm text-muted-foreground">
@@ -246,47 +181,131 @@ const AsyncAPISidecar = ({
         </div>
       </div>
 
-      {content.length > 0 &&
-        content[0]?.examples &&
-        content[0].examples.length > 0 && (
-          <SidecarBox.Root>
-            <SidecarBox.Head className="text-xs flex justify-between items-center">
-              <span className="font-medium">Example Payload</span>
-              {messages.length > 1 && (
-                <NativeSelect
-                  className="text-xs h-fit py-1 max-w-48 bg-background"
-                  value={selectedMessageIndex.toString()}
-                  onChange={(e) => {
-                    setSelectedMessageIndex(Number(e.target.value));
-                    setSelectedExampleIndex(0);
-                  }}
-                >
-                  {messages.map((message, index) => {
-                    const key = message.name ?? message.title ?? `msg-${index}`;
-                    return (
-                      <NativeSelectOption key={key} value={index.toString()}>
-                        {message.title ??
-                          message.name ??
-                          message.summary ??
-                          `Message ${index + 1}`}
-                      </NativeSelectOption>
-                    );
-                  })}
-                </NativeSelect>
-              )}
-            </SidecarBox.Head>
-            <SidecarExamples
-              content={content}
-              selectedContentIndex={0}
-              selectedExampleIndex={safeExampleIndex}
-              onExampleChange={({ exampleIndex }) =>
-                setSelectedExampleIndex(exampleIndex)
-              }
-              description={selectedMessage?.summary ?? undefined}
-              isOnScreen
-            />
-          </SidecarBox.Root>
-        )}
+      {/* Messages list */}
+      {messages.length > 0 && (
+        <SidecarBox.Root>
+          <SidecarBox.Head className="text-xs">
+            <span className="font-medium">Messages</span>
+          </SidecarBox.Head>
+          <SidecarBox.Body className="p-0">
+            <div className="divide-y divide-border">
+              {messages.map((message, index) => (
+                <MessageListItem
+                  key={message.name ?? message.title ?? `msg-${index}`}
+                  message={message}
+                  action={operation.action}
+                />
+              ))}
+            </div>
+          </SidecarBox.Body>
+        </SidecarBox.Root>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Individual message item in the flat list
+ */
+const MessageListItem = ({
+  message,
+  action,
+}: {
+  message: MessageResult;
+  action: "send" | "receive";
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isCopied, copyToClipboard] = useCopyToClipboard();
+
+  const payload = message.payload as Record<string, unknown> | undefined;
+  const example = useMemo(() => {
+    // Try message examples first
+    const messageExample = message.examples?.[0]?.payload;
+    if (messageExample !== undefined) return messageExample;
+
+    // Try schema examples
+    if (Array.isArray(payload?.examples) && payload.examples.length > 0) {
+      return payload.examples[0];
+    }
+    if (payload?.example !== undefined) return payload.example;
+
+    // Generate from schema
+    return payload ? generateExampleFromSchema(payload) : null;
+  }, [message.examples, payload]);
+
+  const exampleJson = example ? JSON.stringify(example, null, 2) : null;
+
+  const messageName =
+    message.title ?? message.name ?? message.summary ?? "Message";
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (exampleJson) {
+      copyToClipboard(exampleJson);
+    }
+  };
+
+  return (
+    <div className="bg-background">
+      <button
+        type="button"
+        className="w-full px-3 py-2.5 text-left flex items-center gap-2 hover:bg-accent/30 transition-colors"
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        {/* Direction indicator */}
+        <span
+          className={cn(
+            "flex items-center justify-center w-5 h-5 rounded-full shrink-0",
+            action === "send"
+              ? "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+              : "bg-green-500/20 text-green-600 dark:text-green-400",
+          )}
+        >
+          {action === "send" ? (
+            <ArrowUpIcon size={12} />
+          ) : (
+            <ArrowDownIcon size={12} />
+          )}
+        </span>
+
+        {/* Message title */}
+        <span className="flex-1 min-w-0 text-sm font-medium text-foreground truncate">
+          {messageName}
+        </span>
+
+        {/* Actions */}
+        <ChevronDownIcon
+          size={14}
+          className={cn(
+            "text-muted-foreground transition-transform shrink-0",
+            isExpanded && "rotate-180",
+          )}
+        />
+        <button
+          type="button"
+          className="p-1 hover:bg-accent rounded shrink-0"
+          onClick={handleCopy}
+          title="Copy to clipboard"
+        >
+          {isCopied ? (
+            <CheckIcon size={14} className="text-green-500" />
+          ) : (
+            <CopyIcon size={14} className="text-muted-foreground" />
+          )}
+        </button>
+      </button>
+
+      {/* Expanded content */}
+      {isExpanded && exampleJson && (
+        <div className="px-3 pb-3 pt-0">
+          <SyntaxHighlight
+            embedded
+            language="json"
+            className="[--scrollbar-color:gray] rounded max-h-48 text-xs overflow-auto"
+            code={exampleJson}
+          />
+        </div>
+      )}
     </div>
   );
 };

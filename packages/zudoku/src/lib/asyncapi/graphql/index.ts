@@ -14,6 +14,8 @@ import type {
   MessageExampleObject,
   MessageObject,
   OperationObject,
+  ParameterObject,
+  SecuritySchemeObject,
   ServerObject,
   TagObject,
 } from "../types.js";
@@ -77,6 +79,7 @@ type GraphQLOperationObject = OperationObject & {
   operationId: string;
   channelAddress?: string;
   channelTitle?: string;
+  channelDescription?: string;
   slug?: string;
   parentTag?: string;
   protocols?: string[];
@@ -295,6 +298,7 @@ export const getAllOperations = (
       operationId,
       channelAddress: channel?.address ?? undefined,
       channelTitle: channel?.title ?? undefined,
+      channelDescription: channel?.description ?? undefined,
       protocols,
       tags,
       parentTag: tags?.[0]?.name,
@@ -318,6 +322,12 @@ const SchemaTag = builder.objectRef<
   }
 >("SchemaTag");
 const Channel = builder.objectRef<ChannelObject>("Channel");
+const ChannelParameter = builder.objectRef<ParameterObject & { name: string }>(
+  "ChannelParameter",
+);
+const SecurityScheme = builder.objectRef<
+  SecuritySchemeObject & { name: string }
+>("SecurityScheme");
 const MessageExample =
   builder.objectRef<MessageExampleObject>("MessageExample");
 const Message = builder.objectRef<MessageObject>("Message");
@@ -340,6 +350,59 @@ ServerItem.implement({
     description: t.string({
       nullable: true,
       resolve: (server) => server.description ?? null,
+    }),
+  }),
+});
+
+ChannelParameter.implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    description: t.string({
+      nullable: true,
+      resolve: (param) => param.description ?? null,
+    }),
+    enum: t.stringList({
+      nullable: true,
+      resolve: (param) => param.enum ?? null,
+    }),
+    default: t.string({
+      nullable: true,
+      resolve: (param) => param.default ?? null,
+    }),
+    examples: t.stringList({
+      nullable: true,
+      resolve: (param) => param.examples ?? null,
+    }),
+    location: t.string({
+      nullable: true,
+      resolve: (param) => param.location ?? null,
+    }),
+  }),
+});
+
+SecurityScheme.implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    type: t.exposeString("type"),
+    description: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.description ?? null,
+    }),
+    in: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.in ?? null,
+    }),
+    scheme: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.scheme ?? null,
+    }),
+    bearerFormat: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.bearerFormat ?? null,
+    }),
+    openIdConnectUrl: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.openIdConnectUrl ?? null,
     }),
   }),
 });
@@ -468,6 +531,16 @@ Channel.implement({
       nullable: true,
       resolve: (channel) => channel.description ?? null,
     }),
+    parameters: t.field({
+      type: [ChannelParameter],
+      resolve: (channel) => {
+        if (!channel.parameters) return [];
+        return Object.entries(channel.parameters).map(([name, param]) => ({
+          name,
+          ...param,
+        }));
+      },
+    }),
     messages: t.field({
       type: [Message],
       resolve: (channel) => Object.values(channel.messages ?? {}),
@@ -507,6 +580,32 @@ OperationItem.implement({
     channelTitle: t.string({
       nullable: true,
       resolve: (op) => op.channelTitle ?? null,
+    }),
+    channelDescription: t.string({
+      nullable: true,
+      resolve: (op) => op.channelDescription ?? null,
+    }),
+    channelParameters: t.field({
+      type: [ChannelParameter],
+      resolve: (op, _, ctx) => {
+        // Get channel to access its parameters
+        const channelValue = op.channel as any;
+        let channel: ChannelObject | undefined;
+
+        if (channelValue && "address" in channelValue) {
+          channel = channelValue as ChannelObject;
+        } else {
+          const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+          const channelRef = refPath.replace("#/channels/", "");
+          channel = ctx.schema.channels?.[channelRef];
+        }
+
+        if (!channel?.parameters) return [];
+        return Object.entries(channel.parameters).map(([name, param]) => ({
+          name,
+          ...param,
+        }));
+      },
     }),
     slug: t.string({
       nullable: true,
@@ -596,11 +695,16 @@ OperationItem.implement({
                 name: msg.name ?? name,
               };
             })
-            .filter((m): m is MessageObject => !!m);
+            .filter((m): m is MessageObject & { name: string } => !!m);
         }
 
         return [];
       },
+    }),
+    security: t.field({
+      type: JSONScalar,
+      nullable: true,
+      resolve: (op) => op.security ?? null,
     }),
   }),
 });
@@ -662,6 +766,16 @@ Schema.implement({
         }
 
         return ops;
+      },
+    }),
+    securitySchemes: t.field({
+      type: [SecurityScheme],
+      resolve: (schema) => {
+        const schemes = schema.components?.securitySchemes ?? {};
+        return Object.entries(schemes).map(([name, scheme]) => ({
+          name,
+          ...scheme,
+        }));
       },
     }),
     extensions: t.field({

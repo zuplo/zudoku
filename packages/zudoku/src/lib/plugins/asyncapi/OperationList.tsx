@@ -1,7 +1,12 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useMemo } from "react";
+import {
+  CheckIcon,
+  ChevronsDownUpIcon,
+  ChevronsUpDownIcon,
+  CopyIcon,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import { useParams } from "react-router";
 import {
   Collapsible,
@@ -10,12 +15,37 @@ import {
 } from "zudoku/ui/Collapsible.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
+import { InlineCode } from "../../components/InlineCode.js";
 import { Markdown } from "../../components/Markdown.js";
 import { Pagination } from "../../components/Pagination.js";
+import { Button } from "../../ui/Button.js";
 import { ChannelGroup, groupOperationsByChannel } from "./ChannelGroup.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useAsyncApiConfig } from "./context.js";
 import { OperationsForTagQuery } from "./graphql/queries.js";
+
+const CopyButton = ({ url }: { url: string }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  return (
+    <Button
+      onClick={() => {
+        void navigator.clipboard.writeText(url).then(() => {
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        });
+      }}
+      variant="ghost"
+      size="icon-xs"
+    >
+      {isCopied ? (
+        <CheckIcon className="text-green-600" size={14} />
+      ) : (
+        <CopyIcon size={14} strokeWidth={1.3} />
+      )}
+    </Button>
+  );
+};
 
 export const UNTAGGED_PATH = "~endpoints";
 
@@ -111,15 +141,24 @@ export const OperationList = ({
                 className="mb-0"
               >
                 {tagTitle}
-                <span className="text-xl text-muted-foreground ms-1.5">
-                  {" "}
-                  ({schema.version})
-                </span>
+                {schema.version && (
+                  <span className="text-xl text-muted-foreground ms-1.5">
+                    {" "}
+                    ({schema.version})
+                  </span>
+                )}
               </Heading>
               {serverUrl && (
-                <div className="text-sm font-mono text-muted-foreground">
-                  {serverUrl}
+                <div className="flex items-center gap-1.5 flex-nowrap">
+                  <span className="font-medium text-sm">Endpoint</span>
+                  <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
+                    {serverUrl}
+                  </InlineCode>
+                  <CopyButton url={serverUrl} />
                 </div>
+              )}
+              {tagDescription && (
+                <p className="text-muted-foreground">{tagDescription}</p>
               )}
             </div>
             <div className="flex flex-col gap-4 sm:items-end">
@@ -149,12 +188,6 @@ export const OperationList = ({
             </CollapsibleContent>
           )}
         </Collapsible>
-        {tagDescription && (
-          <Markdown
-            className="my-4 max-w-full prose-img:max-w-prose"
-            content={tagDescription}
-          />
-        )}
       </div>
       <hr />
       {/* px, -mx is so that `content-visibility` doesn't cut off overflown heading anchor links '#' */}
@@ -165,7 +198,6 @@ export const OperationList = ({
               <ChannelGroup
                 channelAddress={channelAddress}
                 operations={channelOps}
-                serverUrl={serverUrl}
               />
               <hr className="my-10" />
             </div>
