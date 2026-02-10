@@ -107,6 +107,7 @@ export const MobileTopNavigation = () => {
                     <li key={i.label}>
                       <TopNavLink
                         to={i.path ?? ""}
+                        target={i.target}
                         onClick={() => setDrawerOpen(false)}
                       >
                         {i.label}

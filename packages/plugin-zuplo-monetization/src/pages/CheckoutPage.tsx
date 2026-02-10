@@ -1,8 +1,8 @@
-import { useEffect } from "react";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
 import { useParams } from "zudoku/router";
+import { RedirectPage } from "../components/RedirectPage.js";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
 import { useUrlUtils } from "../hooks/useUrlUtils";
@@ -44,40 +44,13 @@ const CheckoutPage = () => {
     },
   });
 
-  useEffect(() => {
-    if (checkoutLink.data?.url) {
-      window.location.href = checkoutLink.data.url;
-    }
-  }, [checkoutLink.data]);
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted">
-      <div className="flex max-w-md flex-col items-center space-y-6 text-center">
-        <div className="relative">
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-foreground/10">
-            <ShieldIcon className="w-12 h-12 text-foreground" />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h2 className="text-2xl font-bold text-card-foreground">
-            Establishing encrypted connection...
-          </h2>
-          <p className="text-muted-foreground">
-            Setting up your secure checkout experience
-          </p>
-          <p className="text-sm text-muted-foreground">
-            Powered by Stripe for maximum security
-          </p>
-        </div>
-
-        <div className="flex space-x-2">
-          <div className="h-3 w-3 animate-pulse rounded-full bg-primary [animation-delay:-0.3s]"></div>
-          <div className="h-3 w-3 animate-pulse rounded-full bg-primary [animation-delay:-0.15s]"></div>
-          <div className="h-3 w-3 animate-pulse rounded-full bg-primary"></div>
-        </div>
-      </div>
-    </div>
+    <RedirectPage
+      icon={ShieldIcon}
+      title="Establishing encrypted connection..."
+      description="Setting up your secure checkout experience"
+      url={checkoutLink.data?.url}
+    />
   );
 };
 
