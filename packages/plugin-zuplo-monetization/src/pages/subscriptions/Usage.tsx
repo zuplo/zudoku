@@ -163,6 +163,23 @@ export const Usage = ({
           </AlertDescription>
         </Alert>
       )}
+      {usage.paymentStatus.status === "failed" && (
+        <Alert variant="destructive" fit="loose">
+          <AlertTriangleIcon className="size-4 shrink-0" />
+          <AlertTitle>Payment failed</AlertTitle>
+          <AlertDescription>
+            Your last payment was unsuccessful. Please update your billing
+            information to continue using your subscription.
+          </AlertDescription>
+          <AlertAction>
+            <Button variant="destructive" size="xs" asChild>
+              <Link to="/manage-payment" target="_blank">
+                Manage billing
+              </Link>
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
       {hasUsage ? (
         Object.entries(usage.entitlements).flatMap(([key, value]) =>
           isMeteredEntitlement(value) ? (
