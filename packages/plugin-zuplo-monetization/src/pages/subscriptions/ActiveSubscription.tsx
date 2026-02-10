@@ -27,7 +27,7 @@ const ActiveSubscription = ({
   const location = useLocation();
   const planSwitched = (location.state as LocationState)?.planSwitched;
 
-  const { data: usage } = useSuspenseQuery<UsageResult>({
+  const usageQuery = useSuspenseQuery<UsageResult>({
     queryKey: [
       `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscription.id}/usage`,
     ],
@@ -38,8 +38,8 @@ const ActiveSubscription = ({
   });
 
   const isPendingFirstPayment =
-    usage.paymentStatus.status === "pending" &&
-    !usage.annotations?.["subscription.previous.id"];
+    usageQuery.data.paymentStatus.status === "pending" &&
+    !subscription.annotations?.["subscription.previous.id"];
 
   const activePhase = subscription?.phases.find(
     (p) =>
@@ -64,7 +64,7 @@ const ActiveSubscription = ({
 
       <Usage
         currentItems={activePhase?.items}
-        usage={usage}
+        usageQuery={usageQuery}
         subscription={subscription}
         isPendingFirstPayment={isPendingFirstPayment}
       />

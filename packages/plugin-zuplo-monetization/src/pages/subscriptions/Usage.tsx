@@ -6,6 +6,7 @@ import {
   Grid2x2XIcon,
   Loader2Icon,
 } from "zudoku/icons";
+import type { UseSuspenseQueryResult } from "zudoku/react-query";
 import {
   Alert,
   AlertAction,
@@ -134,16 +135,17 @@ const UsageItem = ({
 };
 
 export const Usage = ({
-  usage,
+  usageQuery,
   currentItems,
   subscription,
   isPendingFirstPayment,
 }: {
-  usage: UsageResult;
+  usageQuery: UseSuspenseQueryResult<UsageResult>;
   currentItems?: Item[];
   subscription?: Subscription;
   isPendingFirstPayment: boolean;
 }) => {
+  const usage = usageQuery.data;
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
@@ -174,7 +176,8 @@ export const Usage = ({
             []
           ),
         )
-      ) : (
+      ) : !usageQuery.isFetching &&
+        !subscription?.annotations?.["subscription.previous.id"] ? (
         <Alert variant="warning">
           <Grid2x2XIcon />
           <AlertTitle>No usage data available</AlertTitle>
@@ -182,7 +185,7 @@ export const Usage = ({
             This subscription does not have any usage data.
           </AlertDescription>
         </Alert>
-      )}
+      ) : null}
     </div>
   );
 };

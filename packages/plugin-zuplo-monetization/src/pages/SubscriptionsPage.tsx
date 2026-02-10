@@ -43,6 +43,7 @@ const SubscriptionsPage = () => {
 
         {activeSubscription && (
           <ActiveSubscription
+            key={activeSubscription.id}
             subscription={activeSubscription}
             deploymentName={deploymentName}
           />

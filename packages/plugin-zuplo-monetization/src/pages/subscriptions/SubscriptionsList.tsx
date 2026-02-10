@@ -150,7 +150,9 @@ const SubscriptionItem = ({
               ? willExpire
                 ? "Expires on"
                 : "Expired on"
-              : "Started on"}{" "}
+              : new Date(subscription.activeFrom) > new Date()
+                ? "Starts on"
+                : "Started on"}{" "}
             {formatDate(subscription.activeTo ?? subscription.activeFrom)}
           </ItemDescription>
         </ItemContent>
