@@ -24,7 +24,6 @@ const cloneNavigation = (items: NavigationItem[]): NavigationItem[] =>
   );
 
 // Strips the top-nav prefix from a rule path if it matches the current label.
-// Returns null if the rule targets a different nav context.
 const normalizeRulePath = (rulePath: string, topNavLabel?: string) => {
   if (!topNavLabel) return rulePath;
 

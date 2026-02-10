@@ -13,8 +13,7 @@ export type PathMatchResult =
     };
 
 const parseSegment = (segment: string): PathSegment => {
-  const num = Number(segment);
-  if (Number.isInteger(num)) return { type: "index", value: num };
+  if (/^-?\d+$/.test(segment)) return { type: "index", value: Number(segment) };
   return { type: "label", value: segment };
 };
 

@@ -78,7 +78,7 @@ export const viteNavigationPlugin = (): Plugin => {
       await writePluginDebugCode(
         config.__meta.rootDir,
         "navigation-plugin",
-        `navigation: ${navigationCode}\nrules: ${rulesCode}`,
+        `export const navigation = ${navigationCode};\nexport const rules = ${rulesCode};`,
         "js",
       );
 
