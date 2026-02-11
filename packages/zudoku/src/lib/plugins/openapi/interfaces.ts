@@ -73,7 +73,6 @@ type BaseOasConfig = {
     disableSidecar?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
-    interleaveTagGroups?: boolean;
     expandApiInformation?: boolean;
     schemaDownload?: {
       enabled: boolean;

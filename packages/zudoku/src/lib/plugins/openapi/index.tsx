@@ -169,7 +169,6 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         const categories: NavigationItem[] = buildTagCategories({
           tagCategories,
           tagGroups,
-          interleaveTagGroups: config.options?.interleaveTagGroups,
           expandAllTags: config.options?.expandAllTags,
         });
 

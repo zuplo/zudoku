@@ -5,14 +5,12 @@ type TagGroup = { name: string; tags: string[] };
 type BuildTagCategoriesOptions = {
   tagCategories: Map<string, NavigationItem>;
   tagGroups: TagGroup[];
-  interleaveTagGroups?: boolean;
   expandAllTags?: boolean;
 };
 
 export const buildTagCategories = ({
   tagCategories,
   tagGroups,
-  interleaveTagGroups,
   expandAllTags,
 }: BuildTagCategoriesOptions): NavigationItem[] => {
   const groupedTags = new Set(
@@ -44,11 +42,7 @@ export const buildTagCategories = ({
     .filter(([name]) => !groupedTags.has(name))
     .map(([, cat]) => cat);
 
-  if (interleaveTagGroups) {
-    return [...groupedCategories, ...ungroupedCategories].sort((a, b) =>
-      (a.label ?? "").localeCompare(b.label ?? ""),
-    );
-  }
-
-  return [...groupedCategories, ...ungroupedCategories];
+  return [...groupedCategories, ...ungroupedCategories].sort((a, b) =>
+    (a.label ?? "").localeCompare(b.label ?? ""),
+  );
 };
