@@ -47,7 +47,10 @@ const mockUseAuth = vi.mocked(useAuth);
 
 type CreateWrapperOptions = {
   auth?: Partial<UseAuthReturn>;
-  protectedRoutes?: Record<string, (c: CallbackContext) => ProtectedRouteResult>;
+  protectedRoutes?: Record<
+    string,
+    (c: CallbackContext) => ProtectedRouteResult
+  >;
   shouldBypass?: boolean;
   initialPath?: string;
   wrapRouteGuard?: boolean;
@@ -114,7 +117,9 @@ const render = async (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ZudokuProvider context={context}>
-          <RenderContext value={{ status: 200, bypassProtection: shouldBypass }}>
+          <RenderContext
+            value={{ status: 200, bypassProtection: shouldBypass }}
+          >
             <Outlet />
           </RenderContext>
         </ZudokuProvider>
