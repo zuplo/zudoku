@@ -1,0 +1,687 @@
+asyncapi: 3.1.0
+info:
+  title: Multi-Protocol Event API
+  version: 1.0.0
+  description: >
+    A sample AsyncAPI specification demonstrating multiple protocols supported
+    by AsyncAPI.
+
+    This API provides real-time event streaming across various message brokers
+    and transport protocols.
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: Apache 2.0
+  tags:
+    - name: Events
+      description: Core event streaming operations
+    - name: Notifications
+      description: Push notification services
+servers:
+  websocket-production:
+    host: ws.api.example.com
+    protocol: wss
+    description: WebSocket server for real-time browser connections
+  kafka-production:
+    host: "kafka.api.example.com:9092"
+    protocol: kafka-secure
+    description: Apache Kafka cluster for high-throughput event streaming
+  mqtt-production:
+    host: "mqtt.api.example.com:8883"
+    protocol: mqtts
+    description: MQTT broker for IoT device communication
+  amqp-production:
+    host: "rabbitmq.api.example.com:5672"
+    protocol: amqps
+    description: RabbitMQ server for enterprise message queuing
+  http-production:
+    host: api.example.com
+    protocol: https
+    description: HTTP server for REST and Server-Sent Events
+  nats-production:
+    host: "nats.api.example.com:4222"
+    protocol: nats
+    description: NATS server for cloud-native messaging
+  redis-production:
+    host: "redis.api.example.com:6379"
+    protocol: redis
+    description: Redis Pub/Sub for caching and real-time updates
+channels:
+  eventsStream:
+    address: /events/stream
+    title: Real-time Event Stream
+    description: >-
+      WebSocket endpoint for streaming events to web clients in real-time.
+      Supports bidirectional communication with automatic reconnection.
+    tags:
+      - name: Events
+    parameters:
+      token:
+        description: Authentication token for WebSocket connection
+      clientId:
+        description: Unique client identifier for session tracking
+      version:
+        description: API version (default v1)
+    servers:
+      - $ref: "#/servers/websocket-production"
+    messages:
+      eventMessage:
+        $ref: "#/components/messages/EventMessage"
+      eventAck:
+        $ref: "#/components/messages/EventAck"
+    bindings:
+      ws:
+        method: GET
+        query:
+          type: object
+          properties:
+            token:
+              type: string
+              description: Authentication token
+            clientId:
+              type: string
+              description: Client identifier
+            version:
+              type: string
+              enum: [v1, v2]
+              default: v1
+          required:
+            - token
+  userActivityTopic:
+    address: events.user.activity
+    title: User Activity Events
+    description: >-
+      Kafka topic for publishing user activity events. High-throughput,
+      partitioned for scalability with 7-day retention.
+    tags:
+      - name: Events
+    servers:
+      - $ref: "#/servers/kafka-production"
+    messages:
+      userActivityEvent:
+        $ref: "#/components/messages/UserActivityEvent"
+    bindings:
+      kafka:
+        topic: events.user.activity
+        partitions: 12
+        replicas: 3
+  deviceTelemetry:
+    address: "devices/{deviceId}/telemetry/{sensorType}"
+    title: Device Telemetry
+    description: >-
+      MQTT topic for IoT device telemetry data. Wildcard subscription supported
+      for monitoring multiple devices.
+    tags:
+      - name: Events
+    parameters:
+      deviceId:
+        description: Unique device identifier (e.g., sensor-001)
+        examples:
+          - sensor-001
+          - sensor-002
+      sensorType:
+        description: Type of sensor data being transmitted
+        enum:
+          - temperature
+          - humidity
+          - pressure
+          - all
+    servers:
+      - $ref: "#/servers/mqtt-production"
+    messages:
+      telemetryMessage:
+        $ref: "#/components/messages/TelemetryMessage"
+    bindings:
+      mqtt:
+        qos: 1
+        retain: false
+  emailNotificationQueue:
+    address: notifications.email
+    title: Email Notification Queue
+    description: >-
+      RabbitMQ queue for email notification processing. Messages are durably
+      stored and processed by email workers.
+    tags:
+      - name: Notifications
+    servers:
+      - $ref: "#/servers/amqp-production"
+    messages:
+      emailNotification:
+        $ref: "#/components/messages/EmailNotification"
+    bindings:
+      amqp:
+        is: queue
+        queue:
+          name: notifications.email
+          durable: true
+  sseNotifications:
+    address: /notifications/sse
+    title: Server-Sent Events
+    description: >-
+      HTTP endpoint for Server-Sent Events. One-way server-to-client streaming
+      for push notifications.
+    tags:
+      - name: Notifications
+    servers:
+      - $ref: "#/servers/http-production"
+    messages:
+      sseNotification:
+        $ref: "#/components/messages/SSENotification"
+  ordersCreated:
+    address: orders.created
+    title: Order Created Events
+    description: >-
+      NATS subject for order creation events. Low-latency pub/sub messaging for
+      microservices.
+    tags:
+      - name: Events
+    servers:
+      - $ref: "#/servers/nats-production"
+    messages:
+      orderCreatedEvent:
+        $ref: "#/components/messages/OrderCreatedEvent"
+  cacheInvalidation:
+    address: cache.invalidation
+    title: Cache Invalidation
+    description: >-
+      Redis Pub/Sub channel for cache invalidation events across distributed
+      cache nodes.
+    tags:
+      - name: Events
+    servers:
+      - $ref: "#/servers/redis-production"
+    messages:
+      cacheInvalidationMsg:
+        $ref: "#/components/messages/CacheInvalidation"
+operations:
+  streamEventsSend:
+    action: send
+    channel:
+      $ref: "#/channels/eventsStream"
+    summary: Send events over WebSocket
+    description: Stream events to connected WebSocket clients
+    security:
+      - bearerAuth: []
+    messages:
+      - $ref: "#/channels/eventsStream/messages/eventMessage"
+  streamEventsReceive:
+    action: receive
+    channel:
+      $ref: "#/channels/eventsStream"
+    summary: Receive event acknowledgments
+    description: Receive acknowledgments from WebSocket clients
+    messages:
+      - $ref: "#/channels/eventsStream/messages/eventAck"
+  publishUserActivity:
+    action: send
+    channel:
+      $ref: "#/channels/userActivityTopic"
+    summary: Publish user activity to Kafka
+    description: Publish user activity events to Kafka topic for analytics and processing
+    security:
+      - apiKey: []
+      - oauth2:
+          - events:write
+    messages:
+      - $ref: "#/channels/userActivityTopic/messages/userActivityEvent"
+  consumeUserActivity:
+    action: receive
+    channel:
+      $ref: "#/channels/userActivityTopic"
+    summary: Consume user activity from Kafka
+    description: Consume user activity events from Kafka for real-time processing
+    messages:
+      - $ref: "#/channels/userActivityTopic/messages/userActivityEvent"
+  publishTelemetry:
+    action: send
+    channel:
+      $ref: "#/channels/deviceTelemetry"
+    summary: Publish device telemetry via MQTT
+    description: IoT devices publish telemetry data over MQTT
+    messages:
+      - $ref: "#/channels/deviceTelemetry/messages/telemetryMessage"
+  subscribeTelemetry:
+    action: receive
+    channel:
+      $ref: "#/channels/deviceTelemetry"
+    summary: Subscribe to device telemetry
+    description: Subscribe to telemetry data from IoT devices
+    messages:
+      - $ref: "#/channels/deviceTelemetry/messages/telemetryMessage"
+  sendEmailNotification:
+    action: send
+    channel:
+      $ref: "#/channels/emailNotificationQueue"
+    summary: Queue email notification
+    description: Add email notification to RabbitMQ queue for processing
+    security:
+      - oauth2:
+          - notifications:send
+    messages:
+      - $ref: "#/channels/emailNotificationQueue/messages/emailNotification"
+  processEmailNotification:
+    action: receive
+    channel:
+      $ref: "#/channels/emailNotificationQueue"
+    summary: Process email notification
+    description: Consume and process email notifications from the queue
+    messages:
+      - $ref: "#/channels/emailNotificationQueue/messages/emailNotification"
+  pushSSENotification:
+    action: send
+    channel:
+      $ref: "#/channels/sseNotifications"
+    summary: Push SSE notification
+    description: Push notifications to clients via Server-Sent Events
+    messages:
+      - $ref: "#/channels/sseNotifications/messages/sseNotification"
+  publishOrderCreated:
+    action: send
+    channel:
+      $ref: "#/channels/ordersCreated"
+    summary: Publish order created event
+    description: Publish order creation events to NATS for microservice communication
+    messages:
+      - $ref: "#/channels/ordersCreated/messages/orderCreatedEvent"
+  subscribeOrderCreated:
+    action: receive
+    channel:
+      $ref: "#/channels/ordersCreated"
+    summary: Subscribe to order events
+    description: Subscribe to order creation events from NATS
+    messages:
+      - $ref: "#/channels/ordersCreated/messages/orderCreatedEvent"
+  publishCacheInvalidation:
+    action: send
+    channel:
+      $ref: "#/channels/cacheInvalidation"
+    summary: Publish cache invalidation
+    description: Broadcast cache invalidation events via Redis Pub/Sub
+    messages:
+      - $ref: "#/channels/cacheInvalidation/messages/cacheInvalidationMsg"
+  subscribeCacheInvalidation:
+    action: receive
+    channel:
+      $ref: "#/channels/cacheInvalidation"
+    summary: Subscribe to cache invalidation
+    description: Listen for cache invalidation events to update local caches
+    messages:
+      - $ref: "#/channels/cacheInvalidation/messages/cacheInvalidationMsg"
+components:
+  securitySchemes:
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authenticating requests. Include in the X-API-Key header.
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Bearer token for authentication. Tokens are valid for 24 hours.
+    oauth2:
+      type: oauth2
+      description: OAuth 2.0 authentication for user-delegated access
+      flows:
+        authorizationCode:
+          authorizationUrl: https://auth.example.com/oauth/authorize
+          tokenUrl: https://auth.example.com/oauth/token
+          scopes:
+            events:read: Read access to events
+            events:write: Write access to events
+            notifications:send: Send notifications
+  messages:
+    EventMessage:
+      name: EventMessage
+      title: Generic Event
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          X-Correlation-ID:
+            type: string
+            format: uuid
+            description: Correlation ID for tracing requests
+          X-Client-Version:
+            type: string
+            description: Client application version
+          Authorization:
+            type: string
+            description: Bearer token for authentication
+        required:
+          - X-Correlation-ID
+      payload:
+        type: object
+        required:
+          - eventId
+          - eventType
+          - timestamp
+        properties:
+          eventId:
+            type: string
+            format: uuid
+            description: Unique event identifier
+          eventType:
+            type: string
+            description: Type of event
+          timestamp:
+            type: string
+            format: date-time
+            description: Event timestamp
+          data:
+            type: object
+            description: Event payload
+      examples:
+        - name: sampleEvent
+          summary: Sample event message
+          headers:
+            X-Correlation-ID: 123e4567-e89b-12d3-a456-426614174000
+            X-Client-Version: "2.1.0"
+            Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
+          payload:
+            eventId: 550e8400-e29b-41d4-a716-446655440000
+            eventType: user.login
+            timestamp: "2024-01-15T10:30:00Z"
+            data:
+              userId: user-123
+              ipAddress: 192.168.1.1
+    EventAck:
+      name: EventAck
+      title: Event Acknowledgment
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - eventId
+          - status
+        properties:
+          eventId:
+            type: string
+            format: uuid
+          status:
+            type: string
+            enum:
+              - received
+              - processed
+              - error
+          errorMessage:
+            type: string
+    UserActivityEvent:
+      name: UserActivityEvent
+      title: User Activity Event
+      contentType: application/json
+      headers:
+        type: object
+        properties:
+          X-Partition-Key:
+            type: string
+            description: Kafka partition key (usually userId)
+          X-Message-ID:
+            type: string
+            format: uuid
+            description: Unique message identifier
+          X-Timestamp:
+            type: string
+            format: date-time
+            description: Message timestamp
+        required:
+          - X-Partition-Key
+      payload:
+        type: object
+        required:
+          - userId
+          - action
+          - timestamp
+        properties:
+          userId:
+            type: string
+            description: User identifier
+          action:
+            type: string
+            enum:
+              - page_view
+              - click
+              - purchase
+              - signup
+            description: Type of user action
+          timestamp:
+            type: string
+            format: date-time
+          metadata:
+            type: object
+            properties:
+              page:
+                type: string
+              referrer:
+                type: string
+              userAgent:
+                type: string
+      examples:
+        - name: pageView
+          summary: Page view event
+          payload:
+            userId: user-456
+            action: page_view
+            timestamp: "2024-01-15T10:30:00Z"
+            metadata:
+              page: /products/shoes
+              referrer: "https://google.com"
+    TelemetryMessage:
+      name: TelemetryMessage
+      title: Device Telemetry
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - deviceId
+          - timestamp
+          - readings
+        properties:
+          deviceId:
+            type: string
+            description: Device identifier
+          timestamp:
+            type: string
+            format: date-time
+          readings:
+            type: object
+            properties:
+              temperature:
+                type: number
+                description: Temperature in Celsius
+              humidity:
+                type: number
+                description: Relative humidity percentage
+              battery:
+                type: number
+                description: Battery level percentage
+      examples:
+        - name: sensorReading
+          summary: Temperature sensor reading
+          payload:
+            deviceId: sensor-001
+            timestamp: "2024-01-15T10:30:00Z"
+            readings:
+              temperature: 23.5
+              humidity: 45.2
+              battery: 87
+    EmailNotification:
+      name: EmailNotification
+      title: Email Notification
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - to
+          - subject
+          - body
+        properties:
+          to:
+            type: string
+            format: email
+            description: Recipient email address
+          subject:
+            type: string
+            description: Email subject line
+          body:
+            type: string
+            description: Email body content
+          templateId:
+            type: string
+            description: Optional template identifier
+          variables:
+            type: object
+            description: Template variables
+      examples:
+        - name: welcomeEmail
+          summary: Welcome email notification
+          payload:
+            to: user@example.com
+            subject: Welcome to Our Platform!
+            body: Thank you for signing up...
+            templateId: welcome-v2
+            variables:
+              firstName: John
+    SSENotification:
+      name: SSENotification
+      title: SSE Push Notification
+      contentType: text/event-stream
+      headers:
+        type: object
+        properties:
+          Cache-Control:
+            type: string
+            description: Cache control header (typically no-cache)
+            default: no-cache
+          Connection:
+            type: string
+            description: Connection type
+            default: keep-alive
+          Content-Type:
+            type: string
+            description: Content type header
+            default: text/event-stream
+          X-Accel-Buffering:
+            type: string
+            description: Disable nginx buffering for SSE
+            default: "no"
+      payload:
+        type: object
+        required:
+          - id
+          - type
+          - data
+        properties:
+          id:
+            type: string
+            description: Event ID for SSE
+          type:
+            type: string
+            description: Event type
+          data:
+            type: object
+            description: Notification payload
+          retry:
+            type: integer
+            description: Reconnection time in milliseconds
+      examples:
+        - name: priceUpdate
+          summary: Real-time price update
+          headers:
+            Cache-Control: no-cache
+            Connection: keep-alive
+            Content-Type: text/event-stream
+            X-Accel-Buffering: "no"
+          payload:
+            id: evt-789
+            type: price.update
+            data:
+              productId: prod-123
+              newPrice: 29.99
+            retry: 5000
+    OrderCreatedEvent:
+      name: OrderCreatedEvent
+      title: Order Created Event
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - orderId
+          - customerId
+          - items
+          - total
+        properties:
+          orderId:
+            type: string
+            description: Unique order identifier
+          customerId:
+            type: string
+            description: Customer identifier
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                productId:
+                  type: string
+                quantity:
+                  type: integer
+                price:
+                  type: number
+          total:
+            type: number
+            description: Order total amount
+          createdAt:
+            type: string
+            format: date-time
+      examples:
+        - name: newOrder
+          summary: New order event
+          payload:
+            orderId: ord-12345
+            customerId: cust-789
+            items:
+              - productId: prod-001
+                quantity: 2
+                price: 19.99
+            total: 39.98
+            createdAt: "2024-01-15T10:30:00Z"
+    CacheInvalidation:
+      name: CacheInvalidation
+      title: Cache Invalidation Event
+      contentType: application/json
+      payload:
+        type: object
+        required:
+          - keys
+          - reason
+        properties:
+          keys:
+            type: array
+            items:
+              type: string
+            description: Cache keys to invalidate
+          pattern:
+            type: string
+            description: Optional pattern for bulk invalidation
+          reason:
+            type: string
+            enum:
+              - update
+              - delete
+              - expire
+              - manual
+            description: Reason for invalidation
+          timestamp:
+            type: string
+            format: date-time
+      examples:
+        - name: productCacheInvalidation
+          summary: Invalidate product cache
+          payload:
+            keys:
+              - "product:123"
+              - "product:123:inventory"
+            reason: update
+            timestamp: "2024-01-15T10:30:00Z"

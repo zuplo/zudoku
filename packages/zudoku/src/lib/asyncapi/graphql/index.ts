@@ -1,0 +1,901 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
+import SchemaBuilder from "@pothos/core";
+import {
+  type CountableSlugify,
+  slugifyWithCounter,
+} from "@sindresorhus/slugify";
+import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
+import { createYoga, type YogaServerOptions } from "graphql-yoga";
+import { GraphQLJSONSchema } from "../../oas/graphql/circular.js";
+import { validate } from "../parser/index.js";
+import type {
+  AsyncAPIDocument,
+  ChannelObject,
+  MessageExampleObject,
+  MessageObject,
+  OperationObject,
+  ParameterObject,
+  SecuritySchemeObject,
+  ServerObject,
+  TagObject,
+} from "../types.js";
+
+export type {
+  AsyncAPIDocument,
+  ChannelObject,
+  MessageObject,
+  OperationObject,
+  ServerObject,
+  TagObject,
+};
+
+type OperationLike = {
+  summary?: string | null;
+  operationId?: string;
+  action: "send" | "receive";
+  channelAddress?: string;
+};
+
+export const createOperationSlug = (
+  slugify: CountableSlugify,
+  operation: OperationLike,
+) => {
+  const summary =
+    operation.summary ||
+    operation.operationId ||
+    `${operation.action}-${operation.channelAddress}`;
+
+  return slugify(summary);
+};
+
+export type SchemaImport = () => Promise<{
+  schema: AsyncAPIDocument;
+  slugs: ReturnType<typeof getAllSlugs>;
+}>;
+
+export type SchemaImports = Record<string, SchemaImport>;
+
+type Context = {
+  schema: AsyncAPIDocument;
+  operations: GraphQLOperationObject[];
+  schemaImports?: SchemaImports;
+  tags: ReturnType<typeof getAllTags>;
+  slugs: ReturnType<typeof getAllSlugs>;
+};
+
+const builder = new SchemaBuilder<{
+  DefaultFieldNullability: false;
+  Scalars: {
+    JSON: any;
+    JSONObject: any;
+    JSONSchema: any;
+  };
+  Context: Context;
+}>({
+  defaultFieldNullability: false,
+});
+
+type GraphQLOperationObject = OperationObject & {
+  operationId: string;
+  channelAddress?: string;
+  channelTitle?: string;
+  channelDescription?: string;
+  slug?: string;
+  parentTag?: string;
+  protocols?: string[];
+};
+
+const JSONScalar = builder.addScalarType("JSON", GraphQLJSON);
+const JSONObjectScalar = builder.addScalarType("JSONObject", GraphQLJSONObject);
+const JSONSchemaScalar = builder.addScalarType("JSONSchema", GraphQLJSONSchema);
+
+const resolveExtensions = (obj: Record<string, any>) =>
+  Object.fromEntries(
+    Object.entries(obj).filter(([key]) => key.startsWith("x-")),
+  );
+
+/**
+ * Get all tags from the AsyncAPI document
+ * Considers tags from: info.tags, operations.tags, and channels.tags
+ */
+export const getAllTags = (
+  schema: AsyncAPIDocument,
+  slugs: ReturnType<typeof getAllSlugs>["tags"],
+): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
+  const rootTags = schema.info?.tags ?? [];
+
+  // Collect tags from operations (which now include inherited channel tags)
+  const operationTags = new Set(
+    Object.values(schema.operations ?? {})
+      .flatMap((op) => op.tags ?? [])
+      .map((tag) => tag.name),
+  );
+
+  // Also collect tags directly from channels (for completeness)
+  const channelTags = new Set(
+    Object.values(schema.channels ?? {})
+      .flatMap((channel) => channel.tags ?? [])
+      .map((tag) => tag.name),
+  );
+
+  // Merge all unique tag names
+  const allTagNames = new Set([...operationTags, ...channelTags]);
+
+  // Check if there are untagged operations (operations without tags AND their channel doesn't have tags)
+  const hasUntaggedOperations = Object.entries(schema.operations ?? {}).some(
+    ([_, op]) => {
+      if (op.tags?.length) return false;
+      // Check if channel has tags
+      const channelValue = op.channel as any;
+      let channel: ChannelObject | undefined;
+      if (channelValue && "address" in channelValue) {
+        channel = channelValue as ChannelObject;
+      } else {
+        const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+        const channelRef = refPath.replace("#/channels/", "");
+        channel = schema.channels?.[channelRef];
+      }
+      return !channel?.tags?.length;
+    },
+  );
+
+  // Sort tags alphabetically for deterministic order
+  const sortedTags = Array.from(allTagNames).sort((a, b) => a.localeCompare(b));
+
+  const result = [
+    // Keep root tags that are actually used in operations or channels (in spec order)
+    ...rootTags
+      .filter((tag) => allTagNames.has(tag.name))
+      .map((tag) => ({ ...tag, slug: slugs[tag.name] })),
+    // Add tags found in operations/channels but not defined in root tags (sorted alphabetically)
+    ...sortedTags
+      .filter((tag) => !rootTags.some((rt) => rt.name === tag))
+      .map((tag) => ({ name: tag, slug: slugs[tag] })),
+    // Add untagged operations if there are any (always last)
+    ...(hasUntaggedOperations ? [{ name: undefined, slug: undefined }] : []),
+  ];
+
+  return result;
+};
+
+/**
+ * Generate slugs for all operations and tags
+ */
+export const getAllSlugs = (
+  ops: GraphQLOperationObject[],
+  schemaTags: TagObject[] = [],
+  channels?: Record<string, ChannelObject>,
+) => {
+  const slugify = slugifyWithCounter();
+
+  // Collect tags from operations, schema, and channels
+  const tags = Array.from(
+    new Set([
+      ...ops.flatMap((op) => op.tags?.map((t) => t.name) ?? []),
+      ...schemaTags.map((tag) => tag.name),
+      ...Object.values(channels ?? {}).flatMap(
+        (channel) => channel.tags?.map((t) => t.name) ?? [],
+      ),
+    ]),
+  );
+
+  return {
+    operations: Object.fromEntries(
+      ops.map((op) => [
+        getOperationSlugKey(op),
+        createOperationSlug(slugify, op),
+      ]),
+    ),
+    tags: Object.fromEntries(tags.map((tag) => [tag, slugify(tag)])),
+  };
+};
+
+const getOperationSlugKey = (op: GraphQLOperationObject) =>
+  [op.channelAddress, op.action, op.operationId, op.summary]
+    .filter(Boolean)
+    .join("-");
+
+/**
+ * Normalize protocol names to standard format (e.g., wss -> ws)
+ */
+const normalizeProtocol = (protocol: string): string => {
+  const normalized = protocol.toLowerCase();
+  const aliases: Record<string, string> = {
+    wss: "ws",
+    websocket: "ws",
+    websockets: "ws",
+    https: "http",
+    mqtts: "mqtt",
+    amqps: "amqp",
+  };
+  return aliases[normalized] || normalized;
+};
+
+/**
+ * Detect protocols from channel and server objects
+ */
+const detectProtocols = (
+  channel: ChannelObject | undefined,
+  servers: Record<string, ServerObject> | undefined,
+  serverRefs: any[] = [],
+): string[] => {
+  const protocols = new Set<string>();
+
+  // From channel bindings
+  if (channel?.bindings) {
+    Object.keys(channel.bindings).forEach((protocol) => {
+      if (protocol !== "__$ref" && channel.bindings?.[protocol]) {
+        protocols.add(normalizeProtocol(protocol));
+      }
+    });
+  }
+
+  // From server refs - handle both dereferenced servers and $ref objects
+  serverRefs.forEach((ref) => {
+    // If the server has been dereferenced, it's a ServerObject with protocol
+    if (ref && typeof ref === "object" && "protocol" in ref) {
+      protocols.add(normalizeProtocol(ref.protocol));
+      return;
+    }
+
+    // Otherwise, try to resolve the $ref or __$ref (original ref stored during dereference)
+    const refPath = typeof ref === "string" ? ref : (ref?.$ref ?? ref?.__$ref);
+
+    if (refPath) {
+      const serverName = refPath.replace("#/servers/", "");
+      const server = servers?.[serverName];
+      if (server?.protocol) {
+        protocols.add(normalizeProtocol(server.protocol));
+      }
+    }
+  });
+
+  // If no protocols detected from bindings or server refs, try all servers
+  if (protocols.size === 0 && servers) {
+    Object.values(servers).forEach((server) => {
+      if (server?.protocol) {
+        protocols.add(normalizeProtocol(server.protocol));
+      }
+    });
+  }
+
+  return Array.from(protocols);
+};
+
+/**
+ * Get all operations from the AsyncAPI document with enriched data
+ */
+export const getAllOperations = (
+  operations?: Record<string, OperationObject>,
+  channels?: Record<string, ChannelObject>,
+  servers?: Record<string, ServerObject>,
+): GraphQLOperationObject[] => {
+  return Object.entries(operations ?? {}).map(([operationId, operation]) => {
+    let channel: ChannelObject | undefined;
+
+    // Check if channel has been dereferenced (has address property)
+    const channelValue = operation.channel as any;
+    if (channelValue && "address" in channelValue) {
+      // Channel has been dereferenced - use it directly
+      channel = channelValue as ChannelObject;
+    } else {
+      // Resolve channel reference using $ref or __$ref (stored during dereference)
+      const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+      const channelRef = refPath.replace("#/channels/", "");
+      channel = channels?.[channelRef];
+    }
+
+    // Detect protocols
+    const protocols = detectProtocols(channel, servers, channel?.servers ?? []);
+
+    // Inherit tags from channel if operation doesn't have tags
+    const tags = operation.tags?.length
+      ? operation.tags
+      : (channel?.tags ?? []);
+
+    return {
+      ...operation,
+      operationId,
+      channelAddress: channel?.address ?? undefined,
+      channelTitle: channel?.title ?? undefined,
+      channelDescription: channel?.description ?? undefined,
+      protocols,
+      tags,
+      parentTag: tags?.[0]?.name,
+    };
+  });
+};
+
+// GraphQL Types
+
+const ActionEnum = builder.enumType("Action", {
+  values: ["send", "receive"] as const,
+});
+
+const ServerItem = builder.objectRef<ServerObject>("ServerItem");
+const SchemaTag = builder.objectRef<
+  Omit<TagObject, "name"> & {
+    name?: string;
+    slug?: string;
+    prev?: any;
+    next?: any;
+  }
+>("SchemaTag");
+const Channel = builder.objectRef<ChannelObject>("Channel");
+const ChannelParameter = builder.objectRef<ParameterObject & { name: string }>(
+  "ChannelParameter",
+);
+const SecurityScheme = builder.objectRef<
+  SecuritySchemeObject & { name: string }
+>("SecurityScheme");
+const MessageExample =
+  builder.objectRef<MessageExampleObject>("MessageExample");
+const Message = builder.objectRef<MessageObject>("Message");
+const OperationItem =
+  builder.objectRef<GraphQLOperationObject>("OperationItem");
+const Schema = builder.objectRef<AsyncAPIDocument>("Schema");
+
+ServerItem.implement({
+  fields: (t) => ({
+    host: t.exposeString("host"),
+    protocol: t.exposeString("protocol"),
+    protocolVersion: t.string({
+      nullable: true,
+      resolve: (server) => server.protocolVersion ?? null,
+    }),
+    pathname: t.string({
+      nullable: true,
+      resolve: (server) => server.pathname ?? null,
+    }),
+    description: t.string({
+      nullable: true,
+      resolve: (server) => server.description ?? null,
+    }),
+  }),
+});
+
+ChannelParameter.implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    description: t.string({
+      nullable: true,
+      resolve: (param) => param.description ?? null,
+    }),
+    enum: t.stringList({
+      nullable: true,
+      resolve: (param) => param.enum ?? null,
+    }),
+    default: t.string({
+      nullable: true,
+      resolve: (param) => param.default ?? null,
+    }),
+    examples: t.stringList({
+      nullable: true,
+      resolve: (param) => param.examples ?? null,
+    }),
+    location: t.string({
+      nullable: true,
+      resolve: (param) => param.location ?? null,
+    }),
+  }),
+});
+
+SecurityScheme.implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    type: t.exposeString("type"),
+    description: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.description ?? null,
+    }),
+    in: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.in ?? null,
+    }),
+    scheme: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.scheme ?? null,
+    }),
+    bearerFormat: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.bearerFormat ?? null,
+    }),
+    openIdConnectUrl: t.string({
+      nullable: true,
+      resolve: (scheme) => scheme.openIdConnectUrl ?? null,
+    }),
+  }),
+});
+
+SchemaTag.implement({
+  fields: (t) => ({
+    name: t.string({
+      nullable: true,
+      resolve: (tag) => tag.name ?? null,
+    }),
+    slug: t.string({
+      nullable: true,
+      resolve: (tag) => tag.slug ?? null,
+    }),
+    description: t.string({
+      nullable: true,
+      resolve: (tag) => tag.description ?? null,
+    }),
+    operations: t.field({
+      type: [OperationItem],
+      resolve: (tag, _, ctx) =>
+        ctx.operations.filter((op) =>
+          tag.name
+            ? op.tags?.some((t) => t.name === tag.name)
+            : !op.tags?.length,
+        ),
+    }),
+    prev: t.field({
+      type: SchemaTag,
+      nullable: true,
+      resolve: (tag, _, ctx) => {
+        if (!tag.slug) return null;
+        const tagIndex = ctx.tags.findIndex((t) => t.slug === tag.slug);
+        return tagIndex > 0 ? ctx.tags[tagIndex - 1] : null;
+      },
+    }),
+    next: t.field({
+      type: SchemaTag,
+      nullable: true,
+      resolve: (tag, _, ctx) => {
+        if (!tag.slug) return null;
+        const tagIndex = ctx.tags.findIndex((t) => t.slug === tag.slug);
+        return tagIndex < ctx.tags.length - 1 ? ctx.tags[tagIndex + 1] : null;
+      },
+    }),
+  }),
+});
+
+MessageExample.implement({
+  fields: (t) => ({
+    name: t.string({
+      nullable: true,
+      resolve: (example) => example.name ?? null,
+    }),
+    summary: t.string({
+      nullable: true,
+      resolve: (example) => example.summary ?? null,
+    }),
+    headers: t.field({
+      type: JSONScalar,
+      nullable: true,
+      resolve: (example) => example.headers ?? null,
+    }),
+    payload: t.field({
+      type: JSONScalar,
+      nullable: true,
+      resolve: (example) => example.payload ?? null,
+    }),
+  }),
+});
+
+Message.implement({
+  fields: (t) => ({
+    name: t.string({
+      nullable: true,
+      resolve: (message) => message.name ?? null,
+    }),
+    title: t.string({
+      nullable: true,
+      resolve: (message) => message.title ?? null,
+    }),
+    summary: t.string({
+      nullable: true,
+      resolve: (message) => message.summary ?? null,
+    }),
+    description: t.string({
+      nullable: true,
+      resolve: (message) => message.description ?? null,
+    }),
+    contentType: t.string({
+      nullable: true,
+      resolve: (message) => message.contentType ?? null,
+    }),
+    payload: t.field({
+      type: JSONSchemaScalar,
+      nullable: true,
+      resolve: (message) => message.payload ?? null,
+    }),
+    headers: t.field({
+      type: JSONSchemaScalar,
+      nullable: true,
+      resolve: (message) => message.headers ?? null,
+    }),
+    examples: t.field({
+      type: [MessageExample],
+      resolve: (message) => message.examples ?? [],
+    }),
+  }),
+});
+
+Channel.implement({
+  fields: (t) => ({
+    address: t.string({
+      nullable: true,
+      resolve: (channel) => channel.address ?? null,
+    }),
+    title: t.string({
+      nullable: true,
+      resolve: (channel) => channel.title ?? null,
+    }),
+    summary: t.string({
+      nullable: true,
+      resolve: (channel) => channel.summary ?? null,
+    }),
+    description: t.string({
+      nullable: true,
+      resolve: (channel) => channel.description ?? null,
+    }),
+    parameters: t.field({
+      type: [ChannelParameter],
+      resolve: (channel) => {
+        if (!channel.parameters) return [];
+        return Object.entries(channel.parameters).map(([name, param]) => ({
+          name,
+          ...param,
+        }));
+      },
+    }),
+    messages: t.field({
+      type: [Message],
+      resolve: (channel) => Object.values(channel.messages ?? {}),
+    }),
+    servers: t.field({
+      type: [ServerItem],
+      resolve: (channel, _, ctx) => {
+        const serverRefs = channel.servers ?? [];
+        return serverRefs
+          .map((ref) => {
+            // If dereferenced, ref is the actual ServerObject
+            if (ref && typeof ref === "object" && "protocol" in ref) {
+              return ref as ServerObject;
+            }
+            // Otherwise resolve the $ref or __$ref
+            const refPath = (ref as any)?.$ref ?? (ref as any)?.__$ref ?? "";
+            const serverName = refPath.replace("#/servers/", "");
+            return ctx.schema.servers?.[serverName];
+          })
+          .filter((s): s is ServerObject => !!s);
+      },
+    }),
+  }),
+});
+
+OperationItem.implement({
+  fields: (t) => ({
+    operationId: t.exposeString("operationId"),
+    action: t.field({
+      type: ActionEnum,
+      resolve: (op) => op.action,
+    }),
+    channelAddress: t.string({
+      nullable: true,
+      resolve: (op) => op.channelAddress ?? null,
+    }),
+    channelTitle: t.string({
+      nullable: true,
+      resolve: (op) => op.channelTitle ?? null,
+    }),
+    channelDescription: t.string({
+      nullable: true,
+      resolve: (op) => op.channelDescription ?? null,
+    }),
+    channelParameters: t.field({
+      type: [ChannelParameter],
+      resolve: (op, _, ctx) => {
+        // Get channel to access its parameters
+        const channelValue = op.channel as any;
+        let channel: ChannelObject | undefined;
+
+        if (channelValue && "address" in channelValue) {
+          channel = channelValue as ChannelObject;
+        } else {
+          const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+          const channelRef = refPath.replace("#/channels/", "");
+          channel = ctx.schema.channels?.[channelRef];
+        }
+
+        if (!channel?.parameters) return [];
+        return Object.entries(channel.parameters).map(([name, param]) => ({
+          name,
+          ...param,
+        }));
+      },
+    }),
+    slug: t.string({
+      nullable: true,
+      resolve: (op, _, ctx) => {
+        // Look up the slug from the slugs map, like OpenAPI does
+        const slug = ctx.slugs.operations[getOperationSlugKey(op)];
+        return slug ?? null;
+      },
+    }),
+    summary: t.string({
+      nullable: true,
+      resolve: (op) => op.summary ?? null,
+    }),
+    description: t.string({
+      nullable: true,
+      resolve: (op) => op.description ?? null,
+    }),
+    protocols: t.stringList({
+      resolve: (op) => op.protocols ?? [],
+    }),
+    messages: t.field({
+      type: [Message],
+      resolve: (op, _, ctx) => {
+        // First try to get messages from operation
+        const messageRefs = op.messages ?? [];
+        const operationMessages = messageRefs
+          .map((ref) => {
+            // If dereferenced, ref is the actual MessageObject
+            if (
+              ref &&
+              typeof ref === "object" &&
+              ("payload" in ref || "headers" in ref || "name" in ref)
+            ) {
+              return ref as MessageObject;
+            }
+            // Otherwise resolve the $ref or __$ref
+            const refPath = (ref as any)?.$ref ?? (ref as any)?.__$ref ?? "";
+            const messageName = refPath
+              .replace("#/components/messages/", "")
+              .replace("#/channels/", "")
+              .replace(/\/messages\/.*$/, "");
+            return ctx.schema.components?.messages?.[messageName];
+          })
+          .filter((m): m is MessageObject => !!m);
+
+        // If operation has messages, return them
+        if (operationMessages.length > 0) {
+          return operationMessages;
+        }
+
+        // Otherwise, try to get messages from the channel
+        const channelValue = op.channel as any;
+        let channel: ChannelObject | undefined;
+
+        if (channelValue && "address" in channelValue) {
+          // Channel has been dereferenced
+          channel = channelValue as ChannelObject;
+        } else {
+          // Resolve channel reference
+          const refPath = channelValue?.$ref ?? channelValue?.__$ref ?? "";
+          const channelRef = refPath.replace("#/channels/", "");
+          channel = ctx.schema.channels?.[channelRef];
+        }
+
+        if (channel?.messages) {
+          return Object.entries(channel.messages)
+            .map(([name, msg]) => {
+              // If msg is a $ref, resolve it
+              const msgRef = (msg as any)?.$ref ?? (msg as any)?.__$ref;
+              if (msgRef) {
+                const messageName = msgRef.replace(
+                  "#/components/messages/",
+                  "",
+                );
+                const resolvedMsg =
+                  ctx.schema.components?.messages?.[messageName];
+                if (resolvedMsg) {
+                  return {
+                    ...resolvedMsg,
+                    name: resolvedMsg.name ?? name,
+                  };
+                }
+              }
+              // Otherwise use the message directly (already dereferenced)
+              return {
+                ...msg,
+                name: msg.name ?? name,
+              };
+            })
+            .filter((m): m is MessageObject & { name: string } => !!m);
+        }
+
+        return [];
+      },
+    }),
+    security: t.field({
+      type: JSONScalar,
+      nullable: true,
+      resolve: (op) => op.security ?? null,
+    }),
+  }),
+});
+
+Schema.implement({
+  fields: (t) => ({
+    asyncapi: t.exposeString("asyncapi"),
+    title: t.string({
+      resolve: (schema) => schema.info.title,
+    }),
+    version: t.string({
+      resolve: (schema) => schema.info.version,
+    }),
+    description: t.string({
+      nullable: true,
+      resolve: (schema) => schema.info.description ?? null,
+    }),
+    servers: t.field({
+      type: [ServerItem],
+      resolve: (schema) => Object.values(schema.servers ?? {}),
+    }),
+    tags: t.field({
+      type: [SchemaTag],
+      resolve: (_, __, ctx) => ctx.tags,
+    }),
+    tag: t.field({
+      type: SchemaTag,
+      nullable: true,
+      args: {
+        slug: t.arg.string(),
+        name: t.arg.string({ required: false }),
+      },
+      resolve: (_, args, ctx) =>
+        ctx.tags.find(
+          (tag) =>
+            tag.slug === args.slug ||
+            (args.name && tag.name === args.name) ||
+            (args.slug == null && tag.name === undefined),
+        ) ?? null,
+    }),
+    operations: t.field({
+      type: [OperationItem],
+      args: {
+        action: t.arg({
+          type: ActionEnum,
+          required: false,
+        }),
+        tag: t.arg.string({ required: false }),
+      },
+      resolve: (_, args, ctx) => {
+        let ops = ctx.operations;
+
+        if (args.action) {
+          ops = ops.filter((op) => op.action === args.action);
+        }
+
+        if (args.tag) {
+          ops = ops.filter((op) => op.tags?.some((t) => t.name === args.tag));
+        }
+
+        return ops;
+      },
+    }),
+    securitySchemes: t.field({
+      type: [SecurityScheme],
+      resolve: (schema) => {
+        const schemes = schema.components?.securitySchemes ?? {};
+        return Object.entries(schemes).map(([name, scheme]) => ({
+          name,
+          ...scheme,
+        }));
+      },
+    }),
+    extensions: t.field({
+      type: JSONObjectScalar,
+      resolve: (schema) => resolveExtensions(schema as any),
+    }),
+  }),
+});
+
+builder.queryType({
+  fields: (t) => ({
+    schema: t.field({
+      type: Schema,
+      resolve: (_, __, ctx) => ctx.schema,
+    }),
+  }),
+});
+
+/**
+ * Create a GraphQL server for querying AsyncAPI documents
+ */
+export const createGraphQLServer = (
+  schemaInputs: unknown | SchemaImports,
+  options?: Omit<YogaServerOptions<any, any>, "schema" | "context">,
+): ReturnType<typeof createYoga> => {
+  // Cache for validated schemas to avoid re-processing on every request
+  let cachedContext:
+    | {
+        schema: AsyncAPIDocument;
+        operations: GraphQLOperationObject[];
+        slugs: ReturnType<typeof getAllSlugs>;
+        tags: ReturnType<typeof getAllTags>;
+      }
+    | undefined;
+
+  return createYoga({
+    schema: builder.toSchema(),
+    ...options,
+    context: async (ctx) => {
+      // If schemaInputs is a function (SchemaImports), use it
+      if (typeof schemaInputs === "function") {
+        const schemaImport = schemaInputs as SchemaImport;
+        const { schema, slugs } = await schemaImport();
+        const operations = getAllOperations(
+          schema.operations,
+          schema.channels,
+          schema.servers,
+        );
+
+        return {
+          ...ctx,
+          schema,
+          operations,
+          slugs,
+          tags: getAllTags(schema, slugs.tags),
+        };
+      }
+
+      // If schemaInputs is an object (SchemaImports), get the first import
+      if (typeof schemaInputs === "object" && schemaInputs !== null) {
+        const imports = schemaInputs as SchemaImports;
+        const importKeys = Object.keys(imports);
+        const firstImportKey = importKeys[0];
+
+        if (firstImportKey && imports[firstImportKey]) {
+          const { schema, slugs } = await imports[firstImportKey]();
+          const operations = getAllOperations(
+            schema.operations,
+            schema.channels,
+            schema.servers,
+          );
+
+          return {
+            ...ctx,
+            schema,
+            operations,
+            slugs,
+            tags: getAllTags(schema, slugs.tags),
+            schemaImports: imports,
+          };
+        }
+      }
+
+      // Return cached context if available (for raw/direct input)
+      if (cachedContext) {
+        return {
+          ...ctx,
+          ...cachedContext,
+        };
+      }
+
+      // Otherwise, validate the input directly and cache the result
+      const schema = await validate(schemaInputs);
+      const operations = getAllOperations(
+        schema.operations,
+        schema.channels,
+        schema.servers,
+      );
+      const slugs = getAllSlugs(
+        operations,
+        schema.info?.tags ?? [],
+        schema.channels,
+      );
+      const tags = getAllTags(schema, slugs.tags);
+
+      // Cache the processed context
+      cachedContext = {
+        schema,
+        operations,
+        slugs,
+        tags,
+      };
+
+      return {
+        ...ctx,
+        schema,
+        operations,
+        slugs,
+        tags,
+      };
+    },
+  });
+};

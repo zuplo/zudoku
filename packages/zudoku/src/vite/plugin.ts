@@ -4,6 +4,7 @@ import type { PluginOption } from "vite";
 import { vitePluginSsrCss } from "./css/plugin.js";
 import viteApiPlugin from "./plugin-api.js";
 import viteApiKeysPlugin from "./plugin-api-keys.js";
+import viteAsyncApiPlugin from "./plugin-asyncapi.js";
 import viteAuthPlugin from "./plugin-auth.js";
 import viteAliasPlugin from "./plugin-component.js";
 import viteConfigPlugin from "./plugin-config.js";
@@ -33,6 +34,7 @@ export default function vitePlugin(): PluginOption {
     viteFrontmatterPlugin(),
     viteNavigationPlugin(),
     viteApiPlugin(),
+    viteAsyncApiPlugin(),
     viteSearchPlugin(),
     viteAliasPlugin(),
     viteRedirectPlugin(),

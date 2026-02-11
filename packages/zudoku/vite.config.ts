@@ -22,6 +22,7 @@ const entries: Record<string, string> = {
   "plugin-api-keys": "./src/lib/plugins/api-keys/index.tsx",
   "plugin-markdown": "./src/lib/plugins/markdown/index.tsx",
   "plugin-openapi": "./src/lib/plugins/openapi/index.tsx",
+  "plugin-asyncapi": "./src/lib/plugins/asyncapi/index.tsx",
   "plugin-redirect": "./src/lib/plugins/redirect/index.tsx",
   "plugin-custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
   "plugin-search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",

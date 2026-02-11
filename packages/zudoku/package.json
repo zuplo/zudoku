@@ -40,6 +40,7 @@
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.tsx",
     "./plugins/openapi": "./src/lib/plugins/openapi/index.tsx",
+    "./plugins/asyncapi": "./src/lib/plugins/asyncapi/index.tsx",
     "./plugins/redirect": "./src/lib/plugins/redirect/index.tsx",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
@@ -121,6 +122,10 @@
       "./plugins/openapi": {
         "import": "./lib/zudoku.plugin-openapi.js",
         "types": "./dist/lib/plugins/openapi/index.d.ts"
+      },
+      "./plugins/asyncapi": {
+        "import": "./lib/zudoku.plugin-asyncapi.js",
+        "types": "./dist/lib/plugins/asyncapi/index.d.ts"
       },
       "./plugins/redirect": {
         "import": "./lib/zudoku.plugin-redirect.js",
@@ -204,6 +209,7 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "15.2.2",
+    "@asyncapi/parser": "^3.4.0",
     "@envelop/core": "5.3.2",
     "@graphql-typed-document-node/core": "3.2.0",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",

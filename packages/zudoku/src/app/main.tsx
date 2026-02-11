@@ -3,6 +3,7 @@ import {
   configuredApiCatalogPlugins,
   configuredApiPlugins,
 } from "virtual:zudoku-api-plugins";
+import { configuredAsyncApiPlugins } from "virtual:zudoku-asyncapi-plugins";
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
@@ -57,6 +58,7 @@ export const convertZudokuConfigToOptions = (
       ...(configuredAuthProvider ? [configuredAuthProvider] : []),
       ...(configuredDocsPlugin ? [configuredDocsPlugin] : []),
       ...configuredApiPlugins,
+      ...configuredAsyncApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
       ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),

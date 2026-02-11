@@ -23,6 +23,7 @@ export const resolveLocalRef = (schema: JSONSchema, ref: string): unknown => {
     if (!current || typeof current !== "object") {
       // we've reached a dead end
       current = null;
+      break;
     }
     current = current[segment] ?? null;
   }

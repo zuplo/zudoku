@@ -12,6 +12,10 @@ import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
 import type { ApiConsumer } from "../../lib/plugins/api-keys/index.js";
 import type {
+  GenerateCodeSnippetFn as AsyncApiGenerateCodeSnippetFn,
+  TransformExamplesFn as AsyncApiTransformExamplesFn,
+} from "../../lib/plugins/asyncapi/interfaces.js";
+import type {
   GenerateCodeSnippetFn,
   TransformExamplesFn,
 } from "../../lib/plugins/openapi/interfaces.js";
@@ -109,6 +113,60 @@ const ApiSchema = z.discriminatedUnion("type", [
     type: z.literal("raw"),
     input: z.string(),
     ...ApiConfigSchema.shape,
+  }),
+]);
+
+// AsyncAPI Options Schema
+const AsyncApiOptionsSchema = z
+  .object({
+    defaultProtocol: z.string(),
+    supportedProtocols: z.array(
+      z.object({
+        value: z.string().min(1),
+        label: z.string().min(1),
+      }),
+    ),
+    disableSimulator: z.boolean(),
+    disableSidecar: z.boolean(),
+    showVersionSelect: z.enum(["always", "if-available", "hide"]),
+    expandAllTags: z.boolean(),
+    expandApiInformation: z.boolean(),
+    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
+    transformExamples: z.custom<AsyncApiTransformExamplesFn>(
+      (val) => typeof val === "function",
+    ),
+    generateCodeSnippet: z.custom<AsyncApiGenerateCodeSnippetFn>(
+      (val) => typeof val === "function",
+    ),
+  })
+  .partial();
+
+const AsyncApiConfigSchema = z
+  .object({
+    server: z.string(),
+    path: z.string(),
+    options: AsyncApiOptionsSchema,
+  })
+  .partial();
+
+const AsyncApiSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("url"),
+    input: z.union([z.string(), z.array(VersionConfigSchema)]),
+    ...AsyncApiConfigSchema.shape,
+  }),
+  z.object({
+    type: z.literal("file"),
+    input: z.union([
+      z.string(),
+      z.array(z.union([z.string(), VersionConfigSchema])),
+    ]),
+    ...AsyncApiConfigSchema.shape,
+  }),
+  z.object({
+    type: z.literal("raw"),
+    input: z.string(),
+    ...AsyncApiConfigSchema.shape,
   }),
 ]);
 
@@ -616,6 +674,7 @@ const BaseConfigSchema = z.object({
   search: SearchSchema,
   docs: DocsConfigSchema.optional(),
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
+  asyncApis: z.union([AsyncApiSchema, z.array(AsyncApiSchema)]),
   catalogs: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,
   redirects: z.array(Redirect),
@@ -623,6 +682,7 @@ const BaseConfigSchema = z.object({
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,
+    asyncApis: AsyncApiOptionsSchema,
     /**
      * @deprecated Use `apis.examplesLanguage` or `defaults.apis.examplesLanguage` instead
      */
@@ -635,6 +695,7 @@ const BaseConfigSchema = z.object({
 export const ZudokuConfig = BaseConfigSchema.partial();
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
+export type ZudokuAsyncApiConfig = z.infer<typeof AsyncApiSchema>;
 export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
