@@ -168,19 +168,32 @@ If the provider does not return a field, it will be left blank.
 ## Protected Routes
 
 Once authentication is configured, you can protect specific routes in your documentation to require
-users to be authenticated or meet custom authorization requirements.
+users to be authenticated or meet custom authorization requirements. Routes can be protected with a
+simple array of patterns, or with custom callback functions that support reason codes for
+distinguishing between unauthorized and forbidden access.
 
 ```typescript title="zudoku.config.ts"
 {
   // ...
+  // Simple array format: requires authentication
   protectedRoutes: [
-    "/admin/*",     // Protect all routes under /admin
-    "/settings",    // Protect the settings page
-    "/api/*",       // Protect all API-related routes
+    "/admin/*",
+    "/settings",
+    "/api/*",
   ],
+
+  // Or object format: custom authorization with reason codes
+  protectedRoutes: {
+    "/admin/*": ({ auth, reasonCode }) =>
+      !auth.isAuthenticated
+        ? reasonCode.UNAUTHORIZED
+        : auth.profile?.email?.endsWith("@example.com")
+          ? true
+          : reasonCode.FORBIDDEN,
+  },
   // ...
 }
 ```
 
 See the [Protected Routes](./protected-routes.md) documentation for detailed information on
-configuring route protection with simple patterns or advanced authorization logic.
+configuring route protection, reason codes, and navigation behavior.
