@@ -6,6 +6,7 @@ import {
   Grid2x2XIcon,
   Loader2Icon,
 } from "zudoku/icons";
+import type { UseSuspenseQueryResult } from "zudoku/react-query";
 import {
   Alert,
   AlertAction,
@@ -28,7 +29,7 @@ export type UsageResult = {
 };
 
 export type PaymentStatus = {
-  status: string;
+  status: "failed" | "paid" | string;
   isFirstPayment?: boolean;
   lastPaymentSucceededAt?: string;
   lastPaymentFailedAt?: string;
@@ -87,7 +88,7 @@ const UsageItem = ({
             {subscription && (
               <AlertAction>
                 <SwitchPlanModal subscription={subscription}>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="xs">
                     <ArrowUpIcon />
                     Upgrade
                   </Button>
@@ -134,14 +135,17 @@ const UsageItem = ({
 };
 
 export const Usage = ({
-  usage,
+  usageQuery,
   currentItems,
   subscription,
+  isPendingFirstPayment,
 }: {
-  usage: UsageResult;
+  usageQuery: UseSuspenseQueryResult<UsageResult>;
   currentItems?: Item[];
   subscription?: Subscription;
+  isPendingFirstPayment: boolean;
 }) => {
+  const usage = usageQuery.data;
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
@@ -149,7 +153,7 @@ export const Usage = ({
   return (
     <div className="space-y-4">
       <Heading level={3}>Usage</Heading>
-      {usage.paymentStatus.status === "pending" && (
+      {isPendingFirstPayment && (
         <Alert fit="loose">
           <Loader2Icon className="size-5 animate-spin mr-1 ml-1 self-center" />
           <AlertTitle>Your payment is being processed</AlertTitle>
@@ -157,6 +161,23 @@ export const Usage = ({
             Your API keys may take a minute to load. Please wait while we set up
             your subscription.
           </AlertDescription>
+        </Alert>
+      )}
+      {usage.paymentStatus.status === "failed" && (
+        <Alert variant="destructive" fit="loose">
+          <AlertTriangleIcon className="size-4 shrink-0" />
+          <AlertTitle>Payment failed</AlertTitle>
+          <AlertDescription>
+            Your last payment was unsuccessful. Please update your billing
+            information to continue using your subscription.
+          </AlertDescription>
+          <AlertAction>
+            <Button variant="destructive" size="xs" asChild>
+              <Link to="/manage-payment" target="_blank">
+                Manage billing
+              </Link>
+            </Button>
+          </AlertAction>
         </Alert>
       )}
       {hasUsage ? (
@@ -172,7 +193,8 @@ export const Usage = ({
             []
           ),
         )
-      ) : (
+      ) : !usageQuery.isFetching &&
+        !subscription?.annotations?.["subscription.previous.id"] ? (
         <Alert variant="warning">
           <Grid2x2XIcon />
           <AlertTitle>No usage data available</AlertTitle>
@@ -180,7 +202,7 @@ export const Usage = ({
             This subscription does not have any usage data.
           </AlertDescription>
         </Alert>
-      )}
+      ) : null}
     </div>
   );
 };

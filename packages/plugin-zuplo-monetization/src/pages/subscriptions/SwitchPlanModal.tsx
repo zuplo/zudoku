@@ -213,6 +213,7 @@ const PlanComparisonItem = ({
         },
       });
       onRequestClose();
+      window.scrollTo({ top: 0, behavior: "smooth" });
     },
   });
 
@@ -401,10 +402,6 @@ export const SwitchPlanModal = ({
             <DialogTitle className="text-xl font-semibold">
               Change Your Plan
             </DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Currently on{" "}
-              <span className="font-medium">{currentPlan?.name}</span>
-            </p>
           </DialogHeader>
           <div className="mt-4 space-y-6">
             {currentPlan && (
