@@ -66,7 +66,10 @@ export const render = async ({
 
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
-  const renderContext = { status: 200 };
+  const renderContext = {
+    status: 200,
+    bypassProtection: bypassProtection ?? false,
+  };
 
   const App = (
     <BootstrapStatic

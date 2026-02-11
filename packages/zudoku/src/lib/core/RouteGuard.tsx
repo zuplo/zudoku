@@ -138,7 +138,13 @@ export const RouteGuard = () => {
   useEffect(() => {
     if (!auth.isAuthenticated || !intendedPath) return;
     const check = getAuthCheck(intendedPath);
-    if (!check || check(authCheckContext) === true) {
+    if (!check) {
+      blocker.proceed?.();
+      return;
+    }
+    const result = check(authCheckContext);
+    // Proceed whenever the result is no longer UNAUTHORIZED (e.g. true or FORBIDDEN)
+    if (result !== false && result !== REASON_CODES.UNAUTHORIZED) {
       blocker.proceed?.();
     }
   }, [

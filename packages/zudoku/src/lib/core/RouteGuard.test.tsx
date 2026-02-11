@@ -26,9 +26,10 @@ import {
   Routes,
 } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type {
-  CallbackContext,
-  ProtectedRouteResult,
+import {
+  type CallbackContext,
+  type ProtectedRouteResult,
+  REASON_CODES,
 } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { UseAuthReturn } from "../authentication/hook.js";
 import { useAuthState } from "../authentication/state.js";
@@ -460,6 +461,82 @@ describe("RouteGuard", () => {
 
       // Should render content because path doesn't match exactly
       expect(screen.getByText("Public")).toBeInTheDocument();
+    });
+  });
+
+  describe("forbidden routes", () => {
+    it("renders ForbiddenPage when route returns FORBIDDEN", async () => {
+      await render(
+        { path: "/vip", element: <div>VIP Content</div> },
+        {
+          initialPath: "/vip",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+            profile: {
+              sub: "123",
+              email: "user@example.com",
+              emailVerified: false,
+              name: "Test",
+              pictureUrl: undefined,
+            },
+          },
+          protectedRoutes: {
+            "/vip": () => REASON_CODES.FORBIDDEN,
+          },
+        },
+      );
+
+      expect(screen.getByText("Access Denied")).toBeInTheDocument();
+      expect(
+        screen.getByText("You don't have permission to access this page."),
+      ).toBeInTheDocument();
+      // The actual page content should not be rendered
+      expect(screen.queryByText("VIP Content")).not.toBeInTheDocument();
+    });
+
+    it("does not block navigation to FORBIDDEN route with login dialog", async () => {
+      const navRoutes: RouteObject[] = [
+        {
+          path: "/",
+          element: (
+            <div>
+              Public <Link to="/vip">Go VIP</Link>
+            </div>
+          ),
+        },
+        { path: "/vip", element: <div>VIP Content</div> },
+      ];
+
+      await render(navRoutes, {
+        auth: {
+          isAuthEnabled: true,
+          isPending: false,
+          isAuthenticated: true,
+          profile: {
+            sub: "123",
+            email: "user@example.com",
+            emailVerified: false,
+            name: "Test",
+            pictureUrl: undefined,
+          },
+        },
+        protectedRoutes: {
+          "/vip": () => REASON_CODES.FORBIDDEN,
+        },
+        initialPath: "/",
+      });
+
+      expect(screen.getByText("Public")).toBeInTheDocument();
+
+      await userEvent.click(screen.getByText("Go VIP"));
+
+      // Should show ForbiddenPage, not a login dialog
+      await waitFor(() => {
+        expect(screen.getByText("Access Denied")).toBeInTheDocument();
+      });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 
