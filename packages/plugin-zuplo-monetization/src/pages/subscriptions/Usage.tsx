@@ -88,7 +88,7 @@ const UsageItem = ({
             {subscription && (
               <AlertAction>
                 <SwitchPlanModal subscription={subscription}>
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="xs">
                     <ArrowUpIcon />
                     Upgrade
                   </Button>
