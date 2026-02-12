@@ -24,6 +24,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: write
       id-token: write
@@ -31,6 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          fetch-depth: 0
           ssh-key: ${{ secrets.GH_ACTIONS_DEPLOY_KEY_RULE_BYPASS }}
 
       - uses: pnpm/action-setup@v4
