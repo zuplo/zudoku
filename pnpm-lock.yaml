@@ -465,8 +465,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0(acorn@8.15.0)(rollup@4.52.5)
       '@pothos/core':
-        specifier: 4.10.0
-        version: 4.10.0(graphql@16.12.0)
+        specifier: 4.12.0
+        version: 4.12.0(graphql@16.12.0)
       '@radix-ui/react-accordion':
         specifier: 1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -3499,8 +3499,8 @@ packages:
   '@posthog/core@1.17.0':
     resolution: {integrity: sha512-8pDNL+/u9ojzXloA5wILVDXBCV5daJ7w2ipCALQlEEZmL752cCKhRpbyiHn3tjKXh3Hy6aOboJneYa1JdlVHrQ==}
 
-  '@pothos/core@4.10.0':
-    resolution: {integrity: sha512-spC7v6N80GfDKqt6ZSGELLu7EFDZsuQBb/oCqAtDwAe+HIL5T0STjv220IumLeC8lIAMgTaZMa/WnMNKkawbFg==}
+  '@pothos/core@4.12.0':
+    resolution: {integrity: sha512-PeiODrj3GjQ7Nbs/5p65DEyBWZTSGGjgGO/BgaMEqS1jBNX/2zJTEQJA9zM5uPmCHUCDjE7Qn2U7lOi0ALp/8A==}
     peerDependencies:
       graphql: ^16.10.0
 
@@ -13380,7 +13380,7 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
 
-  '@pothos/core@4.10.0(graphql@16.12.0)':
+  '@pothos/core@4.12.0(graphql@16.12.0)':
     dependencies:
       graphql: 16.12.0
 
