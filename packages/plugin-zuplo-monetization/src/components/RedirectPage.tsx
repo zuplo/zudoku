@@ -6,11 +6,13 @@ const RedirectPage = ({
   title,
   description,
   url,
+  children,
 }: {
   icon: LucideIcon;
   title: string;
   description: string;
   url?: string;
+  children?: React.ReactNode;
 }) => {
   useEffect(() => {
     if (url) {
@@ -26,6 +28,8 @@ const RedirectPage = ({
             <Icon className="w-12 h-12 text-foreground" />
           </div>
         </div>
+
+        {children}
 
         <div className="space-y-2">
           <h2 className="text-2xl font-bold text-card-foreground">{title}</h2>

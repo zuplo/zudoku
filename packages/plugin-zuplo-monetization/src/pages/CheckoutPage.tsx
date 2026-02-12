@@ -1,7 +1,9 @@
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
-import { useParams } from "zudoku/router";
+import { Link, useParams } from "zudoku/router";
+import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
+import { Button } from "zudoku/ui/Button";
 import { RedirectPage } from "../components/RedirectPage.js";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
@@ -50,7 +52,20 @@ const CheckoutPage = () => {
       title="Establishing encrypted connection..."
       description="Setting up your secure checkout experience"
       url={checkoutLink.data?.url}
-    />
+    >
+      {checkoutLink.isError && (
+        <Alert variant="destructive">
+          <AlertDescription className="first-letter:uppercase">
+            {checkoutLink.error.message}
+          </AlertDescription>
+          <AlertAction>
+            <Button variant="outline" size="xs" asChild>
+              <Link to="/subscriptions">Back</Link>
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+    </RedirectPage>
   );
 };
 
