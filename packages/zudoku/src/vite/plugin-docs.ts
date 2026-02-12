@@ -23,6 +23,7 @@ export const globMarkdownFiles = async (
   for (const globPattern of docsConfig.files) {
     const globbedFiles = await glob(globPattern, {
       root: config.__meta.rootDir,
+      cwd: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
       // Always glob with relative paths to avoid issues on different OS
       absolute: false,
