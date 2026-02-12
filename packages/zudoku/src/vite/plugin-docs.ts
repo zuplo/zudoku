@@ -19,7 +19,6 @@ export const globMarkdownFiles = async (
 ): Promise<Record<string, string>> => {
   const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
   const fileMapping: Record<string, string> = {};
-  const isDevelopment = process.env.NODE_ENV === "development";
 
   for (const globPattern of docsConfig.files) {
     const globbedFiles = await glob(globPattern, {
@@ -35,9 +34,7 @@ export const globMarkdownFiles = async (
 
     for (const file of globbedFiles) {
       // Skip draft documents in production mode
-      // Note: This reads frontmatter for all files during build, which is acceptable
-      // since it's a one-time cost at build time (not runtime)
-      if (!isDevelopment) {
+      if (process.env.NODE_ENV !== "development") {
         const absolutePath = path.resolve(config.__meta.rootDir, file);
         const { data } = await readFrontmatter(absolutePath);
         if (data.draft === true) {
