@@ -77,6 +77,9 @@ const config: ZudokuConfig = {
   docs: {
     files: "/pages/**/*.mdx",
   },
+  apiKeys: {
+    enabled: true,
+  },
   authentication: {
     type: "auth0",
     domain: "auth.zuplo.site",

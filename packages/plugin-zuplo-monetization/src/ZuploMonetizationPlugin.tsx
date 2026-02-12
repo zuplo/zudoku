@@ -25,6 +25,9 @@ export const zuploMonetizationPlugin = createPlugin(
   (options?: ZudokuMonetizationPluginOptions) => ({
     transformConfig: ({ merge }) =>
       merge({
+        apiKeys: {
+          enabled: false,
+        },
         slots: {
           "head-navigation-start": () => (
             <Button asChild variant="ghost">
