@@ -1,7 +1,8 @@
 import type { JSONSchema7 } from "json-schema";
 import { describe, expect, it, vi } from "vitest";
 import type { OpenAPIDocument } from "../oas/parser/index.js";
-import { flattenAllOf, flattenAllOfProcessor } from "./flattenAllOf.js";
+import { flattenAllOf } from "./flattenAllOf.js";
+import { flattenAllOfProcessor } from "./flattenAllOfProcessor.js";
 import invariant from "./invariant.js";
 
 describe("flattenAllOf", () => {
@@ -240,6 +241,38 @@ describe("flattenAllOf", () => {
       properties: { id: { type: "string" } },
     } as JSONSchema7;
     expect(flattenAllOf(objectSchema)).toEqual(objectSchema);
+  });
+
+  it("should convert boolean true to empty object", () => {
+    // Empty objects merge to boolean true, should convert back to {}
+    const schema = { allOf: [{}] } as JSONSchema7;
+    const result = flattenAllOf(schema);
+    expect(result).toEqual({});
+  });
+
+  it("should convert boolean false to not schema", () => {
+    // Boolean false should convert to { not: {} }
+    const result = flattenAllOf(false);
+    expect(result).toEqual({ not: {} });
+  });
+
+  it("should handle empty schema objects in properties", () => {
+    // Reproduces issue #1837: _id: {} should not crash
+    const schema = {
+      type: "object",
+      properties: {
+        _id: {},
+        name: { type: "string" },
+      },
+    } as JSONSchema7;
+
+    const result = flattenAllOf(schema);
+
+    invariant(typeof result === "object", "Result is not a schema");
+
+    // Empty object should be preserved or converted to valid schema
+    expect(result.properties?._id).toBeDefined();
+    expect(result.properties?.name).toEqual({ type: "string" });
   });
 
   it("should preserve description and other properties", () => {

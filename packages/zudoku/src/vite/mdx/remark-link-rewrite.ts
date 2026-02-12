@@ -8,7 +8,9 @@ export const remarkLinkRewrite =
     visit(tree, "link", (node) => {
       if (!node.url) return;
 
-      const base = path.join(basePath);
+      node.url = node.url.replace(/\\/g, "/");
+
+      const base = path.posix.join(basePath);
       if (basePath && node.url.startsWith(base)) {
         node.url = node.url.slice(base.length);
       } else if (
@@ -17,9 +19,9 @@ export const remarkLinkRewrite =
         !node.url.startsWith("/") &&
         !node.url.startsWith("#")
       ) {
-        node.url = path.join("../", node.url);
+        node.url = path.posix.join("..", node.url);
       }
 
-      node.url = node.url.replace(/\.mdx?(#.*?)?/, "$1");
+      node.url = node.url.replace(/\.mdx?(#.*)?$/, "$1");
     });
   };

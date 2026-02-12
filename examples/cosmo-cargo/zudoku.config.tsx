@@ -128,6 +128,8 @@ const config: ZudokuConfig = {
       icon: "book-open",
       items: [
         "documentation",
+        { type: "filter", placeholder: "Filter documentation" },
+        { type: "section", label: "Operations" },
         {
           type: "category",
           icon: "telescope",
@@ -136,11 +138,19 @@ const config: ZudokuConfig = {
           items: ["shipping-process", "tracking"],
         },
         "global",
+        { type: "separator" },
+        { type: "section", label: "Guides" },
         {
           type: "category",
           icon: "library-big",
           label: "Shipping Guides",
           items: ["interstellar", "intergalactic"],
+        },
+        {
+          type: "link",
+          label: "See Shipment API",
+          to: "/api-shipments/shipment-management",
+          icon: "arrow-right",
         },
         {
           type: "category",
@@ -238,7 +248,11 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: [
-        "./schema/label-v3.json",
+        {
+          input: "./schema/label-v3.json",
+          path: "latest",
+          label: "Latest (3.0.0)",
+        },
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],

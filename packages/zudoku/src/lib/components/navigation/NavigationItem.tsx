@@ -1,6 +1,7 @@
 import { ExternalLinkIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
+import { Separator } from "zudoku/ui/Separator.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
@@ -11,6 +12,8 @@ import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { useZudoku } from "../context/ZudokuContext.js";
 import { NavigationBadge } from "./NavigationBadge.js";
 import { NavigationCategory } from "./NavigationCategory.js";
+import { useNavigationFilter } from "./NavigationFilterContext.js";
+import { NavigationFilterInput } from "./NavigationFilterInput.js";
 import { navigationListItem, shouldShowItem } from "./utils.js";
 
 const TruncatedLabel = ({
@@ -65,8 +68,9 @@ export const NavigationItem = ({
   const { activeAnchor } = useViewportAnchor();
   const auth = useAuth();
   const context = useZudoku();
+  const { query } = useNavigationFilter();
 
-  if (!shouldShowItem(auth, context)(item)) {
+  if (!shouldShowItem(auth, context, query)(item)) {
     return null;
   }
 
@@ -75,6 +79,18 @@ export const NavigationItem = ({
       return (
         <NavigationCategory category={item} onRequestClose={onRequestClose} />
       );
+    case "separator":
+      return (
+        <Separator className="my-1 mx-auto w-[calc(100%-var(--padding-nav-item)*2)]!" />
+      );
+    case "section":
+      return (
+        <div className="mt-4 px-(--padding-nav-item) text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {item.label}
+        </div>
+      );
+    case "filter":
+      return <NavigationFilterInput placeholder={item.placeholder} />;
     case "doc":
       return (
         <NavLink
@@ -86,7 +102,9 @@ export const NavigationItem = ({
           onClick={onRequestClose}
           end
         >
-          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
+          {item.icon && (
+            <item.icon size={16} className="align-[-0.125em] shrink-0" />
+          )}
           {item.badge ? (
             <>
               {item.label && (
@@ -117,7 +135,9 @@ export const NavigationItem = ({
           })}
           onClick={onRequestClose}
         >
-          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
+          {item.icon && (
+            <item.icon size={16} className="align-[-0.125em] shrink-0" />
+          )}
           {item.badge ? (
             <>
               {item.label && <TruncatedLabel label={item.label} />}
@@ -135,7 +155,9 @@ export const NavigationItem = ({
           rel="noopener noreferrer"
           onClick={onRequestClose}
         >
-          {item.icon && <item.icon size={16} className="align-[-0.125em]" />}
+          {item.icon && (
+            <item.icon size={16} className="align-[-0.125em] shrink-0" />
+          )}
           <span className="whitespace-normal">{item.label}</span>
           {/* This prevents that the icon would be positioned in its own line if the text fills a line entirely */}
           <span className="whitespace-nowrap">

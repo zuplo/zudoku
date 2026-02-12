@@ -1,8 +1,10 @@
 import type { RouteObject } from "react-router";
 
+import { joinUrl } from "../../lib/util/joinUrl.js";
+
 export const routesToPaths = (routes: RouteObject[]) => {
   const paths: string[] = [];
-  const addPaths = (routes: RouteObject[]) => {
+  const addPaths = (routes: RouteObject[], parentPath = "") => {
     for (const route of routes) {
       // skip catch-all routes and dynamic segments
       if (route.path?.includes("*") || route.path?.includes(":")) {
@@ -14,11 +16,17 @@ export const routesToPaths = (routes: RouteObject[]) => {
         continue;
       }
 
+      const fullPath = route.path
+        ? route.path.startsWith("/")
+          ? route.path
+          : joinUrl(parentPath, route.path)
+        : parentPath;
+
       if (route.path) {
-        paths.push(route.path.startsWith("/") ? route.path : `/${route.path}`);
+        paths.push(fullPath);
       }
       if (route.children) {
-        addPaths(route.children);
+        addPaths(route.children, fullPath);
       }
     }
   };

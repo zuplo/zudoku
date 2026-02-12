@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 import colors from "picocolors";
 import {
   type ConfigEnv,
@@ -16,6 +17,7 @@ import { CdnUrlSchema } from "../config/validators/validate.js";
 import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import vitePlugin from "./plugin.js";
+import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
@@ -123,6 +125,18 @@ export async function getViteConfig(
     ]),
   );
 
+  if (ZuploEnv.isZuplo) {
+    dotenv.config({
+      path: path.resolve(config.__meta.rootDir, "../.env.zuplo"),
+      quiet: true,
+    });
+  }
+
+  const deploymentName =
+    ZuploEnv.buildConfig?.deploymentName ||
+    getZuploSystemConfigurations(process.env.ZUPLO_SYSTEM_CONFIGURATIONS)
+      ?.__ZUPLO_DEPLOYMENT_NAME;
+
   const viteConfig: InlineConfig = {
     root: dir,
     base,
@@ -141,6 +155,8 @@ export async function getViteConfig(
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
+        JSON.stringify(deploymentName),
       ...defineEnvVars([
         "SENTRY_DSN",
         "ZUPLO_BUILD_ID",

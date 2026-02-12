@@ -3,7 +3,10 @@ import type { ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   site: {
     logo: {
-      src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
+      src: {
+        light: "https://cdn.zuplo.com/static/logos/zudoku-light.svg",
+        dark: "https://cdn.zuplo.com/static/logos/zudoku-dark.svg",
+      },
       alt: "Zudoku",
       width: 130,
     },
@@ -51,6 +54,7 @@ const config: ZudokuConfig = {
       "github",
       "google",
       "facebook",
+      "password",
       "twitter",
       "microsoft",
       "apple",

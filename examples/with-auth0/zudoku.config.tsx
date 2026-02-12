@@ -1,7 +1,8 @@
 import type { ZudokuConfig } from "zudoku";
+import VerifiedPage from "./src/VerifiedPage";
 
 const config: ZudokuConfig = {
-  page: {
+  site: {
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       alt: "Zudoku",
@@ -19,8 +20,15 @@ const config: ZudokuConfig = {
       to: "/api",
       label: "Rick & Morty API",
     },
+    {
+      label: "Email Verification",
+      type: "custom-page",
+      path: "/verified",
+      element: <VerifiedPage />,
+    },
   ],
-  protectedRoutes: ["/documentation/installation", "/api/*"],
+
+  protectedRoutes: ["/documentation/installation", "/api/*", "/verified"],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   docs: {
     files: "/pages/**/*.mdx",
@@ -31,9 +39,6 @@ const config: ZudokuConfig = {
     domain: "zuplo-samples.us.auth0.com",
     clientId: "kWQs12Q9Og4w6zzI82qJSa3klN1sMtvz",
     audience: "https://api.example.com/",
-  },
-  apiKeys: {
-    enabled: true,
   },
   apis: {
     type: "url",

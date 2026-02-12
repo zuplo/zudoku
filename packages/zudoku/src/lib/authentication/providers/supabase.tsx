@@ -129,21 +129,12 @@ class SupabaseAuthenticationProvider
   };
 
   signOut = async () => {
-    await new Promise<void>((resolve) => {
-      const { data } = this.client.auth.onAuthStateChange(async (event) => {
-        if (event !== "SIGNED_OUT") return;
-        data.subscription.unsubscribe();
-        resolve();
-      });
-      void this.client.auth.signOut();
-    });
-
-    useAuthState.setState({
-      isAuthenticated: false,
-      isPending: false,
-      profile: undefined,
-      providerData: undefined,
-    });
+    const { error } = await this.client.auth.signOut({ scope: "local" });
+    if (error) {
+      // biome-ignore lint/suspicious: Logging is better than not doing anything
+      console.error("Error signing out", error);
+    }
+    useAuthState.getState().setLoggedOut();
   };
 
   onPageLoad = async () => {

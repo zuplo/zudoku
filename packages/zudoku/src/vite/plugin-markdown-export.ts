@@ -120,7 +120,9 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
 
         const basePath = joinUrl(config.basePath);
-        const routePath = req.url.slice(basePath.length).replace(/\.md$/, "");
+        const routePath = joinUrl(
+          req.url.slice(basePath.length).replace(/\.mdx?$/, ""),
+        );
         const filePath = markdownFiles[routePath];
 
         if (!filePath) return next();
@@ -178,9 +180,12 @@ const viteMarkdownExportPlugin = (): Plugin => {
             content: finalMarkdown,
           });
 
-          const outputFileName =
-            routePath === "/" ? "/index.md" : `${routePath}.md`;
-          const outputPath = path.join(distDir, outputFileName);
+          const segments =
+            routePath === "/"
+              ? ["index"]
+              : routePath.split("/").filter(Boolean);
+
+          const outputPath = `${path.join(distDir, ...segments)}.md`;
 
           await mkdir(path.dirname(outputPath), { recursive: true });
 

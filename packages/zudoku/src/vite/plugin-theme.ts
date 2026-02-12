@@ -349,7 +349,13 @@ export const viteThemePlugin = (): Plugin => {
         ),
       );
 
-      const code = [...files].map((file) => `@source "${file}";`);
+      const tailwindSources = (config.__tailwindSources ?? []).map((source) =>
+        path.relative(path.dirname(id), source),
+      );
+
+      const code = [...files, ...tailwindSources].map(
+        (file) => `@source "${file}";`,
+      );
 
       // NOTE: Font imports and declarations are handled by virtual:zudoku-theme.css
       // This @theme block only maps CSS variables to Tailwind utilities

@@ -32,6 +32,8 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "../CollapsibleHeader.js";
+import { isAudioContentType } from "../fileUtils.js";
+import { AudioPlayer } from "./AudioPlayer.js";
 import { convertToTypes } from "./convertToTypes.js";
 
 const mimeTypeToLanguage = (mimeType: string) => {
@@ -50,9 +52,14 @@ const mimeTypeToLanguage = (mimeType: string) => {
   )?.[1];
 };
 
+const getContentType = (headers: Array<[string, string]>) => {
+  return (
+    headers.find(([key]) => key.toLowerCase() === "content-type")?.[1] || ""
+  );
+};
+
 const detectLanguage = (headers: Array<[string, string]>) => {
-  const contentType =
-    headers.find(([key]) => key.toLowerCase() === "content-type")?.[1] || "";
+  const contentType = getContentType(headers);
   return mimeTypeToLanguage(contentType);
 };
 
@@ -293,23 +300,32 @@ export const ResponseTab = ({
       </div>
       <div className="flex-1">
         {isBinary ? (
-          <div className="p-4 text-center">
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-lg font-semibold">Binary Content</div>
-              <div className="text-sm text-muted-foreground">
-                This response contains binary data that cannot be displayed as
-                text.
+          blob && isAudioContentType(getContentType(headers)) ? (
+            <AudioPlayer
+              blob={blob}
+              fileName={fileName ?? "audio"}
+              size={size}
+              onDownload={handleDownload}
+            />
+          ) : (
+            <div className="p-4 text-center">
+              <div className="flex flex-col items-center gap-4">
+                <div className="text-lg font-semibold">Binary Content</div>
+                <div className="text-sm text-muted-foreground">
+                  This response contains binary data that cannot be displayed as
+                  text.
+                </div>
+                <Button
+                  onClick={handleDownload}
+                  className="flex items-center gap-2"
+                  disabled={!blob}
+                >
+                  <DownloadIcon className="h-4 w-4" />
+                  Download {fileName || "file"} ({humanFileSize(size)})
+                </Button>
               </div>
-              <Button
-                onClick={handleDownload}
-                className="flex items-center gap-2"
-                disabled={!blob}
-              >
-                <DownloadIcon className="h-4 w-4" />
-                Download {fileName || "file"} ({humanFileSize(size)})
-              </Button>
             </div>
-          </div>
+          )
         ) : (
           <SyntaxHighlight
             className="text-xs flex-1"

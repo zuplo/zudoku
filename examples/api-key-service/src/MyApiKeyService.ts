@@ -1,14 +1,11 @@
-// biome-ignore-all lint: Need to fix this
-// TODO: fix this file
-// @ts-nocheck
 import { createApiKeyService } from "zudoku/plugins/api-keys";
 
 const now = new Date();
 const thirtyDaysFromNow = new Date(now);
 thirtyDaysFromNow.setDate(now.getDate() + 30);
 
-const ninetyDaysFromNow = new Date(now);
-ninetyDaysFromNow.setDate(now.getDate() + 90);
+const oneDaysAgo = new Date(now);
+oneDaysAgo.setDate(now.getDate() - 1);
 
 /**
  * Sample API keys for demonstration purposes.
@@ -16,24 +13,24 @@ ninetyDaysFromNow.setDate(now.getDate() + 90);
  */
 const EXAMPLE_KEYS = [
   {
-    id: "prod-key-1",
-    description: "Production API Key",
-    key: "prod-key-xyz-123",
-    createdOn: now.toISOString(),
-    expiresOn: ninetyDaysFromNow.toISOString(),
-  },
-  {
-    id: "test-key-1",
+    id: crypto.randomUUID(),
     description: "Testing Environment Key",
-    key: "test-key-abc-456",
+    key: `key-${crypto.randomUUID()}`,
     createdOn: now.toISOString(),
     expiresOn: thirtyDaysFromNow.toISOString(),
   },
   {
-    id: "dev-key-1",
+    id: crypto.randomUUID(),
     description: "Development Key (No Expiration)",
-    key: "dev-key-def-789",
+    key: `key-${crypto.randomUUID()}`,
     createdOn: now.toISOString(),
+  },
+  {
+    id: crypto.randomUUID(),
+    description: "Production API Key",
+    key: `key-${crypto.randomUUID()}`,
+    createdOn: now.toISOString(),
+    expiresOn: oneDaysAgo.toISOString(),
   },
 ];
 
@@ -66,8 +63,14 @@ export const MyApiKeyService = createApiKeyService({
    * - Add sorting options
    * - Filter based on user permissions
    */
-  getKeys: async (context) => {
-    return keys;
+  getConsumers: async () => {
+    return [
+      {
+        id: "My First Consumer",
+        label: "API Consumer",
+        apiKeys: keys,
+      },
+    ];
   },
 
   /**
@@ -95,8 +98,8 @@ export const MyApiKeyService = createApiKeyService({
    * - Archive deleted keys
    * - Add validation for protected keys
    */
-  deleteKey: async (id, _context) => {
-    keys = keys.filter((key) => key.id !== id);
+  deleteKey: async (_consumerId, keyId, _context) => {
+    keys = keys.filter((key) => key.id !== keyId);
   },
 
   /**
@@ -104,11 +107,14 @@ export const MyApiKeyService = createApiKeyService({
    * This is useful when a key might have been compromised.
    * The key ID stays the same but gets a new value.
    */
-  rollKey: async (id, _context) => {
-    const key = keys.find((k) => k.id === id);
-    if (key) {
-      key.key = `key-${crypto.randomUUID()}`;
-    }
+  rollKey: async (_consumerId, _context) => {
+    keys.unshift({
+      id: crypto.randomUUID(),
+      description: "New API Key",
+      key: `key-${crypto.randomUUID()}`,
+      createdOn: new Date().toISOString(),
+      expiresOn: thirtyDaysFromNow.toISOString(),
+    });
   },
 
   /**
@@ -117,7 +123,7 @@ export const MyApiKeyService = createApiKeyService({
    * - Finding and updating specific keys
    * - Maintaining update timestamps
    */
-  updateKeyDescription: async (apiKey, context) => {
+  updateKeyDescription: async (apiKey, _context) => {
     const key = keys.find((k) => k.id === apiKey.id);
     if (key) {
       key.description = apiKey.description;

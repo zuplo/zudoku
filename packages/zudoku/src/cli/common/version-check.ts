@@ -35,9 +35,18 @@ export const warnPackageVersionMismatch = async () => {
   const reactDomPath = path.join(nodeModulesPath, "react-dom/package.json");
 
   const required = packageJson.peerDependencies;
+
+  const tryGetVersion = (pkgPath: string) => {
+    try {
+      return getPackageJson(pkgPath).version;
+    } catch {
+      return undefined;
+    }
+  };
+
   const installed = {
-    react: getPackageJson(reactPath).version,
-    "react-dom": getPackageJson(reactDomPath).version,
+    react: tryGetVersion(reactPath),
+    "react-dom": tryGetVersion(reactDomPath),
   };
 
   if (
@@ -46,7 +55,10 @@ export const warnPackageVersionMismatch = async () => {
     !required.react ||
     !required["react-dom"]
   ) {
-    throw new Error("React/React-DOM version could not be determined");
+    printWarningToConsole(
+      "Could not verify React version. Ensure react and react-dom are installed.",
+    );
+    return;
   }
 
   if (

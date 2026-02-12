@@ -149,10 +149,10 @@ export const Sidecar = ({
       selectedServer,
       exampleBody: currentExampleCode
         ? {
-            mimeType: "application/json",
+            mimeType: selectedContent?.mediaType ?? "application/json",
             text: JSON.stringify(currentExampleCode, null, 2),
           }
-        : { mimeType: "application/json" },
+        : { mimeType: selectedContent?.mediaType ?? "application/json" },
     });
 
     return getConverted(snippet, selectedLang);
@@ -161,6 +161,7 @@ export const Sidecar = ({
     operation,
     selectedServer,
     selectedLang,
+    selectedContent,
     options,
     auth,
     context,

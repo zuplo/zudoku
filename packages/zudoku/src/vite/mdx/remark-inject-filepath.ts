@@ -5,7 +5,9 @@ import { exportMdxjsConst } from "./utils.js";
 
 export const remarkInjectFilepath =
   (rootDir: string) => (tree: Root, vfile: VFile) => {
-    tree.children.unshift(
-      exportMdxjsConst("__filepath", path.relative(rootDir, vfile.path)),
-    );
+    const relativePath = path
+      .relative(rootDir, vfile.path)
+      .split(path.sep)
+      .join(path.posix.sep);
+    tree.children.unshift(exportMdxjsConst("__filepath", relativePath));
   };

@@ -10,7 +10,7 @@ import type { SlotType } from "../../lib/components/context/SlotProvider.js";
 import type { ZudokuPlugin } from "../../lib/core/plugins.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import type { FilterCatalogItemsFn } from "../../lib/plugins/api-catalog/index.js";
-import type { ApiKey } from "../../lib/plugins/api-keys/index.js";
+import type { ApiConsumer } from "../../lib/plugins/api-keys/index.js";
 import type {
   GenerateCodeSnippetFn,
   TransformExamplesFn,
@@ -85,7 +85,7 @@ const ApiConfigSchema = z
   })
   .partial();
 
-const UrlVersionConfigSchema = z.object({
+const VersionConfigSchema = z.object({
   path: z.string(),
   input: z.string(),
   label: z.string().optional(),
@@ -94,12 +94,15 @@ const UrlVersionConfigSchema = z.object({
 const ApiSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("url"),
-    input: z.union([z.string(), z.array(UrlVersionConfigSchema)]),
+    input: z.union([z.string(), z.array(VersionConfigSchema)]),
     ...ApiConfigSchema.shape,
   }),
   z.object({
     type: z.literal("file"),
-    input: z.union([z.string(), z.array(z.string())]),
+    input: z.union([
+      z.string(),
+      z.array(z.union([z.string(), VersionConfigSchema])),
+    ]),
     ...ApiConfigSchema.shape,
   }),
   z.object({
@@ -111,8 +114,8 @@ const ApiSchema = z.discriminatedUnion("type", [
 
 const ApiKeysSchema = z.object({
   enabled: z.boolean(),
-  getKeys: z
-    .custom<(context: ZudokuContext) => Promise<ApiKey[]>>(
+  getConsumers: z
+    .custom<(context: ZudokuContext) => Promise<ApiConsumer[]>>(
       (val) => typeof val === "function",
     )
     .optional(),
@@ -122,9 +125,13 @@ const ApiKeysSchema = z.object({
     )
     .optional(),
   deleteKey: z
-    .custom<(id: string, context: ZudokuContext) => Promise<void>>(
-      (val) => typeof val === "function",
-    )
+    .custom<
+      (
+        consumerId: string,
+        keyId: string,
+        context: ZudokuContext,
+      ) => Promise<void>
+    >((val) => typeof val === "function")
     .optional(),
   updateKeyDescription: z
     .custom<
@@ -148,6 +155,8 @@ const ApiKeysSchema = z.object({
     >((val) => typeof val === "function")
     .optional(),
 });
+
+export type ApiKeysOptions = z.infer<typeof ApiKeysSchema>;
 
 const LogoSchema = z.object({
   src: z.object({ light: z.string(), dark: z.string() }),
@@ -619,11 +628,14 @@ const BaseConfigSchema = z.object({
      */
     examplesLanguage: z.string().optional(),
   }),
+  // Internal: populated by plugins via `transformConfig` to add Tailwind source paths
+  __tailwindSources: z.array(z.string()),
 });
 
 export const ZudokuConfig = BaseConfigSchema.partial();
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
+export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;

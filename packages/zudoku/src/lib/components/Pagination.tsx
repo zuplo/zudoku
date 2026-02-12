@@ -13,19 +13,18 @@ export const Pagination = ({
   className?: string;
 }) => {
   const linkClass =
-    "group transition-all p-5 space-x-1 rtl:space-x-reverse transition-all hover:text-foreground";
-
+    "group min-w-0 transition-all p-5 space-x-1 rtl:space-x-reverse hover:text-foreground";
   return (
     <div
       className={cn(
-        "flex -mx-4 text-muted-foreground font-semibold",
+        "flex flex-wrap gap-2 -mx-4 text-muted-foreground font-semibold",
         prev ? "justify-between" : "justify-end",
         className,
       )}
       data-pagefind-ignore="all"
     >
       {prev && (
-        <Button variant="ghost" asChild>
+        <Button variant="ghost" className="min-w-0 max-w-full" asChild>
           <Link to={prev.to} relative="path" className={linkClass}>
             <ArrowLeftIcon size={14} strokeWidth={2.5} />
             <span className="text-lg truncate">{prev.label}</span>
@@ -33,7 +32,7 @@ export const Pagination = ({
         </Button>
       )}
       {next && (
-        <Button variant="ghost" asChild>
+        <Button variant="ghost" className="ms-auto min-w-0 max-w-full" asChild>
           <Link to={next.to} relative="path" className={linkClass}>
             <span className="text-lg truncate">{next.label}</span>
             <ArrowRightIcon size={14} strokeWidth={2.5} />

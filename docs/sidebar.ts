@@ -6,6 +6,7 @@ import type { Navigation } from "zudoku";
  */
 
 export const docs: Navigation = [
+  { type: "filter", placeholder: "Filter documentation" },
   "docs/quickstart",
   // {
   //   type: "category",
@@ -112,6 +113,7 @@ export const docs: Navigation = [
     icon: "cloud-upload",
     link: "docs/deployment",
     items: [
+      "docs/deploy/zuplo",
       "docs/deploy/cloudflare-pages",
       "docs/deploy/github-pages",
       "docs/deploy/vercel",

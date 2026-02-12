@@ -1,8 +1,8 @@
 import { GraphQLScalarType } from "graphql/index.js";
 import { GraphQLJSON } from "graphql-type-json";
-import type { RecordAny } from "../../util/traverse.js";
 
 export const CIRCULAR_REF = "$[Circular Reference]";
+export const SCHEMA_REF_PREFIX = "$ref:";
 
 const OPENAPI_PROPS = new Set([
   "properties",
@@ -13,39 +13,52 @@ const OPENAPI_PROPS = new Set([
   "oneOf",
 ]);
 
-const handleCircularRefs = (
+export const handleCircularRefs = (
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   obj: any,
-  visited = new WeakSet(),
+  currentPath = new WeakSet(),
   refs = new WeakMap(),
   path: string[] = [],
+  currentRefPaths = new Set<string>(),
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
 ): any => {
   if (obj === null || typeof obj !== "object") return obj;
 
-  if (visited.has(obj)) {
-    const cached = refs.get(obj);
-    if (cached) return cached;
-    const circularProp = path.find((p) => !OPENAPI_PROPS.has(p)) || path[0];
+  const refPath = obj.__$ref;
+  const isCircular =
+    currentPath.has(obj) ||
+    (typeof refPath === "string" && currentRefPaths.has(refPath));
 
+  if (isCircular) {
+    if (typeof refPath === "string") return SCHEMA_REF_PREFIX + refPath;
+    const circularProp = path.find((p) => !OPENAPI_PROPS.has(p)) || path[0];
     return [CIRCULAR_REF, circularProp].filter(Boolean).join(":");
   }
 
-  visited.add(obj);
+  if (refs.has(obj)) return refs.get(obj);
 
-  if (Array.isArray(obj)) {
-    const result = obj.map((item, index) =>
-      handleCircularRefs(item, visited, refs, [...path, index.toString()]),
+  currentPath.add(obj);
+  if (typeof refPath === "string") currentRefPaths.add(refPath);
+
+  const recurse = (value: unknown, key: string) =>
+    handleCircularRefs(
+      value,
+      currentPath,
+      refs,
+      [...path, key],
+      currentRefPaths,
     );
-    refs.set(obj, result);
-    return result;
-  }
 
-  const result: RecordAny = {};
-  for (const [key, value] of Object.entries(obj)) {
-    result[key] = handleCircularRefs(value, visited, refs, [...path, key]);
-  }
+  const result = Array.isArray(obj)
+    ? obj.map((item, i) => recurse(item, i.toString()))
+    : Object.fromEntries(
+        Object.entries(obj).map(([k, v]) => [k, recurse(v, k)]),
+      );
+
   refs.set(obj, result);
+  currentPath.delete(obj);
+  if (typeof refPath === "string") currentRefPaths.delete(refPath);
+
   return result;
 };
 
