@@ -46,9 +46,13 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
             <ItemTitle>Verified email required</ItemTitle>
             <ItemDescription>
               You need to verify your email to access API keys.
-              <Button onClick={refresh}>Refresh</Button>
             </ItemDescription>
           </ItemContent>
+          <ItemActions>
+            <Button onClick={refresh} className="ml-2">
+              Refresh
+            </Button>
+          </ItemActions>
 
           {supportsEmailVerification && (
             <ItemActions>
