@@ -1,6 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
+import { useDeferredValue } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   Collapsible,
@@ -45,6 +46,12 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     servers {
       url
       description
+      variables {
+        name
+        defaultValue
+        description
+        enumValues
+      }
     }
     parameters {
       name
@@ -120,6 +127,13 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
     schema(input: $input, type: $type) {
       servers {
         url
+        description
+        variables {
+          name
+          defaultValue
+          description
+          enumValues
+        }
       }
       description
       summary
@@ -167,9 +181,7 @@ export const OperationList = ({
     untagged,
   });
   const schema = useSuspenseQuery(query).data.schema;
-  const { selectedServer: globalSelectedServer } = useSelectedServer(
-    schema.servers,
-  );
+  const { selectedServer } = useSelectedServer(schema.servers);
   const title = schema.title;
   const summary = schema.summary;
   const description = schema.description;
@@ -186,6 +198,8 @@ export const OperationList = ({
 
   // Prefetch for Playground
   useApiIdentities();
+
+  const deferredServerUrl = useDeferredValue(selectedServer);
 
   if (!schema.tag) {
     return (
@@ -292,7 +306,7 @@ export const OperationList = ({
                   </span>
                 )}
               </Heading>
-              <Endpoint />
+              <Endpoint servers={schema.servers} />
             </div>
             <div className="flex flex-col gap-4 sm:items-end">
               <div className="flex gap-2 items-center">
@@ -362,7 +376,7 @@ export const OperationList = ({
           <div key={fragment.slug}>
             <OperationListItem
               operationFragment={fragment}
-              globalSelectedServer={globalSelectedServer}
+              serverUrl={deferredServerUrl}
               shouldLazyHighlight={shouldLazyHighlight}
             />
             <hr className="my-10" />

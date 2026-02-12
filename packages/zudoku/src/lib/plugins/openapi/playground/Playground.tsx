@@ -142,7 +142,7 @@ export const Playground = ({
   onSignUp,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
-    servers.map((url) => ({ url })),
+    servers.map((url) => ({ url, variables: [] })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
   const identities = useApiIdentities();
