@@ -11,6 +11,18 @@ your [Zudoku configuration](./overview.md). This requires [authentication](./aut
 be configured. The property supports two formats: a simple array of path patterns, or an advanced
 object format with custom authorization logic.
 
+:::caution[Client-side protection only]
+
+Zudoku builds your documentation as static site generated (SSG) content. All page content, including
+API specifications, is bundled into the JavaScript files served to every visitor. Protected routes
+only prevent navigation on the client side — they do not prevent the underlying content from being
+downloaded and inspected in the browser's JavaScript bundles.
+
+Do not rely on `protectedRoutes` to hide sensitive or confidential API specifications. Server-side
+rendering support with proper access control is currently being developed.
+
+:::
+
 ## Array Format
 
 The simplest way to protect routes is to provide an array of path patterns. Users must be
