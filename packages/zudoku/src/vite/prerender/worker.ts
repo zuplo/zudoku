@@ -77,7 +77,11 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       );
     }
 
-    html = bypassResponse.buffer;
+    // Use bypass HTML for search indexing only if the bypass render succeeded
+    html =
+      bypassResponse.statusCode >= 400
+        ? fileResponse.buffer
+        : bypassResponse.buffer;
   } else {
     await server.render({ ...sharedOpts, response: fileResponse });
     await fileResponse.isSent();
@@ -98,6 +102,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   return {
     outputPath,
     redirect,
+    statusCode: fileResponse.statusCode,
     html,
   };
 };

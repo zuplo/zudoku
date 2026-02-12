@@ -26,10 +26,14 @@ import {
   Routes,
 } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CallbackContext } from "../../config/validators/ProtectedRoutesSchema.js";
+import {
+  type CallbackContext,
+  type ProtectedRouteResult,
+  REASON_CODES,
+} from "../../config/validators/ProtectedRoutesSchema.js";
 import type { UseAuthReturn } from "../authentication/hook.js";
 import { useAuthState } from "../authentication/state.js";
-import { BypassProtectedRoutesContext } from "../components/context/BypassProtectedRoutesContext.js";
+import { RenderContext } from "../components/context/RenderContext.js";
 import { ZudokuProvider } from "../components/context/ZudokuProvider.js";
 import { ZudokuContext } from "../core/ZudokuContext.js";
 import { ensureArray } from "../util/ensureArray.js";
@@ -44,7 +48,10 @@ const mockUseAuth = vi.mocked(useAuth);
 
 type CreateWrapperOptions = {
   auth?: Partial<UseAuthReturn>;
-  protectedRoutes?: Record<string, (c: CallbackContext) => boolean>;
+  protectedRoutes?: Record<
+    string,
+    (c: CallbackContext) => ProtectedRouteResult
+  >;
   shouldBypass?: boolean;
   initialPath?: string;
   wrapRouteGuard?: boolean;
@@ -111,9 +118,11 @@ const render = async (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ZudokuProvider context={context}>
-          <BypassProtectedRoutesContext.Provider value={shouldBypass}>
+          <RenderContext
+            value={{ status: 200, bypassProtection: shouldBypass }}
+          >
             <Outlet />
-          </BypassProtectedRoutesContext.Provider>
+          </RenderContext>
         </ZudokuProvider>
       </QueryClientProvider>
     </HelmetProvider>
@@ -202,9 +211,9 @@ describe("RouteGuard", () => {
         <HelmetProvider>
           <QueryClientProvider client={queryClient}>
             <ZudokuProvider context={context}>
-              <BypassProtectedRoutesContext.Provider value={false}>
+              <RenderContext value={{ status: 200, bypassProtection: false }}>
                 {children}
-              </BypassProtectedRoutesContext.Provider>
+              </RenderContext>
             </ZudokuProvider>
           </QueryClientProvider>
         </HelmetProvider>
@@ -452,6 +461,82 @@ describe("RouteGuard", () => {
 
       // Should render content because path doesn't match exactly
       expect(screen.getByText("Public")).toBeInTheDocument();
+    });
+  });
+
+  describe("forbidden routes", () => {
+    it("renders ForbiddenPage when route returns FORBIDDEN", async () => {
+      await render(
+        { path: "/vip", element: <div>VIP Content</div> },
+        {
+          initialPath: "/vip",
+          auth: {
+            isAuthEnabled: true,
+            isPending: false,
+            isAuthenticated: true,
+            profile: {
+              sub: "123",
+              email: "user@example.com",
+              emailVerified: false,
+              name: "Test",
+              pictureUrl: undefined,
+            },
+          },
+          protectedRoutes: {
+            "/vip": () => REASON_CODES.FORBIDDEN,
+          },
+        },
+      );
+
+      expect(screen.getByText("Access Denied")).toBeInTheDocument();
+      expect(
+        screen.getByText("You don't have permission to access this page."),
+      ).toBeInTheDocument();
+      // The actual page content should not be rendered
+      expect(screen.queryByText("VIP Content")).not.toBeInTheDocument();
+    });
+
+    it("does not block navigation to FORBIDDEN route with login dialog", async () => {
+      const navRoutes: RouteObject[] = [
+        {
+          path: "/",
+          element: (
+            <div>
+              Public <Link to="/vip">Go VIP</Link>
+            </div>
+          ),
+        },
+        { path: "/vip", element: <div>VIP Content</div> },
+      ];
+
+      await render(navRoutes, {
+        auth: {
+          isAuthEnabled: true,
+          isPending: false,
+          isAuthenticated: true,
+          profile: {
+            sub: "123",
+            email: "user@example.com",
+            emailVerified: false,
+            name: "Test",
+            pictureUrl: undefined,
+          },
+        },
+        protectedRoutes: {
+          "/vip": () => REASON_CODES.FORBIDDEN,
+        },
+        initialPath: "/",
+      });
+
+      expect(screen.getByText("Public")).toBeInTheDocument();
+
+      await userEvent.click(screen.getByText("Go VIP"));
+
+      // Should show ForbiddenPage, not a login dialog
+      await waitFor(() => {
+        expect(screen.getByText("Access Denied")).toBeInTheDocument();
+      });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
   });
 

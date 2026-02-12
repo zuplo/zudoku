@@ -26,7 +26,7 @@ export const HIGHLIGHT_CODE_BLOCK_CLASS =
 
 const engine = createJavaScriptRegexEngine({ forgiving: true });
 
-const shikiPromise = import.meta.hot?.data.shiki
+const shikiPromise = import.meta.hot?.data?.shiki
   ? import.meta.hot.data.shiki
   : createHighlighterCore({
       engine,
@@ -41,7 +41,7 @@ const shikiPromise = import.meta.hot?.data.shiki
       },
     });
 
-if (import.meta.hot) {
+if (import.meta.hot?.data) {
   import.meta.hot.data.shiki = shikiPromise;
 }
 

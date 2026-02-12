@@ -23,6 +23,7 @@ const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 export type WorkerResult = {
   outputPath: string;
   html: string;
+  statusCode: number;
   redirect?: { from: string; to: string };
 };
 
@@ -108,10 +109,12 @@ export const prerender = async ({
     paths.map(async (urlPath) => {
       const result = await pool.run({ urlPath } satisfies WorkerData);
 
-      await pagefindIndex?.addHTMLFile({
-        url: urlPath,
-        content: result.html,
-      });
+      if (result.statusCode < 400) {
+        await pagefindIndex?.addHTMLFile({
+          url: urlPath,
+          content: result.html,
+        });
+      }
 
       completedCount++;
 
