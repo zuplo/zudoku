@@ -13,33 +13,38 @@ export const buildTagCategories = ({
   tagGroups,
   expandAllTags,
 }: BuildTagCategoriesOptions): NavigationItem[] => {
-  const groupedTags = new Set(
-    tagGroups.flatMap((group) =>
-      group.tags.filter((name) => tagCategories.has(name)),
-    ),
-  );
+  const consumedTags = new Set<string>();
 
   const groupedCategories: NavigationItem[] = tagGroups.flatMap((group) => {
-    const items = group.tags
-      .map((name) => tagCategories.get(name))
-      .filter(Boolean) as NavigationItem[];
+    const matchingTag = tagCategories.get(group.name);
+    const base = matchingTag?.type === "category" ? matchingTag : undefined;
 
-    if (items.length === 0) {
-      return [];
-    }
+    if (base) consumedTags.add(group.name);
+
+    const childTags = group.tags
+      .filter((name) => name !== group.name && tagCategories.has(name))
+      .flatMap((name) => {
+        consumedTags.add(name);
+        const tag = tagCategories.get(name);
+        return tag ? [tag] : [];
+      });
+
+    if (!base && childTags.length === 0) return [];
+
     return [
       {
-        type: "category",
-        label: group.name,
-        items,
-        collapsible: true,
-        collapsed: !expandAllTags,
+        ...base,
+        type: "category" as const,
+        label: base?.label ?? group.name,
+        items: [...(base?.items ?? []), ...childTags],
+        collapsible: base?.collapsible ?? true,
+        collapsed: base?.collapsed ?? !expandAllTags,
       },
     ];
   });
 
   const ungroupedCategories = Array.from(tagCategories.entries())
-    .filter(([name]) => !groupedTags.has(name))
+    .filter(([name]) => !consumedTags.has(name))
     .map(([, cat]) => cat);
 
   return [...groupedCategories, ...ungroupedCategories];
