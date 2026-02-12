@@ -285,7 +285,7 @@
     "piscina": "5.1.4",
     "posthog-node": "5.24.7",
     "react-error-boundary": "6.0.0",
-    "react-hook-form": "7.66.0",
+    "react-hook-form": "7.71.1",
     "react-is": "catalog:",
     "react-markdown": "10.1.0",
     "react-router": "7.12.0",
