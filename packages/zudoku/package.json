@@ -257,7 +257,7 @@
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "embla-carousel-react": "8.6.0",
     "estree-util-value-to-estree": "3.4.1",
     "express": "5.2.1",
