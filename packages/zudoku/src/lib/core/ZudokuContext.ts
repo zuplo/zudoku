@@ -23,7 +23,6 @@ import {
   isEventConsumerPlugin,
   isNavigationPlugin,
   isProfileMenuPlugin,
-  type NavigationPlugin,
   needsInitialization,
   type ProfileNavigationItem,
   type ZudokuPlugin,
@@ -106,7 +105,7 @@ export type ZudokuContextOptions = {
   };
 };
 
-export const transformProtectedRoutes = (
+export const normalizeProtectedRoutes = (
   val: ProtectedRoutesInput,
 ): Record<string, (c: CallbackContext) => boolean> | undefined => {
   if (!val) return undefined;
@@ -124,43 +123,42 @@ export const transformProtectedRoutes = (
 };
 
 export class ZudokuContext {
-  public plugins: NonNullable<ZudokuContextOptions["plugins"]>;
-  public navigation: Navigation;
-  public meta: ZudokuContextOptions["metadata"];
-  public site: ZudokuContextOptions["site"];
-  public readonly authentication?: ZudokuContextOptions["authentication"];
+  public readonly authentication?: AuthenticationPlugin;
   public readonly getAuthState: () => AuthState;
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
-  private readonly navigationPlugins: NavigationPlugin[];
-  private emitter = createNanoEvents<ZudokuEvents>();
+  public readonly env: Record<string, string | undefined>;
+  public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
+  private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
+  private readonly emitter = createNanoEvents<ZudokuEvents>();
 
-  constructor(options: ZudokuContextOptions, queryClient: QueryClient) {
+  constructor(
+    options: ZudokuContextOptions,
+    queryClient: QueryClient,
+    env: Record<string, string | undefined>,
+  ) {
+    this.queryClient = queryClient;
+    this.env = env;
+    this.options = options;
+    this.plugins = options.plugins ?? [];
+    this.authentication = this.plugins.find(isAuthenticationPlugin);
+    this.getAuthState = useAuthState.getState;
+
     const pluginProtectedRoutes = Object.fromEntries(
-      (options.plugins ?? []).flatMap((plugin) => {
+      this.plugins.flatMap((plugin) => {
         if (!isNavigationPlugin(plugin)) return [];
         const routes = plugin.getProtectedRoutes?.();
         if (!routes) return [];
 
-        return Object.entries(transformProtectedRoutes(routes) ?? {});
+        return Object.entries(normalizeProtectedRoutes(routes) ?? {});
       }),
     );
 
-    const protectedRoutes = {
+    this.protectedRoutes = {
       ...pluginProtectedRoutes,
-      ...transformProtectedRoutes(options.protectedRoutes),
+      ...normalizeProtectedRoutes(options.protectedRoutes),
     };
 
-    this.queryClient = queryClient;
-    this.options = { ...options, protectedRoutes };
-    this.plugins = options.plugins ?? [];
-    this.navigation = options.navigation ?? [];
-    this.navigationPlugins = this.plugins.filter(isNavigationPlugin);
-    this.authentication = this.plugins.find(isAuthenticationPlugin);
-    this.getAuthState = useAuthState.getState;
-
-    this.meta = options.metadata;
-    this.site = options.site;
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 
@@ -212,9 +210,9 @@ export class ZudokuContext {
 
   getPluginNavigation = async (path: string) => {
     const navigations = await Promise.all(
-      this.navigationPlugins.map((plugin) =>
-        plugin.getNavigation?.(joinUrl(path), this),
-      ),
+      this.plugins
+        .filter(isNavigationPlugin)
+        .map((plugin) => plugin.getNavigation?.(joinUrl(path), this)),
     );
 
     return navigations.flatMap((nav) => nav ?? []);

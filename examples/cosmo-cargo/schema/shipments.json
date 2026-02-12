@@ -210,6 +210,7 @@
             "description": "Empty object for future extensibility",
             "properties": {}
           },
+          "legacyId": {},
           "customFields": {
             "type": "object",
             "description": "Dictionary of custom string fields that can be added to the shipment",

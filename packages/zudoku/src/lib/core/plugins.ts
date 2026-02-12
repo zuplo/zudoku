@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import type { HTMLAttributeAnchorTarget, ReactNode } from "react";
 import type { Location, RouteObject } from "react-router";
 import type { Navigation } from "../../config/validators/NavigationSchema.js";
 import type { ProtectedRoutesInput } from "../../config/validators/ProtectedRoutesSchema.js";
@@ -56,6 +56,7 @@ export interface ProfileMenuPlugin {
 export type ProfileNavigationItem = {
   label: string;
   path?: string;
+  target?: HTMLAttributeAnchorTarget;
   weight?: number;
   category?: "top" | "middle" | "bottom";
   children?: ProfileNavigationItem[];
@@ -68,11 +69,15 @@ export interface ConfigHookContext {
   configPath: string;
 }
 
+export interface TransformConfigContext {
+  config: ZudokuConfig;
+  merge: <T extends Partial<ZudokuConfig>>(partial: T) => ZudokuConfig & T;
+}
+
 export interface TransformConfigPlugin {
   transformConfig?: (
-    config: ZudokuConfig,
-    ctx: ConfigHookContext,
-  ) => Partial<ZudokuConfig> | void | Promise<Partial<ZudokuConfig> | void>;
+    context: TransformConfigContext,
+  ) => ZudokuConfig | void | Promise<ZudokuConfig | void>;
 }
 
 export interface CommonPlugin {

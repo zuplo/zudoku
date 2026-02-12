@@ -1,28 +1,29 @@
-minimumReleaseAge: 4320 # 3 days
+packages:
+  - scripts
+  - packages/*
+  - examples/**
+  - website
+  - docs
+
+catalog:
+  "@types/node": 22.19.1
+  "@types/react": 19.2.10
+  "@types/react-dom": 19.2.3
+  "@types/react-is": 19.2.0
+  react: 19.2.4
+  react-dom: 19.2.4
+  react-is: 19.2.4
+
+minimumReleaseAge: 4320
 
 minimumReleaseAgeExclude:
   - zudoku
   - react-router@7.12.0
   - pagefind
-  - "@pagefind/freebsd-x64"
-  - "@pagefind/linux-arm64"
-  - "@pagefind/darwin-x64"
-  - "@pagefind/darwin-arm64"
-  - "@pagefind/linux-x64"
-  - "@pagefind/windows-x64"
-
-packages:
-  - "scripts"
-  - "packages/*"
-  - "examples/**"
-  - "website"
-  - "docs"
-
-catalog:
-  react: 19.2.3
-  react-dom: 19.2.3
-  react-is: 19.2.3
-  "@types/react": 19.2.7
-  "@types/react-dom": 19.2.3
-  "@types/react-is": 19.2.0
-  "@types/node": 22.19.1
+  - tar@7.5.7
+  - react@19.2.4
+  - react-dom@19.2.4
+  - react-is@19.2.4
+  - "@types/react@19.2.10"
+  - "@types/react-dom@19.2.4"
+  - "@pagefind/*"

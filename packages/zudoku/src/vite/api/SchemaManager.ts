@@ -11,7 +11,7 @@ import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { VersionConfig } from "../../config/validators/validate.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
-import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
+import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { generateCode } from "./schema-codegen.js";
 

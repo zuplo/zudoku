@@ -1,16 +1,12 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createContext, useContext, useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { matchPath, useLocation } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuthState } from "../../authentication/state.js";
-import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, useCache } from "../cache.js";
 import { traverseNavigation } from "../navigation/utils.js";
-
-export const ZudokuReactContext = createContext<ZudokuContext | undefined>(
-  undefined,
-);
+import { ZudokuReactContext } from "./ZudokuReactContext.js";
 
 export const useZudoku = () => {
   const context = useContext(ZudokuReactContext);
@@ -73,10 +69,14 @@ const extractAllPaths = (items: NavigationItem[]) => {
 };
 
 export const useCurrentNavigation = () => {
-  const { getPluginNavigation, navigation } = useZudoku();
+  const {
+    getPluginNavigation,
+    options: { navigation = [] },
+  } = useZudoku();
   const location = useLocation();
 
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
+    if (item.type === "link") return;
     if (getItemPath(item) === location.pathname) {
       return parentCategories.at(0) ?? item;
     }

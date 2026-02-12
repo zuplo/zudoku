@@ -17,30 +17,27 @@ export const SecretText = ({
   previewChars?: number;
   className?: string;
 }) => {
+  if (revealed) {
+    return <span className={className}>{secret}</span>;
+  }
+
+  const hiddenPart =
+    "•••• ".repeat(secret.slice(0, -previewChars).length / 5) +
+    "•".repeat(secret.slice(0, -previewChars).length % 5);
+  const visiblePart = previewChars > 0 ? secret.slice(-previewChars) : "";
+
   return (
-    <span className={cn("w-full truncate", className)}>
-      <div
-        className={cn(
-          "w-40 inline-block md:w-fit",
-          revealed ? "" : "opacity-50",
-        )}
-      >
-        {revealed
-          ? secret.slice(0, previewChars === 0 ? secret.length : -previewChars)
-          : "•••• ".repeat(
-              secret.slice(
-                0,
-                previewChars === 0 ? secret.length : -previewChars,
-              ).length / 5,
-            ) +
-            "•".repeat(
-              secret.slice(
-                0,
-                previewChars === 0 ? secret.length : -previewChars,
-              ).length % 5,
-            )}
-      </div>
-      {previewChars > 0 && <span>{secret.slice(-previewChars)}</span>}
+    <span
+      className={cn(
+        "block overflow-hidden text-ellipsis whitespace-nowrap",
+        className,
+      )}
+      dir="rtl"
+    >
+      <span dir="ltr" className="inline">
+        <span className="opacity-50">{hiddenPart}</span>
+        {visiblePart && <span>{visiblePart}</span>}
+      </span>
     </span>
   );
 };
@@ -77,7 +74,12 @@ export const Secret = ({
         className,
       )}
     >
-      <div className="font-mono w-full h-9 items-center flex px-2 text-xs gap-2">
+      <div
+        className={cn(
+          "font-mono w-full h-9 items-center flex px-2 text-xs gap-2 min-w-0",
+          revealed ? "overflow-x-auto" : "overflow-hidden",
+        )}
+      >
         {status && (
           <div
             className={cn(
@@ -103,9 +105,13 @@ export const Secret = ({
             setRevealed((prev) => !prev);
             onReveal?.(!revealed);
           }}
-          size="icon"
+          size="icon-xxs"
         >
-          {revealed ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+          {revealed ? (
+            <EyeOffIcon className="size-3.5" />
+          ) : (
+            <EyeIcon className="size-3.5" />
+          )}
         </Button>
       )}
       <Button
@@ -114,9 +120,13 @@ export const Secret = ({
           copyToClipboard(secret);
           onCopy?.(secret);
         }}
-        size="icon"
+        size="icon-xxs"
       >
-        {isCopied ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
+        {isCopied ? (
+          <CheckIcon className="size-3.5" />
+        ) : (
+          <CopyIcon className="size-3.5" />
+        )}
       </Button>
     </div>
   );

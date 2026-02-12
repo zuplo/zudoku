@@ -12,7 +12,6 @@ import {
   StaticRouterProvider,
 } from "react-router";
 import { RouterProvider } from "react-router/dom";
-import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { BypassProtectedRoutesContext } from "./context/BypassProtectedRoutesContext.js";
 
 const queryClient = new QueryClient({
@@ -36,9 +35,7 @@ const Bootstrap = ({
       <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
         <BypassProtectedRoutesContext value={false}>
           <HelmetProvider>
-            <StaggeredRenderContext.Provider value={{ stagger: !hydrate }}>
-              <RouterProvider router={router} />
-            </StaggeredRenderContext.Provider>
+            <RouterProvider router={router} />
           </HelmetProvider>
         </BypassProtectedRoutesContext>
       </HydrationBoundary>

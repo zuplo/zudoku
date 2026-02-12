@@ -8,8 +8,11 @@ import type {
   InputNavigationCategoryLinkDoc,
   InputNavigationCustomPage,
   InputNavigationDoc,
+  InputNavigationFilter,
   InputNavigationItem,
   InputNavigationLink,
+  InputNavigationSection,
+  InputNavigationSeparator,
 } from "./InputNavigationSchema.js";
 import { DocsConfigSchema } from "./validate.js";
 
@@ -45,11 +48,20 @@ export type NavigationCustomPage = ReplaceFields<
   ResolvedIcon
 >;
 
+export type NavigationSeparator = InputNavigationSeparator & { label: string };
+
+export type NavigationSection = InputNavigationSection;
+
+export type NavigationFilter = InputNavigationFilter & { label: string };
+
 export type NavigationItem =
   | NavigationDoc
   | NavigationLink
   | NavigationCategory
-  | NavigationCustomPage;
+  | NavigationCustomPage
+  | NavigationSeparator
+  | NavigationSection
+  | NavigationFilter;
 
 export type Navigation = NavigationItem[];
 
@@ -67,6 +79,7 @@ export class NavigationResolver {
   private globPatterns: string[];
   private globFiles: string[] = [];
   private items: InputNavigationItem[] = [];
+  private itemIndex = 0;
 
   constructor(config: ConfigWithMeta) {
     this.rootDir = config.__meta.rootDir;
@@ -120,6 +133,7 @@ export class NavigationResolver {
       file: filePath,
       label,
       icon,
+      display: data.navigation_display,
       categoryLabel,
       path: fileNoExt,
     } satisfies NavigationDoc;
@@ -180,7 +194,12 @@ export class NavigationResolver {
         return this.resolveNavigationItemDoc(item, categoryLabel);
       case "link":
       case "custom-page":
+      case "section":
         return item;
+      case "separator":
+        return { ...item, label: `separator-${this.itemIndex++}` };
+      case "filter":
+        return { ...item, label: `filter-${this.itemIndex++}` };
       case "category": {
         const categoryItem = item;
 
