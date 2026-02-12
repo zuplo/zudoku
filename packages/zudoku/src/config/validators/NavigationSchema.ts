@@ -119,6 +119,11 @@ export class NavigationResolver {
 
     const { data, content } = await readFrontmatter(foundMatches);
 
+    // Skip draft documents in production mode
+    if (process.env.NODE_ENV !== "development" && data.draft === true) {
+      return undefined;
+    }
+
     const label =
       data.navigation_label ??
       data.sidebar_label ??
