@@ -130,7 +130,12 @@ export const ApiKeysList = ({
           </ActionButton>
         </ConfirmRollKeyAlert>
       </div>
-
+      {rollKeyMutation.isError && (
+        <Alert variant="destructive">
+          <AlertTitle>Could not roll API key</AlertTitle>
+          <AlertDescription>{rollKeyMutation.error.message}</AlertDescription>
+        </Alert>
+      )}
       <ApiKeyInfo />
 
       {deleteKeyMutation.isSuccess && deleteKeyMutation.variables && (
