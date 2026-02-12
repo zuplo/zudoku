@@ -17,7 +17,7 @@ const viteApiKeysPlugin = (): Plugin => {
       if (id === resolvedVirtualModuleId) {
         const config = getCurrentConfig();
 
-        if (!config.apiKeys || config.__meta.mode === "standalone") {
+        if (!config.apiKeys?.enabled || config.__meta.mode === "standalone") {
           return `export const configuredApiKeysPlugin = undefined;`;
         }
 
