@@ -1,4 +1,4 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
@@ -131,6 +131,30 @@ describe("plugin-docs", () => {
       expect(Object.keys(fileMapping)).toHaveLength(1);
       expect(fileMapping["/regular"]).toBeDefined();
       expect(fileMapping["/draft"]).toBeUndefined();
+    });
+
+    test("handles leading-slash glob patterns (default pattern)", async () => {
+      process.env.NODE_ENV = "production";
+
+      // Create pages directory structure like default config
+      const pagesDir = path.join(tempDir, "pages");
+      await mkdir(pagesDir, { recursive: true });
+
+      await writeFile(
+        path.join(pagesDir, "index.md"),
+        "---\ntitle: Home\n---\n# Home",
+      );
+      await writeFile(
+        path.join(pagesDir, "draft-page.md"),
+        "---\ntitle: Draft\ndraft: true\n---\n# Draft",
+      );
+
+      const config = createTestConfig(tempDir, ["/pages/**/*.{md,mdx}"]);
+      const fileMapping = await globMarkdownFiles(config, { absolute: false });
+
+      expect(Object.keys(fileMapping)).toHaveLength(1);
+      expect(fileMapping["/index"]).toBeDefined();
+      expect(fileMapping["/draft-page"]).toBeUndefined();
     });
   });
 });

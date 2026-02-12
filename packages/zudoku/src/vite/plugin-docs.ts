@@ -21,7 +21,10 @@ export const globMarkdownFiles = async (
   const fileMapping: Record<string, string> = {};
 
   for (const globPattern of docsConfig.files) {
-    const globbedFiles = await glob(globPattern, {
+    // Strip leading slash for cwd-based globbing
+    const normalizedPattern = globPattern.replace(/^\//, "");
+
+    const globbedFiles = await glob(normalizedPattern, {
       cwd: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
       // Always glob with relative paths to avoid issues on different OS

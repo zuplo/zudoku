@@ -227,6 +227,11 @@ export class NavigationResolver {
 
     const { data, content } = await readFrontmatter(foundMatches);
 
+    // Skip draft documents in production mode
+    if (process.env.NODE_ENV !== "development" && data.draft === true) {
+      return undefined;
+    }
+
     const richH1 = extractRichH1(content);
 
     const label =
