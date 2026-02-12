@@ -8,10 +8,19 @@ import {
   CheckIcon,
   XIcon,
 } from "zudoku/icons";
-import { useMutation } from "zudoku/react-query";
+import { useMutation, useQueryClient } from "zudoku/react-query";
 import { useNavigate } from "zudoku/router";
 import { ActionButton } from "zudoku/ui/ActionButton";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
+import { Alert, AlertDescription } from "zudoku/ui/Alert";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "zudoku/ui/AlertDialog";
 import { Button } from "zudoku/ui/Button";
 import {
   Dialog,
@@ -27,7 +36,6 @@ import type { Subscription } from "../../hooks/useSubscriptions.js";
 import type { Feature, Plan, Quota } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
-import { queryClient } from "../../ZuploMonetizationWrapper.js";
 
 type PlanComparison = {
   plan: Plan;
@@ -181,42 +189,12 @@ const ChangeIndicator = ({
 const PlanComparisonItem = ({
   comparison,
   subscriptionId,
-  onRequestClose,
+  onRequestChange,
 }: {
   comparison: PlanComparison;
   subscriptionId: string;
-  onRequestClose: () => void;
+  onRequestChange: (switchTo: SwitchPlanTarget) => void;
 }) => {
-  const deploymentName = useDeploymentName();
-  const context = useZudoku();
-  const navigate = useNavigate();
-  const mutation = useMutation<Subscription>({
-    mutationKey: [
-      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change`,
-    ],
-    meta: {
-      context,
-      request: {
-        method: "POST",
-        body: JSON.stringify({ planId: comparison.plan.id }),
-      },
-    },
-    retry: false,
-    onSuccess: async (subscription) => {
-      await queryClient.invalidateQueries();
-      navigate(`/subscriptions/${subscription.id}`, {
-        state: {
-          planSwitched: {
-            isUpgrade: comparison.isUpgrade,
-            newPlanName: comparison.plan.name,
-          },
-        },
-      });
-      onRequestClose();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    },
-  });
-
   const price = getPriceFromPlan(comparison.plan);
   const isCustom = comparison.plan.key === "enterprise";
   const displayPrice = price.monthly;
@@ -226,135 +204,208 @@ const PlanComparisonItem = ({
     comparison.featureChanges.some((f) => f.change !== "same");
 
   return (
-    <>
-      {mutation.error && (
-        <Alert variant="destructive">
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{JSON.stringify(mutation.error)}</AlertDescription>
-        </Alert>
-      )}
-      <div className="border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-baseline gap-2">
-            <h4 className="font-semibold text-foreground">
-              {comparison.plan.name}
-            </h4>
-            {isCustom ? (
-              <span className="text-primary font-medium">Custom</span>
-            ) : displayPrice === 0 ? (
-              <span className="text-primary font-medium">Free</span>
-            ) : (
-              <span className="text-primary font-medium text-lg">
-                ${displayPrice.toLocaleString()}/ mo
-              </span>
-            )}
-          </div>
+    <div className="border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-baseline gap-2">
+          <h4 className="font-semibold text-foreground">
+            {comparison.plan.name}
+          </h4>
           {isCustom ? (
-            <Button variant="default" size="sm">
-              Contact Sales
-            </Button>
+            <span className="text-primary font-medium">Custom</span>
+          ) : displayPrice === 0 ? (
+            <span className="text-primary font-medium">Free</span>
           ) : (
-            <ActionButton
-              variant={comparison.isUpgrade ? "default" : "outline"}
-              isPending={mutation.isPending}
-              size="sm"
-              onClick={() => mutation.mutate()}
-            >
-              {comparison.isUpgrade ? "Upgrade" : "Downgrade"}
-            </ActionButton>
+            <span className="text-primary font-medium text-lg">
+              ${displayPrice.toLocaleString()}/ mo
+            </span>
           )}
         </div>
-
-        {hasChanges && (
-          <div className="space-y-1.5">
-            {comparison.quotaChanges
-              .filter((q) => q.change !== "same")
-              .map((quota) => (
-                <div
-                  key={quota.key}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  <ChangeIndicator change={quota.change} />
-                  <span className="font-medium">{quota.name}:</span>
-                  {quota.change === "added" ? (
-                    <span className="text-green-600">Now included</span>
-                  ) : quota.change === "removed" ? (
-                    <span className="text-destructive">No longer included</span>
-                  ) : (
-                    <>
-                      <span className="text-muted-foreground">
-                        {quota.currentValue?.toLocaleString()}/{quota.period}
-                      </span>
-                      <span className="text-muted-foreground">→</span>
-                      <span
-                        className={cn(
-                          "font-medium",
-                          quota.change === "increase"
-                            ? "text-primary"
-                            : "text-amber-600",
-                        )}
-                      >
-                        {quota.newValue?.toLocaleString()}/{quota.period}
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))}
-
-            {comparison.featureChanges
-              .filter((f) => f.change !== "same")
-              .map((feature) => (
-                <div
-                  key={feature.key}
-                  className="flex items-center gap-2 text-sm"
-                >
-                  {feature.change === "added" ? (
-                    <>
-                      <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
-                      <span className="text-muted-foreground font-medium">
-                        {feature.name}
-                      </span>
-                      <span className="text-green-600">—</span>
-                      <span className="text-green-600">Now included</span>
-                    </>
-                  ) : feature.change === "removed" ? (
-                    <>
-                      <XIcon className="w-4 h-4 text-destructive shrink-0" />
-                      <span className="font-medium">{feature.name}</span>
-                      <span className="text-destructive">—</span>
-                      <span className="text-destructive">
-                        No longer included
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <ChangeIndicator change={feature.change} />
-                      <span className="">{feature.name}:</span>
-                      <span className="text-muted-foreground">
-                        {typeof feature.currentValue === "string"
-                          ? feature.currentValue
-                          : "Included"}
-                      </span>
-                      <span className="text-muted-foreground">→</span>
-                      <span
-                        className={cn(
-                          feature.change === "upgraded"
-                            ? "text-green-600"
-                            : "text-destructive",
-                        )}
-                      >
-                        {typeof feature.newValue === "string"
-                          ? feature.newValue
-                          : "Included"}
-                      </span>
-                    </>
-                  )}
-                </div>
-              ))}
-          </div>
+        {isCustom ? (
+          <Button variant="default" size="sm">
+            Contact Sales
+          </Button>
+        ) : (
+          <Button
+            variant={comparison.isUpgrade ? "default" : "outline"}
+            onClick={() =>
+              onRequestChange({
+                subscriptionId,
+                plan: comparison.plan,
+                mode: comparison.isUpgrade ? "upgrade" : "downgrade",
+              })
+            }
+            size="sm"
+          >
+            {comparison.isUpgrade ? "Upgrade" : "Downgrade"}
+          </Button>
         )}
       </div>
-    </>
+
+      {hasChanges && (
+        <div className="space-y-1.5">
+          {comparison.quotaChanges
+            .filter((q) => q.change !== "same")
+            .map((quota) => (
+              <div key={quota.key} className="flex items-center gap-2 text-sm">
+                <ChangeIndicator change={quota.change} />
+                <span className="font-medium">{quota.name}:</span>
+                {quota.change === "added" ? (
+                  <span className="text-green-600">Now included</span>
+                ) : quota.change === "removed" ? (
+                  <span className="text-destructive">No longer included</span>
+                ) : (
+                  <>
+                    <span className="text-muted-foreground">
+                      {quota.currentValue?.toLocaleString()}/{quota.period}
+                    </span>
+                    <span className="text-muted-foreground">→</span>
+                    <span
+                      className={cn(
+                        "font-medium",
+                        quota.change === "increase"
+                          ? "text-primary"
+                          : "text-amber-600",
+                      )}
+                    >
+                      {quota.newValue?.toLocaleString()}/{quota.period}
+                    </span>
+                  </>
+                )}
+              </div>
+            ))}
+
+          {comparison.featureChanges
+            .filter((f) => f.change !== "same")
+            .map((feature) => (
+              <div
+                key={feature.key}
+                className="flex items-center gap-2 text-sm"
+              >
+                {feature.change === "added" ? (
+                  <>
+                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                    <span className="text-muted-foreground font-medium">
+                      {feature.name}
+                    </span>
+                    <span className="text-green-600">—</span>
+                    <span className="text-green-600">Now included</span>
+                  </>
+                ) : feature.change === "removed" ? (
+                  <>
+                    <XIcon className="w-4 h-4 text-destructive shrink-0" />
+                    <span className="font-medium">{feature.name}</span>
+                    <span className="text-destructive">—</span>
+                    <span className="text-destructive">No longer included</span>
+                  </>
+                ) : (
+                  <>
+                    <ChangeIndicator change={feature.change} />
+                    <span className="">{feature.name}:</span>
+                    <span className="text-muted-foreground">
+                      {typeof feature.currentValue === "string"
+                        ? feature.currentValue
+                        : "Included"}
+                    </span>
+                    <span className="text-muted-foreground">→</span>
+                    <span
+                      className={cn(
+                        feature.change === "upgraded"
+                          ? "text-green-600"
+                          : "text-destructive",
+                      )}
+                    >
+                      {typeof feature.newValue === "string"
+                        ? feature.newValue
+                        : "Included"}
+                    </span>
+                  </>
+                )}
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export type SwitchPlanTarget = {
+  subscriptionId: string;
+  plan: Plan;
+  mode: "upgrade" | "downgrade";
+};
+
+const ConfirmSwitchAlert = ({
+  switchTo,
+  onRequestClose,
+}: {
+  switchTo: SwitchPlanTarget;
+  onRequestClose: () => void;
+}) => {
+  const deploymentName = useDeploymentName();
+  const context = useZudoku();
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  const mutation = useMutation<Subscription>({
+    mutationKey: [
+      `/v3/zudoku-metering/${deploymentName}/subscriptions/${switchTo.subscriptionId}/change`,
+    ],
+    meta: {
+      context,
+      request: {
+        method: "POST",
+        body: JSON.stringify({ planId: switchTo.plan.id }),
+      },
+    },
+    retry: false,
+    onSuccess: async (subscription) => {
+      await queryClient.invalidateQueries();
+      navigate(`/subscriptions/${subscription.id}`, {
+        state: {
+          planSwitched: {
+            isUpgrade: switchTo.mode === "upgrade",
+            newPlanName: switchTo.plan.name,
+          },
+        },
+      });
+      onRequestClose();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    },
+  });
+
+  return (
+    <AlertDialog open={true} onOpenChange={onRequestClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            Confirm {switchTo.mode === "upgrade" ? "upgrade" : "downgrade"}
+          </AlertDialogTitle>
+          {mutation.isError && (
+            <Alert variant="destructive">
+              <AlertDescription className="first-letter:uppercase">
+                {mutation.error.message}
+              </AlertDescription>
+            </Alert>
+          )}
+          <AlertDialogDescription>
+            {switchTo.mode === "upgrade"
+              ? `Are you sure you want to upgrade to ${switchTo.plan.name}? This will take effect immediately.`
+              : `Are you sure you want to downgrade to ${switchTo.plan.name}? This will take effect at the start of your next billing cycle.`}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={mutation.isPending}>
+            Cancel
+          </AlertDialogCancel>
+          <ActionButton
+            isPending={mutation.isPending}
+            onClick={() => mutation.mutate()}
+          >
+            {switchTo.mode === "upgrade" ? "Upgrade" : "Downgrade"}
+          </ActionButton>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 
@@ -367,6 +418,7 @@ export const SwitchPlanModal = ({
   const [open, setOpen] = useState(false);
   const deploymentName = useDeploymentName();
   const { data: plansData } = usePlans(deploymentName);
+  const [switchTo, setSwitchTo] = useState<SwitchPlanTarget | null>(null);
 
   const currentPlan = plansData?.items.find(
     (p) => p.id === subscription.plan.id,
@@ -387,88 +439,106 @@ export const SwitchPlanModal = ({
     };
   }, [plansData?.items, currentPlan]);
 
+  const switching = switchTo !== null;
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children ?? (
-          <Button variant="outline" size="sm">
-            <ArrowLeftRightIcon /> Switch Plan
-          </Button>
-        )}
-      </DialogTrigger>
-      <DialogContent>
-        <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
-          <DialogHeader className="text-center">
-            <DialogTitle className="text-xl font-semibold">
-              Change Your Plan
-            </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 space-y-6">
-            {currentPlan && (
-              <Item variant="outline">
-                <ItemContent>
-                  <ItemTitle>Current Plan</ItemTitle>
-                  <ItemDescription className="text-lg font-bold">
-                    {currentPlan.name}
-                  </ItemDescription>
-                </ItemContent>
-              </Item>
-            )}
+    <>
+      {switching && (
+        <ConfirmSwitchAlert
+          switchTo={switchTo}
+          onRequestClose={() => setSwitchTo(null)}
+        />
+      )}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          {children ?? (
+            <Button variant="outline" size="sm">
+              <ArrowLeftRightIcon /> Switch Plan
+            </Button>
+          )}
+        </DialogTrigger>
+        <DialogContent>
+          <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
+            <DialogHeader className="text-center">
+              <DialogTitle className="text-xl font-semibold">
+                Change Your Plan
+              </DialogTitle>
+            </DialogHeader>
+            <div className="mt-4 space-y-6">
+              {currentPlan && (
+                <Item variant="outline">
+                  <ItemContent>
+                    <ItemTitle>Current Plan</ItemTitle>
+                    <ItemDescription className="text-lg font-bold">
+                      {currentPlan.name}
+                    </ItemDescription>
+                  </ItemContent>
+                </Item>
+              )}
 
-            {upgrades.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <ArrowUpIcon className="size-5 text-muted-foreground" />
-                    <span className="font-medium text-primary">
-                      Upgrade Options
+              {upgrades.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <ArrowUpIcon className="size-5 text-muted-foreground" />
+                      <span className="font-medium text-primary">
+                        Upgrade Options
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Takes effect immediately
                     </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    Takes effect immediately
-                  </span>
+                  <div className="space-y-3">
+                    {upgrades.map((comparison) => (
+                      <PlanComparisonItem
+                        key={comparison.plan.id}
+                        comparison={comparison}
+                        subscriptionId={subscription.id}
+                        onRequestChange={({ subscriptionId, plan }) =>
+                          setSwitchTo({ subscriptionId, plan, mode: "upgrade" })
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {upgrades.map((comparison) => (
-                    <PlanComparisonItem
-                      key={comparison.plan.id}
-                      comparison={comparison}
-                      subscriptionId={subscription.id}
-                      onRequestClose={() => setOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
-            {downgrades.length > 0 && (
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <ArrowDownIcon className="size-5 text-primary" />
-                    <span className="font-medium text-foreground">
-                      Downgrade Options
+              {downgrades.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <ArrowDownIcon className="size-5 text-primary" />
+                      <span className="font-medium text-foreground">
+                        Downgrade Options
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Takes effect next billing cycle
                     </span>
                   </div>
-                  <span className="text-sm text-muted-foreground">
-                    Takes effect next billing cycle
-                  </span>
+                  <div className="space-y-3">
+                    {downgrades.map((comparison) => (
+                      <PlanComparisonItem
+                        key={comparison.plan.id}
+                        comparison={comparison}
+                        subscriptionId={subscription.id}
+                        onRequestChange={({ subscriptionId, plan }) =>
+                          setSwitchTo({
+                            subscriptionId,
+                            plan,
+                            mode: "downgrade",
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  {downgrades.map((comparison) => (
-                    <PlanComparisonItem
-                      key={comparison.plan.id}
-                      comparison={comparison}
-                      subscriptionId={subscription.id}
-                      onRequestClose={() => setOpen(false)}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
