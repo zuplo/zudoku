@@ -252,7 +252,7 @@
     "@x0k/json-schema-merge": "1.0.2",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
-    "@zuplo/mcp": "^0.0.22",
+    "@zuplo/mcp": "^0.0.32",
     "bs58": "^6.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
