@@ -81,7 +81,7 @@ const ActiveSubscription = ({
       {activePhase && (
         <ManageSubscription
           subscription={subscription}
-          planName={activePhase.name}
+          planName={subscription.name}
         />
       )}
     </>
