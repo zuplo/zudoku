@@ -111,9 +111,35 @@ describe("applyRules", () => {
       const { result } = applyRules(nav, rules);
       const shipments = result[0];
 
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items[0]?.label).toBe("Intro");
         expect(shipments.items[1]?.label).toBe("Track a Shipment");
+      }
+    });
+
+    it("should insert multiple items at once", () => {
+      const nav = createMockNavigation();
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "insert",
+          match: "Shipments/0",
+          position: "before",
+          items: [
+            { type: "link", label: "First", to: "/first" },
+            { type: "link", label: "Second", to: "/second" },
+          ],
+        },
+      ];
+
+      const { result } = applyRules(nav, rules);
+      const shipments = result[0];
+
+      expect(shipments?.type).toBe("category");
+      if (shipments?.type === "category") {
+        expect(shipments.items[0]?.label).toBe("First");
+        expect(shipments.items[1]?.label).toBe("Second");
+        expect(shipments.items[2]?.label).toBe("Track a Shipment");
       }
     });
   });
@@ -140,6 +166,7 @@ describe("applyRules", () => {
       const { result } = applyRules(nav, rules);
       const shipments = result[0];
 
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items).toHaveLength(2);
         expect(
@@ -148,16 +175,18 @@ describe("applyRules", () => {
       }
     });
 
-    it("should remove by label", () => {
+    it("should remove by index", () => {
       const nav = createMockNavigation();
       const rules: ResolvedNavigationRule[] = [
-        { type: "remove", match: "Shipments/Delete Shipment" },
+        { type: "remove", match: "Shipments/2" },
       ];
 
       const { result } = applyRules(nav, rules);
       const shipments = result[0];
 
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
+        expect(shipments.items).toHaveLength(2);
         expect(
           shipments.items.find((item) => item.label === "Delete Shipment"),
         ).toBeUndefined();
@@ -211,6 +240,7 @@ describe("applyRules", () => {
       expect(warnings).toHaveLength(0);
       const shipments = result[0];
       expect(shipments).toHaveProperty("collapsed", true);
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items[0]?.label).toBe("Overview");
         expect(
@@ -249,6 +279,7 @@ describe("applyRules", () => {
 
       expect(warnings).toHaveLength(0);
       const shipments = result[0];
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items.map((i) => i.label)).toEqual([
           "Create Shipment",
@@ -271,6 +302,7 @@ describe("applyRules", () => {
       const { result } = applyRules(nav, rules);
 
       const shipments = result[0];
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items.map((i) => i.label)).toEqual([
           "Track a Shipment",
@@ -327,8 +359,10 @@ describe("applyRules", () => {
 
       expect(warnings).toHaveLength(0);
       const shipments = result[0];
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         const domestic = shipments.items[0];
+        expect(domestic?.type).toBe("category");
         if (domestic?.type === "category") {
           expect(domestic.items.map((i) => i.label)).toEqual([
             "Air",
@@ -359,6 +393,7 @@ describe("applyRules", () => {
 
       expect(warnings).toHaveLength(0);
       const shipments = result[0];
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items[0]?.label).toBe("AAA First");
       }
@@ -377,6 +412,7 @@ describe("applyRules", () => {
       expect(warnings).toHaveLength(0);
       expect(result).toHaveLength(1);
       const shipments = result[0];
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items[0]?.label).toBe("About");
         expect(shipments.items[1]?.label).toBe("Track a Shipment");
@@ -420,6 +456,28 @@ describe("applyRules", () => {
       expect(result[1]?.label).toBe("About");
     });
 
+    it("should warn when move target resolves to root", () => {
+      const sidebarNav: NavigationItem[] = [
+        { type: "link", label: "Track a Shipment", to: "/track" },
+        { type: "link", label: "Create Shipment", to: "/create" },
+      ];
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "move",
+          match: "Shipments/Track a Shipment",
+          to: "Shipments",
+          position: "before",
+        },
+      ];
+
+      const { result, warnings } = applyRules(sidebarNav, rules, "Shipments");
+
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain("not found");
+      // Item should remain in original position
+      expect(result[0]?.label).toBe("Track a Shipment");
+    });
+
     it("should move nested item to root level", () => {
       const nav = createMockNavigation();
       const rules: ResolvedNavigationRule[] = [
@@ -437,6 +495,7 @@ describe("applyRules", () => {
       expect(result[1]?.label).toBe("Create Shipment");
       expect(result[2]?.label).toBe("About");
       const shipments = result[0];
+      expect(shipments?.type).toBe("category");
       if (shipments?.type === "category") {
         expect(shipments.items).toHaveLength(2);
       }
@@ -559,6 +618,24 @@ describe("applyRules", () => {
       expect(result[0]?.label).toBe("Administration");
       expect(result[1]?.label).toBe("Billing & International");
       expect(result[2]?.label).toBe("Shipment");
+    });
+
+    it("should warn when non-sort rule targets root via topNavLabel", () => {
+      const sidebarNav: NavigationItem[] = [
+        { type: "link", label: "Track a Shipment", to: "/track" },
+      ];
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "modify",
+          match: "Shipments",
+          set: { label: "Changed" },
+        },
+      ];
+
+      const { warnings } = applyRules(sidebarNav, rules, topNavLabel);
+
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain("cannot target the root level");
     });
   });
 });

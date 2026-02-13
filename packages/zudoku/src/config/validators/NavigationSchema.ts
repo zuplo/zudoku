@@ -1,6 +1,7 @@
 import path from "node:path";
 import { glob } from "glob";
 import type { LucideIcon } from "lucide-react";
+import type { SortableType } from "../../lib/navigation/applyRules.js";
 import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
@@ -76,11 +77,10 @@ export type NavigationItem =
   | NavigationSection
   | NavigationFilter;
 
-export type SortableNavigationItem =
-  | NavigationDoc
-  | NavigationLink
-  | NavigationCategory
-  | NavigationSection;
+export type SortableNavigationItem = Extract<
+  NavigationItem,
+  { type: SortableType }
+>;
 
 export type Navigation = NavigationItem[];
 

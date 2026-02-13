@@ -5,11 +5,11 @@ import type {
 } from "../../config/validators/NavigationSchema.js";
 import { findByPath } from "./pathMatcher.js";
 
+export const SORTABLE_TYPES = ["doc", "link", "category", "section"] as const;
+export type SortableType = (typeof SORTABLE_TYPES)[number];
+
 const isSortable = (item: NavigationItem): item is SortableNavigationItem =>
-  item.type === "doc" ||
-  item.type === "link" ||
-  item.type === "category" ||
-  item.type === "section";
+  SORTABLE_TYPES.some((t) => t === item.type);
 
 export type ApplyRulesResult = {
   result: NavigationItem[];
