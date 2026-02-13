@@ -8,7 +8,15 @@
       "name": "Cosmo Cargo API Support",
       "email": "api@sh.example.com",
       "url": "https://developers.sh.example.com"
-    }
+    },
+    "license": {
+      "name": "Apache"
+    },
+    "termsOfService": "https://example.com"
+  },
+  "externalDocs": {
+    "url": "https://example.com",
+    "description": "More documentation"
   },
   "x-tagGroups": [
     {

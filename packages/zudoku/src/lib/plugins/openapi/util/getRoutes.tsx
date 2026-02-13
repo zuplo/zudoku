@@ -3,7 +3,6 @@ import {
   generatePath,
   Navigate,
   type RouteObject,
-  redirect,
   useLocation,
   useParams,
 } from "react-router";
@@ -132,11 +131,18 @@ const createVersionRoutes = (
   versionPath: string,
   tagPages: string[],
 ): RouteObject[] => {
-  const firstTagRoute = joinUrl(versionPath, tagPages.at(0) ?? UNTAGGED_PATH);
-
   return [
-    // Redirect to first tag on the index route
-    { index: true, loader: () => redirect(firstTagRoute) },
+    {
+      index: true,
+      path: versionPath,
+      lazy: async () => {
+        const { SchemaInfo } = await import("../SchemaInfo.js");
+
+        return {
+          element: <SchemaInfo />,
+        };
+      },
+    },
     // Create routes for each tag
     ...tagPages.map((tag) =>
       createRoute({
