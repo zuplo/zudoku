@@ -1,10 +1,15 @@
 import { describe, expect, it } from "vitest";
 import type { NavigationItem } from "../../config/validators/NavigationSchema.js";
-import { findByPath } from "./pathMatcher.js";
+import { findByPath, type PathMatchResult } from "./pathMatcher.js";
 
-function expectToBeDefined<T>(value: T | undefined): asserts value is T {
-  expect(value).toBeDefined();
-}
+type ItemMatch = Exclude<PathMatchResult, undefined | { isRoot: true }>;
+
+const expectItemMatch = (value: PathMatchResult): ItemMatch => {
+  if (!value || value.isRoot) {
+    throw new Error("Expected item match, got root or undefined");
+  }
+  return value;
+};
 
 const mockNavigation: NavigationItem[] = [
   {
@@ -30,36 +35,36 @@ describe("pathMatcher", () => {
   describe("findByPath", () => {
     it("should find item by label", () => {
       const result = findByPath(mockNavigation, "Shipments");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Shipments");
-      expect(result.index).toBe(0);
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Shipments");
+      expect(match.index).toBe(0);
     });
 
     it("should find nested item by label path", () => {
       const result = findByPath(mockNavigation, "Shipments/Track a Shipment");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Track a Shipment");
-      expect(result.index).toBe(0);
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Track a Shipment");
+      expect(match.index).toBe(0);
     });
 
     it("should find item by index", () => {
       const result = findByPath(mockNavigation, "Shipments/0");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Track a Shipment");
-      expect(result.index).toBe(0);
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Track a Shipment");
+      expect(match.index).toBe(0);
     });
 
     it("should find nested item by mixed path (label + index)", () => {
       const result = findByPath(mockNavigation, "Shipments/2/0");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("First Nested");
-      expect(result.index).toBe(0);
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("First Nested");
+      expect(match.index).toBe(0);
     });
 
     it("should be case-insensitive for label matching", () => {
       const result = findByPath(mockNavigation, "shipments/track a shipment");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Track a Shipment");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Track a Shipment");
     });
 
     it("should find deeply nested items", () => {
@@ -67,9 +72,9 @@ describe("pathMatcher", () => {
         mockNavigation,
         "Shipments/Nested Category/Second Nested",
       );
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Second Nested");
-      expect(result.index).toBe(1);
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Second Nested");
+      expect(match.index).toBe(1);
     });
 
     it("should return undefined for non-existent path", () => {
@@ -84,15 +89,15 @@ describe("pathMatcher", () => {
 
     it("should handle root-level items", () => {
       const result = findByPath(mockNavigation, "About");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("About");
-      expect(result.index).toBe(1);
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("About");
+      expect(match.index).toBe(1);
     });
 
     it("should provide parentItems for inserting siblings", () => {
       const result = findByPath(mockNavigation, "Shipments/0");
-      expectToBeDefined(result);
-      expect(result.parentItems?.length).toBe(3); // 2 links + 1 category
+      const match = expectItemMatch(result);
+      expect(match.parentItems?.length).toBe(3); // 2 links + 1 category
     });
 
     it("should handle empty path", () => {
@@ -102,38 +107,38 @@ describe("pathMatcher", () => {
 
     it("should support negative indices (-1 for last item)", () => {
       const result = findByPath(mockNavigation, "Shipments/-1");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Nested Category");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Nested Category");
     });
 
     it("should support negative indices (-2 for second-to-last)", () => {
       const result = findByPath(mockNavigation, "Shipments/-2");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Create Shipment");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Create Shipment");
     });
 
     it("should support negative indices in nested paths", () => {
       const result = findByPath(mockNavigation, "Shipments/-1/-1");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Second Nested");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Second Nested");
     });
 
     it("should handle paths with trailing slashes", () => {
       const result = findByPath(mockNavigation, "Shipments/0/");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Track a Shipment");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Track a Shipment");
     });
 
     it("should handle paths with double slashes", () => {
       const result = findByPath(mockNavigation, "Shipments//0");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Track a Shipment");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Track a Shipment");
     });
 
     it("should handle paths with leading slashes", () => {
       const result = findByPath(mockNavigation, "/Shipments/0");
-      expectToBeDefined(result);
-      expect(result.item.label).toBe("Track a Shipment");
+      const match = expectItemMatch(result);
+      expect(match.item.label).toBe("Track a Shipment");
     });
   });
 });

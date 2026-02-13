@@ -3,29 +3,33 @@ title: Navigation Rules
 sidebar_icon: list-tree
 ---
 
-When you add an OpenAPI spec to Zudoku, the sidebar is generated automatically from the schema's
-tags and operations. Navigation rules let you extend or modify that sidebar without changing the
-schema itself. Common use cases include inserting getting-started docs, adding external links, or
-hiding deprecated endpoints.
+import {
+  LayersPlusIcon,
+  PencilIcon,
+  SortAscIcon,
+  ArrowUpDownIcon,
+  TrashIcon,
+  RoflIcon,
+} from "zudoku/icons";
+
+Plugins like the OpenAPI plugin generate sidebar navigation automatically. Navigation rules let you
+customize that generated sidebar without changing the source. You can:
+
+- <LayersPlusIcon className="inline-block size-3.5 me-1" /> **Insert** items at a specific position
+- <PencilIcon className="inline-block size-3.5 me-1" /> **Modify** items
+- <SortAscIcon className="inline-block size-3.5 me-1" /> **Sort** items with a custom comparator
+- <ArrowUpDownIcon className="inline-block size-3.5 me-1" /> **Move** items to a different position
+- <TrashIcon className="inline-block size-3.5 me-1" /> **Remove** items
 
 ## Setup
 
-Navigation rules require two things in your `zudoku.config.tsx`:
-
-1. A `navigation` entry that creates a tab linked to your API
-2. A `navigationRules` array with rules that target that tab
+Add a `navigationRules` array to your `zudoku.config.tsx`:
 
 ```tsx
 import type { ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
-  apis: [
-    {
-      type: "file",
-      input: "./schema/shipments.json",
-      path: "api-shipments",
-    },
-  ],
+  apis: [{ type: "file", input: "./api.json", path: "api-shipments" }],
   navigation: [{ type: "link", label: "Shipments", to: "/api-shipments" }],
   navigationRules: [
     // rules go here
@@ -57,7 +61,7 @@ navigationRules: [
 
 This inserts a "Getting Started" doc before the first item in the Shipments sidebar.
 
-![Inserting a doc before the first sidebar item](/docs/navigation-rules/insert-doc.png)
+![Inserting a doc before the first sidebar item](./navigation-rules/insert-doc.png)
 
 The MDX file lives at `pages/api-shipments/getting-started.mdx` (under your configured docs
 directory, matching the API's base path).
@@ -85,7 +89,7 @@ You can insert external or internal links the same way:
 The `-1` index targets the last item, and `position: "after"` places the link at the very end of the
 sidebar.
 
-![Inserting a link after the last sidebar item](/docs/navigation-rules/insert-doc-end.png)
+![Inserting a link after the last sidebar item](./navigation-rules/insert-doc-end.png)
 
 ## Modifying items
 
@@ -100,7 +104,7 @@ collapsed state:
 }
 ```
 
-![Modifying a sidebar item's icon](/docs/navigation-rules/modify-item.png)
+![Modifying a sidebar item's icon](./navigation-rules/modify-item.png)
 
 ## Removing items
 
@@ -114,12 +118,53 @@ fix the underlying source, but can be useful as a quick workaround:
 }
 ```
 
+## Sorting items
+
+Use `type: "sort"` to reorder children of a category alphabetically or with any custom comparator:
+
+```tsx
+{
+  type: "sort",
+  match: "Shipments",
+  by: (a, b) => a.label.localeCompare(b.label),
+}
+```
+
+The `by` function receives two navigation items and works like a standard `Array.sort` comparator.
+
+## Moving items
+
+Use `type: "move"` to relocate an existing item to a different position in the sidebar:
+
+```tsx
+{
+  type: "move",
+  match: "Shipments/Track a Shipment",
+  to: "Shipments/0",
+  position: "before",
+}
+```
+
+This moves "Track a Shipment" to the top of the Shipments category. You can also move items between
+different levels, for example from inside a category to the root level.
+
+## Rule order
+
+Rules are applied sequentially, so order matters. For example, sorting first and then inserting
+places the new item at an exact position in the already-sorted list. Inserting first and then
+sorting will sort the new item along with everything else.
+
 ## Complete example
 
 This is the configuration used in the Cosmo Cargo demo shown above:
 
 ```tsx
 navigationRules: [
+  {
+    type: "sort",
+    match: "Shipments",
+    by: (a, b) => a.label.localeCompare(b.label),
+  },
   {
     type: "insert",
     match: "Shipments/Shipment",

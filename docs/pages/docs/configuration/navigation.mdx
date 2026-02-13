@@ -365,12 +365,22 @@ Title."
 
 ## Navigation Rules
 
-Plugins automatically generate sidebar navigation (e.g. from OpenAPI tags). Navigation rules let you
-customize that generated sidebar by inserting, modifying, or removing items. To change the top-level
-tabs themselves, use the `navigation` array directly.
+Plugins generate sidebar navigation automatically (e.g. from OpenAPI tags). Navigation rules let you
+customize that generated sidebar by inserting, modifying, sorting, moving, or removing items. To
+change the top-level tabs themselves, use the `navigation` array directly.
 
-For a practical walkthrough with examples, see the [Navigation Rules](/docs/guides/navigation-rules)
-guide.
+```tsx
+navigationRules: [
+  {
+    type: "sort",
+    match: "Shipments",
+    by: (a, b) => a.label.localeCompare(b.label),
+  },
+],
+```
+
+For a practical walkthrough with more examples, see the
+[Navigation Rules](/docs/guides/navigation-rules) guide.
 
 ### Rule Types
 
@@ -381,6 +391,8 @@ Each rule has a `type` and a `match` property that targets a navigation item.
 | `insert` | Add items `before` or `after` a matched item                              |
 | `modify` | Change `label`, `icon`, `badge`, `collapsed`, `collapsible`, or `display` |
 | `remove` | Remove a matched item from the sidebar                                    |
+| `sort`   | Sort children of a matched category using a custom comparator             |
+| `move`   | Relocate a matched item `before` or `after` another item                  |
 
 ### Match Syntax
 
