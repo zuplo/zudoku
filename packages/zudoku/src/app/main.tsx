@@ -6,7 +6,10 @@ import {
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
-import { configuredNavigation } from "virtual:zudoku-navigation";
+import {
+  configuredNavigation,
+  configuredNavigationRules,
+} from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { registerShiki } from "virtual:zudoku-shiki-register";
@@ -52,6 +55,7 @@ export const convertZudokuConfigToOptions = (
       ...config.metadata,
     },
     navigation: configuredNavigation,
+    navigationRules: configuredNavigationRules,
     mdx: config.mdx,
     plugins: [
       ...(configuredAuthProvider ? [configuredAuthProvider] : []),

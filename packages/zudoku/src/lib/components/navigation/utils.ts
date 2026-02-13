@@ -43,6 +43,48 @@ export const traverseNavigationItem = <T>(
   }
 };
 
+export const getItemPath = (item: NavigationItem): string | undefined => {
+  switch (item.type) {
+    case "doc":
+    case "custom-page":
+      return joinUrl(item.path);
+    case "link":
+      return item.to;
+    case "category":
+      return item.link ? joinUrl(item.link.path) : undefined;
+    default:
+      return undefined;
+  }
+};
+
+export const getFirstMatchingPath = (item: NavigationItem): string => {
+  switch (item.type) {
+    case "doc":
+    case "custom-page":
+      return joinUrl(item.path);
+    case "link":
+      return item.to;
+    case "category": {
+      if (item.link?.path) {
+        return joinUrl(item.link.path);
+      }
+      return (
+        traverseNavigationItem(item, (child) => {
+          if (
+            child.type !== "category" &&
+            child.type !== "separator" &&
+            child.type !== "section"
+          ) {
+            return getFirstMatchingPath(child);
+          }
+        }) ?? ""
+      );
+    }
+    default:
+      return "";
+  }
+};
+
 export const useCurrentItem = () => {
   const location = useLocation();
   const { navigation } = useCurrentNavigation();
@@ -118,7 +160,7 @@ export const usePrevNext = (): {
 };
 
 export const navigationListItem = cva(
-  "relative flex items-center gap-2 px-(--padding-nav-item) my-0.5 py-1.5 rounded-lg hover:bg-accent tabular-nums",
+  "relative flex items-center gap-2 px-(--padding-nav-item) my-px py-1.5 rounded-lg hover:bg-accent tabular-nums",
   {
     variants: {
       isActive: {
@@ -159,7 +201,15 @@ export const itemMatchesFilter = (
 };
 
 export const shouldShowItem =
-  (auth: UseAuthReturn, context: ZudokuContext, filterQuery?: string) =>
+  ({
+    auth,
+    context,
+    filterQuery,
+  }: {
+    auth: UseAuthReturn;
+    context: ZudokuContext;
+    filterQuery?: string;
+  }) =>
   (item: NavigationItem): boolean => {
     if (item.type === "filter") return true;
 

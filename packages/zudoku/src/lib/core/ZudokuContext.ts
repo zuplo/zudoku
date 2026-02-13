@@ -4,7 +4,10 @@ import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod";
-import type { Navigation } from "../../config/validators/NavigationSchema.js";
+import type {
+  Navigation,
+  ResolvedNavigationRule,
+} from "../../config/validators/NavigationSchema.js";
 import type {
   CallbackContext,
   ProtectedRouteResult,
@@ -89,6 +92,7 @@ export type ZudokuContextOptions = {
   site?: Site;
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
+  navigationRules?: ResolvedNavigationRule[];
   plugins?: ZudokuPlugin[];
   slots?: Record<string, SlotType>;
   /**
@@ -124,6 +128,8 @@ export const normalizeProtectedRoutes = (
 };
 
 export class ZudokuContext {
+  public navigation: Navigation;
+  public navigationRules: ResolvedNavigationRule[];
   public readonly authentication?: AuthenticationPlugin;
   public readonly getAuthState: () => AuthState;
   public readonly queryClient: QueryClient;
@@ -160,6 +166,8 @@ export class ZudokuContext {
       ...normalizeProtectedRoutes(options.protectedRoutes),
     };
 
+    this.navigation = options.navigation ?? [];
+    this.navigationRules = options.navigationRules ?? [];
     this.plugins.forEach((plugin) => {
       if (!isEventConsumerPlugin(plugin)) return;
 

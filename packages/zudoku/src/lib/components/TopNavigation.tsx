@@ -5,9 +5,8 @@ import { NavLink, type NavLinkProps } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import type { NavigationItem } from "../../config/validators/NavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
-import { joinUrl } from "../util/joinUrl.js";
 import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
-import { shouldShowItem, traverseNavigationItem } from "./navigation/utils.js";
+import { getFirstMatchingPath, shouldShowItem } from "./navigation/utils.js";
 import { Slot } from "./Slot.js";
 
 export const TopNavigation = () => {
@@ -16,7 +15,7 @@ export const TopNavigation = () => {
     options: { navigation = [] },
   } = context;
   const auth = useAuth();
-  const filteredItems = navigation.filter(shouldShowItem(auth, context));
+  const filteredItems = navigation.filter(shouldShowItem({ auth, context }));
 
   if (filteredItems.length === 0 || import.meta.env.MODE === "standalone") {
     return <style>{`:root { --top-nav-height: 0px; }`}</style>;
@@ -45,36 +44,6 @@ export const TopNavigation = () => {
       {/* <PageProgress /> */}
     </Suspense>
   );
-};
-
-const getPathForItem = (item: NavigationItem): string => {
-  switch (item.type) {
-    case "doc":
-      return joinUrl(item.path);
-    case "link":
-      return item.to;
-    case "category": {
-      if (item.link?.path) {
-        return joinUrl(item.link.path);
-      }
-
-      return (
-        traverseNavigationItem(item, (child) => {
-          if (
-            child.type !== "category" &&
-            child.type !== "separator" &&
-            child.type !== "section"
-          ) {
-            return getPathForItem(child);
-          }
-        }) ?? ""
-      );
-    }
-    case "custom-page":
-      return item.path;
-    default:
-      return "";
-  }
 };
 
 export const TopNavLink = ({
@@ -121,7 +90,7 @@ export const TopNavItem = (
   const currentNav = useCurrentNavigation();
   const isActiveTopNavItem = deepEqual(currentNav.topNavItem, item);
 
-  const path = getPathForItem(item);
+  const path = getFirstMatchingPath(item);
 
   return (
     // We don't use isActive here because it has to be inside the navigation,

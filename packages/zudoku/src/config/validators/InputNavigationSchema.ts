@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import { IconNames } from "./icon-types.js";
+import type { SortableNavigationItem } from "./NavigationSchema.js";
 
 const IconSchema = z.enum(IconNames);
 
@@ -30,8 +31,64 @@ export const DisplaySchema = z
       (params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean
     >((val) => typeof val === "function"),
   ])
-  .default("always")
   .optional();
+
+const NavigationModifyRuleSchema = z.object({
+  type: z.literal("modify"),
+  match: z.string(),
+  set: z.object({
+    label: z.string().optional(),
+    icon: IconSchema.optional(),
+    badge: BadgeSchema.optional(),
+    collapsed: z.boolean().optional(),
+    collapsible: z.boolean().optional(),
+    display: DisplaySchema,
+  }),
+});
+
+const NavigationInsertRuleSchema = z.object({
+  type: z.literal("insert"),
+  match: z.string(),
+  position: z.enum(["before", "after"]),
+  items: z.lazy(() => InputNavigationItemSchema.array()),
+});
+
+const NavigationRemoveRuleSchema = z.object({
+  type: z.literal("remove"),
+  match: z.string(),
+});
+
+const NavigationSortRuleSchema = z.object({
+  type: z.literal("sort"),
+  match: z.string(),
+  by: z.custom<
+    (a: SortableNavigationItem, b: SortableNavigationItem) => number
+  >((val) => typeof val === "function"),
+});
+
+const NavigationMoveRuleSchema = z.object({
+  type: z.literal("move"),
+  match: z.string(),
+  to: z.string(),
+  position: z.enum(["before", "after"]),
+});
+
+export const NavigationRuleSchema = z.discriminatedUnion("type", [
+  NavigationModifyRuleSchema,
+  NavigationInsertRuleSchema,
+  NavigationRemoveRuleSchema,
+  NavigationSortRuleSchema,
+  NavigationMoveRuleSchema,
+]);
+
+export const NavigationRulesSchema = NavigationRuleSchema.array();
+
+export type NavigationRule = z.infer<typeof NavigationRuleSchema>;
+export type NavigationModifyRule = z.infer<typeof NavigationModifyRuleSchema>;
+export type NavigationInsertRule = z.infer<typeof NavigationInsertRuleSchema>;
+export type NavigationRemoveRule = z.infer<typeof NavigationRemoveRuleSchema>;
+export type NavigationSortRule = z.infer<typeof NavigationSortRuleSchema>;
+export type NavigationMoveRule = z.infer<typeof NavigationMoveRuleSchema>;
 
 const InputNavigationDocSchema = z.union([
   z.string(),

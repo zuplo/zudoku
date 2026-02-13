@@ -70,7 +70,7 @@ export const NavigationItem = ({
   const context = useZudoku();
   const { query } = useNavigationFilter();
 
-  if (!shouldShowItem(auth, context, query)(item)) {
+  if (!shouldShowItem({ auth, context, filterQuery: query })(item)) {
     return null;
   }
 
@@ -105,16 +105,8 @@ export const NavigationItem = ({
           {item.icon && (
             <item.icon size={16} className="align-[-0.125em] shrink-0" />
           )}
-          {item.badge ? (
-            <>
-              {item.label && (
-                <TruncatedLabel label={item.label} className="flex-1" />
-              )}
-              <NavigationBadge {...item.badge} />
-            </>
-          ) : (
-            item.label
-          )}
+          <TruncatedLabel label={item.label} className="flex-1" />
+          {item.badge && <NavigationBadge {...item.badge} />}
         </NavLink>
       );
     case "link":

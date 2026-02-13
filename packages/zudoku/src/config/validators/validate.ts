@@ -19,7 +19,10 @@ import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/t
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
-import { InputNavigationSchema } from "./InputNavigationSchema.js";
+import {
+  InputNavigationSchema,
+  NavigationRulesSchema,
+} from "./InputNavigationSchema.js";
 import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
 
 const ThemeSchema = z
@@ -600,6 +603,7 @@ const BaseConfigSchema = z.object({
     .optional(),
   site: SiteSchema,
   navigation: InputNavigationSchema,
+  navigationRules: NavigationRulesSchema.optional(),
   theme: ThemeConfigSchema,
   syntaxHighlighting: z
     .object({
@@ -645,8 +649,12 @@ export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 // Use `z.input` type for flexibility with transforms,
 // but override navigation with `z.infer` for strict validation
 type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
-export type ZudokuConfig = Omit<BaseZudokuConfig, "navigation"> & {
+export type ZudokuConfig = Omit<
+  BaseZudokuConfig,
+  "navigation" | "navigationRules"
+> & {
   navigation?: z.infer<typeof InputNavigationSchema>;
+  navigationRules?: z.infer<typeof NavigationRulesSchema>;
 };
 
 export function validateConfig(config: unknown, configPath?: string) {

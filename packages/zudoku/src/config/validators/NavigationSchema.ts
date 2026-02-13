@@ -1,6 +1,7 @@
 import path from "node:path";
 import { glob } from "glob";
 import type { LucideIcon } from "lucide-react";
+import type { SortableType } from "../../lib/navigation/applyRules.js";
 import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
@@ -13,6 +14,12 @@ import type {
   InputNavigationLink,
   InputNavigationSection,
   InputNavigationSeparator,
+  NavigationInsertRule,
+  NavigationModifyRule,
+  NavigationMoveRule,
+  NavigationRemoveRule,
+  NavigationRule,
+  NavigationSortRule,
 } from "./InputNavigationSchema.js";
 import { DocsConfigSchema } from "./validate.js";
 
@@ -29,7 +36,11 @@ type FinalNavigationCategoryLinkDoc = Extract<
 
 export type NavigationDoc = ReplaceFields<
   FinalNavigationDoc,
-  { label: string; categoryLabel?: string; path: string } & ResolvedIcon
+  {
+    label: string;
+    categoryLabel?: string;
+    path: string;
+  } & ResolvedIcon
 >;
 
 export type NavigationLink = ReplaceFields<InputNavigationLink, ResolvedIcon>;
@@ -41,7 +52,10 @@ export type NavigationCategoryLinkDoc = ReplaceFields<
 
 export type NavigationCategory = ReplaceFields<
   InputNavigationCategory,
-  { items: NavigationItem[]; link?: NavigationCategoryLinkDoc } & ResolvedIcon
+  {
+    items: NavigationItem[];
+    link?: NavigationCategoryLinkDoc;
+  } & ResolvedIcon
 >;
 export type NavigationCustomPage = ReplaceFields<
   InputNavigationCustomPage,
@@ -63,6 +77,11 @@ export type NavigationItem =
   | NavigationSection
   | NavigationFilter;
 
+export type SortableNavigationItem = Extract<
+  NavigationItem,
+  { type: SortableType }
+>;
+
 export type Navigation = NavigationItem[];
 
 const extractTitleFromContent = (content: string): string | undefined =>
@@ -73,6 +92,18 @@ const isNavigationItem = (item: unknown): item is NavigationItem =>
 
 const toPosixPath = (filePath: string) =>
   filePath.split(path.win32.sep).join(path.posix.sep);
+
+export type ResolvedNavigationInsertRule = Omit<
+  NavigationInsertRule,
+  "items"
+> & { items: NavigationItem[] };
+
+export type ResolvedNavigationRule =
+  | NavigationModifyRule
+  | NavigationRemoveRule
+  | ResolvedNavigationInsertRule
+  | NavigationSortRule
+  | NavigationMoveRule;
 
 export class NavigationResolver {
   private rootDir: string;
@@ -87,17 +118,42 @@ export class NavigationResolver {
     this.items = config.navigation ?? [];
   }
 
-  async resolve() {
+  async initialize() {
+    if (this.globFiles.length > 0) return;
+
     this.globFiles = await glob(this.globPatterns, {
       root: this.rootDir,
       ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
     }).then((files) => files.map(toPosixPath));
+  }
+
+  async resolve() {
+    await this.initialize();
 
     const resolvedItems = await Promise.all(
       this.items.map((item) => this.resolveItem(item)),
     );
 
     return resolvedItems.filter(isNavigationItem);
+  }
+
+  async resolveRules(
+    rules: NavigationRule[],
+  ): Promise<ResolvedNavigationRule[]> {
+    await this.initialize();
+
+    return Promise.all(
+      rules.map(async (rule) => {
+        if (rule.type === "insert") {
+          const items = await Promise.all(
+            rule.items.map((item) => this.resolveItem(item)),
+          ).then((items) => items.filter(isNavigationItem));
+
+          return { ...rule, items };
+        }
+        return rule;
+      }),
+    );
   }
 
   private async resolveDoc(

@@ -125,6 +125,43 @@ const config: ZudokuConfig = {
           ? true
           : reasonCode.FORBIDDEN,
   },
+  navigationRules: [
+    {
+      type: "insert",
+      match: "Shipments/0",
+      position: "before",
+      items: [
+        {
+          type: "doc",
+          file: "api-shipments/getting-started",
+          icon: "plane-takeoff",
+        },
+      ],
+    },
+    {
+      type: "modify",
+      match: "Shipments/1",
+      set: { icon: "ship" },
+    },
+    {
+      type: "modify",
+      match: "Shipments/2",
+      set: { icon: "box" },
+    },
+    {
+      type: "insert",
+      match: "Shipments/-1",
+      position: "after",
+      items: [
+        {
+          type: "link",
+          label: "System Status",
+          to: "/status",
+          icon: "satellite",
+        },
+      ],
+    },
+  ],
   navigation: [
     {
       type: "custom-page",
