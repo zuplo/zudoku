@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { cn } from "../../util/cn.js";
+import { RichText } from "../../util/hastToJsx.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
@@ -105,7 +106,13 @@ export const NavigationItem = ({
           {item.icon && (
             <item.icon size={16} className="align-[-0.125em] shrink-0" />
           )}
-          <TruncatedLabel label={item.label} className="flex-1" />
+          {item.rich ? (
+            <span>
+              <RichText>{item.rich}</RichText>
+            </span>
+          ) : (
+            <TruncatedLabel label={item.label} className="flex-1" />
+          )}
           {item.badge && <NavigationBadge {...item.badge} />}
         </NavLink>
       );
