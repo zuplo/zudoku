@@ -289,7 +289,7 @@ export const ZudokuSignUpUi = ({
       await onUsernamePasswordSignUp(email, password);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
 
@@ -298,7 +298,7 @@ export const ZudokuSignUpUi = ({
       await onOAuthSignUp(providerId);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
 
