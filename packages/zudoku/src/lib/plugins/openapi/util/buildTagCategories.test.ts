@@ -13,44 +13,6 @@ const makeTag = (label: string): NavigationItem => ({
 });
 
 describe("buildTagCategories", () => {
-  it("returns tags sorted alphabetically when no tag groups exist", () => {
-    const tagCategories = new Map<string, NavigationItem>([
-      ["Zebra", makeTag("Zebra")],
-      ["Alpha", makeTag("Alpha")],
-    ]);
-
-    const result = buildTagCategories({
-      tagCategories,
-      tagGroups: [],
-    });
-
-    expect(result).toHaveLength(2);
-    expect(result[0]?.label).toBe("Alpha");
-    expect(result[1]?.label).toBe("Zebra");
-  });
-
-  it("sorts groups and ungrouped tags alphabetically", () => {
-    const tagCategories = new Map<string, NavigationItem>([
-      ["Packages", makeTag("Packages")],
-      ["Tracking", makeTag("Tracking")],
-      ["Documentation", makeTag("Documentation")],
-      ["Invoices", makeTag("Invoices")],
-    ]);
-
-    const result = buildTagCategories({
-      tagCategories,
-      tagGroups: [
-        { name: "Shipment", tags: ["Packages", "Tracking"] },
-        { name: "Billing", tags: ["Invoices"] },
-      ],
-    });
-
-    expect(result).toHaveLength(3);
-    expect(result[0]?.label).toBe("Billing");
-    expect(result[1]?.label).toBe("Documentation");
-    expect(result[2]?.label).toBe("Shipment");
-  });
-
   it("preserves nested group structure", () => {
     const tagCategories = new Map<string, NavigationItem>([
       ["Packages", makeTag("Packages")],

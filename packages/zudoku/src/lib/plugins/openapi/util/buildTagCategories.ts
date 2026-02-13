@@ -42,7 +42,5 @@ export const buildTagCategories = ({
     .filter(([name]) => !groupedTags.has(name))
     .map(([, cat]) => cat);
 
-  return [...groupedCategories, ...ungroupedCategories].sort((a, b) =>
-    (a.label ?? "").localeCompare(b.label ?? ""),
-  );
+  return [...groupedCategories, ...ungroupedCategories];
 };
