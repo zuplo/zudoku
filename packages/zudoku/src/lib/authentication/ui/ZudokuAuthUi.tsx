@@ -262,7 +262,7 @@ export const ZudokuSignUpUi = ({
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
-  const relativeRedirectTo = redirectTo?.replace(window.location.origin, "");
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
   if (!isAuthProviderIdArray(providers)) {
     throw new Error("Invalid auth provider IDs");
@@ -273,7 +273,7 @@ export const ZudokuSignUpUi = ({
       await onUsernamePasswordSignUp(email, password);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
 
@@ -282,7 +282,7 @@ export const ZudokuSignUpUi = ({
       await onOAuthSignUp(providerId);
     },
     onSuccess: () => {
-      void navigate(relativeRedirectTo ?? "/");
+      void navigate(relativeRedirectTo);
     },
   });
 
