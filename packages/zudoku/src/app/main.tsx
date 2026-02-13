@@ -84,17 +84,38 @@ export const getRoutesByOptions = (
     ...(options.authentication ? [options.authentication] : []),
   ];
 
-  const routes = allPlugins
-    .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
+  const pluginRoutes = allPlugins.flatMap((plugin) =>
+    isNavigationPlugin(plugin) ? plugin.getRoutes() : [],
+  );
+
+  // Check if any plugin provides a catch-all route (e.g. custom 404 page)
+  const customCatchAll = pluginRoutes.find((r) => r.path === "*");
+  const routesWithoutCatchAll = customCatchAll
+    ? pluginRoutes.filter((r) => r !== customCatchAll)
+    : pluginRoutes;
+
+  const notFoundRoute = {
+    element: customCatchAll?.element ?? <StatusPage statusCode={404} />,
+    ...(customCatchAll?.handle ? { handle: customCatchAll.handle } : {}),
+  };
+
+  const routes = routesWithoutCatchAll
     .concat(
       enableStatusPages
-        ? [400, 404, 500].map((statusCode) => ({
+        ? [400, 500].map((statusCode) => ({
             path: `/${statusCode}`,
             element: <StatusPage statusCode={statusCode} />,
           }))
         : [],
     )
-    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }])
+    .concat(
+      // Always create the /404 route when status pages are enabled or a custom
+      // catch-all exists, so that 404.html is prerendered with the correct content
+      enableStatusPages || customCatchAll
+        ? [{ path: "/404", ...notFoundRoute }]
+        : [],
+    )
+    .concat([{ path: "*", ...notFoundRoute }])
     .map((route) => ({
       ...route,
       errorElement: <RouterError className="w-full m-0" />,

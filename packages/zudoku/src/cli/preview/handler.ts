@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { preview as vitePreview } from "vite";
 import { getViteConfig } from "../../vite/config.js";
@@ -21,6 +22,22 @@ export async function preview(argv: Arguments) {
     preview: {
       port: argv.port ?? DEFAULT_PREVIEW_PORT,
     },
+  });
+
+  // Serve 404.html for unmatched routes as a fallback
+  const notFoundPage = path.join(dir, "dist", "404.html");
+  server.middlewares.use((_req, res) => {
+    readFile(notFoundPage, "utf-8").then(
+      (content) => {
+        res.statusCode = 404;
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.end(content);
+      },
+      () => {
+        res.statusCode = 404;
+        res.end("Not Found");
+      },
+    );
   });
 
   printDiagnosticsToConsole("");
