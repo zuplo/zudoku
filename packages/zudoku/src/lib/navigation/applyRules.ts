@@ -66,6 +66,17 @@ export const applyRules = (
       continue;
     }
 
+    if (match.isRoot) {
+      if (rule.type === "sort") {
+        result.sort((a, b) =>
+          isSortable(a) && isSortable(b) ? rule.by(a, b) : 0,
+        );
+      } else {
+        warnings.push(`Rule type "${rule.type}" cannot target the root level`);
+      }
+      continue;
+    }
+
     switch (rule.type) {
       case "remove":
         match.parentItems.splice(match.index, 1);
@@ -79,13 +90,34 @@ export const applyRules = (
         break;
       }
       case "sort": {
-        if (match.item.type === "category") {
-          match.item.items.sort((a, b) =>
+        const sortableItems =
+          match.item.type === "category" ? match.item.items : undefined;
+
+        if (sortableItems) {
+          sortableItems.sort((a, b) =>
             isSortable(a) && isSortable(b) ? rule.by(a, b) : 0,
           );
         } else {
           warnings.push(`Sort target "${rule.match}" is not a category`);
         }
+        break;
+      }
+      case "move": {
+        const toPath = normalizeRulePath(rule.to, topNavLabel);
+        if (toPath === undefined) break;
+
+        const [item] = match.parentItems.splice(match.index, 1);
+        if (!item) break;
+
+        const target = findByPath(result, toPath);
+        if (!target || target.isRoot) {
+          warnings.push(`Move target "${rule.to}" not found`);
+          match.parentItems.splice(match.index, 0, item);
+          break;
+        }
+
+        const offset = rule.position === "after" ? 1 : 0;
+        target.parentItems.splice(target.index + offset, 0, item);
         break;
       }
     }

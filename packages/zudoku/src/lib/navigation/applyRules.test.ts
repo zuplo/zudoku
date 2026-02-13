@@ -365,6 +365,84 @@ describe("applyRules", () => {
     });
   });
 
+  describe("move rules", () => {
+    it("should move item before target", () => {
+      const nav = createMockNavigation();
+      const rules: ResolvedNavigationRule[] = [
+        { type: "move", match: "About", to: "Shipments/0", position: "before" },
+      ];
+
+      const { result, warnings } = applyRules(nav, rules);
+
+      expect(warnings).toHaveLength(0);
+      expect(result).toHaveLength(1);
+      const shipments = result[0];
+      if (shipments?.type === "category") {
+        expect(shipments.items[0]?.label).toBe("About");
+        expect(shipments.items[1]?.label).toBe("Track a Shipment");
+      }
+    });
+
+    it("should move item after target", () => {
+      const nav = createMockNavigation();
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "move",
+          match: "Shipments/Track a Shipment",
+          to: "About",
+          position: "after",
+        },
+      ];
+
+      const { result, warnings } = applyRules(nav, rules);
+
+      expect(warnings).toHaveLength(0);
+      expect(result[1]?.label).toBe("About");
+      expect(result[2]?.label).toBe("Track a Shipment");
+    });
+
+    it("should warn when move target not found", () => {
+      const nav = createMockNavigation();
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "move",
+          match: "About",
+          to: "NonExistent",
+          position: "before",
+        },
+      ];
+
+      const { result, warnings } = applyRules(nav, rules);
+
+      expect(warnings).toHaveLength(1);
+      expect(warnings[0]).toContain("NonExistent");
+      // Item should remain in original position
+      expect(result[1]?.label).toBe("About");
+    });
+
+    it("should move nested item to root level", () => {
+      const nav = createMockNavigation();
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "move",
+          match: "Shipments/Create Shipment",
+          to: "About",
+          position: "before",
+        },
+      ];
+
+      const { result, warnings } = applyRules(nav, rules);
+
+      expect(warnings).toHaveLength(0);
+      expect(result[1]?.label).toBe("Create Shipment");
+      expect(result[2]?.label).toBe("About");
+      const shipments = result[0];
+      if (shipments?.type === "category") {
+        expect(shipments.items).toHaveLength(2);
+      }
+    });
+  });
+
   describe("scoped rules with topNavLabel", () => {
     const topNavLabel = "Shipments";
 
@@ -446,6 +524,41 @@ describe("applyRules", () => {
 
       expect(result[0]?.label).toBe("Home");
       expect(result[1]?.label).toBe("About");
+    });
+
+    it("should sort root level items when match equals topNavLabel", () => {
+      const sidebarNav: NavigationItem[] = [
+        {
+          type: "category",
+          label: "Billing & International",
+          items: [],
+        },
+        {
+          type: "category",
+          label: "Shipment",
+          items: [],
+        },
+        {
+          type: "category",
+          label: "Administration",
+          items: [],
+        },
+      ];
+      const topNavLabel = "API Reference";
+      const rules: ResolvedNavigationRule[] = [
+        {
+          type: "sort",
+          match: "API Reference",
+          by: (a, b) => a.label.localeCompare(b.label),
+        },
+      ];
+
+      const { result, warnings } = applyRules(sidebarNav, rules, topNavLabel);
+
+      expect(warnings).toHaveLength(0);
+      expect(result[0]?.label).toBe("Administration");
+      expect(result[1]?.label).toBe("Billing & International");
+      expect(result[2]?.label).toBe("Shipment");
     });
   });
 });

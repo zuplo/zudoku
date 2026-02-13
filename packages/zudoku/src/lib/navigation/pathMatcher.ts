@@ -10,7 +10,9 @@ export type PathMatchResult =
       item: NavigationItem;
       parentItems: NavigationItem[];
       index: number;
-    };
+      isRoot?: false;
+    }
+  | { parentItems: NavigationItem[]; isRoot: true };
 
 const parseSegment = (segment: string): PathSegment => {
   if (/^-?\d+$/.test(segment)) return { type: "index", value: Number(segment) };
@@ -41,7 +43,12 @@ export const findByPath = (
   navigation: NavigationItem[],
   pathString: string,
 ): PathMatchResult => {
-  if (!pathString || pathString === "/") return undefined;
+  if (!pathString) return undefined;
+
+  // Special case: "/" matches the root level for sorting/manipulation
+  if (pathString === "/") {
+    return { parentItems: navigation, isRoot: true };
+  }
 
   const segments = splitPathSegments(pathString).map(parseSegment);
   if (segments.length === 0) return undefined;

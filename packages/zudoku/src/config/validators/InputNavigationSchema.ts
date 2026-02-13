@@ -66,11 +66,19 @@ const NavigationSortRuleSchema = z.object({
   >((val) => typeof val === "function"),
 });
 
+const NavigationMoveRuleSchema = z.object({
+  type: z.literal("move"),
+  match: z.string(),
+  to: z.string(),
+  position: z.enum(["before", "after"]),
+});
+
 export const NavigationRuleSchema = z.discriminatedUnion("type", [
   NavigationModifyRuleSchema,
   NavigationInsertRuleSchema,
   NavigationRemoveRuleSchema,
   NavigationSortRuleSchema,
+  NavigationMoveRuleSchema,
 ]);
 
 export const NavigationRulesSchema = NavigationRuleSchema.array();
@@ -80,6 +88,7 @@ export type NavigationModifyRule = z.infer<typeof NavigationModifyRuleSchema>;
 export type NavigationInsertRule = z.infer<typeof NavigationInsertRuleSchema>;
 export type NavigationRemoveRule = z.infer<typeof NavigationRemoveRuleSchema>;
 export type NavigationSortRule = z.infer<typeof NavigationSortRuleSchema>;
+export type NavigationMoveRule = z.infer<typeof NavigationMoveRuleSchema>;
 
 const InputNavigationDocSchema = z.union([
   z.string(),

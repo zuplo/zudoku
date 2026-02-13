@@ -15,6 +15,7 @@ import type {
   InputNavigationSeparator,
   NavigationInsertRule,
   NavigationModifyRule,
+  NavigationMoveRule,
   NavigationRemoveRule,
   NavigationRule,
   NavigationSortRule,
@@ -101,7 +102,8 @@ export type ResolvedNavigationRule =
   | NavigationModifyRule
   | NavigationRemoveRule
   | ResolvedNavigationInsertRule
-  | NavigationSortRule;
+  | NavigationSortRule
+  | NavigationMoveRule;
 
 export class NavigationResolver {
   private rootDir: string;
