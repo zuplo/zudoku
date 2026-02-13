@@ -34,7 +34,10 @@ const entries: Record<string, string> = {
 export default defineConfig({
   resolve: {
     alias: [
-      { find: /^zudoku\/ui\/(.*)\.js/, replacement: `./src/lib/ui/$1.tsx` },
+      {
+        find: /^zudoku\/ui\/(.*)\.js/,
+        replacement: path.resolve(import.meta.dirname, "src/lib/ui/$1.tsx"),
+      },
     ],
   },
   build: {
@@ -53,7 +56,7 @@ export default defineConfig({
           ? `${fileName}.js`
           : `zudoku.${fileName}.js`,
     },
-    rollupOptions: {
+    rolldownOptions: {
       external: [
         "react",
         "react-dom",

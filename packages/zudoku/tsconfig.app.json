@@ -9,6 +9,7 @@
     "module": "NodeNext",
     "resolveJsonModule": true,
     "useUnknownInCatchVariables": false,
+    "erasableSyntaxOnly": true,
     "noUncheckedIndexedAccess": true,
     "strict": true,
     "strictNullChecks": true,

@@ -1,4 +1,3 @@
-import type { PluginContext, TransformPluginContext } from "rollup";
 import type { Plugin } from "vite";
 import { describe, expect, it, vi } from "vitest";
 import type { ConfigWithMeta } from "../config/loader.js";
@@ -11,14 +10,16 @@ const callPluginLoad = async (plugin: Plugin, id: string) => {
   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.load!;
   const loadFn = typeof hook === "function" ? hook : hook.handler;
-  return loadFn.call({} as PluginContext, id);
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
+  return loadFn.call({} as any, id);
 };
 
 const callPluginTransform = async (plugin: Plugin, src: string, id: string) => {
   // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
   const hook = plugin.transform!;
   const transformFn = typeof hook === "function" ? hook : hook.handler;
-  return transformFn.call({} as TransformPluginContext, src, id);
+  // biome-ignore lint/suspicious/noExplicitAny: Allow any type
+  return transformFn.call({} as any, src, id);
 };
 
 describe("plugin-theme", () => {
