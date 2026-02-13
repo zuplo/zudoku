@@ -128,7 +128,7 @@ const config: ZudokuConfig = {
   navigationRules: [
     {
       type: "insert",
-      match: "Shipments/Shipment",
+      match: "Shipments/0",
       position: "before",
       items: [
         {
@@ -141,6 +141,11 @@ const config: ZudokuConfig = {
     {
       type: "modify",
       match: "Shipments/1",
+      set: { icon: "ship" },
+    },
+    {
+      type: "modify",
+      match: "Shipments/2",
       set: { icon: "box" },
     },
     {
