@@ -73,7 +73,8 @@ export const getFirstMatchingPath = (item: NavigationItem): string => {
           if (
             child.type !== "category" &&
             child.type !== "separator" &&
-            child.type !== "section"
+            child.type !== "section" &&
+            child.type !== "filter"
           ) {
             return getFirstMatchingPath(child);
           }

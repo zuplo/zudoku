@@ -2,12 +2,12 @@ import path from "node:path";
 import { glob } from "glob";
 import type { RootContent } from "hast";
 import type { LucideIcon } from "lucide-react";
-import type { SortableType } from "../../lib/navigation/applyRules.js";
 import type { Heading, PhrasingContent } from "mdast";
 import { fromMarkdown } from "mdast-util-from-markdown";
 import { mdxFromMarkdown } from "mdast-util-mdx";
 import type { MdxJsxTextElement } from "mdast-util-mdx-jsx";
 import { mdxjs } from "micromark-extension-mdxjs";
+import type { SortableType } from "../../lib/navigation/applyRules.js";
 import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
