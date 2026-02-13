@@ -6,6 +6,7 @@ import {
 } from "@supabase/supabase-js";
 import type { SupabaseAuthenticationConfig } from "../../../config/config.js";
 import { ZudokuError } from "../../util/invariant.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
@@ -19,6 +20,7 @@ import { type UserProfile, useAuthState } from "../state.js";
 import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
 import {
   ZudokuPasswordResetUi,
+  ZudokuPasswordUpdateUi,
   ZudokuSignInUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
@@ -167,7 +169,11 @@ class SupabaseAuthenticationProvider
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}${this.config.basePath ?? ""}/verify-email`,
+        emailRedirectTo: joinUrl(
+          window.location.origin,
+          this.config.basePath,
+          "/verify-email",
+        ),
       },
     });
     useAuthState.setState({ isPending: false });
@@ -199,7 +205,7 @@ class SupabaseAuthenticationProvider
       options: {
         redirectTo:
           this.config.redirectToAfterSignIn ??
-          `${window.location.origin}${this.config.basePath ?? ""}`,
+          joinUrl(window.location.origin, this.config.basePath),
       },
     });
     if (error) {
@@ -211,8 +217,19 @@ class SupabaseAuthenticationProvider
 
   private onPasswordReset = async (email: string) => {
     const { error } = await this.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}${this.config.basePath ?? ""}/reset-password`,
+      redirectTo: joinUrl(
+        window.location.origin,
+        this.config.basePath,
+        "/update-password",
+      ),
     });
+    if (error) {
+      throw Error(getSupabaseErrorMessage(error), { cause: error });
+    }
+  };
+
+  private onPasswordUpdate = async (password: string) => {
+    const { error } = await this.client.auth.updateUser({ password });
     if (error) {
       throw Error(getSupabaseErrorMessage(error), { cause: error });
     }
@@ -271,6 +288,12 @@ class SupabaseAuthenticationProvider
         path: "/reset-password",
         element: (
           <ZudokuPasswordResetUi onPasswordReset={this.onPasswordReset} />
+        ),
+      },
+      {
+        path: "/update-password",
+        element: (
+          <ZudokuPasswordUpdateUi onPasswordUpdate={this.onPasswordUpdate} />
         ),
       },
       {

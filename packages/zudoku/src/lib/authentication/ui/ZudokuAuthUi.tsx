@@ -475,3 +475,112 @@ export const ZudokuPasswordResetUi = ({
     </AuthCard>
   );
 };
+
+export const ZudokuPasswordUpdateUi = ({
+  onPasswordUpdate,
+}: {
+  onPasswordUpdate: (password: string) => Promise<void>;
+}) => {
+  const [isSubmitted, setIsSubmitted] = React.useState(false);
+
+  const passwordUpdateMutation = useMutation({
+    mutationFn: async ({ password }: { password: string }) => {
+      await onPasswordUpdate(password);
+    },
+    onSuccess: () => {
+      setIsSubmitted(true);
+    },
+  });
+
+  const form = useForm<{ password: string; confirmPassword: string }>({
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const error = passwordUpdateMutation.error;
+
+  const onSubmit = (data: { password: string; confirmPassword: string }) => {
+    if (data.password !== data.confirmPassword) {
+      form.setError("confirmPassword", {
+        message: "Passwords do not match",
+      });
+      return;
+    }
+    passwordUpdateMutation.mutate({ password: data.password });
+  };
+
+  return (
+    <AuthCard>
+      <CardHeader>
+        <CardTitle>Set new password</CardTitle>
+        <CardDescription>
+          {isSubmitted
+            ? "Your password has been updated successfully."
+            : "Enter your new password below."}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        {error && (
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error?.message}</AlertDescription>
+          </Alert>
+        )}
+        {isSubmitted ? (
+          <div className="flex flex-col gap-4">
+            <Alert>
+              <AlertTitle>Password updated</AlertTitle>
+              <AlertDescription>
+                Your password has been successfully updated. You can now sign in
+                with your new password.
+              </AlertDescription>
+            </Alert>
+            <Link to="/signin">
+              <Button variant="outline" className="w-full">
+                Sign in
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col gap-2"
+            >
+              <FormItem>
+                <FormLabel>New password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Enter new password"
+                    {...form.register("password")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+              <FormItem>
+                <FormLabel>Confirm password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Confirm new password"
+                    {...form.register("confirmPassword")}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+              <ActionButton
+                type="submit"
+                isPending={passwordUpdateMutation.isPending}
+              >
+                Update password
+              </ActionButton>
+            </form>
+          </Form>
+        )}
+      </CardContent>
+    </AuthCard>
+  );
+};
