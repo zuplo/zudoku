@@ -106,12 +106,12 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
             <p>
               <strong>Error:</strong> <code>{type}</code>
             </p>
-            {oauthError?.error_description && (
+            {oauthError?.error_description != null && (
               <p>
                 <strong>Description:</strong> {oauthError.error_description}
               </p>
             )}
-            {oauthError?.error_uri && (
+            {oauthError?.error_uri?.startsWith("http") && (
               <p>
                 <strong>More info:</strong>{" "}
                 <a
@@ -127,7 +127,6 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
           </DeveloperHint>
         </div>
 
-        {/* Action Buttons */}
         <div className="space-y-3 pt-4">
           <div className="space-y-2">
             {(type === "access_denied" ||
@@ -153,7 +152,6 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
           </div>
         </div>
 
-        {/* Additional Help */}
         {helpMessages[type] && (
           <Typography className="text-sm text-gray-500 dark:text-gray-400">
             {helpMessages[type]}
