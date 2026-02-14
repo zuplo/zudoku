@@ -7,18 +7,14 @@ export const remarkLinkRewrite =
   (tree: Root) => {
     visit(tree, "link", (node) => {
       if (!node.url) return;
+      if (node.url.startsWith("http") || node.url.startsWith("mailto:")) return;
 
       node.url = node.url.replace(/\\/g, "/");
 
       const base = path.posix.join(basePath);
       if (basePath && node.url.startsWith(base)) {
         node.url = node.url.slice(base.length);
-      } else if (
-        !node.url.startsWith("http") &&
-        !node.url.startsWith("mailto:") &&
-        !node.url.startsWith("/") &&
-        !node.url.startsWith("#")
-      ) {
+      } else if (!node.url.startsWith("/") && !node.url.startsWith("#")) {
         node.url = path.posix.join("..", node.url);
       }
 
