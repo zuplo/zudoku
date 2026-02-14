@@ -29,9 +29,17 @@ export const generateSchemaExample = (
     }
   }
 
-  // No example needed for const values
+  // const is a strict constraint and takes precedence over examples
   if (schema.const !== undefined) {
     return schema.const;
+  }
+
+  if (
+    schema.examples &&
+    Array.isArray(schema.examples) &&
+    schema.examples.length > 0
+  ) {
+    return schema.examples[0];
   }
 
   // For object schemas with properties
@@ -93,15 +101,6 @@ export const generateSchemaExample = (
     // Should likely be expanded to return a partial set of values, but it would require
     // detection if being used within an array or a string type.
     return generateSchemaExample(schema.anyOf[0]);
-  }
-
-  // Check for property-level examples
-  if (
-    schema.examples &&
-    Array.isArray(schema.examples) &&
-    schema.examples.length > 0
-  ) {
-    return schema.examples[0];
   }
 
   switch (schema.type) {

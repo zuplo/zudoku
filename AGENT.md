@@ -43,6 +43,36 @@
 - Use UI components from the `zudoku/ui` module. (based on shadcn/ui)
 - Use icons from the `zudoku/icons` module (based on Lucide icons)
 
+## OpenAPI Schema Processing Pipeline
+
+There are two distinct pipelines depending on how schemas are loaded:
+
+### File schemas (build mode via `SchemaManager`)
+
+1. `$RefParser.bundle()` bundles external refs, keeps internal `$ref`s. Uses
+   `preservedProperties: ["description", "summary"]` so other `$ref` sibling properties are lost.
+2. `@scalar/openapi-parser` `upgrade()` converts OAS 3.0 → 3.1. Converts `example` → `examples`
+   (array for schema paths, `{ default: { value } }` for non-schema paths) and deletes `example`.
+   Skips if already OAS 3.1+.
+3. `flattenAllOfProcessor` resolves `$ref`s inside `allOf` arrays then merges via
+   `@x0k/json-schema-merge`.
+4. Custom user-defined processors run.
+
+### URL schemas (runtime via `validate()` in `oas/parser/index.ts`)
+
+1. Custom `dereference()` resolves all `$ref`s inline (replaces entirely, losing sibling
+   properties).
+2. Custom `upgradeSchema()` in `oas/parser/upgrade/index.ts` converts OAS 3.0 → 3.1. Always runs the
+   `example` → `examples` conversion regardless of version.
+3. `flattenAllOf()` merges `allOf` schemas.
+
+### GraphQL layer
+
+Schemas are exposed via a Pothos GraphQL API (`oas/graphql/index.ts`). The `schema` field on
+responses/request bodies is passed as `JSONSchemaScalar`, which serializes the raw schema object
+through `handleCircularRefs()`. Media-type level `example`/`examples` are resolved into
+`ExampleItem` arrays by the GraphQL resolvers before reaching the client.
+
 ## Plugin Architecture
 
 - Plugins live in packages/zudoku/lib/plugins/

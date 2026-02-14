@@ -342,17 +342,23 @@
       "Error": {
         "type": "object",
         "required": ["code", "message"],
+        "example": {
+          "code": "SHIPMENT_NOT_FOUND",
+          "message": "The requested shipment could not be found"
+        },
         "properties": {
           "code": {
             "type": "string",
             "pattern": "^[A-Z_]+$",
             "minLength": 1,
-            "maxLength": 50
+            "maxLength": 50,
+            "example": "SHIPMENT_NOT_FOUND"
           },
           "message": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 500
+            "maxLength": 500,
+            "example": "The requested shipment could not be found"
           }
         }
       },
