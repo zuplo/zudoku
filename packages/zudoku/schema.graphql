@@ -56,7 +56,7 @@ type OperationItem {
   path: String!
   requestBody: RequestBodyObject
   responses: [ResponseItem!]!
-  servers: [Server!]!
+  servers: [Server!]
   slug: String!
   summary: String
   tags: [TagItem!]
@@ -156,6 +156,14 @@ enum SchemaType {
 type Server {
   description: String
   url: String!
+  variables: [ServerVariable!]!
+}
+
+type ServerVariable {
+  defaultValue: String!
+  description: String
+  enumValues: [String!]
+  name: String!
 }
 
 type TagItem {

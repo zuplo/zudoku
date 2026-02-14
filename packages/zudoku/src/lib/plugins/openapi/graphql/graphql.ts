@@ -79,7 +79,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
-  servers: Array<Server>;
+  servers?: Maybe<Array<Server>>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
   tags?: Maybe<Array<TagItem>>;
@@ -192,6 +192,15 @@ export type Server = {
   __typename?: "Server";
   description?: Maybe<Scalars["String"]["output"]>;
   url: Scalars["String"]["output"];
+  variables: Array<ServerVariable>;
+};
+
+export type ServerVariable = {
+  __typename?: "ServerVariable";
+  defaultValue: Scalars["String"]["output"];
+  description?: Maybe<Scalars["String"]["output"]>;
+  enumValues?: Maybe<Array<Scalars["String"]["output"]>>;
+  name: Scalars["String"]["output"];
 };
 
 export type TagItem = {
@@ -199,20 +208,6 @@ export type TagItem = {
   description?: Maybe<Scalars["String"]["output"]>;
   extensions?: Maybe<Scalars["JSONObject"]["output"]>;
   name: Scalars["String"]["output"];
-};
-
-export type ServersQueryQueryVariables = Exact<{
-  input: Scalars["JSON"]["input"];
-  type: SchemaType;
-}>;
-
-export type ServersQueryQuery = {
-  __typename?: "Query";
-  schema: {
-    __typename?: "Schema";
-    url?: string | null;
-    servers: Array<{ __typename?: "Server"; url: string }>;
-  };
 };
 
 export type OperationsFragmentFragment = {
@@ -226,11 +221,18 @@ export type OperationsFragmentFragment = {
   path: string;
   deprecated?: boolean | null;
   extensions?: any | null;
-  servers: Array<{
+  servers?: Array<{
     __typename?: "Server";
     url: string;
     description?: string | null;
-  }>;
+    variables: Array<{
+      __typename?: "ServerVariable";
+      name: string;
+      defaultValue: string;
+      description?: string | null;
+      enumValues?: Array<string> | null;
+    }>;
+  }> | null;
   parameters?: Array<{
     __typename?: "ParameterItem";
     name: string;
@@ -316,7 +318,18 @@ export type OperationsForTagQuery = {
     title: string;
     url?: string | null;
     version: string;
-    servers: Array<{ __typename?: "Server"; url: string }>;
+    servers: Array<{
+      __typename?: "Server";
+      url: string;
+      description?: string | null;
+      variables: Array<{
+        __typename?: "ServerVariable";
+        name: string;
+        defaultValue: string;
+        description?: string | null;
+        enumValues?: Array<string> | null;
+      }>;
+    }>;
     tag?: {
       __typename?: "SchemaTag";
       name?: string | null;
@@ -449,6 +462,12 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   servers {
     url
     description
+    variables {
+      name
+      defaultValue
+      description
+      enumValues
+    }
   }
   parameters {
     name
@@ -507,19 +526,6 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
     `,
   { fragmentName: "OperationsFragment" },
 ) as unknown as TypedDocumentString<OperationsFragmentFragment, unknown>;
-export const ServersQueryDocument = new TypedDocumentString(`
-    query ServersQuery($input: JSON!, $type: SchemaType!) {
-  schema(input: $input, type: $type) {
-    url
-    servers {
-      url
-    }
-  }
-}
-    `) as unknown as TypedDocumentString<
-  ServersQueryQuery,
-  ServersQueryQueryVariables
->;
 export const SchemaWarmupDocument = new TypedDocumentString(`
     query SchemaWarmup($input: JSON!, $type: SchemaType!) {
   schema(input: $input, type: $type) {
@@ -535,6 +541,13 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   schema(input: $input, type: $type) {
     servers {
       url
+      description
+      variables {
+        name
+        defaultValue
+        description
+        enumValues
+      }
     }
     description
     summary
@@ -575,6 +588,12 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   servers {
     url
     description
+    variables {
+      name
+      defaultValue
+      description
+      enumValues
+    }
   }
   parameters {
     name

@@ -54,20 +54,33 @@
   ],
   "servers": [
     {
+      "url": "https://{tenant}.{region}.{env}.sh.example.com/{version}",
+      "description": "Global default server with tenant, region, environment, and version variables",
+      "variables": {
+        "tenant": {
+          "default": "acme-logistics",
+          "description": "Tenant subdomain used to isolate organization data"
+        },
+        "region": {
+          "default": "us-east-1",
+          "enum": ["us-east-1", "us-west-2", "eu-central-1"],
+          "description": "Primary data residency region"
+        },
+        "env": {
+          "default": "prod",
+          "enum": ["prod", "staging", "dev"],
+          "description": "Deployment environment"
+        },
+        "version": {
+          "default": "v1",
+          "enum": ["v1", "v1-beta"],
+          "description": "API version path segment"
+        }
+      }
+    },
+    {
       "url": "https://8f9618f3bc0f4eec989627ceaafd5e4d_oas.api.mockbin.io/",
-      "description": "Production environment"
-    },
-    {
-      "url": "https://api.sh.example.com/v1",
-      "description": "Production environment"
-    },
-    {
-      "url": "https://api.staging.sh.example.com/v1",
-      "description": "Staging environment"
-    },
-    {
-      "url": "https://api.dev.sh.example.com/v1",
-      "description": "Development environment"
+      "description": "Static mock server for quick local demos"
     }
   ],
   "security": [
@@ -1077,6 +1090,29 @@
       }
     },
     "/shipments/{trackingNumber}": {
+      "servers": [
+        {
+          "url": "https://{region}.tracking.{env}.sh.example.com/{version}",
+          "description": "Path-level override for /shipment/{trackingNumber}",
+          "variables": {
+            "region": {
+              "default": "us-east-1",
+              "enum": ["us-east-1", "eu-central-1"],
+              "description": "Tracking service region"
+            },
+            "env": {
+              "default": "prod",
+              "enum": ["prod", "staging"],
+              "description": "Tracking environment"
+            },
+            "version": {
+              "default": "v1",
+              "enum": ["v1", "v1-edge"],
+              "description": "Tracking API version channel"
+            }
+          }
+        }
+      ],
       "get": {
         "tags": ["Shipment Management"],
         "summary": "Track a shipment",

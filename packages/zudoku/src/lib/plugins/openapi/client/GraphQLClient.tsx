@@ -41,15 +41,32 @@ export class GraphQLClient {
     return localServer.fetch("http://localhost/graphql", init);
   };
 
+  #getQueryString = (query: unknown): string => {
+    if (typeof query === "string") return query;
+
+    if (query && typeof query === "object" && "toString" in query) {
+      const value = String(query);
+      if (value && value !== "[object Object]") return value;
+    }
+
+    throw new ZudokuError("Invalid GraphQL query document", {
+      developerHint:
+        "The GraphQL query document is not serializable. Ensure generated GraphQL documents are up to date.",
+    });
+  };
+
   fetch = async <TResult, TVariables>(
     query: TypedDocumentString<TResult, TVariables>,
     variables?: TVariables,
   ): Promise<TResult> => {
-    const operationName = query.match(/query (\w+)/)?.[1];
+    const queryString = this.#getQueryString(query);
+    const operationName = queryString.match(
+      /\b(query|mutation|subscription)\s+(\w+)/,
+    )?.[2];
 
     const response = await this.#executeFetch({
       method: "POST",
-      body: JSON.stringify({ query, variables, operationName }),
+      body: JSON.stringify({ query: queryString, variables, operationName }),
       headers: { "Content-Type": "application/json" },
     });
 
