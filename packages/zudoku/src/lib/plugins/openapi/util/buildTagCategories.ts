@@ -8,6 +8,8 @@ type BuildTagCategoriesOptions = {
   expandAllTags?: boolean;
 };
 
+// Merges tags and x-tagGroups with the same name into a single sidebar
+// category (mimics OpenAPI 3.2.0 "Enhanced tags" behaviour).
 export const buildTagCategories = ({
   tagCategories,
   tagGroups,
@@ -15,34 +17,35 @@ export const buildTagCategories = ({
 }: BuildTagCategoriesOptions): NavigationItem[] => {
   const consumedTags = new Set<string>();
 
-  const groupedCategories: NavigationItem[] = tagGroups.flatMap((group) => {
+  const groupedCategories = tagGroups.flatMap<NavigationItem>((group) => {
+    // Use a same-named tag as base so its operations appear first
     const matchingTag = tagCategories.get(group.name);
     const base = matchingTag?.type === "category" ? matchingTag : undefined;
 
     if (base) consumedTags.add(group.name);
 
-    const childTags = group.tags
-      .filter((name) => name !== group.name && tagCategories.has(name))
-      .flatMap((name) => {
-        consumedTags.add(name);
-        const tag = tagCategories.get(name);
-        return tag ? [tag] : [];
-      });
+    // Exclude group's own name to avoid nesting a tag inside itself
+    const childTags = group.tags.flatMap((name) => {
+      if (name === group.name) return [];
+      const tag = tagCategories.get(name);
+      if (!tag) return [];
+      consumedTags.add(name);
+      return tag;
+    });
 
     if (!base && childTags.length === 0) return [];
 
-    return [
-      {
-        ...base,
-        type: "category" as const,
-        label: base?.label ?? group.name,
-        items: [...(base?.items ?? []), ...childTags],
-        collapsible: base?.collapsible ?? true,
-        collapsed: base?.collapsed ?? !expandAllTags,
-      },
-    ];
+    return {
+      ...base,
+      type: "category",
+      label: base?.label ?? group.name,
+      items: [...(base?.items ?? []), ...childTags],
+      collapsible: base?.collapsible ?? true,
+      collapsed: base?.collapsed ?? !expandAllTags,
+    };
   });
 
+  // Tags not claimed by any group appear as standalone entries
   const ungroupedCategories = Array.from(tagCategories.entries())
     .filter(([name]) => !consumedTags.has(name))
     .map(([, cat]) => cat);

@@ -104,29 +104,11 @@ describe("buildTagCategories", () => {
     expect(contacts?.type).toBe("category");
 
     if (contacts?.type === "category") {
-      // Operations from the "Contacts" tag come first, then "Notes" as a child
+      // Operations from the "Contacts" tag come first, then "Notes" as a child.
+      // "Contacts" must not appear as a nested child of itself.
       expect(contacts.items).toHaveLength(2);
       expect(contacts.items[0]?.label).toBe("Contacts op");
       expect(contacts.items[1]?.label).toBe("Notes");
-    }
-  });
-
-  it("excludes self-reference when tagGroup includes its own name in tags", () => {
-    const tagCategories = new Map<string, NavigationItem>([
-      ["Contacts", makeTag("Contacts")],
-      ["Notes", makeTag("Notes")],
-    ]);
-
-    const result = buildTagCategories({
-      tagCategories,
-      tagGroups: [{ name: "Contacts", tags: ["Contacts", "Notes"] }],
-    });
-
-    const contacts = result[0];
-    if (contacts?.type === "category") {
-      // "Contacts" tag should NOT appear as a nested child of itself
-      const childLabels = contacts.items.map((i) => i.label);
-      expect(childLabels).not.toContain("Contacts");
     }
   });
 
