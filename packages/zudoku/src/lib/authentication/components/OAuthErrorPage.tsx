@@ -1,5 +1,6 @@
 import { HomeIcon } from "lucide-react";
 import { Link } from "react-router";
+import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Typography } from "../../components/Typography.js";
 import { Button } from "../../ui/Button.js";
@@ -79,7 +80,9 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
     throw error;
   }
 
-  const oauthError = error.error;
+  const oauthError = error.error as
+    | { error?: string; error_description?: string; error_uri?: string }
+    | undefined;
   const type =
     oauthError && typeof oauthError === "object" && "error" in oauthError
       ? String(oauthError.error)
@@ -99,7 +102,29 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
             {details?.message}
           </Typography>
 
-          {/* Technical details for developers (only in development) */}
+          <DeveloperHint>
+            <p>
+              <strong>Error:</strong> <code>{type}</code>
+            </p>
+            {oauthError?.error_description && (
+              <p>
+                <strong>Description:</strong> {oauthError.error_description}
+              </p>
+            )}
+            {oauthError?.error_uri && (
+              <p>
+                <strong>More info:</strong>{" "}
+                <a
+                  href={oauthError.error_uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {oauthError.error_uri}
+                </a>
+              </p>
+            )}
+          </DeveloperHint>
         </div>
 
         {/* Action Buttons */}
