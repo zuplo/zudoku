@@ -85,4 +85,68 @@ describe("buildTagCategories", () => {
 
     expect(result).toEqual([]);
   });
+
+  it("merges a tag and tagGroup with the same name", () => {
+    const tagCategories = new Map<string, NavigationItem>([
+      ["Contacts", makeTag("Contacts")],
+      ["Notes", makeTag("Notes")],
+    ]);
+
+    const result = buildTagCategories({
+      tagCategories,
+      tagGroups: [{ name: "Contacts", tags: ["Contacts", "Notes"] }],
+    });
+
+    expect(result).toHaveLength(1);
+
+    const contacts = result[0];
+    expect(contacts?.label).toBe("Contacts");
+    expect(contacts?.type).toBe("category");
+
+    if (contacts?.type === "category") {
+      // Operations from the "Contacts" tag come first, then "Notes" as a child.
+      // "Contacts" must not appear as a nested child of itself.
+      expect(contacts.items).toHaveLength(2);
+      expect(contacts.items[0]?.label).toBe("Contacts op");
+      expect(contacts.items[1]?.label).toBe("Notes");
+    }
+  });
+
+  it("excludes merged tag from ungrouped results", () => {
+    const tagCategories = new Map<string, NavigationItem>([
+      ["Contacts", makeTag("Contacts")],
+      ["Notes", makeTag("Notes")],
+      ["Standalone", makeTag("Standalone")],
+    ]);
+
+    const result = buildTagCategories({
+      tagCategories,
+      tagGroups: [{ name: "Contacts", tags: ["Contacts", "Notes"] }],
+    });
+
+    // "Contacts" (merged) + "Standalone" (ungrouped) = 2 top-level entries
+    expect(result).toHaveLength(2);
+    expect(result.map((r) => r.label)).toEqual(["Contacts", "Standalone"]);
+  });
+
+  it("merges tag with tagGroup that has no additional child tags", () => {
+    const tagCategories = new Map<string, NavigationItem>([
+      ["Contacts", makeTag("Contacts")],
+    ]);
+
+    const result = buildTagCategories({
+      tagCategories,
+      tagGroups: [{ name: "Contacts", tags: ["Contacts"] }],
+    });
+
+    expect(result).toHaveLength(1);
+
+    const contacts = result[0];
+    expect(contacts?.label).toBe("Contacts");
+    if (contacts?.type === "category") {
+      // Only the original operations, no nested tags
+      expect(contacts.items).toHaveLength(1);
+      expect(contacts.items[0]?.label).toBe("Contacts op");
+    }
+  });
 });
