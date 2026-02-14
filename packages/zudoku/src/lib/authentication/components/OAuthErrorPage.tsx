@@ -1,5 +1,6 @@
 import { HomeIcon } from "lucide-react";
 import { Link } from "react-router";
+import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Typography } from "../../components/Typography.js";
 import { Button } from "../../ui/Button.js";
@@ -79,7 +80,9 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
     throw error;
   }
 
-  const oauthError = error.error;
+  const oauthError = error.error as
+    | { error?: string; error_description?: string; error_uri?: string }
+    | undefined;
   const type =
     oauthError && typeof oauthError === "object" && "error" in oauthError
       ? String(oauthError.error)
@@ -99,10 +102,31 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
             {details?.message}
           </Typography>
 
-          {/* Technical details for developers (only in development) */}
+          <DeveloperHint>
+            <p>
+              <strong>Error:</strong> <code>{type}</code>
+            </p>
+            {oauthError?.error_description != null && (
+              <p>
+                <strong>Description:</strong> {oauthError.error_description}
+              </p>
+            )}
+            {oauthError?.error_uri?.startsWith("http") && (
+              <p>
+                <strong>More info:</strong>{" "}
+                <a
+                  href={oauthError.error_uri}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  {oauthError.error_uri}
+                </a>
+              </p>
+            )}
+          </DeveloperHint>
         </div>
 
-        {/* Action Buttons */}
         <div className="space-y-3 pt-4">
           <div className="space-y-2">
             {(type === "access_denied" ||
@@ -128,7 +152,6 @@ export function OAuthErrorPage({ error }: { error: unknown }) {
           </div>
         </div>
 
-        {/* Additional Help */}
         {helpMessages[type] && (
           <Typography className="text-sm text-gray-500 dark:text-gray-400">
             {helpMessages[type]}
