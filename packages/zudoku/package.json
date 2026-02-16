@@ -244,7 +244,7 @@
     "@stefanprobst/rehype-extract-toc": "3.0.0",
     "@tailwindcss/typography": "0.5.19",
     "@tailwindcss/vite": "4.1.16",
-    "@tanem/react-nprogress": "5.0.56",
+    "@tanem/react-nprogress": "5.0.60",
     "@tanstack/react-query": "5.90.12",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
