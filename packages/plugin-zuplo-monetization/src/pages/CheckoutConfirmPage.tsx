@@ -14,6 +14,7 @@ import { usePlans } from "../hooks/usePlans";
 import type { Subscription } from "../hooks/useSubscriptions";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatDuration } from "../utils/formatDuration";
+import { formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import { queryClient } from "../ZuploMonetizationWrapper";
 
@@ -41,7 +42,10 @@ const CheckoutConfirmPage = () => {
   if (!planId) throw new Error("Parameter `planId` missing");
 
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
-  const { quotas, features } = categorizeRateCards(rateCards ?? []);
+  const { quotas, features } = categorizeRateCards(
+    rateCards ?? [],
+    selectedPlan?.currency,
+  );
   const price = selectedPlan ? getPriceFromPlan(selectedPlan) : null;
   const billingCycle = selectedPlan?.billingCadence
     ? formatDuration(selectedPlan.billingCadence)
@@ -111,7 +115,7 @@ const CheckoutConfirmPage = () => {
                   {price && price.monthly > 0 && (
                     <div className="text-right">
                       <div className="text-2xl font-bold">
-                        ${price.monthly.toLocaleString()}
+                        {formatPrice(price.monthly, selectedPlan?.currency)}
                       </div>
                       {billingCycle && (
                         <div className="text-sm text-muted-foreground font-normal">

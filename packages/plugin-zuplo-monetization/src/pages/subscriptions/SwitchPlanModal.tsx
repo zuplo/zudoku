@@ -35,6 +35,7 @@ import { usePlans } from "../../hooks/usePlans.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import type { Feature, Plan, Quota } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
+import { formatPrice } from "../../utils/formatPrice.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 
 type PlanComparison = {
@@ -73,11 +74,11 @@ const comparePlans = (
   const targetPhase = targetPlan.phases.at(-1);
 
   const { quotas: currentQuotas, features: currentFeatures } = currentPhase
-    ? categorizeRateCards(currentPhase.rateCards)
+    ? categorizeRateCards(currentPhase.rateCards, currentPlan?.currency)
     : { quotas: [] as Quota[], features: [] as Feature[] };
 
   const { quotas: targetQuotas, features: targetFeatures } = targetPhase
-    ? categorizeRateCards(targetPhase.rateCards)
+    ? categorizeRateCards(targetPhase.rateCards, targetPlan.currency)
     : { quotas: [] as Quota[], features: [] as Feature[] };
 
   const quotaChanges: QuotaChange[] = [];
@@ -216,7 +217,7 @@ const PlanComparisonItem = ({
             <span className="text-primary font-medium">Free</span>
           ) : (
             <span className="text-primary font-medium text-lg">
-              ${displayPrice.toLocaleString()}/ mo
+              {formatPrice(displayPrice, comparison.plan.currency)}/ mo
             </span>
           )}
         </div>

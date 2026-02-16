@@ -143,4 +143,6 @@ export interface Plan {
   updatedAt?: string;
   deletedAt?: string;
   phases: PlanPhase[];
+  monthlyPrice: string | null;
+  yearlyPrice: string | null;
 }

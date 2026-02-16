@@ -1,20 +1,8 @@
-import type { FlatFeeRateCard, Plan } from "../types/PlanType";
+import type { Plan } from "../types/PlanType.js";
 
 export const getPriceFromPlan = (plan: Plan) => {
-  const defaultPhase = plan.phases.at(-1);
-  if (!defaultPhase) return { monthly: 0, yearly: 0 };
+  const monthly = plan.monthlyPrice != null ? parseFloat(plan.monthlyPrice) : 0;
+  const yearly = plan.yearlyPrice != null ? parseFloat(plan.yearlyPrice) : 0;
 
-  const flatFeeCard = defaultPhase.rateCards.find(
-    (rc): rc is FlatFeeRateCard =>
-      rc.type === "flat_fee" && rc.price?.type === "flat",
-  );
-
-  const monthlyAmount = flatFeeCard?.price.amount
-    ? parseInt(flatFeeCard.price.amount, 10)
-    : 0;
-
-  return {
-    monthly: monthlyAmount,
-    yearly: monthlyAmount * 12,
-  };
+  return { monthly, yearly };
 };
