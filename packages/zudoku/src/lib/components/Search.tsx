@@ -8,7 +8,7 @@ import { useZudoku } from "./context/ZudokuContext.js";
 export const Search = ({ className }: { className?: string }) => {
   const ctx = useZudoku();
   const [isOpen, setIsOpen] = useState(false);
-
+  const onOpen = useCallback(() => setIsOpen(true), []);
   const onClose = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export const Search = ({ className }: { className?: string }) => {
     <div className={className}>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={onOpen}
         className="flex items-center border border-input hover:bg-accent hover:text-accent-foreground p-4 relative h-8 justify-start rounded-lg bg-background text-sm text-muted-foreground shadow-none w-full sm:w-72"
       >
         <div className="flex items-center gap-2 grow">
@@ -49,7 +49,9 @@ export const Search = ({ className }: { className?: string }) => {
           <KbdShortcut />
         </ClientOnly>
       </button>
-      <Suspense>{searchPlugin.renderSearch({ isOpen, onClose })}</Suspense>
+      <Suspense>
+        {searchPlugin.renderSearch({ isOpen, onOpen, onClose })}
+      </Suspense>
     </div>
   );
 };
