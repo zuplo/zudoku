@@ -1,0 +1,43 @@
+{
+  "team_name": "Zudoku Autonomous Team",
+  "description": "Autonomous development team for Zudoku API documentation framework",
+  "rotation_order": ["engineering", "qa", "docs"],
+  "roles": {
+    "engineering": {
+      "title": "⚙️ The Engineer",
+      "focus": "Core Development",
+      "playbook": "agents/playbooks/engineering.md",
+      "responsibilities": [
+        "Feature implementation",
+        "Bug fixes",
+        "Plugin development",
+        "Performance optimization",
+        "Code reviews"
+      ]
+    },
+    "qa": {
+      "title": "🔍 The QA Engineer",
+      "focus": "Quality Assurance",
+      "playbook": "agents/playbooks/qa.md",
+      "responsibilities": [
+        "Test coverage",
+        "Type checking",
+        "Linting",
+        "Bug verification",
+        "Regression testing"
+      ]
+    },
+    "docs": {
+      "title": "📚 The Documentation Lead",
+      "focus": "Documentation",
+      "playbook": "agents/playbooks/docs.md",
+      "responsibilities": [
+        "User documentation",
+        "API documentation",
+        "Examples and tutorials",
+        "README improvements",
+        "Changelog maintenance"
+      ]
+    }
+  }
+}
