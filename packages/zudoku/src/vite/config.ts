@@ -16,6 +16,7 @@ import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/validate.js";
 import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
 import { getZuploSystemConfigurations } from "./zuplo.js";
 
@@ -251,29 +252,34 @@ export async function getViteConfig(
     },
   };
 
-  // If the user has supplied a vite.config file, merge it with ours
-  const userConfig = await loadConfigFromFile(
-    configEnv,
-    undefined,
-    dir,
-    undefined,
-    undefined,
-    "runner",
+  // Merge vite configs from plugin directories and user's project
+  const configRoots = await Promise.all(
+    (config.__pluginDirs ?? []).map(findPackageRoot),
   );
+  configRoots.push(dir);
 
-  if (userConfig) {
-    const merged: InlineConfig = mergeConfig(
-      viteConfig,
-      userConfig.config,
-      true,
+  let mergedViteConfig = viteConfig;
+
+  for (const root of configRoots) {
+    if (!root) continue;
+    const loaded = await loadConfigFromFile(
+      configEnv,
+      undefined,
+      root,
+      undefined,
+      undefined,
+      "runner",
     );
+    if (!loaded) continue;
 
-    logger.info(colors.blue(`merged with custom user Vite config`), {
-      timestamp: true,
-    });
+    mergedViteConfig = mergeConfig(mergedViteConfig, loaded.config, true);
 
-    return merged;
+    if (root === dir) {
+      logger.info(colors.blue(`merged with custom user Vite config`), {
+        timestamp: true,
+      });
+    }
   }
 
-  return viteConfig;
+  return mergedViteConfig;
 }
