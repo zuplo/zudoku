@@ -3,7 +3,10 @@ import { expect, it } from "vitest";
 import { loadZudokuConfig } from "../config/loader.js";
 
 it("Should correctly load zudoku.config.ts file", async () => {
-  const rootPath = path.resolve("../../examples/with-config/");
+  const rootPath = path.resolve(
+    import.meta.dirname,
+    "../../../../examples/with-config/",
+  );
   const { config } = await loadZudokuConfig(
     {
       mode: "development",

@@ -13,7 +13,6 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
   "publishConfig": {
@@ -39,7 +38,6 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsdown": "0.20.3",
-    "vitest": "catalog:",
     "zudoku": "workspace:*"
   },
   "peerDependencies": {

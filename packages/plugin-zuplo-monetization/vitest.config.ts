@@ -1,13 +1,9 @@
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
-import { defineConfig } from "vitest/config";
+import { defineProject } from "vitest/config";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-export default defineConfig({
+export default defineProject({
   test: {
     globals: true,
     environment: "happy-dom",
-    setupFiles: [resolve(__dirname, "vitest.setup.ts")],
+    setupFiles: ["./vitest.setup.ts"],
   },
 });

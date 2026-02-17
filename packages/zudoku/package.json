@@ -199,8 +199,7 @@
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
     "clean": "tsc --build --clean",
-    "codegen": "graphql-codegen --config ./src/codegen.ts",
-    "test": "vitest run --typecheck"
+    "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "15.2.2",
@@ -344,8 +343,7 @@
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "6.0.5",
     "tsx": "4.20.6",
-    "typescript": "5.9.3",
-    "vitest": "catalog:"
+    "typescript": "5.9.3"
   },
   "peerDependencies": {
     "@azure/msal-browser": "^4.13.0",

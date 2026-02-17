@@ -21,9 +21,6 @@
     "clean": {
       "dependsOn": ["^clean"],
       "cache": false
-    },
-    "test": {
-      "dependsOn": ["build"]
     }
   },
   "cli": {
