@@ -16,7 +16,7 @@ export const ParamsGridItem = createVariantComponent(
 
 export const ParamsGridInput = createVariantComponent(
   Input,
-  "w-full truncate border-0 p-0 m-0 shadow-none text-xs focus-visible:ring-0 font-mono",
+  "w-full truncate border-0 p-0 m-0 shadow-none text-xs! focus-visible:ring-0 font-mono",
 );
 
 export const ParamsGridRemoveButton = ({

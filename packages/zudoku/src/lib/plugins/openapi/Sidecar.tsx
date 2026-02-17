@@ -50,12 +50,12 @@ const EXAMPLE_LANGUAGES = [
 export const Sidecar = ({
   operation,
   selectedResponse,
-  globalSelectedServer,
+  resolvedServerUrl,
   shouldLazyHighlight,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
-  globalSelectedServer?: string;
+  resolvedServerUrl: string;
   shouldLazyHighlight?: boolean;
 }) => {
   const { options } = useOasConfig();
@@ -127,10 +127,7 @@ export const Sidecar = ({
     />
   );
 
-  // Manual server selection takes precedence over the server hierarchy.
-  // If no manual selection, fall back to operation's first server (already respects operation > path > global hierarchy)
-  const selectedServer =
-    globalSelectedServer || operation.servers.at(0)?.url || "";
+  const selectedServer = resolvedServerUrl;
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
     const converted = options?.generateCodeSnippet?.({
@@ -226,7 +223,7 @@ export const Sidecar = ({
               </NativeSelect>
               {showPlayground && (
                 <PlaygroundDialogWrapper
-                  servers={operation.servers.map((server) => server.url)}
+                  server={selectedServer}
                   operation={operation}
                   examples={requestBodyContent ?? undefined}
                 />

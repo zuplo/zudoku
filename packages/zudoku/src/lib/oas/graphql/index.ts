@@ -263,10 +263,38 @@ SchemaTag.implement({
   }),
 });
 
+type GraphQLServerVariable = {
+  name: string;
+  defaultValue: string;
+  description?: string;
+  enumValues?: string[];
+};
+
+const ServerVariableItem = builder
+  .objectRef<GraphQLServerVariable>("ServerVariable")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      defaultValue: t.exposeString("defaultValue"),
+      description: t.exposeString("description", { nullable: true }),
+      enumValues: t.exposeStringList("enumValues", { nullable: true }),
+    }),
+  });
+
 const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
     url: t.exposeString("url"),
     description: t.exposeString("description", { nullable: true }),
+    variables: t.field({
+      type: [ServerVariableItem],
+      resolve: (parent) =>
+        Object.entries(parent.variables ?? {}).map(([name, value]) => ({
+          name,
+          defaultValue: value.default,
+          description: value.description,
+          enumValues: value.enum,
+        })),
+    }),
   }),
 });
 
@@ -448,14 +476,9 @@ const OperationItem = builder
         type: [ParameterItem],
         nullable: true,
       }),
-      servers: t.field({
+      servers: t.expose("servers", {
         type: [ServerItem],
-        resolve: (parent, _, ctx) => {
-          // Return operation/path-level servers if defined, otherwise fall back to global servers
-          return parent.servers && parent.servers.length > 0
-            ? parent.servers
-            : (ctx.schema.servers ?? []);
-        },
+        nullable: true,
       }),
       requestBody: t.field({
         type: RequestBodyObject,
