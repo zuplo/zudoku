@@ -106,12 +106,12 @@ ZudokuInner.displayName = "ZudokuInner";
 
 const Zudoku = (
   props: PropsWithChildren<
-    ZudokuContextOptions & { env: Record<string, string> }
+    ZudokuContextOptions & { env?: Record<string, string> }
   >,
 ) => {
   return (
     <ErrorBoundary FallbackComponent={TopLevelError}>
-      <ZudokuInner {...props} />
+      <ZudokuInner {...props} env={props.env ?? {}} />
     </ErrorBoundary>
   );
 };

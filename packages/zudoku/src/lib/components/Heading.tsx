@@ -57,6 +57,7 @@ export const Heading = ({
   id,
   className,
   registerNavigationAnchor,
+  ...props
 }: HeadingProps) => {
   const Component = getComponent(level ?? 1);
   const { ref } = useRegisterAnchorElement();
@@ -66,6 +67,7 @@ export const Heading = ({
       className={heading({ className, level })}
       ref={registerNavigationAnchor ? ref : undefined}
       id={id}
+      {...props}
     >
       {children}
       {id && (

@@ -57,7 +57,8 @@
     "./hooks": "./src/lib/hooks/index.ts",
     "./shiki/*": "./src/shiki/*.js",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
-    "./with-zuplo": "./src/zuplo/with-zuplo.ts"
+    "./with-zuplo": "./src/zuplo/with-zuplo.ts",
+    "./testing": "./src/lib/testing/index.tsx"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -188,6 +189,10 @@
       "./with-zuplo": {
         "require": "./dist/zuplo/with-zuplo.js",
         "import": "./dist/zuplo/with-zuplo.js"
+      },
+      "./testing": {
+        "import": "./lib/zudoku.testing.js",
+        "types": "./dist/lib/testing/index.d.ts"
       }
     }
   },
