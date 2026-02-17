@@ -248,7 +248,7 @@
     "@tanstack/react-query": "5.90.12",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "5.1.0",
+    "@vitejs/plugin-react": "5.1.4",
     "@x0k/json-schema-merge": "1.0.2",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
