@@ -99,16 +99,14 @@ export const getAllTags = (
   slugs: ReturnType<typeof getAllSlugs>["tags"],
 ): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.tags ?? [];
-  const operationTags = new Set(
-    Object.values(schema.paths ?? {})
-      .flatMap((path) => Object.values(path ?? {}))
-      .flatMap((op) => (op as OperationObject).tags ?? []),
+  const operations = Object.values(schema.paths ?? {}).flatMap((path) =>
+    HttpMethods.map((k) => path?.[k]).filter((op) => op != null),
   );
 
-  const hasUntaggedOperations = Object.values(schema.paths ?? {}).some((path) =>
-    Object.values(path ?? {}).some(
-      (op) => !(op as OperationObject).tags?.length,
-    ),
+  const operationTags = new Set(operations.flatMap((op) => op.tags ?? []));
+
+  const hasUntaggedOperations = operations.some(
+    (op) => (op.tags?.length ?? 0) === 0,
   );
 
   const result = [
