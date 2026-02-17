@@ -3,8 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 import type { Plan } from "../types/PlanType.js";
 import PricingPage from "./PricingPage.js";
 
-// Head is Helmet from react-helmet-async which requires a HelmetProvider.
-// That provider isn't exported by zudoku, so we stub Head as a passthrough.
 vi.mock("zudoku/components", async (importOriginal) => ({
   ...(await importOriginal()),
   Head: ({ children }: { children: React.ReactNode }) => <>{children}</>,
@@ -64,52 +62,37 @@ const makePlan = (id: string, key: string, name: string): Plan => ({
       ],
     },
   ],
+  monthlyPrice: "49",
+  yearlyPrice: "49",
+  currency: "USD",
 });
 
 describe("PricingPage", () => {
-  it("renders 3 cards for 3 plans", () => {
+  it("Shows 'Manage Subscriptions' if the user has any active subscriptions", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),
       makePlan("2", "pro", "Pro"),
       makePlan("3", "business", "Business"),
     ];
+    mockSubscriptionData.items = [{ status: "active", plan: { id: "2" } }];
 
     render(<PricingPage />);
 
-    expect(screen.getByText("Starter")).toBeInTheDocument();
-    expect(screen.getByText("Pro")).toBeInTheDocument();
-    expect(screen.getByText("Business")).toBeInTheDocument();
-  });
-
-  it("renders 1 card for 1 plan", () => {
-    mockPricingData.items = [makePlan("1", "starter", "Starter")];
-
-    render(<PricingPage />);
-
-    expect(screen.getByText("Starter")).toBeInTheDocument();
-  });
-
-  it("shows Already subscribed on all buttons when user has any active subscriptions", () => {
-    mockPricingData.items = [
-      makePlan("1", "starter", "Starter"),
-      makePlan("2", "pro", "Pro"),
-      makePlan("3", "business", "Business"),
-    ];
-    mockSubscriptionData.items = [
-      { status: "active", plan: { id: "1" } },
-      // { status: "active", plan: { id: "2" } },
-      // { status: "active", plan: { id: "3" } },
-    ];
-
-    render(<PricingPage />);
-
-    const buttons = screen.getAllByRole("button", {
-      name: "Already subscribed",
-    });
+    const buttons = screen.getAllByText("Manage Subscriptions");
     expect(buttons).toHaveLength(3);
-    for (const button of buttons) {
-      expect(button).toBeDisabled();
-    }
-    expect(screen.queryByText("Subscribe")).not.toBeInTheDocument();
+  });
+
+  it("Shows 'Subscribe' if the user has no subscriptions", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      makePlan("2", "pro", "Pro"),
+      makePlan("3", "business", "Business"),
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    const buttons = screen.getAllByText("Subscribe");
+    expect(buttons).toHaveLength(3);
   });
 });

@@ -32,7 +32,7 @@ export const ManageSubscription = ({
           <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 shrink-0">
             <Settings className="w-6 h-6 text-primary" />
           </div>
-          <div className="flex-1">
+          <div className="flex-1" id="manage">
             <h2 className="text-lg font-semibold text-foreground mb-1">
               Manage Subscription
             </h2>

@@ -46,7 +46,7 @@ const PricingPage = ({
             plan={plan}
             // TODO: should be determined by the metadata
             isPopular={plan.key === "pro"}
-            disabled={subscriptions.items.some((subscription) =>
+            isSubscribed={subscriptions.items.some((subscription) =>
               ["active", "canceled"].includes(subscription.status),
             )}
           />
