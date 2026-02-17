@@ -30,16 +30,16 @@
     "tinyduration": "3.4.1"
   },
   "devDependencies": {
-    "@testing-library/dom": "10.4.1",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "16.3.2",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "happy-dom": "20.0.10",
+    "happy-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsdown": "0.20.3",
-    "vitest": "4.0.18",
+    "vitest": "catalog:",
     "zudoku": "workspace:*"
   },
   "peerDependencies": {
