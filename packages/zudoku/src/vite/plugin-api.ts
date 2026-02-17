@@ -170,16 +170,18 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             if (!schemas?.length) continue;
 
+            const allTags = schemas.flatMap(({ schema }) => {
+              const operations = getAllOperations(schema.paths);
+              const slugs = getAllSlugs(operations);
+              return getAllTags(schema, slugs.tags);
+            });
+
             const tags = Array.from(
-              new Set(
-                schemas
-                  .flatMap(({ schema }) => {
-                    const operations = getAllOperations(schema.paths);
-                    const slugs = getAllSlugs(operations);
-                    return getAllTags(schema, slugs.tags);
-                  })
-                  .flatMap(({ slug }) => slug ?? []),
-              ),
+              new Set(allTags.flatMap(({ slug }) => slug ?? [])),
+            );
+
+            const hasUntaggedOperations = allTags.some(
+              (tag) => tag.name === undefined,
             );
 
             const schemaMapEntries = Array.from(
@@ -200,6 +202,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `  input: ${JSON.stringify(versionedInput)},`,
               `  path: ${JSON.stringify(apiConfig.path)},`,
               `  tagPages: ${JSON.stringify(tags)},`,
+              `  hasUntaggedOperations: ${JSON.stringify(hasUntaggedOperations)},`,
               `  options: {`,
               `    examplesLanguage: config.defaults?.apis?.examplesLanguage ?? config.defaults?.examplesLanguage,`,
               `    supportedLanguages: config.defaults?.apis?.supportedLanguages,`,

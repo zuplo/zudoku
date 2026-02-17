@@ -65,6 +65,7 @@ type BaseOasConfig = {
   path?: string;
   skipPreload?: boolean;
   tagPages?: Array<string>;
+  hasUntaggedOperations?: boolean;
   schemaImports?: SchemaImports;
   options?: {
     examplesLanguage?: string;

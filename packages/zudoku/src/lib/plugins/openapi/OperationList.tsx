@@ -1,7 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { useNavigate, useParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
 import {
   Collapsible,
   CollapsibleContent,
@@ -188,8 +188,16 @@ export const OperationList = ({
   useApiIdentities();
 
   if (!schema.tag) {
+    // Route targets a tag or untagged ops that don't exist in this version
+    if (tag || tagFromParams || untagged) {
+      return <Navigate to=".." replace />;
+    }
+
     return (
-      <div className="flex flex-col h-full items-center justify-center text-center">
+      <div
+        className="flex flex-col h-full items-center justify-center text-center"
+        data-pagefind-ignore="all"
+      >
         <div className="text-muted-foreground font-medium">
           No operations found
         </div>
@@ -245,7 +253,10 @@ export const OperationList = ({
         : undefined,
   };
 
-  const tagTitle = schema.tag.extensions?.["x-displayName"] ?? schema.tag.name;
+  const tagTitle = untagged
+    ? "Other endpoints"
+    : (schema.tag.extensions?.["x-displayName"] ?? schema.tag.name);
+
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
   const currentVersion = version != null ? versions[version] : undefined;

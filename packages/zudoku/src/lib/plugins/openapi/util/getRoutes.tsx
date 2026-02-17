@@ -111,12 +111,22 @@ const createNonTagPagesRoute = ({ path }: { path: string }): RouteObject => ({
   },
 });
 
-const createAdditionalRoutes = (basePath: string) => [
-  // Category without tagged operations
-  createRoute({
-    path: joinUrl(basePath, UNTAGGED_PATH),
-    untagged: true,
-  }),
+const createAdditionalRoutes = ({
+  basePath,
+  hasUntaggedOperations = true,
+}: {
+  basePath: string;
+  hasUntaggedOperations?: boolean;
+}) => [
+  // Route for operations not assigned to any tag
+  ...(hasUntaggedOperations
+    ? [
+        createRoute({
+          path: joinUrl(basePath, UNTAGGED_PATH),
+          untagged: true,
+        }),
+      ]
+    : []),
   // Schema list route
   {
     path: joinUrl(basePath, "~schemas"),
@@ -128,15 +138,27 @@ const createAdditionalRoutes = (basePath: string) => [
 ];
 
 // Creates routes for a specific version, including tag-based routes and the untagged operations route.
-const createVersionRoutes = (
-  versionPath: string,
-  tagPages: string[],
-): RouteObject[] => {
-  const firstTagRoute = joinUrl(versionPath, tagPages.at(0) ?? UNTAGGED_PATH);
+const createVersionRoutes = ({
+  versionPath,
+  tagPages,
+  hasUntaggedOperations = true,
+}: {
+  versionPath: string;
+  tagPages: string[];
+  hasUntaggedOperations?: boolean;
+}): RouteObject[] => {
+  const firstTagPage =
+    tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
 
   return [
-    // Redirect to first tag on the index route
-    { index: true, loader: () => redirect(firstTagRoute) },
+    ...(firstTagPage
+      ? [
+          {
+            index: true,
+            loader: () => redirect(joinUrl(versionPath, firstTagPage)),
+          } as const,
+        ]
+      : [createRoute({ path: versionPath })]),
     // Create routes for each tag
     ...tagPages.map((tag) =>
       createRoute({
@@ -144,7 +166,7 @@ const createVersionRoutes = (
         tag,
       }),
     ),
-    ...createAdditionalRoutes(versionPath),
+    ...createAdditionalRoutes({ basePath: versionPath, hasUntaggedOperations }),
   ];
 };
 
@@ -174,6 +196,7 @@ export const getRoutes = ({
   basePath: string;
 }): RouteObject[] => {
   const tagPages = config.tagPages;
+  const { hasUntaggedOperations } = config;
   const { versions } = getVersionMetadata(config);
 
   // If the config does not provide tag pages the catch-all
@@ -192,7 +215,10 @@ export const getRoutes = ({
           routePath: versionPath,
           routes: [
             createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),
-            ...createAdditionalRoutes(versionPath),
+            ...createAdditionalRoutes({
+              basePath: versionPath,
+              hasUntaggedOperations,
+            }),
           ],
           client,
           config,
@@ -207,7 +233,7 @@ export const getRoutes = ({
         routePath: basePath,
         routes: [
           createNonTagPagesRoute({ path: `${basePath}/:tag?` }),
-          ...createAdditionalRoutes(basePath),
+          ...createAdditionalRoutes({ basePath, hasUntaggedOperations }),
         ],
         client,
         config,
@@ -225,7 +251,11 @@ export const getRoutes = ({
       basePath,
       version,
       routePath: versionPath,
-      routes: createVersionRoutes(versionPath, tagPages),
+      routes: createVersionRoutes({
+        versionPath,
+        tagPages,
+        hasUntaggedOperations,
+      }),
       client,
       config,
     });
