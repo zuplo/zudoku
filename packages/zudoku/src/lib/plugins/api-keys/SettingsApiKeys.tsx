@@ -49,9 +49,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
             </ItemDescription>
           </ItemContent>
           <ItemActions>
-            <Button onClick={refresh}>
-              Refresh
-            </Button>
+            <Button onClick={refresh}>Refresh</Button>
           </ItemActions>
 
           {supportsEmailVerification && (
