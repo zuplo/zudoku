@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
+    "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
   "publishConfig": {
@@ -29,11 +30,16 @@
     "tinyduration": "3.4.1"
   },
   "devDependencies": {
+    "@testing-library/dom": "10.4.1",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "happy-dom": "20.0.10",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsdown": "0.20.3",
+    "vitest": "4.0.18",
     "zudoku": "workspace:*"
   },
   "peerDependencies": {
