@@ -5,6 +5,7 @@ import { FeatureItem } from "../../components/FeatureItem";
 import { QuotaItem } from "../../components/QuotaItem";
 import type { Plan } from "../../types/PlanType";
 import { categorizeRateCards } from "../../utils/categorizeRateCards";
+import { formatPrice } from "../../utils/formatPrice";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan";
 
 export const PricingCard = ({
@@ -19,7 +20,10 @@ export const PricingCard = ({
   const defaultPhase = plan.phases.at(-1);
   if (!defaultPhase) return null;
 
-  const { quotas, features } = categorizeRateCards(defaultPhase.rateCards);
+  const { quotas, features } = categorizeRateCards(
+    defaultPhase.rateCards,
+    plan.currency,
+  );
   const price = getPriceFromPlan(plan);
   const isFree = price.monthly === 0;
   // TODO: should be determined by the metadata
@@ -57,13 +61,13 @@ export const PricingCard = ({
           ) : (
             <>
               <span className="text-3xl font-bold text-card-foreground">
-                {isFree ? "Free" : `$${price.monthly.toLocaleString()}`}
+                {isFree ? "Free" : formatPrice(price.monthly, plan.currency)}
               </span>
               {!isFree && (
                 <>
                   <span className="text-muted-foreground text-sm">/mo</span>
                   <div className="w-full text-sm text-muted-foreground mt-1">
-                    ${price.yearly.toLocaleString()}/year
+                    {formatPrice(price.yearly, plan.currency)}/year
                   </div>
                 </>
               )}

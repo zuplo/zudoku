@@ -70,7 +70,7 @@ export const ApiKeysList = ({
 
   const rollKeyMutation = useMutation({
     mutationKey: [
-      `/v2/client/${deploymentName}/consumers/${consumerId}/roll-key`,
+      `/v3/zudoku-metering/${deploymentName}/consumers/${consumerId}/roll-key`,
     ],
     meta: {
       request: { method: "POST", body: "{}" },
@@ -83,7 +83,7 @@ export const ApiKeysList = ({
 
   const deleteKeyMutation = useMutation<void, Error, { keyId: string }>({
     mutationKey: [
-      `/v2/client/${deploymentName}/consumers/${consumerId}/keys/{keyId}`,
+      `/v3/zudoku-metering/${deploymentName}/consumers/${consumerId}/keys/{keyId}`,
     ],
     meta: {
       context,
