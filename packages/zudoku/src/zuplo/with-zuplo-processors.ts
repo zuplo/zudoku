@@ -25,7 +25,8 @@ export const getProcessors = async (rootDir: string): Promise<Processor[]> => {
     enrichWithZuploMcpServerData({ rootDir }),
     ({ schema }: ProcessorArg) => {
       const url = ZuploEnv.serverUrl;
-      if (!url) return schema;
+      if (!url || process.env.ZUPLO_PUBLIC_DISABLE_INJECT_ENDPOINT)
+        return schema;
       return { ...schema, servers: [{ url }] };
     },
     removeExtensions({ shouldRemove: (key) => key.startsWith("x-zuplo") }),
