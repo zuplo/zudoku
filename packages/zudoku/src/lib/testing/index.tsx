@@ -5,6 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { HelmetProvider } from "@zudoku/react-helmet-async";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
+import type { AuthenticationPlugin } from "../authentication/authentication.js";
+import { useAuthState } from "../authentication/state.js";
 import { RenderContext } from "../components/context/RenderContext.js";
 import { Layout } from "../components/Layout.js";
 import { Meta } from "../components/Meta.js";
@@ -23,6 +25,7 @@ type StaticZudokuProps = ZudokuContextOptions & {
   path: string;
   queryData?: QueryData[];
   env?: Record<string, string>;
+  isAuthenticated?: boolean;
 };
 
 const getRoutesByOptions = (options: ZudokuContextOptions) => {
@@ -37,19 +40,44 @@ const wrapWithLayout = (route: RouteObject) => ({
   children: [route],
 });
 
+const noopAuth: AuthenticationPlugin = {
+  signIn: async () => {},
+  signOut: async () => {},
+  signUp: async () => {},
+  signRequest: async (req) => req,
+};
+
 const StaticZudoku = ({
   path,
   queryData,
   env = {},
+  isAuthenticated,
   ...options
 }: StaticZudokuProps) => {
+  if (isAuthenticated) {
+    useAuthState.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile: {
+        sub: "test-user",
+        email: "test@example.com",
+        emailVerified: true,
+        name: "Test User",
+        pictureUrl: undefined,
+      },
+      providerData: null,
+    });
+
+    options.plugins = [...(options.plugins ?? []), noopAuth];
+  }
+
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 1000 * 60 * 5,
         retry: false,
         // Ensure un-mocked queries fail immediately instead of hanging
-        queryFn: (q) => {
+        queryFn: () => {
           throw new Error("No queryData provided for this query key");
         },
       },

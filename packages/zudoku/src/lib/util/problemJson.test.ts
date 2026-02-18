@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  type ProblemJson,
   getProblemJson,
+  type ProblemJson,
   throwIfProblemJson,
 } from "./problemJson.js";
 
@@ -78,7 +78,9 @@ describe("getProblemJson", () => {
 
   it("should return undefined for invalid JSON body", async () => {
     const result = await getProblemJson(
-      createResponse("not json {{{", { contentType: "application/problem+json" }),
+      createResponse("not json {{{", {
+        contentType: "application/problem+json",
+      }),
     );
 
     expect(result).toBeUndefined();
