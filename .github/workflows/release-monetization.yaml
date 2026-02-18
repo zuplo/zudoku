@@ -46,6 +46,9 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           cache: "pnpm"
 
+      - name: Update npm for OIDC trusted publishing support
+        run: npm install -g npm@latest
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -61,7 +64,8 @@ jobs:
         run: echo "version=$(node --print 'require(`./packages/plugin-zuplo-monetization/package.json`).version')" >> $GITHUB_OUTPUT
 
       - name: Publish
-        run: pnpm publish --provenance --filter @zuplo/zudoku-plugin-monetization --no-git-checks --tag latest
+        working-directory: packages/plugin-zuplo-monetization
+        run: npm publish --provenance --access public --tag latest
 
       - name: Commit and tag
         run: |
