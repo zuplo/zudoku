@@ -332,6 +332,15 @@ export class NavigationResolver {
           ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
           : undefined;
 
+        // Filter out empty categories (no items and no link) in production
+        if (
+          process.env.NODE_ENV !== "development" &&
+          items.length === 0 &&
+          !resolvedLink
+        ) {
+          return undefined;
+        }
+
         return {
           ...categoryItem,
           items,

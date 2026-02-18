@@ -23,7 +23,6 @@ export const globMarkdownFiles = async (
   for (const globPattern of docsConfig.files) {
     const globbedFiles = await glob(globPattern, {
       root: config.__meta.rootDir,
-      cwd: config.__meta.rootDir,
       ignore: ["**/node_modules/**", "**/dist/**", "**/.git/**"],
       // Always glob with relative paths to avoid issues on different OS
       absolute: false,
@@ -33,14 +32,27 @@ export const globMarkdownFiles = async (
     // Normalize parent by removing leading `./` or `/`
     const parent = globParent(globPattern).replace(/^\.?\//, "");
 
+    // Precompute draft status for all files in production mode to avoid serial I/O
+    let draftFiles = new Set<string>();
+    if (process.env.NODE_ENV !== "development") {
+      const draftStatuses = await Promise.all(
+        globbedFiles.map(async (file) => {
+          const absolutePath = path.resolve(config.__meta.rootDir, file);
+          const { data } = await readFrontmatter(absolutePath);
+          return { file, isDraft: data.draft === true };
+        }),
+      );
+      draftFiles = new Set(
+        draftStatuses
+          .filter((entry) => entry.isDraft)
+          .map((entry) => entry.file),
+      );
+    }
+
     for (const file of globbedFiles) {
       // Skip draft documents in production mode
-      if (process.env.NODE_ENV !== "development") {
-        const absolutePath = path.resolve(config.__meta.rootDir, file);
-        const { data } = await readFrontmatter(absolutePath);
-        if (data.draft === true) {
-          continue;
-        }
+      if (draftFiles.has(file)) {
+        continue;
       }
 
       const relativePath = path.posix.relative(parent, file);
