@@ -26,6 +26,7 @@ export const PricingCard = ({
   );
   const price = getPriceFromPlan(plan);
   const isFree = price.monthly === 0;
+
   // TODO: should be determined by the metadata
   const isCustom = plan.key === "enterprise";
 
@@ -74,7 +75,7 @@ export const PricingCard = ({
             </>
           )}
         </div>
-        {isFree && (
+        {plan.paymentRequired === false && (
           <div className="text-sm text-muted-foreground mt-1">
             No CC required
           </div>

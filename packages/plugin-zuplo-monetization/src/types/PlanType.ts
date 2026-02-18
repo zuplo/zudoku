@@ -36,8 +36,8 @@ export type Price =
 
 export interface FlatPrice {
   type: "flat";
-  amount: string; // Money (numeric string)
-  paymentTerm?: "in_advance" | "in_arrears"; // Defaults to in_advance
+  amount: string;
+  paymentTerm?: "in_advance" | "in_arrears";
 }
 
 export interface UnitPrice {
@@ -129,6 +129,7 @@ export interface Plan {
   key: string;
   name: string;
   description?: string;
+  paymentRequired?: boolean;
   metadata?: Record<string, any>;
   version?: number; // defaults to 1
   currency?: string;

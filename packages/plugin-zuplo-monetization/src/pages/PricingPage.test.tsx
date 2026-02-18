@@ -95,4 +95,68 @@ describe("PricingPage", () => {
     const buttons = screen.getAllByText("Subscribe");
     expect(buttons).toHaveLength(3);
   });
+
+  it("Shows 'no cc required' if no rate card has 'in_advance' fee with 'amount=0'", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "free", "Free"),
+        monthlyPrice: "0",
+        paymentRequired: false,
+        yearlyPrice: "0",
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "base-fee",
+                name: "Base Fee",
+                billingCadence: "P1M",
+                price: { type: "flat", amount: "0" },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("No CC required")).toBeInTheDocument();
+  });
+
+  it("Does not show 'no cc required' if any rate card has 'in_advance' fee", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        paymentRequired: true,
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "flat_fee",
+                key: "base-fee",
+                name: "Base Fee",
+                billingCadence: "P1M",
+                price: {
+                  type: "flat",
+                  amount: "49",
+                  paymentTerm: "in_advance",
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    expect(screen.queryByText("No CC required")).not.toBeInTheDocument();
+  });
 });
