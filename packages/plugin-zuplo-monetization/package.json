@@ -1,6 +1,11 @@
 {
   "name": "@zuplo/zudoku-plugin-monetization",
   "version": "0.0.12",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuplo/zudoku",
+    "directory": "packages/plugin-zuplo-monetization"
+  },
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
