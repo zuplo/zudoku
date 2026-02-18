@@ -15,7 +15,8 @@
     "build:clean": "tsc --build --clean",
     "reset": "nx reset && npm run build:clean",
     "clean": "git clean -Xfde !.env",
-    "test": "vitest run --typecheck"
+    "test": "vitest run --typecheck",
+    "test:browser": "vitest --config=vitest.browser.config.ts"
   },
   "engines": {
     "node": ">=20.19.0 <21.0.0 || >=22.7.0",
@@ -25,11 +26,15 @@
     "@biomejs/biome": "2.2.6",
     "@nx/vite": "22.4.5",
     "@nx/web": "22.4.5",
+    "@vitejs/plugin-react": "5.1.4",
+    "@vitest/browser-preview": "^4.0.18",
+    "@vitest/ui": "^4.0.18",
     "lefthook": "^1.12.3",
     "nx": "22.4.5",
-    "vitest": "4.0.18",
     "prettier": "3.6.2",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.0.18",
+    "vitest-browser-react": "^2.0.5"
   },
   "pnpm": {
     "overrides": {
