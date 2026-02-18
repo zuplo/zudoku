@@ -1,5 +1,5 @@
 import { cn } from "zudoku";
-import { Button, Heading } from "zudoku/components";
+import { Button, Heading, Link } from "zudoku/components";
 import {
   AlertTriangleIcon,
   ArrowUpIcon,
@@ -29,7 +29,7 @@ export type UsageResult = {
 };
 
 export type PaymentStatus = {
-  status: "failed" | "paid" | string;
+  status: "failed" | "paid" | "uncollectible" | "not_required" | "pending";
   isFirstPayment?: boolean;
   lastPaymentSucceededAt?: string;
   lastPaymentFailedAt?: string;
@@ -153,7 +153,7 @@ export const Usage = ({
   return (
     <div className="space-y-4">
       <Heading level={3}>Usage</Heading>
-      {isPendingFirstPayment && (
+      {(isPendingFirstPayment || usage.paymentStatus.status === "pending") && (
         <Alert fit="loose">
           <Loader2Icon className="size-5 animate-spin mr-1 ml-1 self-center" />
           <AlertTitle>Your payment is being processed</AlertTitle>
@@ -163,10 +163,15 @@ export const Usage = ({
           </AlertDescription>
         </Alert>
       )}
-      {usage.paymentStatus.status === "failed" && (
+      {(usage.paymentStatus.status === "failed" ||
+        usage.paymentStatus.status === "uncollectible") && (
         <Alert variant="destructive" fit="loose">
           <AlertTriangleIcon className="size-4 shrink-0" />
-          <AlertTitle>Payment failed</AlertTitle>
+          <AlertTitle>
+            {usage.paymentStatus.status === "failed"
+              ? "Payment failed"
+              : "Payment unsuccessful"}
+          </AlertTitle>
           <AlertDescription>
             Your last payment was unsuccessful. Please update your billing
             information to continue using your subscription.

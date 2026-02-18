@@ -36,8 +36,12 @@ const PricingPage = ({
         <meta name="description" content={subtitle} />
       </Head>
       <div className="text-center space-y-4 mb-12">
-        <Heading level={1}>{title}</Heading>
-        <p className="text-muted-foreground">{subtitle}</p>
+        <Heading level={1} data-testid="title">
+          {title}
+        </Heading>
+        <p className="text-muted-foreground" data-testid="subtitle">
+          {subtitle}
+        </p>
       </div>
       <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
         {pricingTable.items.slice(0, 4).map((plan) => (
