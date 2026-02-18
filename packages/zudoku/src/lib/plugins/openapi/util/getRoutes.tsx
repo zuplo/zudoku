@@ -18,7 +18,6 @@ import {
 } from "../index.js";
 import type { OasPluginConfig } from "../interfaces.js";
 
-// Creates the main provider route that wraps operation routes.
 const createOasProvider = (opts: {
   routePath: string;
   basePath: string;
@@ -44,7 +43,6 @@ const createOasProvider = (opts: {
   children: opts.routes,
 });
 
-// Creates a route for displaying the operation list used for both tagged and untagged operations.
 const createRoute = ({
   path,
   tag,
@@ -61,6 +59,8 @@ const createRoute = ({
   },
 });
 
+// Used when tagPages is not configured (e.g. URL schemas). Resolves tags at
+// runtime via GraphQL and redirects to the first available tag.
 const NonTagPagesOperationList = ({
   render,
   path,
@@ -111,13 +111,21 @@ const createNonTagPagesRoute = ({ path }: { path: string }): RouteObject => ({
   },
 });
 
-const createAdditionalRoutes = (basePath: string) => [
-  // Category without tagged operations
-  createRoute({
-    path: joinUrl(basePath, UNTAGGED_PATH),
-    untagged: true,
-  }),
-  // Schema list route
+const createAdditionalRoutes = ({
+  basePath,
+  hasUntaggedOperations = true,
+}: {
+  basePath: string;
+  hasUntaggedOperations?: boolean;
+}) => [
+  ...(hasUntaggedOperations
+    ? [
+        createRoute({
+          path: joinUrl(basePath, UNTAGGED_PATH),
+          untagged: true,
+        }),
+      ]
+    : []),
   {
     path: joinUrl(basePath, "~schemas"),
     lazy: async () => {
@@ -127,24 +135,28 @@ const createAdditionalRoutes = (basePath: string) => [
   },
 ];
 
-// Creates routes for a specific version, including tag-based routes and the untagged operations route.
-const createVersionRoutes = (
-  versionPath: string,
-  tagPages: string[],
-): RouteObject[] => {
-  const firstTagRoute = joinUrl(versionPath, tagPages.at(0) ?? UNTAGGED_PATH);
+const createVersionRoutes = ({
+  versionPath,
+  tagPages,
+  hasUntaggedOperations = true,
+}: {
+  versionPath: string;
+  tagPages: string[];
+  hasUntaggedOperations?: boolean;
+}): RouteObject[] => {
+  const firstTag =
+    tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
+
+  const indexRoute: RouteObject = firstTag
+    ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
+    : createRoute({ path: versionPath });
 
   return [
-    // Redirect to first tag on the index route
-    { index: true, loader: () => redirect(firstTagRoute) },
-    // Create routes for each tag
+    indexRoute,
     ...tagPages.map((tag) =>
-      createRoute({
-        path: joinUrl(versionPath, tag),
-        tag,
-      }),
+      createRoute({ path: joinUrl(versionPath, tag), tag }),
     ),
-    ...createAdditionalRoutes(versionPath),
+    ...createAdditionalRoutes({ basePath: versionPath, hasUntaggedOperations }),
   ];
 };
 
@@ -175,57 +187,36 @@ export const getRoutes = ({
 }): RouteObject[] => {
   const tagPages = config.tagPages;
   const { versions } = getVersionMetadata(config);
+  const inputArray = Array.isArray(config.input) ? config.input : undefined;
 
-  // If the config does not provide tag pages the catch-all
-  // route handles all operations on a single page
-  if (!tagPages) {
-    // If there are versions, create versioned routes even without tag pages
-    if (versions.length > 0) {
-      const versionsInPath =
-        versions.length > 1 ? [undefined, ...versions] : [undefined];
-
-      return versionsInPath.map((version) => {
-        const versionPath = joinUrl(basePath, version);
-        return createOasProvider({
-          basePath,
-          version,
-          routePath: versionPath,
-          routes: [
-            createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),
-            ...createAdditionalRoutes(versionPath),
-          ],
-          client,
-          config,
-        });
-      });
-    }
-
-    // No versions, single route
-    return [
-      createOasProvider({
-        basePath,
-        routePath: basePath,
-        routes: [
-          createNonTagPagesRoute({ path: `${basePath}/:tag?` }),
-          ...createAdditionalRoutes(basePath),
-        ],
-        client,
-        config,
-      }),
-    ];
-  }
-
-  // The latest version always is added as index path
+  // undefined entry = index path that serves the latest version
   const versionsInPath =
     versions.length > 1 ? [undefined, ...versions] : [undefined];
 
   return versionsInPath.map((version) => {
     const versionPath = joinUrl(basePath, version);
+    const versionInput = version
+      ? inputArray?.find((v) => v.path === version)
+      : inputArray?.[0];
+    const hasUntaggedOperations = versionInput?.hasUntaggedOperations ?? true;
+
     return createOasProvider({
       basePath,
       version,
       routePath: versionPath,
-      routes: createVersionRoutes(versionPath, tagPages),
+      routes: tagPages
+        ? createVersionRoutes({
+            versionPath,
+            tagPages,
+            hasUntaggedOperations,
+          })
+        : [
+            createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),
+            ...createAdditionalRoutes({
+              basePath: versionPath,
+              hasUntaggedOperations,
+            }),
+          ],
       client,
       config,
     });

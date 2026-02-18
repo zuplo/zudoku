@@ -17,6 +17,7 @@ import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { reload } from "./plugin-config-reload.js";
@@ -170,29 +171,32 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             if (!schemas?.length) continue;
 
-            const tags = Array.from(
-              new Set(
-                schemas
-                  .flatMap(({ schema }) => {
-                    const operations = getAllOperations(schema.paths);
-                    const slugs = getAllSlugs(operations);
-                    return getAllTags(schema, slugs.tags);
-                  })
-                  .flatMap(({ slug }) => slug ?? []),
-              ),
-            );
+            const allSlugs = new Set<string>();
+            const versionedInput = schemas.map<VersionedInput>((s) => {
+              const operations = getAllOperations(s.schema.paths);
+              const slugs = getAllSlugs(operations);
+              const versionTags = getAllTags(s.schema, slugs.tags);
+              versionTags.forEach(({ slug }) => {
+                if (slug) allSlugs.add(slug);
+              });
+
+              return {
+                path: s.path,
+                version: s.version,
+                downloadUrl: s.downloadUrl,
+                label: s.label ?? s.schema.info?.version,
+                input: s.inputPath,
+                hasUntaggedOperations: versionTags.some(
+                  (tag) => tag.name === undefined,
+                ),
+              };
+            });
+
+            const tags = Array.from(allSlugs);
 
             const schemaMapEntries = Array.from(
               schemaManager.schemaMap.entries(),
             );
-
-            const versionedInput = schemas.map((s) => ({
-              path: s.path,
-              version: s.version,
-              downloadUrl: s.downloadUrl,
-              label: s.label ?? s.schema.info?.version,
-              input: s.inputPath,
-            }));
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",

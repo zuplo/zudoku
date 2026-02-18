@@ -5,17 +5,18 @@ import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 
 type DynamicInput = () => Promise<unknown>;
 
-export type VersionedInput<T> = Array<{
+export type VersionedInput<T = string> = {
   path: string;
   version?: string;
   downloadUrl?: string;
   label?: string;
   input: T;
-}>;
+  hasUntaggedOperations?: boolean;
+};
 
 type OasSource =
-  | { type: "url"; input: string | VersionedInput<string> }
-  | { type: "file"; input: VersionedInput<DynamicInput> }
+  | { type: "url"; input: string | VersionedInput[] }
+  | { type: "file"; input: VersionedInput<DynamicInput>[] }
   | { type: "raw"; input: string };
 
 export type ContextOasSource = {
