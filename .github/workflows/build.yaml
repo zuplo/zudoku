@@ -89,7 +89,7 @@ jobs:
 
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .lycheecache
           key: cache-lychee-v4-${{ github.sha }}
@@ -109,7 +109,7 @@ jobs:
             ./docs/dist
       - name: Save lychee cache
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .lycheecache
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}
