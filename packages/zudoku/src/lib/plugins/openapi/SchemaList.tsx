@@ -109,7 +109,7 @@ export function SchemaList() {
       <Toc
         entries={schemas.map((schema) => ({
           id: slugify(schema.name),
-          value: schema.name,
+          text: schema.name,
           depth: 1,
         }))}
       />

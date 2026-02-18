@@ -125,6 +125,11 @@ const config: ZudokuConfig = {
           ? true
           : reasonCode.FORBIDDEN,
   },
+  mdx: {
+    components: {
+      Trademark: () => "™",
+    },
+  },
   navigationRules: [
     {
       type: "insert",
@@ -173,15 +178,15 @@ const config: ZudokuConfig = {
       label: "Documentation",
       icon: "book-open",
       items: [
-        "documentation",
         { type: "filter", placeholder: "Filter documentation" },
+        "documentation",
         { type: "section", label: "Operations" },
         {
           type: "category",
           icon: "telescope",
           collapsed: false,
           label: "Space Operations",
-          items: ["shipping-process", "tracking"],
+          items: ["shipping-process", "tracking", "quantum-express"],
         },
         "global",
         { type: "separator" },

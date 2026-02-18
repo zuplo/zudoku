@@ -1,7 +1,5 @@
 import rehypeMetaAsAttributes from "@lekoarts/rehype-meta-as-attributes";
 import mdx from "@mdx-js/rollup";
-import withToc from "@stefanprobst/rehype-extract-toc";
-import withTocExport from "@stefanprobst/rehype-extract-toc/mdx";
 import type { Root as HastRoot } from "hast";
 import { toString as hastToString } from "hast-util-to-string";
 import rehypeMdxImportMedia from "rehype-mdx-import-media";
@@ -18,6 +16,8 @@ import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
+import rehypeExtractTocWithJsx from "./mdx/rehype-extract-toc-with-jsx.js";
+import rehypeExtractTocWithJsxExport from "./mdx/rehype-extract-toc-with-jsx-export.js";
 import { remarkInjectFilepath } from "./mdx/remark-inject-filepath.js";
 import { remarkLastModified } from "./mdx/remark-last-modified.js";
 import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
@@ -106,8 +106,8 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
 
   const defaultRehypePlugins = [
     rehypeSlug,
-    withToc,
-    withTocExport,
+    rehypeExtractTocWithJsx,
+    rehypeExtractTocWithJsxExport,
     rehypeExcerptWithMdxExport,
     rehypeNormalizeMdxImages,
     rehypeMdxImportMedia,
