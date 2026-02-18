@@ -62,8 +62,6 @@ jobs:
 
       - name: Publish
         run: pnpm publish --provenance --filter @zuplo/zudoku-plugin-monetization --no-git-checks --tag latest
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit and tag
         run: |
