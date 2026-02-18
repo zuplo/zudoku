@@ -37,7 +37,10 @@ const PendingFirstPaymentAlert = ({
 }: {
   children: React.ReactNode;
 }) => (
-  <div className="relative rounded-lg overflow-hidden">
+  <div
+    className="relative rounded-lg overflow-hidden"
+    data-testid="pending-first-payment-alert"
+  >
     <div>{children}</div>
     <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
       <Item className="max-w-md bg-muted">

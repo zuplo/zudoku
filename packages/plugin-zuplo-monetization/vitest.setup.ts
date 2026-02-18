@@ -1,6 +1,6 @@
-import * as matchers from "@testing-library/jest-dom/matchers";
+import "@testing-library/jest-dom/vitest";
 import { cleanup, configure } from "@testing-library/react";
-import { afterEach, expect } from "vitest";
+import { afterEach } from "vitest";
 
 configure({
   getElementError: (message: string, container) => {
@@ -10,8 +10,6 @@ configure({
     return error;
   },
 });
-
-expect.extend(matchers);
 
 afterEach(() => {
   cleanup();

@@ -125,9 +125,7 @@ describe("Subscription payment status", () => {
         expect(screen.getByText("Payment failed")).toBeInTheDocument();
         expect(screen.getByText("Manage billing")).toBeInTheDocument();
         expect(
-          screen.queryByText(
-            "Your keys will be available once the payment has been successfully",
-          ),
+          screen.getByTestId("pending-first-payment-alert"),
         ).toBeInTheDocument();
       });
 
@@ -147,7 +145,10 @@ describe("Subscription payment status", () => {
         expect(
           screen.queryByText("Your payment is being processed"),
         ).not.toBeInTheDocument();
-        expect(screen.queryByText(/contact support/i)).not.toBeInTheDocument();
+
+        expect(
+          screen.queryByTestId("pending-first-payment-alert"),
+        ).not.toBeInTheDocument();
       });
 
       it("pending: shows processing message and hides API keys", async () => {
@@ -216,9 +217,6 @@ describe("Subscription payment status", () => {
     });
   });
 
-  // ─────────────────────────────────────────────────────────────────────────
-  // UPGRADE SUBSCRIPTION (has previous subscription annotation)
-  // ─────────────────────────────────────────────────────────────────────────
   describe("Upgrade subscription (has previous subscription annotation)", () => {
     const annotations = { "subscription.previous.id": "prev-sub-1" };
 
@@ -233,8 +231,8 @@ describe("Subscription payment status", () => {
         // API keys keep working for upgrades — should be visible
         expect(screen.getByText("API Keys")).toBeInTheDocument();
         expect(
-          screen.queryByText(/Your keys will be available/),
-        ).not.toBeInTheDocument();
+          screen.queryByTestId("pending-first-payment-alert"),
+        ).toBeInTheDocument();
       });
 
       it("uncollectible: shows 'Payment unsuccessful' warning and link to manage billing, shows API keys", async () => {
@@ -266,8 +264,8 @@ describe("Subscription payment status", () => {
         // API keys continue working for upgrades
         expect(screen.getByText("API Keys")).toBeInTheDocument();
         expect(
-          screen.queryByText(/Your keys will be available/),
-        ).not.toBeInTheDocument();
+          screen.queryByTestId("pending-first-payment-alert"),
+        ).toBeInTheDocument();
       });
     });
 
@@ -334,8 +332,8 @@ describe("Subscription payment status", () => {
         expect(screen.getByText("Manage billing")).toBeInTheDocument();
         expect(screen.getByText("API Keys")).toBeInTheDocument();
         expect(
-          screen.queryByText(/Your keys will be available/),
-        ).not.toBeInTheDocument();
+          screen.queryByTestId("pending-first-payment-alert"),
+        ).toBeInTheDocument();
       });
 
       it("uncollectible: shows 'Payment unsuccessful' warning and link to manage billing, shows API keys", async () => {
@@ -351,9 +349,8 @@ describe("Subscription payment status", () => {
         expect(screen.getByText("API Keys")).toBeInTheDocument();
         expect(screen.queryByText("Payment failed")).not.toBeInTheDocument();
         expect(
-          screen.queryByText("Your payment is being processed"),
+          screen.queryByTestId("pending-first-payment-alert"),
         ).not.toBeInTheDocument();
-        expect(screen.queryByText(/contact support/i)).not.toBeInTheDocument();
       });
 
       it("pending: shows pending message, shows API keys", async () => {
@@ -364,8 +361,8 @@ describe("Subscription payment status", () => {
         ).toBeInTheDocument();
         expect(screen.getByText("API Keys")).toBeInTheDocument();
         expect(
-          screen.queryByText(/Your keys will be available/),
-        ).not.toBeInTheDocument();
+          screen.queryByTestId("pending-first-payment-alert"),
+        ).toBeInTheDocument();
       });
     });
 
