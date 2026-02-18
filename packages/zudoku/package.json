@@ -57,7 +57,8 @@
     "./hooks": "./src/lib/hooks/index.ts",
     "./shiki/*": "./src/shiki/*.js",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
-    "./with-zuplo": "./src/zuplo/with-zuplo.ts"
+    "./with-zuplo": "./src/zuplo/with-zuplo.ts",
+    "./testing": "./src/lib/testing/index.tsx"
   },
   "publishConfig": {
     "module": "./dist/index.js",
@@ -188,6 +189,10 @@
       "./with-zuplo": {
         "require": "./dist/zuplo/with-zuplo.js",
         "import": "./dist/zuplo/with-zuplo.js"
+      },
+      "./testing": {
+        "import": "./lib/zudoku.testing.js",
+        "types": "./dist/lib/testing/index.d.ts"
       }
     }
   },
@@ -199,8 +204,7 @@
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
     "clean": "tsc --build --clean",
-    "codegen": "graphql-codegen --config ./src/codegen.ts",
-    "test": "vitest run --typecheck"
+    "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "15.2.2",
@@ -319,10 +323,10 @@
   "devDependencies": {
     "@graphql-codegen/cli": "6.1.0",
     "@inkeep/cxkit-types": "0.5.113",
-    "@testing-library/dom": "10.4.1",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "16.3.2",
-    "@testing-library/user-event": "14.6.1",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@types/estree": "1.0.8",
     "@types/express": "5.0.6",
     "@types/glob-parent": "5.1.3",
@@ -338,14 +342,13 @@
     "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.0.18",
     "esbuild": "0.27.0",
-    "happy-dom": "20.0.10",
+    "happy-dom": "catalog:",
     "mdast-util-mdx": "3.0.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "6.0.5",
     "tsx": "4.20.6",
-    "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "typescript": "5.9.3"
   },
   "peerDependencies": {
     "@azure/msal-browser": "^4.13.0",

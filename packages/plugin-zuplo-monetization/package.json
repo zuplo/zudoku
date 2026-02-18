@@ -29,8 +29,12 @@
     "tinyduration": "3.4.1"
   },
   "devDependencies": {
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "happy-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsdown": "0.20.3",

@@ -11,11 +11,11 @@ import { getPriceFromPlan } from "../../utils/getPriceFromPlan";
 export const PricingCard = ({
   plan,
   isPopular = false,
-  disabled = false,
+  isSubscribed = false,
 }: {
   plan: Plan;
   isPopular?: boolean;
-  disabled?: boolean;
+  isSubscribed?: boolean;
 }) => {
   const defaultPhase = plan.phases.at(-1);
   if (!defaultPhase) return null;
@@ -99,9 +99,9 @@ export const PricingCard = ({
         )}
       </div>
 
-      {disabled ? (
-        <Button disabled variant={isPopular ? "default" : "secondary"}>
-          Already subscribed
+      {isSubscribed ? (
+        <Button variant={isPopular ? "default" : "secondary"} asChild>
+          <Link to={`/subscriptions#manage`}>Manage Subscriptions</Link>
         </Button>
       ) : (
         <Button variant={isPopular ? "default" : "secondary"} asChild>

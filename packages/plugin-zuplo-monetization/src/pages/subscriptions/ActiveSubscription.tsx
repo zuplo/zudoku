@@ -38,8 +38,9 @@ const ActiveSubscription = ({
   });
 
   const isPendingFirstPayment =
-    usageQuery.data.paymentStatus.status === "pending" &&
-    !subscription.annotations?.["subscription.previous.id"];
+    usageQuery.data.paymentStatus.isFirstPayment === true &&
+    usageQuery.data.paymentStatus.status !== "paid" &&
+    usageQuery.data.paymentStatus.status !== "not_required";
 
   const activePhase = subscription?.phases.find(
     (p) =>
