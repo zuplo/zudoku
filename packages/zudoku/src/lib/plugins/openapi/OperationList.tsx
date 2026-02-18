@@ -1,29 +1,14 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { ChevronsDownUpIcon, ChevronsUpDownIcon } from "lucide-react";
-import { Navigate, useNavigate, useParams } from "react-router";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "zudoku/ui/Collapsible.js";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "zudoku/ui/Select.js";
-import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { Navigate, useParams } from "react-router";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
-import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { usePrevNext } from "../../components/navigation/utils.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { Pagination } from "../../components/Pagination.js";
+import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
-import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 import { Endpoint } from "./Endpoint.js";
 import { graphql } from "./graphql/index.js";
 import { UNTAGGED_PATH } from "./index.js";
@@ -158,7 +143,7 @@ export const OperationList = ({
   tag?: string;
   untagged?: boolean;
 }) => {
-  const { input, type, versions, version, options } = useOasConfig();
+  const { input, type } = useOasConfig();
   const { tag: tagFromParams } = useParams<"tag">();
   const query = useCreateQuery(OperationsForTagQuery, {
     input,
@@ -173,7 +158,6 @@ export const OperationList = ({
   const title = schema.title;
   const summary = schema.summary;
   const description = schema.description;
-  const navigate = useNavigate();
   const { prev: navPrev, next: navNext } = usePrevNext();
 
   // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
@@ -225,12 +209,6 @@ export const OperationList = ({
         ? sanitizeMarkdownForMetatag(description)
         : undefined;
 
-  const hasMultipleVersions = Object.entries(versions).length > 1;
-
-  const showVersions =
-    options?.showVersionSelect === "always" ||
-    (hasMultipleVersions && options?.showVersionSelect !== "hide");
-
   const paginationProps = {
     prev: prev
       ? {
@@ -259,14 +237,6 @@ export const OperationList = ({
 
   const helmetTitle = [tagTitle, title].filter(Boolean).join(" - ");
 
-  const currentVersion = version != null ? versions[version] : undefined;
-  const downloadUrl =
-    typeof input === "string"
-      ? type === "url"
-        ? input
-        : currentVersion?.downloadUrl
-      : undefined;
-
   return (
     <div
       className="pt-(--padding-content-top)"
@@ -282,83 +252,14 @@ export const OperationList = ({
       </Helmet>
 
       <div className="mb-8">
-        <Collapsible
-          className="w-full"
-          defaultOpen={options?.expandApiInformation}
+        <ApiHeader
+          title={title}
+          heading={tagTitle}
+          headingId="description"
+          description={description ?? undefined}
         >
-          <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end">
-            <div className="flex flex-col flex-1 gap-2">
-              <CategoryHeading>{title}</CategoryHeading>
-              <Heading
-                level={1}
-                id="description"
-                registerNavigationAnchor
-                className="mb-0"
-              >
-                {tagTitle}
-                {showVersions && (
-                  <span className="text-xl text-muted-foreground ms-1.5">
-                    {" "}
-                    ({schema.version})
-                  </span>
-                )}
-              </Heading>
-              <Endpoint />
-            </div>
-            <div className="flex flex-col gap-4 sm:items-end">
-              <div className="flex gap-2 items-center">
-                {showVersions && (
-                  <Select
-                    onValueChange={(version) =>
-                      // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-                      navigate(versions[version]!.path)
-                    }
-                    defaultValue={version}
-                    disabled={!hasMultipleVersions}
-                  >
-                    <SelectTrigger className="w-[180px]" size="sm">
-                      <SelectValue placeholder="Select version" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(versions).map(([version, { label }]) => (
-                        <SelectItem key={version} value={version}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-                {options?.schemaDownload?.enabled && downloadUrl && (
-                  <DownloadSchemaButton downloadUrl={downloadUrl} />
-                )}
-              </div>
-              {schema.description && (
-                <CollapsibleTrigger className="flex items-center gap-1 text-sm font-medium text-muted-foreground group">
-                  <span>API information</span>
-
-                  <ChevronsUpDownIcon
-                    className="group-data-[state=open]:hidden translate-y-px"
-                    size={14}
-                  />
-                  <ChevronsDownUpIcon
-                    className="group-data-[state=closed]:hidden translate-y-px"
-                    size={13}
-                  />
-                </CollapsibleTrigger>
-              )}
-            </div>
-          </div>
-          {schema.description && (
-            <CollapsibleContent className="CollapsibleContent">
-              <div className="mt-4 max-w-full border rounded-sm bg-muted/25">
-                <Markdown
-                  className="max-w-full prose-img:max-w-prose border-border p-3 lg:p-5"
-                  content={schema.description}
-                />
-              </div>
-            </CollapsibleContent>
-          )}
-        </Collapsible>
+          <Endpoint />
+        </ApiHeader>
         {tagDescription && (
           <Markdown
             className="my-4 max-w-full prose-img:max-w-prose"
