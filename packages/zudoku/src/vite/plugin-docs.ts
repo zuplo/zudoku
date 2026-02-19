@@ -7,6 +7,7 @@ import { NavigationResolver } from "../config/validators/NavigationSchema.js";
 import { DocsConfigSchema } from "../config/validators/validate.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import { readFrontmatter } from "../lib/util/readFrontmatter.js";
 import { writePluginDebugCode } from "./debug.js";
 
 const ensureLeadingSlash = joinUrl;
@@ -31,7 +32,29 @@ export const globMarkdownFiles = async (
     // Normalize parent by removing leading `./` or `/`
     const parent = globParent(globPattern).replace(/^\.?\//, "");
 
+    // Precompute draft status for all files in production mode to avoid serial I/O
+    let draftFiles = new Set<string>();
+    if (process.env.NODE_ENV !== "development") {
+      const draftStatuses = await Promise.all(
+        globbedFiles.map(async (file) => {
+          const absolutePath = path.resolve(config.__meta.rootDir, file);
+          const { data } = await readFrontmatter(absolutePath);
+          return { file, isDraft: data.draft === true };
+        }),
+      );
+      draftFiles = new Set(
+        draftStatuses
+          .filter((entry) => entry.isDraft)
+          .map((entry) => entry.file),
+      );
+    }
+
     for (const file of globbedFiles) {
+      // Skip draft documents in production mode
+      if (draftFiles.has(file)) {
+        continue;
+      }
+
       const relativePath = path.posix.relative(parent, file);
       const routePath = ensureLeadingSlash(relativePath.replace(/\.mdx?$/, ""));
       // Resolve to absolute path if requested, using path.resolve to handle cross-platform paths

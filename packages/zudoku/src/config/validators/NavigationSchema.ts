@@ -227,6 +227,11 @@ export class NavigationResolver {
 
     const { data, content } = await readFrontmatter(foundMatches);
 
+    // Skip draft documents in production mode
+    if (process.env.NODE_ENV !== "development" && data.draft === true) {
+      return undefined;
+    }
+
     const richH1 = extractRichH1(content);
 
     const label =
@@ -326,6 +331,15 @@ export class NavigationResolver {
         const resolvedLink = categoryItem.link
           ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
           : undefined;
+
+        // Filter out empty categories (no items and no link) in production
+        if (
+          process.env.NODE_ENV !== "development" &&
+          items.length === 0 &&
+          !resolvedLink
+        ) {
+          return undefined;
+        }
 
         return {
           ...categoryItem,
