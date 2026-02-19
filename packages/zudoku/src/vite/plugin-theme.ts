@@ -344,18 +344,14 @@ export const viteThemePlugin = (): Plugin => {
       const config = getCurrentConfig();
 
       const files = new Set(
-        [config.__meta.rootDir, ...config.__meta.dependencies].map((file) =>
-          path.relative(path.dirname(id), file),
-        ),
+        [
+          config.__meta.rootDir,
+          ...config.__meta.dependencies,
+          ...(config.__pluginDirs ?? []),
+        ].map((file) => path.relative(path.dirname(id), file)),
       );
 
-      const tailwindSources = (config.__tailwindSources ?? []).map((source) =>
-        path.relative(path.dirname(id), source),
-      );
-
-      const code = [...files, ...tailwindSources].map(
-        (file) => `@source "${file}";`,
-      );
+      const code = [...files].map((file) => `@source "${file}";`);
 
       // NOTE: Font imports and declarations are handled by virtual:zudoku-theme.css
       // This @theme block only maps CSS variables to Tailwind utilities

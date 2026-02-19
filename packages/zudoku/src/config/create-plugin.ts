@@ -54,14 +54,14 @@ export const createPlugin = <TOptions extends unknown[]>(
     return {
       ...plugin,
       transformConfig: async (context) => {
-        const result = await originalTransformConfig?.(context);
-        if (!result) return;
+        const result =
+          (await originalTransformConfig?.(context)) ?? context.config;
 
         return {
           ...result,
-          __tailwindSources: [
-            ...(context.config.__tailwindSources ?? []),
-            ...(result.__tailwindSources ?? []),
+          __pluginDirs: [
+            ...(context.config.__pluginDirs ?? []),
+            ...(result.__pluginDirs ?? []),
             pluginDir,
           ],
         };

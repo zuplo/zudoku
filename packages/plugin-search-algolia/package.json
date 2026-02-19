@@ -1,0 +1,47 @@
+{
+  "name": "@zudoku/plugin-search-algolia",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.tsx",
+  "types": "./src/index.tsx",
+  "exports": {
+    ".": "./src/index.tsx"
+  },
+  "files": [
+    "dist",
+    "vite.config.ts"
+  ],
+  "scripts": {
+    "build": "tsdown src/index.tsx",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "types": "./dist/index.d.mts"
+      }
+    }
+  },
+  "dependencies": {
+    "@docsearch/core": "^4.5.4",
+    "@docsearch/css": "^4.5.4",
+    "@docsearch/modal": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsdown": "0.20.3",
+    "zudoku": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0",
+    "zudoku": "*"
+  }
+}
