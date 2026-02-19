@@ -15,7 +15,11 @@ export const categorizeRateCards = (
 
     if (et.type === "metered" && et.issueAfterReset != null) {
       let overagePrice: string | undefined;
-      if (rc.price?.type === "tiered" && rc.price.tiers) {
+      if (
+        et.isSoftLimit !== false &&
+        rc.price?.type === "tiered" &&
+        rc.price.tiers
+      ) {
         const overageTier = rc.price.tiers.find((t) => t.unitPrice?.amount);
         if (overageTier?.unitPrice) {
           const amount = parseFloat(overageTier.unitPrice.amount);
