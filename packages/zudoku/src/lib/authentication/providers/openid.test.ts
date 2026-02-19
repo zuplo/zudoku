@@ -17,6 +17,8 @@ vi.mock("oauth4webapi", async (importOriginal) => {
     validateAuthResponse: vi.fn(),
     authorizationCodeGrantRequest: vi.fn(),
     processAuthorizationCodeResponse: vi.fn(),
+    refreshTokenGrantRequest: vi.fn(),
+    processRefreshTokenResponse: vi.fn(),
     userInfoRequest: vi.fn(),
   };
 });
@@ -208,5 +210,48 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
       expect(useAuthState.getState().profile?.emailVerified).toBe(false);
     });
+  });
+
+  test("self heals providerData when providerData.type is undefined", async () => {
+    const provider = createProvider();
+
+    useAuthState.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile: {
+        sub: "user-1",
+        email: "user@example.com",
+        emailVerified: false,
+        name: "Test",
+        pictureUrl: undefined,
+      },
+      providerData: {
+        type: undefined,
+        accessToken: "old-access-token",
+        expiresOn: new Date(Date.now() - 1000),
+        refreshToken: "test-refresh-token",
+        tokenType: "bearer",
+        claims: undefined,
+      } satisfies OpenIdProviderData,
+    });
+
+    vi.mocked(oauth.refreshTokenGrantRequest).mockResolvedValue(new Response());
+    vi.mocked(oauth.processRefreshTokenResponse).mockResolvedValue({
+      access_token: "new-access-token",
+      token_type: "bearer",
+      expires_in: 3600,
+    } as oauth.TokenEndpointResponse);
+
+    vi.mocked(oauth.userInfoRequest).mockResolvedValue(
+      Response.json({
+        sub: "user-1",
+        email: "user@example.com",
+        name: "Test",
+      }),
+    );
+
+    await provider.refreshUserProfile();
+
+    expect(useAuthState.getState().providerData?.type).toBe("openid");
   });
 });
