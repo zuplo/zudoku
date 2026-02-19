@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "experimentalSortPackageJson": false,
+  "experimentalSortImports": {
+    "newlinesBetween": false
+  },
+  "embeddedLanguageFormatting": "auto",
+  "overrides": [
+    {
+      "files": ["*.md", "*.mdx"],
+      "options": {
+        "printWidth": 100,
+        "proseWrap": "always"
+      }
+    },
+    {
+      "files": ["*.jsonc", "*.json", "*.json5"],
+      "options": {
+        "trailingComma": "none"
+      }
+    }
+  ]
+}

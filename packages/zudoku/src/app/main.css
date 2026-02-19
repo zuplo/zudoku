@@ -176,7 +176,6 @@
     cursor: pointer;
   }
 
-
   .shiki {
     counter-reset: line;
     @apply leading-normal;

@@ -1,6 +1,5 @@
 import { cn } from "zudoku";
 import { CheckIcon } from "zudoku/icons";
-
 import type { Quota } from "../types/PlanType";
 
 export const QuotaItem = ({

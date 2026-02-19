@@ -1,5 +1,5 @@
-import { GraphQLScalarType } from "graphql/index.js";
 import { GraphQLJSON } from "graphql-type-json";
+import { GraphQLScalarType } from "graphql/index.js";
 
 export const CIRCULAR_REF = "$[Circular Reference]";
 export const SCHEMA_REF_PREFIX = "$ref:";

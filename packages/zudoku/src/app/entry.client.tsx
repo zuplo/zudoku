@@ -1,10 +1,10 @@
-import config from "virtual:zudoku-config";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import {
   createBrowserRouter,
   matchRoutes,
   type RouteObject,
 } from "react-router";
+import config from "virtual:zudoku-config";
 import "vite/modulepreload-polyfill";
 import { Bootstrap } from "zudoku/__internal";
 import { getRoutesByConfig } from "./main.js";

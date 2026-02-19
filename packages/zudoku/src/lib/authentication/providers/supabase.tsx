@@ -4,13 +4,13 @@ import {
   type SupabaseClient,
 } from "@supabase/supabase-js";
 import type { SupabaseAuthenticationConfig } from "../../../config/config.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";

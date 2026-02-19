@@ -13,8 +13,8 @@ import { type FragmentType, useFragment } from "./graphql/index.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
-import { Sidecar } from "./Sidecar.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { Sidecar } from "./Sidecar.js";
 import { methodForColor } from "./util/methodToColor.js";
 
 const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;

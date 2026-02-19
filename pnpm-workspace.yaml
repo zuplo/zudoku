@@ -26,6 +26,8 @@ minimumReleaseAgeExclude:
   - glob
   - pagefind
   - "@pagefind/*"
+  - oxfmt
+  - "@oxfmt/*"
   - tailwind-merge
   - tailwindcss
   - "@tailwindcss/*"

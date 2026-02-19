@@ -1,3 +1,4 @@
+import type { RouteObject } from "react-router";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -13,7 +14,6 @@ import {
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import { registerShiki } from "virtual:zudoku-shiki-register";
-import type { RouteObject } from "react-router";
 import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
