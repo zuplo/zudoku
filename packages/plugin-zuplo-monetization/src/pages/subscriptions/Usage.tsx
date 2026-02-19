@@ -6,7 +6,6 @@ import {
   Grid2x2XIcon,
   Loader2Icon,
 } from "zudoku/icons";
-import type { UseSuspenseQueryResult } from "zudoku/react-query";
 import {
   Alert,
   AlertAction,
@@ -65,17 +64,20 @@ const UsageItem = ({
   item?: Item;
   subscription?: Subscription;
 }) => {
+  const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
   const overageTier =
     item?.price?.tiers?.find((t) => !t.upToAmount) ??
     item?.price?.tiers?.at(-1);
   const rate = overageTier?.unitPrice?.amount;
+  const hasOverage = meter.overage > 0;
+  const limit = meter.balance + meter.usage - meter.overage;
+  const isAtLimit = !isSoftLimit && meter.usage >= limit;
+  const dangerZone = hasOverage || isAtLimit;
 
   return (
-    <Card
-      className={cn(meter.overage > 0 && "border-destructive bg-destructive/5")}
-    >
+    <Card className={cn(dangerZone && "border-destructive bg-destructive/5")}>
       <CardHeader>
-        {meter.overage > 0 && (
+        {hasOverage && isSoftLimit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
             <AlertTitle>You've exceeded your monthly quota</AlertTitle>
@@ -97,6 +99,27 @@ const UsageItem = ({
             )}
           </Alert>
         )}
+        {isAtLimit && !isSoftLimit && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
+            <AlertTitle>You've reached your monthly limit</AlertTitle>
+            <AlertDescription>
+              Requests beyond your quota are blocked. Upgrade to a higher plan
+              for more usage.
+            </AlertDescription>
+
+            {subscription && (
+              <AlertAction>
+                <SwitchPlanModal subscription={subscription}>
+                  <Button variant="destructive" size="xs">
+                    <ArrowUpIcon />
+                    Upgrade
+                  </Button>
+                </SwitchPlanModal>
+              </AlertAction>
+            )}
+          </Alert>
+        )}
         <CardTitle>
           {item?.name ?? "Limit"} {item?.price?.amount}
         </CardTitle>
@@ -104,11 +127,9 @@ const UsageItem = ({
       <CardContent className="space-y-2">
         <div className="flex items-center justify-between text-sm">
           <div className="flex flex-col gap-2 mb-2">
-            <span
-              className={cn(meter.overage > 0 && "text-red-600 font-medium")}
-            >
+            <span className={cn(dangerZone && "text-red-600 font-medium")}>
               {meter.usage.toLocaleString()} used
-              {meter.overage > 0 && (
+              {hasOverage && isSoftLimit && (
                 <span className="ml-1 text-xs">
                   (+{meter.overage.toLocaleString()} overage)
                 </span>
@@ -116,15 +137,12 @@ const UsageItem = ({
             </span>
           </div>
           <span className="text-foreground font-medium">
-            {(meter.balance + meter.usage - meter.overage).toLocaleString()}{" "}
-            limit
+            {limit.toLocaleString()} limit
           </span>
         </div>
         <Progress
-          value={
-            (meter.usage / (meter.balance + meter.usage - meter.overage)) * 100
-          }
-          className={cn("mb-3 h-2", meter.overage > 0 && "bg-red-500")}
+          value={Math.min(100, limit > 0 ? (meter.usage / limit) * 100 : 100)}
+          className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
         />
         <p className="text-xs text-muted-foreground">
           {meter.balance.toLocaleString()} remaining this month
@@ -135,17 +153,18 @@ const UsageItem = ({
 };
 
 export const Usage = ({
-  usageQuery,
+  usage,
+  isFetching,
   currentItems,
   subscription,
   isPendingFirstPayment,
 }: {
-  usageQuery: UseSuspenseQueryResult<UsageResult>;
+  usage: UsageResult;
+  isFetching: boolean;
   currentItems?: Item[];
   subscription?: Subscription;
   isPendingFirstPayment: boolean;
 }) => {
-  const usage = usageQuery.data;
   const hasUsage = Object.values(usage.entitlements).some((value) =>
     isMeteredEntitlement(value),
   );
@@ -198,7 +217,7 @@ export const Usage = ({
             []
           ),
         )
-      ) : !usageQuery.isFetching &&
+      ) : !isFetching &&
         !subscription?.annotations?.["subscription.previous.id"] ? (
         <Alert variant="warning">
           <Grid2x2XIcon />

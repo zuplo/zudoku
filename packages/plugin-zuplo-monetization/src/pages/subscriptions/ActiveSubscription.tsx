@@ -65,7 +65,8 @@ const ActiveSubscription = ({
 
       <Usage
         currentItems={activePhase?.items}
-        usageQuery={usageQuery}
+        usage={usageQuery.data}
+        isFetching={usageQuery.isFetching}
         subscription={subscription}
         isPendingFirstPayment={isPendingFirstPayment}
       />

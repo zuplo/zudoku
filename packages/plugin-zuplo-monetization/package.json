@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsdown",
     "dev": "tsdown --watch",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm typecheck && pnpm build",
+    "typecheck": "tsc --project tsconfig.json"
   },
   "publishConfig": {
     "main": "./dist/index.mjs",

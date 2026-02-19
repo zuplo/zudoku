@@ -3,10 +3,10 @@ import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
 
 configure({
-  getElementError: (message: string, container) => {
-    const error = new Error(message);
+  getElementError: (message, _container) => {
+    const error = new Error(message ?? "Unknown error");
     error.name = "TestingLibraryElementError";
-    error.stack = null;
+    error.stack = undefined;
     return error;
   },
 });

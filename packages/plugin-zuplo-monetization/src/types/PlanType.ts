@@ -69,7 +69,7 @@ interface RateCardBase {
   key: string;
   name: string;
   description?: string;
-  metadata?: Record<string, any> | null;
+  metadata?: Record<string, unknown> | null;
   featureKey?: string;
   entitlementTemplate?: EntitlementTemplate;
 }
@@ -90,7 +90,7 @@ export interface PlanPhase {
   key: string;
   name: string;
   description?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   duration?: string | null;
   rateCards: RateCard[];
 }
@@ -130,7 +130,7 @@ export interface Plan {
   name: string;
   description?: string;
   paymentRequired?: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   version?: number; // defaults to 1
   currency?: string;
   billingCadence: string;
