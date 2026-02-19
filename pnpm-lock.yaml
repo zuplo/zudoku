@@ -593,12 +593,6 @@ importers:
       '@stefanprobst/rehype-extract-toc':
         specifier: 3.0.0
         version: 3.0.0
-      '@supabase/auth-ui-react':
-        specifier: ^0.4.0
-        version: 0.4.7(@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      '@supabase/auth-ui-shared':
-        specifier: ^0.1.0
-        version: 0.1.8(@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@supabase/supabase-js':
         specifier: ^2.49.4
         version: 2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -14797,15 +14791,6 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@supabase/auth-ui-react@0.4.7(@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@stitches/core': 1.2.8
-      '@supabase/auth-ui-shared': 0.1.8(@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
-      '@supabase/supabase-js': 2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      prop-types: 15.8.1
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-
   '@supabase/auth-ui-react@0.4.7(@supabase/supabase-js@2.86.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
     dependencies:
       '@stitches/core': 1.2.8
@@ -14814,10 +14799,6 @@ snapshots:
       prop-types: 15.8.1
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-
-  '@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
-    dependencies:
-      '@supabase/supabase-js': 2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
 
   '@supabase/auth-ui-shared@0.1.8(@supabase/supabase-js@2.86.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
     dependencies:
