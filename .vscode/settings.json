@@ -4,13 +4,14 @@
     "pnpm-lock.yaml": true
   },
   "npm.packageManager": "pnpm",
+  "vitest.rootConfig": "vitest.config.ts",
   "oxc.fmt.configPath": ".oxfmtrc.json",
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.biome": "explicit"
   },
-  "vitest.rootConfig": "vitest.config.ts",
+  "editor.rulers": [80],
   "[markdown]": {
     "editor.wordWrapColumn": 100,
     "editor.rulers": [100]
