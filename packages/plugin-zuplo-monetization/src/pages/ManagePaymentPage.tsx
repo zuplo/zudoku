@@ -1,5 +1,5 @@
 import { Link } from "zudoku/components";
-import { useZudoku } from "zudoku/hooks";
+import { useAuth, useZudoku } from "zudoku/hooks";
 import { CreditCardIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
 import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
@@ -12,6 +12,7 @@ const ManagePaymentPage = () => {
   const zudoku = useZudoku();
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
+  const auth = useAuth();
 
   const billingPortal = useQuery<{ url: string }>({
     queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/portal`],
@@ -20,6 +21,7 @@ const ManagePaymentPage = () => {
       request: {
         method: "POST",
         body: JSON.stringify({
+          email: auth.profile?.email,
           returnURL: generateUrl("/subscriptions"),
         }),
       },
