@@ -45,7 +45,6 @@ export interface ApiIdentityPlugin {
 export interface SearchProviderPlugin {
   renderSearch: (o: {
     isOpen: boolean;
-    onOpen: () => void;
     onClose: () => void;
   }) => React.JSX.Element | null;
 }

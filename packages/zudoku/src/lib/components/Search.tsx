@@ -49,9 +49,7 @@ export const Search = ({ className }: { className?: string }) => {
           <KbdShortcut />
         </ClientOnly>
       </button>
-      <Suspense>
-        {searchPlugin.renderSearch({ isOpen, onOpen, onClose })}
-      </Suspense>
+      <Suspense>{searchPlugin.renderSearch({ isOpen, onClose })}</Suspense>
     </div>
   );
 };
