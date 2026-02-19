@@ -20,7 +20,8 @@ const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
 export interface OpenIdProviderData {
-  type: "openid";
+  // just for easy migration we also allow for undefined type. can be removed in the future.
+  type: "openid" | undefined;
   accessToken: string;
   idToken?: string;
   refreshToken?: string;
@@ -131,7 +132,7 @@ export class OpenIDAuthenticationProvider
             emailVerified:
               emailVerified ?? state.profile.emailVerified ?? false,
           }
-        : undefined;
+        : null;
 
       return {
         profile,
@@ -276,7 +277,11 @@ export class OpenIDAuthenticationProvider
     const as = await this.getAuthServer();
     const { providerData, setLoggedOut } = useAuthState.getState();
 
-    if (providerData?.type !== "openid") {
+    if (
+      !providerData ||
+      (providerData?.type !== "openid" && providerData?.type !== undefined)
+    ) {
+      useAuthState.getState().setLoggedOut();
       throw new AuthorizationError("Invalid or incompatible provider data");
     }
 
