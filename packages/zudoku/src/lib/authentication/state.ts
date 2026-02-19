@@ -2,23 +2,39 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { syncZustandState } from "../util/syncZustandState.js";
 
-export interface AuthState<ProviderData = unknown> {
+/**
+ * Registry interface for provider-specific data types.
+ * Providers augment this via declaration merging:
+ *
+ * ```ts
+ * declare module "../state.js" {
+ *   interface ProviderDataRegistry {
+ *     myProvider: MyProviderData;
+ *   }
+ * }
+ * ```
+ */
+// biome-ignore lint/suspicious/noEmptyInterface: Intended to be augmented via declaration merging by auth providers
+export interface ProviderDataRegistry {}
+
+export type ProviderData = [keyof ProviderDataRegistry] extends [never]
+  ? unknown
+  : ProviderDataRegistry[keyof ProviderDataRegistry];
+
+export interface AuthState {
   isAuthenticated: boolean;
   isPending: boolean;
   profile: UserProfile | null;
   providerData: ProviderData | null;
   setAuthenticationPending: () => void;
   setLoggedOut: () => void;
-  setLoggedIn: ({
-    profile,
-    providerData,
-  }: {
+  setLoggedIn: (args: {
     profile: UserProfile;
-    providerData: unknown;
+    providerData: ProviderData;
   }) => void;
 }
 
-export const useAuthState = create<AuthState>()(
+export const authState = create<AuthState>()(
   persist(
     (set) => ({
       isAuthenticated: false,
@@ -39,13 +55,7 @@ export const useAuthState = create<AuthState>()(
           profile: null,
           providerData: null,
         })),
-      setLoggedIn: ({
-        profile,
-        providerData,
-      }: {
-        profile: UserProfile;
-        providerData: unknown;
-      }) =>
+      setLoggedIn: ({ profile, providerData }) =>
         set(() => ({
           isAuthenticated: true,
           isPending: false,
@@ -67,7 +77,9 @@ export const useAuthState = create<AuthState>()(
   ),
 );
 
-syncZustandState(useAuthState);
+syncZustandState(authState);
+
+export const useAuthState = authState;
 
 export interface UserProfile {
   sub: string;

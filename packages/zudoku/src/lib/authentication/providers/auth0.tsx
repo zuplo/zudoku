@@ -45,16 +45,11 @@ class Auth0AuthenticationProvider
   signOut = async (_: AuthActionContext): Promise<void> => {
     const as = await this.getAuthServer();
 
-    // biome-ignore lint/suspicious/noExplicitAny: We don't have a good way for typing provider-data yet.
-    const providerData = useAuthState.getState().providerData as any;
-    const idToken = providerData?.idToken;
+    const { providerData } = useAuthState.getState();
+    const idToken =
+      providerData?.type === "openid" ? providerData.idToken : undefined;
 
-    useAuthState.setState({
-      isAuthenticated: false,
-      isPending: false,
-      profile: undefined,
-      providerData: undefined,
-    });
+    useAuthState.getState().setLoggedOut();
 
     const redirectUrl = new URL(window.location.origin);
     redirectUrl.pathname = joinUrl(
