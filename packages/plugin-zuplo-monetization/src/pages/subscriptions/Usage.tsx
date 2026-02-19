@@ -141,7 +141,7 @@ const UsageItem = ({
           </span>
         </div>
         <Progress
-          value={limit > 0 ? (meter.usage / limit) * 100 : 100}
+          value={Math.min(100, limit > 0 ? (meter.usage / limit) * 100 : 100)}
           className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
         />
         <p className="text-xs text-muted-foreground">
