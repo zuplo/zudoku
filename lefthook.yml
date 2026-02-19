@@ -8,6 +8,6 @@ pre-commit:
       run: pnpm biome lint --write --no-errors-on-unmatched {staged_files}
       stage_fixed: true
     oxfmt:
-      glob: "**/*.{md,mdx,yml,yaml}"
+      glob: "**/*.{ts,tsx,json,js,jsx,css,html,md,mdx,yml,yaml}"
       run: pnpm fmt {staged_files}
       stage_fixed: true
