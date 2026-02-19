@@ -266,7 +266,7 @@
     "estree-util-is-identifier-name": "3.0.0",
     "estree-util-value-to-estree": "3.5.0",
     "express": "5.2.1",
-    "fast-equals": "5.2.2",
+    "fast-equals": "6.0.0",
     "glob": "13.0.1",
     "glob-parent": "6.0.2",
     "graphql": "16.12.0",
