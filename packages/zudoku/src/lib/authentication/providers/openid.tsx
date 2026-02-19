@@ -20,11 +20,19 @@ const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
 export interface OpenIdProviderData {
+  type: "openid";
   accessToken: string;
   idToken?: string;
   refreshToken?: string;
   expiresOn: Date;
   tokenType: string;
+  claims: oauth.IDToken | undefined;
+}
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    openid: OpenIdProviderData;
+  }
 }
 
 export const OPENID_CALLBACK_PATH = "/oauth/callback";
@@ -97,16 +105,38 @@ export class OpenIDAuthenticationProvider
       throw new AuthorizationError("No expires_in in response");
     }
 
+    const claims = response.id_token
+      ? oauth.getValidatedIdTokenClaims(response)
+      : undefined;
+
     const tokens: OpenIdProviderData = {
+      type: "openid",
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
       idToken: response.id_token,
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
+      claims,
     };
 
-    useAuthState.setState({
-      providerData: tokens,
+    const emailVerified =
+      claims?.email_verified === undefined
+        ? undefined
+        : Boolean(claims?.email_verified);
+
+    useAuthState.setState((state) => {
+      const profile = state.profile
+        ? {
+            ...state.profile,
+            emailVerified:
+              emailVerified ?? state.profile.emailVerified ?? false,
+          }
+        : undefined;
+
+      return {
+        profile,
+        providerData: tokens,
+      };
     });
   }
 
@@ -148,11 +178,17 @@ export class OpenIDAuthenticationProvider
     );
     const userInfo = await userInfoResponse.json();
 
+    const { providerData } = useAuthState.getState();
+    const emailVerified =
+      providerData?.type === "openid"
+        ? providerData.claims?.email_verified
+        : undefined;
+
     const profile: UserProfile = {
       sub: userInfo.sub,
       email: userInfo.email,
       name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? false,
+      emailVerified: userInfo.email_verified ?? emailVerified ?? false,
       pictureUrl: userInfo.picture,
     };
 
@@ -240,11 +276,11 @@ export class OpenIDAuthenticationProvider
     const as = await this.getAuthServer();
     const { providerData, setLoggedOut } = useAuthState.getState();
 
-    if (!providerData) {
-      setLoggedOut();
-      throw new AuthorizationError("User is not authenticated");
+    if (providerData?.type !== "openid") {
+      throw new AuthorizationError("Invalid or incompatible provider data");
     }
-    const tokenState = providerData as OpenIdProviderData;
+
+    const tokenState = providerData;
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
@@ -284,12 +320,7 @@ export class OpenIDAuthenticationProvider
   };
 
   signOut = async (_: AuthActionContext) => {
-    useAuthState.setState({
-      isAuthenticated: false,
-      isPending: false,
-      profile: undefined,
-      providerData: undefined,
-    });
+    useAuthState.getState().setLoggedOut();
 
     const as = await this.getAuthServer();
 
@@ -323,12 +354,10 @@ export class OpenIDAuthenticationProvider
   onPageLoad = async () => {
     const { providerData } = useAuthState.getState();
 
-    if (!providerData) {
-      useAuthState.setState({ isPending: false });
+    if (providerData?.type !== "openid") {
       return;
     }
-
-    const tokenState = providerData as OpenIdProviderData;
+    const tokenState = providerData;
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
@@ -361,12 +390,7 @@ export class OpenIDAuthenticationProvider
 
         this.setTokensFromResponse(result);
       } catch {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: null,
-          providerData: null,
-        });
+        useAuthState.getState().setLoggedOut();
         return;
       }
     }
@@ -425,6 +449,10 @@ export class OpenIDAuthenticationProvider
 
     const accessToken = await this.getAccessToken();
 
+    const { providerData } = useAuthState.getState();
+    const claims =
+      providerData?.type === "openid" ? providerData.claims : undefined;
+
     const userInfoResponse = await oauth.userInfoRequest(
       authServer,
       this.client,
@@ -437,7 +465,7 @@ export class OpenIDAuthenticationProvider
       sub: userInfo.sub,
       email: userInfo.email,
       name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? false,
+      emailVerified: userInfo.email_verified ?? claims?.email_verified ?? false,
       pictureUrl: userInfo.picture,
     };
 
