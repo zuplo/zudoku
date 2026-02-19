@@ -12,6 +12,17 @@ import { SignOut } from "../components/SignOut.js";
 import { SignUp } from "../components/SignUp.js";
 import { type UserProfile, useAuthState } from "../state.js";
 
+export type ClerkProviderData = {
+  type: "clerk";
+  user: NonNullable<Clerk["session"]>["user"] | undefined;
+};
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    clerk: ClerkProviderData;
+  }
+}
+
 const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
 > = ({
@@ -88,6 +99,7 @@ const clerkAuth: AuthenticationProviderInitializer<
       isPending: false,
       profile,
       providerData: {
+        type: "clerk",
         user: clerk.session?.user,
       },
     });
@@ -149,6 +161,7 @@ const clerkAuth: AuthenticationProviderInitializer<
         useAuthState.getState().setLoggedIn({
           profile,
           providerData: {
+            type: "clerk",
             user: clerk.session.user,
           },
         });

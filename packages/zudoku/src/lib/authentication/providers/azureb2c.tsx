@@ -15,6 +15,20 @@ import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
 
+export type AzureB2CProviderData = {
+  type: "azureb2c";
+  accessToken: string;
+  idToken: string;
+  scopes: string[];
+  account: AuthenticationResult["account"];
+};
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    azureb2c: AzureB2CProviderData;
+  }
+}
+
 const AZUREB2C_CALLBACK_PATH = "/oauth/callback";
 
 export class AzureB2CAuthPlugin
@@ -92,6 +106,7 @@ export class AzureB2CAuthPlugin
 
     useAuthState.getState().setLoggedIn({
       providerData: {
+        type: "azureb2c",
         accessToken,
         idToken,
         scopes,

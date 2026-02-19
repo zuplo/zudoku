@@ -16,6 +16,17 @@ import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 import { SupabaseAuthUI } from "./supabase/SupabaseAuthUI.js";
 
+export type SupabaseProviderData = {
+  type: "supabase";
+  session: Session;
+};
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    supabase: SupabaseProviderData;
+  }
+}
+
 class SupabaseAuthenticationProvider
   extends CoreAuthenticationPlugin
   implements AuthenticationPlugin
@@ -57,7 +68,7 @@ class SupabaseAuthenticationProvider
 
     useAuthState.getState().setLoggedIn({
       profile,
-      providerData: { session },
+      providerData: { type: "supabase", session },
     });
   }
 

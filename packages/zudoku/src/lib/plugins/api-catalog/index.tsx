@@ -29,13 +29,13 @@ export type ApiCatalogPluginOptions = {
   filterCatalogItems?: FilterCatalogItemsFn;
 };
 
-export type CatalogContext<ProviderData = unknown> = {
-  auth: AuthState<ProviderData>;
+export type CatalogContext = {
+  auth: AuthState;
 };
 
-export type FilterCatalogItemsFn<ProviderData = unknown> = (
+export type FilterCatalogItemsFn = (
   items: ApiCatalogItem[],
-  { auth }: CatalogContext<ProviderData>,
+  { auth }: CatalogContext,
 ) => ApiCatalogItem[];
 
 export const apiCatalogPlugin = ({

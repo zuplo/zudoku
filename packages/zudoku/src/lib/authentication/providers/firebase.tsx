@@ -22,6 +22,18 @@ import type {
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+
+export type FirebaseProviderData = {
+  type: "firebase";
+  user: User;
+};
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    firebase: FirebaseProviderData;
+  }
+}
+
 import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
 import {
   ZudokuPasswordResetUi,
@@ -173,7 +185,7 @@ class FirebaseAuthenticationProvider
               const result = await signInWithPopup(this.auth, provider);
               useAuthState.setState({ isPending: false });
               useAuthState.getState().setLoggedIn({
-                providerData: { user: result.user },
+                providerData: { type: "firebase", user: result.user },
                 profile: {
                   sub: result.user.uid,
                   email: result.user.email ?? undefined,
@@ -269,7 +281,7 @@ class FirebaseAuthenticationProvider
         emailVerified: user.emailVerified,
         pictureUrl: user.photoURL ?? undefined,
       },
-      providerData: { user },
+      providerData: { type: "firebase", user },
     });
   }
 }
