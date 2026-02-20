@@ -1,10 +1,12 @@
 import type { GraphQLError } from "graphql/error/index.js";
+import type { SchemaImports } from "../../../oas/graphql/index.js";
 import { ZudokuError } from "../../../util/invariant.js";
 import type { TypedDocumentString } from "../graphql/graphql.js";
 import type { OpenApiPluginOptions } from "../index.js";
 import type { LocalServer } from "./createServer.js";
 
 let localServerPromise: Promise<LocalServer> | undefined;
+const sharedSchemaImports: SchemaImports = {};
 
 type GraphQLResponse<TResult> = {
   errors?: GraphQLError[];
@@ -21,12 +23,18 @@ const throwIfError = (response: GraphQLResponse<unknown>) => {
 };
 
 export class GraphQLClient {
-  constructor(private readonly config: OpenApiPluginOptions) {}
+  private readonly config: OpenApiPluginOptions;
+  constructor(config: OpenApiPluginOptions) {
+    if (config.schemaImports) {
+      Object.assign(sharedSchemaImports, config.schemaImports);
+    }
+    this.config = config;
+  }
 
   #getLocalServer = async () => {
     if (!localServerPromise) {
       localServerPromise = import("./createServer.js").then((m) =>
-        m.createServer(this.config),
+        m.createServer({ ...this.config, schemaImports: sharedSchemaImports }),
       );
     }
     return localServerPromise;

@@ -12,13 +12,13 @@ import {
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
 import { ZudokuError } from "../../util/invariant.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";

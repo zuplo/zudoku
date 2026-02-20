@@ -3,7 +3,6 @@ import useEmblaCarousel, {
 } from "embla-carousel-react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import * as React from "react";
-
 import { cn } from "../util/cn.js";
 import { Button } from "./Button.js";
 

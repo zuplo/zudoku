@@ -23,11 +23,6 @@
       "!**/*.{md,mdx}"
     ]
   },
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2
-  },
   "linter": {
     "enabled": true,
     "domains": {
@@ -48,10 +43,7 @@
         "noAccumulatingSpread": "off"
       },
       "correctness": {
-        "noUnusedImports": {
-          "level": "error",
-          "fix": "safe"
-        }
+        "noUnusedImports": { "level": "error", "fix": "safe" }
       },
       "style": {
         "useNodejsImportProtocol": {
@@ -61,9 +53,7 @@
         "useImportType": {
           "level": "warn",
           "fix": "safe",
-          "options": {
-            "style": "auto"
-          }
+          "options": { "style": "auto" }
         }
       }
     }
@@ -81,22 +71,5 @@
       }
     }
   ],
-  "html": {
-    "formatter": {
-      "selfCloseVoidElements": "always"
-    }
-  },
-  "json": {
-    "formatter": {
-      "trailingCommas": "none"
-    }
-  },
-  "assist": {
-    "enabled": true,
-    "actions": {
-      "source": {
-        "organizeImports": "on"
-      }
-    }
-  }
+  "assist": { "enabled": false }
 }

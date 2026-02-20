@@ -4,12 +4,12 @@ import { ErrorBoundary } from "react-error-boundary";
 import type { AzureB2CAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError } from "../errors.js";

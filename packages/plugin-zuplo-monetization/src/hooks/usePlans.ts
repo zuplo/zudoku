@@ -1,5 +1,4 @@
 import { useSuspenseQuery } from "zudoku/react-query";
-
 import type { Plan } from "../types/PlanType";
 
 export const usePlans = (environmentName: string) => {
