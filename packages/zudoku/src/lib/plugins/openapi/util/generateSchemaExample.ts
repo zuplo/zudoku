@@ -1,6 +1,11 @@
 import type { SchemaObject } from "../../../oas/graphql/index.js";
 import { isCircularRef } from "../schema/utils.js";
 
+const isIntegerSchema = (schema: SchemaObject): boolean =>
+  schema.type === "integer" ||
+  schema.format === "int32" ||
+  schema.format === "int64";
+
 const getNumberExample = (schema: SchemaObject): number => {
   const min =
     typeof schema.exclusiveMinimum === "number"
@@ -15,8 +20,9 @@ const getNumberExample = (schema: SchemaObject): number => {
         ? schema.maximum
         : undefined;
 
-  const minOffset = typeof schema.exclusiveMinimum === "number" ? 1 : 0;
-  const maxOffset = typeof schema.exclusiveMaximum === "number" ? 1 : 0;
+  const offset = isIntegerSchema(schema) ? 1 : 0.1;
+  const minOffset = typeof schema.exclusiveMinimum === "number" ? offset : 0;
+  const maxOffset = typeof schema.exclusiveMaximum === "number" ? offset : 0;
 
   if (min !== undefined && min >= 0) return min + minOffset;
   if (max !== undefined && max <= 0) return max - maxOffset;

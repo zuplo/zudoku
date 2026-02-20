@@ -306,7 +306,23 @@ describe("generateSchemaExample", () => {
     it("respects exclusiveMaximum", () => {
       expect(
         generateSchemaExample({ type: "number", exclusiveMaximum: 0 }),
-      ).toBe(-1);
+      ).toBe(-0.1);
+    });
+
+    it("uses integer offset for exclusiveMinimum on integer types", () => {
+      expect(
+        generateSchemaExample({ type: "integer", exclusiveMinimum: 5 }),
+      ).toBe(6);
+    });
+
+    it("uses float offset for exclusiveMinimum on number types", () => {
+      expect(
+        generateSchemaExample({
+          type: "number",
+          format: "float",
+          exclusiveMinimum: 0,
+        }),
+      ).toBe(0.1);
     });
 
     it("returns 0 when it satisfies constraints", () => {
