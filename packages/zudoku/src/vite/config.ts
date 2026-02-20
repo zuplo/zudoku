@@ -164,7 +164,7 @@ export async function getViteConfig(
         "ZUPLO_BUILD_CONFIG",
         "ZUPLO_ENVIRONMENT_TYPE",
         "ZUPLO_SERVER_URL",
-        "ZUPLO_GATEWAY_URL",
+        "ZUPLO_GATEWAY_SERVICE_URL",
       ]),
       ...publicVarsProcessEnvDefine,
     },
