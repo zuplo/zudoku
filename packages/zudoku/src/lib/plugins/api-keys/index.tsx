@@ -11,7 +11,7 @@ import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import invariant from "../../util/invariant.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
-const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
+const DEFAULT_API_KEY_ENDPOINT = `${process.env.ZUPLO_GATEWAY_URL || "https://api.zuploedge.com"}/v2/client`;
 
 export type ApiKeyService = {
   getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
