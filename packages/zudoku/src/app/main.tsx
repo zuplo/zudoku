@@ -31,6 +31,7 @@ import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
 import "./main.css";
+import "./polyfills.js";
 
 await registerShiki(highlighter);
 
