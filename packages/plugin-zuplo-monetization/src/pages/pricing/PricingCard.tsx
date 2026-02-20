@@ -27,8 +27,7 @@ export const PricingCard = ({
   const price = getPriceFromPlan(plan);
   const isFree = price.monthly === 0;
 
-  // TODO: should be determined by the metadata
-  const isCustom = plan.key === "enterprise";
+  const isCustom = plan.metadata?.isCustom === true;
 
   return (
     <div

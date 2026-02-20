@@ -159,4 +159,36 @@ describe("PricingPage", () => {
 
     expect(screen.queryByText("No CC required")).not.toBeInTheDocument();
   });
+
+  it("Shows 'Most Popular' badge when plan.metadata.isMostPopular is true", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      {
+        ...makePlan("2", "pro", "Pro"),
+        metadata: { isMostPopular: true },
+      },
+      makePlan("3", "business", "Business"),
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("Most Popular")).toBeInTheDocument();
+  });
+
+  it("Does not show 'Most Popular' badge when plan.metadata.isMostPopular is false or missing", () => {
+    mockPricingData.items = [
+      makePlan("1", "starter", "Starter"),
+      {
+        ...makePlan("2", "pro", "Pro"),
+        metadata: { isMostPopular: false },
+      },
+      makePlan("3", "business", "Business"),
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
+  });
 });
