@@ -21,7 +21,7 @@ declare module "zudoku/react-query" {
   }
 }
 
-const BASE_URL = "https://api.zuploedge.com";
+const BASE_URL = process.env.ZUPLO_GATEWAY_URL || "https://api.zuploedge.com";
 
 const hasVariables = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value != null;
