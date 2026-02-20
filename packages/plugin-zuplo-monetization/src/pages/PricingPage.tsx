@@ -48,7 +48,7 @@ const PricingPage = ({
           <PricingCard
             key={plan.id}
             plan={plan}
-            isPopular={plan.metadata?.isPopular === true}
+            isPopular={plan.metadata?.isMostPopular === true}
             isSubscribed={subscriptions.items.some((subscription) =>
               ["active", "canceled"].includes(subscription.status),
             )}
