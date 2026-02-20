@@ -23,12 +23,24 @@ minimumReleaseAge: 4320
 
 minimumReleaseAgeExclude:
   - zudoku
-  - react-router@7.12.0
+  - glob
   - pagefind
-  - tar@7.5.7
-  - react@19.2.4
-  - react-dom@19.2.4
-  - react-is@19.2.4
-  - "@types/react@19.2.10"
-  - "@types/react-dom@19.2.4"
   - "@pagefind/*"
+  - tailwind-merge
+  - tailwindcss
+  - "@tailwindcss/*"
+  - lucide-react
+
+onlyBuiltDependencies:
+  - esbuild
+
+overrides:
+  "@supabase/auth-ui-react>react": "catalog:"
+  "@supabase/auth-ui-react>react-dom": "catalog:"
+  bs58: ">=6"
+  js-yaml: ">=4.1.1"
+  minimatch: ">=10.2.1"
+  qs: ">=6.14.1"
+
+patchedDependencies:
+  decode-named-character-reference@1.2.0: patches/decode-named-character-reference@1.2.0.patch

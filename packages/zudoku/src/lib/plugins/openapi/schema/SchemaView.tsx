@@ -10,7 +10,6 @@ import {
 import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { Markdown } from "../../../components/Markdown.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
-import { groupBy } from "../../../util/groupBy.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
@@ -106,7 +105,7 @@ export const SchemaView = ({
     "object" && <SchemaView schema={schema.additionalProperties} embedded />;
 
   if (schema.type === "object") {
-    const groupedProperties = groupBy(
+    const groupedProperties = Object.groupBy(
       Object.entries(schema.properties ?? {}),
       ([propertyName, property]) => {
         return property.deprecated
