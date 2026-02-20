@@ -9,9 +9,12 @@ import type {
 } from "../../core/plugins.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import invariant from "../../util/invariant.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
-const DEFAULT_API_KEY_ENDPOINT = `${process.env.ZUPLO_GATEWAY_URL || "https://api.zuploedge.com"}/v2/client`;
+const DEFAULT_GATEWAY_URL =
+  process.env.ZUPLO_GATEWAY_URL || "https://api.zuploedge.com";
+const DEFAULT_API_KEY_ENDPOINT = joinUrl(DEFAULT_GATEWAY_URL, "v2/client");
 
 export type ApiKeyService = {
   getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
