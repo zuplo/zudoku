@@ -21,7 +21,12 @@ declare module "zudoku/react-query" {
   }
 }
 
-const BASE_URL = "https://api.zuploedge.com";
+const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
+
+const getBaseUrl = (context?: ZudokuContext) => {
+  if (!context) return DEFAULT_GATEWAY_URL;
+  return context.env.ZUPLO_GATEWAY_SERVICE_URL || DEFAULT_GATEWAY_URL;
+};
 
 const hasVariables = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value != null;
@@ -42,7 +47,7 @@ export const queryClient = new QueryClient({
           throw new Error("URL is required");
         }
 
-        const request = new Request(`${BASE_URL}${url}`, {
+        const request = new Request(joinUrl(getBaseUrl(q.meta?.context), url), {
           ...q.meta?.request,
           headers: {
             "Content-Type": "application/json",
@@ -102,7 +107,7 @@ export const queryClient = new QueryClient({
             ? JSON.stringify(variables)
             : undefined);
 
-        const request = new Request(joinUrl(BASE_URL, url), {
+        const request = new Request(joinUrl(getBaseUrl(m.meta?.context), url), {
           ...init,
           method,
           body,
