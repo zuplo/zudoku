@@ -1,6 +1,41 @@
 import type { SchemaObject } from "../../../oas/graphql/index.js";
 import { isCircularRef } from "../schema/utils.js";
 
+const isIntegerSchema = (schema: SchemaObject): boolean =>
+  schema.type === "integer" ||
+  schema.format === "int32" ||
+  schema.format === "int64";
+
+const getNumberExample = (schema: SchemaObject): number => {
+  const min =
+    typeof schema.exclusiveMinimum === "number"
+      ? schema.exclusiveMinimum
+      : typeof schema.minimum === "number"
+        ? schema.minimum
+        : undefined;
+  const max =
+    typeof schema.exclusiveMaximum === "number"
+      ? schema.exclusiveMaximum
+      : typeof schema.maximum === "number"
+        ? schema.maximum
+        : undefined;
+
+  const offset = isIntegerSchema(schema) ? 1 : 0.1;
+  const minOffset = typeof schema.exclusiveMinimum === "number" ? offset : 0;
+  const maxOffset = typeof schema.exclusiveMaximum === "number" ? offset : 0;
+
+  if (min !== undefined && min >= 0) return min + minOffset;
+  if (max !== undefined && max <= 0) return max - maxOffset;
+  return 0;
+};
+
+const getStringExample = (schema: SchemaObject, name?: string): string => {
+  const base = name || "string";
+  const minLength = schema.minLength ?? 0;
+  if (base.length >= minLength) return base;
+  return base.padEnd(minLength, "a");
+};
+
 export const generateSchemaExample = (
   schema?: SchemaObject,
   name?: string,
@@ -10,12 +45,10 @@ export const generateSchemaExample = (
     return null;
   }
 
-  // Check for schema-level example first
   if (schema.example !== undefined) {
     return schema.example;
   }
 
-  // Then check for schema-level examples
   if (
     schema.examples &&
     typeof schema.examples === "object" &&
@@ -29,10 +62,18 @@ export const generateSchemaExample = (
     }
   }
 
-  // const is a strict constraint and takes precedence over examples
   if (schema.const !== undefined) {
     return schema.const;
   }
+
+  if (schema.default !== undefined) {
+    return schema.default;
+  }
+
+  // Resolve nullable array types (e.g. ["null", "string"]) to the non-null type
+  const schemaType = Array.isArray(schema.type)
+    ? (schema.type.find((t) => t !== "null") ?? schema.type[0])
+    : schema.type;
 
   if (
     schema.examples &&
@@ -42,35 +83,45 @@ export const generateSchemaExample = (
     return schema.examples[0];
   }
 
-  // For object schemas with properties
-  if (schema.type === "object" && schema.properties) {
+  if (schemaType === "object" && schema.properties) {
     // biome-ignore lint/suspicious/noExplicitAny: Allow any type
     const example: Record<string, any> = {};
 
     for (const [key, propSchema] of Object.entries(schema.properties)) {
       if (typeof propSchema === "object") {
-        example[key] = generateSchemaExample(propSchema as SchemaObject, key);
+        example[key] = generateSchemaExample(propSchema, key);
       }
     }
 
     return example;
   }
 
-  if (schema.type === "array") {
+  if (
+    schemaType === "object" &&
+    !schema.properties &&
+    schema.additionalProperties &&
+    typeof schema.additionalProperties === "object"
+  ) {
+    return { key: generateSchemaExample(schema.additionalProperties) };
+  }
+
+  if (schemaType === "array" && "items" in schema) {
     if (Array.isArray(schema.items)) {
       return schema.items.map((itemSchema) =>
-        generateSchemaExample(itemSchema as SchemaObject),
+        generateSchemaExample(itemSchema),
       );
     }
     if (schema.items) {
-      return [generateSchemaExample(schema.items as SchemaObject)];
+      return [generateSchemaExample(schema.items)];
     }
     return [];
   }
 
+  if (schemaType === "array") {
+    return [];
+  }
+
   if (schema.format !== undefined) {
-    // Partial implementation of JSON Schema format examples
-    // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-00#rfc.section.7.3
     switch (schema.format) {
       case "date-time":
         return "2024-08-25T15:00:00Z";
@@ -86,6 +137,25 @@ export const generateSchemaExample = (
         return "/path/to/resource";
       case "uuid":
         return "00000000-0000-0000-0000-000000000000";
+      case "ipv4":
+        return "192.168.1.1";
+      case "ipv6":
+        return "2001:0db8:85a3:0000:0000:8a2e:0370:7334";
+      case "hostname":
+        return "example.com";
+      case "password":
+        return "********";
+      case "byte":
+        return "U3dhZ2dlcg==";
+      case "binary":
+        return "<binary>";
+      case "duration":
+        return "P3D";
+      case "int32":
+      case "int64":
+      case "float":
+      case "double":
+        return getNumberExample(schema);
     }
   }
 
@@ -94,21 +164,21 @@ export const generateSchemaExample = (
   }
 
   if (schema.oneOf && schema.oneOf.length > 0) {
-    return generateSchemaExample(schema.oneOf[0]);
+    const nonNull = schema.oneOf.find((s) => s.type !== "null");
+    return generateSchemaExample(nonNull ?? schema.oneOf[0]);
   }
 
   if (schema.anyOf && schema.anyOf.length > 0) {
-    // Should likely be expanded to return a partial set of values, but it would require
-    // detection if being used within an array or a string type.
-    return generateSchemaExample(schema.anyOf[0]);
+    const nonNull = schema.anyOf.find((s) => s.type !== "null");
+    return generateSchemaExample(nonNull ?? schema.anyOf[0]);
   }
 
-  switch (schema.type) {
+  switch (schemaType) {
     case "string":
-      return name || "string";
+      return getStringExample(schema, name);
     case "number":
     case "integer":
-      return 0;
+      return getNumberExample(schema);
     case "boolean":
       return true;
     case "null":
