@@ -1,7 +1,7 @@
 import { SearchIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { isSearchPlugin } from "../core/plugins.js";
-import { detectOS } from "../util/detectOS.js";
+import { getOS } from "../util/os.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
@@ -55,10 +55,10 @@ export const Search = ({ className }: { className?: string }) => {
 };
 
 const KbdShortcut = () => {
-  const os = detectOS();
+  const os = getOS();
   return (
     <kbd className="absolute end-1.5 hidden h-5 select-none items-center gap-1 rounded-sm border bg-muted px-1.5 font-mono text-[11px] font-medium opacity-100 sm:flex">
-      {os === "macOS" ? "⌘" : "Ctrl"}+K
+      {os === "apple" ? "⌘" : "Ctrl"}+K
     </kbd>
   );
 };
