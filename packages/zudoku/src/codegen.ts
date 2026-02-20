@@ -48,7 +48,7 @@ const config: CodegenConfig = {
   },
   hooks: {
     afterAllFileWrite: [
-      "prettier --write",
+      "oxfmt",
       async (...files) => {
         await Promise.all(files.map(fixImports));
       },

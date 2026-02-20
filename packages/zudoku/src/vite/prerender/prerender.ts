@@ -163,9 +163,8 @@ export const prerender = async ({
 
   // Generate llms.txt files if markdown export is enabled
   if (config.docs) {
-    const { DocsConfigSchema } = await import(
-      "../../config/validators/validate.js"
-    );
+    const { DocsConfigSchema } =
+      await import("../../config/validators/validate.js");
     const { generateLlmsTxtFiles } = await import("../llms.js");
 
     const docsConfig = DocsConfigSchema.parse(config.docs);

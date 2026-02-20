@@ -80,16 +80,16 @@ export const SchemaPropertyItem = ({
         "items" in schema &&
         isComplexType(schema.items)) ||
       schema.additionalProperties) &&
-      !isArrayCircularRef(schema),
+    !isArrayCircularRef(schema),
   );
 
   const shouldRenderDescription = Boolean(
     schema.description ||
-      ("items" in schema && schema.items?.enum) ||
-      schema.const ||
-      schema.enum ||
-      schema.example !== undefined ||
-      schema.default !== undefined,
+    ("items" in schema && schema.items?.enum) ||
+    schema.const ||
+    schema.enum ||
+    schema.example !== undefined ||
+    schema.default !== undefined,
   );
 
   return (

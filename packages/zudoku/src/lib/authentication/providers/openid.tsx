@@ -4,13 +4,13 @@ import type { NavigateFunction } from "react-router";
 import type { OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError } from "../errors.js";

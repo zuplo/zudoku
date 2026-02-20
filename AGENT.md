@@ -3,13 +3,11 @@
 ## Build/Lint/Test Commands
 
 - **Check**: To check for all linting/formatting issues, run `pnpm check`
-  - For Markdown and YAML files, run `pnpm prettier --check '**/*.{md,mdx,yml,yaml}'` to check for
-    formatting errors
-  - For all other files, run `pnpm biome ci` to check for linting errors
+  - For formatting, run `pnpm fmt:check` (uses oxfmt)
+  - For linting, run `pnpm biome ci`
 - **Fix**: To fix all linting/formatting issues, run `pnpm fix`
-  - For Markdown and YAML files, run `pnpm prettier --write '**/*.{md,mdx,yml,yaml}'` to fix
-    formatting errors
-  - For all other files, run `pnpm biome check --write {files}` to fix linting errors
+  - For formatting, run `pnpm fmt` (uses oxfmt)
+  - For linting, run `pnpm biome check --write {files}`
   - Always use `--write` when running biome check to fix issues in one command
 - **Test**: `vitest run --typecheck` or for single test: `vitest run path/to/test.spec.ts`
 - **Dev**: Running example projects with `nx` (e.g., `nx run docs:dev`) will automatically rebuild

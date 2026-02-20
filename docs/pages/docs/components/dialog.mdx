@@ -151,8 +151,9 @@ The Dialog component consists of several sub-components:
 ### DialogContent
 
 ```ts
-interface DialogContentProps
-  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> {
+interface DialogContentProps extends React.ComponentPropsWithoutRef<
+  typeof DialogPrimitive.Content
+> {
   showCloseButton?: boolean; // Default: true
 }
 ```

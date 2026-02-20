@@ -6,7 +6,6 @@ import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
-
 import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
 import { useDeploymentName } from "../hooks/useDeploymentName";

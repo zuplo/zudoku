@@ -66,7 +66,7 @@ export const SubscriptionsList = ({
           isSelected={activeSubscriptionId === subscription.id}
           isExpired={Boolean(
             subscription.activeTo &&
-              new Date(subscription.activeTo) < new Date(),
+            new Date(subscription.activeTo) < new Date(),
           )}
         />
       ))}
@@ -79,7 +79,7 @@ export const SubscriptionsList = ({
             isSelected={activeSubscriptionId === subscription.id}
             isExpired={Boolean(
               subscription.activeTo &&
-                new Date(subscription.activeTo) < new Date(),
+              new Date(subscription.activeTo) < new Date(),
             )}
           />
         ))}
