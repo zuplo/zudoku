@@ -49,6 +49,21 @@ export const highlighter = await shikiPromise;
 
 type ThemesRecord = CodeOptionsMultipleThemes<BundledTheme>["themes"];
 
+export const parseMetaString = (str: string) => {
+  const matches = str.matchAll(
+    /([a-z0-9]+)(?:=(["'])(.*?)\2|=(.*?)(?:\s|$)|(?:\s|$))/gi,
+  );
+  return Object.fromEntries(
+    Array.from(matches).map((match) => {
+      const key = match[1];
+      const raw = match[3] ?? match[4];
+      const value =
+        raw == null || raw === "true" ? true : raw === "false" ? false : raw;
+      return [key, value];
+    }),
+  );
+};
+
 export const defaultHighlightOptions = {
   themes: {
     light: "github-light",
@@ -60,19 +75,7 @@ export const defaultHighlightOptions = {
   inline: "tailing-curly-colon",
   addLanguageClass: true,
   transformers: [transformerMetaHighlight(), transformerMetaWordHighlight()],
-  parseMetaString: (str) => {
-    // Matches key="value", key=value, or key attributes
-    const matches = str.matchAll(
-      /([a-z0-9]+)(?:=(["'])(.*?)\2|=(.*?)(?:\s|$)|(?:\s|$))/gi,
-    );
-    return Object.fromEntries(
-      Array.from(matches).map((match) => {
-        const key = match[1];
-        const value = match[3] || match[4] || true;
-        return [key, value];
-      }),
-    );
-  },
+  parseMetaString,
 } satisfies RehypeShikiCoreOptions;
 
 export const defaultLanguages: BundledLanguage[] = [
@@ -148,18 +151,27 @@ export const highlight = (
   code: string,
   lang = "text",
   themes: ThemesRecord = defaultHighlightOptions.themes,
+  meta?: string,
 ) => {
   const value = highlighter.codeToHast(code, {
     lang,
     ...defaultHighlightOptions,
     themes,
+    ...(meta && { meta: { __raw: meta } }),
   });
+
+  // Shiki always outputs <pre><code>...</code></pre>, but callers of this
+  // function (HighlightedCode, CodeTabs) provide their own wrapper so the
+  // <pre> is unwanted. We reuse rehypeCodeBlockPlugin to merge <pre> props
+  // onto <code>, then strip <pre> during JSX conversion.
+  rehypeCodeBlockPlugin()(value);
 
   return toJsxRuntime(value, {
     Fragment,
     jsx,
     jsxs,
     components: {
+      pre: (props) => props.children,
       code: (props) =>
         createElement("code", {
           ...props,

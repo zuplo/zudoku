@@ -1,9 +1,30 @@
 import { memo } from "react";
 import { useZudoku } from "../components/context/ZudokuContext.js";
-import { highlight } from "../shiki.js";
-import invariant from "../util/invariant.js";
+import { HIGHLIGHT_CODE_BLOCK_CLASS, highlight } from "../shiki.js";
 import { CodeBlock, type CodeBlockProps } from "./CodeBlock.js";
 import { EmbeddedCodeBlock } from "./EmbeddedCodeBlock.js";
+
+export const HighlightedCode = ({
+  code,
+  language,
+  meta,
+}: {
+  code: string;
+  language?: string;
+  meta?: string;
+}) => {
+  const { syntaxHighlighting } = useZudoku().options;
+  if (!syntaxHighlighting?.highlighter) {
+    return <code className={HIGHLIGHT_CODE_BLOCK_CLASS}>{code}</code>;
+  }
+  return highlight(
+    syntaxHighlighting.highlighter,
+    code,
+    language,
+    syntaxHighlighting.themes,
+    meta,
+  );
+};
 
 type SyntaxHighlightProps = CodeBlockProps &
   (
@@ -18,21 +39,12 @@ type SyntaxHighlightProps = CodeBlockProps &
 
 export const SyntaxHighlight = memo(
   ({ code, children, embedded, ...props }: SyntaxHighlightProps) => {
-    const { syntaxHighlighting } = useZudoku().options;
+    const Wrapper = embedded ? EmbeddedCodeBlock : CodeBlock;
 
-    invariant(syntaxHighlighting?.highlighter, "Highlighter not found");
-
-    const highlightedCode = highlight(
-      syntaxHighlighting.highlighter,
-      code ?? children,
-      props.language,
-      syntaxHighlighting.themes,
-    );
-
-    return embedded ? (
-      <EmbeddedCodeBlock {...props}>{highlightedCode}</EmbeddedCodeBlock>
-    ) : (
-      <CodeBlock {...props}>{highlightedCode}</CodeBlock>
+    return (
+      <Wrapper {...props}>
+        <HighlightedCode code={code ?? children} language={props.language} />
+      </Wrapper>
     );
   },
 );

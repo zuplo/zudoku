@@ -11,6 +11,7 @@ import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
 import { CodeBlock } from "../ui/CodeBlock.js";
+import { CodeTabPanel, CodeTabs } from "../ui/CodeTabs.js";
 import { Stepper } from "../ui/Stepper.js";
 import { SyntaxHighlight } from "../ui/SyntaxHighlight.js";
 import { cn } from "./cn.js";
@@ -91,6 +92,8 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
+  CodeTabs,
+  CodeTabPanel,
   pre: (props) => (
     <pre className={cn("not-prose my-4", props.className)} {...props} />
   ),
@@ -99,11 +102,12 @@ export const MdxComponents = {
     node: _node,
     children,
     title,
+    icon,
     inline,
     showLineNumbers,
     ...props
   }) => {
-    const match = className?.match(/language?-(\w+)/);
+    const match = className?.match(/language-(\w+)/);
 
     if (inline === "true" || inline === true) {
       return (
@@ -114,6 +118,7 @@ export const MdxComponents = {
     return (
       <CodeBlock
         language={match?.[1]}
+        icon={icon}
         showLanguageIndicator
         showLineNumbers={showLineNumbers}
         title={title}

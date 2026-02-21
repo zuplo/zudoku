@@ -213,7 +213,7 @@
 
   .shiki.not-inline .line {
     @apply block -mx-4 px-4;
-    width: calc(100% + --spacing(4));
+    width: calc(100% + --spacing(7));
     --highlighted-bg: hsl(from var(--shiki-light-bg) h s calc(l - 6));
   }
   .dark .shiki.not-inline .line {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import { ClientOnly, Link, useTheme } from "zudoku/components";
 import {
   ClipboardPasteIcon,
@@ -50,7 +50,7 @@ export const ThemeEditor = () => {
     return baseColors.find((c) => c.name === color);
   }, [color]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (activeColor) {
       Object.entries(activeColor.cssVars[resolvedTheme]).forEach(([key]) => {
         document.documentElement.style.setProperty(

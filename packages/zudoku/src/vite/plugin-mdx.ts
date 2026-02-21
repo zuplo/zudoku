@@ -18,6 +18,7 @@ import { getBuildConfig } from "../config/validators/BuildSchema.js";
 import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
 import rehypeExtractTocWithJsxExport from "./mdx/rehype-extract-toc-with-jsx-export.js";
 import rehypeExtractTocWithJsx from "./mdx/rehype-extract-toc-with-jsx.js";
+import { remarkCodeTabs } from "./mdx/remark-code-tabs.js";
 import { remarkInjectFilepath } from "./mdx/remark-inject-filepath.js";
 import { remarkLastModified } from "./mdx/remark-last-modified.js";
 import { remarkLinkRewrite } from "./mdx/remark-link-rewrite.js";
@@ -94,6 +95,7 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
     remarkMdxFrontmatter,
     remarkDirective,
     remarkDirectiveRehype,
+    remarkCodeTabs,
     [remarkLinkRewrite, config.basePath],
     [remarkNormalizeImageUrl, config.basePath],
     ...(config.build?.remarkPlugins ?? []),
