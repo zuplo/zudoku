@@ -154,6 +154,7 @@ export const components: Navigation = [
     type: "category",
     label: "Documentation",
     items: [
+      "docs/components/code-tabs",
       "docs/components/mermaid",
       "docs/components/playground",
       "docs/components/secret",

@@ -1,0 +1,179 @@
+---
+title: CodeTabs
+sidebar_icon: columns-2
+---
+
+A tabbed code block component that groups multiple code blocks into a single unified view. Useful
+for showing the same example in different languages or alternative commands for different package
+managers.
+
+:::note
+
+In MDX, the `CodeTabs` component is available by default and doesn't need an explicit import.
+
+:::
+
+## Usage
+
+Wrap multiple fenced code blocks with `<CodeTabs>` and they will render as tabs. Tab labels are
+automatically inferred from the code block language.
+
+<CodeTabs>
+
+```ts
+const greeting: string = "Hello, world!";
+console.log(greeting);
+```
+
+```js
+const greeting = "Hello, world!";
+console.log(greeting);
+```
+
+```py
+greeting = "Hello, world!"
+print(greeting)
+```
+
+</CodeTabs>
+
+````mdx
+<CodeTabs>
+
+```ts
+const greeting: string = "Hello, world!";
+console.log(greeting);
+```
+
+```js
+const greeting = "Hello, world!";
+console.log(greeting);
+```
+
+```py
+greeting = "Hello, world!"
+print(greeting)
+```
+
+</CodeTabs>
+````
+
+## Custom Labels
+
+Use the `title` meta attribute on each code block to set a custom tab label. This is especially
+useful when multiple code blocks share the same language.
+
+<CodeTabs>
+
+```sh /zudoku/ title="pnpm" showLineNumbers icon="pnpm"
+pnpm add zudoku
+```
+
+```sh title="npm" icon="npm"
+npm install zudoku
+```
+
+```sh title="yarn" icon="yarn"
+yarn add zudoku
+```
+
+</CodeTabs>
+
+````mdx
+<CodeTabs>
+
+```sh title="pnpm" icon="pnpm"
+pnpm add zudoku
+```
+
+```sh title="npm" icon="npm"
+npm install zudoku
+```
+
+```sh title="yarn" icon="yarn"
+yarn add zudoku
+```
+
+</CodeTabs>
+````
+
+## Synced Tabs
+
+Use the `syncKey` prop to keep multiple `CodeTabs` instances in sync. When a user selects a tab in
+one group, all groups with the same `syncKey` update to match. The selection is persisted to
+localStorage and synced across browser tabs.
+
+<div className="flex justify-center gap-4 *:flex-1">
+
+<CodeTabs syncKey="package-manager">
+```sh title="pnpm" icon="pnpm"
+pnpm run build
+```
+
+```sh title="npm" icon="npm"
+npm run build
+```
+
+</CodeTabs>
+
+<CodeTabs syncKey="package-manager">
+```sh title="pnpm" icon="pnpm"
+pnpm run build
+```
+
+```sh title="npm" icon="npm"
+npm run build
+```
+
+</CodeTabs>
+</div>
+
+````mdx
+<CodeTabs syncKey="package-manager">
+```sh title="pnpm" icon="pnpm"
+pnpm add zudoku
+```
+
+```sh title="npm" icon="npm"
+npm install zudoku
+```
+
+</CodeTabs>
+
+<!-- repeat above -->
+````
+
+## Programmatic Usage
+
+Usually it's recommended to use fenced code blocks in MDX files. However, when building reusable
+components (e.g. in your MDX component config), fenced code blocks aren't processed by the MDX
+pipeline. Use `CodeTabPanel` directly instead:
+
+```tsx
+import { CodeTabs, CodeTabPanel } from "zudoku/ui/CodeTabs";
+
+const InstallTabs = ({ pkg }: { pkg: string }) => (
+  <CodeTabs syncKey="package-manager">
+    <CodeTabPanel language="sh" title="pnpm" icon="pnpm" code={`pnpm add ${pkg}`} />
+    <CodeTabPanel language="sh" title="npm" icon="npm" code={`npm install ${pkg}`} />
+    <CodeTabPanel language="sh" title="yarn" icon="yarn" code={`yarn add ${pkg}`} />
+  </CodeTabs>
+);
+```
+
+### CodeTabPanel Props
+
+| Prop       | Type     | Description                                                     |
+| ---------- | -------- | --------------------------------------------------------------- |
+| `code`     | `string` | The code content to display. Required.                          |
+| `language` | `string` | Language for syntax highlighting and label inference.           |
+| `title`    | `string` | Custom tab label. Falls back to `language`.                     |
+| `icon`     | `string` | Override the language icon (e.g. `"pnpm"`, `"npm"`).            |
+| `meta`     | `string` | Raw meta string like in code blocks (e.g. `"showLineNumbers"`). |
+
+## Props
+
+| Prop       | Type      | Description                                                                                           |
+| ---------- | --------- | ----------------------------------------------------------------------------------------------------- |
+| `syncKey`  | `string`  | Sync selected tab across all `CodeTabs` with the same key. Persisted to localStorage and across tabs. |
+| `hideIcon` | `boolean` | Hide the language icon in tabs. Defaults to `false`.                                                  |
