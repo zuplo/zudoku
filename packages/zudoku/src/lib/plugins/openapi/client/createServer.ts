@@ -4,9 +4,6 @@ import type { OpenApiPluginOptions } from "../index.js";
 
 const map = new Map<string, number>();
 
-/**
- * Creates the GraphQL server
- */
 export const createServer = (config: OpenApiPluginOptions) =>
   createGraphQLServer({
     context: {

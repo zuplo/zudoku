@@ -2,16 +2,19 @@ import { ListTreeIcon } from "lucide-react";
 import {
   type CSSProperties,
   type PropsWithChildren,
+  Suspense,
+  lazy,
   useEffect,
   useRef,
   useState,
 } from "react";
 import type { TocEntry } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import { cn } from "../../util/cn.js";
-import { RichText } from "../../util/hastToJsx.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
 import { InlineCode } from "../InlineCode.js";
+
+const HastRichText = lazy(() => import("../../util/hastToJsx.js"));
 
 const DATA_ANCHOR_ATTR = "data-active";
 
@@ -36,9 +39,9 @@ const TocItem = ({
       )}
     >
       {item.rich ? (
-        <RichText overrides={{ code: InlineCode, pre: "pre" }}>
-          {item.rich}
-        </RichText>
+        <Suspense fallback={item.text}>
+          <HastRichText overrides={{ code: InlineCode, pre: "pre" }}>{item.rich}</HastRichText>
+        </Suspense>
       ) : (
         item.text
       )}

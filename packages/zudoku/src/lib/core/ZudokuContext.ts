@@ -3,7 +3,7 @@ import { createNanoEvents } from "nanoevents";
 import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
-import type { z } from "zod";
+import type { z } from "zod/mini";
 import type {
   Navigation,
   ResolvedNavigationRule,
@@ -105,7 +105,7 @@ export type ZudokuContextOptions = {
   overrides?: ComponentsContextType;
   protectedRoutes?: ProtectedRoutesInput;
   syntaxHighlighting?: {
-    highlighter: HighlighterCore;
+    highlighterPromise: Promise<HighlighterCore>;
     themes?: { light: BundledTheme; dark: BundledTheme };
   };
 };

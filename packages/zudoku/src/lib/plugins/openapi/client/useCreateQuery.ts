@@ -1,4 +1,3 @@
-import { stripIgnoredCharacters } from "graphql";
 import { use } from "react";
 import type { TypedDocumentString } from "../graphql/graphql.js";
 import type { GraphQLClient } from "./GraphQLClient.js";
@@ -20,7 +19,7 @@ export const createQuery = <TResult, TVariables>(
 ) => {
   return {
     queryFn: () => client.fetch(query, variables),
-    queryKey: [stripIgnoredCharacters(query.toString()), variables],
+    queryKey: [query.toString().replace(/\s+/g, "").trim(), variables],
   } as const;
 };
 

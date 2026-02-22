@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  CIRCULAR_REF,
-  handleCircularRefs,
-  SCHEMA_REF_PREFIX,
-} from "./circular.js";
+import { handleCircularRefs } from "./circular.js";
+import { CIRCULAR_REF, SCHEMA_REF_PREFIX } from "./constants.js";
 
 describe("handleCircularRefs", () => {
   it("should return primitives unchanged", () => {

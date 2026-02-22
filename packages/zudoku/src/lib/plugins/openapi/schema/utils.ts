@@ -1,7 +1,7 @@
 import {
   CIRCULAR_REF,
   SCHEMA_REF_PREFIX,
-} from "../../../oas/graphql/circular.js";
+} from "../../../oas/graphql/constants.js";
 import type {
   ArraySchemaObject,
   SchemaObject,
