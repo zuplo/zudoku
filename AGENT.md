@@ -7,8 +7,8 @@
   - For linting, run `pnpm biome ci`
 - **Fix**: To fix all linting/formatting issues, run `pnpm fix`
   - For formatting, run `pnpm fmt` (uses oxfmt)
-  - For linting, run `pnpm biome check --write {files}`
-  - Always use `--write` when running biome check to fix issues in one command
+  - For linting, run `pnpm biome lint --write {files}`
+  - Always use `--write` when running biome lint to fix issues in one command
 - **Test**: `vitest run --typecheck` or for single test: `vitest run path/to/test.spec.ts`
 - **Dev**: Running example projects with `nx` (e.g., `nx run docs:dev`) will automatically rebuild
   dependent packages as needed. Don't manually run `pnpm -F zudoku build` repeatedly.

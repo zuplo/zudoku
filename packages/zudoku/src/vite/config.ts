@@ -14,7 +14,8 @@ import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/validate.js";
-import { defaultHighlightOptions, defaultLanguages } from "../lib/shiki.js";
+import { defaultLanguages } from "../lib/shiki-constants.js";
+import { defaultHighlightOptions } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
@@ -81,42 +82,15 @@ export async function getViteConfig(
     hasLoggedCdnInfo = true;
   }
 
-  // These dependencies are listed explicitly to prevent cascading page reloads that occur during auto-discovery
+  // Shiki subpath imports are dynamic (based on user config) and need explicit listing.
   const zudokuIncludeOptimizedDeps = [
-    "@sindresorhus/slugify",
-    "@apidevtools/json-schema-ref-parser",
-    "@x0k/json-schema-merge",
-    "@x0k/json-schema-merge/lib/array",
-    "react-hook-form",
-    "cmdk",
-    "@radix-ui/react-tabs",
-    "@radix-ui/react-tooltip",
-    "@radix-ui/react-select",
-    "@radix-ui/react-popover",
-    "@radix-ui/react-checkbox",
-    "@radix-ui/react-label",
-    "@radix-ui/react-radio-group",
-    "@radix-ui/react-slot",
-    "@radix-ui/react-separator",
-    "@envelop/core",
-    "@pothos/core",
-    "graphql-yoga",
-    "graphql",
-    "graphql/index.js",
-    "graphql/error/index.js",
-    "openapi-types",
-    "@zudoku/httpsnippet",
-    "graphql-type-json",
-    "yaml",
-    "@clerk/clerk-js",
-    "@scalar/openapi-parser",
     ...(config.syntaxHighlighting?.languages ?? defaultLanguages).map(
-      (lang) => `@shikijs/langs/${lang}`,
+      (lang) => `zudoku/shiki/langs/${lang}`,
     ),
     ...Object.values(
       config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
-    ).map((theme) => `@shikijs/themes/${theme}`),
-  ].map((dep) => `zudoku > ${dep}`);
+    ).map((theme) => `zudoku/shiki/themes/${theme}`),
+  ];
 
   // We define public env vars as `process.env` vars because Vite only exposes them as `import.meta.env` vars
   const publicVarsProcessEnvDefine = Object.fromEntries(
@@ -148,6 +122,7 @@ export async function getViteConfig(
     customLogger: logger,
     envPrefix,
     resolve: {
+      dedupe: ["react", "react-dom"],
       alias: {
         "@mdx-js/react": import.meta.resolve("@mdx-js/react"),
       },
@@ -170,7 +145,7 @@ export async function getViteConfig(
     },
     ssr: {
       target: "node",
-      noExternal: ["@mdx-js/react"],
+      noExternal: ["zudoku", "@mdx-js/react"],
     },
     server: {
       middlewareMode: true,
@@ -205,7 +180,10 @@ export async function getViteConfig(
               ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
               : "zudoku/app/entry.client.tsx"
             : undefined,
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        external: [
+          joinUrl(config.basePath, "/pagefind/pagefind.js"),
+          "mermaid",
+        ],
       },
       chunkSizeWarningLimit: 1500,
     },
@@ -226,11 +204,7 @@ export async function getViteConfig(
       esbuildOptions: {
         target: "es2022",
       },
-      entries: [
-        configEnv.isSsrBuild
-          ? getAppServerEntryPath()
-          : getAppClientEntryPath(),
-      ],
+      entries: [path.posix.join(getModuleDir(), "src/{app,lib}/**")],
       include: [
         "react-dom/client",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
