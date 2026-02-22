@@ -31,14 +31,19 @@ const loadClerkCdn = (publishableKey: string): Promise<void> =>
       return;
     }
 
-    const pending = document.querySelector("script[data-clerk=loading]");
+    const pending = document.querySelector<HTMLScriptElement>(
+      "script[data-clerk=loading]",
+    );
+
     if (pending) {
-      pending.addEventListener("load", () => resolve());
-      pending.addEventListener("error", () =>
-        reject(new Error("Failed to load Clerk from CDN")),
+      pending.addEventListener("load", () => resolve(), { once: true });
+      pending.addEventListener(
+        "error",
+        () => reject(new Error("Failed to load Clerk from CDN")),
+        { once: true },
       );
       // Re-check in case load fired between querySelector and addEventListener
-      if ((pending as HTMLElement).dataset.clerk === "loaded") resolve();
+      if (pending.dataset.clerk === "loaded") resolve();
       return;
     }
 
@@ -54,7 +59,10 @@ const loadClerkCdn = (publishableKey: string): Promise<void> =>
       script.dataset.clerk = "loaded";
       resolve();
     };
-    script.onerror = () => reject(new Error("Failed to load Clerk from CDN"));
+    script.onerror = () => {
+      script.dataset.clerk = "error";
+      reject(new Error("Failed to load Clerk from CDN"));
+    };
     document.head.appendChild(script);
   });
 
@@ -71,14 +79,23 @@ const clerkAuth: AuthenticationProviderInitializer<
     if (typeof window === "undefined") return undefined;
     await loadClerkCdn(clerkPubKey);
     const clerk = (window as { Clerk?: Clerk }).Clerk;
-    await clerk?.load();
+    if (!clerk) {
+      throw new Error("Clerk script loaded but window.Clerk is not available");
+    }
+    await clerk.load();
     return clerk;
   })();
 
-  async function getAccessToken() {
+  const getClerk = async () => {
     const clerk = await clerkInstance;
+    if (!clerk) throw new Error("Clerk is not available");
+    return clerk;
+  };
 
-    if (!clerk?.session) {
+  async function getAccessToken() {
+    const clerk = await getClerk();
+
+    if (!clerk.session) {
       throw new Error("No session available");
     }
     const response = await clerk.session.getToken({
@@ -113,7 +130,11 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   async function refreshUserProfile() {
-    const clerk = await clerkInstance.catch(() => undefined);
+    const clerk = await clerkInstance.catch((e) => {
+      // biome-ignore lint/suspicious/noConsole: Intentional warning
+      console.warn("Clerk unavailable during profile refresh:", e);
+      return undefined;
+    });
     if (!clerk) return false;
 
     await clerk.session?.user?.reload();
@@ -194,18 +215,18 @@ const clerkAuth: AuthenticationProviderInitializer<
     getAccessToken,
     signRequest,
     signOut: async () => {
-      const clerk = await clerkInstance;
-      useAuthState.getState().setLoggedOut();
-      await clerk?.signOut({
+      const clerk = await getClerk();
+      await clerk.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
       });
+      useAuthState.getState().setLoggedOut();
     },
     signIn: async (
       _: AuthActionContext,
       { redirectTo }: { redirectTo?: string } = {},
     ) => {
-      const clerk = await clerkInstance;
-      await clerk?.redirectToSignIn({
+      const clerk = await getClerk();
+      await clerk.redirectToSignIn({
         signInForceRedirectUrl: redirectToAfterSignIn
           ? window.location.origin + redirectToAfterSignIn
           : redirectTo,
@@ -218,8 +239,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       _: AuthActionContext,
       { redirectTo }: { redirectTo?: string } = {},
     ) => {
-      const clerk = await clerkInstance;
-      await clerk?.redirectToSignUp({
+      const clerk = await getClerk();
+      await clerk.redirectToSignUp({
         signInForceRedirectUrl: redirectToAfterSignIn
           ? window.location.origin + redirectToAfterSignIn
           : redirectTo,

@@ -1,4 +1,15 @@
+import { z } from "zod/mini";
 import { parseBuildConfig } from "./ZuploBuildConfig.js";
+
+const formatError = (error: unknown) => {
+  if (error instanceof SyntaxError) {
+    return "ZUPLO_BUILD_CONFIG contains invalid JSON";
+  }
+  if (error instanceof z.core.$ZodError) {
+    return `ZUPLO_BUILD_CONFIG is invalid:\n${z.prettifyError(error)}`;
+  }
+  return `ZUPLO_BUILD_CONFIG is invalid: ${error}`;
+};
 
 const getZuploBuildConfig = () => {
   if (!process.env.ZUPLO_BUILD_CONFIG) return undefined;
@@ -8,12 +19,7 @@ const getZuploBuildConfig = () => {
     return parseBuildConfig(parsed);
   } catch (error) {
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
-    console.error(
-      error instanceof SyntaxError
-        ? "ZUPLO_BUILD_CONFIG contains invalid JSON. This is a reserved env var."
-        : "ZUPLO_BUILD_CONFIG is invalid.",
-      error,
-    );
+    console.error(formatError(error));
     return undefined;
   }
 };

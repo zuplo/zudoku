@@ -19,7 +19,7 @@ export const createQuery = <TResult, TVariables>(
 ) => {
   return {
     queryFn: () => client.fetch(query, variables),
-    queryKey: [query.toString().replace(/\s+/g, "").trim(), variables],
+    queryKey: [query.toString().replace(/\s+/g, " ").trim(), variables],
   } as const;
 };
 

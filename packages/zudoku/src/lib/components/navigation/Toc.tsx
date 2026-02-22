@@ -40,7 +40,9 @@ const TocItem = ({
     >
       {item.rich ? (
         <Suspense fallback={item.text}>
-          <HastRichText overrides={{ code: InlineCode, pre: "pre" }}>{item.rich}</HastRichText>
+          <HastRichText overrides={{ code: InlineCode, pre: "pre" }}>
+            {item.rich}
+          </HastRichText>
         </Suspense>
       ) : (
         item.text

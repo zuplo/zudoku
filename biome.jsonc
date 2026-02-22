@@ -58,8 +58,24 @@
       }
     }
   },
-
   "overrides": [
+    {
+      "includes": ["packages/zudoku/src/lib/**", "packages/zudoku/src/app/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "zod": "Use zod/mini instead to keep the client bundle small."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     {
       "includes": ["packages/zudoku/src/cli/**"],
       "linter": {
