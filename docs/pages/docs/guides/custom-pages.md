@@ -18,7 +18,7 @@ project. Let's create the `<MyCustomPage />` component as an example.
 
 From the root of your project run this command:
 
-```command
+```bash
 touch src/MyCustomPage.tsx
 ```
 
@@ -52,7 +52,7 @@ In the [Zudoku Configuration](../configuration/overview.md) you will need to do 
 In order to embed `jsx`/`tsx` components into your Zudoku config, you will need to change your file
 extension from `ts` to `tsx` (or `js` to `jsx` if not using TypeScript).
 
-```fs
+```
 zudoku.config.ts -> zudoku.config.tsx
 ```
 

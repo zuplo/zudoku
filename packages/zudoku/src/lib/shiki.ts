@@ -44,16 +44,20 @@ type ThemesRecord = CodeOptionsMultipleThemes<BundledTheme>["themes"];
 const warnedLanguages = new Set<string>();
 
 const warnUnloadedLanguage = (lang: string, highlighter: HighlighterCore) => {
+  const resolved = highlighter.resolveLangAlias(lang);
   if (
     warnedLanguages.has(lang) ||
-    highlighter.getLoadedLanguages().includes(lang)
+    resolved === "ansi" ||
+    resolved === "text" ||
+    highlighter.getLoadedLanguages().includes(resolved)
   )
     return;
   warnedLanguages.add(lang);
   // biome-ignore lint/suspicious/noConsole: Intentional warning
   console.warn(
     `Language "${lang}" is not loaded for syntax highlighting. ` +
-      `Add it to \`syntaxHighlighting.languages\` in your Zudoku config. Falling back to \`text\`.`,
+      `Add it to \`syntaxHighlighting.languages\` in your config. Falling back to plain text.\n` +
+      `See https://zudoku.dev/docs/markdown/code-blocks#configuration`,
   );
 };
 
@@ -139,7 +143,8 @@ export const highlight = (
   themes: ThemesRecord = defaultHighlightOptions.themes,
   meta?: string,
 ) => {
-  const effectiveLang = highlighter.getLoadedLanguages().includes(lang)
+  const resolved = highlighter.resolveLangAlias(lang);
+  const effectiveLang = highlighter.getLoadedLanguages().includes(resolved)
     ? lang
     : "text";
 
