@@ -15,7 +15,10 @@ import { EXIT, visit } from "unist-util-visit";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { getBuildConfig } from "../config/validators/BuildSchema.js";
-import { createConfiguredShikiRehypePlugins } from "../lib/shiki.js";
+import {
+  createConfiguredShikiRehypePlugins,
+  highlighterPromise,
+} from "../lib/shiki.js";
 import rehypeExtractTocWithJsxExport from "./mdx/rehype-extract-toc-with-jsx-export.js";
 import rehypeExtractTocWithJsx from "./mdx/rehype-extract-toc-with-jsx.js";
 import { remarkCodeTabs } from "./mdx/remark-code-tabs.js";
@@ -81,6 +84,7 @@ const rehypeExcerptWithMdxExport = () => (tree: HastRoot) => {
 const viteMdxPlugin = async (): Promise<Plugin> => {
   const config = getCurrentConfig();
   const buildConfig = await getBuildConfig();
+  const highlighter = await highlighterPromise;
 
   const defaultRemarkPlugins = [
     remarkStaticGeneration,
@@ -114,7 +118,10 @@ const viteMdxPlugin = async (): Promise<Plugin> => {
     rehypeNormalizeMdxImages,
     rehypeMdxImportMedia,
     rehypeMetaAsAttributes,
-    ...createConfiguredShikiRehypePlugins(config.syntaxHighlighting?.themes),
+    ...createConfiguredShikiRehypePlugins(
+      highlighter,
+      config.syntaxHighlighting?.themes,
+    ),
     ...(config.build?.rehypePlugins ?? []),
   ] satisfies PluggableList;
 

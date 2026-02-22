@@ -336,7 +336,7 @@ export const ResponseTab = ({
                 ? "typescript"
                 : view === "raw"
                   ? jsonContent
-                    ? "plain"
+                    ? "text"
                     : detectedLanguage
                   : "json"
             }

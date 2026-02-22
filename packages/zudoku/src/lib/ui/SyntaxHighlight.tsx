@@ -1,5 +1,7 @@
 import { memo } from "react";
 import { useZudoku } from "../components/context/ZudokuContext.js";
+import { useHighlighter } from "../hooks/useHighlighter.js";
+import { highlight } from "../shiki.js";
 import { HIGHLIGHT_CODE_BLOCK_CLASS, highlight } from "../shiki.js";
 import { CodeBlock, type CodeBlockProps } from "./CodeBlock.js";
 import { EmbeddedCodeBlock } from "./EmbeddedCodeBlock.js";
@@ -14,14 +16,13 @@ export const HighlightedCode = ({
   meta?: string;
 }) => {
   const { syntaxHighlighting } = useZudoku().options;
-  if (!syntaxHighlighting?.highlighter) {
-    return <code className={HIGHLIGHT_CODE_BLOCK_CLASS}>{code}</code>;
-  }
+  const highlighter = useHighlighter();
+
   return highlight(
-    syntaxHighlighting.highlighter,
+    highlighter,
     code,
     language,
-    syntaxHighlighting.themes,
+    syntaxHighlighting?.themes,
     meta,
   );
 };
@@ -50,3 +51,5 @@ export const SyntaxHighlight = memo(
 );
 
 SyntaxHighlight.displayName = "SyntaxHighlight";
+
+export default SyntaxHighlight;

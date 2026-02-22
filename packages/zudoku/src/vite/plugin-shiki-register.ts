@@ -1,10 +1,7 @@
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
-import {
-  defaultHighlightOptions,
-  defaultLanguages,
-  highlighter,
-} from "../lib/shiki.js";
+import { defaultLanguages } from "../lib/shiki-constants.js";
+import { defaultHighlightOptions, highlighterPromise } from "../lib/shiki.js";
 
 export const viteShikiRegisterPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-shiki-register";
@@ -27,6 +24,8 @@ export const viteShikiRegisterPlugin = (): Plugin => {
       const themes = Object.values(
         config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
       );
+
+      const highlighter = await highlighterPromise;
 
       await Promise.all([
         highlighter.loadTheme(

@@ -10,44 +10,52 @@ import { toJsxRuntime } from "hast-util-to-jsx-runtime";
 import { createElement, Fragment } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
 import type {
-  BundledLanguage,
   BundledTheme,
   CodeOptionsMultipleThemes,
   HighlighterCore,
 } from "shiki";
-import { createHighlighterCore } from "shiki/core";
+import { getSingletonHighlighterCore } from "shiki/core";
 import { createJavaScriptRegexEngine } from "shiki/engine/javascript";
 import type { Pluggable } from "unified";
 import { visit } from "unist-util-visit";
+import { HIGHLIGHT_CODE_BLOCK_CLASS } from "./shiki-constants.js";
 import { cn } from "./util/cn.js";
 
-export const HIGHLIGHT_CODE_BLOCK_CLASS =
-  "overflow-x-auto scrollbar not-inline";
+export {
+  HIGHLIGHT_CODE_BLOCK_CLASS,
+  defaultLanguages,
+} from "./shiki-constants.js";
 
-const engine = createJavaScriptRegexEngine({ forgiving: true });
-
-const shikiPromise = import.meta.hot?.data?.shiki
-  ? import.meta.hot.data.shiki
-  : createHighlighterCore({
-      engine,
-      langAlias: {
-        markup: "html",
-        svg: "xml",
-        mathml: "xml",
-        atom: "xml",
-        ssml: "xml",
-        rss: "xml",
-        webmanifest: "json",
-      },
-    });
-
-if (import.meta.hot?.data) {
-  import.meta.hot.data.shiki = shikiPromise;
-}
-
-export const highlighter = await shikiPromise;
+export const highlighterPromise = getSingletonHighlighterCore({
+  engine: createJavaScriptRegexEngine({ forgiving: true }),
+  langAlias: {
+    markup: "html",
+    svg: "xml",
+    mathml: "xml",
+    atom: "xml",
+    ssml: "xml",
+    rss: "xml",
+    webmanifest: "json",
+  },
+});
 
 type ThemesRecord = CodeOptionsMultipleThemes<BundledTheme>["themes"];
+
+const warnedLanguages = new Set<string>();
+
+const warnUnloadedLanguage = (lang: string, highlighter: HighlighterCore) => {
+  if (
+    warnedLanguages.has(lang) ||
+    highlighter.getLoadedLanguages().includes(lang)
+  )
+    return;
+  warnedLanguages.add(lang);
+  // biome-ignore lint/suspicious/noConsole: Intentional warning
+  console.warn(
+    `Language "${lang}" is not loaded for syntax highlighting. ` +
+      `Add it to \`syntaxHighlighting.languages\` in your Zudoku config. Falling back to \`text\`.`,
+  );
+};
 
 export const parseMetaString = (str: string) => {
   const matches = str.matchAll(
@@ -78,43 +86,6 @@ export const defaultHighlightOptions = {
   parseMetaString,
 } satisfies RehypeShikiCoreOptions;
 
-export const defaultLanguages: BundledLanguage[] = [
-  "shellscript",
-  "javascript",
-  "jsx",
-  "typescript",
-  "tsx",
-  "graphql",
-  "jsonc",
-  "json",
-  "python",
-  "java",
-  "go",
-  "csharp",
-  "kotlin",
-  "objective-c",
-  "php",
-  "ruby",
-  "swift",
-  "css",
-  "html",
-  "xml",
-  "yaml",
-  "toml",
-  "rust",
-  "markdown",
-  "mdx",
-  "zig",
-  "scala",
-  "dart",
-  "ocaml",
-  "c",
-  "cpp",
-  "common-lisp",
-  "elixir",
-  "powershell",
-];
-
 const rehypeCodeBlockPlugin = () => (tree: Root) => {
   visit(tree, "element", (node, _index, parent) => {
     if (node.tagName !== "code") return;
@@ -134,10 +105,25 @@ const rehypeCodeBlockPlugin = () => (tree: Root) => {
   });
 };
 
+const rehypeWarnUnloadedLanguages =
+  (highlighter: HighlighterCore) => () => (tree: Root) => {
+    visit(tree, "element", (node) => {
+      if (!node.properties.className) return;
+      if (node.tagName !== "code" && node.tagName !== "pre") return;
+
+      const lang = (node.properties.className as string[] | undefined)
+        ?.find((c) => c.startsWith("language-"))
+        ?.slice("language-".length);
+
+      if (lang) warnUnloadedLanguage(lang, highlighter);
+    });
+  };
+
 export const createConfiguredShikiRehypePlugins = (
+  highlighterInstance: HighlighterCore,
   themes: ThemesRecord = defaultHighlightOptions.themes,
-  highlighterInstance: HighlighterCore = highlighter,
 ) => [
+  rehypeWarnUnloadedLanguages(highlighterInstance),
   [
     rehypeShikiFromHighlighter,
     highlighterInstance,
@@ -153,8 +139,14 @@ export const highlight = (
   themes: ThemesRecord = defaultHighlightOptions.themes,
   meta?: string,
 ) => {
+  const effectiveLang = highlighter.getLoadedLanguages().includes(lang)
+    ? lang
+    : "text";
+
+  if (effectiveLang !== lang) warnUnloadedLanguage(lang, highlighter);
+
   const value = highlighter.codeToHast(code, {
-    lang,
+    lang: effectiveLang,
     ...defaultHighlightOptions,
     themes,
     ...(meta && { meta: { __raw: meta } }),

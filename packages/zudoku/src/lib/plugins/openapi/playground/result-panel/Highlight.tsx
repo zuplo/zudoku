@@ -1,6 +1,6 @@
 import { useZudoku } from "../../../../components/context/ZudokuContext.js";
+import { useHighlighter } from "../../../../hooks/useHighlighter.js";
 import { highlight } from "../../../../shiki.js";
-import invariant from "../../../../util/invariant.js";
 
 export const Highlight = ({
   code,
@@ -10,17 +10,14 @@ export const Highlight = ({
   | { code?: string; children?: never; language?: string }
   | { code?: never; children: string; language: string }) => {
   const { syntaxHighlighting } = useZudoku().options;
+  const highlighter = useHighlighter();
 
-  invariant(syntaxHighlighting?.highlighter, "Highlighter not found");
-
-  const highlightedCode = highlight(
-    syntaxHighlighting.highlighter,
+  return highlight(
+    highlighter,
     code ?? children ?? "",
     language,
-    syntaxHighlighting.themes,
+    syntaxHighlighting?.themes,
   );
-
-  return highlightedCode;
 };
 
 Highlight.displayName = "Highlight";
