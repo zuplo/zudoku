@@ -1,4 +1,3 @@
-import slugify from "@sindresorhus/slugify";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { ChevronRightIcon } from "lucide-react";
@@ -11,6 +10,7 @@ import {
 import { Heading } from "../../components/Heading.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
+import { slugify } from "../../util/slugify.js";
 import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";

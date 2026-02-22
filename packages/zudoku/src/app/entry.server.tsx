@@ -13,10 +13,19 @@ import {
 import "vite/modulepreload-polyfill";
 import { BootstrapStatic, ServerError } from "zudoku/__internal";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
+import { highlighterPromise } from "../lib/shiki.js";
 import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
 
+// Statically importing shiki.ts here ensures it's in the SSR bundle.
+// main.tsx dynamically imports it instead to enable lazy loading on the client.
+await import("virtual:zudoku-shiki-register").then(
+  async ({ registerShiki }) => {
+    const highlighter = await highlighterPromise;
+    await registerShiki(highlighter);
+  },
+);
 export const render = async ({
   template,
   request: baseRequest,

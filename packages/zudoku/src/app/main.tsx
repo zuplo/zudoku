@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import type { HighlighterCore } from "shiki";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -13,7 +14,6 @@ import {
 } from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
-import { registerShiki } from "virtual:zudoku-shiki-register";
 import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
@@ -28,12 +28,17 @@ import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
-import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
 import "./main.css";
 import "./polyfills.js";
 
-await registerShiki(highlighter);
+export const shikiReady: Promise<HighlighterCore> =
+  import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
+    const highlighter = await highlighterPromise;
+    const { registerShiki } = await import("virtual:zudoku-shiki-register");
+    await registerShiki(highlighter);
+    return highlighter;
+  });
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -70,7 +75,7 @@ export const convertZudokuConfigToOptions = (
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
-      highlighter,
+      highlighterPromise: shikiReady,
       themes: config.syntaxHighlighting?.themes,
     },
   };

@@ -11,6 +11,7 @@ import { SignIn } from "../components/SignIn.js";
 import { SignOut } from "../components/SignOut.js";
 import { SignUp } from "../components/SignUp.js";
 import { type UserProfile, useAuthState } from "../state.js";
+import { getClerkFrontendApi } from "./util.js";
 
 export type ClerkProviderData = {
   type: "clerk";
@@ -23,6 +24,40 @@ declare module "../state.js" {
   }
 }
 
+const loadClerkCdn = (publishableKey: string): Promise<void> =>
+  new Promise((resolve, reject) => {
+    if (document.querySelector("script[data-clerk=loaded]")) {
+      resolve();
+      return;
+    }
+
+    const pending = document.querySelector("script[data-clerk=loading]");
+    if (pending) {
+      pending.addEventListener("load", () => resolve());
+      pending.addEventListener("error", () =>
+        reject(new Error("Failed to load Clerk from CDN")),
+      );
+      // Re-check in case load fired between querySelector and addEventListener
+      if ((pending as HTMLElement).dataset.clerk === "loaded") resolve();
+      return;
+    }
+
+    const frontendApiUrl = getClerkFrontendApi(publishableKey);
+
+    const script = document.createElement("script");
+    script.src = `https://${frontendApiUrl}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+    script.async = true;
+    script.crossOrigin = "anonymous";
+    script.dataset.clerkPublishableKey = publishableKey;
+    script.dataset.clerk = "loading";
+    script.onload = () => {
+      script.dataset.clerk = "loaded";
+      resolve();
+    };
+    script.onerror = () => reject(new Error("Failed to load Clerk from CDN"));
+    document.head.appendChild(script);
+  });
+
 const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
 > = ({
@@ -32,23 +67,21 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignUp,
   redirectToAfterSignIn,
 }): AuthenticationPlugin & ZudokuPlugin => {
-  let clerkApi: Clerk | undefined;
-  const ensureLoaded = (async () => {
-    if (typeof window === "undefined") return;
-    const { Clerk } = await import("@clerk/clerk-js");
-    clerkApi = new Clerk(clerkPubKey);
-
-    await clerkApi.load();
-
-    return clerkApi;
+  const clerkInstance = (async () => {
+    if (typeof window === "undefined") return undefined;
+    await loadClerkCdn(clerkPubKey);
+    const clerk = (window as { Clerk?: Clerk }).Clerk;
+    await clerk?.load();
+    return clerk;
   })();
 
   async function getAccessToken() {
-    await ensureLoaded;
-    if (!clerkApi?.session) {
+    const clerk = await clerkInstance;
+
+    if (!clerk?.session) {
       throw new Error("No session available");
     }
-    const response = await clerkApi.session.getToken({
+    const response = await clerk.session.getToken({
       template: jwtTemplateName,
     });
     if (!response) {
@@ -60,31 +93,28 @@ const clerkAuth: AuthenticationProviderInitializer<
   async function getUserProfile(
     clerk: Clerk,
   ): Promise<UserProfile | undefined> {
-    if (!clerk.session?.user) {
-      return undefined;
-    }
+    const user = clerk.session?.user;
+    if (!user) return undefined;
 
-    const verifiedEmail = clerk.session?.user?.emailAddresses.find(
+    const verifiedEmail = user.emailAddresses.find(
       (email) => email.verification.status === "verified",
     );
 
     return {
-      sub: clerk.session?.user?.id ?? "",
+      sub: user.id ?? "",
       email:
         verifiedEmail?.emailAddress ??
-        clerk.session?.user?.emailAddresses[0]?.emailAddress ??
+        user.emailAddresses[0]?.emailAddress ??
         "",
-      name: clerk.session?.user?.fullName ?? "",
+      name: user.fullName ?? "",
       emailVerified: !!verifiedEmail?.emailAddress,
-      pictureUrl: clerk.session?.user?.imageUrl ?? "",
+      pictureUrl: user.imageUrl ?? "",
     };
   }
 
   async function refreshUserProfile() {
-    const clerk = await ensureLoaded;
-    if (!clerk) {
-      return false;
-    }
+    const clerk = await clerkInstance.catch(() => undefined);
+    if (!clerk) return false;
 
     await clerk.session?.user?.reload();
 
@@ -114,25 +144,12 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   return {
-    getRoutes: () => {
-      return [
-        {
-          path: "/signout",
-          element: <SignOut />,
-        },
-        {
-          path: "/signin",
-          element: <SignIn />,
-        },
-        {
-          path: "/signup",
-          element: <SignUp />,
-        },
-      ];
-    },
-
+    getRoutes: () => [
+      { path: "/signout", element: <SignOut /> },
+      { path: "/signin", element: <SignIn /> },
+      { path: "/signup", element: <SignUp /> },
+    ],
     refreshUserProfile,
-
     getProfileMenuItems() {
       return [
         {
@@ -144,11 +161,16 @@ const clerkAuth: AuthenticationProviderInitializer<
       ];
     },
     initialize: async () => {
-      const clerk = await ensureLoaded;
-
-      if (!clerk) {
+      let clerk: Clerk | undefined;
+      try {
+        clerk = await clerkInstance;
+      } catch (e) {
+        // biome-ignore lint/suspicious/noConsole: Intentional error logging
+        console.error("Clerk failed to initialize:", e);
         return;
       }
+
+      if (!clerk) return;
 
       if (clerk.session) {
         const profile = await getUserProfile(clerk);
@@ -172,9 +194,9 @@ const clerkAuth: AuthenticationProviderInitializer<
     getAccessToken,
     signRequest,
     signOut: async () => {
-      await ensureLoaded;
+      const clerk = await clerkInstance;
       useAuthState.getState().setLoggedOut();
-      await clerkApi?.signOut({
+      await clerk?.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
       });
     },
@@ -182,8 +204,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       _: AuthActionContext,
       { redirectTo }: { redirectTo?: string } = {},
     ) => {
-      await ensureLoaded;
-      await clerkApi?.redirectToSignIn({
+      const clerk = await clerkInstance;
+      await clerk?.redirectToSignIn({
         signInForceRedirectUrl: redirectToAfterSignIn
           ? window.location.origin + redirectToAfterSignIn
           : redirectTo,
@@ -196,8 +218,8 @@ const clerkAuth: AuthenticationProviderInitializer<
       _: AuthActionContext,
       { redirectTo }: { redirectTo?: string } = {},
     ) => {
-      await ensureLoaded;
-      await clerkApi?.redirectToSignUp({
+      const clerk = await clerkInstance;
+      await clerk?.redirectToSignUp({
         signInForceRedirectUrl: redirectToAfterSignIn
           ? window.location.origin + redirectToAfterSignIn
           : redirectTo,

@@ -1,5 +1,4 @@
 import { useMDXComponents } from "@mdx-js/react";
-import slugify from "@sindresorhus/slugify";
 import { Helmet } from "@zudoku/react-helmet-async";
 import {
   CheckIcon,
@@ -29,6 +28,7 @@ import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
+import { slugify } from "../../util/slugify.js";
 import { ChatGPTLogo } from "./assets/ChatGPTLogo.js";
 import { ClaudeLogo } from "./assets/ClaudeLogo.js";
 import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
