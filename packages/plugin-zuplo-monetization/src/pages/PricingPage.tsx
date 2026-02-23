@@ -44,7 +44,7 @@ const PricingPage = ({
         </p>
       </div>
       <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
-        {pricingTable.items.slice(0, 4).map((plan) => (
+        {pricingTable.items.map((plan) => (
           <PricingCard
             key={plan.id}
             plan={plan}
