@@ -16,7 +16,7 @@ export const SignUp = () => {
   const signup = useLatest(auth.signup);
 
   useEffect(() => {
-    void signup.current();
+    void signup.current({ redirectTo: "/" });
   }, [signup]);
 
   return (

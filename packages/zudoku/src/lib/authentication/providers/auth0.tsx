@@ -69,6 +69,7 @@ class Auth0AuthenticationProvider
       if (idToken) {
         logoutUrl.searchParams.set("id_token_hint", idToken);
       }
+      logoutUrl.searchParams.set("client_id", this.client.client_id);
       logoutUrl.searchParams.set(
         "post_logout_redirect_uri",
         redirectUrl.toString(),
