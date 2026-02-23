@@ -74,7 +74,7 @@ export const Endpoint = () => {
           }))}
         />
       ) : (
-        <InlineCode className="text-xs px-2 py-1.5" selectOnClick>
+        <InlineCode className="text-xs px-2 py-1.5">
           {firstServer.url}
         </InlineCode>
       )}

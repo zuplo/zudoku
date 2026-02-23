@@ -49,8 +49,14 @@ const convertNode = (
   return toJsxRuntime(node, { Fragment, jsx, jsxs, components });
 };
 
-export const RichText = ({ children }: { children: RootContent[] }) => {
-  const components = useMDXComponents();
+export const RichText = ({
+  children,
+  overrides,
+}: {
+  children: RootContent[];
+  overrides?: MDXComponents;
+}) => {
+  const components = useMDXComponents(overrides);
 
   return children.map((node, i) => (
     // biome-ignore lint/suspicious/noArrayIndexKey: Stable content from markdown AST
