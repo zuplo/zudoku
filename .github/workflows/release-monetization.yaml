@@ -65,7 +65,7 @@ jobs:
 
       - name: Publish
         working-directory: packages/plugin-zuplo-monetization
-        run: pnpm publish --provenance --access public --tag latest
+        run: pnpm publish --provenance --access public --tag latest --no-git-checks
 
       - name: Commit and tag
         run: |
