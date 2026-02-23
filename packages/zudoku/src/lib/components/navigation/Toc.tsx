@@ -11,6 +11,7 @@ import { cn } from "../../util/cn.js";
 import { RichText } from "../../util/hastToJsx.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
+import { InlineCode } from "../InlineCode.js";
 
 const DATA_ANCHOR_ATTR = "data-active";
 
@@ -34,7 +35,13 @@ const TocItem = ({
           : "hover:text-accent-foreground text-muted-foreground",
       )}
     >
-      {item.rich ? <RichText>{item.rich}</RichText> : item.text}
+      {item.rich ? (
+        <RichText overrides={{ code: InlineCode, pre: "pre" }}>
+          {item.rich}
+        </RichText>
+      ) : (
+        item.text
+      )}
     </AnchorLink>
     {children}
   </li>
@@ -88,7 +95,7 @@ export const Toc = ({ entries }: { entries: TocEntry[] }) => {
         <div className="absolute inset-0 end-auto bg-border w-[1.5px]" />
         <div
           className={cn(
-            "absolute start-0 -translate-y-1 h-6 w-[2.5px] bg-primary",
+            "absolute inset-s-0 -translate-y-1 h-6 w-[2.5px] bg-primary",
             paintedOnce.current &&
               "ease-out [transition:top_150ms,opacity_325ms]",
           )}

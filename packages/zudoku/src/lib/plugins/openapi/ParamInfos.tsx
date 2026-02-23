@@ -13,7 +13,6 @@ const Pattern = ({ pattern }: { pattern: string }) => {
     <InlineCode
       className={cn("text-xs", isExpandable && "cursor-pointer")}
       onClick={() => setIsExpanded(!isExpanded)}
-      selectOnClick={false}
     >
       {isExpanded ? pattern : shortPattern}
       {isExpandable && (

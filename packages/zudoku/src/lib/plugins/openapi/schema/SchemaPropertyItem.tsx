@@ -21,10 +21,7 @@ import {
 } from "./utils.js";
 
 const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
-  <InlineCode
-    className="inline-flex items-center gap-1.5 text-xs translate-y-0.5"
-    selectOnClick={false}
-  >
+  <InlineCode className="inline-flex items-center gap-1.5 text-xs translate-y-0.5">
     <RefreshCcwDotIcon size={13} />
     <span>{circularProp ? `${circularProp} (circular)` : "circular"}</span>
   </InlineCode>
