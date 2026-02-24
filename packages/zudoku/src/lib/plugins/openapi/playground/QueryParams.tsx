@@ -32,7 +32,9 @@ export const QueryParams = ({
     shouldSetActive: (item) => {
       const schemaParam = schemaQueryParams.find((p) => p.name === item.name);
       if (schemaParam) {
-        return schemaParam.isRequired ?? false;
+        const isRequired = schemaParam.isRequired ?? false;
+        const hasValue = Boolean(item.value);
+        return isRequired || hasValue;
       }
       return Boolean(item.name || item.value);
     },
