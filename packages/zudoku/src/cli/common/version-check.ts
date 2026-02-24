@@ -1,4 +1,3 @@
-import path from "node:path";
 import { fileURLToPath } from "node:url";
 import colors from "picocolors";
 import { minVersion, satisfies } from "semver";
@@ -16,6 +15,14 @@ export const getPkgManager = () => {
   return "npm";
 };
 
+const resolvePackageJson = (pkg: string) => {
+  try {
+    return fileURLToPath(import.meta.resolve(`${pkg}/package.json`));
+  } catch {
+    return undefined;
+  }
+};
+
 export const warnPackageVersionMismatch = async () => {
   if (!process.env.ZUDOKU_OVERRIDE_CI_TO_TEST && process.env.CI) {
     return;
@@ -25,28 +32,20 @@ export const warnPackageVersionMismatch = async () => {
     return;
   }
 
-  const packageJson = getPackageJson(
-    fileURLToPath(new URL("../../../package.json", import.meta.url)),
-  );
-  const nodeModulesPath = fileURLToPath(
-    new URL("../../../..", import.meta.url),
-  );
-  const reactPath = path.join(nodeModulesPath, "react/package.json");
-  const reactDomPath = path.join(nodeModulesPath, "react-dom/package.json");
+  const zudokuPkgPath = resolvePackageJson("zudoku");
+  if (!zudokuPkgPath) return;
+
+  const packageJson = getPackageJson(zudokuPkgPath);
+  const reactPath = resolvePackageJson("react");
+  const reactDomPath = resolvePackageJson("react-dom");
 
   const required = packageJson.peerDependencies;
 
-  const tryGetVersion = (pkgPath: string) => {
-    try {
-      return getPackageJson(pkgPath).version;
-    } catch {
-      return undefined;
-    }
-  };
-
   const installed = {
-    react: tryGetVersion(reactPath),
-    "react-dom": tryGetVersion(reactDomPath),
+    react: reactPath ? getPackageJson(reactPath).version : undefined,
+    "react-dom": reactDomPath
+      ? getPackageJson(reactDomPath).version
+      : undefined,
   };
 
   if (

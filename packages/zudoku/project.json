@@ -7,7 +7,7 @@
       "command": "node ./cli.js"
     },
     "build:ci": {
-      "dependsOn": ["build:vite", "build:standalone"],
+      "dependsOn": ["build:vite", "build:standalone", "typecheck"],
       "executor": "nx:noop"
     },
     "build:standalone": {
@@ -28,23 +28,22 @@
     },
     "build": {
       "dependsOn": ["^build", "generate:types"],
-      "outputs": ["{projectRoot}/dist"],
+      "outputs": ["{projectRoot}/dist/cli"],
       "inputs": [
-        "{projectRoot}/**/*.ts",
-        "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css",
-        "{projectRoot}/tsconfig.json",
+        "{projectRoot}/src/**/*.ts",
+        "{projectRoot}/src/**/*.tsx",
+        "{projectRoot}/tsdown.config.ts",
         "{projectRoot}/package.json"
       ],
       "cache": true
     },
-    "build:dev": {
-      "dependsOn": ["generate:types"],
-      "outputs": ["{projectRoot}/dist"],
+    "typecheck": {
+      "dependsOn": ["^build", "generate:types"],
       "inputs": [
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.tsx",
         "!{projectRoot}/**/*.css",
+        "{projectRoot}/tsconfig.app.json",
         "{projectRoot}/package.json"
       ],
       "cache": true

@@ -20,6 +20,7 @@ import type {
 import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
+import { getModuleDir } from "./config.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
@@ -32,7 +33,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = ZuploEnv.isZuplo
     ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        path.resolve(import.meta.dirname, "../zuplo/with-zuplo-processors.js"),
+        path.resolve(getModuleDir(), "src/zuplo/with-zuplo-processors.js"),
       ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 

@@ -26,6 +26,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./package.json": "./package.json",
     "./ui/*": {
       "types": "./src/lib/ui/*.tsx",
       "default": "./src/lib/ui/*"
@@ -69,12 +70,12 @@
     "./testing": "./src/lib/testing/index.tsx"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.app.json",
-    "build:dev": "esbuild \"./src/**/*.ts\" \"./src/**/*.tsx\" --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
+    "build": "tsdown",
+    "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
-    "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts --log-level=silent",
+    "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
     "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
-    "clean": "tsc --build --clean",
+    "clean": "rm -rf dist",
     "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
@@ -221,6 +222,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "6.0.5",
+    "tsdown": "0.20.3",
     "tsx": "4.21.0",
     "typescript": "5.9.3"
   },

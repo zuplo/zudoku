@@ -12,8 +12,6 @@
     "noUncheckedIndexedAccess": true,
     "strict": true,
     "strictNullChecks": true,
-    "declaration": true,
-    "sourceMap": true,
     "esModuleInterop": true,
     "useDefineForClassFields": true,
     "skipLibCheck": true,

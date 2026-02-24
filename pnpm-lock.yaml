@@ -946,6 +946,9 @@ importers:
       rollup-plugin-visualizer:
         specifier: 6.0.5
         version: 6.0.5(rolldown@1.0.0-rc.3)(rollup@4.57.1)
+      tsdown:
+        specifier: 0.20.3
+        version: 0.20.3(typescript@5.9.3)
       tsx:
         specifier: 4.21.0
         version: 4.21.0

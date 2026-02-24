@@ -26,9 +26,9 @@ export type ZudokuConfigEnv = ConfigEnv & {
 };
 
 export function getModuleDir() {
-  // NOTE: This is relative to the /dist folder because the dev server
-  // runs the compiled JS files, but vite uses the raw TS files
-  const moduleDir = fileURLToPath(new URL("../../", import.meta.url))
+  const pkgJsonPath = fileURLToPath(import.meta.resolve("zudoku/package.json"));
+  const moduleDir = path
+    .dirname(pkgJsonPath)
     // Windows compat
     .replaceAll(path.sep, path.posix.sep);
 
