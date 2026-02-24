@@ -24,29 +24,12 @@ declare module "../state.js" {
   }
 }
 
-const loadClerkCdn = (publishableKey: string): Promise<void> =>
-  new Promise((resolve, reject) => {
-    if (document.querySelector("script[data-clerk=loaded]")) {
-      resolve();
-      return;
-    }
+let clerkPromise: Promise<Clerk> | undefined;
 
-    const pending = document.querySelector<HTMLScriptElement>(
-      "script[data-clerk=loading]",
-    );
+const loadClerk = (publishableKey: string): Promise<Clerk> => {
+  if (clerkPromise) return clerkPromise;
 
-    if (pending) {
-      pending.addEventListener("load", () => resolve(), { once: true });
-      pending.addEventListener(
-        "error",
-        () => reject(new Error("Failed to load Clerk from CDN")),
-        { once: true },
-      );
-      // Re-check in case load fired between querySelector and addEventListener
-      if (pending.dataset.clerk === "loaded") resolve();
-      return;
-    }
-
+  clerkPromise = new Promise<void>((resolve, reject) => {
     const frontendApiUrl = getClerkFrontendApi(publishableKey);
 
     const script = document.createElement("script");
@@ -54,17 +37,23 @@ const loadClerkCdn = (publishableKey: string): Promise<void> =>
     script.async = true;
     script.crossOrigin = "anonymous";
     script.dataset.clerkPublishableKey = publishableKey;
-    script.dataset.clerk = "loading";
-    script.onload = () => {
-      script.dataset.clerk = "loaded";
-      resolve();
-    };
+    script.onload = () => resolve();
     script.onerror = () => {
-      script.dataset.clerk = "error";
+      clerkPromise = undefined;
       reject(new Error("Failed to load Clerk from CDN"));
     };
     document.head.appendChild(script);
+  }).then(async () => {
+    const clerk = (window as { Clerk?: Clerk }).Clerk;
+    if (!clerk) {
+      throw new Error("Clerk script loaded but window.Clerk is not available");
+    }
+    await clerk.load();
+    return clerk;
   });
+
+  return clerkPromise;
+};
 
 const clerkAuth: AuthenticationProviderInitializer<
   ClerkAuthenticationConfig
@@ -75,21 +64,11 @@ const clerkAuth: AuthenticationProviderInitializer<
   redirectToAfterSignUp,
   redirectToAfterSignIn,
 }): AuthenticationPlugin & ZudokuPlugin => {
-  const clerkInstance = (async () => {
-    if (typeof window === "undefined") return undefined;
-    await loadClerkCdn(clerkPubKey);
-    const clerk = (window as { Clerk?: Clerk }).Clerk;
-    if (!clerk) {
-      throw new Error("Clerk script loaded but window.Clerk is not available");
+  const getClerk = (): Promise<Clerk> => {
+    if (typeof window === "undefined") {
+      return Promise.reject(new Error("Clerk is not available during SSR"));
     }
-    await clerk.load();
-    return clerk;
-  })();
-
-  const getClerk = async () => {
-    const clerk = await clerkInstance;
-    if (!clerk) throw new Error("Clerk is not available");
-    return clerk;
+    return loadClerk(clerkPubKey);
   };
 
   async function getAccessToken() {
@@ -130,7 +109,7 @@ const clerkAuth: AuthenticationProviderInitializer<
   }
 
   async function refreshUserProfile() {
-    const clerk = await clerkInstance.catch((e) => {
+    const clerk = await getClerk().catch((e) => {
       // biome-ignore lint/suspicious/noConsole: Intentional warning
       console.warn("Clerk unavailable during profile refresh:", e);
       return undefined;
@@ -182,15 +161,13 @@ const clerkAuth: AuthenticationProviderInitializer<
       ];
     },
     initialize: async () => {
-      let clerk: Clerk | undefined;
-      try {
-        clerk = await clerkInstance;
-      } catch (e) {
+      if (typeof window === "undefined") return;
+
+      const clerk = await getClerk().catch((e) => {
         // biome-ignore lint/suspicious/noConsole: Intentional error logging
         console.error("Clerk failed to initialize:", e);
-        return;
-      }
-
+        return undefined;
+      });
       if (!clerk) return;
 
       if (clerk.session) {
