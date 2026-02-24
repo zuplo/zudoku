@@ -955,6 +955,7 @@
           {
             "name": "status",
             "in": "query",
+            "required": true,
             "description": "Filter by shipment status",
             "schema": {
               "type": "array",
