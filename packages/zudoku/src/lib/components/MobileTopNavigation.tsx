@@ -1,6 +1,7 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
@@ -23,6 +24,7 @@ import { TopNavItem, TopNavLink } from "./TopNavigation.js";
 export const MobileTopNavigation = () => {
   const context = useZudoku();
   const authState = useAuth();
+  const location = useLocation();
 
   const {
     options: { navigation = [], site },
@@ -49,7 +51,7 @@ export const MobileTopNavigation = () => {
         <PageProgress />
       </div>
       <DrawerContent
-        className="lg:hidden h-dvh end-0 start-auto w-[320px] rounded-none"
+        className="lg:hidden h-dvh inset-e-0 start-auto w-[320px] rounded-none"
         aria-describedby={undefined}
       >
         <div className="p-4 overflow-y-auto overscroll-none h-full flex flex-col justify-between">
@@ -70,7 +72,7 @@ export const MobileTopNavigation = () => {
                   {!isAuthenticated ? (
                     <li>
                       <TopNavLink
-                        to="/signin"
+                        to={`/signin?redirect=${encodeURIComponent(location.pathname)}`}
                         onClick={() => setDrawerOpen(false)}
                       >
                         Login

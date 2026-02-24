@@ -20,7 +20,7 @@ export const SignIn = () => {
 
   useEffect(() => {
     void login.current({
-      redirectTo,
+      redirectTo: redirectTo ?? "/",
       replace: true,
     });
   }, [login, redirectTo]);
