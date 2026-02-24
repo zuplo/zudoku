@@ -84,6 +84,7 @@ Heavy modules must never be statically imported from entry-path code (modules re
 pages) are fine since those are already in separate chunks.
 
 Modules that must be lazy-loaded (`React.lazy` or dynamic `import()`) in entry-path code:
+
 - `SyntaxHighlight` / `HighlightedCode` (pulls in shiki)
 - `CodeTabs` (imports SyntaxHighlight)
 - `Mermaid`
