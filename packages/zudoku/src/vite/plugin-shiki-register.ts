@@ -20,6 +20,23 @@ export const viteShikiRegisterPlugin = (): Plugin => {
 
   return {
     name: "vite-plugin-shiki-register",
+    config() {
+      const config = getCurrentConfig();
+      const languages =
+        config.syntaxHighlighting?.languages ?? defaultLanguages;
+      const themes = Object.values(
+        config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
+      );
+
+      return {
+        optimizeDeps: {
+          include: [
+            ...languages.map((l) => `zudoku/shiki/langs/${resolveLang(l)}`),
+            ...themes.map((t) => `zudoku/shiki/themes/${t}`),
+          ],
+        },
+      };
+    },
     resolveId(id) {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId;

@@ -193,10 +193,10 @@ const clerkAuth: AuthenticationProviderInitializer<
     signRequest,
     signOut: async () => {
       const clerk = await getClerk();
+      useAuthState.getState().setLoggedOut();
       await clerk.signOut({
         redirectUrl: window.location.origin + redirectToAfterSignOut,
       });
-      useAuthState.getState().setLoggedOut();
     },
     signIn: async (
       _: AuthActionContext,

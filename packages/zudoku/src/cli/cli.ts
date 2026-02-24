@@ -30,7 +30,7 @@ export const getPackageJson = (path: string): PackageJson =>
   JSON.parse(readFileSync(path, "utf-8")) as PackageJson;
 
 const packageJson = getPackageJson(
-  fileURLToPath(new URL("../../package.json", import.meta.url)),
+  fileURLToPath(import.meta.resolve("zudoku/package.json")),
 );
 
 if (SENTRY_DSN) {

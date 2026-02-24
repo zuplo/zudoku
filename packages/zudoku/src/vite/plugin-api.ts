@@ -33,7 +33,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = ZuploEnv.isZuplo
     ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        path.resolve(getModuleDir(), "src/zuplo/with-zuplo-processors.js"),
+        path.resolve(getModuleDir(), "src/zuplo/with-zuplo-processors.ts"),
       ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 

@@ -14,8 +14,6 @@ import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/validate.js";
-import { defaultLanguages } from "../lib/shiki-constants.js";
-import { defaultHighlightOptions } from "../lib/shiki.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";
@@ -81,16 +79,6 @@ export async function getViteConfig(
     logger.info(colors.blue(`  media: `) + colors.dim(cdnUrl.media));
     hasLoggedCdnInfo = true;
   }
-
-  // Shiki subpath imports are dynamic (based on user config) and need explicit listing.
-  const zudokuIncludeOptimizedDeps = [
-    ...(config.syntaxHighlighting?.languages ?? defaultLanguages).map(
-      (lang) => `zudoku/shiki/langs/${lang}`,
-    ),
-    ...Object.values(
-      config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
-    ).map((theme) => `zudoku/shiki/themes/${theme}`),
-  ];
 
   // We define public env vars as `process.env` vars because Vite only exposes them as `import.meta.env` vars
   const publicVarsProcessEnvDefine = Object.fromEntries(
@@ -208,7 +196,6 @@ export async function getViteConfig(
       include: [
         "react-dom/client",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
-        ...zudokuIncludeOptimizedDeps,
       ],
     },
     assetsInclude: [

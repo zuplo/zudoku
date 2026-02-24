@@ -1,10 +1,8 @@
 export const slugify = (str: string) =>
   str
-    .normalize("NFKD") // Decompose everything
-    .replace(/\p{Diacritic}/gu, "") // Remove diacritics
-    .toLocaleLowerCase() // Lowercase
-    .replace(/[^\p{L}\p{N}]+/gu, "-") // Non-alphanumeric → hyphen
-    .split("-") // Split into words
-    .join("-") // Rejoin
-    .replace(/-+/g, "-") // Clean up
-    .replace(/^-|-$/g, ""); // Trim edges
+    .normalize("NFKD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/['\u2018\u2019\u201C\u201D]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "");
