@@ -185,7 +185,7 @@
     background-color: var(--shiki-dark-bg) !important;
   }
   .code-block .shiki {
-    @apply grid grid-rows-1;
+    @apply grid grid-rows-1 whitespace-pre;
     grid-auto-rows: 1lh;
   }
 
