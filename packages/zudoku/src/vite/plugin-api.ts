@@ -97,8 +97,8 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        for (const mainFile of mainFiles) {
-          await schemaManager.processSchema({ input: mainFile });
+        for (const inputConfig of mainFiles) {
+          await schemaManager.processSchema(inputConfig);
         }
         schemaManager
           .getAllTrackedFiles()
@@ -186,7 +186,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                 version: s.version,
                 downloadUrl: s.downloadUrl,
                 label: s.label ?? s.schema.info?.version,
-                input: s.inputPath,
+                input: s.importKey,
                 hasUntaggedOperations: versionTags.some(
                   (tag) => tag.name === undefined,
                 ),
@@ -195,9 +195,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const tags = Array.from(allSlugs);
 
-            const schemaMapEntries = Array.from(
-              schemaManager.schemaMap.entries(),
-            );
+            const schemaImports = schemaManager.getSchemaImports();
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
@@ -219,9 +217,9 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
               `  schemaImports: {`,
-              ...schemaMapEntries.map(
-                ([key, processed]) =>
-                  `    "${key.replace(/\\/g, "\\\\")}": () => import("${processed.filePath.replace(/\\/g, "/")}?d=${processed.processedTime}"),`,
+              ...schemaImports.map(
+                (s) =>
+                  `    "${s.importKey.replaceAll("\\", "\\\\")}": () => import("${s.importKey.replaceAll("\\", "/")}?d=${s.processedTime}"),`,
               ),
               `  },`,
               "}));",

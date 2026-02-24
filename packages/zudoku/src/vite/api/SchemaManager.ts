@@ -21,28 +21,55 @@ type ProcessedSchema = {
   path: string;
   label?: string;
   inputPath: string;
+  params: Record<string, string>;
+  importKey: string;
   downloadUrl: string;
+  processedJsonPath: string;
+  processedTime: number;
 };
 const FALLBACK_VERSION = "default";
 
-type InputConfig = Partial<VersionConfig> & { input: string };
+type InputConfig = Partial<VersionConfig> & {
+  input: string;
+  params: Record<string, string>;
+};
+
+const parseInputString = (input: string) => {
+  const idx = input.indexOf("?");
+  if (idx === -1)
+    return { filePath: input, params: {} as Record<string, string> };
+  return {
+    filePath: input.slice(0, idx),
+    params: Object.fromEntries(new URLSearchParams(input.slice(idx))),
+  };
+};
+
+const paramsSuffix = (params: Record<string, string>) =>
+  Object.keys(params).length > 0
+    ? `-${slugify(new URLSearchParams(params).toString(), { separator: "_" })}`
+    : "";
 
 const normalizeInputs = (
-  inputs: string | InputConfig | Array<string | InputConfig>,
+  inputs:
+    | string
+    | InputConfig
+    | Array<
+        | string
+        | (Omit<InputConfig, "params"> & { params?: Record<string, string> })
+      >,
 ): InputConfig[] =>
-  ensureArray(inputs).map((i) => (typeof i === "string" ? { input: i } : i));
+  ensureArray(inputs).map((i) => {
+    const raw = typeof i === "string" ? { input: i } : i;
+    const { filePath, params } = parseInputString(raw.input);
+    return { ...raw, input: filePath, params: { ...params, ...raw.params } };
+  });
 
 export class SchemaManager {
   private storeDir: string;
   private processors: Processor[];
   private processedSchemas: Record<string, ProcessedSchema[]> = {};
-  private fileToPath: Map<string, string> = new Map();
   private referencedBy = new Map<string, Set<string>>();
   public config: LoadedConfig;
-  public schemaMap = new Map<
-    string,
-    { filePath: string; processedTime: number }
-  >();
 
   constructor({
     storeDir,
@@ -62,30 +89,26 @@ export class SchemaManager {
     ];
   }
 
-  private getPathForFile = (input: string) => {
+  private getPathForFile = (input: string, params: Record<string, string>) => {
     const filePath = path.resolve(this.config.__meta.rootDir, input);
-
-    if (this.fileToPath.has(filePath)) {
-      return this.fileToPath.get(filePath);
-    }
 
     const apis = ensureArray(this.config.apis ?? []);
     for (const apiConfig of apis) {
       if (!apiConfig || apiConfig.type !== "file" || !apiConfig.path) continue;
 
-      const inputs = normalizeInputs(apiConfig.input).map((i) =>
-        path.resolve(this.config.__meta.rootDir, i.input),
+      const match = normalizeInputs(apiConfig.input).some(
+        (i) =>
+          path.resolve(this.config.__meta.rootDir, i.input) === filePath &&
+          JSON.stringify(i.params) === JSON.stringify(params),
       );
-      if (inputs.includes(filePath)) {
-        this.fileToPath.set(filePath, apiConfig.path);
-        return apiConfig.path;
-      }
+      if (match) return apiConfig.path;
     }
   };
 
   public processSchema = async (input: InputConfig) => {
     const filePath = path.resolve(this.config.__meta.rootDir, input.input);
-    const configuredPath = this.getPathForFile(filePath);
+    const params = input.params;
+    const configuredPath = this.getPathForFile(input.input, params);
     if (!configuredPath) {
       // biome-ignore lint/suspicious/noConsole: Logging allowed here
       console.warn(`No path found for file ${input.input}`);
@@ -115,6 +138,7 @@ export class SchemaManager {
         processor({
           schema: await schema,
           file: filePath,
+          params,
           dereference: (schema) =>
             new $RefParser<OpenAPIDocument>().dereference(schema, {
               dereference: {
@@ -129,18 +153,24 @@ export class SchemaManager {
     const processedTime = Date.now();
     const code = await generateCode(processedSchema, filePath);
 
-    // Create a unique filename using the configuredPath to avoid collisions
-    // when multiple APIs use the same basename (e.g., index.json)
     const prefixPath = slugify(configuredPath, { separator: "_" });
     const processedFilePath = path.posix.join(
       this.storeDir,
-      `${prefixPath}-${path.basename(filePath)}.js`,
+      `${prefixPath}-${path.basename(filePath)}${paramsSuffix(params)}.js`,
     );
+    const importKey = processedFilePath;
+
     await fs.writeFile(processedFilePath, code);
-    this.schemaMap.set(filePath, {
-      filePath: processedFilePath,
-      processedTime,
-    });
+
+    const processedJsonPath = paramsSuffix(params)
+      ? processedFilePath.replace(/\.js$/, ".json")
+      : "";
+    if (processedJsonPath) {
+      await fs.writeFile(
+        processedJsonPath,
+        JSON.stringify(processedSchema, null, 2),
+      );
+    }
 
     const schemas = this.processedSchemas[configuredPath];
 
@@ -148,7 +178,11 @@ export class SchemaManager {
       throw new Error(`No schemas found for navigation ID ${configuredPath}.`);
     }
 
-    const index = schemas.findIndex((s) => s.inputPath === filePath);
+    const index = schemas.findIndex(
+      (s) =>
+        s.inputPath === filePath &&
+        JSON.stringify(s.params) === JSON.stringify(params),
+    );
     const existingSchema = schemas[index];
 
     const schemaVersion = processedSchema.info.version ?? FALLBACK_VERSION;
@@ -163,7 +197,16 @@ export class SchemaManager {
       path: versionPath,
       label: existingSchema?.label,
       inputPath: filePath,
-      downloadUrl: this.createSchemaPath(filePath, versionPath, configuredPath),
+      params,
+      importKey,
+      downloadUrl: this.createSchemaPath(
+        filePath,
+        versionPath,
+        configuredPath,
+        params,
+      ),
+      processedJsonPath,
+      processedTime,
     } satisfies ProcessedSchema;
 
     if (index > -1) {
@@ -173,24 +216,34 @@ export class SchemaManager {
         `Schema with input path ${filePath} was not pre-initialized for ${configuredPath}.`,
       );
     }
-    this.fileToPath.set(filePath, configuredPath);
     return processed;
   };
 
   public getAllTrackedFiles = () => Array.from(this.referencedBy.keys());
 
-  public getFilesToReprocess = (changedFile: string) => {
+  public getFilesToReprocess = (changedFile: string): InputConfig[] => {
     const resolvedPath = path.resolve(this.config.__meta.rootDir, changedFile);
     const referencedBy = this.referencedBy.get(resolvedPath);
 
     if (!referencedBy) return [];
-    if (referencedBy.size === 0) return [resolvedPath];
-    return Array.from(referencedBy);
+
+    const filesToProcess =
+      referencedBy.size === 0 ? [resolvedPath] : Array.from(referencedBy);
+
+    return filesToProcess.flatMap((fp) => {
+      const configs: InputConfig[] = [];
+      for (const schemas of Object.values(this.processedSchemas)) {
+        for (const s of schemas) {
+          if (s.inputPath === fp) {
+            configs.push({ input: fp, params: s.params });
+          }
+        }
+      }
+      return configs.length > 0 ? configs : [{ input: fp, params: {} }];
+    });
   };
 
   public processAllSchemas = async () => {
-    this.schemaMap.clear();
-    this.fileToPath.clear();
     this.referencedBy.clear();
     this.processedSchemas = {};
 
@@ -207,7 +260,11 @@ export class SchemaManager {
         path: input.path ?? "",
         label: input.label,
         inputPath: path.resolve(this.config.__meta.rootDir, input.input),
+        params: input.params,
+        importKey: "",
         downloadUrl: "",
+        processedJsonPath: "",
+        processedTime: 0,
       }));
 
       const results = await Promise.allSettled(
@@ -228,10 +285,12 @@ export class SchemaManager {
 
   public getLatestSchema = (path: string) => this.processedSchemas[path]?.at(0);
 
-  public getBySchemaFilepath = (schemaPath: string) =>
-    this.schemaMap.get(path.resolve(this.config.__meta.rootDir, schemaPath));
-
   public getSchemasForPath = (path: string) => this.processedSchemas[path];
+
+  public getSchemaImports = () =>
+    Object.values(this.processedSchemas)
+      .flat()
+      .filter((s) => s.importKey);
 
   public getUrlToFilePathMap = () => {
     const map = new Map<string, string>();
@@ -252,7 +311,10 @@ export class SchemaManager {
       if (!schemas || schemas.length === 0) continue;
 
       for (const schema of schemas) {
-        map.set(schema.downloadUrl, schema.inputPath);
+        map.set(
+          schema.downloadUrl,
+          schema.processedJsonPath || schema.inputPath,
+        );
       }
     }
 
@@ -263,13 +325,16 @@ export class SchemaManager {
     inputPath: string,
     versionPath: string,
     apiPath: string,
+    params: Record<string, string>,
   ) => {
-    const extension = path.extname(inputPath);
+    const suffix = paramsSuffix(params);
+    const extension = suffix ? ".json" : path.extname(inputPath);
+
     return joinUrl(
       this.config.basePath,
       apiPath,
       versionPath,
-      `schema${extension}`,
+      `schema${suffix}${extension}`,
     );
   };
 
