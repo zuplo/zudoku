@@ -6,6 +6,7 @@ import {
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
 import slugify from "@sindresorhus/slugify";
+import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { VersionConfig } from "../../config/validators/validate.js";
@@ -99,7 +100,7 @@ export class SchemaManager {
       const match = normalizeInputs(apiConfig.input).some(
         (i) =>
           path.resolve(this.config.__meta.rootDir, i.input) === filePath &&
-          JSON.stringify(i.params) === JSON.stringify(params),
+          deepEqual(i.params, params),
       );
       if (match) return apiConfig.path;
     }
@@ -179,9 +180,7 @@ export class SchemaManager {
     }
 
     const index = schemas.findIndex(
-      (s) =>
-        s.inputPath === filePath &&
-        JSON.stringify(s.params) === JSON.stringify(params),
+      (s) => s.inputPath === filePath && deepEqual(s.params, params),
     );
     const existingSchema = schemas[index];
 
