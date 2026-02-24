@@ -16,7 +16,6 @@ import type {
 import type { FooterSchema } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
-import type { ComponentsContextType } from "../components/context/ComponentsContext.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
 import { joinUrl } from "../util/joinUrl.js";
 import type { MdxComponentsType } from "../util/MdxComponents.js";
@@ -102,7 +101,6 @@ export type ZudokuContextOptions = {
   mdx?: {
     components?: MdxComponentsType;
   };
-  overrides?: ComponentsContextType;
   protectedRoutes?: ProtectedRoutesInput;
   syntaxHighlighting?: {
     highlighterPromise: Promise<HighlighterCore>;
