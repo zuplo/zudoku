@@ -133,7 +133,6 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
           versionParam = undefined;
         }
 
-
         const version = versionParam ?? versions.at(0);
         const { type } = config;
 
@@ -188,13 +187,15 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
             to: joinUrl(basePath, versionParam),
             label: "Information",
           },
-        ]
+        ];
 
-        categories.push(...buildTagCategories({
-          tagCategories,
-          tagGroups,
-          expandAllTags: config.options?.expandAllTags,
-        }));
+        categories.push(
+          ...buildTagCategories({
+            tagCategories,
+            tagGroups,
+            expandAllTags: config.options?.expandAllTags,
+          }),
+        );
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,

@@ -132,18 +132,6 @@ const config: ZudokuConfig = {
   },
   navigationRules: [
     {
-      type: "insert",
-      match: "Shipments/0",
-      position: "before",
-      items: [
-        {
-          type: "doc",
-          file: "api-shipments/getting-started",
-          icon: "plane-takeoff",
-        },
-      ],
-    },
-    {
       type: "modify",
       match: "Shipments/1",
       set: { icon: "ship" },
@@ -200,7 +188,7 @@ const config: ZudokuConfig = {
         {
           type: "link",
           label: "See Shipment API",
-          to: "/api-shipments/shipment-management",
+          to: "/api-shipments",
           icon: "arrow-right",
         },
         {
@@ -229,7 +217,7 @@ const config: ZudokuConfig = {
     {
       type: "link",
       icon: "ship",
-      to: "/api-shipments/shipment-management",
+      to: "/api-shipments",
       label: "Shipments",
     },
     {
@@ -377,16 +365,14 @@ const config: ZudokuConfig = {
     light: {
       background: "0 0% 100%",
       foreground: "20 14.3% 4.1%",
-      card: "#fff",
+      card: "#fafafa",
       cardForeground: "#262626",
-      popover: "0 0% 100%",
-      popoverForeground: "20 14.3% 4.1%",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
       secondary: "60 4.8% 95.9%",
       secondaryForeground: "24 9.8% 10%",
-      muted: "#f5f5f5",
-      mutedForeground: "var(--color-zinc-500)",
+      // muted: "#f5f5f5",
+      // mutedForeground: "var(--color-zinc-500)",
       accent: "60 4.8% 95.9%",
       accentForeground: "24 9.8% 10%",
       destructive: "0 84.2% 60.2%",
@@ -398,8 +384,8 @@ const config: ZudokuConfig = {
     dark: {
       background: "#1a1a18",
       foreground: "60 9.1% 97.8%",
-      card: "#151518",
-      cardForeground: "60 9.1% 97.8%",
+      card: "#242424",
+      cardForeground: "#f2e9e4",
       popover: "20 14.3% 4.1%",
       popoverForeground: "60 9.1% 97.8%",
       primary: "#f4bf32",

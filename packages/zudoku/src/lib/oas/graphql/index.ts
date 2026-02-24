@@ -6,19 +6,20 @@ import {
 } from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
-import type { OpenAPIV3_1 } from "openapi-types";
-import {
-  type EncodingObject,
-  type ExampleObject,
-  HttpMethods,
-  type OpenAPIDocument,
-  type OperationObject,
-  type ParameterObject,
-  type PathsObject,
-  type SchemaObject,
-  type ServerObject,
-  type TagObject,
-  validate,
+import { HttpMethods, validate } from "../parser/index.js";
+import type {
+  ContactObject,
+  EncodingObject,
+  ExampleObject,
+  ExternalDocumentationObject,
+  LicenseObject,
+  OpenAPIDocument,
+  OperationObject,
+  ParameterObject,
+  PathsObject,
+  SchemaObject,
+  ServerObject,
+  TagObject,
 } from "../parser/index.js";
 import { GraphQLJSONSchema } from "./circular.js";
 
@@ -215,7 +216,7 @@ export const getAllOperations = (
 };
 
 const SchemaContact = builder
-  .objectRef<OpenAPIV3_1.ContactObject>("SchemaContact")
+  .objectRef<ContactObject>("SchemaContact")
   .implement({
     fields: (t) => ({
       name: t.exposeString("name", { nullable: true }),
@@ -225,7 +226,7 @@ const SchemaContact = builder
   });
 
 const SchemaLicense = builder
-  .objectRef<OpenAPIV3_1.LicenseObject>("SchemaLicense")
+  .objectRef<LicenseObject>("SchemaLicense")
   .implement({
     fields: (t) => ({
       name: t.exposeString("name"),
@@ -235,7 +236,7 @@ const SchemaLicense = builder
   });
 
 const SchemaExternalDocs = builder
-  .objectRef<OpenAPIV3_1.ExternalDocumentationObject>("SchemaExternalDocs")
+  .objectRef<ExternalDocumentationObject>("SchemaExternalDocs")
   .implement({
     fields: (t) => ({
       description: t.exposeString("description", { nullable: true }),
@@ -299,6 +300,41 @@ const ServerItem = builder.objectRef<ServerObject>("Server").implement({
     description: t.exposeString("description", { nullable: true }),
   }),
 });
+
+type WebhookData = {
+  name: string;
+  method: string;
+  summary?: string;
+  description?: string;
+  operationId?: string;
+};
+
+const WebhookItem = builder.objectRef<WebhookData>("WebhookItem").implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    method: t.exposeString("method"),
+    summary: t.exposeString("summary", { nullable: true }),
+    description: t.exposeString("description", { nullable: true }),
+    operationId: t.exposeString("operationId", { nullable: true }),
+  }),
+});
+
+const resolveWebhooks = (schema: OpenAPIDocument): WebhookData[] => {
+  const webhooks = (schema as any).webhooks ?? {};
+  return Object.entries(webhooks).flatMap(([name, pathItem]: [string, any]) =>
+    HttpMethods.flatMap((method) => {
+      const op = pathItem?.[method];
+      if (!op) return [];
+      return {
+        name,
+        method: method.toUpperCase(),
+        summary: op.summary,
+        description: op.description,
+        operationId: op.operationId,
+      };
+    }),
+  );
+};
 
 const PathItem = builder
   .objectRef<{
@@ -707,6 +743,10 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
             (!args.untagged || (op.tags ?? []).length === 0)
           );
         }),
+    }),
+    webhooks: t.field({
+      type: [WebhookItem],
+      resolve: (root) => resolveWebhooks(root),
     }),
     components: t.field({
       type: Components,

@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "Shipment API",
-    "description": "This API allows you to create and track shipments through the Cosmo Cargo platform.\n\n## Authentication\nAll endpoints require a valid API key passed in the `X-API-Key` header.\n",
+    "title": "Shipment API3",
+    "description": "The Shipment API provides programmatic access to Cosmo Cargo's interstellar logistics network. Create shipments, calculate rates, track packages in real-time, and manage customs documentation for cross-border deliveries.\n\n## Getting Started\n\nTo start shipping, create a shipment with origin and destination addresses, then calculate rates for your preferred service level. Once confirmed, use the tracking endpoints to monitor delivery progress.\n\n```sh\ncurl -X POST https://api.cosmocargo.com/v1/shipments \\\n  -H \"X-API-Key: your_api_key\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"recipientAddress\": {...}, \"senderAddress\": {...}, \"packages\": [...]}'\n```\n\n## Rate Limits\n\n| Plan       | Requests/min | Burst |\n|------------|-------------|-------|\n| Free       | 60          | 10    |\n| Pro        | 600         | 50    |\n| Enterprise | Custom      | Custom|\n\nRate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) are included in every response.\n\n## Idempotency\n\nPOST and PUT endpoints support idempotency keys via the `Idempotency-Key` header. Sending the same key within 24 hours returns the original response without creating duplicates.\n\n## Versioning\n\nThe API is versioned via the `X-API-Version` header. The current stable version is `2024-01`. Omitting the header defaults to the latest stable version.\n",
     "version": "1.0.0",
     "contact": {
       "name": "Cosmo Cargo API Support",

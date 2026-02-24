@@ -153,7 +153,7 @@ const createVersionRoutes = ({
         element: <SchemaInfo />,
       };
     },
-  } satisfies RouteObject
+  } satisfies RouteObject;
 
   return [
     indexRoute,
@@ -220,7 +220,7 @@ export const getRoutes = ({
               basePath: versionPath,
               hasUntaggedOperations,
             }),
-        ],
+          ],
       client,
       config,
     });

@@ -132,6 +132,7 @@ type Schema {
   title: String!
   url: String
   version: String!
+  webhooks: [WebhookItem!]!
 }
 
 type SchemaContact {
@@ -183,4 +184,12 @@ type TagItem {
   description: String
   extensions: JSONObject
   name: String!
+}
+
+type WebhookItem {
+  description: String
+  method: String!
+  name: String!
+  operationId: String
+  summary: String
 }

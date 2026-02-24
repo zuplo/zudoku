@@ -20,7 +20,7 @@ import { useOasConfig } from "./context.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 
 type ApiHeaderProps = {
-  title: string;
+  title?: string;
   heading: ReactNode;
   headingId: string;
   description?: string;
@@ -54,7 +54,7 @@ export const ApiHeader = ({
     <Collapsible className="w-full" defaultOpen={options?.expandApiInformation}>
       <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end">
         <div className="flex flex-col flex-1 gap-3">
-          <CategoryHeading>{title}</CategoryHeading>
+          {title && <CategoryHeading>{title}</CategoryHeading>}
           <Heading level={1} id={headingId} registerNavigationAnchor>
             {heading}
             {showVersions && (

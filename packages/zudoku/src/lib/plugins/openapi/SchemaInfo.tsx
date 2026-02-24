@@ -1,37 +1,48 @@
 import slugify from "@sindresorhus/slugify";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { Link, useNavigate } from "react-router";
-import { Callout } from "zudoku/components";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "zudoku/ui/Select.js";
-import { Heading } from "../../components/Heading.js";
+  BracesIcon,
+  ExternalLinkIcon,
+  FileTextIcon,
+  GlobeIcon,
+  MailIcon,
+  ScaleIcon,
+  ServerIcon,
+  TagIcon,
+  UserIcon,
+  WebhookIcon,
+} from "lucide-react";
+import { Link } from "react-router";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
+import { Badge } from "../../ui/Badge.js";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../../ui/Card.js";
+import {
+  Item,
+  ItemActions,
+  ItemContent,
+  ItemDescription,
+  ItemTitle,
+} from "../../ui/Item.js";
+import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
-import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
-import { Endpoint } from "./Endpoint.js";
 import { graphql } from "./graphql/index.js";
-
-const SchemaWarmupQuery = graphql(/* GraphQL */ `
-  query SchemaWarmup($input: JSON!, $type: SchemaType!) {
-    schema(input: $input, type: $type) {
-      openapi
-    }
-  }
-`);
+import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
 const SchemaInfoQuery = graphql(/* GraphQL */ `
   query SchemaInfo($input: JSON!, $type: SchemaType!) {
     schema(input: $input, type: $type) {
       servers {
         url
+        description
       }
       license {
         name
@@ -57,48 +68,42 @@ const SchemaInfoQuery = graphql(/* GraphQL */ `
         name
         description
       }
+      components {
+        schemas {
+          name
+        }
+      }
+      webhooks {
+        name
+        method
+        summary
+        description
+      }
     }
   }
 `);
 
 export const SchemaInfo = () => {
-  const { input, type, versions, version, options } = useOasConfig();
-  const query = useCreateQuery(SchemaInfoQuery, {
-    input,
-    type,
-  });
+  const { input, type } = useOasConfig();
+  const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const result = useSuspenseQuery(query);
   const {
     data: { schema },
   } = result;
-  // Global server selection for the dropdown UI
   const title = schema.title;
   const description = schema.description;
-  const navigate = useNavigate();
 
-  // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
-  const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
-  useQuery({
-    ...warmupQuery,
-    enabled: typeof window !== "undefined",
-    notifyOnChangeProps: [],
-  });
+  useWarmupSchema();
 
-  const hasMultipleVersions = Object.entries(versions).length > 1;
+  const hasContact =
+    schema.contact?.name || schema.contact?.email || schema.contact?.url;
+  const hasServers = schema.servers.length > 0;
+  const hasInfoLinks =
+    schema.license || schema.termsOfService || schema.externalDocs;
 
-  const showVersions =
-    options?.showVersionSelect === "always" ||
-    (hasMultipleVersions && options?.showVersionSelect !== "hide");
-
-  const currentVersion = version != null ? versions[version] : undefined;
-  const downloadUrl =
-    typeof input === "string"
-      ? type === "url"
-        ? input
-        : currentVersion?.downloadUrl
-      : undefined;
-
-  const helmetTitle = title;
+  const tags = schema.tags.flatMap(({ name, description }) =>
+    name ? { name, description } : [],
+  );
 
   return (
     <div
@@ -108,121 +113,209 @@ export const SchemaInfo = () => {
     >
       <PagefindSearchMeta name="category">{title}</PagefindSearchMeta>
       <Helmet>
-        {helmetTitle && <title>{helmetTitle}</title>}
+        {title && <title>{title}</title>}
         {description && <meta name="description" content={description} />}
       </Helmet>
 
-      <div className="mb-8">
-        <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end mb-4">
-          <div className="flex flex-col flex-1 gap-2">
-            <Heading
-              level={1}
-              id="description"
-              registerNavigationAnchor
-              className="mb-0"
-            >
-              {title}
-              {showVersions && (
-                <span className="text-xl text-muted-foreground ms-1.5">
-                  {" "}
-                  ({schema.version})
-                </span>
-              )}
-            </Heading>
-            <Endpoint />
-          </div>
-          <div className="flex flex-col gap-4 sm:items-end">
-            <div className="flex gap-2 items-center">
-              {showVersions && (
-                <Select
-                  onValueChange={(version) =>
-                    // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-                    navigate(versions[version]!.path)
-                  }
-                  defaultValue={version}
-                  disabled={!hasMultipleVersions}
-                >
-                  <SelectTrigger className="w-[180px]" size="sm">
-                    <SelectValue placeholder="Select version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(versions).map(([version, { label }]) => (
-                      <SelectItem key={version} value={version}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {options?.schemaDownload?.enabled && downloadUrl && (
-                <DownloadSchemaButton downloadUrl={downloadUrl} />
-              )}
-            </div>
-          </div>
+      <div className="mb-8 flex flex-col gap-6">
+        <div className="flex justify-between gap-4">
+          <ApiHeader heading={title} headingId="description" />
         </div>
-        <div>
-          <Callout icon={false} type="note">
-            {schema.contact?.email && (
-              <div>
-                <b>{schema.contact?.name ?? "Contact"}</b>:{" "}
-                <a href={`mailto: ${schema.contact.email}`}>
-                  {schema.contact.email}
-                </a>
-              </div>
+        <Card>
+          <CardContent className="flex flex-col gap-4">
+            {schema.summary && (
+              <p className="text-lg text-muted-foreground">{schema.summary}</p>
             )}
-            {schema.contact?.url && (
-              <div>
-                <b>URL</b>:{" "}
-                <a href={schema.contact.url}>{schema.contact.url}</a>
-              </div>
-            )}
-            {schema.license && (
-              <div>
-                <b>License</b>:{" "}
-                {schema.license.url ? (
-                  <a href={schema.license.url}>{schema.license.name}</a>
-                ) : (
-                  schema.license.name
-                )}
-              </div>
-            )}
-            {schema.termsOfService && (
-              <div>
-                <b>Terms of Service</b>:{" "}
-                <a href={schema.termsOfService}>{schema.termsOfService}</a>
-              </div>
-            )}
-            {schema.externalDocs && (
-              <div>
-                <b>Read more</b>:{" "}
-                <a href={schema.externalDocs.url}>{schema.externalDocs.url}</a>
-              </div>
-            )}
-          </Callout>
-
-          {schema.description && (
-            <Markdown
-              className="max-w-full prose-img:max-w-prose border-border lg:pt-5 pb-10"
-              content={schema.description}
-            />
-          )}
-        </div>
-        <Heading level={2}>Tags</Heading>
-        {schema.tags.map((tag) => (
-          <div key={tag.name} className="p-3">
-            {tag.name && (
-              <Heading level={3}>
-                <Link to={slugify(tag.name)}>{tag.name}</Link>
-              </Heading>
-            )}
-            {tag.description && (
+            {schema.description && (
               <Markdown
-                className="max-w-full prose-img:max-w-prose border-border pb-3"
-                content={tag.description}
+                className="max-w-3/4 prose-img:max-w-prose prose-sm"
+                content={schema.description}
               />
             )}
+          </CardContent>
+          {hasInfoLinks && (
+            <CardFooter className="flex flex-wrap gap-6 text-sm">
+              {schema.license && (
+                <a
+                  href={schema.license.url ?? undefined}
+                  className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                  {...(schema.license.url
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                >
+                  <ScaleIcon size={14} />
+                  {schema.license.name}
+                  {schema.license.url && <ExternalLinkIcon size={12} />}
+                </a>
+              )}
+              {schema.termsOfService && (
+                <a
+                  href={schema.termsOfService}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <FileTextIcon size={14} />
+                  Terms of Service
+                  <ExternalLinkIcon size={12} />
+                </a>
+              )}
+              {schema.externalDocs && (
+                <a
+                  href={schema.externalDocs.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <FileTextIcon size={14} />
+                  {schema.externalDocs.description ?? "Documentation"}
+                  <ExternalLinkIcon size={12} />
+                </a>
+              )}
+            </CardFooter>
+          )}
+        </Card>
+        {(hasContact || hasServers) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {hasContact && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+                    <UserIcon size={14} />
+                    Contact
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-2 text-sm">
+                  {schema.contact?.name && (
+                    <span className="font-medium">{schema.contact.name}</span>
+                  )}
+                  {schema.contact?.email && (
+                    <a
+                      href={`mailto:${schema.contact.email}`}
+                      className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <MailIcon size={14} />
+                      {schema.contact.email}
+                    </a>
+                  )}
+                  {schema.contact?.url && (
+                    <a
+                      href={schema.contact.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <GlobeIcon size={14} />
+                      {schema.contact.url}
+                    </a>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+            {hasServers && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground">
+                    <ServerIcon size={14} />
+                    Servers
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-3 text-sm">
+                  {schema.servers.map((server) => (
+                    <div key={server.url} className="flex items-start gap-2">
+                      <span className="mt-1.5 size-2 rounded-full bg-emerald-500 shrink-0" />
+                      <div className="truncate">
+                        <code className="text-xs">{server.url}</code>
+                        {server.description && (
+                          <p className="text-muted-foreground text-xs">
+                            {server.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
-        ))}
+        )}
+        {tags.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+              <TagIcon size={14} />
+              Tags
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {tags.map((tag) => (
+                <Item key={tag.name} variant="outline" asChild>
+                  <Link to={slugify(tag.name)}>
+                    <ItemContent>
+                      <ItemTitle>{tag.name}</ItemTitle>
+                      {tag.description && (
+                        <ItemDescription>
+                          <Markdown
+                            components={{ p: ({ children }) => children }}
+                            content={tag.description}
+                            className="prose-sm text-pretty"
+                          />
+                        </ItemDescription>
+                      )}
+                    </ItemContent>
+                  </Link>
+                </Item>
+              ))}
+            </div>
+          </div>
+        )}
+        {(schema.components?.schemas?.length ?? 0) > 0 && (
+          <div>
+            <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+              <BracesIcon size={14} />
+              Schemas
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
+              {schema.components?.schemas?.map((s) => (
+                <Item key={s.name} variant="outline" title={s.name} asChild>
+                  <Link to={`~schemas#${slugify(s.name)}`}>
+                    <span className="text-sm font-medium leading-snug truncate">
+                      {s.name}
+                    </span>
+                  </Link>
+                </Item>
+              ))}
+            </div>
+          </div>
+        )}
+        {schema.webhooks.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+              <WebhookIcon size={14} />
+              Webhooks
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {schema.webhooks.map((webhook) => (
+                <Item
+                  key={`${webhook.name}-${webhook.method}`}
+                  variant="outline"
+                >
+                  <ItemContent>
+                    <ItemTitle>{webhook.name}</ItemTitle>
+                    {(webhook.summary || webhook.description) && (
+                      <ItemDescription>
+                        {webhook.summary ?? webhook.description}
+                      </ItemDescription>
+                    )}
+                  </ItemContent>
+                  <ItemActions>
+                    <Badge variant="muted" className="text-[10px] font-mono">
+                      {webhook.method}
+                    </Badge>
+                  </ItemActions>
+                </Item>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
