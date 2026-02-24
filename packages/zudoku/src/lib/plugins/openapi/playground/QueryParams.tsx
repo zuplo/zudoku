@@ -29,6 +29,13 @@ export const QueryParams = ({
     control,
     name: "queryParams",
     defaultValue: { name: "", value: "", active: false },
+    shouldSetActive: (item) => {
+      const schemaParam = schemaQueryParams.find((p) => p.name === item.name);
+      if (schemaParam) {
+        return schemaParam.isRequired ?? false;
+      }
+      return Boolean(item.name || item.value);
+    },
   });
 
   const requiredFields = schemaQueryParams.map((param) =>
@@ -81,7 +88,7 @@ export const QueryParams = ({
                       title={requiredFields[i] ? "Required field" : undefined}
                     >
                       {watchedQueryParams[i]?.name}
-                      {requiredFields[i] && <sup>&nbsp;*</sup>}
+                      {requiredFields[i] && <span>&nbsp;*</span>}
                     </label>
                   </ParamsGridInput>
                 )}
