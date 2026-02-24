@@ -398,6 +398,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: vi.fn(),
     });
 
@@ -438,6 +439,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -462,6 +464,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: vi.fn(),
     });
 
@@ -508,6 +511,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -566,6 +570,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -631,6 +636,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: mockDereference,
     });
 
@@ -696,6 +702,7 @@ describe("flattenAllOf processor", () => {
     const result = await flattenAllOfProcessor({
       schema,
       file: "/test/schema.json",
+      params: {},
       dereference: vi.fn(),
     });
 
