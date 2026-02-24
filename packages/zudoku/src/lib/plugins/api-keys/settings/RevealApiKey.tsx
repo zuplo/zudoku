@@ -26,7 +26,7 @@ export const RevealApiKey = ({
 }) => {
   const [revealed, setRevealed] = useState(false);
 
-  const { key, createdOn, expiresOn } = apiKey;
+  const { key, description, createdOn, expiresOn } = apiKey;
   const isExpired = expiresOn && new Date(expiresOn) < new Date();
   const daysUntilExpiry = expiresOn
     ? Math.ceil(
@@ -38,6 +38,9 @@ export const RevealApiKey = ({
   return (
     <div className={cn("grid col-span-full grid-cols-subgrid p-6", className)}>
       <div className="flex flex-col gap-1">
+        {description && (
+          <span className="text-sm font-medium">{description}</span>
+        )}
         <Secret
           className="max-w-fit w-full"
           secret={key}
