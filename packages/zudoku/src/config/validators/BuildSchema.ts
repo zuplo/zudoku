@@ -11,6 +11,7 @@ export const BuildProcessorSchema = z.custom<
   (data: {
     file: string;
     schema: OpenAPIDocument;
+    params: Record<string, string>;
     dereference: (schema: OpenAPIDocument) => Promise<OpenAPIDocument>;
   }) => OpenAPIDocument | Promise<OpenAPIDocument>
 >((val) => typeof val === "function");
