@@ -11,13 +11,16 @@ import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
 import { Callout } from "../ui/Callout.js";
 import { CodeBlock } from "../ui/CodeBlock.js";
-import { CodeTabPanel, CodeTabs } from "../ui/CodeTabs.js";
+import { CodeTabPanel } from "../ui/CodeTabPanel.js";
 import { Stepper } from "../ui/Stepper.js";
 import { cn } from "./cn.js";
 
-// Lazy-loaded to avoid pulling into the initial bundle.
+// Lazy-loaded to avoid pulling shiki/mermaid into the initial bundle.
 const SyntaxHighlight = lazy(() => import("../ui/SyntaxHighlight.js"));
 const Mermaid = lazy(() => import("../components/Mermaid.js"));
+const CodeTabs = lazy(() =>
+  import("../ui/CodeTabs.js").then((m) => ({ default: m.CodeTabs })),
+);
 
 export type MdxComponentsType = Readonly<MDXComponents> | null | undefined;
 
@@ -103,7 +106,11 @@ export const MdxComponents = {
   caution: (props) => <Callout type="caution" {...props} />,
   warning: (props) => <Callout type="caution" {...props} />,
   danger: (props) => <Callout type="danger" {...props} />,
-  CodeTabs,
+  CodeTabs: (props) => (
+    <Suspense>
+      <CodeTabs {...props} />
+    </Suspense>
+  ),
   CodeTabPanel,
   pre: (props) => (
     <pre className={cn("not-prose my-4", props.className)} {...props} />

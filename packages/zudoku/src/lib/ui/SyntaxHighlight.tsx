@@ -2,7 +2,6 @@ import { memo } from "react";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import { useHighlighter } from "../hooks/useHighlighter.js";
 import { highlight } from "../shiki.js";
-import { HIGHLIGHT_CODE_BLOCK_CLASS, highlight } from "../shiki.js";
 import { CodeBlock, type CodeBlockProps } from "./CodeBlock.js";
 import { EmbeddedCodeBlock } from "./EmbeddedCodeBlock.js";
 

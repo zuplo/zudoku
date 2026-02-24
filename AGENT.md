@@ -77,6 +77,23 @@ responses/request bodies is passed as `JSONSchemaScalar`, which serializes the r
 through `handleCircularRefs()`. Media-type level `example`/`examples` are resolved into
 `ExampleItem` arrays by the GraphQL resolvers before reaching the client.
 
+## Bundle Size
+
+Heavy modules must never be statically imported from entry-path code (modules reachable from
+`entry.client` without a lazy boundary). Static imports from route-split code (e.g. openapi plugin
+pages) are fine since those are already in separate chunks.
+
+Modules that must be lazy-loaded (`React.lazy` or dynamic `import()`) in entry-path code:
+- `SyntaxHighlight` / `HighlightedCode` (pulls in shiki)
+- `CodeTabs` (imports SyntaxHighlight)
+- `Mermaid`
+- `Markdown`
+- `PlaygroundDialog`
+
+When adding new components that depend on these, either lazy-load them or place them in route-split
+plugin code. A static import chain from `MdxComponents.tsx` or similar always-loaded modules will
+pull the heavy dependency into `entry.client`.
+
 ## Plugin Architecture
 
 - Plugins live in packages/zudoku/lib/plugins/
