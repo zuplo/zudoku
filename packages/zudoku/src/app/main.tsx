@@ -15,22 +15,20 @@ import {
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import "virtual:zudoku-theme.css";
-import {
-  BuildCheck,
-  Layout,
-  Meta,
-  RouteGuard,
-  RouterError,
-  StatusPage,
-} from "zudoku/__internal";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
-import { isNavigationPlugin } from "../lib/core/plugins.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
-import { ZuploEnv } from "./env.js";
+import { BuildCheck } from "../lib/components/BuildCheck.js";
+import { Layout } from "../lib/components/Layout.js";
+import { Meta } from "../lib/components/Meta.js";
 import "./main.css";
 import "./polyfills.js";
+import { StatusPage } from "../lib/components/StatusPage.js";
+import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { RouteGuard } from "../lib/core/RouteGuard.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
+import { RouterError } from "../lib/errors/RouterError.js";
+import { ZuploEnv } from "./env.js";
 
 export const shikiReady: Promise<HighlighterCore> =
   import("../lib/shiki.js").then(async ({ highlighterPromise }) => {

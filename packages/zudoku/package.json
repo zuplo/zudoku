@@ -57,7 +57,6 @@
     "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
     "./react-query": "./src/lib/core/react-query.ts",
-    "./__internal": "./src/lib/core/__internal.tsx",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/index.ts",
     "./tailwind": "./src/app/tailwind.ts",
