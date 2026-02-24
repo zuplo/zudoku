@@ -160,12 +160,12 @@ describe("PricingPage", () => {
     expect(screen.queryByText("No CC required")).not.toBeInTheDocument();
   });
 
-  it("Shows 'Most Popular' badge when plan.metadata.isMostPopular is true", () => {
+  it("Shows 'Most Popular' badge when plan.metadata.zuplo_most_popular is 'true'", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),
       {
         ...makePlan("2", "pro", "Pro"),
-        metadata: { isMostPopular: true },
+        metadata: { zuplo_most_popular: "true" },
       },
       makePlan("3", "business", "Business"),
     ];
@@ -176,12 +176,12 @@ describe("PricingPage", () => {
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
 
-  it("Does not show 'Most Popular' badge when plan.metadata.isMostPopular is false or missing", () => {
+  it("Does not show 'Most Popular' badge when plan.metadata.zuplo_most_popular is not 'true' or missing", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),
       {
         ...makePlan("2", "pro", "Pro"),
-        metadata: { isMostPopular: false },
+        metadata: { zuplo_most_popular: "false" },
       },
       makePlan("3", "business", "Business"),
     ];
