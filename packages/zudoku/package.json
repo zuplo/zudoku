@@ -70,7 +70,7 @@
     "./testing": "./src/lib/testing/index.tsx"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown --log-level=error",
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",

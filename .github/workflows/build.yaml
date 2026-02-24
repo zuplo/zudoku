@@ -57,6 +57,9 @@ jobs:
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
 
+      - name: Check Bundle Size
+        run: pnpm size
+
         # Check if the stats file exists, if zudoku doesn't change in the PR
         # the stats file won't exist and we don't need to upload it
       - name: Has Stats
