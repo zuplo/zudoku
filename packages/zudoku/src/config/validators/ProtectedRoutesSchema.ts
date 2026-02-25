@@ -1,15 +1,14 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 import type { UseAuthReturn } from "../../lib/authentication/hook.js";
 import type { ZudokuContext } from "../../lib/core/ZudokuContext.js";
 import { normalizeProtectedRoutes } from "../../lib/core/ZudokuContext.js";
+import {
+  type ProtectedRouteResult,
+  type ReasonCode,
+  REASON_CODES,
+} from "./reason-codes.js";
 
-export const REASON_CODES = {
-  UNAUTHORIZED: "unauthorized",
-  FORBIDDEN: "forbidden",
-} as const;
-
-export type ReasonCode = (typeof REASON_CODES)[keyof typeof REASON_CODES];
-export type ProtectedRouteResult = boolean | ReasonCode;
+export { REASON_CODES, type ReasonCode, type ProtectedRouteResult };
 
 export type CallbackContext = {
   auth: UseAuthReturn;
@@ -20,16 +19,17 @@ type ProtectedRouteCallback = (c: CallbackContext) => ProtectedRouteResult;
 export type ProtectedRoutesInput = z.input<typeof ProtectedRoutesInputSchema>;
 export type ProtectedRoutes = z.output<typeof ProtectedRoutesInputSchema>;
 
-export const ProtectedRoutesInputSchema = z
-  .union([
-    z.string().array(),
+export const ProtectedRoutesInputSchema = z.optional(
+  z.union([
+    z.array(z.string()),
     z.record(
       z.string(),
       z.custom<ProtectedRouteCallback>((val) => typeof val === "function"),
     ),
-  ])
-  .optional();
+  ]),
+);
 
-export const ProtectedRoutesSchema = ProtectedRoutesInputSchema.transform(
-  normalizeProtectedRoutes,
+export const ProtectedRoutesSchema = z.pipe(
+  ProtectedRoutesInputSchema,
+  z.transform(normalizeProtectedRoutes),
 );

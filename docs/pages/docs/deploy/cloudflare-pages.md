@@ -37,7 +37,7 @@ order.
 
 Build the static version of your documentation site by running:
 
-```command
+```bash
 npm run build
 ```
 
@@ -45,13 +45,13 @@ This will generate a new folder called `dist` that contains all the files that y
 
 Next, if you don't already have one, create a new Pages project:
 
-```command
+```bash
 npx wrangler pages project create
 ```
 
 Finally, deploy the files to the new project:
 
-```command
+```bash
 npx wrangler pages deploy ./dist
 ```
 

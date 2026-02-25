@@ -1,12 +1,11 @@
 import { ExternalLinkIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { NavLink, useLocation } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import type { NavigationItem as NavigationItemType } from "../../../config/validators/NavigationSchema.js";
 import { useAuth } from "../../authentication/hook.js";
 import { cn } from "../../util/cn.js";
-import { RichText } from "../../util/hastToJsx.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { AnchorLink } from "../AnchorLink.js";
 import { useViewportAnchor } from "../context/ViewportAnchorContext.js";
@@ -16,6 +15,8 @@ import { NavigationCategory } from "./NavigationCategory.js";
 import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationFilterInput } from "./NavigationFilterInput.js";
 import { navigationListItem, shouldShowItem } from "./utils.js";
+
+const HastRichText = lazy(() => import("../../util/hastToJsx.js"));
 
 const TruncatedLabel = ({
   label,
@@ -107,9 +108,11 @@ export const NavigationItem = ({
             <item.icon size={16} className="align-[-0.125em] shrink-0" />
           )}
           {item.rich ? (
-            <span>
-              <RichText>{item.rich}</RichText>
-            </span>
+            <Suspense fallback={<span>{item.label}</span>}>
+              <span>
+                <HastRichText>{item.rich}</HastRichText>
+              </span>
+            </Suspense>
           ) : (
             <TruncatedLabel label={item.label} className="flex-1" />
           )}

@@ -1,5 +1,6 @@
 import { lazy } from "react";
 import type { ZudokuConfig } from "zudoku";
+import { defaultLanguages } from "zudoku";
 import { Button } from "zudoku/ui/Button.js";
 import { components, docs } from "./sidebar";
 import DiscordIcon from "./src/DiscordIcon";
@@ -138,6 +139,30 @@ const config: ZudokuConfig = {
         </Button>
       </div>
     ),
+  },
+  syntaxHighlighting: {
+    languages: [
+      ...defaultLanguages,
+      "apache",
+      "nginx",
+      "sql",
+      "toml",
+      "csharp",
+      "rust",
+      "ruby",
+      "php",
+      "kotlin",
+      "objc",
+      "swift",
+      "cpp",
+      "zig",
+      "scala",
+      "dart",
+      "elixir",
+      "ocaml",
+      "lisp",
+      "powershell",
+    ],
   },
 } satisfies ZudokuConfig;
 

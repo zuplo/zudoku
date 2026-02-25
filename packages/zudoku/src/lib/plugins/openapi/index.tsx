@@ -1,5 +1,5 @@
 import { CirclePlayIcon } from "lucide-react";
-import type { PropsWithChildren } from "react";
+import { type PropsWithChildren, Suspense, lazy } from "react";
 import { matchPath } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
@@ -11,10 +11,15 @@ import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult
 import { graphql } from "./graphql/index.js";
 import type { OasPluginConfig } from "./interfaces.js";
 import type { PlaygroundContentProps } from "./playground/Playground.js";
-import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
+
+const PlaygroundDialog = lazy(() =>
+  import("./playground/PlaygroundDialog.js").then((m) => ({
+    default: m.PlaygroundDialog,
+  })),
+);
 
 export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
@@ -87,21 +92,23 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         }
 
         return (
-          <PlaygroundDialog
-            url={url}
-            method={method}
-            server={server}
-            {...props}
-          >
-            <Button className="gap-2 items-center" variant="outline">
-              {children ?? (
-                <>
-                  Open in Playground
-                  <CirclePlayIcon size={16} />
-                </>
-              )}
-            </Button>
-          </PlaygroundDialog>
+          <Suspense>
+            <PlaygroundDialog
+              url={url}
+              method={method}
+              server={server}
+              {...props}
+            >
+              <Button className="gap-2 items-center" variant="outline">
+                {children ?? (
+                  <>
+                    Open in Playground
+                    <CirclePlayIcon size={16} />
+                  </>
+                )}
+              </Button>
+            </PlaygroundDialog>
+          </Suspense>
         );
       },
     }),

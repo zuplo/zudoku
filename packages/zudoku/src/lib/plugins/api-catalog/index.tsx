@@ -1,10 +1,9 @@
-import slugify from "@sindresorhus/slugify";
 import { matchPath } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { Catalog } from "./Catalog.js";
+import { slugify } from "../../util/slugify.js";
 
 export const getKey = (category: string, tag: string) =>
   slugify(`${category}-${tag}`);
@@ -101,15 +100,20 @@ export const apiCatalogPlugin = ({
     getRoutes: () =>
       Object.entries(paths).map(([path, tag]) => ({
         path,
-        element: (
-          <Catalog
-            label={label}
-            categoryLabel={tag}
-            items={items}
-            filterCatalogItems={filterCatalogItems}
-            categories={categories}
-          />
-        ),
+        async lazy() {
+          const { Catalog } = await import("./Catalog.js");
+          return {
+            element: (
+              <Catalog
+                label={label}
+                categoryLabel={tag}
+                items={items}
+                filterCatalogItems={filterCatalogItems}
+                categories={categories}
+              />
+            ),
+          };
+        },
       })),
   };
 };

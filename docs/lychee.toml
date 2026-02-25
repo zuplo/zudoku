@@ -39,7 +39,4 @@ exclude = [
 
 exclude_path = ["\\.(md|txt)$"]
 
-# Headers to send with requests
-[headers]
-user_agent = "Mozilla/5.0 (compatible; lychee/0.19.1)"
-accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+header = { "user-agent" = "Mozilla/5.0 (compatible; lychee/0.19.1)", "accept" = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" }

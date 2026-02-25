@@ -1,5 +1,5 @@
 import type { JSONSchema4, JSONSchema6 } from "json-schema";
-import { CIRCULAR_REF } from "../../graphql/circular.js";
+import { CIRCULAR_REF } from "../../graphql/constants.js";
 import { resolveLocalRef } from "./resolveRef.js";
 
 export type JSONSchema = JSONSchema4 | JSONSchema6;

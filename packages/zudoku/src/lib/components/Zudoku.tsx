@@ -20,10 +20,6 @@ import {
 import { TopLevelError } from "../errors/TopLevelError.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import "../util/requestIdleCallbackPolyfill.js";
-import {
-  ComponentsProvider,
-  DEFAULT_COMPONENTS,
-} from "./context/ComponentsContext.js";
 import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
@@ -39,11 +35,6 @@ const ZudokuInner = memo(
   }: PropsWithChildren<
     ZudokuContextOptions & { env: Record<string, string> }
   >) => {
-    const components = useMemo(
-      () => ({ ...DEFAULT_COMPONENTS, ...props.overrides }),
-      [props.overrides],
-    );
-
     const location = useLocation();
     const mdxComponents = useMemo(() => {
       const componentsFromPlugins = (props.plugins ?? [])
@@ -87,11 +78,9 @@ const ZudokuInner = memo(
             <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
               <MDXProvider components={mdxComponents}>
                 <ThemeProvider attribute="class" disableTransitionOnChange>
-                  <ComponentsProvider value={components}>
-                    <ViewportAnchorProvider>
-                      {children ?? <Outlet />}
-                    </ViewportAnchorProvider>
-                  </ComponentsProvider>
+                  <ViewportAnchorProvider>
+                    {children ?? <Outlet />}
+                  </ViewportAnchorProvider>
                 </ThemeProvider>
               </MDXProvider>
             </SlotProvider>

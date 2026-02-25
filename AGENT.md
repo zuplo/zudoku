@@ -7,8 +7,8 @@
   - For linting, run `pnpm biome ci`
 - **Fix**: To fix all linting/formatting issues, run `pnpm fix`
   - For formatting, run `pnpm fmt` (uses oxfmt)
-  - For linting, run `pnpm biome check --write {files}`
-  - Always use `--write` when running biome check to fix issues in one command
+  - For linting, run `pnpm biome lint --write {files}`
+  - Always use `--write` when running biome lint to fix issues in one command
 - **Test**: `vitest run --typecheck` or for single test: `vitest run path/to/test.spec.ts`
 - **Dev**: Running example projects with `nx` (e.g., `nx run docs:dev`) will automatically rebuild
   dependent packages as needed. Don't manually run `pnpm -F zudoku build` repeatedly.
@@ -76,6 +76,24 @@ Schemas are exposed via a Pothos GraphQL API (`oas/graphql/index.ts`). The `sche
 responses/request bodies is passed as `JSONSchemaScalar`, which serializes the raw schema object
 through `handleCircularRefs()`. Media-type level `example`/`examples` are resolved into
 `ExampleItem` arrays by the GraphQL resolvers before reaching the client.
+
+## Bundle Size
+
+Heavy modules must never be statically imported from entry-path code (modules reachable from
+`entry.client` without a lazy boundary). Static imports from route-split code (e.g. openapi plugin
+pages) are fine since those are already in separate chunks.
+
+Modules that must be lazy-loaded (`React.lazy` or dynamic `import()`) in entry-path code:
+
+- `SyntaxHighlight` / `HighlightedCode` (pulls in shiki)
+- `CodeTabs` (imports SyntaxHighlight)
+- `Mermaid`
+- `Markdown`
+- `PlaygroundDialog`
+
+When adding new components that depend on these, either lazy-load them or place them in route-split
+plugin code. A static import chain from `MdxComponents.tsx` or similar always-loaded modules will
+pull the heavy dependency into `entry.client`.
 
 ## Plugin Architecture
 

@@ -10,8 +10,4 @@ if (!semver.satisfies(process.version, ">=20.19.0 <21.0.0 || >=22.7.0")) {
   process.exit(1);
 }
 
-if (process.env.ZUDOKU_INTERNAL_CLI) {
-  await import("./scripts/cli-dev.js");
-} else {
-  await import("./dist/cli/cli.js");
-}
+await import("./dist/cli/cli.js");

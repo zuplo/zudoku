@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { CircleFadingArrowUpIcon, LoaderCircleIcon } from "lucide-react";
 import { useEffect } from "react";
-import { z } from "zod";
+import { z } from "zod/mini";
 import { Button } from "../ui/Button.js";
 
 const BuildStatusSchema = z.object({
@@ -24,13 +24,12 @@ export const BuildCheck = ({
     refetchInterval: 3000,
     enabled: buildId !== undefined && environmentType === "WORKING_COPY",
     retry: false,
-    queryFn: () =>
-      fetch(endpoint, { signal: AbortSignal.timeout(2000) })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to fetch build status");
-          return res.json();
-        })
-        .then((data) => BuildStatusSchema.parse(data)),
+    queryFn: async () => {
+      const res = await fetch(endpoint, { signal: AbortSignal.timeout(2000) });
+      if (!res.ok) throw new Error("Failed to fetch build status");
+      const data: unknown = await res.json();
+      return BuildStatusSchema.parse(data);
+    },
   });
 
   useEffect(() => {

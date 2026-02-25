@@ -1,8 +1,6 @@
 import { GraphQLJSON } from "graphql-type-json";
 import { GraphQLScalarType } from "graphql/index.js";
-
-export const CIRCULAR_REF = "$[Circular Reference]";
-export const SCHEMA_REF_PREFIX = "$ref:";
+import { CIRCULAR_REF, SCHEMA_REF_PREFIX } from "./constants.js";
 
 const OPENAPI_PROPS = new Set([
   "properties",

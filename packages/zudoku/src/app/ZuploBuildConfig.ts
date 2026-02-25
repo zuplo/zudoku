@@ -1,6 +1,6 @@
-import { z } from "zod";
+import { z } from "zod/mini";
 
-export const EntitlementsSchema = z.object({
+const EntitlementsSchema = z.object({
   devPortalZuploBranding: z.boolean(),
   numberOfProjects: z.number(),
   numberOfUsers: z.number(),
@@ -17,17 +17,20 @@ export const EntitlementsSchema = z.object({
   largeBuildRunners: z.boolean(),
 });
 
-export const BuildConfigSchema = z.object({
+const BuildConfigSchema = z.object({
   entitlements: EntitlementsSchema,
-  environmentType: z.string().optional(),
+  environmentType: z.optional(z.string()),
   deploymentName: z.string(),
-  deploymentUrl: z.string().optional(),
-  projectId: z.string().optional(),
-  projectType: z.string().optional(),
-  sourceType: z.string().optional(),
-  accountName: z.string().optional(),
-  projectName: z.string().optional(),
+  deploymentUrl: z.optional(z.string()),
+  projectId: z.optional(z.string()),
+  projectType: z.optional(z.string()),
+  sourceType: z.optional(z.string()),
+  accountName: z.optional(z.string()),
+  projectName: z.optional(z.string()),
 });
 
 export type BuildConfig = z.infer<typeof BuildConfigSchema>;
 export type Entitlements = z.infer<typeof EntitlementsSchema>;
+
+export const parseBuildConfig = (value: unknown): BuildConfig =>
+  BuildConfigSchema.parse(value);

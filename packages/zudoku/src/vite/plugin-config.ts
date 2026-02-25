@@ -20,9 +20,14 @@ const viteConfigPlugin = (): Plugin => {
     load(id) {
       if (id !== resolvedVirtualModuleId) return;
 
+      const configPath = getCurrentConfig().__meta.configPath;
+      if (!configPath) {
+        return `export default {};`;
+      }
+
       return `
-import rawConfig from "${normalizePath(getCurrentConfig().__meta.configPath)}";
-import { runPluginTransformConfig } from "zudoku/__internal";
+import rawConfig from "${normalizePath(configPath)}";
+import { runPluginTransformConfig } from "zudoku/plugins";
 
 const config = await runPluginTransformConfig(rawConfig);
 export default config;

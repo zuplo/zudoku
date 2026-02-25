@@ -16,7 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
-import { REASON_CODES } from "../../config/validators/ProtectedRoutesSchema.js";
+import { REASON_CODES } from "../../config/validators/reason-codes.js";
 import { useAuth } from "../authentication/hook.js";
 import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";

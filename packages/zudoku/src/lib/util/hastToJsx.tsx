@@ -49,7 +49,7 @@ const convertNode = (
   return toJsxRuntime(node, { Fragment, jsx, jsxs, components });
 };
 
-export const RichText = ({
+const HastRichText = ({
   children,
   overrides,
 }: {
@@ -63,3 +63,5 @@ export const RichText = ({
     <Fragment key={i}>{convertNode(node, components)}</Fragment>
   ));
 };
+
+export default HastRichText;
