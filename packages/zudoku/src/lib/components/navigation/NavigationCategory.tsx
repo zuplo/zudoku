@@ -29,7 +29,8 @@ const NavigationCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(category.link?.path ?? "");
+  const match = useMatch(category.link?.path ?? "");
+  const isActive = category.link ? match : false;
 
   useEffect(() => {
     // this is triggered when an item from the navigation is clicked
@@ -137,7 +138,7 @@ const NavigationCategoryInner = ({
           "ms-6 my-1",
         )}
       >
-        <ul className="relative after:absolute after:-start-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
+        <ul className="relative after:absolute after:-inset-s-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <NavigationItem
               key={
