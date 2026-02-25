@@ -63,7 +63,6 @@
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
     "./main.css": "./src/app/main.css",
-    "./shiki/*": "./src/shiki/*.js",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
     "./with-zuplo": "./src/zuplo/with-zuplo.ts",
     "./testing": "./src/lib/testing/index.tsx"

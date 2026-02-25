@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import { bundledLanguagesInfo, type BundledLanguage } from "shiki";
 import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
@@ -29,10 +30,19 @@ export const viteShikiRegisterPlugin = (): Plugin => {
       );
 
       return {
+        resolve: {
+          alias: [
+            {
+              find: /^@shikijs\/(langs|themes)\/.+$/,
+              replacement: "$&",
+              customResolver: (id) => fileURLToPath(import.meta.resolve(id)),
+            },
+          ],
+        },
         optimizeDeps: {
           include: [
-            ...languages.map((l) => `zudoku/shiki/langs/${resolveLang(l)}`),
-            ...themes.map((t) => `zudoku/shiki/themes/${t}`),
+            ...languages.map((lang) => `@shikijs/langs/${resolveLang(lang)}`),
+            ...themes.map((theme) => `@shikijs/themes/${theme}`),
           ],
         },
       };
@@ -70,11 +80,11 @@ export const viteShikiRegisterPlugin = (): Plugin => {
         "export const registerShiki = async (highlighter) => {",
         "  await Promise.all([",
         "    highlighter.loadTheme(",
-        themes.map((t) => `import('zudoku/shiki/themes/${t}')`).join(","),
+        themes.map((theme) => `import('@shikijs/themes/${theme}')`).join(","),
         "    ),",
         "    highlighter.loadLanguage(",
         languages
-          .map((l) => `import('zudoku/shiki/langs/${resolveLang(l)}')`)
+          .map((lang) => `import('@shikijs/langs/${resolveLang(lang)}')`)
           .join(","),
         "    ),",
         "  ]);",
