@@ -31,7 +31,7 @@
     "@size-limit/file": "^12.0.0",
     "lefthook": "2.1.1",
     "nx": "22.5.1",
-    "oxfmt": "0.33.0",
+    "oxfmt": "0.34.0",
     "size-limit": "^12.0.0",
     "typescript": "5.9.3",
     "vitest": "4.0.18"
