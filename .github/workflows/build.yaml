@@ -60,12 +60,6 @@ jobs:
       - name: Check Bundle Size
         run: pnpm size
 
-        # Check if the stats file exists, if zudoku doesn't change in the PR
-        # the stats file won't exist and we don't need to upload it
-      - name: Has Stats
-        run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
-        id: stats-file
-
   check-links:
     name: Check Links
     runs-on: ubuntu-latest

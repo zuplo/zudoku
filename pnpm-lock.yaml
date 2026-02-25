@@ -42,6 +42,9 @@ catalogs:
     react-is:
       specifier: 19.2.4
       version: 19.2.4
+    tsdown:
+      specifier: 0.20.3
+      version: 0.20.3
 
 overrides:
   '@supabase/auth-ui-react>react': 19.2.4
@@ -462,7 +465,7 @@ importers:
         specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
       tsdown:
-        specifier: 0.20.3
+        specifier: 'catalog:'
         version: 0.20.3(typescript@5.9.3)
       zudoku:
         specifier: workspace:*
@@ -499,7 +502,7 @@ importers:
         specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
       tsdown:
-        specifier: 0.20.3
+        specifier: 'catalog:'
         version: 0.20.3(typescript@5.9.3)
       zudoku:
         specifier: workspace:*
@@ -937,9 +940,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: 4.0.18
         version: 4.0.18(vitest@4.0.18(@opentelemetry/api@1.9.0)(@types/node@22.19.1)(happy-dom@20.6.1(bufferutil@4.1.0)(utf-8-validate@5.0.10))(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
-      esbuild:
-        specifier: 0.27.3
-        version: 0.27.3
       happy-dom:
         specifier: 'catalog:'
         version: 20.6.1(bufferutil@4.1.0)(utf-8-validate@5.0.10)
@@ -949,11 +949,8 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
-      rollup-plugin-visualizer:
-        specifier: 6.0.5
-        version: 6.0.5(rolldown@1.0.0-rc.3)(rollup@4.57.1)
       tsdown:
-        specifier: 0.20.3
+        specifier: 'catalog:'
         version: 0.20.3(typescript@5.9.3)
       tsx:
         specifier: 4.21.0
@@ -1190,11 +1187,6 @@ packages:
   '@babel/helpers@7.28.6':
     resolution: {integrity: sha512-xOBvwq86HHdB7WUDTfKfT/Vuxh7gElQ+Sfti2Cy6yIWNW05P8iUslOVcZ4/sKbE+/jQaukQAdz/gf3724kYdqw==}
     engines: {node: '>=6.9.0'}
-
-  '@babel/parser@7.28.6':
-    resolution: {integrity: sha512-TeR9zWR18BvbfPmGbLampPMW+uW1NZnJlRuuHso8i87QZNq2JRF9i6RgxRqtEq+wQGsS19NNTWr2duhnE49mfQ==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
 
   '@babel/parser@7.29.0':
     resolution: {integrity: sha512-IyDgFV5GeDUVX4YdF/3CPULtVGSXXMLh1xVIgdCgxApktqnQV0r7/8Nqthg+8YLGaAtdyIlo2qIdZrbCv4+7ww==}
@@ -1714,10 +1706,6 @@ packages:
 
   '@babel/traverse@7.29.0':
     resolution: {integrity: sha512-4HPiQr0X7+waHfyXPZpWPfWL/J7dcN1mx9gL6WdQVMbPnF3+ZhSMs8tCxN7oHddJE9fhNE7+lxdnlyemKfJRuA==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/types@7.28.6':
-    resolution: {integrity: sha512-0ZrskXVEHSWIqZM/sQZ4EV3jZJXRkio/WCxaqKZP1g//CEWEPSfeZFcms4XeKBCHU0ZKnIkdJeU/kF+eRp5lBg==}
     engines: {node: '>=6.9.0'}
 
   '@babel/types@7.29.0':
@@ -10405,10 +10393,6 @@ snapshots:
       '@babel/template': 7.28.6
       '@babel/types': 7.29.0
 
-  '@babel/parser@7.28.6':
-    dependencies:
-      '@babel/types': 7.29.0
-
   '@babel/parser@7.29.0':
     dependencies:
       '@babel/types': 7.29.0
@@ -11045,11 +11029,6 @@ snapshots:
       debug: 4.4.3
     transitivePeerDependencies:
       - supports-color
-
-  '@babel/types@7.28.6':
-    dependencies:
-      '@babel/helper-string-parser': 7.27.1
-      '@babel/helper-validator-identifier': 7.28.5
 
   '@babel/types@7.29.0':
     dependencies:
@@ -18092,8 +18071,8 @@ snapshots:
 
   magicast@0.5.1:
     dependencies:
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.28.6
+      '@babel/parser': 7.29.0
+      '@babel/types': 7.29.0
       source-map-js: 1.2.1
 
   make-dir@4.0.0:

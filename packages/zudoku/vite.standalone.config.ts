@@ -1,13 +1,9 @@
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import { setStandaloneConfig } from "./src/config/loader.js";
 import vitePlugin from "./src/vite/plugin.js";
-
-const entries: Record<string, string> = {
-  standalone: "./src/app/standalone.tsx",
-  demo: "./src/app/demo.tsx",
-};
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -22,14 +18,11 @@ export default defineConfig({
     "process.env.ZUPLO_BUILD_CONFIG": "undefined",
   },
   build: {
-    sourcemap: true,
+    emptyOutDir: true,
     target: "es2022",
     outDir: path.resolve(__dirname, "standalone"),
     lib: {
-      entry: Object.entries(entries).reduce((acc, [key, value]) => {
-        acc[key] = path.resolve(__dirname, value);
-        return acc;
-      }, {}),
+      entry: ["src/app/standalone.tsx", "src/app/demo.tsx"],
       name: "Zudoku",
       formats: ["es"],
       fileName: (_format, fileName) => {
@@ -54,5 +47,22 @@ export default defineConfig({
       },
     },
   },
-  plugins: [vitePlugin()],
+  plugins: [
+    vitePlugin(),
+    {
+      name: "copy-standalone-html",
+      closeBundle() {
+        const outDir = path.resolve(__dirname, "standalone");
+        const srcApp = path.resolve(__dirname, "src/app");
+
+        [
+          ["standalone.html", "standalone.html"],
+          ["demo.html", "demo.html"],
+          ["demo-cdn.html", "index.html"],
+        ].forEach(([src, dest]) => {
+          fs.copyFileSync(path.join(srcApp, src), path.join(outDir, dest));
+        });
+      },
+    },
+  ],
 });

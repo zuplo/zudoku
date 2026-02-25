@@ -3,15 +3,11 @@
   "$schema": "../../node_modules/nx/schemas/nx-schema.json",
   "targets": {
     "cli": {
-      "dependsOn": ["build:vite"],
+      "dependsOn": ["build"],
       "command": "node ./cli.js"
     },
     "build:ci": {
-      "dependsOn": ["build:vite", "build:standalone", "typecheck"],
-      "executor": "nx:noop"
-    },
-    "build:standalone": {
-      "dependsOn": ["build:standalone:html", "build:standalone:vite"],
+      "dependsOn": ["build", "build:standalone", "typecheck"],
       "executor": "nx:noop"
     },
     "publish:local": {
@@ -47,35 +43,6 @@
         "{projectRoot}/package.json"
       ],
       "cache": true
-    },
-    "build:vite": {
-      "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/lib", "{projectRoot}/stats.html"],
-      "inputs": [
-        "{projectRoot}/vite.config.ts",
-        "{projectRoot}/**/*.ts",
-        "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css",
-        "{projectRoot}/tsconfig.json",
-        "{projectRoot}/package.json"
-      ],
-      "cache": true
-    },
-    "build:standalone:vite": {
-      "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/standalone"],
-      "inputs": [
-        "{projectRoot}/vite.standalone.config.ts",
-        "{projectRoot}/**/*.ts",
-        "{projectRoot}/**/*.tsx",
-        "!{projectRoot}/**/*.css",
-        "{projectRoot}/tsconfig.json",
-        "{projectRoot}/package.json"
-      ],
-      "cache": true
-    },
-    "build:standalone:html": {
-      "dependsOn": ["build:standalone:vite"]
     },
     "generate:types": {
       "cache": true,

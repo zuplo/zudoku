@@ -72,8 +72,7 @@
     "build": "tsdown --log-level=error",
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
-    "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
-    "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
+    "build:standalone": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
     "clean": "rm -rf dist",
     "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
@@ -216,12 +215,10 @@
     "@types/unist": "3.0.3",
     "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.0.18",
-    "esbuild": "0.27.3",
     "happy-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "rollup-plugin-visualizer": "6.0.5",
-    "tsdown": "0.20.3",
+    "tsdown": "catalog:",
     "tsx": "4.21.0",
     "typescript": "5.9.3"
   },

@@ -36,7 +36,7 @@
     "@types/react-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tsdown": "0.20.3",
+    "tsdown": "catalog:",
     "zudoku": "workspace:*"
   },
   "peerDependencies": {
