@@ -52,21 +52,15 @@ export const ApiHeader = ({
 
   return (
     <Collapsible className="w-full" defaultOpen={options?.expandApiInformation}>
-      <div className="flex flex-col gap-4 sm:flex-row justify-around items-start sm:items-end">
+      <div className="flex flex-col gap-4 sm:flex-row justify-around items-start">
         <div className="flex flex-col flex-1 gap-3">
           {title && <CategoryHeading>{title}</CategoryHeading>}
           <Heading level={1} id={headingId} registerNavigationAnchor>
             {heading}
-            {showVersions && (
-              <span className="text-xl text-muted-foreground ms-1.5">
-                {" "}
-                ({version})
-              </span>
-            )}
           </Heading>
           {children}
         </div>
-        <div className="flex flex-col gap-4 sm:items-end">
+        <div className="flex flex-col gap-4 sm:items-end self-start">
           <div className="flex gap-2 items-center">
             {showVersions && (
               <Select

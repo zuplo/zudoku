@@ -655,41 +655,21 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
     contact: t.field({
       type: SchemaContact,
       nullable: true,
-      resolve: (root) =>
-        root.info.contact != null
-          ? {
-              name: root.info.contact.name,
-              url: root.info.contact.url,
-              email: root.info.contact.email,
-            }
-          : null,
+      resolve: (root) => root.info.contact ?? null,
     }),
     license: t.field({
-      nullable: true,
       type: SchemaLicense,
-      resolve: (root) =>
-        root.info.license != null
-          ? {
-              name: root.info.license.name,
-              url: root.info.license.url,
-              identifier: root.info.license.identifier,
-            }
-          : null,
+      nullable: true,
+      resolve: (root) => root.info.license ?? null,
     }),
     termsOfService: t.string({
       resolve: (root) => root.info.termsOfService,
       nullable: true,
     }),
     externalDocs: t.field({
-      nullable: true,
       type: SchemaExternalDocs,
-      resolve: (root) =>
-        root.externalDocs != null
-          ? {
-              description: root.externalDocs.description,
-              url: root.externalDocs.url,
-            }
-          : null,
+      nullable: true,
+      resolve: (root) => root.externalDocs ?? null,
     }),
     paths: t.field({
       type: [PathItem],
