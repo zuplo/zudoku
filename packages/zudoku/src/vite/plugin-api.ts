@@ -21,6 +21,7 @@ import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { getModuleDir } from "./config.js";
+import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const viteApiPlugin = async (): Promise<Plugin> => {
@@ -104,16 +105,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
           .forEach((file) => server.watcher.add(file));
 
         invalidateNavigation(server);
-
-        for (const environment of Object.values(server.environments)) {
-          const mod =
-            environment.moduleGraph.getModuleById(virtualModuleId) ??
-            environment.moduleGraph.getModuleById(resolvedVirtualModuleId);
-          if (mod) {
-            environment.moduleGraph.invalidateModule(mod);
-          }
-        }
-        server.ws.send({ type: "full-reload" });
+        reload(server);
       });
     },
     resolveId(id) {

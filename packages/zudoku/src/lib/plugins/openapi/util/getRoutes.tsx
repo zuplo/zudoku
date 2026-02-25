@@ -2,6 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   generatePath,
   Navigate,
+  redirect,
   type RouteObject,
   useLocation,
   useParams,
@@ -145,6 +146,9 @@ const createVersionRoutes = ({
   hasUntaggedOperations?: boolean;
   showInfoPage?: boolean;
 }): RouteObject[] => {
+  const firstTag =
+    tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
+
   const indexRoute: RouteObject = showInfoPage
     ? {
         index: true,
@@ -154,13 +158,9 @@ const createVersionRoutes = ({
           return { element: <SchemaInfo /> };
         },
       }
-    : {
-        index: true,
-        path: versionPath,
-        element: (
-          <Navigate to={joinUrl(versionPath, tagPages[0] ?? "")} replace />
-        ),
-      };
+    : firstTag
+      ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
+      : createRoute({ path: versionPath });
 
   return [
     indexRoute,

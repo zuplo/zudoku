@@ -196,10 +196,28 @@ describe("getRoutes", () => {
       expect(children?.[5]?.path).toBe("/api/~schemas");
     });
 
-    it("index loader redirects to first tag", () => {
+    it("index shows SchemaInfo by default", () => {
       const config: OpenApiPluginOptions = {
         ...baseConfig,
         tagPages: ["users", "posts"],
+      };
+
+      const routes = getRoutes({
+        basePath: "/api",
+        config,
+        client: mockClient,
+      });
+
+      const indexRoute = routes[0]?.children?.[0];
+      expect(indexRoute?.index).toBe(true);
+      expect(indexRoute?.lazy).toBeDefined();
+    });
+
+    it("index redirects to first tag when showInfoPage is false", () => {
+      const config: OpenApiPluginOptions = {
+        ...baseConfig,
+        tagPages: ["users", "posts"],
+        options: { showInfoPage: false },
       };
 
       const routes = getRoutes({
@@ -217,7 +235,54 @@ describe("getRoutes", () => {
       expect(response.headers.get("Location")).toBe("/api/users");
     });
 
-    it("index redirects to ~endpoints when tagPages is empty", () => {
+    it("showInfoPage false with empty tagPages redirects to ~endpoints", () => {
+      const config: OpenApiPluginOptions = {
+        ...baseConfig,
+        tagPages: [],
+        options: { showInfoPage: false },
+      };
+
+      const routes = getRoutes({
+        basePath: "/api",
+        config,
+        client: mockClient,
+      });
+
+      const indexRoute = routes[0]?.children?.[0];
+      expect(indexRoute?.index).toBe(true);
+
+      const response = (indexRoute?.loader as () => Response)();
+      expect(response).toBeInstanceOf(Response);
+      expect(response.status).toBe(302);
+      expect(response.headers.get("Location")).toBe("/api/~endpoints");
+    });
+
+    it("showInfoPage false with empty tagPages and no untagged ops uses fallback route", () => {
+      const config: OpenApiPluginOptions = {
+        type: "url",
+        input: [
+          {
+            path: "v1",
+            input: "https://example.com/v1.json",
+            hasUntaggedOperations: false,
+          },
+        ],
+        tagPages: [],
+        options: { showInfoPage: false },
+      };
+
+      const routes = getRoutes({
+        basePath: "/api",
+        config,
+        client: mockClient,
+      });
+
+      const indexRoute = routes[0]?.children?.[0];
+      expect(indexRoute?.index).toBeUndefined();
+      expect(indexRoute?.path).toBe("/api");
+    });
+
+    it("index shows SchemaInfo when tagPages is empty", () => {
       const config: OpenApiPluginOptions = {
         ...baseConfig,
         tagPages: [],
@@ -232,9 +297,8 @@ describe("getRoutes", () => {
       const children = routes[0]?.children;
       // index + untagged + schemas (no tag routes)
       expect(children).toHaveLength(3);
-
-      const response = (children?.[0]?.loader as () => Response)();
-      expect(response.headers.get("Location")).toBe("/api/~endpoints");
+      expect(children?.[0]?.index).toBe(true);
+      expect(children?.[0]?.lazy).toBeDefined();
     });
 
     it("creates single route with tag children for single version", () => {
@@ -388,9 +452,9 @@ describe("getRoutes", () => {
       });
 
       const children = routes[0]?.children;
-      // fallback route + schemas (no index redirect, no ~endpoints)
+      // index (SchemaInfo) + schemas (no ~endpoints)
       expect(children?.some((r) => r.path === "/api/~endpoints")).toBe(false);
-      expect(children?.some((r) => r.index === true)).toBe(false);
+      expect(children?.some((r) => r.index === true)).toBe(true);
     });
 
     it("omits ~endpoints without tagPages", () => {
