@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/groovy";
+import _default from "@shikijs/langs/groovy";
+export default _default;

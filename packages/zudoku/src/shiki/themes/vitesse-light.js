@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/vitesse-light";
+import _default from "@shikijs/themes/vitesse-light";
+export default _default;

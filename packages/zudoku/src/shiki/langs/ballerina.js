@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/ballerina";
+import _default from "@shikijs/langs/ballerina";
+export default _default;

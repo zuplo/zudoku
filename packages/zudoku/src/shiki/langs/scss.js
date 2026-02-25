@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/scss";
+import _default from "@shikijs/langs/scss";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/nim";
+import _default from "@shikijs/langs/nim";
+export default _default;

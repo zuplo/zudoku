@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/tex";
+import _default from "@shikijs/langs/tex";
+export default _default;

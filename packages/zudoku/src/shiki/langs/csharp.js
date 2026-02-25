@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/csharp";
+import _default from "@shikijs/langs/csharp";
+export default _default;

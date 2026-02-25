@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/vhdl";
+import _default from "@shikijs/langs/vhdl";
+export default _default;

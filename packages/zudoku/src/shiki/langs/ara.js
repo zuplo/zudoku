@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/ara";
+import _default from "@shikijs/langs/ara";
+export default _default;

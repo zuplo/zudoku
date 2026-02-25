@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/kotlin";
+import _default from "@shikijs/langs/kotlin";
+export default _default;

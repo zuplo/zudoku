@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/racket";
+import _default from "@shikijs/langs/racket";
+export default _default;

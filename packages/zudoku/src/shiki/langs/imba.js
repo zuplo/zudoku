@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/imba";
+import _default from "@shikijs/langs/imba";
+export default _default;

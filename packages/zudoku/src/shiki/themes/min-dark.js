@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/min-dark";
+import _default from "@shikijs/themes/min-dark";
+export default _default;

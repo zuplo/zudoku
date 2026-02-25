@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/zig";
+import _default from "@shikijs/langs/zig";
+export default _default;

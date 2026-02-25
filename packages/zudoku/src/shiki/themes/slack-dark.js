@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/slack-dark";
+import _default from "@shikijs/themes/slack-dark";
+export default _default;

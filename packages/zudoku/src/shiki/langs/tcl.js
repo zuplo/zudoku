@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/tcl";
+import _default from "@shikijs/langs/tcl";
+export default _default;

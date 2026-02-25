@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/angular-template";
+import _default from "@shikijs/langs/angular-template";
+export default _default;

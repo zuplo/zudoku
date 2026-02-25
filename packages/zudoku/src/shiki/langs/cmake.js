@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/cmake";
+import _default from "@shikijs/langs/cmake";
+export default _default;

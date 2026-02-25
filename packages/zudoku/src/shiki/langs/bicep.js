@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/bicep";
+import _default from "@shikijs/langs/bicep";
+export default _default;

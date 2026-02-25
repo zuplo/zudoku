@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/moonbit";
+import _default from "@shikijs/langs/moonbit";
+export default _default;

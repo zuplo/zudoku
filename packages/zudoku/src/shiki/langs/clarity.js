@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/clarity";
+import _default from "@shikijs/langs/clarity";
+export default _default;

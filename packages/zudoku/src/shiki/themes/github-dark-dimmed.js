@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/github-dark-dimmed";
+import _default from "@shikijs/themes/github-dark-dimmed";
+export default _default;

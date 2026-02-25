@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/vue";
+import _default from "@shikijs/langs/vue";
+export default _default;

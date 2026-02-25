@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/glimmer-js";
+import _default from "@shikijs/langs/glimmer-js";
+export default _default;

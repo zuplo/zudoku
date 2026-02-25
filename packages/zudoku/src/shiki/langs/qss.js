@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/qss";
+import _default from "@shikijs/langs/qss";
+export default _default;

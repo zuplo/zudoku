@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/gdscript";
+import _default from "@shikijs/langs/gdscript";
+export default _default;

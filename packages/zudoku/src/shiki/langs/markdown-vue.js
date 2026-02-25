@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/markdown-vue";
+import _default from "@shikijs/langs/markdown-vue";
+export default _default;

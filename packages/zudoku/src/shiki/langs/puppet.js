@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/puppet";
+import _default from "@shikijs/langs/puppet";
+export default _default;

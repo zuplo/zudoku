@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/typespec";
+import _default from "@shikijs/langs/typespec";
+export default _default;

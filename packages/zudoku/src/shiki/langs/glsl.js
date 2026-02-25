@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/glsl";
+import _default from "@shikijs/langs/glsl";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/vyper";
+import _default from "@shikijs/langs/vyper";
+export default _default;

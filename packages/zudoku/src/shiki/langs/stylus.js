@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/stylus";
+import _default from "@shikijs/langs/stylus";
+export default _default;

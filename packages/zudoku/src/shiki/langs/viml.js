@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/viml";
+import _default from "@shikijs/langs/viml";
+export default _default;

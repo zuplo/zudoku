@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/twig";
+import _default from "@shikijs/langs/twig";
+export default _default;

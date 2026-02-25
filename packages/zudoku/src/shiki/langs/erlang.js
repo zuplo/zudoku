@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/erlang";
+import _default from "@shikijs/langs/erlang";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/vesper";
+import _default from "@shikijs/themes/vesper";
+export default _default;

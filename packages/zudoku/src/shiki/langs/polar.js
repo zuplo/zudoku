@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/polar";
+import _default from "@shikijs/langs/polar";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/riscv";
+import _default from "@shikijs/langs/riscv";
+export default _default;

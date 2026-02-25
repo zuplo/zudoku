@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/elixir";
+import _default from "@shikijs/langs/elixir";
+export default _default;

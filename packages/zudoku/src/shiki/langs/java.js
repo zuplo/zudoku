@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/java";
+import _default from "@shikijs/langs/java";
+export default _default;

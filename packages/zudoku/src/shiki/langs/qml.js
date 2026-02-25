@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/qml";
+import _default from "@shikijs/langs/qml";
+export default _default;

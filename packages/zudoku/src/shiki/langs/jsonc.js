@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/jsonc";
+import _default from "@shikijs/langs/jsonc";
+export default _default;

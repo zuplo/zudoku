@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/markdown-nix";
+import _default from "@shikijs/langs/markdown-nix";
+export default _default;

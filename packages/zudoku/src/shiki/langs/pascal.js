@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/pascal";
+import _default from "@shikijs/langs/pascal";
+export default _default;

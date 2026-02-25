@@ -134,6 +134,7 @@ export async function getViteConfig(
     ssr: {
       target: "node",
       noExternal: ["zudoku", "@mdx-js/react"],
+      external: ["@shikijs/themes", "@shikijs/langs"],
     },
     server: {
       middlewareMode: true,

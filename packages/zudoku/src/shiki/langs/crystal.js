@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/crystal";
+import _default from "@shikijs/langs/crystal";
+export default _default;

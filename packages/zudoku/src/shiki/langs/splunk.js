@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/splunk";
+import _default from "@shikijs/langs/splunk";
+export default _default;

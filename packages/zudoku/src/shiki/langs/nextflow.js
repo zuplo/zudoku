@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/nextflow";
+import _default from "@shikijs/langs/nextflow";
+export default _default;

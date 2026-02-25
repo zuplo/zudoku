@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/cue";
+import _default from "@shikijs/langs/cue";
+export default _default;

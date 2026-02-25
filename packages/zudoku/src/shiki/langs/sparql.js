@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/sparql";
+import _default from "@shikijs/langs/sparql";
+export default _default;

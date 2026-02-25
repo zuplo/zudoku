@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/talonscript";
+import _default from "@shikijs/langs/talonscript";
+export default _default;

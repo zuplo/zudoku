@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/regexp";
+import _default from "@shikijs/langs/regexp";
+export default _default;

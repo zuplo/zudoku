@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/systemd";
+import _default from "@shikijs/langs/systemd";
+export default _default;

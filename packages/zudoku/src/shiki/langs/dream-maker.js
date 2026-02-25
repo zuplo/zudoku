@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/dream-maker";
+import _default from "@shikijs/langs/dream-maker";
+export default _default;

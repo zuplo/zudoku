@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/odin";
+import _default from "@shikijs/langs/odin";
+export default _default;

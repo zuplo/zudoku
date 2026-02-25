@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/vue-interpolations";
+import _default from "@shikijs/langs/vue-interpolations";
+export default _default;

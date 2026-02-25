@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/gdresource";
+import _default from "@shikijs/langs/gdresource";
+export default _default;

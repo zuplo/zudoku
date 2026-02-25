@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/mipsasm";
+import _default from "@shikijs/langs/mipsasm";
+export default _default;

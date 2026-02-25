@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/liquid";
+import _default from "@shikijs/langs/liquid";
+export default _default;
