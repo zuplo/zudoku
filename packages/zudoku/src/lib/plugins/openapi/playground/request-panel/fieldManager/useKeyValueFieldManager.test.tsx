@@ -292,6 +292,34 @@ describe("useKeyValueFieldManager", () => {
 
       expect(result.current.form.getValues("fields.0.active")).toBe(false);
     });
+
+    it("should not override manual checkbox toggle", async () => {
+      const { result } = renderHook(
+        () => {
+          const form = useFormContext<TestFormData>();
+          return {
+            manager: useKeyValueFieldManager({
+              control: form.control,
+              name: "fields",
+              defaultValue: { name: "", value: "", active: false },
+            }),
+            form,
+          };
+        },
+        {
+          wrapper: createWrapper({
+            fields: [{ name: "test", value: "value", active: true }],
+          }),
+        },
+      );
+
+      // Manually uncheck via checkbox handler
+      act(() => {
+        result.current.manager.getCheckboxProps(0).onCheckedChange(false);
+      });
+
+      expect(result.current.form.getValues("fields.0.active")).toBe(false);
+    });
   });
 
   describe("File type support", () => {
