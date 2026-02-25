@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/night-owl-light";
+import _default from "@shikijs/themes/night-owl-light";
+export default _default;

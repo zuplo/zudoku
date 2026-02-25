@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/nginx";
+import _default from "@shikijs/langs/nginx";
+export default _default;

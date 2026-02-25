@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/kdl";
+import _default from "@shikijs/langs/kdl";
+export default _default;

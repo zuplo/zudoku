@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/swift";
+import _default from "@shikijs/langs/swift";
+export default _default;

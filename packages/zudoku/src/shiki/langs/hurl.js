@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/hurl";
+import _default from "@shikijs/langs/hurl";
+export default _default;

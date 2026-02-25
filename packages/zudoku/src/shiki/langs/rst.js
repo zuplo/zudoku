@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/rst";
+import _default from "@shikijs/langs/rst";
+export default _default;

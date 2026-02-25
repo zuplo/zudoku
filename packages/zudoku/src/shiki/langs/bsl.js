@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/bsl";
+import _default from "@shikijs/langs/bsl";
+export default _default;

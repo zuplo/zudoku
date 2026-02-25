@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/system-verilog";
+import _default from "@shikijs/langs/system-verilog";
+export default _default;

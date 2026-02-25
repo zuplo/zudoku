@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/rust";
+import _default from "@shikijs/langs/rust";
+export default _default;

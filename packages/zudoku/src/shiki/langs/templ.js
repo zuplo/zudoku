@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/templ";
+import _default from "@shikijs/langs/templ";
+export default _default;

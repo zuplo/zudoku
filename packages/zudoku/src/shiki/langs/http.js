@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/http";
+import _default from "@shikijs/langs/http";
+export default _default;

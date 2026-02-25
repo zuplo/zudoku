@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/shellscript";
+import _default from "@shikijs/langs/shellscript";
+export default _default;

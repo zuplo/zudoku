@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/andromeeda";
+import _default from "@shikijs/themes/andromeeda";
+export default _default;

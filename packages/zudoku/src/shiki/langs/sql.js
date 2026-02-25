@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/sql";
+import _default from "@shikijs/langs/sql";
+export default _default;

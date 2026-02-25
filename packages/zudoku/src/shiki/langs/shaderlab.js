@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/shaderlab";
+import _default from "@shikijs/langs/shaderlab";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/clojure";
+import _default from "@shikijs/langs/clojure";
+export default _default;

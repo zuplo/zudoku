@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/mojo";
+import _default from "@shikijs/langs/mojo";
+export default _default;

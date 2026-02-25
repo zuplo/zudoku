@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/angular-expression";
+import _default from "@shikijs/langs/angular-expression";
+export default _default;

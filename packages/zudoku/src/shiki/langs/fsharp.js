@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/fsharp";
+import _default from "@shikijs/langs/fsharp";
+export default _default;

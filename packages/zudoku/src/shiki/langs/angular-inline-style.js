@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/angular-inline-style";
+import _default from "@shikijs/langs/angular-inline-style";
+export default _default;

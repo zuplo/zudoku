@@ -43,7 +43,7 @@ const generateFiles = async (items: readonly string[], type: string) => {
       fileURLToPath(
         new URL(`../src/shiki/${type}/${item}.js`, import.meta.url),
       ),
-      `export { default } from "@shikijs/${type}/${item}";\n`,
+      `import _default from "@shikijs/${type}/${item}";\nexport default _default;\n`,
     );
   }
 };

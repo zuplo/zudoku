@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/pug";
+import _default from "@shikijs/langs/pug";
+export default _default;

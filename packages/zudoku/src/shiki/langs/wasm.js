@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/wasm";
+import _default from "@shikijs/langs/wasm";
+export default _default;

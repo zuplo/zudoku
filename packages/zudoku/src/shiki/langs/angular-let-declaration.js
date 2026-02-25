@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/angular-let-declaration";
+import _default from "@shikijs/langs/angular-let-declaration";
+export default _default;

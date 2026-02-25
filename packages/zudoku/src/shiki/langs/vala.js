@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/vala";
+import _default from "@shikijs/langs/vala";
+export default _default;

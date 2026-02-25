@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/bat";
+import _default from "@shikijs/langs/bat";
+export default _default;

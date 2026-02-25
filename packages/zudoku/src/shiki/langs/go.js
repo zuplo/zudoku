@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/go";
+import _default from "@shikijs/langs/go";
+export default _default;

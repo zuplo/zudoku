@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/edge";
+import _default from "@shikijs/langs/edge";
+export default _default;

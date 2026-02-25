@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/scala";
+import _default from "@shikijs/langs/scala";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/common-lisp";
+import _default from "@shikijs/langs/common-lisp";
+export default _default;

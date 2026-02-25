@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/bibtex";
+import _default from "@shikijs/langs/bibtex";
+export default _default;

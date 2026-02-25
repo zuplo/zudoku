@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/jsonnet";
+import _default from "@shikijs/langs/jsonnet";
+export default _default;

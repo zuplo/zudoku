@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/gdshader";
+import _default from "@shikijs/langs/gdshader";
+export default _default;

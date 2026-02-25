@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/applescript";
+import _default from "@shikijs/langs/applescript";
+export default _default;

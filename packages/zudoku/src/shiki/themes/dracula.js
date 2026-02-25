@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/dracula";
+import _default from "@shikijs/themes/dracula";
+export default _default;

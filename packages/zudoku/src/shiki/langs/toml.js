@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/toml";
+import _default from "@shikijs/langs/toml";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/houston";
+import _default from "@shikijs/themes/houston";
+export default _default;

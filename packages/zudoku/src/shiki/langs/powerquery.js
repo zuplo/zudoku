@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/powerquery";
+import _default from "@shikijs/langs/powerquery";
+export default _default;

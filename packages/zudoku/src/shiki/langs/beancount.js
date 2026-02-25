@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/beancount";
+import _default from "@shikijs/langs/beancount";
+export default _default;

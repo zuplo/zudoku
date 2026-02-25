@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/horizon";
+import _default from "@shikijs/themes/horizon";
+export default _default;

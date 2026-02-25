@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/gleam";
+import _default from "@shikijs/langs/gleam";
+export default _default;

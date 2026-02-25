@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/abap";
+import _default from "@shikijs/langs/abap";
+export default _default;

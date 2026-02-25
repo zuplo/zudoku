@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/purescript";
+import _default from "@shikijs/langs/purescript";
+export default _default;

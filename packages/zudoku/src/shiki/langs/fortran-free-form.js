@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/fortran-free-form";
+import _default from "@shikijs/langs/fortran-free-form";
+export default _default;

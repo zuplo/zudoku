@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/perl";
+import _default from "@shikijs/langs/perl";
+export default _default;

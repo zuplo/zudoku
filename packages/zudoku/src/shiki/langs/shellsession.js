@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/shellsession";
+import _default from "@shikijs/langs/shellsession";
+export default _default;

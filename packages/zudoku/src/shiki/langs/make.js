@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/make";
+import _default from "@shikijs/langs/make";
+export default _default;

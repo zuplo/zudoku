@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/gherkin";
+import _default from "@shikijs/langs/gherkin";
+export default _default;

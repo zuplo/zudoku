@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/codeowners";
+import _default from "@shikijs/langs/codeowners";
+export default _default;

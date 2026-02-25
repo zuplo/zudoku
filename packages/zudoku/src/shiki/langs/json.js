@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/json";
+import _default from "@shikijs/langs/json";
+export default _default;

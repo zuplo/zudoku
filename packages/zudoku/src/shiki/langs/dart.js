@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/dart";
+import _default from "@shikijs/langs/dart";
+export default _default;

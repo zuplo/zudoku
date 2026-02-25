@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/gruvbox-light-soft";
+import _default from "@shikijs/themes/gruvbox-light-soft";
+export default _default;

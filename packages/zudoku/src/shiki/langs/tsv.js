@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/tsv";
+import _default from "@shikijs/langs/tsv";
+export default _default;

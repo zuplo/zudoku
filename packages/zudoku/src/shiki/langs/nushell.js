@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/nushell";
+import _default from "@shikijs/langs/nushell";
+export default _default;

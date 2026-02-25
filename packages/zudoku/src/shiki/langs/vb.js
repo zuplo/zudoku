@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/vb";
+import _default from "@shikijs/langs/vb";
+export default _default;

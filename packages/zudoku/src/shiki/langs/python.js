@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/python";
+import _default from "@shikijs/langs/python";
+export default _default;

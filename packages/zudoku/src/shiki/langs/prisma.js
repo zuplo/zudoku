@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/prisma";
+import _default from "@shikijs/langs/prisma";
+export default _default;

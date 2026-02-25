@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/zenscript";
+import _default from "@shikijs/langs/zenscript";
+export default _default;

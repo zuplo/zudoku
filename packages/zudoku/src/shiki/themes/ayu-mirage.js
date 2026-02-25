@@ -1,1 +1,2 @@
-export { default } from "@shikijs/themes/ayu-mirage";
+import _default from "@shikijs/themes/ayu-mirage";
+export default _default;

@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/cypher";
+import _default from "@shikijs/langs/cypher";
+export default _default;

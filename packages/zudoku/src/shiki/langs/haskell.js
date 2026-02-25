@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/haskell";
+import _default from "@shikijs/langs/haskell";
+export default _default;

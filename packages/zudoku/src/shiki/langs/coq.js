@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/coq";
+import _default from "@shikijs/langs/coq";
+export default _default;

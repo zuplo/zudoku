@@ -1,1 +1,2 @@
-export { default } from "@shikijs/langs/jssm";
+import _default from "@shikijs/langs/jssm";
+export default _default;
