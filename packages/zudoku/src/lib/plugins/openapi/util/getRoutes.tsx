@@ -138,22 +138,29 @@ const createVersionRoutes = ({
   versionPath,
   tagPages,
   hasUntaggedOperations = true,
+  showInfoPage = true,
 }: {
   versionPath: string;
   tagPages: string[];
   hasUntaggedOperations?: boolean;
+  showInfoPage?: boolean;
 }): RouteObject[] => {
-  const indexRoute = {
-    index: true,
-    path: versionPath,
-    lazy: async () => {
-      const { SchemaInfo } = await import("../SchemaInfo.js");
-
-      return {
-        element: <SchemaInfo />,
+  const indexRoute: RouteObject = showInfoPage
+    ? {
+        index: true,
+        path: versionPath,
+        lazy: async () => {
+          const { SchemaInfo } = await import("../SchemaInfo.js");
+          return { element: <SchemaInfo /> };
+        },
+      }
+    : {
+        index: true,
+        path: versionPath,
+        element: (
+          <Navigate to={joinUrl(versionPath, tagPages[0] ?? "")} replace />
+        ),
       };
-    },
-  } satisfies RouteObject;
 
   return [
     indexRoute,
@@ -213,6 +220,7 @@ export const getRoutes = ({
             versionPath,
             tagPages,
             hasUntaggedOperations,
+            showInfoPage: config.options?.showInfoPage !== false,
           })
         : [
             createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),

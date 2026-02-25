@@ -254,6 +254,7 @@ const config: ZudokuConfig = {
   defaults: {
     apis: {
       examplesLanguage: "js",
+      showInfoPage: false,
       schemaDownload: {
         enabled: true,
       },

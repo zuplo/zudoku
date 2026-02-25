@@ -1,7 +1,6 @@
 import { CirclePlayIcon } from "lucide-react";
 import { type PropsWithChildren, Suspense, lazy } from "react";
 import { matchPath } from "react-router";
-import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -172,18 +171,19 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
             | { name: string; tags: string[] }[]
             | undefined) ?? [];
 
-        const categories: NavigationItem[] = [
-          {
-            type: "link",
+        const categories = buildTagCategories({
+          tagCategories,
+          tagGroups,
+          expandAllTags: config.options?.expandAllTags,
+        });
+
+        if (config.options?.showInfoPage !== false) {
+          categories.unshift({
+            type: "link" as const,
             to: joinUrl(basePath, versionParam),
             label: "Information",
-          },
-          ...buildTagCategories({
-            tagCategories,
-            tagGroups,
-            expandAllTags: config.options?.expandAllTags,
-          }),
-        ];
+          });
+        }
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,

@@ -21,7 +21,6 @@ import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
 import { getModuleDir } from "./config.js";
-import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
 const viteApiPlugin = async (): Promise<Plugin> => {
@@ -105,7 +104,16 @@ const viteApiPlugin = async (): Promise<Plugin> => {
           .forEach((file) => server.watcher.add(file));
 
         invalidateNavigation(server);
-        reload(server);
+
+        for (const environment of Object.values(server.environments)) {
+          const mod =
+            environment.moduleGraph.getModuleById(virtualModuleId) ??
+            environment.moduleGraph.getModuleById(resolvedVirtualModuleId);
+          if (mod) {
+            environment.moduleGraph.invalidateModule(mod);
+          }
+        }
+        server.ws.send({ type: "full-reload" });
       });
     },
     resolveId(id) {
@@ -213,6 +221,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
               `    expandApiInformation: config.defaults?.apis?.expandApiInformation ?? false,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
               `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
@@ -237,6 +246,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
               `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               "  },",
