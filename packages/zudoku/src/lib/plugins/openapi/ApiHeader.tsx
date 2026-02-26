@@ -60,7 +60,7 @@ export const ApiHeader = ({
             {showVersions && (
               <span className="text-xl text-muted-foreground ms-1.5">
                 {" "}
-                ({version})
+                ({currentVersion?.label ?? version})
               </span>
             )}
           </Heading>
