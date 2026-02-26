@@ -887,8 +887,8 @@ importers:
         specifier: 6.1.1
         version: 6.1.1(@types/node@22.19.1)(bufferutil@4.1.0)(graphql-sock@1.0.1(graphql@16.12.0))(graphql@16.12.0)(typescript@5.9.3)(utf-8-validate@5.0.10)
       '@inkeep/cxkit-types':
-        specifier: 0.5.115
-        version: 0.5.115
+        specifier: 0.5.116
+        version: 0.5.116
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.1
@@ -2714,8 +2714,8 @@ packages:
   '@iconify/utils@3.0.2':
     resolution: {integrity: sha512-EfJS0rLfVuRuJRn4psJHtK2A9TqVnkxPpHY6lYHiB9+8eSuudsxbwMiavocG45ujOo6FJ+CIRlRnlOGinzkaGQ==}
 
-  '@inkeep/cxkit-types@0.5.115':
-    resolution: {integrity: sha512-PSYEQfiok+c/RiAib6grUKtWi3Iac2yl7HgoytLNuIbHKmjrMzxQzpbYDuraYKjhO8OZakWLMbJ7N+HyE/tOyA==}
+  '@inkeep/cxkit-types@0.5.116':
+    resolution: {integrity: sha512-wYWz6Bbp5XzEwdfkj7Msy4i1O8vaXVpnoIe4zZcxhwNFFI8V3QMDQpfwQVxOhLIKdMzs0nKFciwR+WQWLawblQ==}
 
   '@inquirer/ansi@1.0.2':
     resolution: {integrity: sha512-S8qNSZiYzFd0wAcyG5AXCvUHC5Sr7xpZ9wZ2py9XR88jUz8wooStVx5M6dRzczbBWjic9NP7+rY0Xi7qqK/aMQ==}
@@ -4892,6 +4892,9 @@ packages:
 
   '@swc/helpers@0.5.18':
     resolution: {integrity: sha512-TXTnIcNJQEKwThMMqBXsZ4VGAza6bvN4pa41Rkqoio6QBKMvo+5lexeTMScGCIxtzgQJzElcvIltani+adC5PQ==}
+
+  '@swc/helpers@0.5.19':
+    resolution: {integrity: sha512-QamiFeIK3txNjgUTNppE6MiG3p7TdninpZu0E0PbqVh1a9FNLT2FRhisaa4NcaX52XVhA5l7Pk58Ft7Sqi/2sA==}
 
   '@tailwindcss/node@4.2.0':
     resolution: {integrity: sha512-Yv+fn/o2OmL5fh/Ir62VXItdShnUxfpkMA4Y7jdeC8O81WPB8Kf6TT6GSHvnqgSwDzlB5iT7kDpeXxLsUS0T6Q==}
@@ -12576,7 +12579,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@inkeep/cxkit-types@0.5.115': {}
+  '@inkeep/cxkit-types@0.5.116': {}
 
   '@inquirer/ansi@1.0.2': {}
 
@@ -14913,6 +14916,10 @@ snapshots:
       - utf-8-validate
 
   '@swc/helpers@0.5.18':
+    dependencies:
+      tslib: 2.8.1
+
+  '@swc/helpers@0.5.19':
     dependencies:
       tslib: 2.8.1
 
@@ -20047,7 +20054,7 @@ snapshots:
 
   rpc-websockets@9.3.3:
     dependencies:
-      '@swc/helpers': 0.5.18
+      '@swc/helpers': 0.5.19
       '@types/uuid': 8.3.4
       '@types/ws': 8.18.1
       buffer: 6.0.3
