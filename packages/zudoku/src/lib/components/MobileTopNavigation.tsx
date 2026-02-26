@@ -62,6 +62,9 @@ export const MobileTopNavigation = () => {
             <Search className="flex p-4" />
             <ul className="flex flex-col items-center gap-4 p-4">
               <li className="empty:hidden">
+                <Slot.Target name="head-navigation-start" />
+              </li>
+              <li className="empty:hidden">
                 <Slot.Target name="top-navigation-side" />
               </li>
 
