@@ -50,6 +50,13 @@ const paramsSuffix = (params: Record<string, string>) =>
     ? `-${slugify(new URLSearchParams(params).toString(), { separator: "_" })}`
     : "";
 
+const paramsPath = (params: Record<string, string>) =>
+  Object.keys(params).length > 0
+    ? Object.values(params)
+        .map((v) => slugify(v))
+        .join("-")
+    : "";
+
 const normalizeInputs = (
   inputs:
     | string
@@ -188,13 +195,17 @@ export class SchemaManager {
     const versionPath =
       existingSchema?.path && existingSchema.path.length > 0
         ? existingSchema.path
-        : schemaVersion;
+        : paramsPath(params) || schemaVersion;
 
     const processed = {
       schema: processedSchema,
       version: schemaVersion,
       path: versionPath,
-      label: existingSchema?.label,
+      label:
+        existingSchema?.label ??
+        (Object.keys(params).length > 0
+          ? Object.values(params).join(", ")
+          : undefined),
       inputPath: filePath,
       params,
       importKey,

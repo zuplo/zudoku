@@ -170,11 +170,28 @@ argument, allowing you to filter or transform the schema differently for each va
 This is useful when you have a single schema containing multiple API versions or groups that you
 want to split into separate pages.
 
+Plain strings work out of the box. Version paths and dropdown labels are auto-generated from the
+query parameter values. For more control, use the object form with explicit `path` and `label`.
+
 ```ts title=zudoku.config.ts
 const config = {
   apis: {
     type: "file",
-    input: ["openapi.json?prefix=/v2", "openapi.json?prefix=/v1"],
+    input: [
+      // Object form: explicit path and label
+      {
+        input: "openapi.json?prefix=/v2",
+        path: "latest",
+        label: "Latest (v2)",
+      },
+      // Object form: explicit path, label auto-generated from params
+      {
+        input: "openapi.json?prefix=/v1.1",
+        path: "v1.1",
+      },
+      // Plain string: both path and label auto-generated from params
+      "openapi.json?prefix=/v1",
+    ],
     path: "/api",
   },
 };

@@ -274,6 +274,12 @@ describe("SchemaManager", () => {
 
     expect(schemas?.[0]?.importKey).not.toBe(schemas?.[1]?.importKey);
 
+    // Auto-generated version paths are unique when using query params
+    expect(schemas?.[0]?.path).not.toBe(schemas?.[1]?.path);
+    // Auto-generated labels from param values
+    expect(schemas?.[0]?.label).toBe("/v1");
+    expect(schemas?.[1]?.label).toBe("/v2");
+
     const v1Paths = Object.keys(schemas?.[0]?.schema.paths ?? {});
     const v2Paths = Object.keys(schemas?.[1]?.schema.paths ?? {});
     expect(v1Paths).toEqual(["/v1/users", "/v1/posts"]);
