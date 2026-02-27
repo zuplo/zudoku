@@ -75,12 +75,14 @@ export const CodeTabs = ({
       .filter(isCodeTabPanel)
       .map(({ props }, i) => {
         const meta = props.meta ? parseMetaString(props.meta) : {};
+        const metaIcon = typeof meta.icon === "string" ? meta.icon : undefined;
+        const metaTitle = typeof meta.title === "string" ? meta.title : undefined;
         return {
           ...props,
-          icon: props.icon ?? meta.icon,
-          title: props.title ?? meta.title,
-          showLineNumbers: meta.showLineNumbers,
-          label: meta.title ?? props.title ?? props.language ?? `Tab ${i + 1}`,
+          icon: props.icon ?? metaIcon,
+          title: props.title ?? metaTitle,
+          showLineNumbers: meta.showLineNumbers === true,
+          label: metaTitle ?? props.title ?? props.language ?? `Tab ${i + 1}`,
         };
       });
   }, [children]);
