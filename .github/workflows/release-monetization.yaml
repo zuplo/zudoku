@@ -52,6 +52,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck
+        run: pnpm --filter @zuplo/zudoku-plugin-monetization run typecheck
+
       - name: Build
         run: pnpm --filter @zuplo/zudoku-plugin-monetization run build
 
