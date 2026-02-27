@@ -1302,11 +1302,68 @@
           {
             "name": "fuelType",
             "in": "query",
-            "description": "Filter by available fuel type",
+            "description": "Filter by fuel type (pipe-delimited: fuelType=ION|CHEMICAL)",
             "schema": {
-              "type": "string",
-              "enum": ["ION", "CHEMICAL", "SOLAR", "NUCLEAR"]
-            }
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["ION", "CHEMICAL", "SOLAR", "NUCLEAR"]
+              }
+            },
+            "style": "pipeDelimited",
+            "explode": false
+          },
+          {
+            "name": "features",
+            "in": "query",
+            "description": "Filter by station features (comma-separated: features=REPAIR_BAY,CARGO_TRANSFER)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "REPAIR_BAY",
+                  "CARGO_TRANSFER",
+                  "CREW_REST",
+                  "EMERGENCY_DOCK"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": false
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter by station status (exploded: status=ACTIVE&status=MAINTENANCE)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "ACTIVE",
+                  "MAINTENANCE",
+                  "DECOMMISSIONED",
+                  "UNDER_CONSTRUCTION"
+                ]
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "name": "sectors",
+            "in": "query",
+            "description": "Filter by space sectors (space-delimited: sectors=ALPHA%20BETA)",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["ALPHA", "BETA", "GAMMA", "DELTA"]
+              }
+            },
+            "style": "spaceDelimited",
+            "explode": false
           }
         ],
         "responses": {

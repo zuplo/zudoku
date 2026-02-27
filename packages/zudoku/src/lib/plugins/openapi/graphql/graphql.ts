@@ -240,6 +240,7 @@ export type OperationsFragmentFragment = {
     schema?: any | null;
     style?: string | null;
     explode?: boolean | null;
+    allowReserved?: boolean | null;
     examples?: Array<{
       __typename?: "ExampleItem";
       name: string;
@@ -458,6 +459,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
     schema
     style
     explode
+    allowReserved
     examples {
       name
       description
@@ -584,6 +586,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
     schema
     style
     explode
+    allowReserved
     examples {
       name
       description

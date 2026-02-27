@@ -37,7 +37,12 @@ export const PlaygroundDialogWrapper = ({
       isRequired: p.required ?? false,
       enum: p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
-      defaultValue: p.schema?.default,
+      defaultValue: Array.isArray(p.schema?.default)
+        ? JSON.stringify(p.schema.default)
+        : p.schema?.default,
+      style: p.style ?? undefined,
+      explode: p.explode ?? undefined,
+      allowReserved: p.allowReserved ?? undefined,
     }));
 
   const pathParams = operation.parameters
