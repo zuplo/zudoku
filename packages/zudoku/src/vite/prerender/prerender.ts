@@ -159,6 +159,7 @@ export const prerender = async ({
     outputUrls: paths,
     config: config.sitemap,
     baseOutputDir: distDir,
+    workerResults,
   });
 
   // Generate llms.txt files if markdown export is enabled

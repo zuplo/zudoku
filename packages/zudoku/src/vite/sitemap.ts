@@ -5,12 +5,14 @@ import colors from "picocolors";
 import { SitemapStream } from "sitemap";
 import type { ZudokuSiteMapConfig } from "../config/validators/validate.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import type { WorkerResult } from "./prerender/prerender.js";
 
 export async function generateSitemap({
   outputUrls,
   basePath,
   baseOutputDir,
   config,
+  workerResults,
 }: {
   /**
    * The base path of the site (e.g. `/docs`).
@@ -28,6 +30,10 @@ export async function generateSitemap({
    * The site map configuration
    */
   config: ZudokuSiteMapConfig;
+  /**
+   * The worker results from prerendering (used to filter redirects)
+   */
+  workerResults: WorkerResult[];
 }) {
   if (!config) {
     return;
@@ -38,7 +44,7 @@ export async function generateSitemap({
   const outputDir = path.resolve(baseOutputDir, config.outDir ?? "");
 
   // Ensure the output directory exists
-  if (!existsSync(outputDir) === false) {
+  if (!existsSync(outputDir)) {
     await mkdir(outputDir, { recursive: true });
   }
 
@@ -57,9 +63,23 @@ export async function generateSitemap({
       ? await config.exclude()
       : config.exclude) ?? [];
 
+  // Filter out redirects from the sitemap
+  const redirectUrls = new Set(
+    workerResults
+      .filter((result) => result.redirect)
+      .map((result) => {
+        const redirect = result.redirect;
+        if (!redirect) return "";
+        return redirect.from.replace(basePath ?? "", "");
+      }),
+  );
+
   for (const url of outputUrls) {
     const shouldExclude =
-      exclude.includes(url) || url.includes("*") || /(400|404|500)$/.test(url);
+      exclude.includes(url) ||
+      url.includes("*") ||
+      /(400|404|500)$/.test(url) ||
+      redirectUrls.has(url);
 
     if (shouldExclude) continue;
 
@@ -72,6 +92,12 @@ export async function generateSitemap({
   }
 
   sitemap.end();
+
+  // Wait for the write stream to finish
+  await new Promise<void>((resolve, reject) => {
+    writeStream.on("finish", resolve);
+    writeStream.on("error", reject);
+  });
 
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.debug(
