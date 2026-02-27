@@ -624,9 +624,6 @@ importers:
       '@shikijs/transformers':
         specifier: 3.22.0
         version: 3.22.0
-      '@sindresorhus/slugify':
-        specifier: 3.0.0
-        version: 3.0.0
       '@supabase/auth-ui-react':
         specifier: ^0.4.0
         version: 0.4.7(@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
@@ -4682,14 +4679,6 @@ packages:
 
   '@sinclair/typebox@0.34.48':
     resolution: {integrity: sha512-kKJTNuK3AQOrgjjotVxMrCn1sUJwM76wMszfq1kdU4uYVJjvEWuFQ6HgvLt4Xz3fSmZlTOxJ/Ie13KnIcWQXFA==}
-
-  '@sindresorhus/slugify@3.0.0':
-    resolution: {integrity: sha512-SCrKh1zS96q+CuH5GumHcyQEVPsM4Ve8oE0E6tw7AAhGq50K8ojbTUOQnX/j9Mhcv/AXiIsbCfquovyGOo5fGw==}
-    engines: {node: '>=20'}
-
-  '@sindresorhus/transliterate@2.2.0':
-    resolution: {integrity: sha512-aLtANYAx3qvFilasPhZke27+Cm7WawGGuGiOd2EAp0lg1NdWKfulslcql/Qi7lNQ9odkPjwRbwk9c4CYsTh+Rg==}
-    engines: {node: '>=20'}
 
   '@sinonjs/commons@3.0.1':
     resolution: {integrity: sha512-K3mCHKQ9sVh8o1C9cxkwxaOmXoAMlDxC1mYyHrjqOWEcBjYr76t96zL2zlj5dUGZ3HSw240X1qgH3Mjf1yJWpQ==}
@@ -14562,13 +14551,6 @@ snapshots:
   '@sinclair/typebox@0.27.10': {}
 
   '@sinclair/typebox@0.34.48': {}
-
-  '@sindresorhus/slugify@3.0.0':
-    dependencies:
-      '@sindresorhus/transliterate': 2.2.0
-      escape-string-regexp: 5.0.0
-
-  '@sindresorhus/transliterate@2.2.0': {}
 
   '@sinonjs/commons@3.0.1':
     dependencies:

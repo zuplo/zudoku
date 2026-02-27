@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { GraphQLClient } from "../client/GraphQLClient.js";
 import type { OpenApiPluginOptions } from "../index.js";
-import { getRoutes, getVersionMetadata } from "./getRoutes.js";
+import {
+  buildVersionSwitchUrl,
+  getRoutes,
+  getVersionMetadata,
+} from "./getRoutes.js";
 
 const mockClient = {} as GraphQLClient;
 
@@ -13,11 +17,7 @@ const baseConfig: OpenApiPluginOptions = {
 describe("getVersionMetadata", () => {
   it("returns empty metadata for raw type", () => {
     const result = getVersionMetadata({ type: "raw", input: "{}" });
-    expect(result).toEqual({
-      versions: [],
-      labels: {},
-      downloadUrls: {},
-    });
+    expect(result).toEqual({ versions: [], versionMap: {} });
   });
 
   it("returns empty metadata for non-array input", () => {
@@ -25,11 +25,7 @@ describe("getVersionMetadata", () => {
       type: "url",
       input: "https://example.com/openapi.json",
     });
-    expect(result).toEqual({
-      versions: [],
-      labels: {},
-      downloadUrls: {},
-    });
+    expect(result).toEqual({ versions: [], versionMap: {} });
   });
 
   it("extracts versions, labels and download URLs from versioned input", () => {
@@ -50,12 +46,17 @@ describe("getVersionMetadata", () => {
       ],
     });
 
-    expect(result).toEqual({
-      versions: ["v1", "v2"],
-      labels: { v1: "Version 1", v2: "v2" },
-      downloadUrls: {
-        v1: "https://example.com/v1.json",
-        v2: "https://example.com/v2.json",
+    expect(result.versions).toEqual(["v1", "v2"]);
+    expect(result.versionMap).toEqual({
+      v1: {
+        label: "Version 1",
+        downloadUrl: "https://example.com/v1.json",
+        tagPages: undefined,
+      },
+      v2: {
+        label: "v2",
+        downloadUrl: "https://example.com/v2.json",
+        tagPages: undefined,
       },
     });
   });
@@ -66,8 +67,11 @@ describe("getVersionMetadata", () => {
       input: [{ path: "v3", input: "https://example.com/v3.json" }],
     });
 
-    expect(result.labels).toEqual({ v3: "v3" });
-    expect(result.downloadUrls).toEqual({ v3: undefined });
+    expect(result.versionMap.v3).toEqual({
+      label: "v3",
+      downloadUrl: undefined,
+      tagPages: undefined,
+    });
   });
 
   it("extracts metadata from file type with versioned input", () => {
@@ -83,10 +87,11 @@ describe("getVersionMetadata", () => {
       ],
     });
 
-    expect(result).toEqual({
-      versions: ["v1"],
-      labels: { v1: "File V1" },
-      downloadUrls: { v1: "https://example.com/v1.json" },
+    expect(result.versions).toEqual(["v1"]);
+    expect(result.versionMap.v1).toEqual({
+      label: "File V1",
+      downloadUrl: "https://example.com/v1.json",
+      tagPages: undefined,
     });
   });
 });
@@ -464,5 +469,31 @@ describe("getRoutes", () => {
     expect(
       routes[0]?.children?.find((r) => r.path === "/api/~schemas")?.lazy,
     ).toBeDefined();
+  });
+});
+
+describe("buildVersionSwitchUrl", () => {
+  it("preserves tag when it exists in target version", () => {
+    const target = {
+      path: "/api/v2",
+      label: "V2",
+      tagPages: ["users", "posts"],
+    };
+    expect(buildVersionSwitchUrl(target, "users")).toBe("/api/v2/users");
+  });
+
+  it("falls back to version root when tag missing in target", () => {
+    const target = { path: "/api/v2", label: "V2", tagPages: ["users"] };
+    expect(buildVersionSwitchUrl(target, "analytics")).toBe("/api/v2");
+  });
+
+  it("preserves tag when target has no tagPages (URL schemas)", () => {
+    const target = { path: "/api/v2", label: "V2" };
+    expect(buildVersionSwitchUrl(target, "users")).toBe("/api/v2/users");
+  });
+
+  it("returns version root when no current tag", () => {
+    const target = { path: "/api/v2", label: "V2", tagPages: ["users"] };
+    expect(buildVersionSwitchUrl(target, undefined)).toBe("/api/v2");
   });
 });

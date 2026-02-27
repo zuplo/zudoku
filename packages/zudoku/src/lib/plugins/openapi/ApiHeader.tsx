@@ -18,6 +18,7 @@ import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { useOasConfig } from "./context.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
+import { buildVersionSwitchUrl } from "./util/getRoutes.js";
 
 type ApiHeaderProps = {
   title: string;
@@ -25,6 +26,7 @@ type ApiHeaderProps = {
   headingId: string;
   description?: string;
   children?: ReactNode;
+  tag?: string;
 };
 
 export const ApiHeader = ({
@@ -33,11 +35,12 @@ export const ApiHeader = ({
   headingId,
   description,
   children,
+  tag,
 }: ApiHeaderProps) => {
   const { input, type, versions, version, options } = useOasConfig();
   const navigate = useNavigate();
 
-  const hasMultipleVersions = Object.entries(versions).length > 1;
+  const hasMultipleVersions = Object.keys(versions).length > 1;
   const showVersions =
     options?.showVersionSelect === "always" ||
     (hasMultipleVersions && options?.showVersionSelect !== "hide");
@@ -49,6 +52,13 @@ export const ApiHeader = ({
         ? input
         : currentVersion?.downloadUrl
       : undefined;
+
+  const handleVersionChange = (newVersion: string) => {
+    const target = versions[newVersion];
+    if (!target) return;
+
+    navigate(buildVersionSwitchUrl(target, tag));
+  };
 
   return (
     <Collapsible className="w-full" defaultOpen={options?.expandApiInformation}>
@@ -70,11 +80,8 @@ export const ApiHeader = ({
           <div className="flex gap-2 items-center">
             {showVersions && (
               <Select
-                onValueChange={(v) =>
-                  // biome-ignore lint/style/noNonNullAssertion: is guaranteed to be defined
-                  navigate(versions[v]!.path)
-                }
-                defaultValue={version}
+                onValueChange={handleVersionChange}
+                value={version}
                 disabled={!hasMultipleVersions}
               >
                 <SelectTrigger className="w-[180px]" size="sm">

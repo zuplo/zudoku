@@ -258,6 +258,7 @@ export const OperationList = ({
           heading={tagTitle}
           headingId="description"
           description={description ?? undefined}
+          tag={tag ?? tagFromParams}
         >
           <Endpoint />
         </ApiHeader>
