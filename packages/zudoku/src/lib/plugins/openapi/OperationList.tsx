@@ -39,6 +39,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
       schema
       style
       explode
+      allowReserved
       examples {
         name
         description

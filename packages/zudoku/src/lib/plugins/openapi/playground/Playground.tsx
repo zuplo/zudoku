@@ -55,6 +55,12 @@ export type Header = {
   type?: string;
 };
 
+export type QueryParamStyle =
+  | "form"
+  | "spaceDelimited"
+  | "pipeDelimited"
+  | "deepObject";
+
 export type QueryParam = {
   name: string;
   defaultValue?: string;
@@ -62,7 +68,9 @@ export type QueryParam = {
   isRequired?: boolean;
   enum?: string[];
   type?: string;
-  isArray?: boolean;
+  style?: QueryParamStyle;
+  explode?: boolean;
+  allowReserved?: boolean;
 };
 
 export type PathParam = {
@@ -85,7 +93,10 @@ export type PlaygroundForm = {
     value: string;
     active: boolean;
     enum?: string[];
-    isArray?: boolean;
+    type?: string;
+    style?: QueryParamStyle;
+    explode?: boolean;
+    allowReserved?: boolean;
   }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
@@ -181,7 +192,10 @@ export const Playground = ({
                 value: param.defaultValue ?? "",
                 active: param.defaultActive ?? false,
                 enum: param.enum ?? [],
-                isArray: param.isArray ?? false,
+                type: param.type,
+                style: param.style,
+                explode: param.explode,
+                allowReserved: param.allowReserved,
               }))
             : [{ name: "", value: "", active: false, enum: [] }],
         pathParams: sortedPathParams.map((param) => ({

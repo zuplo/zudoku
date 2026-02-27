@@ -8,6 +8,7 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
+import { parseArrayParamValue } from "./createUrl.js";
 import ParamsGrid, {
   ParamsGridInput,
   ParamsGridItem,
@@ -15,16 +16,6 @@ import ParamsGrid, {
 } from "./ParamsGrid.js";
 import type { PlaygroundForm, QueryParam } from "./Playground.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
-
-const parseArrayValue = (value: string): string[] => {
-  if (!value) return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.map(String) : [value];
-  } catch {
-    return [value];
-  }
-};
 
 export const QueryParams = ({
   control,
@@ -70,7 +61,7 @@ export const QueryParams = ({
               (param) => param.name === watchedQueryParams.at(i)?.name,
             );
             const hasEnum = currentParam?.enum && currentParam.enum.length > 0;
-            const isArrayEnum = currentParam?.isArray && hasEnum;
+            const isArrayEnum = currentParam?.type === "array" && hasEnum;
             const nameInputProps = manager.getNameInputProps(i);
             const valueInputProps = manager.getValueInputProps(i);
 
@@ -111,7 +102,7 @@ export const QueryParams = ({
                     <ParamsGridInput asChild>
                       <MultiAutocomplete
                         options={currentParam.enum ?? []}
-                        value={parseArrayValue(
+                        value={parseArrayParamValue(
                           String(manager.getValue(i, "value")),
                         )}
                         onChange={(values) => {

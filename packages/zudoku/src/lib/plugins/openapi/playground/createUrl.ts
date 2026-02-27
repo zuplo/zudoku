@@ -1,4 +1,5 @@
 import type { PlaygroundForm } from "./Playground.js";
+import { serializeQueryString } from "./serializeQueryParams.js";
 
 export const parseArrayParamValue = (value: string): string[] => {
   if (!value) return [];
@@ -25,17 +26,10 @@ export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
     host.endsWith("/") ? host : `${host}/`,
   );
 
-  data.queryParams
-    .filter((param) => param.active)
-    .forEach((param) => {
-      if (param.isArray) {
-        for (const value of parseArrayParamValue(param.value)) {
-          url.searchParams.append(param.name, value);
-        }
-      } else {
-        url.searchParams.append(param.name, param.value);
-      }
-    });
+  const queryString = serializeQueryString(data.queryParams);
+  if (queryString) {
+    url.search = queryString;
+  }
 
   return url;
 };

@@ -86,7 +86,7 @@ describe("createUrl", () => {
     expect(url.searchParams.has("size")).toBe(false);
   });
 
-  it("expands array params into multiple query params (explode style)", () => {
+  it("expands array params with form+explode (default)", () => {
     const url = createUrl(
       "https://api.example.com",
       "/v1/products",
@@ -96,7 +96,7 @@ describe("createUrl", () => {
             name: "statuses",
             value: '["PENDING","IN_REVIEW"]',
             active: true,
-            isArray: true,
+            type: "array",
           },
         ],
       }),
@@ -105,6 +105,120 @@ describe("createUrl", () => {
       "PENDING",
       "IN_REVIEW",
     ]);
+  });
+
+  it("handles form+explode:false (comma-separated)", () => {
+    const url = createUrl(
+      "https://api.example.com",
+      "/v1/products",
+      makeFormData({
+        queryParams: [
+          {
+            name: "statuses",
+            value: '["PENDING","IN_REVIEW"]',
+            active: true,
+            type: "array",
+            style: "form",
+            explode: false,
+          },
+        ],
+      }),
+    );
+    expect(url.search).toBe("?statuses=PENDING,IN_REVIEW");
+  });
+
+  it("handles spaceDelimited style", () => {
+    const url = createUrl(
+      "https://api.example.com",
+      "/v1/products",
+      makeFormData({
+        queryParams: [
+          {
+            name: "ids",
+            value: '["1","2","3"]',
+            active: true,
+            type: "array",
+            style: "spaceDelimited",
+          },
+        ],
+      }),
+    );
+    expect(url.search).toBe("?ids=1%202%203");
+  });
+
+  it("handles pipeDelimited style", () => {
+    const url = createUrl(
+      "https://api.example.com",
+      "/v1/products",
+      makeFormData({
+        queryParams: [
+          {
+            name: "ids",
+            value: '["1","2","3"]',
+            active: true,
+            type: "array",
+            style: "pipeDelimited",
+          },
+        ],
+      }),
+    );
+    expect(url.search).toBe("?ids=1|2|3");
+  });
+
+  it("handles deepObject style", () => {
+    const url = createUrl(
+      "https://api.example.com",
+      "/v1/products",
+      makeFormData({
+        queryParams: [
+          {
+            name: "ids",
+            value: '["a","b"]',
+            active: true,
+            type: "array",
+            style: "deepObject",
+            explode: true,
+          },
+        ],
+      }),
+    );
+    expect(url.search).toBe("?ids%5B0%5D=a&ids%5B1%5D=b");
+  });
+
+  it("handles allowReserved", () => {
+    const url = createUrl(
+      "https://api.example.com",
+      "/v1/products",
+      makeFormData({
+        queryParams: [
+          {
+            name: "filter",
+            value: "a/b:c",
+            active: true,
+            allowReserved: true,
+          },
+        ],
+      }),
+    );
+    expect(url.search).toBe("?filter=a/b:c");
+  });
+
+  it("allowReserved still encodes # and &", () => {
+    const url = createUrl(
+      "https://api.example.com",
+      "/v1/products",
+      makeFormData({
+        queryParams: [
+          {
+            name: "filter",
+            value: "a#b&c",
+            active: true,
+            allowReserved: true,
+          },
+        ],
+      }),
+    );
+    expect(url.search).toBe("?filter=a%23b%26c");
   });
 
   it("handles single-value array param", () => {
@@ -117,7 +231,7 @@ describe("createUrl", () => {
             name: "statuses",
             value: '["PENDING"]',
             active: true,
-            isArray: true,
+            type: "array",
           },
         ],
       }),
@@ -135,7 +249,7 @@ describe("createUrl", () => {
             name: "statuses",
             value: "",
             active: true,
-            isArray: true,
+            type: "array",
           },
         ],
       }),
@@ -153,7 +267,7 @@ describe("createUrl", () => {
             name: "statuses",
             value: "PENDING",
             active: true,
-            isArray: true,
+            type: "array",
           },
         ],
       }),
@@ -186,7 +300,7 @@ describe("createUrl", () => {
             name: "statuses",
             value: '["PENDING","IN_REVIEW"]',
             active: true,
-            isArray: true,
+            type: "array",
           },
           { name: "sort", value: "name", active: true },
         ],
