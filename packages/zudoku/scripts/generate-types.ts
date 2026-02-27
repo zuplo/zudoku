@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { format } from "oxfmt";
 
@@ -29,26 +29,3 @@ const outputPath = fileURLToPath(
   new URL("../src/config/validators/icon-types.ts", import.meta.url),
 );
 await writeFile(outputPath, code);
-
-// Generate shiki code
-const { languageNames } = await import("@shikijs/langs");
-const { themeNames } = await import("@shikijs/themes");
-
-const generateFiles = async (items: readonly string[], type: string) => {
-  const dir = fileURLToPath(new URL(`../src/shiki/${type}`, import.meta.url));
-  await mkdir(dir, { recursive: true });
-
-  for (const item of items) {
-    await writeFile(
-      fileURLToPath(
-        new URL(`../src/shiki/${type}/${item}.js`, import.meta.url),
-      ),
-      `import _default from "@shikijs/${type}/${item}";\nexport default _default;\n`,
-    );
-  }
-};
-
-await Promise.all([
-  generateFiles(languageNames, "langs"),
-  generateFiles(themeNames, "themes"),
-]);
