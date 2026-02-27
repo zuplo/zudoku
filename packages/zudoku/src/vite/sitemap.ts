@@ -65,9 +65,16 @@ export async function generateSitemap({
 
   // Filter out redirects from the sitemap
   const redirectUrls = new Set(
-    workerResults.flatMap((result) =>
-      result.redirect ? [result.redirect.from.replace(basePath ?? "", "")] : [],
-    ),
+    workerResults.flatMap((result) => {
+      if (!result.redirect) return [];
+      const from = result.redirect.from;
+      // Strip basePath from the redirect URL if present
+      const urlWithoutBase =
+        basePath && from.startsWith(basePath)
+          ? from.slice(basePath.length)
+          : from;
+      return [urlWithoutBase];
+    }),
   );
 
   for (const url of outputUrls) {
