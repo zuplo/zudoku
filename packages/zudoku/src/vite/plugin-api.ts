@@ -8,11 +8,7 @@ import {
   getBuildConfig,
   type Processor,
 } from "../config/validators/BuildSchema.js";
-import {
-  getAllOperations,
-  getAllSlugs,
-  getAllTags,
-} from "../lib/oas/graphql/index.js";
+import { getAllTags } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -174,9 +170,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const allSlugs = new Set<string>();
             const versionedInput = schemas.map<VersionedInput>((s) => {
-              const operations = getAllOperations(s.schema.paths);
-              const slugs = getAllSlugs(operations);
-              const versionTags = getAllTags(s.schema, slugs.tags);
+              const versionTags = getAllTags(s.schema);
               versionTags.forEach(({ slug }) => {
                 if (slug) allSlugs.add(slug);
               });
@@ -190,6 +184,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                 hasUntaggedOperations: versionTags.some(
                   (tag) => tag.name === undefined,
                 ),
+                tagPages: versionTags.flatMap((t) => t.slug ?? []),
               };
             });
 

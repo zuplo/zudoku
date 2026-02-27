@@ -5,7 +5,6 @@ import {
   type JSONSchema,
 } from "@apidevtools/json-schema-ref-parser";
 import { upgrade, validate } from "@scalar/openapi-parser";
-import slugify from "@sindresorhus/slugify";
 import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
@@ -14,6 +13,7 @@ import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
+import { slugify } from "../../lib/util/slugify.js";
 import { generateCode } from "./schema-codegen.js";
 
 type ProcessedSchema = {
@@ -47,7 +47,7 @@ const parseInputString = (input: string) => {
 
 const paramsSuffix = (params: Record<string, string>) =>
   Object.keys(params).length > 0
-    ? `-${slugify(new URLSearchParams(params).toString(), { separator: "_" })}`
+    ? `-${slugify(new URLSearchParams(params).toString())}`
     : "";
 
 const paramsPath = (params: Record<string, string>) =>
@@ -159,9 +159,9 @@ export class SchemaManager {
     );
 
     const processedTime = Date.now();
-    const code = await generateCode(processedSchema, filePath);
+    const code = generateCode(processedSchema, filePath);
 
-    const prefixPath = slugify(configuredPath, { separator: "_" });
+    const prefixPath = slugify(configuredPath);
     const processedFilePath = path.posix.join(
       this.storeDir,
       `${prefixPath}-${path.basename(filePath)}${paramsSuffix(params)}.js`,
