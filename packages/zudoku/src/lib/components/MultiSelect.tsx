@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import { cn } from "../util/cn.js";
 
-type MultiAutocompleteProps = {
+type MultiSelectProps = {
   options: readonly string[];
   value: string[];
   onChange: (value: string[]) => void;
@@ -11,13 +11,13 @@ type MultiAutocompleteProps = {
   className?: string;
 };
 
-export const MultiAutocomplete = ({
+export const MultiSelect = ({
   options,
   value,
   onChange,
   placeholder = "Select values...",
   className,
-}: MultiAutocompleteProps) => {
+}: MultiSelectProps) => {
   const [open, setOpen] = useState(false);
 
   const toggleValue = (option: string) => {

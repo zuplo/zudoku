@@ -3,7 +3,7 @@ import { type Control, useFormContext } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
-import { MultiAutocomplete } from "../../../components/MultiAutocomplete.js";
+import { MultiSelect } from "../../../components/MultiSelect.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -100,7 +100,7 @@ export const QueryParams = ({
                 <div className="flex justify-between items-center">
                   {isArrayEnum ? (
                     <ParamsGridInput asChild>
-                      <MultiAutocomplete
+                      <MultiSelect
                         options={currentParam.enum ?? []}
                         value={parseArrayParamValue(
                           String(manager.getValue(i, "value")),
