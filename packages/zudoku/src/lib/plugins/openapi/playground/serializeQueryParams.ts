@@ -1,5 +1,14 @@
-import { parseArrayParamValue } from "./createUrl.js";
 import type { PlaygroundForm } from "./Playground.js";
+
+export const parseArrayParamValue = (value: string): string[] => {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [value];
+  } catch {
+    return [value];
+  }
+};
 
 // RFC 3986 reserved characters that should be kept unencoded when allowReserved
 // is true. # and & are excluded since they have structural meaning in query strings.

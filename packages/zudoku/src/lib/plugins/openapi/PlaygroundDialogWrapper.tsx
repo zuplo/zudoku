@@ -2,7 +2,6 @@ import type {
   MediaTypeObject,
   OperationsFragmentFragment,
 } from "./graphql/graphql.js";
-import type { QueryParamStyle } from "./playground/Playground.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 
 export const PlaygroundDialogWrapper = ({
@@ -41,7 +40,7 @@ export const PlaygroundDialogWrapper = ({
       defaultValue: Array.isArray(p.schema?.default)
         ? JSON.stringify(p.schema.default)
         : p.schema?.default,
-      style: (p.style as QueryParamStyle) ?? undefined,
+      style: p.style ?? undefined,
       explode: p.explode ?? undefined,
       allowReserved: p.allowReserved ?? undefined,
     }));

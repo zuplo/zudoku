@@ -55,12 +55,6 @@ export type Header = {
   type?: string;
 };
 
-export type QueryParamStyle =
-  | "form"
-  | "spaceDelimited"
-  | "pipeDelimited"
-  | "deepObject";
-
 export type QueryParam = {
   name: string;
   defaultValue?: string;
@@ -68,7 +62,7 @@ export type QueryParam = {
   isRequired?: boolean;
   enum?: string[];
   type?: string;
-  style?: QueryParamStyle;
+  style?: string;
   explode?: boolean;
   allowReserved?: boolean;
 };
@@ -94,7 +88,7 @@ export type PlaygroundForm = {
     active: boolean;
     enum?: string[];
     type?: string;
-    style?: QueryParamStyle;
+    style?: string;
     explode?: boolean;
     allowReserved?: boolean;
   }>;

@@ -8,7 +8,6 @@ import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
 } from "./CollapsibleHeader.js";
-import { parseArrayParamValue } from "./createUrl.js";
 import ParamsGrid, {
   ParamsGridInput,
   ParamsGridItem,
@@ -16,6 +15,7 @@ import ParamsGrid, {
 } from "./ParamsGrid.js";
 import type { PlaygroundForm, QueryParam } from "./Playground.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
+import { parseArrayParamValue } from "./serializeQueryParams.js";
 
 export const QueryParams = ({
   control,

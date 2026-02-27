@@ -1,16 +1,6 @@
 import type { PlaygroundForm } from "./Playground.js";
 import { serializeQueryString } from "./serializeQueryParams.js";
 
-export const parseArrayParamValue = (value: string): string[] => {
-  if (!value) return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.map(String) : [value];
-  } catch {
-    return [value];
-  }
-};
-
 export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
   const filledPath = path.replace(/(:\w+|\{\w+})/g, (match) => {
     const key = match.replace(/[:{}]/g, "");

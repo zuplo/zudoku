@@ -1,5 +1,5 @@
 import { CheckIcon, ChevronDownIcon } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import { cn } from "../util/cn.js";
 
@@ -19,7 +19,6 @@ export const MultiAutocomplete = ({
   className,
 }: MultiAutocompleteProps) => {
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const toggleValue = (option: string) => {
     if (value.includes(option)) {
@@ -33,7 +32,6 @@ export const MultiAutocomplete = ({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
-          ref={triggerRef}
           type="button"
           className={cn(
             "flex items-center justify-between w-full h-9 bg-transparent text-xs font-mono text-left truncate",

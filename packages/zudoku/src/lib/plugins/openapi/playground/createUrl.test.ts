@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { createUrl, parseArrayParamValue } from "./createUrl.js";
+import { createUrl } from "./createUrl.js";
 import type { PlaygroundForm } from "./Playground.js";
+import { parseArrayParamValue } from "./serializeQueryParams.js";
 
 describe("parseArrayParamValue", () => {
   it("returns empty array for empty string", () => {
