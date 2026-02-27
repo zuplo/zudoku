@@ -1,11 +1,12 @@
-import { readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
 import path from "node:path";
 import { expect, it } from "vitest";
 import type { WorkerResult } from "./prerender/prerender.js";
 import { generateSitemap } from "./sitemap.js";
 
 it("should exclude redirects from sitemap", async () => {
-  const tempDir = path.join(import.meta.dirname, "../../.tmp/sitemap-test");
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "zudoku-sitemap-test-"));
 
   // Mock worker results with a redirect
   const workerResults: WorkerResult[] = [
@@ -51,7 +52,7 @@ it("should exclude redirects from sitemap", async () => {
 });
 
 it("should exclude redirects with basePath from sitemap", async () => {
-  const tempDir = path.join(import.meta.dirname, "../../.tmp/sitemap-test-2");
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "zudoku-sitemap-test-"));
   const basePath = "/docs";
 
   // Mock worker results with a redirect that includes basePath
