@@ -1,11 +1,11 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: Allow any type
 import SchemaBuilder from "@pothos/core";
+import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
+import { createYoga, type YogaServerOptions } from "graphql-yoga";
 import {
   type CountableSlugify,
   slugifyWithCounter,
-} from "@sindresorhus/slugify";
-import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
-import { createYoga, type YogaServerOptions } from "graphql-yoga";
+} from "../../util/slugify.js";
 import { HttpMethods, validate } from "../parser/index.js";
 import type {
   ContactObject,
@@ -53,19 +53,21 @@ export const createOperationSlug = (
   return slugify(summary);
 };
 
-export type SchemaImport = () => Promise<{
-  schema: OpenAPIDocument;
-  slugs: ReturnType<typeof getAllSlugs>;
-}>;
+export type SchemaImport = () => Promise<{ schema: OpenAPIDocument }>;
 
 export type SchemaImports = Record<string, SchemaImport>;
+
+type Slugs = {
+  operations: Record<string, string>;
+  tags: Record<string, string>;
+};
 
 type Context = {
   schema: OpenAPIDocument;
   operations: GraphQLOperationObject[];
   schemaImports?: SchemaImports;
   tags: ReturnType<typeof getAllTags>;
-  slugs: ReturnType<typeof getAllSlugs>;
+  slugs: Slugs;
 };
 
 const builder = new SchemaBuilder<{
@@ -98,7 +100,6 @@ const resolveExtensions = (obj: Record<string, any>) =>
 
 export const getAllTags = (
   schema: OpenAPIDocument,
-  slugs: ReturnType<typeof getAllSlugs>["tags"],
 ): Array<Omit<TagObject, "name"> & { name?: string; slug?: string }> => {
   const rootTags = schema.tags ?? [];
   const operations = Object.values(schema.paths ?? {}).flatMap((path) =>
@@ -109,6 +110,13 @@ export const getAllTags = (
 
   const hasUntaggedOperations = operations.some(
     (op) => (op.tags?.length ?? 0) === 0,
+  );
+
+  const slugify = slugifyWithCounter();
+  const slugs = Object.fromEntries(
+    Array.from(
+      new Set([...Array.from(operationTags), ...rootTags.map((t) => t.name)]),
+    ).map((tag) => [tag, slugify(tag)]),
   );
 
   const result = [
@@ -144,7 +152,7 @@ export const getAllTags = (
 export const getAllSlugs = (
   ops: GraphQLOperationObject[],
   schemaTags: TagObject[] = [],
-) => {
+): Slugs => {
   const slugify = slugifyWithCounter();
 
   const tags = Array.from(
@@ -760,17 +768,14 @@ builder.queryType({
           if (!loadSchema) {
             throw new Error(`No schema loader found for path: ${args.input}`);
           }
-          const { schema, slugs } = await loadSchema();
-          ctx.schema = schema;
-          ctx.operations = getAllOperations(schema.paths);
-          ctx.slugs = slugs;
-          ctx.tags = getAllTags(schema, ctx.slugs.tags);
+          ctx.schema = (await loadSchema()).schema;
         } else {
           ctx.schema = await validate(args.input as string);
-          ctx.operations = getAllOperations(ctx.schema.paths);
-          ctx.slugs = getAllSlugs(ctx.operations);
-          ctx.tags = getAllTags(ctx.schema, ctx.slugs.tags);
         }
+
+        ctx.operations = getAllOperations(ctx.schema.paths);
+        ctx.slugs = getAllSlugs(ctx.operations, ctx.schema.tags);
+        ctx.tags = getAllTags(ctx.schema);
 
         return ctx.schema;
       },
