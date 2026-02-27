@@ -203,6 +203,7 @@ export async function getViteConfig(
     optimizeDeps: {
       entries: [path.posix.join(getModuleDir(), "src/{app,lib}/**")],
       include: [
+        "@mdx-js/react",
         "react-dom/client",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
       ],

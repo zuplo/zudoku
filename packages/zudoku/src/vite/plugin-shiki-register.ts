@@ -16,40 +16,18 @@ const resolveLang = (lang: BundledLanguage): string =>
   aliasToId.get(lang) ?? lang;
 
 export const viteShikiRegisterPlugin = (): Plugin => {
+  const shikiIdPattern = /^@shikijs\/(langs|themes)\/.+$/;
   const virtualModuleId = "virtual:zudoku-shiki-register";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
 
   return {
     name: "vite-plugin-shiki-register",
-    config() {
-      const config = getCurrentConfig();
-      const languages =
-        config.syntaxHighlighting?.languages ?? defaultLanguages;
-      const themes = Object.values(
-        config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
-      );
-
-      return {
-        resolve: {
-          alias: [
-            {
-              find: /^@shikijs\/(langs|themes)\/.+$/,
-              replacement: "$&",
-              customResolver: (id) => fileURLToPath(import.meta.resolve(id)),
-            },
-          ],
-        },
-        optimizeDeps: {
-          include: [
-            ...languages.map((lang) => `@shikijs/langs/${resolveLang(lang)}`),
-            ...themes.map((theme) => `@shikijs/themes/${theme}`),
-          ],
-        },
-      };
-    },
     resolveId(id) {
       if (id === virtualModuleId) {
         return resolvedVirtualModuleId;
+      }
+      if (shikiIdPattern.test(id)) {
+        return fileURLToPath(import.meta.resolve(id));
       }
     },
     async load(id) {
