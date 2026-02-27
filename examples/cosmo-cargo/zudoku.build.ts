@@ -8,6 +8,20 @@ const buildConfig: ZudokuBuildConfig = {
 
       return schema;
     },
+    ({ schema, params }) => {
+      const prefix = params.prefix;
+      if (!prefix) return schema;
+
+      return {
+        ...schema,
+        info: { ...schema.info, version: prefix },
+        paths: Object.fromEntries(
+          Object.entries(schema.paths ?? {}).filter(([path]) =>
+            path.startsWith(prefix),
+          ),
+        ),
+      };
+    },
   ],
   prerender: {
     workers: Math.floor(os.cpus().length * 0.75),

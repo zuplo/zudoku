@@ -19,22 +19,23 @@ export const OasProvider = ({
   client: GraphQLClient;
 }) => {
   const value = useMemo(() => {
-    const {
-      versions: availableVersions,
-      labels,
-      downloadUrls,
-    } = getVersionMetadata(config);
+    const { versions: availableVersions, versionMap } =
+      getVersionMetadata(config);
     const currentVersion = version ?? availableVersions.at(0);
 
-    const versionLinks = Object.fromEntries(
-      availableVersions.map((id) => [
-        id,
-        {
-          path: joinUrl(basePath, id),
-          label: labels[id] ?? id,
-          downloadUrl: downloadUrls[id],
-        },
-      ]),
+    const versions = Object.fromEntries(
+      availableVersions.map((id) => {
+        const meta = versionMap[id];
+        return [
+          id,
+          {
+            path: joinUrl(basePath, id),
+            label: meta?.label ?? id,
+            downloadUrl: meta?.downloadUrl,
+            tagPages: meta?.tagPages,
+          },
+        ];
+      }),
     );
 
     const resolveInput = (): string | (() => Promise<unknown>) => {
@@ -57,7 +58,7 @@ export const OasProvider = ({
       config: {
         ...config,
         version: currentVersion,
-        versions: versionLinks,
+        versions,
         input: resolveInput(),
       },
     };
