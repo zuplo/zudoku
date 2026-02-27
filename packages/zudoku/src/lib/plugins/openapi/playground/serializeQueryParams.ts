@@ -1,13 +1,17 @@
 import { parseArrayParamValue } from "./createUrl.js";
 import type { PlaygroundForm } from "./Playground.js";
 
-// When allowReserved is true (OAS 3.x parameter option), RFC 3986 reserved
-// characters like /:@[]!*,;= are sent as-is instead of percent-encoded.
-// # and & are excluded since they have structural meaning in query strings.
+// RFC 3986 reserved characters that should be kept unencoded when allowReserved
+// is true. # and & are excluded since they have structural meaning in query strings.
+// gen-delims (minus # and &): : / ? @ [ ]
+// sub-delims: ! $ ' ( ) * + , ; =
+const RFC3986_RESERVED_PERCENT_ENCODED =
+  /%21|%27|%28|%29|%2A|%2B|%2C|%2F|%3A|%3B|%3D|%3F|%24|%40|%5B|%5D/gi;
+
 const encode = (value: string, allowReserved?: boolean): string => {
   if (allowReserved) {
     return encodeURIComponent(value).replace(
-      /%21|%27|%28|%29|%2A|%3A|%40|%2C|%3B|%3D|%5B|%5D|%7B|%7D|%2F|%3F|%2B|%24/gi,
+      RFC3986_RESERVED_PERCENT_ENCODED,
       decodeURIComponent,
     );
   }
