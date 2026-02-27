@@ -38,6 +38,7 @@ export const PlaygroundDialogWrapper = ({
       enum: p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
       type: p.schema?.type ?? "string",
       defaultValue: p.schema?.default,
+      isArray: p.schema?.type === "array",
     }));
 
   const pathParams = operation.parameters

@@ -3,6 +3,7 @@ import { type Control, useFormContext } from "react-hook-form";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
+import { MultiAutocomplete } from "../../../components/MultiAutocomplete.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -14,6 +15,16 @@ import ParamsGrid, {
 } from "./ParamsGrid.js";
 import type { PlaygroundForm, QueryParam } from "./Playground.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
+
+const parseArrayValue = (value: string): string[] => {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [value];
+  } catch {
+    return [value];
+  }
+};
 
 export const QueryParams = ({
   control,
@@ -59,6 +70,7 @@ export const QueryParams = ({
               (param) => param.name === watchedQueryParams.at(i)?.name,
             );
             const hasEnum = currentParam?.enum && currentParam.enum.length > 0;
+            const isArrayEnum = currentParam?.isArray && hasEnum;
             const nameInputProps = manager.getNameInputProps(i);
             const valueInputProps = manager.getValueInputProps(i);
 
@@ -95,7 +107,23 @@ export const QueryParams = ({
                   </ParamsGridInput>
                 )}
                 <div className="flex justify-between items-center">
-                  {!hasEnum ? (
+                  {isArrayEnum ? (
+                    <ParamsGridInput asChild>
+                      <MultiAutocomplete
+                        options={currentParam.enum ?? []}
+                        value={parseArrayValue(
+                          String(manager.getValue(i, "value")),
+                        )}
+                        onChange={(values) => {
+                          manager.setValue(
+                            i,
+                            "value",
+                            values.length > 0 ? JSON.stringify(values) : "",
+                          );
+                        }}
+                      />
+                    </ParamsGridInput>
+                  ) : !hasEnum ? (
                     <ParamsGridInput
                       placeholder="Value"
                       aria-label="Query parameter value"

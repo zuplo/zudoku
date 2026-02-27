@@ -1,0 +1,5 @@
+{
+  "permissions": {
+    "allow": ["Bash(npx vitest run:*)", "Bash(python3:*)"]
+  }
+}

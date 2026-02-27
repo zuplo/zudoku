@@ -62,6 +62,7 @@ export type QueryParam = {
   isRequired?: boolean;
   enum?: string[];
   type?: string;
+  isArray?: boolean;
 };
 
 export type PathParam = {
@@ -84,6 +85,7 @@ export type PlaygroundForm = {
     value: string;
     active: boolean;
     enum?: string[];
+    isArray?: boolean;
   }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
@@ -179,6 +181,7 @@ export const Playground = ({
                 value: param.defaultValue ?? "",
                 active: param.defaultActive ?? false,
                 enum: param.enum ?? [],
+                isArray: param.isArray ?? false,
               }))
             : [{ name: "", value: "", active: false, enum: [] }],
         pathParams: sortedPathParams.map((param) => ({

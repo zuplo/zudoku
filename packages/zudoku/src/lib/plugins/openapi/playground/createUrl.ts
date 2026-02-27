@@ -1,5 +1,15 @@
 import type { PlaygroundForm } from "./Playground.js";
 
+export const parseArrayParamValue = (value: string): string[] => {
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.map(String) : [value];
+  } catch {
+    return [value];
+  }
+};
+
 export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
   const filledPath = path.replace(/(:\w+|\{\w+})/g, (match) => {
     const key = match.replace(/[:{}]/g, "");
@@ -18,7 +28,13 @@ export const createUrl = (host: string, path: string, data: PlaygroundForm) => {
   data.queryParams
     .filter((param) => param.active)
     .forEach((param) => {
-      url.searchParams.set(param.name, param.value);
+      if (param.isArray) {
+        for (const value of parseArrayParamValue(param.value)) {
+          url.searchParams.append(param.name, value);
+        }
+      } else {
+        url.searchParams.append(param.name, param.value);
+      }
     });
 
   return url;
