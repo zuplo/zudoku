@@ -1,4 +1,4 @@
-import { useAuth, useZudoku } from "zudoku/hooks";
+import { useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
 import { Link, useParams } from "zudoku/router";
