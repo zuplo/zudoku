@@ -22,7 +22,7 @@ const CheckoutPage = () => {
   }
 
   if (!planId) {
-    throw new Error(`missing planId`);
+    throw new Error(`missing planId in URL`);
   }
   const email = auth.profile?.email;
 
@@ -30,7 +30,11 @@ const CheckoutPage = () => {
   successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
-    queryKey: [deploymentName, planId, email],
+    queryKey: [
+      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
+      planId,
+      email,
+    ],
     meta: {
       context: zudoku,
       request: {
