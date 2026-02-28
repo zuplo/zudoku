@@ -17,7 +17,7 @@ const CheckoutPage = () => {
 
   if (!auth.profile?.email) {
     throw new Error(
-      "No email found for user. Make sure your Authentication Provider exposes the email address."
+      "No email found for user. Make sure your Authentication Provider exposes the email address.",
     );
   }
 
