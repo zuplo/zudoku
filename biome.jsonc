@@ -10,6 +10,7 @@
     "includes": [
       "**/*.{ts,tsx,js,jsx,mjs,json,yml,yaml,css,html}",
       "!**/node_modules",
+      "!**/{demo,demo-cdn,standalone}.html",
       "!.nx",
       "!**/pagefind",
       "!**/.vercel",
@@ -19,9 +20,11 @@
       "!examples/many-apis/apis",
       "!packages/zudoku/standalone",
       "!packages/zudoku/src/lib/plugins/openapi/graphql",
-      "!packages/zudoku/src/app/main.css",
       "!**/*.{md,mdx}"
     ]
+  },
+  "formatter": {
+    "enabled": false
   },
   "linter": {
     "enabled": true,
@@ -33,7 +36,13 @@
       "suspicious": {
         "noConsole": "error",
         "noConfusingVoidType": "off",
-        "useIterableCallbackReturn": "off"
+        "useIterableCallbackReturn": "off",
+        "noUnknownAtRules": {
+          "level": "warn",
+          "options": {
+            "ignore": ["plugin", "theme", "custom-variant", "apply"]
+          }
+        }
       },
       "a11y": {
         "noSvgWithoutTitle": "off",
@@ -56,6 +65,11 @@
           "options": { "style": "auto" }
         }
       }
+    }
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
     }
   },
   "overrides": [
@@ -82,6 +96,17 @@
         "rules": {
           "suspicious": {
             "noConsole": "off"
+          }
+        }
+      }
+    },
+    {
+      // main.css:
+      "includes": ["packages/zudoku/src/app/main.css"],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noImportantStyles": "off"
           }
         }
       }
