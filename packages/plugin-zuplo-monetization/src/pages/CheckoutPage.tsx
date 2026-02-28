@@ -24,18 +24,19 @@ const CheckoutPage = () => {
   if (!planId) {
     throw new Error(`missing planId`);
   }
+  const email = auth.profile?.email;
 
   const successUrl = new URL(generateUrl("/checkout-confirm"));
   successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
-    queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
+    queryKey: [deploymentName, planId, email],
     meta: {
       context: zudoku,
       request: {
         method: "POST",
         body: JSON.stringify({
-          email: auth.profile?.email,
+          email,
           planId,
           successURL: successUrl.toString(),
           cancelURL: generateUrl("/pricing"),
