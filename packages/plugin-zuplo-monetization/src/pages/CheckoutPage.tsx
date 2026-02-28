@@ -11,36 +11,22 @@ import { useUrlUtils } from "../hooks/useUrlUtils";
 const CheckoutPage = () => {
   const { planId } = useParams();
   const zudoku = useZudoku();
-  const auth = useAuth();
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
-
-  if (!auth.profile?.email) {
-    throw new Error(
-      "No email found for user. Make sure your Authentication Provider exposes the email address.",
-    );
-  }
 
   if (!planId) {
     throw new Error(`missing planId in URL`);
   }
-  const email = auth.profile?.email;
-
   const successUrl = new URL(generateUrl("/checkout-confirm"));
   successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
-    queryKey: [
-      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
-      planId,
-      email,
-    ],
+    queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`, planId],
     meta: {
       context: zudoku,
       request: {
         method: "POST",
         body: JSON.stringify({
-          email,
           planId,
           successURL: successUrl.toString(),
           cancelURL: generateUrl("/pricing"),
