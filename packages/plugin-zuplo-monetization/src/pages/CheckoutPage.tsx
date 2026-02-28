@@ -25,6 +25,9 @@ const CheckoutPage = () => {
     throw new Error(`missing planId`);
   }
 
+  const successUrl = new URL(generateUrl("/checkout-confirm"));
+  successUrl.searchParams.set("plan", planId);
+
   const checkoutLink = useQuery<{ url: string }>({
     queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
     meta: {
@@ -34,7 +37,7 @@ const CheckoutPage = () => {
         body: JSON.stringify({
           email: auth.profile?.email,
           planId,
-          successURL: generateUrl("/checkout-confirm") + `?plan=${planId}`,
+          successURL: successUrl.toString(),
           cancelURL: generateUrl("/pricing"),
         }),
       },
