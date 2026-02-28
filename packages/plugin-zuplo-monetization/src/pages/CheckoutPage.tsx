@@ -1,4 +1,4 @@
-import { useZudoku } from "zudoku/hooks";
+import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
 import { Link, useParams } from "zudoku/router";
@@ -11,6 +11,7 @@ import { useUrlUtils } from "../hooks/useUrlUtils";
 const CheckoutPage = () => {
   const { planId } = useParams();
   const zudoku = useZudoku();
+  const auth = useAuth();
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
 
@@ -21,7 +22,11 @@ const CheckoutPage = () => {
   successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
-    queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`, planId],
+    queryKey: [
+      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
+      planId,
+      auth.profile?.sub,
+    ],
     meta: {
       context: zudoku,
       request: {
