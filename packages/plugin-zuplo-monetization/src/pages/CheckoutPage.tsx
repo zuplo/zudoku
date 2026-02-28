@@ -6,7 +6,6 @@ import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import { RedirectPage } from "../components/RedirectPage.js";
 import { useDeploymentName } from "../hooks/useDeploymentName";
-import { usePlans } from "../hooks/usePlans";
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
 const CheckoutPage = () => {
@@ -15,8 +14,6 @@ const CheckoutPage = () => {
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();
   const deploymentName = useDeploymentName();
-  const plans = usePlans(deploymentName);
-  const selectedPlan = plans.data?.items.find((plan) => plan.id === planId);
 
   if (!auth.profile?.email) {
     throw new Error(
@@ -24,22 +21,28 @@ const CheckoutPage = () => {
     );
   }
 
-  if (!selectedPlan) {
-    throw new Error(`Invalid plan id: ${planId}`);
+  if (!planId) {
+    throw new Error(`missing planId in URL`);
   }
+  const email = auth.profile?.email;
+
+  const successUrl = new URL(generateUrl("/checkout-confirm"));
+  successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
-    queryKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
+    queryKey: [
+      `/v3/zudoku-metering/${deploymentName}/stripe/checkout`,
+      planId,
+      email,
+    ],
     meta: {
       context: zudoku,
       request: {
         method: "POST",
         body: JSON.stringify({
-          email: auth.profile?.email,
-          planId: selectedPlan.id,
-          successURL:
-            generateUrl("/checkout-confirm") +
-            (selectedPlan.id ? `?plan=${selectedPlan.id}` : ""),
+          email,
+          planId,
+          successURL: successUrl.toString(),
           cancelURL: generateUrl("/pricing"),
         }),
       },
