@@ -2,10 +2,10 @@
 
 import semver from "semver";
 
-if (!semver.satisfies(process.version, ">=20.19.0 <21.0.0 || >=22.7.0")) {
+if (!semver.satisfies(process.version, ">=20.19.0 <21.0.0 || >=22.12.0")) {
   // biome-ignore lint/suspicious/noConsole: Logging allowed here
   console.error(
-    `⚠️ Zudoku requires Node.js version >=20.19.0 or >=22.7.0. Your version: ${process.version}`,
+    `⚠️ Zudoku requires Node.js version >=20.19.0 or >=22.12.0. Your version: ${process.version}`,
   );
   process.exit(1);
 }

@@ -150,31 +150,42 @@ export async function getViteConfig(
       },
     },
     build: {
-      ssr: configEnv.isSsrBuild,
       sourcemap: true,
       target: "es2022",
-      outDir: path.resolve(
-        path.join(
-          dir,
-          "dist",
-          config.basePath ?? "",
-          configEnv.isSsrBuild ? "server" : "",
-        ),
-      ),
-      emptyOutDir: true,
-      rollupOptions: {
-        input:
-          configEnv.command === "build"
-            ? configEnv.isSsrBuild
-              ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
-              : "zudoku/app/entry.client.tsx"
-            : undefined,
-        external: [
-          joinUrl(config.basePath, "/pagefind/pagefind.js"),
-          "mermaid",
-        ],
-      },
       chunkSizeWarningLimit: 1500,
+    },
+    environments: {
+      client: {
+        build: {
+          outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
+          emptyOutDir: true,
+          rolldownOptions: {
+            input:
+              configEnv.command === "build"
+                ? "zudoku/app/entry.client.tsx"
+                : undefined,
+            external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+          },
+        },
+      },
+      ssr: {
+        build: {
+          outDir: path.resolve(
+            path.join(dir, "dist", config.basePath ?? "", "server"),
+          ),
+          emptyOutDir: true,
+          rolldownOptions: {
+            input:
+              configEnv.command === "build"
+                ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
+                : undefined,
+            external: [
+              joinUrl(config.basePath, "/pagefind/pagefind.js"),
+              "mermaid",
+            ],
+          },
+        },
+      },
     },
     experimental: {
       renderBuiltUrl(filename) {
@@ -190,11 +201,9 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "es2022",
-      },
       entries: [path.posix.join(getModuleDir(), "src/{app,lib}/**")],
       include: [
+        "@mdx-js/react",
         "react-dom/client",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
       ],
@@ -212,6 +221,8 @@ export async function getViteConfig(
       removePluginHookHandleHotUpdate: "warn",
       removePluginHookSsrArgument: "warn",
       removeServerHot: "warn",
+      removeServerPluginContainer: "warn",
+      removeServerReloadModule: "warn",
     },
   };
 

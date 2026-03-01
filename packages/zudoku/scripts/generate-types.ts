@@ -1,12 +1,9 @@
 import { writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import icons from "lucide-react/dist/esm/dynamicIconImports.js";
 import { format } from "oxfmt";
 
-const icons = await import("lucide-react/dist/esm/dynamicIconImports.js").then(
-  (module) => module.default,
-);
-
-const iconNames = Object.keys(icons)
+const iconNames = Object.keys(icons.default)
   .sort()
   .map((icon) => `"${icon}"`)
   .join(",");

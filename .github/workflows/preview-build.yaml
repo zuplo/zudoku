@@ -51,8 +51,8 @@ jobs:
     runs-on: ubuntu-latest
     # Run on internal PRs or external PRs with 'approve public build' label
     if: |
-      (github.event_name == 'pull_request_target' && !github.event.pull_request.head.repo.fork) ||
-      (github.event_name == 'pull_request_target' && contains(github.event.pull_request.labels.*.name, 'approve public build'))
+      (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) ||
+      (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.fork && contains(github.event.pull_request.labels.*.name, 'approve public build'))
     permissions:
       contents: read
       id-token: write

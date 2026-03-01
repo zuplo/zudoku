@@ -34,7 +34,7 @@ export default defineConfig({
         return `zudoku.${fileName}.js`;
       },
     },
-    rollupOptions: {
+    rolldownOptions: {
       onwarn(warning, warn) {
         // Suppress "Module level directives cause errors when bundled" warnings
         if (
