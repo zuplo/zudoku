@@ -194,8 +194,10 @@ export async function getViteConfig(
         target: "es2022",
       },
       entries: [path.posix.join(getModuleDir(), "src/{app,lib}/**")],
+      exclude: ["zudoku"],
       include: [
         "react-dom/client",
+        "zudoku/icons",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
       ],
     },
