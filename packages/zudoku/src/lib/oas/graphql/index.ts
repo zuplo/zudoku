@@ -6,18 +6,20 @@ import {
 } from "@sindresorhus/slugify";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
-import {
-  type EncodingObject,
-  type ExampleObject,
-  HttpMethods,
-  type OpenAPIDocument,
-  type OperationObject,
-  type ParameterObject,
-  type PathsObject,
-  type SchemaObject,
-  type ServerObject,
-  type TagObject,
-  validate,
+import { HttpMethods, validate } from "../parser/index.js";
+import type {
+  ContactObject,
+  EncodingObject,
+  ExampleObject,
+  ExternalDocumentationObject,
+  LicenseObject,
+  OpenAPIDocument,
+  OperationObject,
+  ParameterObject,
+  PathsObject,
+  SchemaObject,
+  ServerObject,
+  TagObject,
 } from "../parser/index.js";
 import { GraphQLJSONSchema } from "./circular.js";
 
@@ -213,6 +215,35 @@ export const getAllOperations = (
   return operations;
 };
 
+const SchemaContact = builder
+  .objectRef<ContactObject>("SchemaContact")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name", { nullable: true }),
+      url: t.exposeString("url", { nullable: true }),
+      email: t.exposeString("email", { nullable: true }),
+    }),
+  });
+
+const SchemaLicense = builder
+  .objectRef<LicenseObject>("SchemaLicense")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      url: t.exposeString("url", { nullable: true }),
+      identifier: t.exposeString("identifier", { nullable: true }),
+    }),
+  });
+
+const SchemaExternalDocs = builder
+  .objectRef<ExternalDocumentationObject>("SchemaExternalDocs")
+  .implement({
+    fields: (t) => ({
+      description: t.exposeString("description", { nullable: true }),
+      url: t.exposeString("url"),
+    }),
+  });
+
 const SchemaTag = builder.objectRef<
   Omit<TagObject, "name"> & { name?: string; slug?: string }
 >("SchemaTag");
@@ -269,6 +300,41 @@ const ServerItem = builder.objectRef<ServerObject>("Server").implement({
     description: t.exposeString("description", { nullable: true }),
   }),
 });
+
+type WebhookData = {
+  name: string;
+  method: string;
+  summary?: string;
+  description?: string;
+  operationId?: string;
+};
+
+const WebhookItem = builder.objectRef<WebhookData>("WebhookItem").implement({
+  fields: (t) => ({
+    name: t.exposeString("name"),
+    method: t.exposeString("method"),
+    summary: t.exposeString("summary", { nullable: true }),
+    description: t.exposeString("description", { nullable: true }),
+    operationId: t.exposeString("operationId", { nullable: true }),
+  }),
+});
+
+const resolveWebhooks = (schema: OpenAPIDocument): WebhookData[] => {
+  const webhooks = (schema as any).webhooks ?? {};
+  return Object.entries(webhooks).flatMap(([name, pathItem]: [string, any]) =>
+    HttpMethods.flatMap((method) => {
+      const op = pathItem?.[method];
+      if (!op) return [];
+      return {
+        name,
+        method: method.toUpperCase(),
+        summary: op.summary,
+        description: op.description,
+        operationId: op.operationId,
+      };
+    }),
+  );
+};
 
 const PathItem = builder
   .objectRef<{
@@ -586,6 +652,25 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
       resolve: (root) => root.info.summary,
       nullable: true,
     }),
+    contact: t.field({
+      type: SchemaContact,
+      nullable: true,
+      resolve: (root) => root.info.contact ?? null,
+    }),
+    license: t.field({
+      type: SchemaLicense,
+      nullable: true,
+      resolve: (root) => root.info.license ?? null,
+    }),
+    termsOfService: t.string({
+      resolve: (root) => root.info.termsOfService,
+      nullable: true,
+    }),
+    externalDocs: t.field({
+      type: SchemaExternalDocs,
+      nullable: true,
+      resolve: (root) => root.externalDocs ?? null,
+    }),
     paths: t.field({
       type: [PathItem],
       resolve: (root) =>
@@ -638,6 +723,10 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
             (!args.untagged || (op.tags ?? []).length === 0)
           );
         }),
+    }),
+    webhooks: t.field({
+      type: [WebhookItem],
+      resolve: (root) => resolveWebhooks(root),
     }),
     components: t.field({
       type: Components,

@@ -110,8 +110,11 @@ type ResponseItem {
 
 type Schema {
   components: Components
+  contact: SchemaContact
   description: String
   extensions: JSONObject
+  externalDocs: SchemaExternalDocs
+  license: SchemaLicense
   openapi: String!
   operations(
     method: String
@@ -125,15 +128,34 @@ type Schema {
   summary: String
   tag(name: String, slug: String, untagged: Boolean): SchemaTag
   tags: [SchemaTag!]!
+  termsOfService: String
   title: String!
   url: String
   version: String!
+  webhooks: [WebhookItem!]!
+}
+
+type SchemaContact {
+  email: String
+  name: String
+  url: String
+}
+
+type SchemaExternalDocs {
+  description: String
+  url: String!
 }
 
 type SchemaItem {
   extensions: JSONObject
   name: String!
   schema: JSONSchema!
+}
+
+type SchemaLicense {
+  identifier: String
+  name: String!
+  url: String
 }
 
 type SchemaTag {
@@ -162,4 +184,12 @@ type TagItem {
   description: String
   extensions: JSONObject
   name: String!
+}
+
+type WebhookItem {
+  description: String
+  method: String!
+  name: String!
+  operationId: String
+  summary: String
 }

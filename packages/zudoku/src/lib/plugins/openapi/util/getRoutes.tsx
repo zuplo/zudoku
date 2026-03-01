@@ -2,8 +2,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   generatePath,
   Navigate,
-  type RouteObject,
   redirect,
+  type RouteObject,
   useLocation,
   useParams,
 } from "react-router";
@@ -139,17 +139,28 @@ const createVersionRoutes = ({
   versionPath,
   tagPages,
   hasUntaggedOperations = true,
+  showInfoPage = true,
 }: {
   versionPath: string;
   tagPages: string[];
   hasUntaggedOperations?: boolean;
+  showInfoPage?: boolean;
 }): RouteObject[] => {
   const firstTag =
     tagPages.at(0) ?? (hasUntaggedOperations ? UNTAGGED_PATH : undefined);
 
-  const indexRoute: RouteObject = firstTag
-    ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
-    : createRoute({ path: versionPath });
+  const indexRoute: RouteObject = showInfoPage
+    ? {
+        index: true,
+        path: versionPath,
+        lazy: async () => {
+          const { SchemaInfo } = await import("../SchemaInfo.js");
+          return { element: <SchemaInfo /> };
+        },
+      }
+    : firstTag
+      ? { index: true, loader: () => redirect(joinUrl(versionPath, firstTag)) }
+      : createRoute({ path: versionPath });
 
   return [
     indexRoute,
@@ -209,6 +220,7 @@ export const getRoutes = ({
             versionPath,
             tagPages,
             hasUntaggedOperations,
+            showInfoPage: config.options?.showInfoPage !== false,
           })
         : [
             createNonTagPagesRoute({ path: `${versionPath}/:tag?` }),

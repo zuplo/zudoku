@@ -75,6 +75,7 @@ type BaseOasConfig = {
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
     expandApiInformation?: boolean;
+    showInfoPage?: boolean;
     schemaDownload?: {
       enabled: boolean;
     };
