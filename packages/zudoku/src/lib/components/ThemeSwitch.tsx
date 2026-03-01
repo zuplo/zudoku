@@ -1,16 +1,13 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 import { cn } from "../util/cn.js";
+import { useIsClient } from "./ClientOnly.js";
 
 export const ThemeSwitch = () => {
   const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const isClient = useIsClient();
 
-  useEffect(() => setMounted(true), []);
-
-  // Use undefined on server/first render to avoid hydration mismatch
-  const theme = mounted ? resolvedTheme : undefined;
+  const theme = isClient ? resolvedTheme : undefined;
 
   return (
     <button

@@ -17,6 +17,7 @@ const SocialIcon = ({
         src={`https://cdn.simpleicons.org/${icon}/000000/ffffff`}
         className="size-5"
         alt={icon}
+        loading="lazy"
       />
     );
   }
@@ -104,11 +105,13 @@ export const Footer = () => {
                 alt={footer.logo.alt}
                 className="w-8 dark:hidden"
                 style={{ width: footer.logo.width }}
+                loading="lazy"
               />
               <img
                 src={footer.logo.src.dark}
                 alt={footer.logo.alt}
                 className="w-8 hidden dark:block"
+                loading="lazy"
                 style={{ width: footer.logo.width }}
               />
             </>
