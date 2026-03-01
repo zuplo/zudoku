@@ -7,7 +7,7 @@ import {
 import config from "virtual:zudoku-config";
 import "vite/modulepreload-polyfill";
 import { Bootstrap } from "../lib/components/Bootstrap.js";
-import { getRoutesByConfig } from "./main.js";
+import { getRoutesByConfig, shikiReady } from "./main.js";
 
 const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
@@ -100,7 +100,8 @@ function render(routes: RouteObject[]) {
 }
 
 async function hydrate(routes: RouteObject[]) {
-  await hydrateLazyRoutes(routes);
+  await Promise.all([hydrateLazyRoutes(routes), shikiReady]);
+
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });

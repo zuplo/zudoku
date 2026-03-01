@@ -15,7 +15,7 @@ export function vitePluginSsrCss(pluginOpts: { entries: string[] }): Plugin {
 
   const virtualHref = path.join(
     config.basePath ?? "",
-    `/@id/__x00__${VIRTUAL_ENTRY}`,
+    `/@id/__x00__${VIRTUAL_ENTRY}?direct`,
   );
   const cssModuleMap = new Map<string, string>();
 
