@@ -15,7 +15,11 @@ export const ThemeSwitch = () => {
       className="flex rounded-full border p-0.5 gap-0.5 group"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       aria-label={
-        theme === "dark" ? "Switch to light mode" : "Switch to dark mode"
+        !isClient
+          ? "Toggle theme"
+          : theme === "dark"
+            ? "Switch to light mode"
+            : "Switch to dark mode"
       }
     >
       <div
