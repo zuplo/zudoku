@@ -100,9 +100,9 @@ const NavigationCategoryInner = ({
             }}
             className={styles}
             onClick={() => {
-              setHasInteracted(true);
               // if it is the current path and closed then open it because there's no path change to trigger the open
               if (isActive && !open) {
+                setHasInteracted(true);
                 setOpen(true);
               }
             }}
@@ -114,14 +114,7 @@ const NavigationCategoryInner = ({
             </div>
           </NavLink>
         ) : (
-          // biome-ignore lint/a11y/noStaticElementInteractions: This is only to track if the user has interacted
-          <div
-            onClick={() => setHasInteracted(true)}
-            onKeyUp={(e) => {
-              if (e.key === "Enter" || e.key === " ") setHasInteracted(true);
-            }}
-            className={styles}
-          >
+          <div className={styles}>
             {icon}
             <div className="flex items-center justify-between w-full">
               <div className="flex gap-2 truncate w-full">{category.label}</div>
@@ -137,6 +130,7 @@ const NavigationCategoryInner = ({
           category.items.length === 0 && "hidden",
           "ms-6 my-1",
         )}
+        onAnimationEnd={() => setHasInteracted(false)}
       >
         <ul className="relative after:absolute after:-inset-s-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (

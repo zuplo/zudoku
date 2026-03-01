@@ -8,11 +8,7 @@ import {
   getBuildConfig,
   type Processor,
 } from "../config/validators/BuildSchema.js";
-import {
-  getAllOperations,
-  getAllSlugs,
-  getAllTags,
-} from "../lib/oas/graphql/index.js";
+import { getAllTags } from "../lib/oas/graphql/index.js";
 import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
@@ -97,8 +93,8 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         // biome-ignore lint/suspicious/noConsole: Logging allowed here
         console.log(`Re-processing schema ${id}`);
 
-        for (const mainFile of mainFiles) {
-          await schemaManager.processSchema({ input: mainFile });
+        for (const inputConfig of mainFiles) {
+          await schemaManager.processSchema(inputConfig);
         }
         schemaManager
           .getAllTrackedFiles()
@@ -174,9 +170,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             const allSlugs = new Set<string>();
             const versionedInput = schemas.map<VersionedInput>((s) => {
-              const operations = getAllOperations(s.schema.paths);
-              const slugs = getAllSlugs(operations);
-              const versionTags = getAllTags(s.schema, slugs.tags);
+              const versionTags = getAllTags(s.schema);
               versionTags.forEach(({ slug }) => {
                 if (slug) allSlugs.add(slug);
               });
@@ -186,18 +180,17 @@ const viteApiPlugin = async (): Promise<Plugin> => {
                 version: s.version,
                 downloadUrl: s.downloadUrl,
                 label: s.label ?? s.schema.info?.version,
-                input: s.inputPath,
+                input: s.importKey,
                 hasUntaggedOperations: versionTags.some(
                   (tag) => tag.name === undefined,
                 ),
+                tagPages: versionTags.flatMap((t) => t.slug ?? []),
               };
             });
 
             const tags = Array.from(allSlugs);
 
-            const schemaMapEntries = Array.from(
-              schemaManager.schemaMap.entries(),
-            );
+            const schemaImports = schemaManager.getSchemaImports();
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
@@ -219,9 +212,9 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    ...(apis[${apiIndex}].options ?? {}),`,
               `  },`,
               `  schemaImports: {`,
-              ...schemaMapEntries.map(
-                ([key, processed]) =>
-                  `    "${key.replace(/\\/g, "\\\\")}": () => import("${processed.filePath.replace(/\\/g, "/")}?d=${processed.processedTime}"),`,
+              ...schemaImports.map(
+                (s) =>
+                  `    "${s.importKey.replaceAll("\\", "\\\\")}": () => import("${s.importKey.replaceAll("\\", "/")}?d=${s.processedTime}"),`,
               ),
               `  },`,
               "}));",

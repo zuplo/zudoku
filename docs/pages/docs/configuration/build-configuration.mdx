@@ -60,6 +60,8 @@ An array of functions that transform your API schemas. Each processor receives:
 
 - `file`: The path to the schema file
 - `schema`: The OpenAPI schema object
+- `params`: Query parameters extracted from the input string (see
+  [Splitting Schemas](../guides/processors#using-query-parameters-to-split-schemas))
 - `dereference`: A function to dereference the schema
 
 Processors are executed in order, and each processor receives the output of the previous one.

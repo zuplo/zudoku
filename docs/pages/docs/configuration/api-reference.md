@@ -135,6 +135,26 @@ const config = {
 };
 ```
 
+### Splitting a Single Schema
+
+If you have one schema containing multiple API versions (e.g. `/v1/...` and `/v2/...` paths), you
+can split it into separate versions by appending query parameters to the input path:
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: ["openapi.json?prefix=/v2", "openapi.json?prefix=/v1"],
+    path: "/api",
+  },
+};
+```
+
+The query parameters are passed to [schema processors](../guides/processors) via the `params`
+argument, where you can filter the schema based on their values. See
+[Using Query Parameters to Split Schemas](../guides/processors#using-query-parameters-to-split-schemas)
+for a full example.
+
 ### URL-based Versioning
 
 When using `type: "url"`, you can provide an array of version configurations. Since URL-based

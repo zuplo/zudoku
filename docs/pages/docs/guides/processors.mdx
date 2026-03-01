@@ -161,6 +161,70 @@ const buildConfig: ZudokuBuildConfig = {
 export default buildConfig;
 ```
 
+## Using Query Parameters to Split Schemas
+
+You can use the same OpenAPI file multiple times with different processing by appending query
+parameters to the file input string. These parameters are passed to your processors via the `params`
+argument, allowing you to filter or transform the schema differently for each variant.
+
+This is useful when you have a single schema containing multiple API versions or groups that you
+want to split into separate pages.
+
+Plain strings work out of the box. Version paths and dropdown labels are auto-generated from the
+query parameter values. For more control, use the object form with explicit `path` and `label`.
+
+```ts title=zudoku.config.ts
+const config = {
+  apis: {
+    type: "file",
+    input: [
+      // Object form: explicit path and label
+      {
+        input: "openapi.json?prefix=/v2",
+        path: "latest",
+        label: "Latest (v2)",
+      },
+      // Object form: explicit path, label auto-generated from params
+      {
+        input: "openapi.json?prefix=/v1.1",
+        path: "v1.1",
+      },
+      // Plain string: both path and label auto-generated from params
+      "openapi.json?prefix=/v1",
+    ],
+    path: "/api",
+  },
+};
+```
+
+```ts title=zudoku.build.ts
+import type { ZudokuBuildConfig } from "zudoku";
+
+const buildConfig: ZudokuBuildConfig = {
+  processors: [
+    ({ schema, params }) => {
+      const prefix = params.prefix;
+      if (!prefix) return schema;
+
+      return {
+        ...schema,
+        paths: Object.fromEntries(
+          Object.entries(schema.paths ?? {}).filter(([path]) => path.startsWith(prefix)),
+        ),
+      };
+    },
+  ],
+};
+
+export default buildConfig;
+```
+
+Each version tab will show only the endpoints matching that prefix. The query parameters are
+arbitrary key-value pairs that you define and consume in your processors.
+
+When schema download is enabled, param variants serve the processed (filtered) schema rather than
+the original file.
+
 ## Best Practices
 
 - **Handle missing properties**: Check for the existence of properties before accessing them

@@ -72,6 +72,7 @@ describe("removeExtensions", () => {
     const processed = removeExtensions()({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -112,6 +113,7 @@ describe("removeExtensions", () => {
     })({
       schema: docWithExtraExtensions,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     }) as any;
 
@@ -145,6 +147,7 @@ describe("removeExtensions", () => {
     const processed = removeExtensions()({
       schema: deeplyNested,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     }) as any;
 
@@ -162,6 +165,7 @@ describe("removeExtensions", () => {
     const processed = removeExtensions()({
       schema: docWithoutExtensions,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -174,6 +178,7 @@ describe("removeExtensions", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 

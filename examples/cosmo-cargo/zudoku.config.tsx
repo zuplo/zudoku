@@ -372,6 +372,28 @@ const config: ZudokuConfig = {
       path: "/catalog/api-cargo-containers",
       categories: [{ label: "General", tags: ["Containers", "Booking"] }],
     },
+    {
+      type: "file",
+      input: [
+        {
+          input: "./schema/fleet-ops.json?prefix=/v3",
+          path: "v3",
+          label: "v3 (Quantum)",
+        },
+        {
+          input: "./schema/fleet-ops.json?prefix=/v2",
+          path: "v2",
+          label: "v2 (Warp)",
+        },
+        {
+          input: "./schema/fleet-ops.json?prefix=/v1",
+          path: "v1",
+          label: "v1 (Sublight)",
+        },
+      ],
+      path: "/catalog/api-fleet-ops",
+      categories: [{ label: "General", tags: ["Fleet Command"] }],
+    },
   ],
   theme: {
     light: {

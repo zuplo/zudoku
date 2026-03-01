@@ -71,6 +71,7 @@ describe("removeParameters", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -90,6 +91,7 @@ describe("removeParameters", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -106,6 +108,7 @@ describe("removeParameters", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -123,6 +126,7 @@ describe("removeParameters", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -148,6 +152,7 @@ describe("removeParameters", () => {
     })({
       schema: docWithoutParams,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -160,6 +165,7 @@ describe("removeParameters", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 
@@ -173,6 +179,7 @@ describe("removeParameters", () => {
     })({
       schema: baseDoc,
       file: "/file.json",
+      params: {},
       dereference: async (id) => id,
     });
 

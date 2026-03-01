@@ -1,6 +1,3 @@
-import { $RefParser } from "@apidevtools/json-schema-ref-parser";
-import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
-import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { type RecordAny, traverse } from "../../lib/util/traverse.js";
 
 const unescapeJsonPointer = (uri: string) =>
@@ -108,7 +105,7 @@ const lookup = (
  *
  * This ensures object identity throughout the circular references.
  */
-export const generateCode = async (schema: RecordAny, filePath?: string) => {
+export const generateCode = (schema: RecordAny, filePath?: string) => {
   const { refMap, siblingsMap } = createLocalRefMap(schema);
   const lines: string[] = [];
 
@@ -192,23 +189,6 @@ export const generateCode = async (schema: RecordAny, filePath?: string) => {
   if (mergedRefs) finalCode = replaceSiblingRefMarkers(finalCode, mergedRefs);
 
   lines.push(`export const schema = ${finalCode};`);
-
-  // slugify is quite expensive for big schemas, so we pre-generate the slugs here to shave off time
-  const dereferencedSchema = await $RefParser.dereference<OpenAPIDocument>(
-    schema,
-    { dereference: { preservedProperties: ["description", "summary"] } },
-  );
-  const slugs = getAllSlugs(
-    getAllOperations(dereferencedSchema.paths),
-    dereferencedSchema.tags,
-  );
-
-  lines.push(`export const slugs = {`);
-  lines.push(
-    `  operations: ${str(slugs.operations, 0)},`,
-    `  tags: ${str(slugs.tags, 0)},`,
-  );
-  lines.push(`};`);
 
   return lines.join("\n");
 };

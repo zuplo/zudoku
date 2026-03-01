@@ -16,7 +16,7 @@ import {
   type OpenApiPluginOptions,
   UNTAGGED_PATH,
 } from "../index.js";
-import type { OasPluginConfig } from "../interfaces.js";
+import type { OasPluginConfig, VersionEntry } from "../interfaces.js";
 
 const createOasProvider = (opts: {
   routePath: string;
@@ -162,18 +162,45 @@ const createVersionRoutes = ({
 
 export const getVersionMetadata = (config: OasPluginConfig) => {
   if (config.type === "raw" || !Array.isArray(config.input)) {
-    return { versions: [], labels: {}, downloadUrls: {} };
+    return {
+      versions: [] as string[],
+      versionMap: {} as Record<
+        string,
+        { label: string; downloadUrl?: string; tagPages?: string[] }
+      >,
+    };
   }
 
   return {
     versions: config.input.map((v) => v.path),
-    labels: Object.fromEntries(
-      config.input.map((v) => [v.path, v.label ?? v.path]),
-    ),
-    downloadUrls: Object.fromEntries(
-      config.input.map((v) => [v.path, v.downloadUrl]),
+    versionMap: Object.fromEntries(
+      config.input.map((v) => [
+        v.path,
+        {
+          label: v.label ?? v.path,
+          downloadUrl: v.downloadUrl,
+          tagPages: v.tagPages,
+        },
+      ]),
     ),
   };
+};
+
+/**
+ * Build the target URL when switching versions. Preserves the current tag
+ * if it exists in the target version, otherwise navigates to the version
+ * root (which redirects to its first tag).
+ */
+export const buildVersionSwitchUrl = (
+  target: VersionEntry,
+  currentTag: string | undefined,
+) => {
+  const tagExistsInTarget =
+    currentTag && (!target.tagPages || target.tagPages.includes(currentTag));
+
+  if (!tagExistsInTarget) return target.path;
+
+  return joinUrl(target.path, currentTag);
 };
 
 export const getRoutes = ({
@@ -200,14 +227,16 @@ export const getRoutes = ({
       : inputArray?.[0];
     const hasUntaggedOperations = versionInput?.hasUntaggedOperations ?? true;
 
+    const versionTagPages = versionInput?.tagPages ?? tagPages;
+
     return createOasProvider({
       basePath,
       version,
       routePath: versionPath,
-      routes: tagPages
+      routes: versionTagPages
         ? createVersionRoutes({
             versionPath,
-            tagPages,
+            tagPages: versionTagPages,
             hasUntaggedOperations,
           })
         : [

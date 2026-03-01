@@ -12,6 +12,7 @@ export type VersionedInput<T = string> = {
   label?: string;
   input: T;
   hasUntaggedOperations?: boolean;
+  tagPages?: string[];
 };
 
 type OasSource =
@@ -85,11 +86,15 @@ type BaseOasConfig = {
 
 export type OasPluginConfig = BaseOasConfig & OasSource;
 
+export type VersionEntry = {
+  path: string;
+  label: string;
+  downloadUrl?: string;
+  tagPages?: string[];
+};
+
 export type OasPluginContext = BaseOasConfig &
   ContextOasSource & {
     version?: string;
-    versions: Record<
-      string,
-      { path: string; label: string; downloadUrl?: string }
-    >;
+    versions: Record<string, VersionEntry>;
   };
