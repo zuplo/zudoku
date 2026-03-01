@@ -171,7 +171,7 @@
     "rehype-slug": "6.0.0",
     "remark-comment": "1.0.0",
     "remark-directive": "3.0.1",
-    "remark-directive-rehype": "0.4.2",
+    "remark-directive-rehype": "1.0.0",
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.1",
     "remark-mdx-frontmatter": "5.2.0",
