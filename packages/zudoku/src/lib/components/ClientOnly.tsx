@@ -1,16 +1,14 @@
-import { type ReactNode, useSyncExternalStore } from "react";
-
-const noop = () => () => {};
+import { type ReactNode, useEffect, useState } from "react";
 
 export const ClientOnly = (props: {
   children: ReactNode;
   fallback?: ReactNode;
 }) => {
-  const value = useSyncExternalStore(
-    noop,
-    () => "client",
-    () => "server",
-  );
+  const [isClient, setIsClient] = useState(false);
 
-  return value === "client" ? props.children : props.fallback;
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  return isClient ? props.children : props.fallback;
 };

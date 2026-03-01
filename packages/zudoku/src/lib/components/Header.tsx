@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
-import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import {
   isProfileMenuPlugin,
@@ -22,7 +21,6 @@ import {
 import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
-import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { PageProgress } from "./PageProgress.js";
@@ -129,61 +127,54 @@ export const Header = memo(function HeaderInner() {
             <MobileTopNavigation />
             <div className="hidden lg:flex items-center justify-self-end text-sm gap-2">
               <Slot.Target name="head-navigation-start" />
-              {isAuthEnabled && (
-                <ClientOnly
-                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
-                >
-                  {!isAuthenticated ? (
-                    <Button variant="ghost" onClick={() => auth.login()}>
-                      Login
-                    </Button>
-                  ) : (
-                    Object.values(accountItems).length > 0 && (
-                      <DropdownMenu modal={false}>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost">
-                            {profile?.name ?? "My Account"}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-56">
-                          <DropdownMenuLabel>
-                            {profile?.name ? `${profile.name}` : "My Account"}
-                            {profile?.email && (
-                              <div className="font-normal text-muted-foreground">
-                                {profile.email}
-                              </div>
-                            )}
-                          </DropdownMenuLabel>
-                          {accountItems.filter((i) => i.category === "top")
-                            .length > 0 && <DropdownMenuSeparator />}
-                          {accountItems
-                            .filter((i) => i.category === "top")
-                            .map((i) => (
-                              <RecursiveMenu key={i.label} item={i} />
-                            ))}
-                          {accountItems.filter(
-                            (i) => !i.category || i.category === "middle",
-                          ).length > 0 && <DropdownMenuSeparator />}
-                          {accountItems
-                            .filter(
-                              (i) => !i.category || i.category === "middle",
-                            )
-                            .map((i) => (
-                              <RecursiveMenu key={i.label} item={i} />
-                            ))}
-                          {accountItems.filter((i) => i.category === "bottom")
-                            .length > 0 && <DropdownMenuSeparator />}
-                          {accountItems
-                            .filter((i) => i.category === "bottom")
-                            .map((i) => (
-                              <RecursiveMenu key={i.label} item={i} />
-                            ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )
-                  )}
-                </ClientOnly>
-              )}
+              {isAuthEnabled &&
+                (!isAuthenticated ? (
+                  <Button variant="ghost" onClick={() => auth.login()}>
+                    Login
+                  </Button>
+                ) : (
+                  Object.values(accountItems).length > 0 && (
+                    <DropdownMenu modal={false}>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost">
+                          {profile?.name ?? "My Account"}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-56">
+                        <DropdownMenuLabel>
+                          {profile?.name ? `${profile.name}` : "My Account"}
+                          {profile?.email && (
+                            <div className="font-normal text-muted-foreground">
+                              {profile.email}
+                            </div>
+                          )}
+                        </DropdownMenuLabel>
+                        {accountItems.filter((i) => i.category === "top")
+                          .length > 0 && <DropdownMenuSeparator />}
+                        {accountItems
+                          .filter((i) => i.category === "top")
+                          .map((i) => (
+                            <RecursiveMenu key={i.label} item={i} />
+                          ))}
+                        {accountItems.filter(
+                          (i) => !i.category || i.category === "middle",
+                        ).length > 0 && <DropdownMenuSeparator />}
+                        {accountItems
+                          .filter((i) => !i.category || i.category === "middle")
+                          .map((i) => (
+                            <RecursiveMenu key={i.label} item={i} />
+                          ))}
+                        {accountItems.filter((i) => i.category === "bottom")
+                          .length > 0 && <DropdownMenuSeparator />}
+                        {accountItems
+                          .filter((i) => i.category === "bottom")
+                          .map((i) => (
+                            <RecursiveMenu key={i.label} item={i} />
+                          ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )
+                ))}
               <Slot.Target name="head-navigation-end" />
               <ThemeSwitch />
             </div>
