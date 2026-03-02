@@ -29,7 +29,7 @@ export const routesToPaths = (
       : parentPath;
 
     return [
-      ...(routePath ? [fullPath] : []),
+      ...(routePath && fullPath !== parentPath ? [fullPath] : []),
       ...routesToPaths(route.children ?? [], fullPath),
     ];
   });
