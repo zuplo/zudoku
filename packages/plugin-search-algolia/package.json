@@ -29,7 +29,7 @@
   "dependencies": {
     "@docsearch/core": "^4.5.4",
     "@docsearch/css": "^4.6.0",
-    "@docsearch/modal": "^4.5.4"
+    "@docsearch/modal": "^4.6.0"
   },
   "devDependencies": {
     "@types/react": "catalog:",
