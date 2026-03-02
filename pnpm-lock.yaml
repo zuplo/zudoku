@@ -604,8 +604,8 @@ importers:
         specifier: 1.2.4
         version: 1.2.4(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@scalar/openapi-parser':
-        specifier: 0.23.13
-        version: 0.23.13
+        specifier: 0.24.15
+        version: 0.24.15
       '@sentry/node':
         specifier: 10.39.0
         version: 10.39.0
@@ -4556,24 +4556,24 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@scalar/helpers@0.2.7':
-    resolution: {integrity: sha512-uFTcdi3XYDDuaJLWiMuM3ijQit1OBw7AkuOuujReY8L9UmUQHY56erYg0+Db3llTsinuIYFh+eS/WX/sYuevYQ==}
+  '@scalar/helpers@0.2.16':
+    resolution: {integrity: sha512-JlDUKdmwAHdcFUdTngNtx/uhLKTBACXlgvri7iKb6Jx6ImRIBgHwxZNAqlil1L047+QBrKh97lnezNpzNQAffQ==}
     engines: {node: '>=20'}
 
-  '@scalar/json-magic@0.9.0':
-    resolution: {integrity: sha512-aSWd8rd3O73Ak9Ylson2TywvOuTjjOYiXydl9Cn8Ip/r7fi+h0QqAGom5gqo/WewrhySF9v+H/sW/Qmd05T/Kg==}
+  '@scalar/json-magic@0.11.5':
+    resolution: {integrity: sha512-WhNsLzjaCwa0hdYVezHnNmlOkX8PMPbyljeBfHtkmxMSf8W5Ht1LePQzfWzMc9SFwN6n7LcR4XVQvUwwNIyUUg==}
     engines: {node: '>=20'}
 
-  '@scalar/openapi-parser@0.23.13':
-    resolution: {integrity: sha512-YsljPOKOgQgZL/kBcEouwz2CUa+2hFfThlUZRWC2DFI2Fnw5Ur8F1IvGgPqCAHr9p2XMH+Z/Pag2jZUfLcxcww==}
+  '@scalar/openapi-parser@0.24.15':
+    resolution: {integrity: sha512-qpZ4eTAd8yeVcaip9DLHtKjlOOYHMh/atqdA1FRDKeimGEUVyn3zooL7CVG7vfFROT4pE4suB+3lb5qQjxN4sA==}
     engines: {node: '>=20'}
 
   '@scalar/openapi-types@0.5.3':
     resolution: {integrity: sha512-m4n/Su3K01d15dmdWO1LlqecdSPKuNjuokrJLdiQ485kW/hRHbXW1QP6tJL75myhw/XhX5YhYAR+jrwnGjXiMw==}
     engines: {node: '>=20'}
 
-  '@scalar/openapi-upgrader@0.1.7':
-    resolution: {integrity: sha512-065froUtqvaHjyeJtyitf8tb+k7oh7nU0OinAHYbj1Bqgwb1s2+uKMqHYHEES5CNpp+2xtL4lxup6Aq29yW+sQ==}
+  '@scalar/openapi-upgrader@0.1.9':
+    resolution: {integrity: sha512-mT1ijLfoTuQck3bnlTiVk+Efmol1EYoY/qHNTtkoiZbxSAlgO6BGV8l4Z409WPRh2sZ7LvUP/T1TOI/CqVRksA==}
     engines: {node: '>=20'}
 
   '@scure/base@1.2.6':
@@ -5556,6 +5556,9 @@ packages:
 
   ajv@8.17.1:
     resolution: {integrity: sha512-B/gBuNg5SiMTrPkC+A2+cW0RszwxYmn6VYxB/inlBStS5nx6xHIt/ehKRhIMhqusl7a8LjQoZnjCs5vhwxOQ1g==}
+
+  ajv@8.18.0:
+    resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
 
   algoliasearch@5.48.1:
     resolution: {integrity: sha512-Rf7xmeuIo7nb6S4mp4abW2faW8DauZyE2faBIKFaUfP3wnpOvNSbiI5AwVhqBNj0jPgBWEvhyCu0sLjN2q77Rg==}
@@ -14319,21 +14322,23 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.59.0':
     optional: true
 
-  '@scalar/helpers@0.2.7': {}
+  '@scalar/helpers@0.2.16': {}
 
-  '@scalar/json-magic@0.9.0':
+  '@scalar/json-magic@0.11.5':
     dependencies:
-      '@scalar/helpers': 0.2.7
+      '@scalar/helpers': 0.2.16
+      pathe: 2.0.3
       yaml: 2.8.2
 
-  '@scalar/openapi-parser@0.23.13':
+  '@scalar/openapi-parser@0.24.15':
     dependencies:
-      '@scalar/json-magic': 0.9.0
+      '@scalar/helpers': 0.2.16
+      '@scalar/json-magic': 0.11.5
       '@scalar/openapi-types': 0.5.3
-      '@scalar/openapi-upgrader': 0.1.7
-      ajv: 8.17.1
-      ajv-draft-04: 1.0.0(ajv@8.17.1)
-      ajv-formats: 3.0.1(ajv@8.17.1)
+      '@scalar/openapi-upgrader': 0.1.9
+      ajv: 8.18.0
+      ajv-draft-04: 1.0.0(ajv@8.18.0)
+      ajv-formats: 3.0.1(ajv@8.18.0)
       jsonpointer: 5.0.1
       leven: 4.1.0
       yaml: 2.8.2
@@ -14342,7 +14347,7 @@ snapshots:
     dependencies:
       zod: 4.3.6
 
-  '@scalar/openapi-upgrader@0.1.7':
+  '@scalar/openapi-upgrader@0.1.9':
     dependencies:
       '@scalar/openapi-types': 0.5.3
 
@@ -15568,15 +15573,26 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  ajv-draft-04@1.0.0(ajv@8.17.1):
+  ajv-draft-04@1.0.0(ajv@8.18.0):
     optionalDependencies:
-      ajv: 8.17.1
+      ajv: 8.18.0
 
   ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
       ajv: 8.17.1
 
+  ajv-formats@3.0.1(ajv@8.18.0):
+    optionalDependencies:
+      ajv: 8.18.0
+
   ajv@8.17.1:
+    dependencies:
+      fast-deep-equal: 3.1.3
+      fast-uri: 3.1.0
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
+
+  ajv@8.18.0:
     dependencies:
       fast-deep-equal: 3.1.3
       fast-uri: 3.1.0
