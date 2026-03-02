@@ -417,8 +417,7 @@ export const SwitchPlanModal = ({
   subscription: Subscription;
 }>) => {
   const [open, setOpen] = useState(false);
-  const deploymentName = useDeploymentName();
-  const { data: plansData } = usePlans(deploymentName);
+  const { data: plansData } = usePlans();
   const [switchTo, setSwitchTo] = useState<SwitchPlanTarget | null>(null);
 
   const currentPlan = plansData?.items.find(
