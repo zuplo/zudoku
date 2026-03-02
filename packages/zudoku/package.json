@@ -162,7 +162,7 @@
     "piscina": "5.1.4",
     "posthog-node": "5.24.15",
     "react-error-boundary": "6.1.1",
-    "react-hook-form": "7.71.1",
+    "react-hook-form": "7.71.2",
     "react-is": "catalog:",
     "react-markdown": "10.1.0",
     "react-router": "7.13.0",
