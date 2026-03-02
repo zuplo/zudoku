@@ -35,7 +35,7 @@ const CheckoutConfirmPage = () => {
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
   const navigate = useNavigate();
-  const { data: plans } = usePlans(deploymentName);
+  const { data: plans } = usePlans();
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
   if (!planId) throw new Error("Parameter `planId` missing");
