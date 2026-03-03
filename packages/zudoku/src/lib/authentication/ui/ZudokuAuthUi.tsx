@@ -134,56 +134,19 @@ const EmailPasswordForm = ({
   );
 };
 
-type EmailLinkFormFields = {
-  email: string;
-};
-
-const EmailLinkForm = ({
-  form,
-  onSubmit,
-  submitLabel,
-  isPending,
-}: {
-  form: ReturnType<typeof useForm<EmailLinkFormFields>>;
-  onSubmit: (data: EmailLinkFormFields) => void;
-  submitLabel: string;
-  isPending: boolean;
-}) => {
-  return (
-    <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col gap-2"
-      >
-        <FormItem>
-          <FormLabel>E-Mail</FormLabel>
-          <FormControl>
-            <Input placeholder="you@example.com" {...form.register("email")} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-        <ActionButton type="submit" isPending={isPending}>
-          {submitLabel}
-        </ActionButton>
-      </form>
-    </Form>
-  );
-};
-
 export const ZudokuSignInUi = ({
   providers,
   onOAuthSignIn,
   onUsernamePasswordSignIn,
   enableUsernamePassword,
-  onEmailLinkSignIn,
+  enableEmailLink,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
+  enableEmailLink?: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
-  onEmailLinkSignIn?: (email: string) => Promise<void>;
 }) => {
-  const enableEmailLink = !!onEmailLinkSignIn;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
@@ -218,15 +181,6 @@ export const ZudokuSignInUi = ({
       void navigate(relativeRedirectTo);
     },
   });
-  const emailLinkMutation = useMutation({
-    mutationFn: async ({ email }: { email: string }) => {
-      await onEmailLinkSignIn?.(email);
-    },
-    onSuccess: () => {
-      void navigate("/signin/email-link-sent");
-    },
-  });
-
   const form = useForm<FormFields>({
     defaultValues: {
       email: "",
@@ -234,21 +188,10 @@ export const ZudokuSignInUi = ({
     },
   });
 
-  const emailLinkForm = useForm<EmailLinkFormFields>({
-    defaultValues: {
-      email: "",
-    },
-  });
-
   const pending =
-    signInUsernameMutation.isPending ||
-    signInByProviderMutation.isPending ||
-    emailLinkMutation.isPending;
+    signInUsernameMutation.isPending || signInByProviderMutation.isPending;
 
-  const error =
-    signInUsernameMutation.error ??
-    signInByProviderMutation.error ??
-    emailLinkMutation.error;
+  const error = signInUsernameMutation.error ?? signInByProviderMutation.error;
 
   const hasEmailMethod = enableUsernamePassword || enableEmailLink;
 
@@ -286,17 +229,6 @@ export const ZudokuSignInUi = ({
             </Link>
           </>
         )}
-        {enableEmailLink && enableUsernamePassword && <OrSeparator />}
-        {enableEmailLink && (
-          <EmailLinkForm
-            form={emailLinkForm}
-            onSubmit={(data) =>
-              void emailLinkMutation.mutate({ email: data.email })
-            }
-            submitLabel="Send sign-in link"
-            isPending={emailLinkMutation.isPending}
-          />
-        )}
         {hasEmailMethod && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
         )}
@@ -308,9 +240,19 @@ export const ZudokuSignInUi = ({
             }
           />
         )}
-        <Link to="/signup" className="text-sm text-muted-foreground">
-          Don't have an account? Sign up.
-        </Link>
+        <div className="flex flex-col gap-1">
+          {enableEmailLink && (
+            <Link
+              to="/signin/email-link"
+              className="text-sm text-muted-foreground"
+            >
+              Sign in with email link
+            </Link>
+          )}
+          <Link to="/signup" className="text-sm text-muted-foreground">
+            Don't have an account? Sign up.
+          </Link>
+        </div>
       </CardContent>
     </AuthCard>
   );
@@ -319,22 +261,21 @@ export const ZudokuSignInUi = ({
 export const ZudokuSignUpUi = ({
   providers,
   enableUsernamePassword,
+  enableEmailLink,
   onOAuthSignUp,
   onUsernamePasswordSignUp,
-  onEmailLinkSignUp,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
+  enableEmailLink?: boolean;
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
-  onEmailLinkSignUp?: (email: string) => Promise<void>;
 }) => {
-  const enableEmailLink = !!onEmailLinkSignUp;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
-  const relativeRedirectTo = redirectTo?.replace(window.location.origin, "");
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
   if (!isAuthProviderIdArray(providers)) {
     throw new Error("Invalid auth provider IDs");
@@ -358,15 +299,6 @@ export const ZudokuSignUpUi = ({
     },
   });
 
-  const emailLinkMutation = useMutation({
-    mutationFn: async ({ email }: { email: string }) => {
-      await onEmailLinkSignUp?.(email);
-    },
-    onSuccess: () => {
-      void navigate("/signin/email-link-sent");
-    },
-  });
-
   const form = useForm<FormFields>({
     defaultValues: {
       email: "",
@@ -374,21 +306,10 @@ export const ZudokuSignUpUi = ({
     },
   });
 
-  const emailLinkForm = useForm<EmailLinkFormFields>({
-    defaultValues: {
-      email: "",
-    },
-  });
-
   const pending =
-    signUpUsernameMutation.isPending ||
-    signUpByProviderMutation.isPending ||
-    emailLinkMutation.isPending;
+    signUpUsernameMutation.isPending || signUpByProviderMutation.isPending;
 
-  const error =
-    signUpUsernameMutation.error ??
-    signUpByProviderMutation.error ??
-    emailLinkMutation.error;
+  const error = signUpUsernameMutation.error ?? signUpByProviderMutation.error;
 
   const hasEmailMethod = enableUsernamePassword || enableEmailLink;
 
@@ -419,17 +340,6 @@ export const ZudokuSignUpUi = ({
             isPending={pending}
           />
         )}
-        {enableEmailLink && enableUsernamePassword && <OrSeparator />}
-        {enableEmailLink && (
-          <EmailLinkForm
-            form={emailLinkForm}
-            onSubmit={(data) =>
-              void emailLinkMutation.mutate({ email: data.email })
-            }
-            submitLabel="Send sign-up link"
-            isPending={emailLinkMutation.isPending}
-          />
-        )}
         {hasEmailMethod && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
         )}
@@ -441,9 +351,19 @@ export const ZudokuSignUpUi = ({
             }
           />
         )}
-        <Link to="/signin" className="text-sm text-muted-foreground">
-          Already have an account? Sign in.
-        </Link>
+        <div className="flex flex-col gap-1">
+          {enableEmailLink && (
+            <Link
+              to="/signin/email-link"
+              className="text-sm text-muted-foreground"
+            >
+              Sign up with email link
+            </Link>
+          )}
+          <Link to="/signin" className="text-sm text-muted-foreground">
+            Already have an account? Sign in.
+          </Link>
+        </div>
       </CardContent>
     </AuthCard>
   );
@@ -473,16 +393,6 @@ const ProviderButtons = ({
         />
       ))}
     </div>
-  );
-};
-
-const OrSeparator = () => {
-  return (
-    <Separator className="my-3 relative">
-      <span className="bg-card text-muted-foreground text-sm px-2 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-        or
-      </span>
-    </Separator>
   );
 };
 

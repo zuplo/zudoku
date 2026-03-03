@@ -26,17 +26,12 @@ export const EmailVerificationUi = ({
   const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
   const resendMutation = useMutation({
-    mutationFn: async () => {
-      await onResendVerification();
-    },
+    mutationFn: () => onResendVerification(),
   });
 
   const checkVerificationMutation = useQuery({
     queryKey: ["check-verification"],
-    queryFn: async () => {
-      const isVerified = await onCheckVerification();
-      return isVerified;
-    },
+    queryFn: () => onCheckVerification(),
   });
 
   const error = resendMutation.error ?? checkVerificationMutation.error ?? null;

@@ -41,6 +41,7 @@ declare module "../state.js" {
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { EmailLinkCallbackUi } from "../ui/EmailLinkCallbackUi.js";
 import { EmailLinkSentUi } from "../ui/EmailLinkSentUi.js";
+import { EmailLinkSignInUi } from "../ui/EmailLinkSignInUi.js";
 import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
 import {
   ZudokuPasswordResetUi,
@@ -249,11 +250,7 @@ class FirebaseAuthenticationProvider
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
             }}
-            {...(this.enableEmailLink && {
-              onEmailLinkSignIn: async (email: string) => {
-                await this.sendEmailLink(email);
-              },
-            })}
+            enableEmailLink={this.enableEmailLink}
           />
         ),
       },
@@ -263,6 +260,7 @@ class FirebaseAuthenticationProvider
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
+            enableEmailLink={this.enableEmailLink}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {
@@ -284,11 +282,16 @@ class FirebaseAuthenticationProvider
               );
               await this.setUserLoggedIn(createUser.user);
             }}
-            {...(this.enableEmailLink && {
-              onEmailLinkSignUp: async (email: string) => {
-                await this.sendEmailLink(email);
-              },
-            })}
+          />
+        ),
+      },
+      {
+        path: "/signin/email-link",
+        element: (
+          <EmailLinkSignInUi
+            onSubmit={async (email: string) => {
+              await this.sendEmailLink(email);
+            }}
           />
         ),
       },
@@ -323,7 +326,6 @@ class FirebaseAuthenticationProvider
                     email,
                     window.location.href,
                   );
-                  localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
                   await this.setUserLoggedIn(result.user);
                 } catch (error) {
                   throw Error(getFirebaseErrorMessage(error), {

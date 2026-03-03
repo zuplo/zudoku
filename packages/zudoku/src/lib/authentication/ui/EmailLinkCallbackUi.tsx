@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, useSearchParams } from "react-router";
+import { Navigate, useNavigate, useSearchParams } from "react-router";
 import { Spinner } from "zudoku/components";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
@@ -23,6 +23,7 @@ export const EmailLinkCallbackUi = ({
   onCompleteSignIn: (email: string) => Promise<void>;
   isEmailLinkUrl: (url: string) => boolean;
 }) => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
   const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
@@ -31,6 +32,10 @@ export const EmailLinkCallbackUi = ({
 
   const signInMutation = useMutation({
     mutationFn: (email: string) => onCompleteSignIn(email),
+    onSuccess: () => {
+      localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
+      void navigate(relativeRedirectTo, { replace: true });
+    },
   });
 
   const storedEmail = useMemo(
@@ -50,15 +55,7 @@ export const EmailLinkCallbackUi = ({
     return <Navigate to="/signin" replace />;
   }
 
-  if (signInMutation.isSuccess) {
-    return <Navigate to={relativeRedirectTo} replace />;
-  }
-
-  if (
-    storedEmail &&
-    !signInMutation.isError &&
-    (signInMutation.isPending || signInMutation.isIdle)
-  ) {
+  if (signInMutation.isPending || (storedEmail && signInMutation.isIdle)) {
     return (
       <AuthCard>
         <CardHeader className="text-center">

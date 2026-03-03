@@ -5,6 +5,10 @@ export const getRelativeRedirectUrl = (redirectTo?: string | null) => {
     return "/";
   }
 
+  if (typeof window === "undefined") {
+    return redirectTo;
+  }
+
   return redirectTo.replace(
     joinUrl(window.location.origin, import.meta.env.BASE_URL),
     "",
