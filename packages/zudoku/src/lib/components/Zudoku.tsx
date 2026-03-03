@@ -5,7 +5,6 @@ import { ThemeProvider } from "next-themes";
 import {
   memo,
   type PropsWithChildren,
-  Suspense,
   useEffect,
   useMemo,
   useState,
@@ -73,18 +72,16 @@ const ZudokuInner = memo(
       <>
         <Helmet>{heads}</Helmet>
         <ZudokuProvider context={zudokuContext}>
-          <Suspense fallback={<div>Zudoku Loading...</div>}>
-            <RouterEventsEmitter />
-            <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
-              <MDXProvider components={mdxComponents}>
-                <ThemeProvider attribute="class" disableTransitionOnChange>
-                  <ViewportAnchorProvider>
-                    {children ?? <Outlet />}
-                  </ViewportAnchorProvider>
-                </ThemeProvider>
-              </MDXProvider>
-            </SlotProvider>
-          </Suspense>
+          <RouterEventsEmitter />
+          <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
+            <MDXProvider components={mdxComponents}>
+              <ThemeProvider attribute="class" disableTransitionOnChange>
+                <ViewportAnchorProvider>
+                  {children ?? <Outlet />}
+                </ViewportAnchorProvider>
+              </ThemeProvider>
+            </MDXProvider>
+          </SlotProvider>
         </ZudokuProvider>
       </>
     );

@@ -136,6 +136,7 @@ export class ZudokuContext {
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
+  readonly initialize: Promise<unknown> | undefined;
 
   constructor(
     options: ZudokuContextOptions,
@@ -148,6 +149,12 @@ export class ZudokuContext {
     this.plugins = options.plugins ?? [];
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.getAuthState = useAuthState.getState;
+
+    const pluginsToInit = this.plugins.filter(needsInitialization);
+    this.initialize =
+      pluginsToInit.length > 0
+        ? Promise.all(pluginsToInit.map((plugin) => plugin.initialize?.(this)))
+        : undefined;
 
     const pluginProtectedRoutes = Object.fromEntries(
       this.plugins.flatMap((plugin) => {
@@ -182,14 +189,6 @@ export class ZudokuContext {
       });
     });
   }
-
-  initialize = async (): Promise<void> => {
-    await Promise.all(
-      this.plugins
-        .filter(needsInitialization)
-        .map((plugin) => plugin.initialize?.(this)),
-    );
-  };
 
   getApiIdentities = async () => {
     const keys = await Promise.all(
