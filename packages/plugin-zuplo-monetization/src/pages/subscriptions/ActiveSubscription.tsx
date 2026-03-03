@@ -13,7 +13,10 @@ import { ManageSubscription } from "./ManageSubscription";
 import { Usage, type UsageResult } from "./Usage";
 
 type LocationState = {
-  planSwitched?: { isUpgrade: boolean; newPlanName: string };
+  planSwitched?: {
+    mode: "upgrade" | "downgrade" | "private";
+    newPlanName: string;
+  };
 };
 
 const ActiveSubscription = ({
@@ -54,7 +57,12 @@ const ActiveSubscription = ({
         <DismissibleAlert variant="info">
           <CheckCheckIcon className="size-4" />
           <AlertTitle>
-            Plan {planSwitched.isUpgrade ? "upgraded" : "downgraded"}
+            Plan{" "}
+            {planSwitched.mode === "upgrade"
+              ? "upgraded"
+              : planSwitched.mode === "downgrade"
+                ? "downgraded"
+                : "changed"}
           </AlertTitle>
           <AlertDescription>
             You have successfully switched to {planSwitched.newPlanName}.
