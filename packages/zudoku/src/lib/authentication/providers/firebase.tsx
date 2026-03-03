@@ -3,15 +3,19 @@ import {
   type Auth,
   createUserWithEmailAndPassword,
   getAuth,
+  isSignInWithEmailLink,
   sendEmailVerification,
   sendPasswordResetEmail,
+  sendSignInLinkToEmail,
   signInWithEmailAndPassword,
+  signInWithEmailLink,
   signInWithPopup,
   signOut,
   type User,
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
 import { ZudokuError } from "../../util/invariant.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
@@ -34,12 +38,16 @@ declare module "../state.js" {
   }
 }
 
+import { EmailLinkCallbackUi } from "../ui/EmailLinkCallbackUi.js";
+import { EmailLinkSentUi } from "../ui/EmailLinkSentUi.js";
 import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
 import {
   ZudokuPasswordResetUi,
   ZudokuSignInUi,
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
+
+const EMAIL_LINK_STORAGE_KEY = "zudoku:emailForSignIn";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -49,6 +57,7 @@ class FirebaseAuthenticationProvider
   private readonly auth: Auth;
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
+  private readonly enableEmailLink: boolean;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
@@ -63,9 +72,12 @@ class FirebaseAuthenticationProvider
       measurementId: config.measurementId,
     });
     this.auth = getAuth(this.app);
-    this.providers = config.providers?.filter((p) => p !== "password") ?? [];
+    this.providers =
+      config.providers?.filter((p) => p !== "password" && p !== "emailLink") ??
+      [];
     this.enableUsernamePassword =
       config.providers?.includes("password") ?? false;
+    this.enableEmailLink = config.providers?.includes("emailLink") ?? false;
   }
 
   async initialize() {
@@ -121,6 +133,31 @@ class FirebaseAuthenticationProvider
     );
   };
 
+  private getEmailLinkActionCodeSettings() {
+    const callbackUrl = new URL(window.location.origin);
+    callbackUrl.pathname = joinUrl(
+      import.meta.env.BASE_URL,
+      "/signin/email-link-callback",
+    );
+    return {
+      url: callbackUrl.toString(),
+      handleCodeInApp: true as const,
+    };
+  }
+
+  private async sendEmailLink(email: string) {
+    try {
+      await sendSignInLinkToEmail(
+        this.auth,
+        email,
+        this.getEmailLinkActionCodeSettings(),
+      );
+      localStorage.setItem(EMAIL_LINK_STORAGE_KEY, email);
+    } catch (error) {
+      throw Error(getFirebaseErrorMessage(error), { cause: error });
+    }
+  }
+
   getRoutes = () => {
     return [
       {
@@ -174,6 +211,7 @@ class FirebaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
+            enableEmailLink={this.enableEmailLink}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -211,6 +249,9 @@ class FirebaseAuthenticationProvider
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
             }}
+            onEmailLinkSignIn={async (email: string) => {
+              await this.sendEmailLink(email);
+            }}
           />
         ),
       },
@@ -220,6 +261,7 @@ class FirebaseAuthenticationProvider
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
+            enableEmailLink={this.enableEmailLink}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {
@@ -241,6 +283,49 @@ class FirebaseAuthenticationProvider
               );
               await this.setUserLoggedIn(createUser.user);
             }}
+            onEmailLinkSignUp={async (email: string) => {
+              await this.sendEmailLink(email);
+            }}
+          />
+        ),
+      },
+      {
+        path: "/signin/email-link-sent",
+        element: (
+          <EmailLinkSentUi
+            onResendEmailLink={async () => {
+              const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
+              if (!email) {
+                throw new ZudokuError(
+                  "No email address found. Please go back and try again.",
+                  { title: "Email not found" },
+                );
+              }
+              await this.sendEmailLink(email);
+            }}
+          />
+        ),
+      },
+      {
+        path: "/signin/email-link-callback",
+        element: (
+          <EmailLinkCallbackUi
+            onCompleteSignIn={async (email: string) => {
+              try {
+                const result = await signInWithEmailLink(
+                  this.auth,
+                  email,
+                  window.location.href,
+                );
+                localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
+                await this.setUserLoggedIn(result.user);
+              } catch (error) {
+                throw Error(getFirebaseErrorMessage(error), { cause: error });
+              }
+            }}
+            isEmailLinkUrl={(url: string) =>
+              isSignInWithEmailLink(this.auth, url)
+            }
           />
         ),
       },
@@ -263,6 +348,24 @@ class FirebaseAuthenticationProvider
   };
 
   onPageLoad = async () => {
+    if (isSignInWithEmailLink(this.auth, window.location.href)) {
+      const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
+      if (email) {
+        try {
+          const result = await signInWithEmailLink(
+            this.auth,
+            email,
+            window.location.href,
+          );
+          localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
+          await this.setUserLoggedIn(result.user);
+          return;
+        } catch {
+          // Fall through to normal page load
+        }
+      }
+    }
+
     const user = this.auth.currentUser;
 
     if (user) {
