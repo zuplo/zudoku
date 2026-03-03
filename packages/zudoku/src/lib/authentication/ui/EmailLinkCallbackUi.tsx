@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import React from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useSearchParams } from "react-router";
 import { Spinner } from "zudoku/components";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
@@ -13,9 +13,8 @@ import {
 } from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
 import createVariantComponent from "../../util/createVariantComponent.js";
+import { EMAIL_LINK_STORAGE_KEY } from "../providers/firebase.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
-
-const EMAIL_LINK_STORAGE_KEY = "zudoku:emailForSignIn";
 
 export const EmailLinkCallbackUi = ({
   onCompleteSignIn,
@@ -28,26 +27,24 @@ export const EmailLinkCallbackUi = ({
   const redirectTo = searchParams.get("redirectTo");
   const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
-  const [emailInput, setEmailInput] = React.useState("");
+  const [emailInput, setEmailInput] = useState("");
 
   const signInMutation = useMutation({
-    mutationFn: async (email: string) => {
-      await onCompleteSignIn(email);
-    },
+    mutationFn: (email: string) => onCompleteSignIn(email),
   });
 
-  const storedEmail = React.useMemo(
+  const storedEmail = useMemo(
     () => localStorage.getItem(EMAIL_LINK_STORAGE_KEY),
     [],
   );
 
-  const hasTriggered = React.useRef(false);
-  React.useEffect(() => {
+  const hasTriggered = useRef(false);
+  useEffect(() => {
     if (storedEmail && !hasTriggered.current) {
       hasTriggered.current = true;
       signInMutation.mutate(storedEmail);
     }
-  }, [storedEmail, signInMutation]);
+  }, [storedEmail, signInMutation.mutate]);
 
   if (!isEmailLinkUrl(window.location.href)) {
     return <Navigate to="/signin" replace />;

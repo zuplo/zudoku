@@ -136,7 +136,7 @@ export class ZudokuContext {
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
-  readonly initialize: Promise<unknown> | undefined;
+  readonly initialize: Promise<void> | undefined;
 
   constructor(
     options: ZudokuContextOptions,
@@ -153,7 +153,9 @@ export class ZudokuContext {
     const pluginsToInit = this.plugins.filter(needsInitialization);
     this.initialize =
       pluginsToInit.length > 0
-        ? Promise.all(pluginsToInit.map((plugin) => plugin.initialize?.(this)))
+        ? Promise.all(
+            pluginsToInit.map((plugin) => plugin.initialize?.(this)),
+          ).then(() => {})
         : undefined;
 
     const pluginProtectedRoutes = Object.fromEntries(

@@ -175,16 +175,15 @@ export const ZudokuSignInUi = ({
   onOAuthSignIn,
   onUsernamePasswordSignIn,
   enableUsernamePassword,
-  enableEmailLink,
   onEmailLinkSignIn,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
-  enableEmailLink?: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
   onEmailLinkSignIn?: (email: string) => Promise<void>;
 }) => {
+  const enableEmailLink = !!onEmailLinkSignIn;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
@@ -206,17 +205,15 @@ export const ZudokuSignInUi = ({
   }
 
   const signInUsernameMutation = useMutation({
-    mutationFn: async ({ email, password }: FormFields) => {
-      await onUsernamePasswordSignIn(email, password);
-    },
+    mutationFn: ({ email, password }: FormFields) =>
+      onUsernamePasswordSignIn(email, password),
     onSuccess: () => {
       void navigate(relativeRedirectTo);
     },
   });
   const signInByProviderMutation = useMutation({
-    mutationFn: async ({ providerId }: { providerId: string }) => {
-      await onOAuthSignIn(providerId);
-    },
+    mutationFn: ({ providerId }: { providerId: string }) =>
+      onOAuthSignIn(providerId),
     onSuccess: () => {
       void navigate(relativeRedirectTo);
     },
@@ -322,18 +319,17 @@ export const ZudokuSignInUi = ({
 export const ZudokuSignUpUi = ({
   providers,
   enableUsernamePassword,
-  enableEmailLink,
   onOAuthSignUp,
   onUsernamePasswordSignUp,
   onEmailLinkSignUp,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
-  enableEmailLink?: boolean;
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
   onEmailLinkSignUp?: (email: string) => Promise<void>;
 }) => {
+  const enableEmailLink = !!onEmailLinkSignUp;
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");

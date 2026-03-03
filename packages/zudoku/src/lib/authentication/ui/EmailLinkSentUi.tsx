@@ -11,8 +11,7 @@ import {
   CardTitle,
 } from "zudoku/ui/Card.js";
 import createVariantComponent from "../../util/createVariantComponent.js";
-
-const EMAIL_LINK_STORAGE_KEY = "zudoku:emailForSignIn";
+import { EMAIL_LINK_STORAGE_KEY } from "../providers/firebase.js";
 
 export const EmailLinkSentUi = ({
   onResendEmailLink,
@@ -22,12 +21,8 @@ export const EmailLinkSentUi = ({
   const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
 
   const resendMutation = useMutation({
-    mutationFn: async () => {
-      await onResendEmailLink();
-    },
+    mutationFn: () => onResendEmailLink(),
   });
-
-  const error = resendMutation.error;
 
   return (
     <AuthCard>
@@ -42,10 +37,10 @@ export const EmailLinkSentUi = ({
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {error && (
+        {resendMutation.error && (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error.message}</AlertDescription>
+            <AlertDescription>{resendMutation.error?.message}</AlertDescription>
           </Alert>
         )}
 

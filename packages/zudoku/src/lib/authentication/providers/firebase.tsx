@@ -47,7 +47,7 @@ import {
   ZudokuSignUpUi,
 } from "../ui/ZudokuAuthUi.js";
 
-const EMAIL_LINK_STORAGE_KEY = "zudoku:emailForSignIn";
+export const EMAIL_LINK_STORAGE_KEY = "zudoku:emailForSignIn";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -211,7 +211,6 @@ class FirebaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
-            enableEmailLink={this.enableEmailLink}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -249,9 +248,11 @@ class FirebaseAuthenticationProvider
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
             }}
-            onEmailLinkSignIn={async (email: string) => {
-              await this.sendEmailLink(email);
-            }}
+            {...(this.enableEmailLink && {
+              onEmailLinkSignIn: async (email: string) => {
+                await this.sendEmailLink(email);
+              },
+            })}
           />
         ),
       },
@@ -261,7 +262,6 @@ class FirebaseAuthenticationProvider
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
-            enableEmailLink={this.enableEmailLink}
             onOAuthSignUp={async (providerId: string) => {
               const provider = await getProviderForId(providerId);
               if (!provider) {
@@ -283,9 +283,11 @@ class FirebaseAuthenticationProvider
               );
               await this.setUserLoggedIn(createUser.user);
             }}
-            onEmailLinkSignUp={async (email: string) => {
-              await this.sendEmailLink(email);
-            }}
+            {...(this.enableEmailLink && {
+              onEmailLinkSignUp: async (email: string) => {
+                await this.sendEmailLink(email);
+              },
+            })}
           />
         ),
       },
@@ -348,24 +350,6 @@ class FirebaseAuthenticationProvider
   };
 
   onPageLoad = async () => {
-    if (isSignInWithEmailLink(this.auth, window.location.href)) {
-      const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
-      if (email) {
-        try {
-          const result = await signInWithEmailLink(
-            this.auth,
-            email,
-            window.location.href,
-          );
-          localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
-          await this.setUserLoggedIn(result.user);
-          return;
-        } catch {
-          // Fall through to normal page load
-        }
-      }
-    }
-
     const user = this.auth.currentUser;
 
     if (user) {
