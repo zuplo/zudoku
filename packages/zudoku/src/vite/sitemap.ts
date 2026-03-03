@@ -71,7 +71,7 @@ export async function generateSitemap({
       // Strip basePath from the redirect URL if present
       const urlWithoutBase =
         basePath && from.startsWith(basePath)
-          ? from.slice(basePath.length)
+          ? from.slice(basePath.length) || "/"
           : from;
       return [urlWithoutBase];
     }),

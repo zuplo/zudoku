@@ -91,3 +91,40 @@ it("should exclude redirects with basePath from sitemap", async () => {
   // Clean up
   await rm(tempDir, { recursive: true, force: true });
 });
+
+it("should exclude redirects with basePath without trailing slash", async () => {
+  const tempDir = await mkdtemp(path.join(os.tmpdir(), "zudoku-sitemap-test-"));
+  const basePath = "/docs";
+
+  const workerResults: WorkerResult[] = [
+    {
+      outputPath: "/home/test/index.html",
+      html: "<html></html>",
+      statusCode: 301,
+      redirect: { from: "/docs", to: "/docs/introduction" },
+    },
+    {
+      outputPath: "/home/test/introduction.html",
+      html: "<html></html>",
+      statusCode: 200,
+    },
+  ];
+
+  await generateSitemap({
+    basePath,
+    outputUrls: ["/", "/introduction"],
+    config: {
+      siteUrl: "https://example.com",
+    },
+    baseOutputDir: tempDir,
+    workerResults,
+  });
+
+  const sitemapPath = path.join(tempDir, "sitemap.xml");
+  const sitemap = await readFile(sitemapPath, "utf-8");
+
+  expect(sitemap).not.toContain("https://example.com/docs/</loc>");
+  expect(sitemap).toContain("https://example.com/docs/introduction");
+
+  await rm(tempDir, { recursive: true, force: true });
+});
