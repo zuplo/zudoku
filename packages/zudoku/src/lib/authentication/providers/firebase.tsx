@@ -38,6 +38,7 @@ declare module "../state.js" {
   }
 }
 
+import { ClientOnly } from "../../components/ClientOnly.js";
 import { EmailLinkCallbackUi } from "../ui/EmailLinkCallbackUi.js";
 import { EmailLinkSentUi } from "../ui/EmailLinkSentUi.js";
 import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
@@ -294,41 +295,47 @@ class FirebaseAuthenticationProvider
       {
         path: "/signin/email-link-sent",
         element: (
-          <EmailLinkSentUi
-            onResendEmailLink={async () => {
-              const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
-              if (!email) {
-                throw new ZudokuError(
-                  "No email address found. Please go back and try again.",
-                  { title: "Email not found" },
-                );
-              }
-              await this.sendEmailLink(email);
-            }}
-          />
+          <ClientOnly>
+            <EmailLinkSentUi
+              onResendEmailLink={async () => {
+                const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
+                if (!email) {
+                  throw new ZudokuError(
+                    "No email address found. Please go back and try again.",
+                    { title: "Email not found" },
+                  );
+                }
+                await this.sendEmailLink(email);
+              }}
+            />
+          </ClientOnly>
         ),
       },
       {
         path: "/signin/email-link-callback",
         element: (
-          <EmailLinkCallbackUi
-            onCompleteSignIn={async (email: string) => {
-              try {
-                const result = await signInWithEmailLink(
-                  this.auth,
-                  email,
-                  window.location.href,
-                );
-                localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
-                await this.setUserLoggedIn(result.user);
-              } catch (error) {
-                throw Error(getFirebaseErrorMessage(error), { cause: error });
+          <ClientOnly>
+            <EmailLinkCallbackUi
+              onCompleteSignIn={async (email: string) => {
+                try {
+                  const result = await signInWithEmailLink(
+                    this.auth,
+                    email,
+                    window.location.href,
+                  );
+                  localStorage.removeItem(EMAIL_LINK_STORAGE_KEY);
+                  await this.setUserLoggedIn(result.user);
+                } catch (error) {
+                  throw Error(getFirebaseErrorMessage(error), {
+                    cause: error,
+                  });
+                }
+              }}
+              isEmailLinkUrl={(url: string) =>
+                isSignInWithEmailLink(this.auth, url)
               }
-            }}
-            isEmailLinkUrl={(url: string) =>
-              isSignInWithEmailLink(this.auth, url)
-            }
-          />
+            />
+          </ClientOnly>
         ),
       },
       {
