@@ -187,13 +187,21 @@ const ChangeIndicator = ({
   return <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />;
 };
 
+const modeLabelMap: Record<SwitchPlanTarget["mode"], string> = {
+  upgrade: "Upgrade",
+  downgrade: "Downgrade",
+  private: "Switch",
+};
+
 const PlanComparisonItem = ({
   comparison,
   subscriptionId,
+  mode,
   onRequestChange,
 }: {
   comparison: PlanComparison;
   subscriptionId: string;
+  mode: SwitchPlanTarget["mode"];
   onRequestChange: (switchTo: SwitchPlanTarget) => void;
 }) => {
   const price = getPriceFromPlan(comparison.plan);
@@ -227,17 +235,17 @@ const PlanComparisonItem = ({
           </Button>
         ) : (
           <Button
-            variant={comparison.isUpgrade ? "default" : "outline"}
+            variant={mode === "upgrade" ? "default" : "outline"}
             onClick={() =>
               onRequestChange({
                 subscriptionId,
                 plan: comparison.plan,
-                mode: comparison.isUpgrade ? "upgrade" : "downgrade",
+                mode,
               })
             }
             size="sm"
           >
-            {comparison.isUpgrade ? "Upgrade" : "Downgrade"}
+            {modeLabelMap[mode]}
           </Button>
         )}
       </div>
@@ -332,7 +340,7 @@ const PlanComparisonItem = ({
 export type SwitchPlanTarget = {
   subscriptionId: string;
   plan: Plan;
-  mode: "upgrade" | "downgrade";
+  mode: "upgrade" | "downgrade" | "private";
 };
 
 const ConfirmSwitchAlert = ({
@@ -364,7 +372,7 @@ const ConfirmSwitchAlert = ({
       navigate(`/subscriptions/${subscription.id}`, {
         state: {
           planSwitched: {
-            isUpgrade: switchTo.mode === "upgrade",
+            mode: switchTo.mode,
             newPlanName: switchTo.plan.name,
           },
         },
@@ -379,7 +387,12 @@ const ConfirmSwitchAlert = ({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Confirm {switchTo.mode === "upgrade" ? "upgrade" : "downgrade"}
+            Confirm{" "}
+            {switchTo.mode === "private"
+              ? "plan change"
+              : switchTo.mode === "upgrade"
+                ? "upgrade"
+                : "downgrade"}
           </AlertDialogTitle>
           {mutation.isError && (
             <Alert variant="destructive">
@@ -389,9 +402,11 @@ const ConfirmSwitchAlert = ({
             </Alert>
           )}
           <AlertDialogDescription>
-            {switchTo.mode === "upgrade"
-              ? `Are you sure you want to upgrade to ${switchTo.plan.name}? This will take effect immediately.`
-              : `Are you sure you want to downgrade to ${switchTo.plan.name}? This will take effect at the start of your next billing cycle.`}
+            {switchTo.mode === "private"
+              ? `Are you sure you want to switch to ${switchTo.plan.name}? This will take effect immediately.`
+              : switchTo.mode === "upgrade"
+                ? `Are you sure you want to upgrade to ${switchTo.plan.name}? This will take effect immediately.`
+                : `Are you sure you want to downgrade to ${switchTo.plan.name}? This will take effect at the start of your next billing cycle.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
@@ -402,7 +417,7 @@ const ConfirmSwitchAlert = ({
             isPending={mutation.isPending}
             onClick={() => mutation.mutate()}
           >
-            {switchTo.mode === "upgrade" ? "Upgrade" : "Downgrade"}
+            {modeLabelMap[switchTo.mode]}
           </ActionButton>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -424,18 +439,26 @@ export const SwitchPlanModal = ({
     (p) => p.id === subscription.plan.id,
   );
 
-  const { upgrades, downgrades } = useMemo(() => {
+  const { upgrades, downgrades, privatePlans } = useMemo(() => {
     if (!plansData?.items || !currentPlan) {
-      return { upgrades: [], downgrades: [] };
+      return { upgrades: [], downgrades: [], privatePlans: [] };
     }
+
+    const isPrivatePlan = (plan: Plan) =>
+      plan.metadata?.zuplo_is_private === "true";
 
     const allComparisons = plansData.items
       .filter((p) => p.id !== currentPlan.id)
       .map((plan) => comparePlans(currentPlan, plan));
 
     return {
-      upgrades: allComparisons.filter((c) => c.isUpgrade),
-      downgrades: allComparisons.filter((c) => !c.isUpgrade),
+      upgrades: allComparisons.filter(
+        (c) => c.isUpgrade && !isPrivatePlan(c.plan),
+      ),
+      downgrades: allComparisons.filter(
+        (c) => !c.isUpgrade && !isPrivatePlan(c.plan),
+      ),
+      privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
     };
   }, [plansData?.items, currentPlan]);
 
@@ -495,9 +518,8 @@ export const SwitchPlanModal = ({
                         key={comparison.plan.id}
                         comparison={comparison}
                         subscriptionId={subscription.id}
-                        onRequestChange={({ subscriptionId, plan }) =>
-                          setSwitchTo({ subscriptionId, plan, mode: "upgrade" })
-                        }
+                        mode="upgrade"
+                        onRequestChange={setSwitchTo}
                       />
                     ))}
                   </div>
@@ -523,13 +545,35 @@ export const SwitchPlanModal = ({
                         key={comparison.plan.id}
                         comparison={comparison}
                         subscriptionId={subscription.id}
-                        onRequestChange={({ subscriptionId, plan }) =>
-                          setSwitchTo({
-                            subscriptionId,
-                            plan,
-                            mode: "downgrade",
-                          })
-                        }
+                        mode="downgrade"
+                        onRequestChange={setSwitchTo}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {privatePlans.length > 0 && (
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <ArrowLeftRightIcon className="size-5 text-muted-foreground" />
+                      <span className="font-medium text-foreground">
+                        Private Plan Option
+                      </span>
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      Takes effect immediately
+                    </span>
+                  </div>
+                  <div className="space-y-3">
+                    {privatePlans.map((comparison) => (
+                      <PlanComparisonItem
+                        key={comparison.plan.id}
+                        comparison={comparison}
+                        subscriptionId={subscription.id}
+                        mode="private"
+                        onRequestChange={setSwitchTo}
                       />
                     ))}
                   </div>
