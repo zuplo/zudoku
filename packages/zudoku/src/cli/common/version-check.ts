@@ -1,8 +1,8 @@
 import { fileURLToPath } from "node:url";
 import colors from "picocolors";
 import { minVersion, satisfies } from "semver";
-import { getPackageJson } from "../cli.js";
 import { printWarningToConsole } from "./output.js";
+import { getPackageJson } from "./package-json.js";
 import box from "./utils/box.js";
 
 export const getPkgManager = () => {

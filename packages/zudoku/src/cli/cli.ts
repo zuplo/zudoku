@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import * as Sentry from "@sentry/node";
 import { hideBin } from "yargs/helpers";
@@ -10,24 +9,12 @@ import { shutdownAnalytics } from "./common/analytics/lib.js";
 import { MAX_WAIT_PENDING_TIME_MS, SENTRY_DSN } from "./common/constants.js";
 import { warnIfOutdatedVersion } from "./common/outdated.js";
 import { printDiagnosticsToConsole } from "./common/output.js";
+import { getPackageJson } from "./common/package-json.js";
 import { warnPackageVersionMismatch } from "./common/version-check.js";
 
 process.env.ZUDOKU_ENV = process.env.ZUDOKU_INTERNAL_DEV
   ? "internal"
   : "module";
-
-// Minimal representation of a package.json file
-type PackageJson = {
-  name: string;
-  version: string;
-  type: string;
-  dependencies: Record<string, string>;
-  devDependencies: Record<string, string>;
-  peerDependencies: Record<string, string>;
-};
-
-export const getPackageJson = (path: string): PackageJson =>
-  JSON.parse(readFileSync(path, "utf-8")) as PackageJson;
 
 const packageJson = getPackageJson(
   fileURLToPath(import.meta.resolve("zudoku/package.json")),
