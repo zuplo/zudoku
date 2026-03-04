@@ -78,3 +78,17 @@ jobs:
           git commit -m "chore(release): @zuplo/zudoku-plugin-monetization v${{ steps.version.outputs.version }} [skip ci]"
           git tag "monetization-v${{ steps.version.outputs.version }}"
           git push origin main --follow-tags
+
+      - name: Generate a token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.ZUDOKU_GH_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_GH_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: core
+
+      - name: Trigger zudoku builder rebuild
+        run: gh workflow run zudoku-builder.yaml --repo zuplo/core --ref main
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
