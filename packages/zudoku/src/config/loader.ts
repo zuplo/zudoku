@@ -70,6 +70,17 @@ async function loadZudokuConfigWithMeta(
     default: ZudokuConfig;
   }>(configPath, {
     plugins: [virtualModuleStubPlugin],
+    environments: {
+      inline: {
+        resolve: {
+          // Prevent Node.js from trying to load zudoku's raw .ts source
+          // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
+          // when --experimental-strip-types is enabled. Uses regex to also
+          // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
+          noExternal: [/zudoku/],
+        },
+      },
+    },
     server: {
       // this allows us to 'load' CSS files in the config
       // see https://github.com/vitejs/vite/pull/19577
