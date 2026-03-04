@@ -1,7 +1,6 @@
 import type { RouteObject } from "react-router";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 
-/** Strip optional params, return undefined if any required dynamic params exist */
 const resolveRoutePath = (path: string): string | undefined => {
   const segments = path.split("/");
   if (segments.some((s) => s.startsWith(":") && !s.endsWith("?"))) {

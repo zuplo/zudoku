@@ -27,6 +27,22 @@ export type WorkerResult = {
   redirect?: { from: string; to: string };
 };
 
+export const getRedirectUrls = (
+  workerResults: WorkerResult[],
+  basePath: string | undefined,
+): Set<string> =>
+  new Set(
+    workerResults.flatMap((r) => {
+      if (!r.redirect) return [];
+      const from = r.redirect.from;
+      return [
+        basePath && from.startsWith(basePath)
+          ? from.slice(basePath.length) || "/"
+          : from,
+      ];
+    }),
+  );
+
 export const prerender = async ({
   html,
   dir,
@@ -154,11 +170,14 @@ export const prerender = async ({
     );
   }
 
+  const redirectUrls = getRedirectUrls(workerResults, config.basePath);
+
   await generateSitemap({
     basePath: config.basePath,
     outputUrls: paths,
     config: config.sitemap,
     baseOutputDir: distDir,
+    redirectUrls,
   });
 
   // Generate llms.txt files if markdown export is enabled
@@ -190,7 +209,7 @@ export const prerender = async ({
         siteName: config.site?.title,
         llmsTxt: llmsConfig.llmsTxt,
         llmsTxtFull: llmsConfig.llmsTxtFull,
-        workerResults,
+        redirectUrls,
       });
     }
 
