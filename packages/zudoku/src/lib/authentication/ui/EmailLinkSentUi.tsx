@@ -1,28 +1,33 @@
 import { useMutation } from "@tanstack/react-query";
 import { Mail, RefreshCw } from "lucide-react";
-import { Link } from "react-router";
+import { useState } from "react";
+import { Link, Navigate } from "react-router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button } from "zudoku/ui/Button.js";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
-import createVariantComponent from "../../util/createVariantComponent.js";
-import { EMAIL_LINK_STORAGE_KEY } from "../providers/firebase.js";
+import { cn } from "../../util/cn.js";
+import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
+import { AuthCard } from "./AuthCard.js";
 
 export const EmailLinkSentUi = ({
   onResendEmailLink,
 }: {
   onResendEmailLink: () => Promise<void>;
 }) => {
-  const email = localStorage.getItem(EMAIL_LINK_STORAGE_KEY);
+  const [email] = useState(() => localStorage.getItem(EMAIL_LINK_STORAGE_KEY));
 
   const resendMutation = useMutation({
     mutationFn: () => onResendEmailLink(),
   });
+
+  if (!email) {
+    return <Navigate to="/signin/email-link" replace />;
+  }
 
   return (
     <AuthCard>
@@ -32,15 +37,14 @@ export const EmailLinkSentUi = ({
         </div>
         <CardTitle>Check your email</CardTitle>
         <CardDescription>
-          We've sent a sign-in link to{" "}
-          {email ? <strong>{email}</strong> : "your email address"}.
+          We've sent a sign-in link to <strong>{email}</strong>.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         {resendMutation.error && (
           <Alert variant="destructive">
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{resendMutation.error?.message}</AlertDescription>
+            <AlertDescription>{resendMutation.error.message}</AlertDescription>
           </Alert>
         )}
 
@@ -71,11 +75,12 @@ export const EmailLinkSentUi = ({
             disabled={resendMutation.isPending}
             className="w-full gap-2"
           >
-            {resendMutation.isPending ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="h-4 w-4" />
-            )}
+            <RefreshCw
+              className={cn(
+                "h-4 w-4",
+                resendMutation.isPending && "animate-spin",
+              )}
+            />
             Resend sign-in link
           </Button>
         </div>
@@ -94,5 +99,3 @@ export const EmailLinkSentUi = ({
     </AuthCard>
   );
 };
-
-const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");

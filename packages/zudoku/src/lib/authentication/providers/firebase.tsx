@@ -14,6 +14,7 @@ import {
   type User,
 } from "firebase/auth";
 import type { FirebaseAuthenticationConfig } from "../../../config/config.js";
+import { ClientOnly } from "../../components/ClientOnly.js";
 import { ZudokuError } from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type {
@@ -26,6 +27,15 @@ import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
 import { AuthorizationError } from "../errors.js";
 import { useAuthState } from "../state.js";
+import { EmailLinkCallbackUi } from "../ui/EmailLinkCallbackUi.js";
+import { EmailLinkSentUi } from "../ui/EmailLinkSentUi.js";
+import { EmailLinkSignInUi } from "../ui/EmailLinkSignInUi.js";
+import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
+import {
+  ZudokuPasswordResetUi,
+  ZudokuSignInUi,
+  ZudokuSignUpUi,
+} from "../ui/ZudokuAuthUi.js";
 
 export type FirebaseProviderData = {
   type: "firebase";
@@ -38,18 +48,7 @@ declare module "../state.js" {
   }
 }
 
-import { ClientOnly } from "../../components/ClientOnly.js";
-import { EmailLinkCallbackUi } from "../ui/EmailLinkCallbackUi.js";
-import { EmailLinkSentUi } from "../ui/EmailLinkSentUi.js";
-import { EmailLinkSignInUi } from "../ui/EmailLinkSignInUi.js";
-import { EmailVerificationUi } from "../ui/EmailVerificationUi.js";
-import {
-  ZudokuPasswordResetUi,
-  ZudokuSignInUi,
-  ZudokuSignUpUi,
-} from "../ui/ZudokuAuthUi.js";
-
-export const EMAIL_LINK_STORAGE_KEY = "zudoku:emailForSignIn";
+import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
 
 class FirebaseAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -135,29 +134,32 @@ class FirebaseAuthenticationProvider
     );
   };
 
-  private getEmailLinkActionCodeSettings() {
+  private getEmailLinkActionCodeSettings(redirectTo?: string) {
     const callbackUrl = new URL(window.location.origin);
     callbackUrl.pathname = joinUrl(
       import.meta.env.BASE_URL,
       "/signin/email-link-callback",
     );
+    if (redirectTo) {
+      callbackUrl.searchParams.set("redirectTo", redirectTo);
+    }
     return {
       url: callbackUrl.toString(),
       handleCodeInApp: true as const,
     };
   }
 
-  private async sendEmailLink(email: string) {
+  private async sendEmailLink(email: string, redirectTo?: string) {
     try {
       await sendSignInLinkToEmail(
         this.auth,
         email,
-        this.getEmailLinkActionCodeSettings(),
+        this.getEmailLinkActionCodeSettings(redirectTo),
       );
-      localStorage.setItem(EMAIL_LINK_STORAGE_KEY, email);
     } catch (error) {
-      throw Error(getFirebaseErrorMessage(error), { cause: error });
+      throw new Error(getFirebaseErrorMessage(error), { cause: error });
     }
+    localStorage.setItem(EMAIL_LINK_STORAGE_KEY, email);
   }
 
   getRoutes = () => {
@@ -289,8 +291,8 @@ class FirebaseAuthenticationProvider
         path: "/signin/email-link",
         element: (
           <EmailLinkSignInUi
-            onSubmit={async (email: string) => {
-              await this.sendEmailLink(email);
+            onSubmit={async (email: string, redirectTo?: string) => {
+              await this.sendEmailLink(email, redirectTo);
             }}
           />
         ),

@@ -1,10 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -18,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "../../ui/Form.js";
-import createVariantComponent from "../../util/createVariantComponent.js";
+import { AuthCard } from "./AuthCard.js";
 
 type EmailLinkFormFields = {
   email: string;
@@ -27,14 +26,21 @@ type EmailLinkFormFields = {
 export const EmailLinkSignInUi = ({
   onSubmit,
 }: {
-  onSubmit: (email: string) => Promise<void>;
+  onSubmit: (email: string, redirectTo?: string) => Promise<void>;
 }) => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
 
   const mutation = useMutation({
-    mutationFn: ({ email }: EmailLinkFormFields) => onSubmit(email),
+    mutationFn: ({ email }: EmailLinkFormFields) =>
+      onSubmit(email, redirectTo ?? undefined),
     onSuccess: () => {
-      void navigate("/signin/email-link-sent");
+      void navigate(
+        redirectTo
+          ? `/signin/email-link-sent?redirectTo=${encodeURIComponent(redirectTo)}`
+          : "/signin/email-link-sent",
+      );
     },
   });
 
@@ -69,7 +75,9 @@ export const EmailLinkSignInUi = ({
               <FormControl>
                 <Input
                   placeholder="you@example.com"
-                  {...form.register("email")}
+                  type="email"
+                  required
+                  {...form.register("email", { required: true })}
                 />
               </FormControl>
               <FormMessage />
@@ -86,5 +94,3 @@ export const EmailLinkSignInUi = ({
     </AuthCard>
   );
 };
-
-const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");

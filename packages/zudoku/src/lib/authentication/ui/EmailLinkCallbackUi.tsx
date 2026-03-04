@@ -1,20 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Navigate, useNavigate, useSearchParams } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { Spinner } from "zudoku/components";
 import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "zudoku/ui/Card.js";
 import { Input } from "zudoku/ui/Input.js";
-import createVariantComponent from "../../util/createVariantComponent.js";
-import { EMAIL_LINK_STORAGE_KEY } from "../providers/firebase.js";
+import { EMAIL_LINK_STORAGE_KEY } from "../constants.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
+import { AuthCard } from "./AuthCard.js";
 
 export const EmailLinkCallbackUi = ({
   onCompleteSignIn,
@@ -38,21 +37,37 @@ export const EmailLinkCallbackUi = ({
     },
   });
 
-  const storedEmail = useMemo(
-    () => localStorage.getItem(EMAIL_LINK_STORAGE_KEY),
-    [],
+  const [storedEmail] = useState(() =>
+    localStorage.getItem(EMAIL_LINK_STORAGE_KEY),
   );
+
+  const isValidLink = isEmailLinkUrl(window.location.href);
 
   const hasTriggered = useRef(false);
   useEffect(() => {
-    if (storedEmail && !hasTriggered.current) {
+    if (isValidLink && storedEmail && !hasTriggered.current) {
       hasTriggered.current = true;
       signInMutation.mutate(storedEmail);
     }
-  }, [storedEmail, signInMutation.mutate]);
+  }, [isValidLink, storedEmail, signInMutation.mutate]);
 
-  if (!isEmailLinkUrl(window.location.href)) {
-    return <Navigate to="/signin" replace />;
+  if (!isValidLink) {
+    return (
+      <AuthCard>
+        <CardHeader className="text-center">
+          <CardTitle>Invalid sign-in link</CardTitle>
+          <CardDescription>
+            This sign-in link is invalid or has expired. Please request a new
+            one.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center">
+          <a href="/signin/email-link" className="text-sm text-primary">
+            Request a new sign-in link
+          </a>
+        </CardContent>
+      </AuthCard>
+    );
   }
 
   if (signInMutation.isPending || (storedEmail && signInMutation.isIdle)) {
@@ -108,5 +123,3 @@ export const EmailLinkCallbackUi = ({
     </AuthCard>
   );
 };
-
-const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");

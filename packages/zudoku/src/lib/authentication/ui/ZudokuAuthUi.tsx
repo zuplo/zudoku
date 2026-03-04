@@ -6,7 +6,6 @@ import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button, type ButtonProps } from "zudoku/ui/Button.js";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -22,8 +21,8 @@ import {
   FormMessage,
 } from "../../ui/Form.js";
 import { cn } from "../../util/cn.js";
-import createVariantComponent from "../../util/createVariantComponent.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
+import { AuthCard } from "./AuthCard.js";
 import AppleIcon from "./icons/Apple.js";
 import FacebookIcon from "./icons/Facebook.js";
 import GithubIcon from "./icons/Github.js";
@@ -243,7 +242,11 @@ export const ZudokuSignInUi = ({
         <div className="flex flex-col gap-1">
           {enableEmailLink && (
             <Link
-              to="/signin/email-link"
+              to={
+                redirectTo
+                  ? `/signin/email-link?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : "/signin/email-link"
+              }
               className="text-sm text-muted-foreground"
             >
               Sign in with email link
@@ -354,10 +357,14 @@ export const ZudokuSignUpUi = ({
         <div className="flex flex-col gap-1">
           {enableEmailLink && (
             <Link
-              to="/signin/email-link"
+              to={
+                redirectTo
+                  ? `/signin/email-link?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : "/signin/email-link"
+              }
               className="text-sm text-muted-foreground"
             >
-              Sign up with email link
+              Sign in with email link
             </Link>
           )}
           <Link to="/signin" className="text-sm text-muted-foreground">
@@ -368,8 +375,6 @@ export const ZudokuSignUpUi = ({
     </AuthCard>
   );
 };
-
-const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");
 
 const ProviderButtons = ({
   providers,
