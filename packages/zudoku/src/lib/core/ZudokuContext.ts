@@ -48,20 +48,21 @@ export interface ApiIdentity {
 
 export type ApiKeyCache = "api-keys";
 
-type Metadata = Partial<{
-  title: string;
+import type { useSeoMeta } from "@unhead/react";
+
+type SeoMetaInput = NonNullable<Parameters<typeof useSeoMeta>[0]>;
+
+type Metadata = Omit<SeoMetaInput, "title" | "titleTemplate" | "referrer"> & {
+  /** Title template with %s placeholder, e.g. "%s | My Site" */
+  title?: string;
+  /** Fallback title when no page sets one */
   defaultTitle?: string;
-  description: string;
-  logo: string;
-  favicon: string;
-  generator: string;
-  applicationName: string;
-  referrer: string;
-  keywords: string[];
-  authors: string[];
-  creator: string;
-  publisher: string;
-}>;
+  referrer?: string;
+  keywords?: string[];
+  favicon?: string;
+  /** @deprecated Use `author` (string) instead */
+  authors?: string[];
+};
 
 type Site = Partial<{
   dir?: "ltr" | "rtl";

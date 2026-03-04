@@ -465,22 +465,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
-const MetadataSchema = z
-  .object({
-    title: z.string(),
-    defaultTitle: z.string().optional(),
-    description: z.string(),
-    logo: z.string(),
-    favicon: z.string(),
-    generator: z.string(),
-    applicationName: z.string(),
-    referrer: z.string(),
-    keywords: z.array(z.string()),
-    authors: z.array(z.string()),
-    creator: z.string(),
-    publisher: z.string(),
-  })
-  .partial();
+const MetadataSchema = z.record(z.string(), z.unknown());
 
 const FontConfigSchema = z.union([
   z.enum(GOOGLE_FONTS),

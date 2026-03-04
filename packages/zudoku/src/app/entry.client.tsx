@@ -1,3 +1,4 @@
+import { createHead } from "@unhead/react/client";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import {
   createBrowserRouter,
@@ -12,6 +13,7 @@ import { getRoutesByConfig, shikiReady } from "./main.js";
 const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
+const head = createHead();
 
 declare global {
   interface Window {
@@ -96,7 +98,7 @@ function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
-  createRoot(root).render(<Bootstrap router={router} />);
+  createRoot(root).render(<Bootstrap router={router} head={head} />);
 }
 
 async function hydrate(routes: RouteObject[]) {
@@ -106,7 +108,7 @@ async function hydrate(routes: RouteObject[]) {
     basename: config.basePath,
   });
 
-  hydrateRoot(root, <Bootstrap hydrate router={router} />);
+  hydrateRoot(root, <Bootstrap hydrate router={router} head={head} />);
 }
 
 // This is a workaround to avoid version skewing

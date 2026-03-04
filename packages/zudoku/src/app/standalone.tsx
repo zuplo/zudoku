@@ -1,3 +1,4 @@
+import { createHead } from "@unhead/react/client";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
 import type { ZudokuConfig } from "../config/validators/validate.js";
@@ -57,4 +58,4 @@ const routes = getRoutesByConfig(config);
 const router = createBrowserRouter(routes, {
   basename: window.location.pathname,
 });
-createRoot(root).render(<Bootstrap router={router} />);
+createRoot(root).render(<Bootstrap router={router} head={createHead()} />);

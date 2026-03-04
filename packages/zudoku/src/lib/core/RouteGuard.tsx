@@ -1,4 +1,4 @@
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { use, useCallback, useEffect, useMemo } from "react";
 import {
   matchPath,
@@ -61,13 +61,13 @@ const LoginDialog = ({
 const BypassRoute = ({ isProtectedRoute }: { isProtectedRoute: boolean }) => (
   <>
     {isProtectedRoute && (
-      <Helmet>
+      <Head>
         <meta
           name="pagefind"
           data-pagefind-filter={`section:${SEARCH_PROTECTED_SECTION}`}
           content="true"
         />
-      </Helmet>
+      </Head>
     )}
     <Outlet />
   </>

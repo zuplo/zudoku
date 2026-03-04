@@ -28,6 +28,8 @@ minimumReleaseAgeExclude:
   - pagefind
   - "@pagefind/*"
   - oxfmt
+  - unhead
+  - "@unhead/react"
   - "@oxfmt/*"
   - tailwind-merge
   - tailwindcss

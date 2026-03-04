@@ -3,7 +3,7 @@ import {
   QueryClientProvider,
   type QueryKey,
 } from "@tanstack/react-query";
-import { HelmetProvider } from "@zudoku/react-helmet-async";
+import { createHead, UnheadProvider } from "@unhead/react/client";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { useAuthState } from "../authentication/state.js";
@@ -90,6 +90,7 @@ const StaticZudoku = ({
     queryClient.setQueryData(queryKey, data);
   }
 
+  const head = createHead();
   const routes = getRoutesByOptions(options);
   const router = createMemoryRouter(
     [
@@ -120,11 +121,11 @@ const StaticZudoku = ({
 
   return (
     <QueryClientProvider client={queryClient}>
-      <HelmetProvider>
+      <UnheadProvider head={head}>
         <RenderContext value={{ status: 200, bypassProtection: false }}>
           <RouterProvider router={router} />
         </RenderContext>
-      </HelmetProvider>
+      </UnheadProvider>
     </QueryClientProvider>
   );
 };

@@ -32,7 +32,8 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 
 const config: ZudokuConfig = {
   metadata: {
-    title: "Cosmo Cargo Inc.",
+    title: "%s | Cosmo Cargo Inc.",
+    defaultTitle: "Cosmo Cargo Inc.",
   },
   docs: {
     publishMarkdown: true,

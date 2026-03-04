@@ -1,6 +1,6 @@
 import { Transform } from "node:stream";
 import { dehydrate, QueryClient } from "@tanstack/react-query";
-import type { HelmetData } from "@zudoku/react-helmet-async";
+import { createHead, transformHtmlTemplate } from "@unhead/react/server";
 import type express from "express";
 import logger from "loglevel";
 import { renderToPipeableStream, renderToStaticMarkup } from "react-dom/server";
@@ -75,7 +75,7 @@ export const render = async ({
   }
 
   const router = createStaticRouter(dataRoutes, context);
-  const helmetContext = {} as HelmetData["context"];
+  const head = createHead();
   const renderContext = {
     status: 200,
     bypassProtection: bypassProtection ?? false,
@@ -86,7 +86,7 @@ export const render = async ({
       router={router}
       context={context}
       queryClient={queryClient}
-      helmetContext={helmetContext}
+      head={head}
       bypassProtection={bypassProtection}
       renderContext={renderContext}
     />
@@ -101,7 +101,7 @@ export const render = async ({
 
       response.send(html);
     },
-    onAllReady() {
+    async onAllReady() {
       response.set({ "Content-Type": "text/html" });
       response.status(
         renderContext.status !== 200 ? renderContext.status : status,
@@ -120,18 +120,8 @@ export const render = async ({
         throw new Error("No <!--app-html--> found in template");
       }
 
-      response.write(
-        htmlStart.replace(
-          "<!--app-helmet-->",
-          [
-            helmetContext.helmet.title.toString(),
-            helmetContext.helmet.meta.toString(),
-            helmetContext.helmet.link.toString(),
-            helmetContext.helmet.style.toString(),
-            helmetContext.helmet.script.toString(),
-          ].join("\n"),
-        ),
-      );
+      const headHtml = await transformHtmlTemplate(head, htmlStart);
+      response.write(headHtml);
 
       transformStream.on("finish", () => {
         const dehydrated = dehydrate(queryClient, {

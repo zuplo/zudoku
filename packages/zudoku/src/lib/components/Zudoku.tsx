@@ -1,6 +1,6 @@
 import { MDXProvider } from "@mdx-js/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
+import { Head } from "@unhead/react";
 import { ThemeProvider } from "next-themes";
 import {
   memo,
@@ -70,7 +70,7 @@ const ZudokuInner = memo(
 
     return (
       <>
-        <Helmet>{heads}</Helmet>
+        <Head>{heads}</Head>
         <ZudokuProvider context={zudokuContext}>
           <RouterEventsEmitter />
           <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>

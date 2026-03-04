@@ -13,7 +13,7 @@ import {
   within,
 } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
-import { HelmetProvider } from "@zudoku/react-helmet-async";
+import { createHead, UnheadProvider } from "@unhead/react/client";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import {
@@ -115,7 +115,7 @@ const render = async (
     createWrapper(options);
 
   const Providers = () => (
-    <HelmetProvider>
+    <UnheadProvider head={createHead()}>
       <QueryClientProvider client={queryClient}>
         <ZudokuProvider context={context}>
           <RenderContext
@@ -125,7 +125,7 @@ const render = async (
           </RenderContext>
         </ZudokuProvider>
       </QueryClientProvider>
-    </HelmetProvider>
+    </UnheadProvider>
   );
 
   const routes = ensureArray(routeObject);
@@ -158,6 +158,10 @@ const render = async (
 describe("RouteGuard", () => {
   beforeEach(() => {
     cleanup();
+    // Clean up meta elements injected by unhead into the DOM
+    document
+      .querySelectorAll('head meta[name="pagefind"]')
+      .forEach((el) => el.remove());
     vi.clearAllMocks();
     useAuthState.setState({
       isAuthenticated: false,
@@ -208,7 +212,7 @@ describe("RouteGuard", () => {
       });
 
       const Wrapper = ({ children }: PropsWithChildren) => (
-        <HelmetProvider>
+        <UnheadProvider head={createHead()}>
           <QueryClientProvider client={queryClient}>
             <ZudokuProvider context={context}>
               <RenderContext value={{ status: 200, bypassProtection: false }}>
@@ -216,7 +220,7 @@ describe("RouteGuard", () => {
               </RenderContext>
             </ZudokuProvider>
           </QueryClientProvider>
-        </HelmetProvider>
+        </UnheadProvider>
       );
 
       const TestComponent = () => (
