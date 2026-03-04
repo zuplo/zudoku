@@ -5,35 +5,18 @@ import colors from "picocolors";
 import { SitemapStream } from "sitemap";
 import type { ZudokuSiteMapConfig } from "../config/validators/validate.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
-import type { WorkerResult } from "./prerender/prerender.js";
-
 export async function generateSitemap({
   outputUrls,
   basePath,
   baseOutputDir,
   config,
-  workerResults,
+  redirectUrls,
 }: {
-  /**
-   * The base path of the site (e.g. `/docs`).
-   */
   basePath: string | undefined;
-  /**
-   * The URLs of generated pages
-   */
   outputUrls: string[];
-  /**
-   * The base output directory
-   */
   baseOutputDir: string;
-  /**
-   * The site map configuration
-   */
   config: ZudokuSiteMapConfig;
-  /**
-   * The worker results from prerendering (used to filter redirects)
-   */
-  workerResults: WorkerResult[];
+  redirectUrls: Set<string>;
 }) {
   if (!config) {
     return;
@@ -62,20 +45,6 @@ export async function generateSitemap({
     (typeof config.exclude === "function"
       ? await config.exclude()
       : config.exclude) ?? [];
-
-  // Filter out redirects from the sitemap
-  const redirectUrls = new Set(
-    workerResults.flatMap((result) => {
-      if (!result.redirect) return [];
-      const from = result.redirect.from;
-      // Strip basePath from the redirect URL if present
-      const urlWithoutBase =
-        basePath && from.startsWith(basePath)
-          ? from.slice(basePath.length) || "/"
-          : from;
-      return [urlWithoutBase];
-    }),
-  );
 
   for (const url of outputUrls) {
     const shouldExclude =
