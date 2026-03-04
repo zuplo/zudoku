@@ -6,7 +6,6 @@ import { ActionButton } from "zudoku/ui/ActionButton.js";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 import { Button, type ButtonProps } from "zudoku/ui/Button.js";
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -22,8 +21,8 @@ import {
   FormMessage,
 } from "../../ui/Form.js";
 import { cn } from "../../util/cn.js";
-import createVariantComponent from "../../util/createVariantComponent.js";
 import { getRelativeRedirectUrl } from "../utils/relativeRedirectUrl.js";
+import { AuthCard } from "./AuthCard.js";
 import AppleIcon from "./icons/Apple.js";
 import FacebookIcon from "./icons/Facebook.js";
 import GithubIcon from "./icons/Github.js";
@@ -139,9 +138,11 @@ export const ZudokuSignInUi = ({
   onOAuthSignIn,
   onUsernamePasswordSignIn,
   enableUsernamePassword,
+  enableEmailLink,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
+  enableEmailLink?: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
@@ -166,22 +167,19 @@ export const ZudokuSignInUi = ({
   }
 
   const signInUsernameMutation = useMutation({
-    mutationFn: async ({ email, password }: FormFields) => {
-      await onUsernamePasswordSignIn(email, password);
-    },
+    mutationFn: ({ email, password }: FormFields) =>
+      onUsernamePasswordSignIn(email, password),
     onSuccess: () => {
       void navigate(relativeRedirectTo);
     },
   });
   const signInByProviderMutation = useMutation({
-    mutationFn: async ({ providerId }: { providerId: string }) => {
-      await onOAuthSignIn(providerId);
-    },
+    mutationFn: ({ providerId }: { providerId: string }) =>
+      onOAuthSignIn(providerId),
     onSuccess: () => {
       void navigate(relativeRedirectTo);
     },
   });
-
   const form = useForm<FormFields>({
     defaultValues: {
       email: "",
@@ -193,6 +191,8 @@ export const ZudokuSignInUi = ({
     signInUsernameMutation.isPending || signInByProviderMutation.isPending;
 
   const error = signInUsernameMutation.error ?? signInByProviderMutation.error;
+
+  const hasEmailMethod = enableUsernamePassword || enableEmailLink;
 
   return (
     <AuthCard>
@@ -228,7 +228,7 @@ export const ZudokuSignInUi = ({
             </Link>
           </>
         )}
-        {enableUsernamePassword && providers.length > 0 && (
+        {hasEmailMethod && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
         )}
         {providers.length > 0 && (
@@ -239,9 +239,23 @@ export const ZudokuSignInUi = ({
             }
           />
         )}
-        <Link to="/signup" className="text-sm text-muted-foreground">
-          Don't have an account? Sign up.
-        </Link>
+        <div className="flex flex-col gap-1">
+          {enableEmailLink && (
+            <Link
+              to={
+                redirectTo
+                  ? `/signin/email-link?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : "/signin/email-link"
+              }
+              className="text-sm text-muted-foreground"
+            >
+              Sign in with email link
+            </Link>
+          )}
+          <Link to="/signup" className="text-sm text-muted-foreground">
+            Don't have an account? Sign up.
+          </Link>
+        </div>
       </CardContent>
     </AuthCard>
   );
@@ -250,11 +264,13 @@ export const ZudokuSignInUi = ({
 export const ZudokuSignUpUi = ({
   providers,
   enableUsernamePassword,
+  enableEmailLink,
   onOAuthSignUp,
   onUsernamePasswordSignUp,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
+  enableEmailLink?: boolean;
   onOAuthSignUp: (providerId: string) => Promise<void>;
   onUsernamePasswordSignUp: (email: string, password: string) => Promise<void>;
 }) => {
@@ -262,7 +278,7 @@ export const ZudokuSignUpUi = ({
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
 
-  const relativeRedirectTo = redirectTo?.replace(window.location.origin, "");
+  const relativeRedirectTo = getRelativeRedirectUrl(redirectTo);
 
   if (!isAuthProviderIdArray(providers)) {
     throw new Error("Invalid auth provider IDs");
@@ -298,6 +314,8 @@ export const ZudokuSignUpUi = ({
 
   const error = signUpUsernameMutation.error ?? signUpByProviderMutation.error;
 
+  const hasEmailMethod = enableUsernamePassword || enableEmailLink;
+
   return (
     <AuthCard>
       <CardHeader>
@@ -325,7 +343,7 @@ export const ZudokuSignUpUi = ({
             isPending={pending}
           />
         )}
-        {enableUsernamePassword && providers.length > 0 && (
+        {hasEmailMethod && providers.length > 0 && (
           <ProviderSeparator providers={providers} />
         )}
         {providers.length > 0 && (
@@ -336,15 +354,27 @@ export const ZudokuSignUpUi = ({
             }
           />
         )}
-        <Link to="/signin" className="text-sm text-muted-foreground">
-          Already have an account? Sign in.
-        </Link>
+        <div className="flex flex-col gap-1">
+          {enableEmailLink && (
+            <Link
+              to={
+                redirectTo
+                  ? `/signin/email-link?redirectTo=${encodeURIComponent(redirectTo)}`
+                  : "/signin/email-link"
+              }
+              className="text-sm text-muted-foreground"
+            >
+              Sign in with email link
+            </Link>
+          )}
+          <Link to="/signin" className="text-sm text-muted-foreground">
+            Already have an account? Sign in.
+          </Link>
+        </div>
       </CardContent>
     </AuthCard>
   );
 };
-
-const AuthCard = createVariantComponent(Card, "max-w-md w-full mt-10 mx-auto");
 
 const ProviderButtons = ({
   providers,

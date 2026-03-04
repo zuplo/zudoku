@@ -58,6 +58,7 @@ const config: ZudokuConfig = {
       "twitter",
       "microsoft",
       "apple",
+      "emailLink",
     ],
   },
   apis: {

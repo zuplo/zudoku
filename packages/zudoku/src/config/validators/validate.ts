@@ -390,6 +390,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
           "yahoo",
           "password",
           "phone",
+          "emailLink",
         ]),
       )
       .optional(),
