@@ -29,11 +29,11 @@
     "./package.json": "./package.json",
     "./ui/*": {
       "types": "./src/lib/ui/*.tsx",
-      "default": "./src/lib/ui/*"
+      "default": "./src/lib/ui/*.tsx"
     },
     "./ui/*.js": {
       "types": "./src/lib/ui/*.tsx",
-      "default": "./src/lib/ui/*"
+      "default": "./src/lib/ui/*.tsx"
     },
     "./client": {
       "types": "./client.d.ts"
