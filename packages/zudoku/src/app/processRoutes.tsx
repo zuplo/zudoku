@@ -1,5 +1,5 @@
 import type { RouteObject } from "react-router";
-import { Layout } from "zudoku/__internal";
+import { Layout } from "../lib/components/Layout.js";
 
 export const processRoutes = (
   routes: RouteObject[],

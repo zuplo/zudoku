@@ -107,13 +107,9 @@ export const zuploMonetizationPlugin = createPlugin(
               path: "/manage-payment",
               element: <ManagePaymentPage />,
             },
-          ],
-        },
-        {
-          Component: ZuploMonetizationWrapper,
-          children: [
             {
-              path: "/pricing",
+              path: PRICING_PATH,
+              handle: { layout: "default" },
               element: (
                 <PricingPage
                   subtitle={options?.pricing?.subtitle}
@@ -122,6 +118,7 @@ export const zuploMonetizationPlugin = createPlugin(
               ),
             },
             {
+              handle: { layout: "default" },
               path: "/subscriptions/:subscriptionId?",
               element: <SubscriptionsPage />,
             },
