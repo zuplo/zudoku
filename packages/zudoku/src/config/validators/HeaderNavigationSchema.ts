@@ -31,8 +31,9 @@ const HeaderNavItemSchema = z.union([
 
 export const HeaderNavigationSchema = z.array(HeaderNavItemSchema);
 
-export const isHeaderNavGroup = (item: HeaderNavItem): item is HeaderNavGroup =>
-  "items" in item;
+export const isHeaderNavGroup = (
+  item: HeaderNavItem | HeaderNavLinkItem | HeaderNavGroup,
+): item is HeaderNavGroup => "items" in item;
 
 export type HeaderNavLinkItem = z.infer<typeof HeaderNavLinkItemSchema>;
 export type HeaderNavGroup = z.infer<typeof HeaderNavGroupSchema>;

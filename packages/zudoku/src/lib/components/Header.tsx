@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { lazy, memo, Suspense } from "react";
 import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
@@ -21,13 +21,24 @@ import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
-import { HeaderNavigation } from "./HeaderNavigation.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
 import { PageProgress } from "./PageProgress.js";
 import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 import { TopNavigation } from "./TopNavigation.js";
+
+const HeaderNavigation = lazy(() =>
+  import("./HeaderNavigation.js").then((m) => ({
+    default: m.HeaderNavigation,
+  })),
+);
+
+const SuspendedHeaderNavigation = () => (
+  <Suspense>
+    <HeaderNavigation />
+  </Suspense>
+);
 
 const RecursiveMenu = ({ item }: { item: ProfileNavigationItem }) => {
   return item.children ? (
@@ -191,7 +202,7 @@ export const Header = memo(function HeaderInner() {
             )}
             {navPosition === "start" && (
               <div className="hidden lg:block min-w-0">
-                <HeaderNavigation />
+                <SuspendedHeaderNavigation />
               </div>
             )}
           </div>
@@ -204,7 +215,7 @@ export const Header = memo(function HeaderInner() {
             />
             {navPosition === "center" && (
               <div className="hidden lg:block min-w-0">
-                <HeaderNavigation />
+                <SuspendedHeaderNavigation />
               </div>
             )}
             {authPosition === "center" && (
@@ -219,7 +230,7 @@ export const Header = memo(function HeaderInner() {
             <div className="hidden lg:flex items-center text-sm gap-2">
               {navPosition === "end" && (
                 <div className="min-w-0">
-                  <HeaderNavigation />
+                  <SuspendedHeaderNavigation />
                 </div>
               )}
               {authPosition === "end" && <ProfileMenu />}

@@ -66,9 +66,9 @@ const DropdownContent = ({
             </ul>
           </div>
         ) : (
-          <li key={item.to} className="list-none">
+          <div key={item.to}>
             <NavLinkItem item={item} />
-          </li>
+          </div>
         ),
       )}
     </div>
@@ -138,8 +138,8 @@ export const HeaderNavigation = () => {
   return (
     <NavigationMenu className={viewportAlign}>
       <NavigationMenuList>
-        {items.map((item) => (
-          <HeaderNavItemComponent key={item.label} item={item} />
+        {items.map((item, index) => (
+          <HeaderNavItemComponent key={`${item.label}-${index}`} item={item} />
         ))}
       </NavigationMenuList>
     </NavigationMenu>
