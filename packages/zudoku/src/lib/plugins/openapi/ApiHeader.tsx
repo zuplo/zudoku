@@ -9,7 +9,6 @@ import {
 } from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown } from "../../components/Markdown.js";
 import { useOasConfig } from "./context.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 
@@ -17,7 +16,6 @@ type ApiHeaderProps = {
   title?: ReactNode;
   heading: ReactNode;
   headingId: string;
-  description?: string;
   children?: ReactNode;
 };
 
@@ -25,7 +23,6 @@ export const ApiHeader = ({
   title,
   heading,
   headingId,
-  description,
   children,
 }: ApiHeaderProps) => {
   const { input, type, versions, version, options } = useOasConfig();
@@ -87,14 +84,6 @@ export const ApiHeader = ({
           </div>
         </div>
       </div>
-      {description && (
-        <div className="mt-4 max-w-full border rounded-sm bg-muted/25">
-          <Markdown
-            className="max-w-full prose-img:max-w-prose border-border p-3 lg:p-5"
-            content={description}
-          />
-        </div>
-      )}
     </div>
   );
 };
