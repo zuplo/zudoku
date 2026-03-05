@@ -1,0 +1,26 @@
+import type { RouteObject } from "react-router";
+import { Layout } from "zudoku/__internal";
+
+export const processRoutes = (
+  routes: RouteObject[],
+  layoutDisabled?: boolean,
+): RouteObject[] =>
+  routes.map((r) => {
+    const shouldWrapWithLayout = layoutDisabled
+      ? r.handle?.layout === "default"
+      : r.handle?.layout !== "none";
+
+    const route = r.children
+      ? {
+          ...r,
+          children:
+            shouldWrapWithLayout === true
+              ? r.children
+              : processRoutes(r.children, true),
+        }
+      : r;
+
+    return shouldWrapWithLayout
+      ? { element: <Layout />, children: [route] }
+      : route;
+  });

@@ -14,7 +14,6 @@ import type { RouteObject } from "react-router";
 import "virtual:zudoku-theme.css";
 import {
   BuildCheck,
-  Layout,
   Meta,
   RouteGuard,
   RouterError,
@@ -28,6 +27,7 @@ import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { highlighter } from "../lib/shiki.js";
 import { ZuploEnv } from "./env.js";
 import "./main.css";
+import { processRoutes } from "./processRoutes.js";
 
 await registerShiki(highlighter);
 
@@ -100,21 +100,6 @@ export const getRoutesByOptions = (
 
   return routes;
 };
-
-const processRoutes = (
-  routes: RouteObject[],
-  // children should inherit layout from parent
-  shouldWrap = true,
-): RouteObject[] =>
-  routes.map((r) => {
-    const route = r.children
-      ? { ...r, children: processRoutes(r.children, false) }
-      : r;
-
-    return shouldWrap && r.handle?.layout !== "none"
-      ? { element: <Layout />, children: [route] }
-      : route;
-  });
 
 export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   const options = convertZudokuConfigToOptions(config);
