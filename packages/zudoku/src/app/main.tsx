@@ -19,7 +19,6 @@ import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
 import { BuildCheck } from "../lib/components/BuildCheck.js";
-import { Layout } from "../lib/components/Layout.js";
 import { Meta } from "../lib/components/Meta.js";
 import "./main.css";
 import "./polyfills.js";
@@ -29,6 +28,7 @@ import { RouteGuard } from "../lib/core/RouteGuard.js";
 import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
 import { ZuploEnv } from "./env.js";
+import { processRoutes } from "./processRoutes.js";
 
 export const shikiReady: Promise<HighlighterCore> =
   import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
@@ -136,18 +136,9 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
             </Meta>
           ),
           errorElement: <RouterError />,
-          children: routes.map((r) =>
-            r.handle?.layout === "none" ? r : wrapWithLayout(r),
-          ),
+          children: processRoutes(routes),
         },
       ],
     },
   ];
-};
-
-const wrapWithLayout = (route: RouteObject) => {
-  return {
-    element: <Layout />,
-    children: [route],
-  };
 };
