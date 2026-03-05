@@ -1,6 +1,6 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { build as esbuild, type Plugin } from "esbuild";
+import { build as esbuild } from "esbuild";
 import type { Rollup } from "vite";
 import { build as viteBuild } from "vite";
 import { ZuploEnv } from "../app/env.js";
@@ -196,8 +196,12 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
   const { dir, adapter, serverOutDir, html, basePath } = options;
   const tempEntryPath = path.join(dir, "__ssr-entry.js");
 
+  const packageRoot = path.dirname(
+    new URL(import.meta.resolve("zudoku/package.json")).pathname,
+  );
+
   const templateContent = await readFile(
-    new URL(`./ssr-templates/${adapter}.js`, import.meta.url),
+    path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),
     "utf-8",
   );
 
@@ -210,15 +214,6 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
 
   await writeFile(tempEntryPath, entryContent, "utf-8");
 
-  const zudokuResolvePlugin: Plugin = {
-    name: "zudoku-resolve",
-    setup(build) {
-      build.onResolve({ filter: /^(hono|@hono\/.*)$/ }, (args) => ({
-        path: new URL(import.meta.resolve(args.path, import.meta.url)).pathname,
-      }));
-    },
-  };
-
   try {
     await esbuild({
       entryPoints: [tempEntryPath],
@@ -228,7 +223,7 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
       external: ["./entry.server.js", "./zudoku.config.js"],
-      plugins: [zudokuResolvePlugin],
+      nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
     });
   } finally {

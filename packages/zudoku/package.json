@@ -214,6 +214,7 @@
     "@types/unist": "3.0.3",
     "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.0.18",
+    "esbuild": "0.27.3",
     "happy-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
