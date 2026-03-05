@@ -56,7 +56,7 @@ function Item({
   size = "default",
   asChild = false,
   ...props
-}: React.ComponentProps<"div"> &
+}: React.ComponentPropsWithoutRef<"div"> &
   VariantProps<typeof itemVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : "div";
   return (
@@ -91,7 +91,8 @@ function ItemMedia({
   className,
   variant = "default",
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof itemMediaVariants>) {
+}: React.ComponentPropsWithoutRef<"div"> &
+  VariantProps<typeof itemMediaVariants>) {
   return (
     <div
       data-slot="item-media"
@@ -102,7 +103,10 @@ function ItemMedia({
   );
 }
 
-function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
+function ItemContent({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
     <div
       data-slot="item-content"
@@ -115,7 +119,10 @@ function ItemContent({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
+function ItemTitle({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
     <div
       data-slot="item-title"
@@ -128,9 +135,14 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
+function ItemDescription({
+  className,
+  asChild = false,
+  ...props
+}: React.ComponentPropsWithoutRef<"p"> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot : "p";
   return (
-    <p
+    <Comp
       data-slot="item-description"
       className={cn(
         "text-muted-foreground line-clamp-2 text-sm leading-normal font-normal text-balance",
@@ -142,7 +154,10 @@ function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
   );
 }
 
-function ItemActions({ className, ...props }: React.ComponentProps<"div">) {
+function ItemActions({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
     <div
       data-slot="item-actions"
@@ -152,7 +167,10 @@ function ItemActions({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function ItemHeader({ className, ...props }: React.ComponentProps<"div">) {
+function ItemHeader({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
     <div
       data-slot="item-header"
@@ -165,7 +183,10 @@ function ItemHeader({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-function ItemFooter({ className, ...props }: React.ComponentProps<"div">) {
+function ItemFooter({
+  className,
+  ...props
+}: React.ComponentPropsWithoutRef<"div">) {
   return (
     <div
       data-slot="item-footer"

@@ -1,7 +1,6 @@
 import { CirclePlayIcon } from "lucide-react";
 import { type PropsWithChildren, Suspense, lazy } from "react";
 import { matchPath } from "react-router";
-import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -117,14 +116,13 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         return [];
       }
 
-      const match = matchPath(
-        { path: `${basePath}/:version?/:tag`, end: true },
-        path,
-      );
-
       try {
-        const versionParam = match?.params.version;
         const { versions } = getVersionMetadata(config);
+
+        const versionParam = versions.find((v) =>
+          matchPath({ path: joinUrl(basePath, v), end: false }, path),
+        );
+
         const version = versionParam ?? versions.at(0);
         const { type } = config;
 
@@ -173,11 +171,19 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
             | { name: string; tags: string[] }[]
             | undefined) ?? [];
 
-        const categories: NavigationItem[] = buildTagCategories({
+        const categories = buildTagCategories({
           tagCategories,
           tagGroups,
           expandAllTags: config.options?.expandAllTags,
         });
+
+        if (config.options?.showInfoPage !== false) {
+          categories.unshift({
+            type: "link" as const,
+            to: joinUrl(basePath, versionParam),
+            label: "Information",
+          });
+        }
 
         const untaggedOperations = data.schema.tags.find(
           (tag) => !tag.name,
@@ -196,7 +202,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
 
         if (data.schema.components?.schemas?.length) {
           categories.push({
-            type: "link" as const,
+            type: "link",
             label: "Schemas",
             to: joinUrl(basePath, versionParam, "~schemas"),
           });

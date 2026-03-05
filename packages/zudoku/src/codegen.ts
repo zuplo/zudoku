@@ -27,7 +27,7 @@ async function fixImports(filePath: string) {
 
 const config: CodegenConfig = {
   schema: printSchema(schema),
-  documents: ["src/lib/plugins/openapi/**/*.tsx"],
+  documents: ["src/lib/plugins/openapi/**/*.{ts,tsx}"],
   generates: {
     "./src/lib/plugins/openapi/graphql/": {
       preset: "client",

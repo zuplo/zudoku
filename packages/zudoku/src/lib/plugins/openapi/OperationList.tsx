@@ -1,4 +1,4 @@
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { Navigate, useParams } from "react-router";
 import { useApiIdentities } from "../../components/context/ZudokuContext.js";
@@ -15,6 +15,7 @@ import { UNTAGGED_PATH } from "./index.js";
 import { OperationListItem } from "./OperationListItem.js";
 import { useSelectedServer } from "./state.js";
 import { sanitizeMarkdownForMetatag } from "./util/sanitizeMarkdownForMetatag.js";
+import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
 export const OperationsFragment = graphql(/* GraphQL */ `
   fragment OperationsFragment on OperationItem {
@@ -88,14 +89,6 @@ export const OperationsFragment = graphql(/* GraphQL */ `
   }
 `);
 
-const SchemaWarmupQuery = graphql(/* GraphQL */ `
-  query SchemaWarmup($input: JSON!, $type: SchemaType!) {
-    schema(input: $input, type: $type) {
-      openapi
-    }
-  }
-`);
-
 const OperationsForTagQuery = graphql(/* GraphQL */ `
   query OperationsForTag(
     $input: JSON!
@@ -161,13 +154,7 @@ export const OperationList = ({
   const description = schema.description;
   const { prev: navPrev, next: navNext } = usePrevNext();
 
-  // This is to warmup (i.e. load the schema in the background) the schema on the client, if the page has been rendered on the server
-  const warmupQuery = useCreateQuery(SchemaWarmupQuery, { input, type });
-  useQuery({
-    ...warmupQuery,
-    enabled: typeof window !== "undefined",
-    notifyOnChangeProps: [],
-  });
+  useWarmupSchema();
 
   // Prefetch for Playground
   useApiIdentities();
