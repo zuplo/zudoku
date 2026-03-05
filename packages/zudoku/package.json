@@ -76,7 +76,7 @@
     "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "15.2.2",
+    "@apidevtools/json-schema-ref-parser": "15.3.1",
     "@envelop/core": "5.5.1",
     "@graphql-typed-document-node/core": "3.2.0",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
