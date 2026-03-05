@@ -105,7 +105,7 @@ export const Secret = ({
             setRevealed((prev) => !prev);
             onReveal?.(!revealed);
           }}
-          size="icon-xxs"
+          size="icon-xs"
         >
           {revealed ? (
             <EyeOffIcon className="size-3.5" />
@@ -120,7 +120,7 @@ export const Secret = ({
           copyToClipboard(secret);
           onCopy?.(secret);
         }}
-        size="icon-xxs"
+        size="icon-xs"
       >
         {isCopied ? (
           <CheckIcon className="size-3.5" />
