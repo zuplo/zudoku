@@ -73,12 +73,7 @@ export function SchemaList() {
         <meta name="description" content="List of schemas used by the API." />
       </Helmet>
       <div className="pt-(--padding-content-top) pb-(--padding-content-bottom)">
-        <ApiHeader
-          title={title}
-          heading="Schemas"
-          headingId="schemas"
-          description={data.schema.description ?? undefined}
-        />
+        <ApiHeader title={title} heading="Schemas" headingId="schemas" />
         <hr className="my-8" />
         <div className="flex flex-col gap-y-5">
           {schemas.map((schema) => (
