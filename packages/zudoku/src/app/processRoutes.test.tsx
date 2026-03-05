@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
  * @vitest-environment happy-dom
  */
 
-vi.mock("zudoku/__internal", () => ({
+vi.mock("../lib/components/Layout.js", () => ({
   Layout: () => <div data-testid="layout" />,
 }));
 
