@@ -1,7 +1,13 @@
+import { Suspense, lazy } from "react";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
-import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { DeveloperHint } from "../components/DeveloperHint.js";
 import { ZudokuError } from "../util/invariant.js";
+
+const SyntaxHighlight = lazy(() =>
+  import("zudoku/ui/SyntaxHighlight.js").then((m) => ({
+    default: m.SyntaxHighlight,
+  })),
+);
 
 export function ErrorMessage({ error }: { error: unknown }) {
   const message =
@@ -27,11 +33,13 @@ export function ErrorMessage({ error }: { error: unknown }) {
         <DeveloperHint className="mb-4">{hint}</DeveloperHint>
       )}
       {showDeveloperHints && stringError && (
-        <SyntaxHighlight
-          className="max-h-[400px] [&>pre]:p-4"
-          language="js"
-          code={stringError}
-        />
+        <Suspense>
+          <SyntaxHighlight
+            className="max-h-[400px] [&>pre]:p-4"
+            language="js"
+            code={stringError}
+          />
+        </Suspense>
       )}
     </>
   );

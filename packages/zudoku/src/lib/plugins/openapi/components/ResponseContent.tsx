@@ -1,9 +1,9 @@
 import * as Tabs from "@radix-ui/react-tabs";
 import { useState } from "react";
-import { Markdown } from "zudoku/components";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
 import { cn } from "zudoku/ui/util.js";
+import { Markdown } from "../../../components/Markdown.js";
 import type { MediaTypeObject } from "../graphql/graphql.js";
 import { SchemaView } from "../schema/SchemaView.js";
 

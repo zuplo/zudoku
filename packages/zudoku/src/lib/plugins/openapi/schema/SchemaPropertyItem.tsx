@@ -21,10 +21,7 @@ import {
 } from "./utils.js";
 
 const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
-  <InlineCode
-    className="inline-flex items-center gap-1.5 text-xs translate-y-0.5"
-    selectOnClick={false}
-  >
+  <InlineCode className="inline-flex items-center gap-1.5 text-xs translate-y-0.5">
     <RefreshCcwDotIcon size={13} />
     <span>{circularProp ? `${circularProp} (circular)` : "circular"}</span>
   </InlineCode>
@@ -53,6 +50,7 @@ export const SchemaPropertyItem = ({
             <ItemTitle className="inline me-2">
               <code>{name}</code>
             </ItemTitle>
+            {"\u200B"}
             <ParamInfos
               className="inline"
               schema={schema}
@@ -79,16 +77,16 @@ export const SchemaPropertyItem = ({
         "items" in schema &&
         isComplexType(schema.items)) ||
       schema.additionalProperties) &&
-      !isArrayCircularRef(schema),
+    !isArrayCircularRef(schema),
   );
 
   const shouldRenderDescription = Boolean(
     schema.description ||
-      ("items" in schema && schema.items?.enum) ||
-      schema.const ||
-      schema.enum ||
-      schema.example !== undefined ||
-      schema.default !== undefined,
+    ("items" in schema && schema.items?.enum) ||
+    schema.const ||
+    schema.enum ||
+    schema.example !== undefined ||
+    schema.default !== undefined,
   );
 
   return (
@@ -108,6 +106,7 @@ export const SchemaPropertyItem = ({
               <code>{name}</code>
             )}
           </ItemTitle>
+          {"\u200B"}
           <ParamInfos
             className="inline"
             schema={schema}

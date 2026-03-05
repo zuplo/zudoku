@@ -32,11 +32,9 @@ npm install -g pnpm
 pnpm add --global nx@latest
 ```
 
-4. **Editor Setup**: This project uses [Biome](https://biomejs.dev/) for linting and formatting. For
-   the best development experience, install the Biome extension for your editor or IDE. Setup
-   instructions can be found at
-   [their documentation page](https://biomejs.dev/guides/editors/first-party-extensions/). Note that
-   Prettier is used for Markdown and YAML files since Biome doesn't support them yet.
+4. **Editor Setup**: This project uses [Biome](https://biomejs.dev/) for linting and
+   [oxfmt](https://oxc.rs/docs/guide/usage/formatter/quickstart.html) for formatting. Install the
+   Biome and OXC extensions for your editor for the best development experience.
 
 ## 3. Environment Variables
 

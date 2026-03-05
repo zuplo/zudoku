@@ -190,17 +190,6 @@ jobs:
             content-type: text/javascript
             cache-control: public,max-age=31536000,immutable
 
-      - name: Upload Artifacts
-        if: github.ref == 'refs/heads/main'
-        uses: google-github-actions/upload-cloud-storage@v3
-        with:
-          process_gcloudignore: false
-          path: packages/zudoku/stats.html
-          destination: cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}
-          parent: false
-          headers: |-
-            content-type: text/html
-
       - name: Clear CDN Cache
         if: env.IS_RELEASE == 'true'
         run: |
@@ -209,13 +198,6 @@ jobs:
           --header 'Content-Type: application/json' \
           --header 'Authorization: Bearer ${{ secrets.CF_ZONE_PURGE_ACCESS_TOKEN }}' \
           --data '{ "purge_everything": true }'
-
-      - name: Write Summary
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "📝 Bundle stats uploaded" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "[View Stats](https://cdn.zudoku.dev/build/rollup/${{ github.run_id }}-${{ github.run_attempt }}/stats.html)" >> $GITHUB_STEP_SUMMARY
 
       - name: Generate a token
         if: env.IS_RELEASE == 'true'

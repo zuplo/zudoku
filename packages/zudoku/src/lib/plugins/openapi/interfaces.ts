@@ -5,15 +5,18 @@ import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 
 type DynamicInput = () => Promise<unknown>;
 
-export type VersionedInput<T> = Array<{
+export type VersionedInput<T = string> = {
   path: string;
+  version?: string;
+  downloadUrl?: string;
   label?: string;
   input: T;
-}>;
+  hasUntaggedOperations?: boolean;
+};
 
 type OasSource =
-  | { type: "url"; input: string | VersionedInput<string> }
-  | { type: "file"; input: VersionedInput<DynamicInput> }
+  | { type: "url"; input: string | VersionedInput[] }
+  | { type: "file"; input: VersionedInput<DynamicInput>[] }
   | { type: "raw"; input: string };
 
 export type ContextOasSource = {
@@ -71,7 +74,7 @@ type BaseOasConfig = {
     disableSidecar?: boolean;
     showVersionSelect?: "always" | "if-available" | "hide";
     expandAllTags?: boolean;
-    expandApiInformation?: boolean;
+    showInfoPage?: boolean;
     schemaDownload?: {
       enabled: boolean;
     };
@@ -85,5 +88,8 @@ export type OasPluginConfig = BaseOasConfig & OasSource;
 export type OasPluginContext = BaseOasConfig &
   ContextOasSource & {
     version?: string;
-    versions: Record<string, { path: string; label: string }>;
+    versions: Record<
+      string,
+      { path: string; label: string; downloadUrl?: string }
+    >;
   };

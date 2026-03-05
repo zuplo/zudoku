@@ -1,3 +1,5 @@
+import type { RouteObject } from "react-router";
+import type { HighlighterCore } from "shiki";
 import { configuredApiKeysPlugin } from "virtual:zudoku-api-keys-plugin";
 import {
   configuredApiCatalogPlugins,
@@ -6,30 +8,35 @@ import {
 import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
-import { configuredNavigation } from "virtual:zudoku-navigation";
+import {
+  configuredNavigation,
+  configuredNavigationRules,
+} from "virtual:zudoku-navigation";
 import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
-import { registerShiki } from "virtual:zudoku-shiki-register";
-import type { RouteObject } from "react-router";
 import "virtual:zudoku-theme.css";
-import {
-  BuildCheck,
-  Meta,
-  RouteGuard,
-  RouterError,
-  StatusPage,
-} from "zudoku/__internal";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
-import { isNavigationPlugin } from "../lib/core/plugins.js";
-import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
-import { highlighter } from "../lib/shiki.js";
-import { ZuploEnv } from "./env.js";
+import { BuildCheck } from "../lib/components/BuildCheck.js";
+import { Layout } from "../lib/components/Layout.js";
+import { Meta } from "../lib/components/Meta.js";
 import "./main.css";
-import { processRoutes } from "./processRoutes.js";
+import "./polyfills.js";
+import { StatusPage } from "../lib/components/StatusPage.js";
+import { isNavigationPlugin } from "../lib/core/plugins.js";
+import { RouteGuard } from "../lib/core/RouteGuard.js";
+import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
+import { RouterError } from "../lib/errors/RouterError.js";
+import { ZuploEnv } from "./env.js";
 
-await registerShiki(highlighter);
+export const shikiReady: Promise<HighlighterCore> =
+  import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
+    const highlighter = await highlighterPromise;
+    const { registerShiki } = await import("virtual:zudoku-shiki-register");
+    await registerShiki(highlighter);
+    return highlighter;
+  });
 
 export const convertZudokuConfigToOptions = (
   config: ZudokuConfig,
@@ -52,6 +59,7 @@ export const convertZudokuConfigToOptions = (
       ...config.metadata,
     },
     navigation: configuredNavigation,
+    navigationRules: configuredNavigationRules,
     mdx: config.mdx,
     plugins: [
       ...(configuredAuthProvider ? [configuredAuthProvider] : []),
@@ -65,7 +73,7 @@ export const convertZudokuConfigToOptions = (
       ...(config.plugins ?? []),
     ],
     syntaxHighlighting: {
-      highlighter,
+      highlighterPromise: shikiReady,
       themes: config.syntaxHighlighting?.themes,
     },
   };
@@ -111,7 +119,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   return [
     {
       element: (
-        <Zudoku {...options}>
+        <Zudoku {...options} env={import.meta.env}>
           <BuildCheck
             buildId={import.meta.env.ZUPLO_BUILD_ID}
             environmentType={import.meta.env.ZUPLO_ENVIRONMENT_TYPE}

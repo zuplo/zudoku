@@ -58,11 +58,12 @@ const config: ZudokuConfig = {
       "twitter",
       "microsoft",
       "apple",
+      "emailLink",
     ],
   },
   apis: {
-    type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
+    type: "file",
+    input: "./openapi.json",
     path: "api",
   },
 };

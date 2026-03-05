@@ -23,9 +23,6 @@ updates:
         patterns:
           - "@nx/*"
           - "nx"
-      prettier-dependencies:
-        patterns:
-          - "*prettier*"
       radix-ui-dependencies:
         patterns:
           - "*@radix-ui/*"

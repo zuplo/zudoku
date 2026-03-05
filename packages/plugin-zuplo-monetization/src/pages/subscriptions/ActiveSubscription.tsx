@@ -1,0 +1,101 @@
+import { useZudoku } from "zudoku/hooks";
+import { CheckCheckIcon } from "zudoku/icons";
+import { useSuspenseQuery } from "zudoku/react-query";
+import { useLocation } from "zudoku/router";
+import { AlertDescription, AlertTitle } from "zudoku/ui/Alert";
+import {
+  DismissibleAlert,
+  DismissibleAlertAction,
+} from "zudoku/ui/DismissibleAlert";
+import type { Subscription } from "../../hooks/useSubscriptions";
+import { ApiKeysList } from "./ApiKeysList";
+import { ManageSubscription } from "./ManageSubscription";
+import { Usage, type UsageResult } from "./Usage";
+
+type LocationState = {
+  planSwitched?: {
+    mode: "upgrade" | "downgrade" | "private";
+    newPlanName: string;
+  };
+};
+
+const ActiveSubscription = ({
+  subscription,
+  deploymentName,
+}: {
+  subscription: Subscription;
+  deploymentName: string;
+}) => {
+  const zudoku = useZudoku();
+  const location = useLocation();
+  const planSwitched = (location.state as LocationState)?.planSwitched;
+
+  const usageQuery = useSuspenseQuery<UsageResult>({
+    queryKey: [
+      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscription.id}/usage`,
+    ],
+    refetchInterval: (query) =>
+      query.state.data?.paymentStatus.status === "pending" ? 1500 : 30 * 1000,
+    refetchOnWindowFocus: true,
+    meta: { context: zudoku },
+  });
+
+  const isPendingFirstPayment =
+    usageQuery.data.paymentStatus.isFirstPayment === true &&
+    usageQuery.data.paymentStatus.status !== "paid" &&
+    usageQuery.data.paymentStatus.status !== "not_required";
+
+  const activePhase = subscription?.phases.find(
+    (p) =>
+      new Date(p.activeFrom) <= new Date() &&
+      (!p.activeTo || new Date(p.activeTo) >= new Date()),
+  );
+
+  return (
+    <>
+      {planSwitched && (
+        <DismissibleAlert variant="info">
+          <CheckCheckIcon className="size-4" />
+          <AlertTitle>
+            Plan{" "}
+            {planSwitched.mode === "upgrade"
+              ? "upgraded"
+              : planSwitched.mode === "downgrade"
+                ? "downgraded"
+                : "changed"}
+          </AlertTitle>
+          <AlertDescription>
+            You have successfully switched to {planSwitched.newPlanName}.
+          </AlertDescription>
+          <DismissibleAlertAction />
+        </DismissibleAlert>
+      )}
+
+      <Usage
+        currentItems={activePhase?.items}
+        usage={usageQuery.data}
+        isFetching={usageQuery.isFetching}
+        subscription={subscription}
+        isPendingFirstPayment={isPendingFirstPayment}
+      />
+
+      {subscription?.consumer?.apiKeys && (
+        <ApiKeysList
+          isPendingFirstPayment={isPendingFirstPayment}
+          deploymentName={deploymentName}
+          consumerId={subscription.consumer.id}
+          apiKeys={subscription.consumer.apiKeys}
+        />
+      )}
+
+      {activePhase && (
+        <ManageSubscription
+          subscription={subscription}
+          planName={subscription.name}
+        />
+      )}
+    </>
+  );
+};
+
+export default ActiveSubscription;

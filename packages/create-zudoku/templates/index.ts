@@ -5,7 +5,6 @@ import path from "node:path";
 import { bold, cyan } from "picocolors";
 import { copy } from "../helpers/copy";
 import { install } from "../helpers/install";
-
 import type { GetTemplateFileArgs, InstallTemplateArgs } from "./types";
 
 // When bundled by ncc, __dirname points to dist/, but templates are at dist/templates/

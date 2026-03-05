@@ -125,7 +125,7 @@ Changes to the syntax `highlighting` configuration require a restart of Zudoku t
 
 :::
 
-```tsx {5-12} title=zudoku.config.ts
+```tsx {5-15} title=zudoku.config.ts
 import { defaultLanguages, type ZudokuConfig } from "zudoku";
 
 const config: ZudokuConfig = {
@@ -135,8 +135,9 @@ const config: ZudokuConfig = {
       light: "vitesse-light",
       dark: "vitesse-dark",
     },
-    // Extend default languages if needed
-    languages: [...defaultLanguages, "powershell"],
+    // Extend default languages with additional ones
+    // Aliases like "lisp" are resolved automatically
+    languages: [...defaultLanguages, "rust", "ruby", "php", "powershell"],
   },
 };
 ```
@@ -148,30 +149,19 @@ For a complete list of available themes and languages, see the list of
 
 By default, Zudoku supports the following languages for syntax highlighting:
 
+- Shell - `shellscript`, `bash`, `sh`, `zsh`
+- JavaScript/TypeScript - `javascript`, `typescript`, `jsx`, `tsx`
+- Data formats - `json`, `jsonc`, `yaml`
 - HTML/CSS/XML - `html`, `css`, `xml`
-- JavaScript/TypeScript - `javascript`, `js`, `typescript`, `ts`
-- React - `jsx`, `tsx`, `react`
-- Markdown - `markdown`, `md`, `mdx`
-- Data formats - `json`, `jsonc`, `yaml`, `toml`
-- Shell - `bash`, `sh`, `shell`, `zsh`, `powershell`
-- Terminal - `terminal`, `term`
-- Python - `python`, `py`
-- Rust - `rust`, `rs`
-- C/C++ - `c`, `cpp`
-- Zig - `zig`
-- PHP - `php`
-- Ruby - `ruby`, `rb`
-- Swift - `swift`
-- Kotlin - `kotlin`, `kt`
-- Scala - `scala`
-- C# - `csharp`, `cs`, `vb`
+- Markdown - `markdown`, `mdx`
+- Python - `python`
+- Java - `java`
 - Go - `go`
-- Objective-C - `objectivec`, `objc`
-- Dart - `dart`
-- Elixir - `elixir`
-- OCaml - `ocaml`
-- Common Lisp - `common-lisp`
-- GraphQL - `graphql`, `gql`
+- GraphQL - `graphql`
+
+Additional languages can be added via `syntaxHighlighting.languages` in your config. Languages not
+in the list fall back to plain text with a console warning. You can use aliases (e.g. `lisp` for
+`common-lisp`) and they will resolve automatically.
 
 ## ANSI Code Blocks
 

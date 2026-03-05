@@ -91,7 +91,7 @@ const enrichWithRateLimitData = (
   return operationObject;
 };
 
-// biome-ignore format: for readability
+// prettier-ignore
 export const operations = [
   "get", "put", "post", "delete",
   "options", "head", "patch", "trace",

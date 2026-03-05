@@ -17,8 +17,10 @@ import type {
   ApiCatalogItem,
   ApiCatalogPluginOptions,
 } from "../lib/plugins/api-catalog/index.js";
+import type { VersionedInput } from "../lib/plugins/openapi/interfaces.js";
 import { ensureArray } from "../lib/util/ensureArray.js";
 import { SchemaManager } from "./api/SchemaManager.js";
+import { getModuleDir } from "./config.js";
 import { reload } from "./plugin-config-reload.js";
 import { invalidate as invalidateNavigation } from "./plugin-navigation.js";
 
@@ -31,7 +33,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
   // Load Zuplo-specific processors if in Zuplo environment
   const zuploProcessors = ZuploEnv.isZuplo
     ? await runnerImport<{ default: (rootDir: string) => Processor[] }>(
-        path.resolve(import.meta.dirname, "../zuplo/with-zuplo-processors.js"),
+        path.resolve(getModuleDir(), "src/zuplo/with-zuplo-processors.ts"),
       ).then((m) => m.module.default(initialConfig.__meta.rootDir))
     : [];
 
@@ -96,7 +98,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         console.log(`Re-processing schema ${id}`);
 
         for (const mainFile of mainFiles) {
-          await schemaManager.processSchema(mainFile);
+          await schemaManager.processSchema({ input: mainFile });
         }
         schemaManager
           .getAllTrackedFiles()
@@ -170,27 +172,32 @@ const viteApiPlugin = async (): Promise<Plugin> => {
 
             if (!schemas?.length) continue;
 
-            const tags = Array.from(
-              new Set(
-                schemas
-                  .flatMap(({ schema }) => {
-                    const operations = getAllOperations(schema.paths);
-                    const slugs = getAllSlugs(operations);
-                    return getAllTags(schema, slugs.tags);
-                  })
-                  .flatMap(({ slug }) => slug ?? []),
-              ),
-            );
+            const allSlugs = new Set<string>();
+            const versionedInput = schemas.map<VersionedInput>((s) => {
+              const operations = getAllOperations(s.schema.paths);
+              const slugs = getAllSlugs(operations);
+              const versionTags = getAllTags(s.schema, slugs.tags);
+              versionTags.forEach(({ slug }) => {
+                if (slug) allSlugs.add(slug);
+              });
+
+              return {
+                path: s.path,
+                version: s.version,
+                downloadUrl: s.downloadUrl,
+                label: s.label ?? s.schema.info?.version,
+                input: s.inputPath,
+                hasUntaggedOperations: versionTags.some(
+                  (tag) => tag.name === undefined,
+                ),
+              };
+            });
+
+            const tags = Array.from(allSlugs);
 
             const schemaMapEntries = Array.from(
               schemaManager.schemaMap.entries(),
             );
-
-            const versionedInput = schemas.map((s) => ({
-              path: s.version,
-              label: s.schema.info?.version,
-              input: s.inputPath,
-            }));
 
             code.push(
               "configuredApiPlugins.push(openApiPlugin({",
@@ -205,7 +212,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? true,`,
-              `    expandApiInformation: config.defaults?.apis?.expandApiInformation ?? false,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
               `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    transformExamples: config.defaults?.apis?.transformExamples,`,
               `    generateCodeSnippet: config.defaults?.apis?.generateCodeSnippet,`,
@@ -230,6 +237,7 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               `    disableSidecar: config.defaults?.apis?.disableSidecar,`,
               `    showVersionSelect: config.defaults?.apis?.showVersionSelect ?? "if-available",`,
               `    expandAllTags: config.defaults?.apis?.expandAllTags ?? false,`,
+              `    showInfoPage: config.defaults?.apis?.showInfoPage ?? true,`,
               `    schemaDownload: config.defaults?.apis?.schemaDownload,`,
               `    ...${JSON.stringify(apiConfig.options ?? {})},`,
               "  },",

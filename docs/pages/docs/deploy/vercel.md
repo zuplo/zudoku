@@ -22,7 +22,7 @@ guide.
 
 To get started you need to install the CLI:
 
-```command
+```bash
 npm i -g vercel
 ```
 
@@ -30,7 +30,7 @@ npm i -g vercel
 
 Next, set up a new Vercel project in the root of your docs:
 
-```command
+```bash
 vercel
 ```
 

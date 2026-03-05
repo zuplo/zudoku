@@ -75,7 +75,7 @@ Add the package and styles to your `<head>` and pass the URL for your API schema
 
     <link rel="icon" type="image/svg+xml" href="https://cdn.zudoku.dev/logos/favicon.svg" />
     <script type="module" src="https://cdn.zudoku.dev/latest/main.js" crossorigin></script>
-    <link rel="stylesheet" href="https://cdn.zudoku.dev/latest/style.css" crossorigin />
+    <link rel="stylesheet" href="https://cdn.zudoku.dev/latest/zudoku.css" crossorigin />
   </head>
   <body>
     <div data-api-url="https://api.example.com/openapi.json"></div>

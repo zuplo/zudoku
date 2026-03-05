@@ -8,6 +8,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -64,7 +66,7 @@
     }
   }
   hr {
-    @apply border-border;
+    @apply border-border my-4;
   }
   code {
     font-weight: 400;
@@ -174,7 +176,6 @@
     cursor: pointer;
   }
 
-
   .shiki {
     counter-reset: line;
     @apply leading-normal;
@@ -184,7 +185,7 @@
     background-color: var(--shiki-dark-bg) !important;
   }
   .code-block .shiki {
-    @apply grid grid-rows-1;
+    @apply grid grid-rows-1 whitespace-pre;
     grid-auto-rows: 1lh;
   }
 
@@ -212,7 +213,7 @@
 
   .shiki.not-inline .line {
     @apply block -mx-4 px-4;
-    width: calc(100% + --spacing(4));
+    width: calc(100% + --spacing(7));
     --highlighted-bg: hsl(from var(--shiki-light-bg) h s calc(l - 6));
   }
   .dark .shiki.not-inline .line {

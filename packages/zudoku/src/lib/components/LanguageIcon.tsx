@@ -25,7 +25,7 @@ const Languages: Record<string, Language> = {
   react: {
     pattern: /^(react|tsx|jsx)$/,
     icon: lazy(() => import("../assets/language-icons/react.js")),
-    width: 22,
+    width: 20,
   },
   markdown: {
     pattern: /^(md|markdown)$/,
@@ -61,6 +61,24 @@ const Languages: Record<string, Language> = {
   python: {
     pattern: /^(py|python)$/,
     icon: lazy(() => import("../assets/language-icons/python.js")),
+  },
+  pnpm: {
+    pattern: /^pnp(m|x)$/,
+    icon: lazy(() => import("../assets/language-icons/pnpm.js")),
+    width: 14,
+  },
+  npm: {
+    pattern: /^np(m|x)$/,
+    icon: lazy(() => import("../assets/language-icons/npm.js")),
+  },
+  yarn: {
+    pattern: /^yarn$/,
+    icon: lazy(() => import("../assets/language-icons/yarn.js")),
+    width: 16,
+  },
+  bun: {
+    pattern: /^bun(x)?$/,
+    icon: lazy(() => import("../assets/language-icons/bun.js")),
   },
   csharp: {
     pattern: /^(cs|csharp|vb)$/,

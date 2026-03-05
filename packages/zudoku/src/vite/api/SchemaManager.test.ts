@@ -4,7 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { LoadedConfig } from "../../config/config.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
-import { flattenAllOfProcessor } from "../../lib/util/flattenAllOf.js";
+import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import invariant from "../../lib/util/invariant.js";
 import { SchemaManager } from "./SchemaManager.js";
 
@@ -99,6 +99,59 @@ describe("SchemaManager", () => {
     expect(schemas).toHaveLength(2);
     expect(schemas?.[0]?.version).toBe("2.0.0"); // v2 first
     expect(schemas?.[1]?.version).toBe("1.0.0"); // v1 second
+  });
+
+  it("should handle multiple versions with overridden path and label", async () => {
+    const schemaPath = path.join(tempDir, "openapi.json");
+    const schemaPathV2 = path.join(tempDir, "openapi-v2.json");
+
+    await fs.writeFile(schemaPath, JSON.stringify(mockSchema));
+    await fs.writeFile(
+      schemaPathV2,
+      JSON.stringify({
+        ...mockSchema,
+        info: { ...mockSchema.info, version: "2.0.0" },
+      }),
+    );
+
+    const config: LoadedConfig = {
+      __meta: {
+        rootDir: tempDir,
+        moduleDir: path.join(tempDir, "node_modules"),
+        mode: "module",
+        dependencies: [],
+        configPath: path.join(tempDir, "zudoku.config.ts"),
+      },
+      apis: [
+        {
+          type: "file",
+          path: "test-api",
+          input: [
+            {
+              input: schemaPathV2,
+              label: "2.0.0 (latest)",
+              path: "latest",
+            },
+            schemaPath,
+          ],
+        },
+      ],
+    };
+
+    const manager = new SchemaManager({ storeDir, config, processors: [] });
+
+    await manager.processAllSchemas();
+
+    const schemas = manager.getSchemasForPath("test-api");
+    expect(schemas).toHaveLength(2);
+    expect(schemas?.[0]?.version).toBe("2.0.0");
+    expect(schemas?.[0]?.label).toBe("2.0.0 (latest)");
+    expect(schemas?.[0]?.path).toBe("latest");
+    expect(schemas?.[0]?.downloadUrl).toBe("/test-api/latest/schema.json");
+    expect(schemas?.[1]?.version).toBe("1.0.0");
+    expect(schemas?.[1]?.label).toBeUndefined();
+    expect(schemas?.[1]?.path).toBe("1.0.0");
+    expect(schemas?.[1]?.downloadUrl).toBe("/test-api/1.0.0/schema.json");
   });
 
   it("should track processed files", async () => {

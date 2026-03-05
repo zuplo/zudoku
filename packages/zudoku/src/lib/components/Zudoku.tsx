@@ -5,7 +5,6 @@ import { ThemeProvider } from "next-themes";
 import {
   memo,
   type PropsWithChildren,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -18,13 +17,8 @@ import {
   type ZudokuContextOptions,
 } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
-import { StaggeredRenderContext } from "../plugins/openapi/StaggeredRender.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import "../util/requestIdleCallbackPolyfill.js";
-import {
-  ComponentsProvider,
-  DEFAULT_COMPONENTS,
-} from "./context/ComponentsContext.js";
 import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
@@ -33,12 +27,13 @@ import { ZudokuProvider } from "./context/ZudokuProvider.js";
 let zudokuContext: ZudokuContext | undefined;
 
 const ZudokuInner = memo(
-  ({ children, ...props }: PropsWithChildren<ZudokuContextOptions>) => {
-    const components = useMemo(
-      () => ({ ...DEFAULT_COMPONENTS, ...props.overrides }),
-      [props.overrides],
-    );
-
+  ({
+    children,
+    env,
+    ...props
+  }: PropsWithChildren<
+    ZudokuContextOptions & { env: Record<string, string> }
+  >) => {
     const location = useLocation();
     const mdxComponents = useMemo(() => {
       const componentsFromPlugins = (props.plugins ?? [])
@@ -56,12 +51,7 @@ const ZudokuInner = memo(
         ...props.mdx?.components,
       };
     }, [props.mdx?.components, props.plugins]);
-    const { stagger } = useContext(StaggeredRenderContext);
     const [didNavigate, setDidNavigate] = useState(false);
-    const staggeredValue = useMemo(
-      () => (didNavigate ? { stagger: true } : { stagger }),
-      [stagger, didNavigate],
-    );
     const navigation = useNavigation();
     const queryClient = useQueryClient();
 
@@ -72,7 +62,7 @@ const ZudokuInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    zudokuContext ??= new ZudokuContext(props, queryClient);
+    zudokuContext ??= new ZudokuContext(props, queryClient, env);
 
     const heads = props.plugins?.flatMap((plugin) =>
       hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
@@ -81,22 +71,18 @@ const ZudokuInner = memo(
     return (
       <>
         <Helmet>{heads}</Helmet>
-        <StaggeredRenderContext.Provider value={staggeredValue}>
-          <ZudokuProvider context={zudokuContext}>
-            <RouterEventsEmitter />
-            <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
-              <MDXProvider components={mdxComponents}>
-                <ThemeProvider attribute="class" disableTransitionOnChange>
-                  <ComponentsProvider value={components}>
-                    <ViewportAnchorProvider>
-                      {children ?? <Outlet />}
-                    </ViewportAnchorProvider>
-                  </ComponentsProvider>
-                </ThemeProvider>
-              </MDXProvider>
-            </SlotProvider>
-          </ZudokuProvider>
-        </StaggeredRenderContext.Provider>
+        <ZudokuProvider context={zudokuContext}>
+          <RouterEventsEmitter />
+          <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
+            <MDXProvider components={mdxComponents}>
+              <ThemeProvider attribute="class" disableTransitionOnChange>
+                <ViewportAnchorProvider>
+                  {children ?? <Outlet />}
+                </ViewportAnchorProvider>
+              </ThemeProvider>
+            </MDXProvider>
+          </SlotProvider>
+        </ZudokuProvider>
       </>
     );
   },
@@ -104,10 +90,14 @@ const ZudokuInner = memo(
 
 ZudokuInner.displayName = "ZudokuInner";
 
-const Zudoku = (props: ZudokuContextOptions) => {
+const Zudoku = (
+  props: PropsWithChildren<
+    ZudokuContextOptions & { env?: Record<string, string> }
+  >,
+) => {
   return (
     <ErrorBoundary FallbackComponent={TopLevelError}>
-      <ZudokuInner {...props} />
+      <ZudokuInner {...props} env={props.env ?? {}} />
     </ErrorBoundary>
   );
 };

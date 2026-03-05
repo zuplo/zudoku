@@ -1,35 +1,34 @@
 import type { RouteObject } from "react-router";
-
 import { joinUrl } from "../../lib/util/joinUrl.js";
 
-export const routesToPaths = (routes: RouteObject[]) => {
-  const paths: string[] = [];
-  const addPaths = (routes: RouteObject[], parentPath = "") => {
-    for (const route of routes) {
-      // skip catch-all routes and dynamic segments
-      if (route.path?.includes("*") || route.path?.includes(":")) {
-        continue;
-      }
-
-      // skip status pages
-      if (route.path && /^\d+$/.test(route.path)) {
-        continue;
-      }
-
-      const fullPath = route.path
-        ? route.path.startsWith("/")
-          ? route.path
-          : joinUrl(parentPath, route.path)
-        : parentPath;
-
-      if (route.path) {
-        paths.push(fullPath);
-      }
-      if (route.children) {
-        addPaths(route.children, fullPath);
-      }
-    }
-  };
-  addPaths(routes);
-  return paths;
+const resolveRoutePath = (path: string): string | undefined => {
+  const segments = path.split("/");
+  if (segments.some((s) => s.startsWith(":") && !s.endsWith("?"))) {
+    return undefined;
+  }
+  return segments.filter((s) => !s.startsWith(":")).join("/") || undefined;
 };
+
+const isSkipped = (path: string) => path.includes("*") || /^\d+$/.test(path);
+
+export const routesToPaths = (
+  routes: RouteObject[],
+  parentPath = "",
+): string[] =>
+  routes.flatMap((route) => {
+    if (route.path && isSkipped(route.path)) return [];
+
+    const routePath = route.path ? resolveRoutePath(route.path) : undefined;
+    if (route.path && !routePath) return [];
+
+    const fullPath = routePath
+      ? routePath.startsWith("/")
+        ? routePath
+        : joinUrl(parentPath, routePath)
+      : parentPath;
+
+    return [
+      ...(routePath && fullPath !== parentPath ? [fullPath] : []),
+      ...routesToPaths(route.children ?? [], fullPath),
+    ];
+  });

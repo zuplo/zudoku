@@ -66,3 +66,5 @@ export const Mermaid = ({ chart, config, ...props }: MermaidProps) => {
   // biome-ignore lint/security/noDangerouslySetInnerHtml: Mermaid generates valid SVG
   return <div {...props} dangerouslySetInnerHTML={{ __html: svg }} />;
 };
+
+export default Mermaid;

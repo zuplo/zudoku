@@ -18,7 +18,7 @@ entries can be links, document references, categories or custom pages.
 The navigation is defined using the `navigation` array in the Zudoku config file. Each item can be
 one of several types. At the simplest level you may only have links and categories.
 
-```json
+```tsx title="zudoku.config.tsx"
 {
   "navigation": [
     {
@@ -92,7 +92,12 @@ type NavigationLink = {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
   target?: "_self" | "_blank";
 };
 ```
@@ -131,7 +136,12 @@ type NavigationCategory = {
   collapsible?: boolean;
   collapsed?: boolean;
   link?: string | { type: "doc"; file: string; label?: string };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -164,7 +174,12 @@ type NavigationDoc = {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -237,7 +252,12 @@ type NavigationCustomPage = {
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
     invert?: boolean;
   };
-  display?: "auth" | "anon" | "always" | "hide";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
 };
 ```
 
@@ -251,6 +271,8 @@ All navigation items support a `display` property that controls when the item sh
 - `"auth"`: Only visible when user is authenticated
 - `"anon"`: Only visible when user is not authenticated
 - `"hide"`: Never visible (useful for temporarily hiding items)
+- **callback function**: For custom logic, pass a function that receives `{ context, auth }` and
+  returns a boolean
 
 ```json
 {
@@ -260,6 +282,27 @@ All navigation items support a `display` property that controls when the item sh
   "display": "auth"
 }
 ```
+
+### Custom Display Logic
+
+For more complex visibility rules, use a callback function:
+
+```tsx
+{
+  type: "link",
+  label: "Premium Features",
+  to: "/premium",
+  display: ({ auth }) => {
+    // Show only for users with premium role
+    return auth.user?.role === "premium";
+  }
+}
+```
+
+The callback receives:
+
+- `context`: The `ZudokuContext` instance
+- `auth`: The authentication state from `UseAuthReturn`, including `user`, `isAuthenticated`, etc.
 
 ## Badges
 
@@ -319,3 +362,47 @@ sidebar_label: Short Title
 
 In this example, the document's title remains "My Long Title," but the sidebar displays "Short
 Title."
+
+## Navigation Rules
+
+Plugins generate sidebar navigation automatically (e.g. from OpenAPI tags). Navigation rules let you
+customize that generated sidebar by inserting, modifying, sorting, moving, or removing items. To
+change the top-level tabs themselves, use the `navigation` array directly.
+
+```tsx
+navigationRules: [
+  {
+    type: "sort",
+    match: "Shipments",
+    by: (a, b) => a.label.localeCompare(b.label),
+  },
+],
+```
+
+For a practical walkthrough with more examples, see the
+[Navigation Rules](/docs/guides/navigation-rules) guide.
+
+### Rule Types
+
+Each rule has a `type` and a `match` property that targets a navigation item.
+
+| Type     | Description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `insert` | Add items `before` or `after` a matched item                              |
+| `modify` | Change `label`, `icon`, `badge`, `collapsed`, `collapsible`, or `display` |
+| `remove` | Remove a matched item from the sidebar                                    |
+| `sort`   | Sort children of a matched category using a custom comparator             |
+| `move`   | Relocate a matched item `before` or `after` another item                  |
+
+### Match Syntax
+
+The `match` property uses slash-separated segments to target items. The first segment identifies the
+top-level tab by label, and remaining segments navigate into the sidebar tree. Label matching is
+case-insensitive.
+
+```json
+match: "Users/Get User";      // by label
+match: "Users/0";             // first item
+match: "Users/-1";            // last item
+match: "Users/Advanced/0";   // mixed nesting
+```

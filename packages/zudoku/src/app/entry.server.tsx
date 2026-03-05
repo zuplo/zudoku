@@ -11,12 +11,22 @@ import {
   type RouteObject,
 } from "react-router";
 import "vite/modulepreload-polyfill";
-import { BootstrapStatic, ServerError } from "zudoku/__internal";
+import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
+import { ServerError } from "../lib/errors/ServerError.js";
+import { highlighterPromise } from "../lib/shiki.js";
 import type { PrerenderResponse } from "../vite/prerender/PrerenderResponse.js";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
 
+// Statically importing shiki.ts here ensures it's in the SSR bundle.
+// main.tsx dynamically imports it instead to enable lazy loading on the client.
+await import("virtual:zudoku-shiki-register").then(
+  async ({ registerShiki }) => {
+    const highlighter = await highlighterPromise;
+    await registerShiki(highlighter);
+  },
+);
 export const render = async ({
   template,
   request: baseRequest,
@@ -66,6 +76,10 @@ export const render = async ({
 
   const router = createStaticRouter(dataRoutes, context);
   const helmetContext = {} as HelmetData["context"];
+  const renderContext = {
+    status: 200,
+    bypassProtection: bypassProtection ?? false,
+  };
 
   const App = (
     <BootstrapStatic
@@ -74,6 +88,7 @@ export const render = async ({
       queryClient={queryClient}
       helmetContext={helmetContext}
       bypassProtection={bypassProtection}
+      renderContext={renderContext}
     />
   );
 
@@ -88,7 +103,9 @@ export const render = async ({
     },
     onAllReady() {
       response.set({ "Content-Type": "text/html" });
-      response.status(status);
+      response.status(
+        renderContext.status !== 200 ? renderContext.status : status,
+      );
 
       const transformStream = new Transform({
         transform(chunk, encoding, callback) {

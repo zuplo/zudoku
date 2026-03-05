@@ -10,6 +10,7 @@ import { logger } from "../../cli/common/logger.js";
 import { fileExists } from "../../config/file-exists.js";
 import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
+import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import type { MarkdownFileInfo } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
@@ -22,8 +23,25 @@ const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
 export type WorkerResult = {
   outputPath: string;
   html: string;
+  statusCode: number;
   redirect?: { from: string; to: string };
 };
+
+export const getRedirectUrls = (
+  workerResults: WorkerResult[],
+  basePath: string | undefined,
+): Set<string> =>
+  new Set(
+    workerResults.flatMap((r) => {
+      if (!r.redirect) return [];
+      const from = r.redirect.from;
+      return [
+        basePath && from.startsWith(basePath)
+          ? from.slice(basePath.length) || "/"
+          : from,
+      ];
+    }),
+  );
 
 export const prerender = async ({
   html,
@@ -46,9 +64,10 @@ export const prerender = async ({
     path.join(distDir, "server/entry.server.js"),
   ).href;
 
-  const config: ZudokuConfig = await import(serverConfigPath).then(
+  const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
     (m) => m.default,
   );
+  const config = await runPluginTransformConfig(rawConfig);
 
   const buildConfig = await getBuildConfig();
   const module = await import(entryServerPath);
@@ -106,10 +125,12 @@ export const prerender = async ({
     paths.map(async (urlPath) => {
       const result = await pool.run({ urlPath } satisfies WorkerData);
 
-      await pagefindIndex?.addHTMLFile({
-        url: urlPath,
-        content: result.html,
-      });
+      if (result.statusCode < 400) {
+        await pagefindIndex?.addHTMLFile({
+          url: urlPath,
+          content: result.html,
+        });
+      }
 
       completedCount++;
 
@@ -149,18 +170,20 @@ export const prerender = async ({
     );
   }
 
+  const redirectUrls = getRedirectUrls(workerResults, config.basePath);
+
   await generateSitemap({
     basePath: config.basePath,
     outputUrls: paths,
     config: config.sitemap,
     baseOutputDir: distDir,
+    redirectUrls,
   });
 
   // Generate llms.txt files if markdown export is enabled
   if (config.docs) {
-    const { DocsConfigSchema } = await import(
-      "../../config/validators/validate.js"
-    );
+    const { DocsConfigSchema } =
+      await import("../../config/validators/validate.js");
     const { generateLlmsTxtFiles } = await import("../llms.js");
 
     const docsConfig = DocsConfigSchema.parse(config.docs);
@@ -186,7 +209,7 @@ export const prerender = async ({
         siteName: config.site?.title,
         llmsTxt: llmsConfig.llmsTxt,
         llmsTxtFull: llmsConfig.llmsTxtFull,
-        workerResults,
+        redirectUrls,
       });
     }
 

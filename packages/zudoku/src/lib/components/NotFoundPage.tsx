@@ -9,7 +9,10 @@ export const NotFoundPage = () => {
   const params = useParams();
 
   return (
-    <Typography className="h-full pt-(--padding-content-top)">
+    <Typography
+      className="h-full pt-(--padding-content-top)"
+      data-pagefind-ignore="all"
+    >
       <CategoryHeading>404</CategoryHeading>
       <Heading level={1} className="flex gap-3.5 items-center">
         Page not found

@@ -5,9 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { LoadedConfig } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const pkgJsonPath = path.join(__dirname, "../../package.json");
-
+const pkgJsonPath = fileURLToPath(import.meta.resolve("zudoku/package.json"));
 const pkgJson = JSON.parse(await readFile(pkgJsonPath, "utf-8"));
 
 // Generates a Vercel build output file

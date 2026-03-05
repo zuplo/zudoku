@@ -9,9 +9,16 @@ import type {
 } from "../../core/plugins.js";
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import invariant from "../../util/invariant.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
-const DEFAULT_API_KEY_ENDPOINT = "https://api.zuploedge.com/v2/client";
+const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
+
+const getApiKeyEndpoint = (context: ZudokuContext) => {
+  const gatewayUrl =
+    context.env.ZUPLO_GATEWAY_SERVICE_URL || DEFAULT_GATEWAY_URL;
+  return joinUrl(gatewayUrl, "v2/client");
+};
 
 export type ApiKeyService = {
   getConsumers: (context: ZudokuContext) => Promise<ApiConsumer[]>;
@@ -95,8 +102,10 @@ const createZuploService = ({
     deleteKey: async (consumerId, keyId, context) => {
       invariant(deploymentName, "Cannot delete API key.", developerHintOptions);
       const request = new Request(
-        DEFAULT_API_KEY_ENDPOINT +
-          `/${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
+        joinUrl(
+          getApiKeyEndpoint(context),
+          `${deploymentName}/consumers/${consumerId}/keys/${keyId}`,
+        ),
         {
           method: "DELETE",
         },
@@ -114,7 +123,10 @@ const createZuploService = ({
       const response = await fetch(
         await context.signRequest(
           new Request(
-            `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers/${consumer.id}`,
+            joinUrl(
+              getApiKeyEndpoint(context),
+              `${deploymentName}/consumers/${consumer.id}`,
+            ),
             {
               method: "PATCH",
               headers: {
@@ -135,7 +147,10 @@ const createZuploService = ({
       const response = await fetch(
         await context.signRequest(
           new Request(
-            `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers/${consumerId}/roll-key`,
+            joinUrl(
+              getApiKeyEndpoint(context),
+              `${deploymentName}/consumers/${consumerId}/roll-key`,
+            ),
             {
               method: "POST",
               headers: {
@@ -152,7 +167,7 @@ const createZuploService = ({
     getConsumers: async (context) => {
       invariant(deploymentName, "Cannot get API keys.", developerHintOptions);
       const request = new Request(
-        `${DEFAULT_API_KEY_ENDPOINT}/${deploymentName}/consumers`,
+        joinUrl(getApiKeyEndpoint(context), `${deploymentName}/consumers`),
       );
       await context.signRequest(request);
 

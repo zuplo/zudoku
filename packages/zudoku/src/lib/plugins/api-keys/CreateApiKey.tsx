@@ -108,7 +108,7 @@ export const CreateApiKey = ({
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <ActionButton isPending={createKeyMutation.isPending}>
+          <ActionButton type="submit" isPending={createKeyMutation.isPending}>
             Generate Key
           </ActionButton>
         </DialogFooter>

@@ -13,7 +13,7 @@ import {
   type RegistryItemCss,
 } from "./shadcn-registry.js";
 
-// biome-ignore format: for readability
+// prettier-ignore
 const THEME_VARIABLES = [
   "background", "foreground", "card", "cardForeground", "popover", "popoverForeground", "primary",
   "primaryForeground", "secondary", "secondaryForeground", "muted", "mutedForeground", "accent",
@@ -81,7 +81,7 @@ const processCustomCss = (css: string | RegistryItemCss): string => {
 const MAIN_REPLACE = "/* @vite-plugin-inject main */";
 const DEFAULT_THEME_REPLACE = "/* @vite-plugin-inject defaultTheme */";
 
-// biome-ignore format: for readability
+// prettier-ignore
 export const GOOGLE_FONTS = [
   "Inter", "Roboto", "Open Sans", "Poppins", "Montserrat", "Outfit",
   "Plus Jakarta Sans", "DM Sans", "IBM Plex Sans", "Geist", "Oxanium",
@@ -344,9 +344,11 @@ export const viteThemePlugin = (): Plugin => {
       const config = getCurrentConfig();
 
       const files = new Set(
-        [config.__meta.rootDir, ...config.__meta.dependencies].map((file) =>
-          path.relative(path.dirname(id), file),
-        ),
+        [
+          config.__meta.rootDir,
+          ...config.__meta.dependencies,
+          ...(config.__pluginDirs ?? []),
+        ].map((file) => path.relative(path.dirname(id), file)),
       );
 
       const code = [...files].map((file) => `@source "${file}";`);
@@ -355,7 +357,7 @@ export const viteThemePlugin = (): Plugin => {
       // This @theme block only maps CSS variables to Tailwind utilities
       code.push("@theme inline {");
 
-      // biome-ignore format: for readability
+      // prettier-ignore
       const colorVars = [
         "background", "foreground", "card", "card-foreground", "popover", "popover-foreground", "primary",
         "primary-foreground", "secondary", "secondary-foreground", "muted", "muted-foreground", "accent",

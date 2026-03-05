@@ -9,5 +9,6 @@ export const yaml = {
 
 export const readFrontmatter = async (filePath: string) => {
   const content = await readFile(filePath, "utf-8");
-  return matter(content, { engines: { yaml } });
+  const normalizedContent = content.replace(/\r\n/g, "\n");
+  return matter(normalizedContent, { engines: { yaml } });
 };

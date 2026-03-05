@@ -5,7 +5,6 @@ import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
 import { PagefindSearchMeta } from "../../components/PagefindSearchMeta.js";
 import { cn } from "../../util/cn.js";
-import { groupBy } from "../../util/groupBy.js";
 import { renderIf } from "../../util/renderIf.js";
 import { ResponseContent } from "./components/ResponseContent.js";
 import { SelectOnClick } from "./components/SelectOnClick.js";
@@ -14,8 +13,8 @@ import { type FragmentType, useFragment } from "./graphql/index.js";
 import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
-import { Sidecar } from "./Sidecar.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { Sidecar } from "./Sidecar.js";
 import { methodForColor } from "./util/methodToColor.js";
 
 const PARAM_GROUPS = ["path", "query", "header", "cookie"] as const;
@@ -31,7 +30,7 @@ export const OperationListItem = ({
   shouldLazyHighlight?: boolean;
 }) => {
   const operation = useFragment(OperationsFragment, operationFragment);
-  const groupedParameters = groupBy(
+  const groupedParameters = Object.groupBy(
     operation.parameters ?? [],
     (param) => param.in,
   );

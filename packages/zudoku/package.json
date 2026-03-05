@@ -1,7 +1,11 @@
 {
   "name": "zudoku",
-  "version": "0.66.7",
+  "version": "0.70.2",
   "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/polyfills.ts"
+  ],
   "homepage": "https://zudoku.dev",
   "repository": {
     "type": "git",
@@ -13,11 +17,8 @@
   "description": "Framework for building high quality, interactive API documentation.",
   "files": [
     "dist",
-    "lib",
     "cli.js",
-    "src/lib",
-    "src/app",
-    "src/shiki",
+    "src",
     "client.d.ts"
   ],
   "bin": {
@@ -25,7 +26,18 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./ui/*": "./src/lib/ui/*",
+    "./package.json": "./package.json",
+    "./ui/*": {
+      "types": "./src/lib/ui/*.tsx",
+      "default": "./src/lib/ui/*.tsx"
+    },
+    "./ui/*.js": {
+      "types": "./src/lib/ui/*.tsx",
+      "default": "./src/lib/ui/*.tsx"
+    },
+    "./client": {
+      "types": "./client.d.ts"
+    },
     "./auth/clerk": "./src/lib/authentication/providers/clerk.tsx",
     "./auth/auth0": "./src/lib/authentication/providers/auth0.tsx",
     "./auth/openid": "./src/lib/authentication/providers/openid.tsx",
@@ -45,167 +57,32 @@
     "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
     "./react-query": "./src/lib/core/react-query.ts",
-    "./__internal": "./src/lib/core/__internal.tsx",
     "./icons": "./src/lib/icons.ts",
-    "./vite": "./src/vite/plugin.ts",
+    "./vite": "./src/vite/index.ts",
     "./tailwind": "./src/app/tailwind.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
-    "./shiki/*": "./src/shiki/*.js",
+    "./main.css": "./src/app/main.css",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
-    "./with-zuplo": "./src/zuplo/with-zuplo.ts"
-  },
-  "publishConfig": {
-    "module": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "exports": {
-      ".": {
-        "import": "./dist/index.js",
-        "types": "./dist/index.d.ts"
-      },
-      "./ui/*": {
-        "import": "./lib/ui/*.js",
-        "types": "./dist/lib/ui/*.d.ts"
-      },
-      "./ui/*.js": {
-        "import": "./lib/ui/*.js",
-        "types": "./dist/lib/ui/*.d.ts"
-      },
-      "./client": {
-        "types": "./client.d.ts"
-      },
-      "./auth/clerk": {
-        "import": "./lib/zudoku.auth-clerk.js",
-        "types": "./dist/lib/authentication/providers/clerk.d.ts"
-      },
-      "./auth/auth0": {
-        "import": "./lib/zudoku.auth-auth0.js",
-        "types": "./dist/lib/authentication/providers/auth0.d.ts"
-      },
-      "./auth/openid": {
-        "import": "./lib/zudoku.auth-openid.js",
-        "types": "./dist/lib/authentication/providers/openid.d.ts"
-      },
-      "./auth/supabase": {
-        "import": "./lib/zudoku.auth-supabase.js",
-        "types": "./dist/lib/authentication/providers/supabase.d.ts"
-      },
-      "./auth/azureb2c": {
-        "import": "./lib/zudoku.auth-azureb2c.js",
-        "types": "./dist/lib/authentication/providers/azureb2c.d.ts"
-      },
-      "./auth/firebase": {
-        "import": "./lib/zudoku.auth-firebase.js",
-        "types": "./dist/lib/authentication/providers/firebase.d.ts"
-      },
-      "./plugins": {
-        "import": "./lib/zudoku.plugins.js",
-        "types": "./dist/lib/core/plugins.d.ts"
-      },
-      "./plugins/api-keys": {
-        "import": "./lib/zudoku.plugin-api-keys.js",
-        "types": "./dist/lib/plugins/api-keys/index.d.ts"
-      },
-      "./plugins/api-catalog": {
-        "import": "./lib/zudoku.plugin-api-catalog.js",
-        "types": "./dist/lib/plugins/api-catalog/index.d.ts"
-      },
-      "./plugins/markdown": {
-        "import": "./lib/zudoku.plugin-markdown.js",
-        "types": "./dist/lib/plugins/markdown/index.d.ts"
-      },
-      "./plugins/openapi": {
-        "import": "./lib/zudoku.plugin-openapi.js",
-        "types": "./dist/lib/plugins/openapi/index.d.ts"
-      },
-      "./plugins/redirect": {
-        "import": "./lib/zudoku.plugin-redirect.js",
-        "types": "./dist/lib/plugins/redirect/index.d.ts"
-      },
-      "./plugins/custom-pages": {
-        "import": "./lib/zudoku.plugin-custom-pages.js",
-        "types": "./dist/lib/plugins/custom-pages/index.d.ts"
-      },
-      "./plugins/search-inkeep": {
-        "import": "./lib/zudoku.plugin-search-inkeep.js",
-        "types": "./dist/lib/plugins/search-inkeep/index.d.ts"
-      },
-      "./plugins/search-pagefind": {
-        "import": "./lib/zudoku.plugin-search-pagefind.js",
-        "types": "./dist/lib/plugins/search-pagefind/index.d.ts"
-      },
-      "./hooks": {
-        "import": "./lib/zudoku.hooks.js",
-        "types": "./dist/lib/hooks/index.d.ts"
-      },
-      "./components": {
-        "import": "./lib/zudoku.components.js",
-        "types": "./dist/lib/components/index.d.ts"
-      },
-      "./mermaid": {
-        "import": "./lib/zudoku.mermaid.js",
-        "types": "./dist/lib/components/Mermaid.d.ts"
-      },
-      "./__internal": {
-        "import": "./lib/zudoku.__internal.js",
-        "types": "./dist/lib/__internal.d.ts"
-      },
-      "./router": {
-        "import": "./lib/zudoku.router.js",
-        "types": "./dist/lib/core/router.d.ts"
-      },
-      "./react-query": {
-        "import": "./lib/zudoku.react-query.js",
-        "types": "./dist/lib/core/react-query.d.ts"
-      },
-      "./processors/*": {
-        "import": "./lib/processors/*.js",
-        "types": "./dist/lib/plugins/openapi/processors/*.d.ts"
-      },
-      "./icons": {
-        "import": "./lib/zudoku.icons.js",
-        "types": "./dist/lib/icons.d.ts"
-      },
-      "./vite": {
-        "require": "./dist/vite/plugin.js",
-        "import": "./dist/vite/plugin.js"
-      },
-      "./main.css": {
-        "require": "./src/app/main.css",
-        "import": "./src/app/main.css"
-      },
-      "./shiki/*": {
-        "require": "./src/shiki/*.js",
-        "import": "./src/shiki/*.js"
-      },
-      "./app/*": {
-        "import": "./src/app/*"
-      },
-      "./with-zuplo": {
-        "require": "./dist/zuplo/with-zuplo.js",
-        "import": "./dist/zuplo/with-zuplo.js"
-      }
-    }
+    "./with-zuplo": "./src/zuplo/with-zuplo.ts",
+    "./testing": "./src/lib/testing/index.tsx"
   },
   "scripts": {
-    "build": "tsc --project tsconfig.app.json",
-    "build:dev": "esbuild './src/**/*.ts' --format=esm --platform=node --target=node22 --outdir=dist --splitting --log-level=warning",
-    "build:vite": "vite build",
+    "build": "tsdown --log-level=error",
+    "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
-    "build:standalone:vite": "vite build --mode standalone --config vite.standalone.config.ts",
-    "build:standalone:html": "cp ./src/app/standalone.html ./standalone/standalone.html && cp ./src/app/demo.html ./standalone/demo.html && cp ./src/app/demo-cdn.html ./standalone/index.html && cp standalone/zudoku.css standalone/style.css",
-    "clean": "tsc --build --clean",
-    "codegen": "graphql-codegen --config ./src/codegen.ts",
-    "test": "vitest run --typecheck"
+    "build:standalone": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
+    "clean": "rm -rf dist",
+    "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "14.1.1",
-    "@envelop/core": "5.3.2",
+    "@apidevtools/json-schema-ref-parser": "15.3.1",
+    "@envelop/core": "5.5.1",
     "@graphql-typed-document-node/core": "3.2.0",
     "@lekoarts/rehype-meta-as-attributes": "3.0.3",
     "@mdx-js/react": "3.1.1",
-    "@mdx-js/rollup": "3.1.0",
-    "@pothos/core": "4.10.0",
+    "@mdx-js/rollup": "3.1.1",
+    "@pothos/core": "4.12.0",
     "@radix-ui/react-accordion": "1.2.12",
     "@radix-ui/react-alert-dialog": "1.1.15",
     "@radix-ui/react-aspect-ratio": "1.1.8",
@@ -229,62 +106,66 @@
     "@radix-ui/react-toggle-group": "1.1.11",
     "@radix-ui/react-tooltip": "1.2.8",
     "@radix-ui/react-visually-hidden": "1.2.4",
-    "@scalar/openapi-parser": "0.23.2",
-    "@sentry/node": "10.27.0",
-    "@shikijs/engine-javascript": "3.20.0",
-    "@shikijs/langs": "3.20.0",
-    "@shikijs/rehype": "3.20.0",
-    "@shikijs/themes": "3.20.0",
-    "@shikijs/transformers": "3.20.0",
+    "@scalar/openapi-parser": "0.23.13",
+    "@sentry/node": "10.40.0",
+    "@shikijs/langs": "3.23.0",
+    "@shikijs/rehype": "3.23.0",
+    "@shikijs/themes": "3.23.0",
+    "@shikijs/transformers": "3.23.0",
     "@sindresorhus/slugify": "3.0.0",
-    "@stefanprobst/rehype-extract-toc": "3.0.0",
     "@tailwindcss/typography": "0.5.19",
-    "@tailwindcss/vite": "4.1.16",
-    "@tanem/react-nprogress": "5.0.56",
-    "@tanstack/react-query": "5.90.12",
+    "@tailwindcss/vite": "4.2.1",
+    "@tanem/react-nprogress": "5.0.63",
+    "@tanstack/react-query": "5.90.21",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@vitejs/plugin-react": "5.1.0",
+    "@vitejs/plugin-react": "5.1.4",
     "@x0k/json-schema-merge": "1.0.2",
     "@zudoku/httpsnippet": "10.0.9",
     "@zudoku/react-helmet-async": "2.0.5",
-    "@zuplo/mcp": "^0.0.22",
-    "bs58": "^6.0.0",
+    "@zuplo/mcp": "0.0.32",
+    "bs58": "6.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
-    "dotenv": "^17.2.3",
+    "dotenv": "17.3.1",
     "embla-carousel-react": "8.6.0",
-    "estree-util-value-to-estree": "3.4.1",
+    "estree-util-is-identifier-name": "3.0.0",
+    "estree-util-value-to-estree": "3.5.0",
     "express": "5.2.1",
-    "fast-equals": "5.2.2",
-    "glob": "13.0.0",
+    "fast-equals": "6.0.0",
+    "glob": "13.0.6",
     "glob-parent": "6.0.2",
-    "graphql": "16.12.0",
+    "graphql": "16.13.0",
     "graphql-type-json": "0.3.2",
-    "graphql-yoga": "5.16.0",
+    "graphql-yoga": "5.18.0",
     "gray-matter": "4.0.3",
-    "hast-util-to-jsx-runtime": "^2.3.6",
+    "hast-util-heading-rank": "3.0.0",
+    "hast-util-to-jsx-runtime": "2.3.6",
     "hast-util-to-string": "3.0.1",
     "http-terminator": "3.2.0",
     "javascript-stringify": "2.1.0",
     "json-schema-to-typescript-lite": "15.0.0",
     "loglevel": "1.9.2",
-    "lucide-react": "0.548.0",
-    "motion": "12.23.24",
-    "nanoevents": "^9.1.0",
+    "lucide-react": "0.575.0",
+    "mdast-util-from-markdown": "2.0.2",
+    "mdast-util-mdx": "3.0.0",
+    "mdast-util-mdx-jsx": "3.2.0",
+    "micromark-extension-mdxjs": "3.0.0",
+    "motion": "12.34.3",
+    "nanoevents": "9.1.0",
     "next-themes": "0.4.6",
-    "oauth4webapi": "2.17.0",
+    "oauth4webapi": "3.8.5",
     "openapi-types": "12.1.3",
     "pagefind": "1.5.0-beta.1",
     "picocolors": "1.1.1",
     "piscina": "5.1.4",
-    "posthog-node": "5.14.1",
-    "react-error-boundary": "6.0.0",
-    "react-hook-form": "7.66.0",
+    "posthog-node": "5.24.15",
+    "react-error-boundary": "6.1.1",
+    "react-hook-form": "7.71.2",
     "react-is": "catalog:",
     "react-markdown": "10.1.0",
-    "react-router": "7.12.0",
+    "react-router": "7.13.0",
     "rehype-mdx-import-media": "1.2.0",
     "rehype-raw": "7.0.0",
     "rehype-slug": "6.0.0",
@@ -294,60 +175,55 @@
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.1",
     "remark-mdx-frontmatter": "5.2.0",
-    "rollup": "4.52.5",
-    "semver": "7.7.2",
-    "shiki": "3.20.0",
-    "sitemap": "9.0.0",
-    "strip-ansi": "7.1.2",
-    "tailwind-merge": "3.4.0",
-    "tailwindcss": "4.1.18",
+    "rollup": "4.59.0",
+    "semver": "7.7.4",
+    "shiki": "3.23.0",
+    "sitemap": "9.0.1",
+    "strip-ansi": "7.2.0",
+    "tailwind-merge": "3.5.0",
+    "tailwindcss": "4.2.1",
     "tw-animate-css": "1.4.0",
-    "unified": "^11.0.5",
-    "unist-util-visit": "5.0.0",
+    "unified": "11.0.5",
+    "unist-util-visit": "5.1.0",
     "vaul": "1.1.2",
     "vfile": "6.0.3",
-    "vite": "6.4.1",
-    "yaml": "2.8.1",
+    "vite": "7.3.1",
+    "yaml": "2.8.2",
     "yargs": "18.0.0",
-    "zod": "4.1.12",
-    "zustand": "5.0.8"
+    "zod": "4.3.6",
+    "zustand": "5.0.11"
   },
   "devDependencies": {
-    "@graphql-codegen/cli": "6.1.0",
-    "@inkeep/cxkit-types": "0.5.101",
-    "@testing-library/dom": "10.4.1",
-    "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "16.3.0",
+    "@clerk/clerk-js": "^5.125.3",
+    "@graphql-codegen/cli": "6.1.2",
+    "@inkeep/cxkit-types": "0.5.116",
+    "@testing-library/dom": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
     "@types/estree": "1.0.8",
     "@types/express": "5.0.6",
     "@types/glob-parent": "5.1.3",
-    "@types/har-format": "1.2.16",
-    "@types/hast": "^3.0.4",
+    "@types/hast": "3.0.4",
     "@types/json-schema": "7.0.15",
     "@types/mdast": "4.0.4",
     "@types/mdx": "2.0.13",
     "@types/node": "catalog:",
     "@types/react-is": "catalog:",
-    "@types/semver": "7.7.0",
-    "@types/unist": "^3.0.3",
+    "@types/semver": "7.7.1",
+    "@types/unist": "3.0.3",
     "@types/yargs": "17.0.35",
-    "@vitest/coverage-v8": "4.0.16",
-    "esbuild": "0.27.0",
-    "happy-dom": "20.0.10",
-    "mdast-util-mdx": "3.0.0",
+    "@vitest/coverage-v8": "4.0.18",
+    "happy-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "rollup-plugin-visualizer": "6.0.5",
-    "tsx": "4.20.6",
-    "typescript": "5.9.3",
-    "vitest": "4.0.15"
+    "tsdown": "catalog:",
+    "tsx": "4.21.0",
+    "typescript": "5.9.3"
   },
   "peerDependencies": {
     "@azure/msal-browser": "^4.13.0",
-    "@clerk/clerk-js": "^5.63.1",
     "@sentry/react": "^10.0.0",
-    "@supabase/auth-ui-react": "^0.4.0",
-    "@supabase/auth-ui-shared": "^0.1.0",
     "@supabase/supabase-js": "^2.49.4",
     "firebase": "^12.6.0",
     "mermaid": "^11.0.0",
@@ -358,19 +234,10 @@
     "@azure/msal-browser": {
       "optional": true
     },
-    "@clerk/clerk-js": {
-      "optional": true
-    },
     "@sentry/react": {
       "optional": true
     },
     "@supabase/supabase-js": {
-      "optional": true
-    },
-    "@supabase/auth-ui-react": {
-      "optional": true
-    },
-    "@supabase/auth-ui-shared": {
       "optional": true
     },
     "firebase": {

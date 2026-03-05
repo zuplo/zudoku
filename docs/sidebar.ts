@@ -6,6 +6,7 @@ import type { Navigation } from "zudoku";
  */
 
 export const docs: Navigation = [
+  { type: "filter", placeholder: "Filter documentation" },
   "docs/quickstart",
   // {
   //   type: "category",
@@ -102,6 +103,7 @@ export const docs: Navigation = [
       "docs/guides/mermaid",
       "docs/guides/using-multiple-apis",
       "docs/guides/managing-api-keys-and-identities",
+      "docs/guides/navigation-rules",
       "docs/guides/transforming-examples",
       "docs/guides/processors",
     ],
@@ -112,6 +114,7 @@ export const docs: Navigation = [
     icon: "cloud-upload",
     link: "docs/deployment",
     items: [
+      "docs/deploy/zuplo",
       "docs/deploy/cloudflare-pages",
       "docs/deploy/github-pages",
       "docs/deploy/vercel",
@@ -151,6 +154,7 @@ export const components: Navigation = [
     type: "category",
     label: "Documentation",
     items: [
+      "docs/components/code-tabs",
       "docs/components/mermaid",
       "docs/components/playground",
       "docs/components/secret",

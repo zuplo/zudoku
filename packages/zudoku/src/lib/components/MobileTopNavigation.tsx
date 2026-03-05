@@ -1,6 +1,8 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "react-router";
+import { Separator } from "zudoku/ui/Separator.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import {
@@ -22,17 +24,23 @@ import { TopNavItem, TopNavLink } from "./TopNavigation.js";
 export const MobileTopNavigation = () => {
   const context = useZudoku();
   const authState = useAuth();
+  const location = useLocation();
 
-  const { navigation, options, getProfileMenuItems } = context;
+  const {
+    options: { navigation = [], site },
+    getProfileMenuItems,
+  } = context;
   const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const accountItems = getProfileMenuItems();
-  const filteredItems = navigation.filter(shouldShowItem(authState, context));
+  const filteredItems = navigation.filter(
+    shouldShowItem({ auth: authState, context }),
+  );
 
   return (
     <Drawer
-      direction={options.site?.dir === "rtl" ? "left" : "right"}
+      direction={site?.dir === "rtl" ? "left" : "right"}
       open={drawerOpen}
       onOpenChange={(open) => setDrawerOpen(open)}
     >
@@ -43,7 +51,7 @@ export const MobileTopNavigation = () => {
         <PageProgress />
       </div>
       <DrawerContent
-        className="lg:hidden h-[100dvh] end-0 start-auto w-[320px] rounded-none"
+        className="lg:hidden h-dvh inset-e-0 start-auto w-[320px] rounded-none"
         aria-describedby={undefined}
       >
         <div className="p-4 overflow-y-auto overscroll-none h-full flex flex-col justify-between">
@@ -64,7 +72,7 @@ export const MobileTopNavigation = () => {
                   {!isAuthenticated ? (
                     <li>
                       <TopNavLink
-                        to="/signin"
+                        to={`/signin?redirect=${encodeURIComponent(location.pathname)}`}
                         onClick={() => setDrawerOpen(false)}
                       >
                         Login
@@ -84,13 +92,17 @@ export const MobileTopNavigation = () => {
                   )}
                 </ClientOnly>
               )}
-              {filteredItems.map((item) => (
-                <li key={item.label}>
-                  <button type="button" onClick={() => setDrawerOpen(false)}>
-                    <TopNavItem {...item} />
-                  </button>
-                </li>
-              ))}
+              {filteredItems.map((item) =>
+                item.type === "separator" ? (
+                  <Separator className="w-full" key={item.label} />
+                ) : item.type !== "section" && item.type !== "filter" ? (
+                  <li key={item.label}>
+                    <button type="button" onClick={() => setDrawerOpen(false)}>
+                      <TopNavItem {...item} />
+                    </button>
+                  </li>
+                ) : null,
+              )}
               {isAuthEnabled && isAuthenticated && accountItems.length > 0 && (
                 <ClientOnly
                   fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
@@ -99,6 +111,12 @@ export const MobileTopNavigation = () => {
                     <li key={i.label}>
                       <TopNavLink
                         to={i.path ?? ""}
+                        target={i.target}
+                        rel={
+                          i.target === "_blank"
+                            ? "noopener noreferrer"
+                            : undefined
+                        }
                         onClick={() => setDrawerOpen(false)}
                       >
                         {i.label}
@@ -112,7 +130,7 @@ export const MobileTopNavigation = () => {
               </li>
             </ul>
           </div>
-          {options.site?.showPoweredBy !== false && (
+          {site?.showPoweredBy !== false && (
             <PoweredByZudoku className="grow-0 justify-center gap-1" />
           )}
         </div>

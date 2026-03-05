@@ -1,9 +1,7 @@
 ---
 title: Authentication Providers & API Identities
 sidebar_label: Authentication and Identities
-zuplo:
-  warning: |
-    This guide shows how to implement your own API Key management system in Zudoku. This is typically not needed when using Zuplo's built-in API Key management system. You only need to implement this if you want to integrate with a custom or third-party identity management system.
+zuplo: false
 ---
 
 When building an API documentation portal, you often need to provide a way for users to authenticate

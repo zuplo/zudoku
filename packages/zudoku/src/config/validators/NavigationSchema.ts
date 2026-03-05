@@ -1,6 +1,13 @@
 import path from "node:path";
 import { glob } from "glob";
+import type { RootContent } from "hast";
 import type { LucideIcon } from "lucide-react";
+import type { Heading, PhrasingContent } from "mdast";
+import { fromMarkdown } from "mdast-util-from-markdown";
+import { mdxFromMarkdown } from "mdast-util-mdx";
+import type { MdxJsxTextElement } from "mdast-util-mdx-jsx";
+import { mdxjs } from "micromark-extension-mdxjs";
+import type { SortableType } from "../../lib/navigation/applyRules.js";
 import { readFrontmatter } from "../../lib/util/readFrontmatter.js";
 import type { ConfigWithMeta } from "../loader.js";
 import type {
@@ -8,8 +15,17 @@ import type {
   InputNavigationCategoryLinkDoc,
   InputNavigationCustomPage,
   InputNavigationDoc,
+  InputNavigationFilter,
   InputNavigationItem,
   InputNavigationLink,
+  InputNavigationSection,
+  InputNavigationSeparator,
+  NavigationInsertRule,
+  NavigationModifyRule,
+  NavigationMoveRule,
+  NavigationRemoveRule,
+  NavigationRule,
+  NavigationSortRule,
 } from "./InputNavigationSchema.js";
 import { DocsConfigSchema } from "./validate.js";
 
@@ -26,7 +42,12 @@ type FinalNavigationCategoryLinkDoc = Extract<
 
 export type NavigationDoc = ReplaceFields<
   FinalNavigationDoc,
-  { label: string; categoryLabel?: string; path: string } & ResolvedIcon
+  {
+    label: string;
+    categoryLabel?: string;
+    path: string;
+    rich?: RootContent[];
+  } & ResolvedIcon
 >;
 
 export type NavigationLink = ReplaceFields<InputNavigationLink, ResolvedIcon>;
@@ -38,23 +59,85 @@ export type NavigationCategoryLinkDoc = ReplaceFields<
 
 export type NavigationCategory = ReplaceFields<
   InputNavigationCategory,
-  { items: NavigationItem[]; link?: NavigationCategoryLinkDoc } & ResolvedIcon
+  {
+    items: NavigationItem[];
+    link?: NavigationCategoryLinkDoc;
+  } & ResolvedIcon
 >;
 export type NavigationCustomPage = ReplaceFields<
   InputNavigationCustomPage,
   ResolvedIcon
 >;
 
+export type NavigationSeparator = InputNavigationSeparator & { label: string };
+
+export type NavigationSection = InputNavigationSection;
+
+export type NavigationFilter = InputNavigationFilter & { label: string };
+
 export type NavigationItem =
   | NavigationDoc
   | NavigationLink
   | NavigationCategory
-  | NavigationCustomPage;
+  | NavigationCustomPage
+  | NavigationSeparator
+  | NavigationSection
+  | NavigationFilter;
+
+export type SortableNavigationItem = Extract<
+  NavigationItem,
+  { type: SortableType }
+>;
 
 export type Navigation = NavigationItem[];
 
 const extractTitleFromContent = (content: string): string | undefined =>
   content.match(/^\s*#\s(.*)$/m)?.at(1);
+
+type MdxPhrasingContent = PhrasingContent | MdxJsxTextElement;
+
+const isMdxJsxElement = (node: MdxPhrasingContent): node is MdxJsxTextElement =>
+  node.type === "mdxJsxTextElement";
+
+const mdastToString = (node: MdxPhrasingContent | Heading): string => {
+  if ("value" in node && typeof node.value === "string") return node.value;
+  if ("children" in node && Array.isArray(node.children)) {
+    return node.children
+      .map((c) => mdastToString(c as MdxPhrasingContent))
+      .join("");
+  }
+
+  return "";
+};
+
+// Extract rich H1 heading content from MDX. Returns AST nodes only when H1 contains JSX elements.
+const extractRichH1 = (content: string) => {
+  try {
+    const mdast = fromMarkdown(content, {
+      extensions: [mdxjs()],
+      mdastExtensions: [mdxFromMarkdown()],
+      // biome-ignore lint/suspicious/noExplicitAny: mdast-util-from-markdown has type incompatibilities between versions
+    } as any);
+
+    const h1 = mdast.children.find(
+      (node): node is Heading => node.type === "heading" && node.depth === 1,
+    );
+
+    if (!h1) return undefined;
+
+    const children = h1.children as MdxPhrasingContent[];
+    const hasJsx = children.some(isMdxJsxElement);
+
+    // Extract all text content including from emphasis/strong/links
+    const label = mdastToString(h1).trim();
+
+    // Note: rich only contains MDAST nodes. RichText handles text and mdxJsxTextElement,
+    // but markdown formatting (strong/emphasis/link) in H1 won't render styled.
+    return hasJsx ? { label, rich: children as RootContent[] } : { label };
+  } catch {
+    return undefined;
+  }
+};
 
 const isNavigationItem = (item: unknown): item is NavigationItem =>
   item !== undefined;
@@ -62,11 +145,24 @@ const isNavigationItem = (item: unknown): item is NavigationItem =>
 const toPosixPath = (filePath: string) =>
   filePath.split(path.win32.sep).join(path.posix.sep);
 
+export type ResolvedNavigationInsertRule = Omit<
+  NavigationInsertRule,
+  "items"
+> & { items: NavigationItem[] };
+
+export type ResolvedNavigationRule =
+  | NavigationModifyRule
+  | NavigationRemoveRule
+  | ResolvedNavigationInsertRule
+  | NavigationSortRule
+  | NavigationMoveRule;
+
 export class NavigationResolver {
   private rootDir: string;
   private globPatterns: string[];
   private globFiles: string[] = [];
   private items: InputNavigationItem[] = [];
+  private itemIndex = 0;
 
   constructor(config: ConfigWithMeta) {
     this.rootDir = config.__meta.rootDir;
@@ -74,17 +170,42 @@ export class NavigationResolver {
     this.items = config.navigation ?? [];
   }
 
-  async resolve() {
+  async initialize() {
+    if (this.globFiles.length > 0) return;
+
     this.globFiles = await glob(this.globPatterns, {
       root: this.rootDir,
       ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
     }).then((files) => files.map(toPosixPath));
+  }
+
+  async resolve() {
+    await this.initialize();
 
     const resolvedItems = await Promise.all(
       this.items.map((item) => this.resolveItem(item)),
     );
 
     return resolvedItems.filter(isNavigationItem);
+  }
+
+  async resolveRules(
+    rules: NavigationRule[],
+  ): Promise<ResolvedNavigationRule[]> {
+    await this.initialize();
+
+    return Promise.all(
+      rules.map(async (rule) => {
+        if (rule.type === "insert") {
+          const items = await Promise.all(
+            rule.items.map((item) => this.resolveItem(item)),
+          ).then((items) => items.filter(isNavigationItem));
+
+          return { ...rule, items };
+        }
+        return rule;
+      }),
+    );
   }
 
   private async resolveDoc(
@@ -106,10 +227,18 @@ export class NavigationResolver {
 
     const { data, content } = await readFrontmatter(foundMatches);
 
+    // Skip draft documents in production mode
+    if (process.env.NODE_ENV !== "development" && data.draft === true) {
+      return undefined;
+    }
+
+    const richH1 = extractRichH1(content);
+
     const label =
       data.navigation_label ??
       data.sidebar_label ??
       data.title ??
+      richH1?.label ??
       extractTitleFromContent(content) ??
       filePath;
 
@@ -120,8 +249,10 @@ export class NavigationResolver {
       file: filePath,
       label,
       icon,
+      display: data.navigation_display,
       categoryLabel,
       path: fileNoExt,
+      rich: richH1?.rich,
     } satisfies NavigationDoc;
 
     return doc;
@@ -180,7 +311,12 @@ export class NavigationResolver {
         return this.resolveNavigationItemDoc(item, categoryLabel);
       case "link":
       case "custom-page":
+      case "section":
         return item;
+      case "separator":
+        return { ...item, label: `separator-${this.itemIndex++}` };
+      case "filter":
+        return { ...item, label: `filter-${this.itemIndex++}` };
       case "category": {
         const categoryItem = item;
 
@@ -195,6 +331,15 @@ export class NavigationResolver {
         const resolvedLink = categoryItem.link
           ? await this.resolveItemCategoryLinkDoc(categoryItem.link)
           : undefined;
+
+        // Filter out empty categories (no items and no link) in production
+        if (
+          process.env.NODE_ENV !== "development" &&
+          items.length === 0 &&
+          !resolvedLink
+        ) {
+          return undefined;
+        }
 
         return {
           ...categoryItem,

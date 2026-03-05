@@ -17,7 +17,7 @@ import ParamsGrid, {
 import type { Header, PlaygroundForm } from "./Playground.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
-// biome-ignore format: Easier to read
+// prettier-ignore
 const headerOptions = Object.freeze([
   "Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Cache-Control", "Connection",
   "Content-Disposition", "Content-Encoding", "Content-Language", "Content-Length", "Content-Range",

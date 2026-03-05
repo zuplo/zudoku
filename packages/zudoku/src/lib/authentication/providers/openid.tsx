@@ -1,31 +1,39 @@
-import logger from "loglevel";
 import * as oauth from "oauth4webapi";
 import { ErrorBoundary } from "react-error-boundary";
 import type { NavigateFunction } from "react-router";
 import type { OpenIDAuthenticationConfig } from "../../../config/config.js";
 import { ClientOnly } from "../../components/ClientOnly.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
 } from "../authentication.js";
+import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
-import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
+import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
 export interface OpenIdProviderData {
+  // just for easy migration we also allow for undefined type. can be removed in the future.
+  type: "openid" | undefined;
   accessToken: string;
   idToken?: string;
   refreshToken?: string;
   expiresOn: Date;
   tokenType: string;
+  claims: oauth.IDToken | undefined;
+}
+
+declare module "../state.js" {
+  interface ProviderDataRegistry {
+    openid: OpenIdProviderData;
+  }
 }
 
 export const OPENID_CALLBACK_PATH = "/oauth/callback";
@@ -93,28 +101,43 @@ export class OpenIDAuthenticationProvider
    * Sets the tokens from various OAuth responses
    * @param response
    */
-  protected setTokensFromResponse(
-    response: oauth.TokenEndpointResponse | oauth.OAuth2Error,
-  ) {
-    if (oauth.isOAuth2Error(response)) {
-      logger.error("Bad Token Response", response);
-      throw new OAuthAuthorizationError("Bad Token Response", response);
-    }
-
+  protected setTokensFromResponse(response: oauth.TokenEndpointResponse) {
     if (!response.expires_in) {
       throw new AuthorizationError("No expires_in in response");
     }
 
+    const claims = response.id_token
+      ? oauth.getValidatedIdTokenClaims(response)
+      : undefined;
+
     const tokens: OpenIdProviderData = {
+      type: "openid",
       accessToken: response.access_token,
       refreshToken: response.refresh_token,
       idToken: response.id_token,
       expiresOn: new Date(Date.now() + response.expires_in * 1000),
       tokenType: response.token_type,
+      claims,
     };
 
-    useAuthState.setState({
-      providerData: tokens,
+    const emailVerified =
+      claims?.email_verified === undefined
+        ? undefined
+        : Boolean(claims?.email_verified);
+
+    useAuthState.setState((state) => {
+      const profile = state.profile
+        ? {
+            ...state.profile,
+            emailVerified:
+              emailVerified ?? state.profile.emailVerified ?? false,
+          }
+        : null;
+
+      return {
+        profile,
+        providerData: tokens,
+      };
     });
   }
 
@@ -143,6 +166,40 @@ export class OpenIDAuthenticationProvider
       redirectTo: this.redirectToAfterSignIn ?? redirectTo ?? "/",
       replace,
     });
+  }
+
+  public async refreshUserProfile(): Promise<boolean> {
+    const accessToken = await this.getAccessToken();
+    const authServer = await this.getAuthServer();
+
+    const userInfoResponse = await oauth.userInfoRequest(
+      authServer,
+      this.client,
+      accessToken,
+    );
+    const userInfo = await userInfoResponse.json();
+
+    const { providerData } = useAuthState.getState();
+    const emailVerified =
+      providerData?.type === "openid"
+        ? providerData.claims?.email_verified
+        : undefined;
+
+    const profile: UserProfile = {
+      sub: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name,
+      emailVerified: userInfo.email_verified ?? emailVerified ?? false,
+      pictureUrl: userInfo.picture,
+    };
+
+    useAuthState.setState({
+      isAuthenticated: true,
+      isPending: false,
+      profile,
+    });
+
+    return true;
   }
 
   private async authorize({
@@ -218,41 +275,44 @@ export class OpenIDAuthenticationProvider
 
   async getAccessToken(): Promise<string> {
     const as = await this.getAuthServer();
-    const { providerData } = useAuthState.getState();
-    if (!providerData) {
-      throw new AuthorizationError("User is not authenticated");
+    const { providerData, setLoggedOut } = useAuthState.getState();
+
+    if (
+      !providerData ||
+      (providerData?.type !== "openid" && providerData?.type !== undefined)
+    ) {
+      useAuthState.getState().setLoggedOut();
+      throw new AuthorizationError("Invalid or incompatible provider data");
     }
-    const tokenState = providerData as OpenIdProviderData;
+
+    const tokenState = providerData;
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: null,
-          providerData: null,
-        });
-        return "";
+        useAuthState.getState().setLoggedOut();
+        throw new AuthorizationError("No refresh token found");
       }
 
-      const request = await oauth.refreshTokenGrantRequest(
+      const response = await oauth.refreshTokenGrantRequest(
         as,
         this.client,
+        oauth.None(),
         tokenState.refreshToken,
       );
-      const response = await oauth.processRefreshTokenResponse(
+      const result = await oauth.processRefreshTokenResponse(
         as,
         this.client,
-        request,
+        response,
       );
 
-      if (!response.access_token) {
+      if (!result.access_token) {
+        setLoggedOut();
         throw new AuthorizationError("No access token in response");
       }
 
-      this.setTokensFromResponse(response);
+      this.setTokensFromResponse(result);
 
-      return response.access_token.toString();
+      return result.access_token.toString();
     } else {
       return tokenState.accessToken;
     }
@@ -265,19 +325,15 @@ export class OpenIDAuthenticationProvider
   };
 
   signOut = async (_: AuthActionContext) => {
-    useAuthState.setState({
-      isAuthenticated: false,
-      isPending: false,
-      profile: undefined,
-      providerData: undefined,
-    });
+    useAuthState.getState().setLoggedOut();
 
     const as = await this.getAuthServer();
 
-    const redirectUrl = new URL(
-      window.location.origin + this.redirectToAfterSignOut,
+    const redirectUrl = new URL(window.location.origin);
+    redirectUrl.pathname = joinUrl(
+      import.meta.env.BASE_URL,
+      this.redirectToAfterSignOut,
     );
-    redirectUrl.pathname = this.callbackUrlPath;
 
     let logoutUrl: URL;
     // The endSessionEndpoint is set, the IdP supports some form of logout,
@@ -296,17 +352,17 @@ export class OpenIDAuthenticationProvider
     } else {
       logoutUrl = redirectUrl;
     }
+
+    window.location.href = logoutUrl.toString();
   };
 
   onPageLoad = async () => {
     const { providerData } = useAuthState.getState();
 
-    if (!providerData) {
-      useAuthState.setState({ isPending: false });
+    if (providerData?.type !== "openid") {
       return;
     }
-
-    const tokenState = providerData as OpenIdProviderData;
+    const tokenState = providerData;
 
     if (new Date(tokenState.expiresOn) < new Date()) {
       if (!tokenState.refreshToken) {
@@ -321,29 +377,25 @@ export class OpenIDAuthenticationProvider
 
       try {
         const as = await this.getAuthServer();
-        const request = await oauth.refreshTokenGrantRequest(
+        const response = await oauth.refreshTokenGrantRequest(
           as,
           this.client,
+          oauth.None(),
           tokenState.refreshToken,
         );
-        const response = await oauth.processRefreshTokenResponse(
+        const result = await oauth.processRefreshTokenResponse(
           as,
           this.client,
-          request,
+          response,
         );
 
-        if (!response.access_token) {
+        if (!result.access_token) {
           throw new AuthorizationError("No access token in response");
         }
 
-        this.setTokensFromResponse(response);
+        this.setTokensFromResponse(result);
       } catch {
-        useAuthState.setState({
-          isAuthenticated: false,
-          isPending: false,
-          profile: null,
-          providerData: null,
-        });
+        useAuthState.getState().setLoggedOut();
         return;
       }
     }
@@ -377,13 +429,6 @@ export class OpenIDAuthenticationProvider
       url.searchParams,
       state ?? undefined,
     );
-    if (oauth.isOAuth2Error(params)) {
-      logger.error("Error validating OAuth response", params);
-      throw new OAuthAuthorizationError(
-        "Error validating OAuth response",
-        params,
-      );
-    }
 
     const redirectUrl = new URL(url);
     redirectUrl.pathname = this.callbackUrlPath;
@@ -393,20 +438,13 @@ export class OpenIDAuthenticationProvider
     const response = await oauth.authorizationCodeGrantRequest(
       authServer,
       this.client,
+      oauth.None(),
       params,
       redirectUrl.toString(),
       codeVerifier,
     );
 
-    // TODO: do we need to do these
-    // const challenges = oauth.parseWwwAuthenticateChallenges(response);
-    // if (challenges) {
-    //   for (const challenge of challenges) {
-    //     console.error("WWW-Authenticate Challenge", challenge);
-    //   }
-    //   throw new Error(); // Handle WWW-Authenticate Challenges as needed
-    // }
-    const oauthResult = await oauth.processAuthorizationCodeOpenIDResponse(
+    const oauthResult = await oauth.processAuthorizationCodeResponse(
       authServer,
       this.client,
       response,
@@ -416,6 +454,10 @@ export class OpenIDAuthenticationProvider
 
     const accessToken = await this.getAccessToken();
 
+    const { providerData } = useAuthState.getState();
+    const claims =
+      providerData?.type === "openid" ? providerData.claims : undefined;
+
     const userInfoResponse = await oauth.userInfoRequest(
       authServer,
       this.client,
@@ -424,10 +466,11 @@ export class OpenIDAuthenticationProvider
     const userInfo = await userInfoResponse.json();
 
     const profile: UserProfile = {
+      ...userInfo,
       sub: userInfo.sub,
       email: userInfo.email,
       name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? false,
+      emailVerified: userInfo.email_verified ?? claims?.email_verified ?? false,
       pictureUrl: userInfo.picture,
     };
 
@@ -436,6 +479,7 @@ export class OpenIDAuthenticationProvider
       isPending: false,
       profile,
     });
+    await this.refreshUserProfile();
 
     const redirectTo = sessionStorage.getItem("redirect-to") ?? "/";
     sessionStorage.removeItem("redirect-to");

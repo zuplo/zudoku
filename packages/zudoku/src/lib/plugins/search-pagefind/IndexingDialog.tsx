@@ -91,9 +91,8 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    if (indexingState.status !== "idle") return;
     return startIndexing();
-  }, [indexingState.status, startIndexing]);
+  }, [startIndexing]);
 
   const handleDone = () => {
     if (indexingState.status !== "complete") return;
@@ -119,9 +118,9 @@ const IndexingDialog = ({ children }: PropsWithChildren) => {
             {indexingState.status === "indexing" && (
               <>
                 {indexingState.total > 0 && (
-                  <div className="font-mono text-sm mb-2">
+                  <span className="font-mono text-sm mb-2 block">
                     <ProgressBar {...indexingState} />
-                  </div>
+                  </span>
                 )}
                 {indexingState.path && (
                   <span className="block text-xs truncate">

@@ -7,6 +7,7 @@ import { Button } from "zudoku/ui/Button.js";
 import type { NavigationCategory as NavigationCategoryType } from "../../../config/validators/NavigationSchema.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { useNavigationFilter } from "./NavigationFilterContext.js";
 import { NavigationItem } from "./NavigationItem.js";
 import { navigationListItem, useIsCategoryOpen } from "./utils.js";
 
@@ -20,6 +21,7 @@ const NavigationCategoryInner = ({
   const isCategoryOpen = useIsCategoryOpen(category);
   const [hasInteracted, setHasInteracted] = useState(false);
   const location = useLocation();
+  const { query: filterQuery } = useNavigationFilter();
 
   const isCollapsible = category.collapsible ?? true;
   const isCollapsed = category.collapsed ?? true;
@@ -27,7 +29,8 @@ const NavigationCategoryInner = ({
     !isCollapsible || !isCollapsed || isCategoryOpen,
   );
   const [open, setOpen] = useState(isDefaultOpen);
-  const isActive = useMatch(category.link?.path ?? "");
+  const match = useMatch(category.link?.path ?? "");
+  const isActive = category.link ? match : false;
 
   useEffect(() => {
     // this is triggered when an item from the navigation is clicked
@@ -36,6 +39,13 @@ const NavigationCategoryInner = ({
       setOpen(true);
     }
   }, [isCategoryOpen]);
+
+  // Auto-expand when there's an active filter query
+  useEffect(() => {
+    if (filterQuery.trim()) {
+      setOpen(true);
+    }
+  }, [filterQuery]);
 
   const ToggleButton = isCollapsible && (
     <Button
@@ -128,7 +138,7 @@ const NavigationCategoryInner = ({
           "ms-6 my-1",
         )}
       >
-        <ul className="relative after:absolute after:-start-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
+        <ul className="relative after:absolute after:-inset-s-(--padding-nav-item) after:translate-x-[1.5px] after:top-0 after:bottom-0 after:w-px after:bg-border">
           {category.items.map((item) => (
             <NavigationItem
               key={

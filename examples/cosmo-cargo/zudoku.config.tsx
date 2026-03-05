@@ -115,7 +115,46 @@ const config: ZudokuConfig = {
     },
   },
   plugins: [new CosmoCargoApiIdentityPlugin()],
-  protectedRoutes: ["/only-members"],
+  protectedRoutes: {
+    "/only-members": ({ auth, reasonCode }) =>
+      auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
+    "/vip-lounge": ({ auth, reasonCode }) =>
+      !auth.isAuthenticated
+        ? reasonCode.UNAUTHORIZED
+        : auth.profile?.email?.endsWith("@zuplo.com")
+          ? true
+          : reasonCode.FORBIDDEN,
+  },
+  mdx: {
+    components: {
+      Trademark: () => "™",
+    },
+  },
+  navigationRules: [
+    {
+      type: "modify",
+      match: "Shipments/1",
+      set: { icon: "ship" },
+    },
+    {
+      type: "modify",
+      match: "Shipments/2",
+      set: { icon: "box" },
+    },
+    {
+      type: "insert",
+      match: "Shipments/-1",
+      position: "after",
+      items: [
+        {
+          type: "link",
+          label: "System Status",
+          to: "/status",
+          icon: "satellite",
+        },
+      ],
+    },
+  ],
   navigation: [
     {
       type: "custom-page",
@@ -127,20 +166,30 @@ const config: ZudokuConfig = {
       label: "Documentation",
       icon: "book-open",
       items: [
+        { type: "filter", placeholder: "Filter documentation" },
         "documentation",
+        { type: "section", label: "Operations" },
         {
           type: "category",
           icon: "telescope",
           collapsed: false,
           label: "Space Operations",
-          items: ["shipping-process", "tracking"],
+          items: ["shipping-process", "tracking", "quantum-express"],
         },
         "global",
+        { type: "separator" },
+        { type: "section", label: "Guides" },
         {
           type: "category",
           icon: "library-big",
           label: "Shipping Guides",
           items: ["interstellar", "intergalactic"],
+        },
+        {
+          type: "link",
+          label: "See Shipment API",
+          to: "/api-shipments",
+          icon: "arrow-right",
         },
         {
           type: "category",
@@ -168,7 +217,7 @@ const config: ZudokuConfig = {
     {
       type: "link",
       icon: "ship",
-      to: "/api-shipments/shipment-management",
+      to: "/api-shipments",
       label: "Shipments",
     },
     {
@@ -183,6 +232,13 @@ const config: ZudokuConfig = {
       label: "Only members",
       display: "auth",
       element: <div>Only members are allowed in here.</div>,
+    },
+    {
+      type: "custom-page",
+      path: "/vip-lounge",
+      label: "VIP Lounge",
+      display: "auth",
+      element: <div>Welcome to the VIP Lounge, exclusive Zuplo member!</div>,
     },
   ],
   catalogs: {
@@ -238,7 +294,11 @@ const config: ZudokuConfig = {
     {
       type: "file",
       input: [
-        "./schema/label-v3.json",
+        {
+          input: "./schema/label-v3.json",
+          path: "latest",
+          label: "Latest (3.0.0)",
+        },
         "./schema/label-v2.json",
         "./schema/label-v1.json",
       ],
@@ -305,10 +365,8 @@ const config: ZudokuConfig = {
     light: {
       background: "0 0% 100%",
       foreground: "20 14.3% 4.1%",
-      card: "#fff",
+      card: "#fafafa",
       cardForeground: "#262626",
-      popover: "0 0% 100%",
-      popoverForeground: "20 14.3% 4.1%",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
       secondary: "60 4.8% 95.9%",
@@ -326,8 +384,8 @@ const config: ZudokuConfig = {
     dark: {
       background: "#1a1a18",
       foreground: "60 9.1% 97.8%",
-      card: "#151518",
-      cardForeground: "60 9.1% 97.8%",
+      card: "#242424",
+      cardForeground: "#f2e9e4",
       popover: "20 14.3% 4.1%",
       popoverForeground: "60 9.1% 97.8%",
       primary: "#f4bf32",

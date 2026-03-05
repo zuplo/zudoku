@@ -39,9 +39,8 @@ describe("validateConfig", () => {
       },
     };
 
-    expect(() =>
-      validateConfig(configWithValidAuth0),
-    ).toThrowErrorMatchingInlineSnapshot(`
+    expect(() => validateConfig(configWithValidAuth0))
+      .toThrowErrorMatchingInlineSnapshot(`
       [Error: Whoops, looks like there's an issue with your config:
       ✖ Clerk public key invalid, must start with pk_test or pk_live
         → at authentication.clerkPubKey]

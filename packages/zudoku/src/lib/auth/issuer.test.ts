@@ -26,7 +26,7 @@ describe("getIssuer", () => {
     };
 
     await expect(getIssuer(config)).rejects.toThrow(
-      "Clerk public key is invalid",
+      "Invalid Clerk publishable key",
     );
   });
 
@@ -39,7 +39,7 @@ describe("getIssuer", () => {
     };
 
     await expect(getIssuer(config)).rejects.toThrow(
-      "Clerk public key is invalid",
+      "Invalid Clerk publishable key",
     );
   });
 

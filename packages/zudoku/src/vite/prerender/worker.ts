@@ -3,6 +3,7 @@ import Piscina from "piscina";
 import { matchPath } from "react-router";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
+import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { FileWritingResponse } from "./FileWritingResponse.js";
 import { InMemoryResponse } from "./InMemoryResponse.js";
@@ -24,9 +25,10 @@ const { template, distDir, serverConfigPath, entryServerPath, writeRedirects } =
   Piscina.workerData as StaticWorkerData;
 
 const server: EntryServer = await import(entryServerPath);
-const config: ZudokuConfig = await import(serverConfigPath).then(
+const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
   (m) => m.default,
 );
+const config = await runPluginTransformConfig(rawConfig);
 
 const routes = server.getRoutesByConfig(config);
 const { basePath } = config;
@@ -75,7 +77,11 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
       );
     }
 
-    html = bypassResponse.buffer;
+    // Use bypass HTML for search indexing only if the bypass render succeeded
+    html =
+      bypassResponse.statusCode >= 400
+        ? fileResponse.buffer
+        : bypassResponse.buffer;
   } else {
     await server.render({ ...sharedOpts, response: fileResponse });
     await fileResponse.isSent();
@@ -96,6 +102,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
   return {
     outputPath,
     redirect,
+    statusCode: fileResponse.statusCode,
     html,
   };
 };

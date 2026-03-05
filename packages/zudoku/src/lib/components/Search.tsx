@@ -1,14 +1,14 @@
 import { SearchIcon } from "lucide-react";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { isSearchPlugin } from "../core/plugins.js";
-import { detectOS } from "../util/detectOS.js";
+import { getOS } from "../util/os.js";
 import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 
 export const Search = ({ className }: { className?: string }) => {
   const ctx = useZudoku();
   const [isOpen, setIsOpen] = useState(false);
-
+  const onOpen = useCallback(() => setIsOpen(true), []);
   const onClose = useCallback(() => setIsOpen(false), []);
 
   useEffect(() => {
@@ -30,17 +30,15 @@ export const Search = ({ className }: { className?: string }) => {
     };
   }, [isOpen]);
 
-  const searchPlugin = ctx.plugins.find(isSearchPlugin);
+  const searchPlugin = ctx.options.plugins?.find(isSearchPlugin);
 
-  if (!searchPlugin) {
-    return null;
-  }
+  if (!searchPlugin) return null;
 
   return (
     <div className={className}>
       <button
         type="button"
-        onClick={() => setIsOpen(true)}
+        onClick={onOpen}
         className="flex items-center border border-input hover:bg-accent hover:text-accent-foreground p-4 relative h-8 justify-start rounded-lg bg-background text-sm text-muted-foreground shadow-none w-full sm:w-72"
       >
         <div className="flex items-center gap-2 grow">
@@ -51,21 +49,16 @@ export const Search = ({ className }: { className?: string }) => {
           <KbdShortcut />
         </ClientOnly>
       </button>
-      <Suspense fallback={null}>
-        {searchPlugin.renderSearch({
-          isOpen,
-          onClose,
-        })}
-      </Suspense>
+      <Suspense>{searchPlugin.renderSearch({ isOpen, onClose })}</Suspense>
     </div>
   );
 };
 
 const KbdShortcut = () => {
-  const os = detectOS();
+  const os = getOS();
   return (
     <kbd className="absolute end-1.5 hidden h-5 select-none items-center gap-1 rounded-sm border bg-muted px-1.5 font-mono text-[11px] font-medium opacity-100 sm:flex">
-      {os === "macOS" ? "⌘" : "Ctrl"}+K
+      {os === "apple" ? "⌘" : "Ctrl"}+K
     </kbd>
   );
 };

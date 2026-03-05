@@ -19,7 +19,10 @@ import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/t
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
-import { InputNavigationSchema } from "./InputNavigationSchema.js";
+import {
+  InputNavigationSchema,
+  NavigationRulesSchema,
+} from "./InputNavigationSchema.js";
 import { ProtectedRoutesSchema } from "./ProtectedRoutesSchema.js";
 
 const ThemeSchema = z
@@ -65,7 +68,7 @@ const ApiOptionsSchema = z
     disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
-    expandApiInformation: z.boolean(),
+    showInfoPage: z.boolean(),
     schemaDownload: z.object({ enabled: z.boolean() }).partial(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
@@ -85,7 +88,7 @@ const ApiConfigSchema = z
   })
   .partial();
 
-const UrlVersionConfigSchema = z.object({
+const VersionConfigSchema = z.object({
   path: z.string(),
   input: z.string(),
   label: z.string().optional(),
@@ -94,12 +97,15 @@ const UrlVersionConfigSchema = z.object({
 const ApiSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("url"),
-    input: z.union([z.string(), z.array(UrlVersionConfigSchema)]),
+    input: z.union([z.string(), z.array(VersionConfigSchema)]),
     ...ApiConfigSchema.shape,
   }),
   z.object({
     type: z.literal("file"),
-    input: z.union([z.string(), z.array(z.string())]),
+    input: z.union([
+      z.string(),
+      z.array(z.union([z.string(), VersionConfigSchema])),
+    ]),
     ...ApiConfigSchema.shape,
   }),
   z.object({
@@ -384,6 +390,7 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
           "yahoo",
           "password",
           "phone",
+          "emailLink",
         ]),
       )
       .optional(),
@@ -597,6 +604,7 @@ const BaseConfigSchema = z.object({
     .optional(),
   site: SiteSchema,
   navigation: InputNavigationSchema,
+  navigationRules: NavigationRulesSchema.optional(),
   theme: ThemeConfigSchema,
   syntaxHighlighting: z
     .object({
@@ -625,11 +633,14 @@ const BaseConfigSchema = z.object({
      */
     examplesLanguage: z.string().optional(),
   }),
+  // Internal: populated by plugins via `transformConfig` to track plugin directories
+  __pluginDirs: z.array(z.string()),
 });
 
 export const ZudokuConfig = BaseConfigSchema.partial();
 
 export type ZudokuApiConfig = z.infer<typeof ApiSchema>;
+export type VersionConfig = z.infer<typeof VersionConfigSchema>;
 export type ZudokuSiteMapConfig = z.infer<typeof SiteMapSchema>;
 export type ZudokuDocsConfig = z.infer<typeof DocsConfigSchema>;
 export type ZudokuLlmsConfig = z.infer<typeof LlmsConfigSchema>;
@@ -639,8 +650,12 @@ export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 // Use `z.input` type for flexibility with transforms,
 // but override navigation with `z.infer` for strict validation
 type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
-export type ZudokuConfig = Omit<BaseZudokuConfig, "navigation"> & {
+export type ZudokuConfig = Omit<
+  BaseZudokuConfig,
+  "navigation" | "navigationRules"
+> & {
   navigation?: z.infer<typeof InputNavigationSchema>;
+  navigationRules?: z.infer<typeof NavigationRulesSchema>;
 };
 
 export function validateConfig(config: unknown, configPath?: string) {

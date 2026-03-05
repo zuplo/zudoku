@@ -1,6 +1,7 @@
 import { GraphQLError } from "graphql/error/index.js";
 import { OpenAPIV3, type OpenAPIV3_1 } from "openapi-types";
-import { flattenAllOfProcessor } from "../../util/flattenAllOf.js";
+import { flattenAllOf } from "../../util/flattenAllOf.js";
+import { traverse } from "../../util/traverse.js";
 import { dereference, type JSONSchema } from "./dereference/index.js";
 import { upgradeSchema } from "./upgrade/index.js";
 
@@ -28,6 +29,10 @@ export type SchemaObject = DeepOmitReference<OpenAPIV3_1.SchemaObject>;
 export type ArraySchemaObject =
   DeepOmitReference<OpenAPIV3_1.ArraySchemaObject>;
 export type ServerObject = DeepOmitReference<OpenAPIV3_1.ServerObject>;
+export type ContactObject = DeepOmitReference<OpenAPIV3_1.ContactObject>;
+export type LicenseObject = DeepOmitReference<OpenAPIV3_1.LicenseObject>;
+export type ExternalDocumentationObject =
+  DeepOmitReference<OpenAPIV3_1.ExternalDocumentationObject>;
 
 export const HttpMethods = Object.values(OpenAPIV3.HttpMethods);
 
@@ -104,11 +109,21 @@ export const validate = async (schemaInput: unknown) => {
   const dereferenced = await dereference(schema);
   const upgraded = upgradeSchema(dereferenced);
 
-  const flattened = await flattenAllOfProcessor({
-    schema: upgraded,
-    file: "schema.json",
-    dereference: async (schema) => schema,
-  });
+  const flattened = traverse(upgraded, (spec) => {
+    if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
+      return spec;
+    }
+    const isSchemaObject =
+      "type" in spec ||
+      "properties" in spec ||
+      "allOf" in spec ||
+      "anyOf" in spec ||
+      "oneOf" in spec;
+
+    if (!isSchemaObject) return spec;
+
+    return flattenAllOf(spec) as typeof spec;
+  }) as OpenAPIDocument;
 
   return flattened;
 };

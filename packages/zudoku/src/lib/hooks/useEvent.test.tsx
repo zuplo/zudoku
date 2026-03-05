@@ -13,7 +13,7 @@ import { useEvent } from "./useEvent.js";
 
 const createTestContext = () => {
   const queryClient = new QueryClient();
-  const context = new ZudokuContext({}, queryClient);
+  const context = new ZudokuContext({}, queryClient, {});
   const wrapper = ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>
       <ZudokuProvider context={context}>{children}</ZudokuProvider>

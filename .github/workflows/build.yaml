@@ -40,7 +40,8 @@ jobs:
       - uses: nrwl/nx-set-shas@v4
 
       - run: pnpm check
-      - run: nx run-many -t build:ci test
+      - run: nx run-many -t build:ci
+      - run: pnpm test
 
       - name: Get Variables
         id: vars
@@ -56,11 +57,8 @@ jobs:
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
 
-        # Check if the stats file exists, if zudoku doesn't change in the PR
-        # the stats file won't exist and we don't need to upload it
-      - name: Has Stats
-        run: echo "exists=${{ hashFiles('./packages/zudoku/stats.html') != '' }}" >> $GITHUB_OUTPUT
-        id: stats-file
+      - name: Check Bundle Size
+        run: pnpm size
 
   check-links:
     name: Check Links
@@ -88,7 +86,7 @@ jobs:
 
       - name: Restore lychee cache
         id: restore-cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .lycheecache
           key: cache-lychee-v4-${{ github.sha }}
@@ -108,7 +106,7 @@ jobs:
             ./docs/dist
       - name: Save lychee cache
         if: always()
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .lycheecache
           key: ${{ steps.restore-cache.outputs.cache-primary-key }}

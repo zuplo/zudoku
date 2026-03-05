@@ -37,10 +37,10 @@ import { IdentityDialog } from "./IdentityDialog.js";
 import IdentitySelector from "./IdentitySelector.js";
 import { PathParams } from "./PathParams.js";
 import { QueryParams } from "./QueryParams.js";
-import RequestLoginDialog from "./RequestLoginDialog.js";
 import { useIdentityStore } from "./rememberedIdentity.js";
 import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
+import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
@@ -62,6 +62,9 @@ export type QueryParam = {
   isRequired?: boolean;
   enum?: string[];
   type?: string;
+  style?: string;
+  explode?: boolean;
+  allowReserved?: boolean;
 };
 
 export type PathParam = {
@@ -84,6 +87,10 @@ export type PlaygroundForm = {
     value: string;
     active: boolean;
     enum?: string[];
+    type?: string;
+    style?: string;
+    explode?: boolean;
+    allowReserved?: boolean;
   }>;
   pathParams: Array<{ name: string; value: string }>;
   headers: Array<{
@@ -179,6 +186,10 @@ export const Playground = ({
                 value: param.defaultValue ?? "",
                 active: param.defaultActive ?? false,
                 enum: param.enum ?? [],
+                type: param.type,
+                style: param.style,
+                explode: param.explode,
+                allowReserved: param.allowReserved,
               }))
             : [{ name: "", value: "", active: false, enum: [] }],
         pathParams: sortedPathParams.map((param) => ({

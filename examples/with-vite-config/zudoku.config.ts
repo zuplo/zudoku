@@ -22,8 +22,8 @@ const config: ZudokuConfig = {
   ],
   redirects: [{ from: "/", to: "/documentation/introduction" }],
   apis: {
-    type: "url",
-    input: "https://rickandmorty.zuplo.io/openapi.json",
+    type: "file",
+    input: "./openapi.json",
     path: "api",
   },
 };
