@@ -188,7 +188,6 @@ const config = {
       disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
-      expandApiInformation: false, // Control if API information section is expanded
       showInfoPage: true, // Show API information page as the index route
       schemaDownload: { enabled: true }, // Enable schema download button
     },
@@ -208,7 +207,6 @@ Available options:
   - `"always"`: Always show version selector (disabled if only one version)
   - `"hide"`: Never show version selector
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
-- `expandApiInformation`: Control if the API information section is expanded by default
 - `showInfoPage`: Show the API information page as the index route (default: `true`). When disabled,
   navigating to the API root redirects to the first tag instead
 - `schemaDownload`: Enable schema download functionality with `{ enabled: boolean }`. When enabled,
@@ -233,7 +231,6 @@ const config = {
       disableSidecar: false, // Disable the sidecar completely
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
-      expandApiInformation: false, // Control if API information section is expanded
       showInfoPage: true, // Show API information page as the index route
       schemaDownload: { enabled: true }, // Enable schema download button
     },

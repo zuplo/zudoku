@@ -68,7 +68,6 @@ const ApiOptionsSchema = z
     disableSidecar: z.boolean(),
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
-    expandApiInformation: z.boolean(),
     showInfoPage: z.boolean(),
     schemaDownload: z.object({ enabled: z.boolean() }).partial(),
     transformExamples: z.custom<TransformExamplesFn>(
