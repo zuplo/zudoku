@@ -9,6 +9,7 @@ import { configuredAuthProvider } from "virtual:zudoku-auth";
 import { configuredCustomPagesPlugin } from "virtual:zudoku-custom-pages-plugin";
 import { configuredDocsPlugin } from "virtual:zudoku-docs-plugin";
 import {
+  configuredHeaderNavigation,
   configuredNavigation,
   configuredNavigationRules,
 } from "virtual:zudoku-navigation";
@@ -57,6 +58,10 @@ export const convertZudokuConfigToOptions = (
       favicon: "https://cdn.zudoku.dev/logos/favicon.svg",
       title: "%s - Zudoku",
       ...config.metadata,
+    },
+    header: {
+      navigation: configuredHeaderNavigation,
+      placements: config.header?.placements,
     },
     navigation: configuredNavigation,
     navigationRules: configuredNavigationRules,

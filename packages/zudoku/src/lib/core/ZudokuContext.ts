@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { Location } from "react-router";
 import type { BundledTheme, HighlighterCore } from "shiki";
 import type { z } from "zod/mini";
+import type { HeaderNavigation } from "../../config/validators/HeaderNavigationSchema.js";
 import type {
   Navigation,
   ResolvedNavigationRule,
@@ -84,11 +85,21 @@ type Site = Partial<{
   footer?: z.infer<typeof FooterSchema>;
 }>;
 
+type HeaderConfig = {
+  navigation?: HeaderNavigation;
+  placements?: {
+    navigation?: "start" | "center" | "end";
+    search?: "start" | "center" | "end";
+    auth?: "start" | "center" | "end" | "navigation";
+  };
+};
+
 export type ZudokuContextOptions = {
   basePath?: string;
   canonicalUrlOrigin?: string;
   metadata?: Metadata;
   site?: Site;
+  header?: HeaderConfig;
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
   navigationRules?: ResolvedNavigationRule[];
@@ -229,7 +240,7 @@ export class ZudokuContext {
   getProfileMenuItems = () => {
     const accountItems = this.plugins
       .filter((p) => isProfileMenuPlugin(p))
-      .flatMap((p) => p.getProfileMenuItems(this))
+      .flatMap((p) => p.getProfileMenuItems?.(this) ?? [])
       .sort(sortByCategory(["top", "middle", "bottom"]))
       .sort((i) => i.weight ?? 0);
 

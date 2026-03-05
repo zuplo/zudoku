@@ -19,6 +19,7 @@ import type { PagefindSearchFragment } from "../../lib/plugins/search-pagefind/t
 import type { MdxComponentsType } from "../../lib/util/MdxComponents.js";
 import type { ExposedComponentProps } from "../../lib/util/useExposedProps.js";
 import { GOOGLE_FONTS } from "../../vite/plugin-theme.js";
+import { HeaderNavigationSchema } from "./HeaderNavigationSchema.js";
 import {
   InputNavigationSchema,
   NavigationRulesSchema,
@@ -541,6 +542,22 @@ const SiteSchema = z
   })
   .partial();
 
+const PlacementPosition = z.enum(["start", "center", "end"]);
+
+const HeaderConfigSchema = z
+  .object({
+    navigation: HeaderNavigationSchema,
+    placements: z
+      .object({
+        navigation: PlacementPosition,
+        search: PlacementPosition,
+        auth: z.enum(["start", "center", "end", "navigation"]),
+      })
+      .partial()
+      .optional(),
+  })
+  .partial();
+
 const ApiCatalogSchema = z.object({
   path: z.string(),
   label: z.string(),
@@ -603,6 +620,7 @@ const BaseConfigSchema = z.object({
     })
     .optional(),
   site: SiteSchema,
+  header: HeaderConfigSchema.optional(),
   navigation: InputNavigationSchema,
   navigationRules: NavigationRulesSchema.optional(),
   theme: ThemeConfigSchema,
@@ -652,8 +670,16 @@ export type AuthenticationConfig = z.infer<typeof AuthenticationSchema>;
 type BaseZudokuConfig = z.input<typeof ZudokuConfig>;
 export type ZudokuConfig = Omit<
   BaseZudokuConfig,
-  "navigation" | "navigationRules"
+  "header" | "navigation" | "navigationRules"
 > & {
+  header?: {
+    navigation?: z.infer<typeof HeaderNavigationSchema>;
+    placements?: {
+      navigation?: "start" | "center" | "end";
+      search?: "start" | "center" | "end";
+      auth?: "start" | "center" | "end" | "navigation";
+    };
+  };
   navigation?: z.infer<typeof InputNavigationSchema>;
   navigationRules?: z.infer<typeof NavigationRulesSchema>;
 };
