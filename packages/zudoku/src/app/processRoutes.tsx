@@ -13,10 +13,9 @@ export const processRoutes = (
     const route = r.children
       ? {
           ...r,
-          children:
-            shouldWrapWithLayout === true
-              ? r.children
-              : processRoutes(r.children, true),
+          children: shouldWrapWithLayout
+            ? r.children
+            : processRoutes(r.children, true),
         }
       : r;
 
