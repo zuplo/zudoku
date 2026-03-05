@@ -1,5 +1,6 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTheme } from "next-themes";
+import { focusRing } from "../ui/util.js";
 import { cn } from "../util/cn.js";
 import { useIsClient } from "./ClientOnly.js";
 
@@ -12,7 +13,7 @@ export const ThemeSwitch = () => {
   return (
     <button
       type="button"
-      className="flex rounded-full border p-0.5 gap-0.5 group"
+      className={cn("flex rounded-full border p-0.5 gap-0.5 group", focusRing)}
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
       aria-label={
         !isClient

@@ -52,20 +52,15 @@ export const DownloadSchemaButton = ({
 
   return (
     <ButtonGroup>
-      <Button
-        variant="outline"
-        size="sm"
-        className="flex items-center gap-1.5"
-        asChild
-      >
+      <Button variant="outline" asChild>
         <a href={downloadUrl} download onClick={handleDownload}>
-          <DownloadIcon size={14} />
+          <DownloadIcon />
           Download schema
         </a>
       </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline" className="px-1.5">
+          <Button variant="outline" className="px-1.5">
             <ChevronDownIcon size={14} />
           </Button>
         </DropdownMenuTrigger>
