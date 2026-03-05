@@ -7,7 +7,6 @@ import {
 import type { SupabaseAuthenticationConfig } from "../../../config/config.js";
 import { ZudokuError } from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import type {
   AuthActionContext,
   AuthActionOptions,
@@ -190,11 +189,11 @@ class SupabaseAuthenticationProvider
     });
     useAuthState.setState({ isPending: false });
     if (error) {
-      throw Error(getSupabaseErrorMessage(error), { cause: error });
+      throw new Error(getSupabaseErrorMessage(error), { cause: error });
     }
 
     // If user exists and is confirmed, update state
-    if (data.user) {
+    if (data.user && data.session) {
       const profile: UserProfile = {
         sub: data.user.id,
         email: data.user.email,
@@ -205,7 +204,7 @@ class SupabaseAuthenticationProvider
 
       useAuthState.getState().setLoggedIn({
         profile,
-        providerData: { session: data.session },
+        providerData: { type: "supabase", session: data.session },
       });
     }
   };
