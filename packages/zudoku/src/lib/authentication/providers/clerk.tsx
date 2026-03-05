@@ -1,5 +1,4 @@
 import type { Clerk } from "@clerk/clerk-js";
-import { LogOutIcon } from "lucide-react";
 import type { ZudokuPlugin } from "zudoku/plugins";
 import type { ClerkAuthenticationConfig } from "../../../config/config.js";
 import type {
@@ -151,14 +150,7 @@ const clerkAuth: AuthenticationProviderInitializer<
     ],
     refreshUserProfile,
     getProfileMenuItems() {
-      return [
-        {
-          label: "Logout",
-          path: "/signout",
-          category: "bottom",
-          icon: LogOutIcon,
-        } as const,
-      ];
+      return [];
     },
     initialize: async () => {
       if (typeof window === "undefined") return;

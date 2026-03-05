@@ -34,6 +34,77 @@ const config: ZudokuConfig = {
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
+  header: {
+    navigation: [
+      {
+        label: "Solutions",
+        items: [
+          {
+            label: "Shipment Tracking",
+            icon: "satellite",
+            description: "Real-time quantum-entangled tracking across galaxies",
+            to: "/documentation",
+          },
+          {
+            label: "Warp Logistics",
+            icon: "zap",
+            description: "FTL delivery for time-critical cargo",
+            to: "/api-shipments/shipment-management",
+          },
+          {
+            label: "API Catalog",
+            icon: "layout-grid",
+            description: "Browse all available Cosmo Cargo APIs",
+            to: "/catalog",
+          },
+        ],
+      },
+      {
+        label: "Products",
+        items: [
+          {
+            label: "Shipping",
+            items: [
+              {
+                label: "Interstellar Express",
+                icon: "rocket",
+                description: "Cross-system delivery in under 12 parsecs",
+                to: "/documentation",
+              },
+              {
+                label: "Quantum Freight",
+                icon: "atom",
+                description: "Bulk cargo via quantum tunneling",
+                to: "/documentation",
+              },
+            ],
+          },
+          {
+            label: "Developer Tools",
+            items: [
+              {
+                label: "Shipment API",
+                icon: "code",
+                description: "Integrate shipping into your apps",
+                to: "/api-shipments/shipment-management",
+              },
+              {
+                label: "Webhooks",
+                icon: "webhook",
+                description: "Event-driven cargo notifications",
+                to: "/catalog",
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    placements: {
+      // search: "start",
+      navigation: "end",
+      auth: "end",
+    },
+  },
   docs: {
     publishMarkdown: true,
     llms: { llmsTxt: true, llmsTxtFull: true },
