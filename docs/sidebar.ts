@@ -119,15 +119,6 @@ export const docs: Navigation = [
       "docs/deploy/github-pages",
       "docs/deploy/vercel",
       "docs/deploy/direct-upload",
-      {
-        type: "category",
-        label: "Server-Side Rendering",
-        items: [
-          "docs/deploy/node-ssr",
-          "docs/deploy/vercel-ssr",
-          "docs/deploy/cloudflare-workers",
-        ],
-      },
     ],
   },
   {

@@ -6,7 +6,7 @@ import { DEFAULT_PREVIEW_PORT } from "../preview/handler.js";
 export type Arguments = {
   dir: string;
   preview?: boolean | number;
-  ssr?: boolean;
+  experimentalSsr?: boolean;
   adapter?: string;
 };
 
@@ -31,9 +31,9 @@ export default {
           return undefined;
         },
       })
-      .option("ssr", {
+      .option("experimental-ssr", {
         type: "boolean",
-        describe: "Build for server-side rendering",
+        describe: "Build for server-side rendering (experimental)",
         default: false,
       })
       .option("adapter", {

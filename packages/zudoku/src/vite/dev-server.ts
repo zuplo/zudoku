@@ -7,6 +7,7 @@ import { createHttpTerminator, type HttpTerminator } from "http-terminator";
 import {
   createServer as createViteServer,
   isRunnableDevEnvironment,
+  mergeConfig,
   type ViteDevServer,
 } from "vite";
 import { logger } from "../cli/common/logger.js";
@@ -74,18 +75,42 @@ export class DevServer {
 
     const server = await this.createNodeServer(config);
 
-    viteConfig.server = {
-      ...viteConfig.server,
-      hmr: { server },
-    };
+    const mergedViteConfig = mergeConfig(viteConfig, {
+      server: {
+        hmr: { server },
+      },
+      plugins: [
+        {
+          // Serves the client entry via Vite's client transform pipeline.
+          // Must be registered via configureServer so it runs before Vite's
+          // built-in transform middleware which would treat the path as a static asset.
+          name: "zudoku:entry-client",
+          configureServer(server: ViteDevServer) {
+            const entryPath = path.posix.join(
+              server.config.base,
+              "/__z/entry.client.tsx",
+            );
+            server.middlewares.use(entryPath, async (_req, res) => {
+              const transformed =
+                await server.environments.client.transformRequest(
+                  getAppClientEntryPath(),
+                );
 
-    const vite = await createViteServer(viteConfig);
+              if (!transformed) {
+                res.writeHead(500);
+                res.end("Error transforming client entry");
+                return;
+              }
+              res.writeHead(200, { "Content-Type": "text/javascript" });
+              res.end(transformed.code);
+            });
+          },
+        },
+      ],
+    });
+
+    const vite = await createViteServer(mergedViteConfig);
     const graphql = createGraphQLServer({ graphqlEndpoint: "/__z/graphql" });
-
-    const proxiedEntryClientPath = path.posix.join(
-      vite.config.base,
-      "/__z/entry.client.tsx",
-    );
 
     // Handle base path redirect
     vite.middlewares.use((req, res, next) => {
@@ -148,20 +173,6 @@ export class DevServer {
       }
 
       res.end();
-    });
-
-    vite.middlewares.use(proxiedEntryClientPath, async (_req, res) => {
-      const transformed = await vite.environments.client.transformRequest(
-        getAppClientEntryPath(),
-      );
-
-      if (!transformed) {
-        res.writeHead(500);
-        res.end("Error transforming client entry");
-        return;
-      }
-      res.writeHead(200, { "Content-Type": "text/javascript" });
-      res.end(transformed.code);
     });
 
     printDiagnosticsToConsole(

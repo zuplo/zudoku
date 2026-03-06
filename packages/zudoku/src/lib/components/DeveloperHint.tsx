@@ -1,5 +1,6 @@
+import { InfoIcon } from "lucide-react";
 import { type ReactNode, Suspense, lazy } from "react";
-import { Callout } from "../ui/Callout.js";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
 
 // Lazy: Markdown imports shiki.ts — keeping it out of the entry chunk.
 const Markdown = lazy(() =>
@@ -16,8 +17,10 @@ export const DeveloperHint = ({
   if (process.env.NODE_ENV !== "development") return null;
 
   return (
-    <Callout type="caution" title="Developer hint" className={className}>
-      <div className="flex flex-col gap-2">
+    <Alert variant="info" className={className}>
+      <InfoIcon />
+      <AlertTitle>Developer hint</AlertTitle>
+      <AlertDescription>
         {typeof children === "string" ? (
           <Suspense>
             <Markdown content={children} />
@@ -26,7 +29,7 @@ export const DeveloperHint = ({
           <div>{children}</div>
         )}
         <small className="italic">Only shown in development mode.</small>
-      </div>
-    </Callout>
+      </AlertDescription>
+    </Alert>
   );
 };

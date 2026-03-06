@@ -19,7 +19,7 @@ export async function build(argv: Arguments) {
   try {
     await runBuild({
       dir,
-      ssr: argv.ssr,
+      ssr: argv.experimentalSsr,
       adapter: argv.adapter as "node" | "cloudflare" | "vercel" | undefined,
     });
   } catch (error) {
