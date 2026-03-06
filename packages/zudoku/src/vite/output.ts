@@ -180,8 +180,8 @@ export function generateOutput({
     routes.push({ handle: "filesystem" });
     for (const rewrite of rewrites) {
       routes.push({
-        src: rewrite.source,
-        dest: rewrite.destination,
+        src: joinUrl(config.basePath, rewrite.source),
+        dest: joinUrl(config.basePath, rewrite.destination),
       });
     }
   }
