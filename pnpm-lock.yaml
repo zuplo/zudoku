@@ -952,9 +952,6 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.4(react@19.2.4)
-      tsdown:
-        specifier: 'catalog:'
-        version: 0.20.3(typescript@5.9.3)
       tsx:
         specifier: 4.21.0
         version: 4.21.0

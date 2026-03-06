@@ -68,7 +68,7 @@
     "./testing": "./src/lib/testing/index.tsx"
   },
   "scripts": {
-    "build": "tsdown --log-level=error",
+    "build": "esbuild src/cli/cli.ts src/vite/prerender/worker.ts --outdir=dist/cli --entry-names=[name] --bundle --format=esm --packages=external --target=node20 --platform=node --log-level=error",
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
@@ -218,7 +218,6 @@
     "happy-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "tsdown": "catalog:",
     "tsx": "4.21.0",
     "typescript": "5.9.3"
   },
