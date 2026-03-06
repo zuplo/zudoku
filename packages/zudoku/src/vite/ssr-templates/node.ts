@@ -16,6 +16,7 @@ const staticDir = join(__dirname, "..");
 
 const app = new Hono();
 
+app.use("/server/*", (c) => c.notFound());
 app.use("*", serveStatic({ root: staticDir }));
 app.get("*", (c) =>
   handleRequest({ template, request: c.req.raw, routes, basePath }),

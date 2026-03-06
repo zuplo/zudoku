@@ -9,9 +9,9 @@ import {
   type Plugin as VitePlugin,
 } from "vite";
 import { logger } from "../cli/common/logger.js";
+import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
-import { getModuleDir } from "../vite/config.js";
 import { fileExists } from "./file-exists.js";
 import type { ZudokuConfig } from "./validators/validate.js";
 import { validateConfig } from "./validators/validate.js";
@@ -96,7 +96,7 @@ async function loadZudokuConfigWithMeta(
     ...config,
     __meta: {
       rootDir,
-      moduleDir: getModuleDir(),
+      moduleDir: getZudokuRootDir(),
       mode: process.env.ZUDOKU_ENV,
       dependencies,
       configPath,
@@ -226,7 +226,7 @@ export const setStandaloneConfig = (rootDir: string) => {
   config = {
     __meta: {
       rootDir,
-      moduleDir: getModuleDir(),
+      moduleDir: getZudokuRootDir(),
       mode: "standalone",
       dependencies: [],
       configPath: "",

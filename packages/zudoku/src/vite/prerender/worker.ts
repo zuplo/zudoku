@@ -60,7 +60,7 @@ const renderPage = async ({ urlPath }: WorkerData): Promise<WorkerResult> => {
     const redirectTo = response.headers.get("Location") ?? "";
 
     if (writeRedirects) {
-      const redirectHtml = `<!doctype html><script>window.location.href='${redirectTo}';</script>`;
+      const redirectHtml = `<!doctype html><script>window.location.href=${JSON.stringify(redirectTo)};</script>`;
       await fs.mkdir(path.dirname(outputPath), { recursive: true });
       await fs.writeFile(outputPath, redirectHtml);
     }

@@ -1,8 +1,11 @@
-import { fileURLToPath } from "node:url";
 import colors from "picocolors";
 import { minVersion, satisfies } from "semver";
 import { printWarningToConsole } from "./output.js";
-import { getPackageJson } from "./package-json.js";
+import {
+  getPackageJson,
+  getPackageJsonPath,
+  getZudokuPackageJson,
+} from "./package-json.js";
 import box from "./utils/box.js";
 
 export const getPkgManager = () => {
@@ -15,15 +18,7 @@ export const getPkgManager = () => {
   return "npm";
 };
 
-const resolvePackageJson = (pkg: string) => {
-  try {
-    return fileURLToPath(import.meta.resolve(`${pkg}/package.json`));
-  } catch {
-    return undefined;
-  }
-};
-
-export const warnPackageVersionMismatch = async () => {
+export const warnPackageVersionMismatch = () => {
   if (!process.env.ZUDOKU_OVERRIDE_CI_TO_TEST && process.env.CI) {
     return;
   }
@@ -32,27 +27,22 @@ export const warnPackageVersionMismatch = async () => {
     return;
   }
 
-  const zudokuPkgPath = resolvePackageJson("zudoku");
-  if (!zudokuPkgPath) return;
-
-  const packageJson = getPackageJson(zudokuPkgPath);
-  const reactPath = resolvePackageJson("react");
-  const reactDomPath = resolvePackageJson("react-dom");
+  const packageJson = getZudokuPackageJson();
+  const reactPath = getPackageJsonPath("react");
+  const reactDomPath = getPackageJsonPath("react-dom");
 
   const required = packageJson.peerDependencies;
 
   const installed = {
-    react: reactPath ? getPackageJson(reactPath).version : undefined,
-    "react-dom": reactDomPath
-      ? getPackageJson(reactDomPath).version
-      : undefined,
+    react: getPackageJson(reactPath).version,
+    "react-dom": getPackageJson(reactDomPath).version,
   };
 
   if (
     !installed.react ||
     !installed["react-dom"] ||
-    !required.react ||
-    !required["react-dom"]
+    !required?.react ||
+    !required?.["react-dom"]
   ) {
     printWarningToConsole(
       "Could not verify React version. Ensure react and react-dom are installed.",

@@ -4,6 +4,7 @@ import { build as esbuild } from "esbuild";
 import type { Rollup } from "vite";
 import { build as viteBuild } from "vite";
 import { ZuploEnv } from "../app/env.js";
+import { getZudokuRootDir } from "../cli/common/package-json.js";
 import {
   findOutputPathOfServerConfig,
   loadZudokuConfig,
@@ -189,11 +190,9 @@ type SSREntryOptions = {
 
 const bundleSSREntry = async (options: SSREntryOptions) => {
   const { dir, adapter, serverOutDir, html, basePath } = options;
-  const tempEntryPath = path.join(dir, "__ssr-entry.js");
+  const tempEntryPath = path.join(dir, "__ssr-entry.ts");
 
-  const packageRoot = path.dirname(
-    new URL(import.meta.resolve("zudoku/package.json")).pathname,
-  );
+  const packageRoot = getZudokuRootDir();
 
   const templateContent = await readFile(
     path.join(packageRoot, "src/vite/ssr-templates", `${adapter}.ts`),

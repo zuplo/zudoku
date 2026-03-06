@@ -1,9 +1,8 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import { DevServer } from "../../vite/dev-server.js";
 import { printDiagnosticsToConsole } from "../common/output.js";
-import { getPackageJson } from "../common/package-json.js";
+import { getZudokuPackageJson } from "../common/package-json.js";
 
 export interface Arguments {
   dir: string;
@@ -13,9 +12,7 @@ export interface Arguments {
 }
 
 export async function dev(argv: Arguments) {
-  const packageJson = getPackageJson(
-    fileURLToPath(import.meta.resolve("zudoku/package.json")),
-  );
+  const packageJson = getZudokuPackageJson();
   process.env.NODE_ENV = "development";
   const dir = path.resolve(process.cwd(), argv.dir);
   const server = new DevServer({
