@@ -15,7 +15,7 @@ import invariant from "../../lib/util/invariant.js";
 import type { MarkdownFileInfo } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
-import { routesToPaths } from "./utils.js";
+import { routesToPaths, routesToRewrites } from "./utils.js";
 import type { StaticWorkerData, WorkerData } from "./worker.js";
 
 const Piscina = PiscinaImport as unknown as typeof PiscinaImport.default;
@@ -75,6 +75,7 @@ export const prerender = async ({
 
   const routes = getRoutes(config);
   const paths = routesToPaths(routes);
+  const rewrites = routesToRewrites(routes);
   const maxThreads =
     buildConfig?.prerender?.workers ?? Math.floor(os.cpus().length * 0.8);
 
@@ -220,5 +221,5 @@ export const prerender = async ({
     }
   }
 
-  return workerResults;
+  return { workerResults, rewrites };
 };

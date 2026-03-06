@@ -1,6 +1,6 @@
 import type { RouteObject } from "react-router";
 import { describe, expect, it } from "vitest";
-import { routesToPaths } from "./utils.js";
+import { routesToPaths, routesToRewrites } from "./utils.js";
 
 describe("routesToPaths", () => {
   it("returns paths for simple routes", () => {
@@ -75,5 +75,48 @@ describe("routesToPaths", () => {
 
   it("returns empty for empty input", () => {
     expect(routesToPaths([])).toEqual([]);
+  });
+});
+
+describe("routesToRewrites", () => {
+  it("generates rewrites for routes with optional params", () => {
+    const routes: RouteObject[] = [
+      { path: "subscriptions/:subscriptionId?" },
+      { path: "checkout/:planId?" },
+    ];
+    expect(routesToRewrites(routes)).toEqual([
+      { source: "/subscriptions/(.+)", destination: "/subscriptions.html" },
+      { source: "/checkout/(.+)", destination: "/checkout.html" },
+    ]);
+  });
+
+  it("returns empty for static routes", () => {
+    const routes: RouteObject[] = [{ path: "about" }, { path: "contact" }];
+    expect(routesToRewrites(routes)).toEqual([]);
+  });
+
+  it("returns empty for routes with required params", () => {
+    const routes: RouteObject[] = [{ path: "users/:id" }];
+    expect(routesToRewrites(routes)).toEqual([]);
+  });
+
+  it("handles nested routes with optional params", () => {
+    const routes: RouteObject[] = [
+      {
+        children: [
+          { path: "/checkout/:planId?" },
+          { path: "/checkout-confirm" },
+          { path: "/subscriptions/:subscriptionId?" },
+        ],
+      },
+    ];
+    expect(routesToRewrites(routes)).toEqual([
+      { source: "/checkout/(.+)", destination: "/checkout.html" },
+      { source: "/subscriptions/(.+)", destination: "/subscriptions.html" },
+    ]);
+  });
+
+  it("returns empty for empty input", () => {
+    expect(routesToRewrites([])).toEqual([]);
   });
 });
