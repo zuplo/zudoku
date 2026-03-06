@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { LoadedConfig } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
+import type { RouteRewrite } from "./prerender/utils.js";
 
 const pkgJsonPath = fileURLToPath(import.meta.resolve("zudoku/package.json"));
 const pkgJson = JSON.parse(await readFile(pkgJsonPath, "utf-8"));
@@ -139,9 +140,11 @@ type CronsConfig = Cron[];
 export function generateOutput({
   config,
   redirects,
+  rewrites = [],
 }: {
   config: LoadedConfig;
   redirects: Array<{ from: string; to: string }>;
+  rewrites?: RouteRewrite[];
 }): Config {
   const routes: Route[] = [];
 
@@ -173,6 +176,16 @@ export function generateOutput({
     });
   }
 
+  if (rewrites.length > 0) {
+    routes.push({ handle: "filesystem" });
+    for (const rewrite of rewrites) {
+      routes.push({
+        src: rewrite.source,
+        dest: rewrite.destination,
+      });
+    }
+  }
+
   const output: Config = {
     version: 3,
     framework: {
@@ -189,12 +202,14 @@ export async function writeOutput(
   {
     config,
     redirects,
+    rewrites,
   }: {
     config: LoadedConfig;
     redirects: Array<{ from: string; to: string }>;
+    rewrites?: RouteRewrite[];
   },
 ) {
-  const output = generateOutput({ config, redirects });
+  const output = generateOutput({ config, redirects, rewrites });
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
 

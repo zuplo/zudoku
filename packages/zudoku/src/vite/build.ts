@@ -78,7 +78,7 @@ export async function runBuild(options: { dir: string }) {
       );
 
       try {
-        const results = await prerender({
+        const { workerResults, rewrites } = await prerender({
           html,
           dir: options.dir,
           basePath: config.basePath,
@@ -91,12 +91,12 @@ export async function runBuild(options: { dir: string }) {
           "index.html",
         );
 
-        if (!results.find((r) => r.outputPath === indexHtml)) {
+        if (!workerResults.find((r) => r.outputPath === indexHtml)) {
           await writeFile(indexHtml, html, "utf-8");
         }
 
         // find 400.html, 404.html, 500.html
-        const statusPages = results.flatMap((r) =>
+        const statusPages = workerResults.flatMap((r) =>
           /400|404|500\.html$/.test(r.outputPath) ? r.outputPath : [],
         );
 
@@ -127,7 +127,8 @@ export async function runBuild(options: { dir: string }) {
         // Write the build output file
         await writeOutput(options.dir, {
           config,
-          redirects: results.flatMap((r) => r.redirect ?? []),
+          redirects: workerResults.flatMap((r) => r.redirect ?? []),
+          rewrites,
         });
 
         if (ZuploEnv.isZuplo && issuer) {
