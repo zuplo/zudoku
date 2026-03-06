@@ -1,13 +1,12 @@
 import assert from "node:assert";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { getZudokuPackageJson } from "../cli/common/package-json.js";
 import type { LoadedConfig } from "../config/config.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import type { RouteRewrite } from "./prerender/utils.js";
 
-const pkgJsonPath = fileURLToPath(import.meta.resolve("zudoku/package.json"));
-const pkgJson = JSON.parse(await readFile(pkgJsonPath, "utf-8"));
+const pkgJson = getZudokuPackageJson();
 
 // Generates a Vercel build output file
 // https://vercel.com/docs/build-output-api/v3
@@ -225,4 +224,38 @@ export async function writeOutput(
     // biome-ignore lint/suspicious/noConsole: Logging allowed here
     console.log("Wrote Vercel output to", outputDir);
   }
+}
+
+export async function writeVercelSSROutput(dir: string, serverOutDir: string) {
+  // https://vercel.com/docs/build-output-api
+  const outputDir = path.join(dir, ".vercel/output");
+
+  const distDir = path.join(dir, "dist");
+  await cp(distDir, path.join(outputDir, "static"), {
+    recursive: true,
+    filter: (src) =>
+      !path.relative(distDir, src).split(path.sep).includes("server"),
+  });
+
+  const funcDir = path.join(outputDir, "functions/render.func");
+  await mkdir(funcDir, { recursive: true });
+  await cp(serverOutDir, funcDir, { recursive: true });
+
+  // Write .vc-config.json for the edge function (see https://vercel.com/docs/build-output-api/primitives#edge-functions)
+  await writeFile(
+    path.join(funcDir, ".vc-config.json"),
+    JSON.stringify({ runtime: "edge", entrypoint: "entry.js" }),
+  );
+
+  await writeFile(
+    path.join(outputDir, "config.json"),
+    JSON.stringify({
+      version: 3,
+      framework: { version: pkgJson.version },
+      routes: [{ handle: "filesystem" }, { src: "/(.*)", dest: "/render" }],
+    }),
+  );
+
+  // biome-ignore lint/suspicious/noConsole: Logging allowed here
+  console.log("Wrote Vercel SSR output to", outputDir);
 }

@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Toc } from "../../components/navigation/Toc.js";
 import {
@@ -148,6 +149,7 @@ export const MdxPage = ({
         <title>{pageTitle}</title>
         {description && <meta name="description" content={description} />}
       </Helmet>
+
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
         {(category || title) && (
           <header className="flex items-start justify-between gap-4">
@@ -239,6 +241,12 @@ export const MdxPage = ({
               </div>
             )}
           </header>
+        )}
+
+        {frontmatter.draft && (
+          <DeveloperHint>
+            This page is a draft and is not visible in production.
+          </DeveloperHint>
         )}
 
         <MdxComponent

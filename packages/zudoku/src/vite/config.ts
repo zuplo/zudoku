@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import colors from "picocolors";
 import {
@@ -12,6 +11,7 @@ import {
 import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
+import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/validate.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -23,27 +23,11 @@ export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
 };
 
-export function getModuleDir() {
-  const pkgJsonPath = fileURLToPath(import.meta.resolve("zudoku/package.json"));
-  const moduleDir = path
-    .dirname(pkgJsonPath)
-    // Windows compat
-    .replaceAll(path.sep, path.posix.sep);
+export const getAppClientEntryPath = () =>
+  path.posix.join(getZudokuRootDir(), "src/app/entry.client.tsx");
 
-  return moduleDir.endsWith(path.posix.sep)
-    ? moduleDir.slice(0, -1)
-    : moduleDir;
-}
-
-export function getAppClientEntryPath() {
-  const modDir = getModuleDir();
-  return path.posix.join(modDir, "src", "app", "entry.client.tsx");
-}
-
-export function getAppServerEntryPath() {
-  const modDir = getModuleDir();
-  return path.posix.join(modDir, "src", "app", "entry.server.tsx");
-}
+export const getAppServerEntryPath = () =>
+  path.posix.join(getZudokuRootDir(), "src/app/entry.server.tsx");
 
 // the vite config gets loaded multiple times, so we only log the CDN info once
 let hasLoggedCdnInfo = false;
@@ -190,7 +174,7 @@ export async function getViteConfig(
       esbuildOptions: {
         target: "es2022",
       },
-      entries: [path.posix.join(getModuleDir(), "src/{app,lib}/**")],
+      entries: [path.posix.join(getZudokuRootDir(), "src/{app,lib}/**")],
       exclude: ["zudoku"],
       include: [
         "react-dom/client",
