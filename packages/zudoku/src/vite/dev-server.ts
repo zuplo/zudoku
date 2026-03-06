@@ -218,11 +218,16 @@ export class DevServer {
               getAppServerEntryPath(),
             );
 
+          const hasBody = req.method !== "GET" && req.method !== "HEAD";
           const request = new Request(
             `${this.protocol}://${req.headers.host}${url}`,
             {
               method: req.method,
               headers: req.headers as HeadersInit,
+              body: hasBody ? (req as unknown as BodyInit) : undefined,
+              // Required by Node when body is a readable stream
+              // @ts-expect-error Missing type definition
+              duplex: hasBody ? "half" : undefined,
             },
           );
 
@@ -233,14 +238,13 @@ export class DevServer {
             basePath: currentConfig.basePath,
           });
 
-          res.writeHead(response.status, Object.fromEntries(response.headers));
-          if (response.body) {
-            const reader = response.body.getReader();
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-              res.write(value);
-            }
+          for (const [key, value] of response.headers) {
+            res.appendHeader(key, value);
+          }
+          res.writeHead(response.status);
+
+          for await (const chunk of response.body ?? []) {
+            res.write(chunk);
           }
           res.end();
         } else {
