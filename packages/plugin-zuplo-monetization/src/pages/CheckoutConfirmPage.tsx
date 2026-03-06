@@ -166,7 +166,12 @@ const CheckoutConfirmPage = () => {
                 ? "Processing Payment..."
                 : "Confirm & Subscribe"}
             </Button>
-            <Button variant="ghost" className="w-full" asChild>
+            <Button
+              variant="ghost"
+              className="w-full"
+              disabled={createSubscriptionMutation.isPending}
+              asChild={!createSubscriptionMutation.isPending}
+            >
               <Link to="/pricing">Cancel</Link>
             </Button>
           </div>
