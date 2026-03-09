@@ -51,15 +51,22 @@ const isDepInPackageJson = (dir: string, dep: string): boolean => {
   try {
     const pkg = getPackageJson(path.join(dir, "package.json"));
     return (
-      dep in (pkg.dependencies ?? {}) || dep in (pkg.devDependencies ?? {})
+      dep in (pkg.dependencies ?? {}) ||
+      dep in (pkg.devDependencies ?? {}) ||
+      dep in (pkg.optionalDependencies ?? {}) ||
+      dep in (pkg.peerDependencies ?? {})
     );
   } catch {
     return false;
   }
 };
 
-const optionalExternals = (dir: string): string[] =>
-  OPTIONAL_DEPS.filter((dep) => !isDepInPackageJson(dir, dep));
+const optionalExternals = async (dir: string): Promise<string[]> => {
+  const pkgRoot = await findPackageRoot(dir);
+  return OPTIONAL_DEPS.filter(
+    (dep) => !pkgRoot || !isDepInPackageJson(pkgRoot, dep),
+  );
+};
 
 export async function getViteConfig(
   dir: string,
@@ -174,7 +181,7 @@ export async function getViteConfig(
             : undefined,
         external: [
           joinUrl(config.basePath, "/pagefind/pagefind.js"),
-          ...optionalExternals(dir),
+          ...(await optionalExternals(dir)),
         ],
       },
       chunkSizeWarningLimit: 1500,
