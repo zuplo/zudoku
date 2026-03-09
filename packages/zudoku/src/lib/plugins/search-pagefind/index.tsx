@@ -1,5 +1,4 @@
 import type { ZudokuConfig } from "../../../config/validators/ZudokuConfig.js";
-import { ClientOnly } from "../../components/ClientOnly.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 import { PagefindSearch } from "./PagefindSearch.js";
 
@@ -13,9 +12,7 @@ export const pagefindSearchPlugin = (
 ): ZudokuPlugin => {
   return {
     renderSearch: ({ isOpen, onClose }) => (
-      <ClientOnly>
-        <PagefindSearch isOpen={isOpen} onClose={onClose} options={options} />
-      </ClientOnly>
+      <PagefindSearch isOpen={isOpen} onClose={onClose} options={options} />
     ),
   };
 };

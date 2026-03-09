@@ -57,7 +57,7 @@ export async function runBuild(options: BuildOptions) {
   const clientResult = await viteBuild(viteClientConfig);
   const serverResult = await viteBuild({
     ...viteServerConfig,
-    logLevel: "silent",
+    logLevel: "error",
   });
 
   if (Array.isArray(clientResult) || !("output" in clientResult)) {
@@ -218,7 +218,7 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
-      external: ["./entry.server.js", "./zudoku.config.js"],
+      external: ["./entry.server.js"],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
     });

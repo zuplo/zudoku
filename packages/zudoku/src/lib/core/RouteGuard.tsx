@@ -158,6 +158,14 @@ export const RouteGuard = () => {
     return <ForbiddenPage />;
   }
 
+  if (typeof window === "undefined") {
+    if (needsToSignIn) {
+      renderContext.status = 401;
+      return null;
+    }
+    return <BypassRoute isProtectedRoute={isProtectedRoute} />;
+  }
+
   if (shouldBypass) {
     return <BypassRoute isProtectedRoute={isProtectedRoute} />;
   }
@@ -170,7 +178,7 @@ export const RouteGuard = () => {
     });
   }
 
-  if (needsToSignIn && auth.isPending && typeof window !== "undefined") {
+  if (needsToSignIn && auth.isPending) {
     return null;
   }
 

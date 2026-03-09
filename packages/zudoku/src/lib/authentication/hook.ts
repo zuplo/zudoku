@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { use } from "react";
 import { useNavigate } from "react-router";
+import { RenderContext } from "../components/context/RenderContext.js";
 import { useZudoku } from "../components/context/ZudokuContext.js";
 import type { AuthActionOptions } from "./authentication.js";
 import { useAuthState } from "./state.js";
@@ -74,9 +76,20 @@ export const useAuth = () => {
 
   useRefreshUserProfile();
 
+  // On the server, the zustand store can't read window.ZUDOKU_SSR_AUTH,
+  // so we override from RenderContext which carries the per-request auth state
+  const { ssrAuth } = use(RenderContext);
+  const isSSR = typeof window === "undefined";
+
   return {
     isAuthEnabled,
     ...authState,
+    ...(isSSR &&
+      ssrAuth && {
+        isAuthenticated: true,
+        isPending: false,
+        profile: ssrAuth.profile,
+      }),
 
     login: async (options?: AuthActionOptions) => {
       if (!isAuthEnabled) {

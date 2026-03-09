@@ -129,6 +129,47 @@ export class DevServer {
 
     vite.middlewares.use(graphql.graphqlEndpoint, graphql);
 
+    // Auth session endpoint for cookie sync
+    vite.middlewares.use("/__z/auth/session", async (req, res) => {
+      const ssrEnvironment = vite.environments.ssr;
+      if (!isRunnableDevEnvironment(ssrEnvironment)) {
+        res.writeHead(500);
+        res.end("SSR environment not available");
+        return;
+      }
+
+      const entryServer = await ssrEnvironment.runner.import<EntryServerImport>(
+        getAppServerEntryPath(),
+      );
+
+      const url = `${this.protocol}://${req.headers.host}${req.originalUrl ?? req.url}`;
+      const body =
+        req.method === "POST"
+          ? await new Promise<string>((resolve) => {
+              let data = "";
+              req.on("data", (chunk: Buffer) => (data += chunk));
+              req.on("end", () => resolve(data));
+            })
+          : undefined;
+
+      const request = new Request(url, {
+        method: req.method,
+        headers: req.headers as HeadersInit,
+        body,
+      });
+
+      const app = entryServer.createServer({ template: "" });
+      const response = await app.fetch(request);
+
+      res.setHeader("Content-Type", "application/json");
+      for (const cookie of response.headers.getSetCookie()) {
+        res.appendHeader("Set-Cookie", cookie);
+      }
+      res.writeHead(response.status);
+      const text = await response.text();
+      res.end(text);
+    });
+
     // Pagefind reindex endpoint (SSE)
     vite.middlewares.use("/__z/pagefind-reindex", async (_req, res) => {
       res.writeHead(200, {
@@ -231,15 +272,19 @@ export class DevServer {
             },
           );
 
-          const response = await entryServer.handleRequest({
+          const app = entryServer.createServer({
             template,
-            request,
-            routes: entryServer.getRoutesByConfig(currentConfig),
             basePath: currentConfig.basePath,
           });
+          const response = await app.fetch(request);
 
-          for (const [key, value] of response.headers) {
-            res.appendHeader(key, value);
+          response.headers.forEach((value, key) => {
+            if (key.toLowerCase() !== "set-cookie") {
+              res.setHeader(key, value);
+            }
+          });
+          for (const cookie of response.headers.getSetCookie()) {
+            res.appendHeader("Set-Cookie", cookie);
           }
           res.writeHead(response.status);
 
