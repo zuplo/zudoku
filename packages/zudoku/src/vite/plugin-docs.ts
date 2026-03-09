@@ -3,7 +3,10 @@ import { glob } from "glob";
 import globParent from "glob-parent";
 import type { Plugin } from "vite";
 import { type ConfigWithMeta, getCurrentConfig } from "../config/loader.js";
-import { NavigationResolver } from "../config/validators/NavigationSchema.js";
+import {
+  type NavigationItem,
+  NavigationResolver,
+} from "../config/validators/NavigationSchema.js";
 import { DocsConfigSchema } from "../config/validators/validate.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -76,12 +79,12 @@ export const resolveCustomNavigationPaths = async (
   config: ConfigWithMeta,
   fileMapping: Record<string, string>,
 ): Promise<Record<string, string>> => {
-  if (!config.navigation) return fileMapping;
+  if (!config.navigation && !config.navigationRules) return fileMapping;
 
-  const resolvedNavigation = await new NavigationResolver(config).resolve();
+  const resolver = new NavigationResolver(config);
   const mapping = { ...fileMapping };
 
-  traverseNavigation(resolvedNavigation, (item) => {
+  const processItem = (item: NavigationItem) => {
     const doc =
       item.type === "doc"
         ? { file: item.file, path: item.path }
@@ -99,7 +102,21 @@ export const resolveCustomNavigationPaths = async (
     const customPath = ensureLeadingSlash(doc.path);
     mapping[customPath] = filePath;
     delete mapping[fileRoutePath];
-  });
+  };
+
+  if (config.navigation) {
+    const resolvedNavigation = await resolver.resolve();
+    traverseNavigation(resolvedNavigation, processItem);
+  }
+
+  if (config.navigationRules) {
+    const resolvedRules = await resolver.resolveRules(config.navigationRules);
+    for (const rule of resolvedRules) {
+      if (rule.type === "insert") {
+        traverseNavigation(rule.items, processItem);
+      }
+    }
+  }
 
   return mapping;
 };
