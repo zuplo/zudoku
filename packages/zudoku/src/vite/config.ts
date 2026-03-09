@@ -11,7 +11,10 @@ import {
 import packageJson from "../../package.json" with { type: "json" };
 import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
-import { getZudokuRootDir } from "../cli/common/package-json.js";
+import {
+  getPackageJson,
+  getZudokuRootDir,
+} from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
 import { CdnUrlSchema } from "../config/validators/validate.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
@@ -41,6 +44,22 @@ const defineEnvVars = (vars: string[]) =>
       [`import.meta.env.${v}`, JSON.stringify(process.env[v])],
     ]),
   );
+
+const OPTIONAL_DEPS = ["mermaid"] as const;
+
+const isDepInPackageJson = (dir: string, dep: string): boolean => {
+  try {
+    const pkg = getPackageJson(path.join(dir, "package.json"));
+    return (
+      dep in (pkg.dependencies ?? {}) || dep in (pkg.devDependencies ?? {})
+    );
+  } catch {
+    return false;
+  }
+};
+
+const optionalExternals = (dir: string): string[] =>
+  OPTIONAL_DEPS.filter((dep) => !isDepInPackageJson(dir, dep));
 
 export async function getViteConfig(
   dir: string,
@@ -153,7 +172,10 @@ export async function getViteConfig(
               ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
               : "zudoku/app/entry.client.tsx"
             : undefined,
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        external: [
+          joinUrl(config.basePath, "/pagefind/pagefind.js"),
+          ...optionalExternals(dir),
+        ],
       },
       chunkSizeWarningLimit: 1500,
     },
