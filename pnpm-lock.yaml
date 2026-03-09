@@ -530,7 +530,7 @@ importers:
         version: 3.2.0(graphql@16.13.1)
       '@hono/node-server':
         specifier: 1.19.10
-        version: 1.19.10(hono@4.12.4)
+        version: 1.19.10(hono@4.12.5)
       '@lekoarts/rehype-meta-as-attributes':
         specifier: 3.0.3
         version: 3.0.3
@@ -730,8 +730,8 @@ importers:
         specifier: 3.0.1
         version: 3.0.1
       hono:
-        specifier: 4.12.4
-        version: 4.12.4
+        specifier: 4.12.5
+        version: 4.12.5
       http-terminator:
         specifier: 3.2.0
         version: 3.2.0
@@ -7171,8 +7171,8 @@ packages:
   hoist-non-react-statics@3.3.2:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
 
-  hono@4.12.4:
-    resolution: {integrity: sha512-ooiZW1Xy8rQ4oELQ++otI2T9DsKpV0M6c6cO6JGx4RTfav9poFFLlet9UMXHZnoM1yG0HWGlQLswBGX3RZmHtg==}
+  hono@4.12.5:
+    resolution: {integrity: sha512-3qq+FUBtlTHhtYxbxheZgY8NIFnkkC/MR8u5TTsr7YZ3wixryQ3cCwn3iZbg8p8B88iDBBAYSfZDS75t8MN7Vg==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.0.1:
@@ -12681,9 +12681,9 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
-  '@hono/node-server@1.19.10(hono@4.12.4)':
+  '@hono/node-server@1.19.10(hono@4.12.5)':
     dependencies:
-      hono: 4.12.4
+      hono: 4.12.5
 
   '@iconify/types@2.0.0': {}
 
@@ -17674,7 +17674,7 @@ snapshots:
     dependencies:
       react-is: 16.13.1
 
-  hono@4.12.4: {}
+  hono@4.12.5: {}
 
   hookable@6.0.1: {}
 
