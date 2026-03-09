@@ -3,7 +3,6 @@ import { LogOutIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
-import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import type { ProfileNavigationItem } from "../core/plugins.js";
 import {
@@ -21,7 +20,6 @@ import {
 import { cn } from "../util/cn.js";
 import { joinUrl } from "../util/joinUrl.js";
 import { Banner } from "./Banner.js";
-import { ClientOnly } from "./ClientOnly.js";
 import { useZudoku } from "./context/ZudokuContext.js";
 import { HeaderNavigation } from "./HeaderNavigation.js";
 import { MobileTopNavigation } from "./MobileTopNavigation.js";
@@ -67,62 +65,58 @@ const ProfileMenu = () => {
 
   if (!isAuthEnabled) return null;
 
-  return (
-    <ClientOnly fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}>
-      {!isAuthenticated ? (
-        <Button size="lg" variant="ghost" onClick={() => auth.login()}>
-          Login
+  return !isAuthenticated ? (
+    <Button size="lg" variant="ghost" onClick={() => auth.login()}>
+      Login
+    </Button>
+  ) : (
+    <DropdownMenu modal={false}>
+      <DropdownMenuTrigger asChild>
+        <Button size="lg" variant="ghost">
+          {profile?.name ?? "My Account"}
         </Button>
-      ) : (
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button size="lg" variant="ghost">
-              {profile?.name ?? "My Account"}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>
-              {profile?.name ?? "My Account"}
-              {profile?.email && profile.email !== profile?.name && (
-                <div className="font-normal text-muted-foreground">
-                  {profile.email}
-                </div>
-              )}
-            </DropdownMenuLabel>
-            {profileItems.filter((i) => i.category === "top").length > 0 && (
-              <DropdownMenuSeparator />
-            )}
-            {profileItems
-              .filter((i) => i.category === "top")
-              .map((i) => (
-                <RecursiveMenu key={i.label} item={i} />
-              ))}
-            {profileItems.filter((i) => !i.category || i.category === "middle")
-              .length > 0 && <DropdownMenuSeparator />}
-            {profileItems
-              .filter((i) => !i.category || i.category === "middle")
-              .map((i) => (
-                <RecursiveMenu key={i.label} item={i} />
-              ))}
-            {profileItems.filter((i) => i.category === "bottom").length > 0 && (
-              <DropdownMenuSeparator />
-            )}
-            {profileItems
-              .filter((i) => i.category === "bottom")
-              .map((i) => (
-                <RecursiveMenu key={i.label} item={i} />
-              ))}
-            <DropdownMenuSeparator />
-            <Link to="/signout">
-              <DropdownMenuItem className="flex gap-2">
-                <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
-                Logout
-              </DropdownMenuItem>
-            </Link>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )}
-    </ClientOnly>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel>
+          {profile?.name ?? "My Account"}
+          {profile?.email && profile.email !== profile?.name && (
+            <div className="font-normal text-muted-foreground">
+              {profile.email}
+            </div>
+          )}
+        </DropdownMenuLabel>
+        {profileItems.filter((i) => i.category === "top").length > 0 && (
+          <DropdownMenuSeparator />
+        )}
+        {profileItems
+          .filter((i) => i.category === "top")
+          .map((i) => (
+            <RecursiveMenu key={i.label} item={i} />
+          ))}
+        {profileItems.filter((i) => !i.category || i.category === "middle")
+          .length > 0 && <DropdownMenuSeparator />}
+        {profileItems
+          .filter((i) => !i.category || i.category === "middle")
+          .map((i) => (
+            <RecursiveMenu key={i.label} item={i} />
+          ))}
+        {profileItems.filter((i) => i.category === "bottom").length > 0 && (
+          <DropdownMenuSeparator />
+        )}
+        {profileItems
+          .filter((i) => i.category === "bottom")
+          .map((i) => (
+            <RecursiveMenu key={i.label} item={i} />
+          ))}
+        <DropdownMenuSeparator />
+        <Link to="/signout">
+          <DropdownMenuItem className="flex gap-2">
+            <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
+            Logout
+          </DropdownMenuItem>
+        </Link>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 export const Header = memo(function HeaderInner() {

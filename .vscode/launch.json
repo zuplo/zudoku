@@ -29,6 +29,25 @@
         "${workspaceFolder}/test-fixtures/**/dist/**",
         "!**/node_modules/**"
       ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "cosmo-cargo:build --ssr",
+      "cwd": "${workspaceFolder}/examples/cosmo-cargo",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "runtimeArgs": ["--inspect-brk"],
+      "args": [
+        "${workspaceFolder}/packages/zudoku/src/cli/cli.ts",
+        "build",
+        "--ssr"
+      ],
+      "env": {
+        "ZUDOKU_INTERNAL_DEV": "true"
+      },
+      "skipFiles": ["<node_internals>/**"],
+      "console": "integratedTerminal",
+      "sourceMaps": true
     }
   ]
 }

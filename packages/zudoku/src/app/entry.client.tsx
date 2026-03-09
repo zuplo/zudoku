@@ -1,21 +1,30 @@
+import type { DehydratedState } from "@tanstack/react-query";
 import { createRoot, hydrateRoot } from "react-dom/client";
 import {
   createBrowserRouter,
   matchRoutes,
   type RouteObject,
 } from "react-router";
-import config from "virtual:zudoku-config";
 import "vite/modulepreload-polyfill";
-import { Bootstrap } from "../lib/components/Bootstrap.js";
+import config from "virtual:zudoku-config";
+import type { UserProfile } from "../lib/authentication/state.js";
+import { BootstrapClient } from "../lib/components/Bootstrap.js";
 import { getRoutesByConfig, shikiReady } from "./main.js";
 
 const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
 
+// Injected by entry.server.tsx into a <script> tag before </body>.
+// ZUDOKU_DATA: dehydrated React Query cache for SSR.
+// ZUDOKU_SSR_AUTH: auth profile from httpOnly cookies (no tokens, client-safe).
+// Used by the zustand auth store (state.ts) to seed initial state so the
+// client renders the same auth UI the server did, avoiding hydration mismatch.
 declare global {
   interface Window {
     ZUDOKU_VERSION: string;
+    ZUDOKU_DATA?: DehydratedState;
+    ZUDOKU_SSR_AUTH?: { profile: UserProfile };
   }
 }
 
@@ -96,7 +105,7 @@ function render(routes: RouteObject[]) {
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
-  createRoot(root).render(<Bootstrap router={router} />);
+  createRoot(root).render(<BootstrapClient router={router} />);
 }
 
 async function hydrate(routes: RouteObject[]) {
@@ -106,7 +115,7 @@ async function hydrate(routes: RouteObject[]) {
     basename: config.basePath,
   });
 
-  hydrateRoot(root, <Bootstrap hydrate router={router} />);
+  hydrateRoot(root, <BootstrapClient hydrate router={router} />);
 }
 
 // This is a workaround to avoid version skewing
