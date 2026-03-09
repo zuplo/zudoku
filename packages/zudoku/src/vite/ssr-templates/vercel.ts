@@ -1,22 +1,17 @@
-// @ts-nocheck
-import { Hono } from "hono";
-import { getRoutesByConfig, handleRequest } from "./entry.server.js";
-import zudokuConfig from "./zudoku.config.js";
+import { handle } from "hono/vercel";
+// @ts-expect-error - Loading entry.server.js will be bundled
+import { createServer } from "./entry.server.js";
 
 // Vercel Edge Functions
 // Static files served automatically from dist/client via vercel.json rewrites
 
 const template = "__TEMPLATE__";
 const basePath = "__BASE_PATH__";
-const routes = getRoutesByConfig(zudokuConfig.default ?? zudokuConfig);
 
-const app = new Hono();
+const app = createServer({ template, basePath });
 
-app.all("*", (c) =>
-  handleRequest({ template, request: c.req.raw, routes, basePath }),
-);
-
-export const GET = (req: Request) => app.fetch(req);
-export const POST = (req: Request) => app.fetch(req);
+export const GET = handle(app);
+export const POST = handle(app);
+export const DELETE = handle(app);
 
 export const config = { runtime: "edge" };

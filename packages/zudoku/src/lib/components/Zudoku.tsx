@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import {
   memo,
   type PropsWithChildren,
+  use,
   useEffect,
   useMemo,
   useState,
@@ -19,6 +20,7 @@ import {
 import { TopLevelError } from "../errors/TopLevelError.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import "../util/requestIdleCallbackPolyfill.js";
+import { RenderContext } from "./context/RenderContext.js";
 import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
@@ -62,7 +64,18 @@ const ZudokuInner = memo(
       setDidNavigate(true);
     }, [didNavigate, navigation.location]);
 
-    zudokuContext ??= new ZudokuContext(props, queryClient, env);
+    const renderContext = use(RenderContext);
+    if (typeof window === "undefined") {
+      // Fresh context per SSR request to avoid leaking
+      zudokuContext = new ZudokuContext(
+        props,
+        queryClient,
+        env,
+        renderContext.ssrAuth?.accessToken,
+      );
+    } else {
+      zudokuContext ??= new ZudokuContext(props, queryClient, env);
+    }
 
     const heads = props.plugins?.flatMap((plugin) =>
       hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],

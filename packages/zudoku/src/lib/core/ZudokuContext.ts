@@ -136,13 +136,16 @@ export class ZudokuContext {
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
+  readonly ssrAccessToken?: string;
   readonly initialize: Promise<void> | undefined;
 
   constructor(
     options: ZudokuContextOptions,
     queryClient: QueryClient,
     env: Record<string, string | undefined>,
+    ssrAccessToken?: string,
   ) {
+    this.ssrAccessToken = ssrAccessToken;
     this.queryClient = queryClient;
     this.env = env;
     this.options = options;
@@ -237,6 +240,11 @@ export class ZudokuContext {
   };
 
   signRequest = async (request: Request) => {
+    if (this.ssrAccessToken) {
+      request.headers.set("Authorization", `Bearer ${this.ssrAccessToken}`);
+      return request;
+    }
+
     if (!this.authentication) {
       throw new Error("No authentication provider configured");
     }
