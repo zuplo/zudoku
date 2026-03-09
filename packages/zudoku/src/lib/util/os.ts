@@ -1,4 +1,5 @@
 export function getOS(): "apple" | "linux" | "unix" | "windows" | undefined {
+  if (typeof navigator === "undefined") return;
   const notFound = -1;
   const userAgent = navigator.userAgent.toLowerCase();
   if (userAgent.indexOf("win") !== notFound) {
