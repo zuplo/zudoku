@@ -65,10 +65,10 @@ type FeatureChange = {
 const comparePlans = (
   currentPlan: Plan | undefined,
   targetPlan: Plan,
+  currentIndex: number,
+  targetIndex: number,
 ): PlanComparison => {
-  const currentPrice = currentPlan ? getPriceFromPlan(currentPlan).monthly : 0;
-  const targetPrice = getPriceFromPlan(targetPlan).monthly;
-  const isUpgrade = targetPrice > currentPrice;
+  const isUpgrade = targetIndex > currentIndex;
 
   const currentPhase = currentPlan?.phases.at(-1);
   const targetPhase = targetPlan.phases.at(-1);
@@ -447,9 +447,15 @@ export const SwitchPlanModal = ({
     const isPrivatePlan = (plan: Plan) =>
       plan.metadata?.zuplo_is_private === "true";
 
+    const currentIndex = plansData.items.findIndex(
+      (p) => p.id === currentPlan.id,
+    );
     const allComparisons = plansData.items
       .filter((p) => p.id !== currentPlan.id)
-      .map((plan) => comparePlans(currentPlan, plan));
+      .map((plan) => {
+        const targetIndex = plansData.items.indexOf(plan);
+        return comparePlans(currentPlan, plan, currentIndex, targetIndex);
+      });
 
     return {
       upgrades: allComparisons.filter(
