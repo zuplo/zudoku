@@ -143,7 +143,7 @@
     "hast-util-heading-rank": "3.0.0",
     "hast-util-to-jsx-runtime": "2.3.6",
     "hast-util-to-string": "3.0.1",
-    "hono": "4.12.4",
+    "hono": "4.12.5",
     "http-terminator": "3.2.0",
     "javascript-stringify": "2.1.0",
     "json-schema-to-typescript-lite": "15.0.0",
