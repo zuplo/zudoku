@@ -25,7 +25,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const Bootstrap = ({
+export const BootstrapClient = ({
   router,
   hydrate = false,
 }: {
@@ -34,10 +34,11 @@ const Bootstrap = ({
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      {/* biome-ignore lint/suspicious/noExplicitAny: Allow any type */}
-      <HydrationBoundary state={hydrate ? (window as any).DATA : undefined}>
+      <HydrationBoundary state={hydrate ? window.ZUDOKU_DATA : undefined}>
         <HelmetProvider>
-          <RouterProvider router={router} />
+          <RenderContext value={{ status: 200, bypassProtection: false }}>
+            <RouterProvider router={router} />
+          </RenderContext>
         </HelmetProvider>
       </HydrationBoundary>
     </QueryClientProvider>
@@ -61,17 +62,22 @@ const BootstrapStatic = ({
 }) => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <HelmetProvider context={helmetContext}>
-        <RenderContext
-          value={
-            renderContext ?? { status: 200, bypassProtection: bypassProtection }
-          }
-        >
-          <StaticRouterProvider router={router} context={context} />
-        </RenderContext>
-      </HelmetProvider>
+      <HydrationBoundary state={undefined}>
+        <HelmetProvider context={helmetContext}>
+          <RenderContext
+            value={
+              renderContext ?? {
+                status: 200,
+                bypassProtection: bypassProtection,
+              }
+            }
+          >
+            <StaticRouterProvider router={router} context={context} />
+          </RenderContext>
+        </HelmetProvider>
+      </HydrationBoundary>
     </QueryClientProvider>
   </StrictMode>
 );
 
-export { Bootstrap, BootstrapStatic };
+export { BootstrapStatic };

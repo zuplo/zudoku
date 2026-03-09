@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
 import type { ZudokuConfig } from "../config/validators/ZudokuConfig.js";
-import { Bootstrap } from "../lib/components/Bootstrap.js";
+import { BootstrapClient } from "../lib/components/Bootstrap.js";
 import { openApiPlugin } from "../lib/plugins/openapi/index.js";
 import "../lib/util/logInit.js";
 import "./main.css";
@@ -57,4 +57,4 @@ const routes = getRoutesByConfig(config);
 const router = createBrowserRouter(routes, {
   basename: window.location.pathname,
 });
-createRoot(root).render(<Bootstrap router={router} />);
+createRoot(root).render(<BootstrapClient router={router} />);

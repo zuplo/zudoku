@@ -161,6 +161,7 @@ export async function getViteConfig(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
           rolldownOptions: {
+            logLevel: "warn",
             input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
           },
         },
