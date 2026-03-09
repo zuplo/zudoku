@@ -445,7 +445,7 @@ export const SwitchPlanModal = ({
     }
 
     const isPrivatePlan = (plan: Plan) =>
-      plan.metadata?.zuplo_is_private === "true";
+      plan.metadata?.zuplo_private_plan === "true";
 
     const allComparisons = plansData.items
       .filter((p) => p.id !== currentPlan.id)
