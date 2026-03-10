@@ -20,7 +20,9 @@ export const categorizeRateCards = (
         rc.price?.type === "tiered" &&
         rc.price.tiers
       ) {
-        const overageTier = rc.price.tiers.find((t) => t.unitPrice?.amount);
+        const overageTier = rc.price.tiers.find(
+          (t) => t.unitPrice?.amount && parseFloat(t.unitPrice.amount) > 0,
+        );
         if (overageTier?.unitPrice) {
           const amount = parseFloat(overageTier.unitPrice.amount);
           overagePrice = `${formatPrice(amount, currency)}/unit`;

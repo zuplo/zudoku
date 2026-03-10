@@ -3,10 +3,52 @@ import { Button } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { FeatureItem } from "../../components/FeatureItem";
 import { QuotaItem } from "../../components/QuotaItem";
-import type { Plan } from "../../types/PlanType";
+import type { Plan, PlanPhase } from "../../types/PlanType";
 import { categorizeRateCards } from "../../utils/categorizeRateCards";
+import { formatDuration } from "../../utils/formatDuration";
 import { formatPrice } from "../../utils/formatPrice";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan";
+
+const PhaseSection = ({
+  phase,
+  currency,
+  showName,
+  excludeKeys,
+}: {
+  phase: PlanPhase;
+  currency?: string;
+  showName: boolean;
+  excludeKeys: Set<string>;
+}) => {
+  const { quotas, features } = categorizeRateCards(phase.rateCards, currency);
+
+  const filteredQuotas = quotas.filter((q) => !excludeKeys.has(q.key));
+  const filteredFeatures = features.filter((f) => !excludeKeys.has(f.key));
+
+  if (filteredQuotas.length === 0 && filteredFeatures.length === 0) return null;
+
+  return (
+    <div className="space-y-2">
+      {showName && (
+        <div className="text-sm font-medium text-card-foreground">
+          {phase.name}
+          {phase.duration && (
+            <span className="text-muted-foreground font-normal">
+              {" "}
+              &mdash; {formatDuration(phase.duration)}
+            </span>
+          )}
+        </div>
+      )}
+      {filteredQuotas.map((quota) => (
+        <QuotaItem key={quota.key} quota={quota} />
+      ))}
+      {filteredFeatures.map((feature) => (
+        <FeatureItem key={feature.key} feature={feature} />
+      ))}
+    </div>
+  );
+};
 
 export const PricingCard = ({
   plan,
@@ -17,17 +59,13 @@ export const PricingCard = ({
   isPopular?: boolean;
   isSubscribed?: boolean;
 }) => {
-  const defaultPhase = plan.phases.at(-1);
-  if (!defaultPhase) return null;
+  if (plan.phases.length === 0) return null;
 
-  const { quotas, features } = categorizeRateCards(
-    defaultPhase.rateCards,
-    plan.currency,
-  );
   const price = getPriceFromPlan(plan);
   const isFree = price.monthly === 0;
 
   const isCustom = plan.metadata?.isCustom === true;
+  const hasMultiplePhases = plan.phases.length > 1;
 
   return (
     <div
@@ -81,22 +119,23 @@ export const PricingCard = ({
         )}
       </div>
 
-      <div className="space-y-4 mb-6  grow">
-        {quotas.length > 0 && (
-          <div className="space-y-2">
-            {quotas.map((quota) => (
-              <QuotaItem key={quota.key} quota={quota} />
-            ))}
-          </div>
-        )}
-
-        {features.length > 0 && (
-          <div className="space-y-2">
-            {features.map((feature) => (
-              <FeatureItem key={feature.key} feature={feature} />
-            ))}
-          </div>
-        )}
+      <div className="space-y-4 mb-6 grow">
+        {plan.phases.map((phase, index) => {
+          const laterKeys = new Set(
+            plan.phases
+              .slice(index + 1)
+              .flatMap((p) => p.rateCards.map((rc) => rc.featureKey ?? rc.key)),
+          );
+          return (
+            <PhaseSection
+              key={phase.key}
+              phase={phase}
+              currency={plan.currency}
+              showName={hasMultiplePhases}
+              excludeKeys={laterKeys}
+            />
+          );
+        })}
       </div>
 
       {isSubscribed ? (
