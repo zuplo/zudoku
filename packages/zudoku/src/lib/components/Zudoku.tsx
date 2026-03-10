@@ -64,9 +64,12 @@ const ZudokuInner = memo(
 
     zudokuContext ??= new ZudokuContext(props, queryClient, env);
 
-    const heads = props.plugins?.flatMap((plugin) =>
-      hasHead(plugin) ? (plugin.getHead?.({ location }) ?? []) : [],
-    );
+    const heads = props.plugins?.flatMap((plugin) => {
+      if (!hasHead(plugin)) return [];
+      const head = plugin.getHead?.({ location });
+      if (!head) return [];
+      return Array.isArray(head) ? head : [head];
+    });
 
     return (
       <>
