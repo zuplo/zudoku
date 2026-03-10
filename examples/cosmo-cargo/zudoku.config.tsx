@@ -114,7 +114,17 @@ const config: ZudokuConfig = {
       },
     },
   },
-  plugins: [new CosmoCargoApiIdentityPlugin()],
+  plugins: [
+    new CosmoCargoApiIdentityPlugin(),
+    {
+      getHead: () => (
+        <>
+          <meta name="cosmo-cargo-head-test" content="verified" />
+          <script>{`window.__COSMO_HEAD_TEST=true`}</script>
+        </>
+      ),
+    },
+  ],
   protectedRoutes: {
     "/only-members": ({ auth, reasonCode }) =>
       auth.isAuthenticated ? true : reasonCode.UNAUTHORIZED,
