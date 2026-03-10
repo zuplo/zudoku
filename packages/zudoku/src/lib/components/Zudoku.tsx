@@ -1,6 +1,5 @@
 import { MDXProvider } from "@mdx-js/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Helmet } from "@zudoku/react-helmet-async";
 import { ThemeProvider } from "next-themes";
 import {
   memo,
@@ -11,7 +10,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet, useLocation, useNavigation } from "react-router";
-import { hasHead, isMdxProviderPlugin } from "../core/plugins.js";
+import { isMdxProviderPlugin } from "../core/plugins.js";
 import {
   ZudokuContext,
   type ZudokuContextOptions,
@@ -23,6 +22,7 @@ import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
 import { ZudokuProvider } from "./context/ZudokuProvider.js";
+import { PluginHeads } from "./PluginHeads.js";
 
 let zudokuContext: ZudokuContext | undefined;
 
@@ -64,16 +64,9 @@ const ZudokuInner = memo(
 
     zudokuContext ??= new ZudokuContext(props, queryClient, env);
 
-    const heads = props.plugins?.flatMap((plugin) => {
-      if (!hasHead(plugin)) return [];
-      const head = plugin.getHead?.({ location });
-      if (!head) return [];
-      return Array.isArray(head) ? head : [head];
-    });
-
     return (
       <>
-        <Helmet>{heads}</Helmet>
+        <PluginHeads plugins={props.plugins ?? []} location={location} />
         <ZudokuProvider context={zudokuContext}>
           <RouterEventsEmitter />
           <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
