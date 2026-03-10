@@ -45,17 +45,21 @@ const parseInputString = (input: string) => {
   };
 };
 
-const paramsSuffix = (params: Record<string, string>) =>
-  Object.keys(params).length > 0
-    ? `-${slugify(new URLSearchParams(params).toString())}`
-    : "";
+const canonicalParams = (params: Record<string, string>) =>
+  Object.entries(params)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([k, v]) => `${k}=${v}`)
+    .join("&");
 
-const paramsPath = (params: Record<string, string>) =>
-  Object.keys(params).length > 0
-    ? Object.values(params)
-        .map((v) => slugify(v))
-        .join("-")
-    : "";
+const paramsSuffix = (params: Record<string, string>) => {
+  const canonical = canonicalParams(params);
+  return canonical ? `-${slugify(canonical)}` : "";
+};
+
+const paramsPath = (params: Record<string, string>) => {
+  const canonical = canonicalParams(params);
+  return canonical ? slugify(canonical) : "";
+};
 
 const normalizeInputs = (
   inputs:
