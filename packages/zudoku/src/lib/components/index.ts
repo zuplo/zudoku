@@ -7,7 +7,7 @@ export { ClientOnly } from "./ClientOnly.js";
 export { Heading } from "./Heading.js";
 export { Markdown } from "./Markdown.js";
 export { Search } from "./Search.js";
-export { Slot } from "./Slot.js";
+export { type CustomSlotNames, Slot } from "./Slot.js";
 export { Spinner } from "./Spinner.js";
 export { Typography } from "./Typography.js";
 export { Zudoku } from "./Zudoku.js";
