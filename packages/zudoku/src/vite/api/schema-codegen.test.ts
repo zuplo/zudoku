@@ -1,5 +1,6 @@
 import type { OpenAPIV3_1 } from "openapi-types";
 import { describe, expect, it } from "vitest";
+import { getAllOperations, getAllSlugs } from "../../lib/oas/graphql/index.js";
 import { generateCode } from "./schema-codegen.js";
 
 const executeCode = (code: string) => {
@@ -183,40 +184,34 @@ describe("Generate OpenAPI schema module", () => {
     );
   });
 
-  it("should generate proper slugs for tags and operations", async () => {
-    const input = {
-      openapi: "3.0.0",
-      info: {
-        title: "Test API",
-        version: "1.0.0",
-      },
-      tags: [{ name: "Pets & Animals" }, { name: "Admins & Users" }],
-      paths: {
-        "/pets": {
+  it("should generate proper slugs for tags and operations", () => {
+    const operations = getAllOperations({
+      "/pets": {
+        get: {
           tags: ["Pets & Animals"],
-          get: {
-            tags: ["Pets & Animals"],
-            responses: { "200": { description: "OK" } },
-          },
-          post: {
-            tags: ["Pets & Animals", "Some other tag"],
-            responses: { "201": { description: "Created" } },
-          },
-          head: {
-            tags: ["Pets & Animals"],
-            responses: { "200": { description: "OK" } },
-          },
+          responses: { "200": { description: "OK" } },
         },
-        "/users": {
-          get: {
-            tags: ["Admins & Users"],
-            responses: { "200": { description: "OK" } },
-          },
+        post: {
+          tags: ["Pets & Animals", "Some other tag"],
+          responses: { "201": { description: "Created" } },
+        },
+        head: {
+          tags: ["Pets & Animals"],
+          responses: { "200": { description: "OK" } },
         },
       },
-    };
+      "/users": {
+        get: {
+          tags: ["Admins & Users"],
+          responses: { "200": { description: "OK" } },
+        },
+      },
+    });
 
-    const { slugs } = await executeCode(await generateCode(input));
+    const slugs = getAllSlugs(operations, [
+      { name: "Pets & Animals" },
+      { name: "Admins & Users" },
+    ]);
 
     expect(slugs.operations).toMatchInlineSnapshot(`
       {
@@ -228,8 +223,8 @@ describe("Generate OpenAPI schema module", () => {
     `);
     expect(slugs.tags).toMatchInlineSnapshot(`
       {
-        "Admins & Users": "admins-and-users",
-        "Pets & Animals": "pets-and-animals",
+        "Admins & Users": "admins-users",
+        "Pets & Animals": "pets-animals",
         "Some other tag": "some-other-tag",
       }
     `);
@@ -327,10 +322,6 @@ describe("Generate OpenAPI schema module", () => {
             }
           }
         }
-      };
-      export const slugs = {
-        operations: {},
-        tags: {},
       };"
     `);
   });

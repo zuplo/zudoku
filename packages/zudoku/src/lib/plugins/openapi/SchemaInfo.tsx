@@ -1,4 +1,3 @@
-import slugify from "@sindresorhus/slugify";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import {
@@ -25,6 +24,7 @@ import {
   ItemTitle,
 } from "../../ui/Item.js";
 import { Popover, PopoverContent, PopoverTrigger } from "../../ui/Popover.js";
+import { slugify } from "../../util/slugify.js";
 import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";

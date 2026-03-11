@@ -240,7 +240,12 @@ export const OperationList = ({
       </Helmet>
 
       <div className="mb-8">
-        <ApiHeader title={title} heading={tagTitle} headingId="description">
+        <ApiHeader
+          title={title}
+          heading={tagTitle}
+          headingId="description"
+          tag={tag ?? tagFromParams}
+        >
           <Endpoint />
         </ApiHeader>
         {tagDescription && (
