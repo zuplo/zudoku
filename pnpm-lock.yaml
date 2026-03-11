@@ -646,8 +646,8 @@ importers:
         specifier: 4.2.1
         version: 4.2.1(vite@7.3.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2))
       '@tanem/react-nprogress':
-        specifier: 5.0.63
-        version: 5.0.63(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        specifier: 6.0.2
+        version: 6.0.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@tanstack/react-query':
         specifier: 5.90.21
         version: 5.90.21(react@19.2.4)
@@ -5140,8 +5140,8 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
 
-  '@tanem/react-nprogress@5.0.63':
-    resolution: {integrity: sha512-bWkOhMBvwAe8GlqgkXdAyAeUDtWv7NknoDnlZXdVJb8M/1tP+JcsHq/xc3zUTQ0jcT3AT0uSB7Hlt27lJMHtDQ==}
+  '@tanem/react-nprogress@6.0.2':
+    resolution: {integrity: sha512-SkBexef8gs8aquOMdyOFN/oSDsDUatDWDhH4R74KCjYc9ffsQJnReXVQKlbkyB9yv+B9MuG6+2g5YpvBNNQ7Vg==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -15321,7 +15321,7 @@ snapshots:
       tailwindcss: 4.2.1
       vite: 7.3.1(@types/node@22.19.1)(jiti@2.6.1)(lightningcss@1.31.1)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  '@tanem/react-nprogress@5.0.63(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
+  '@tanem/react-nprogress@6.0.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
       '@babel/runtime': 7.28.6
       hoist-non-react-statics: 3.3.2
