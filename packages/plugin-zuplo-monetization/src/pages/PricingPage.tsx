@@ -9,9 +9,11 @@ import { PricingCard } from "./pricing/PricingCard";
 const PricingPage = ({
   subtitle = "See our pricing options and choose the one that best suits your needs.",
   title = "Pricing",
+  units,
 }: {
   subtitle?: string;
   title?: string;
+  units?: Record<string, string>;
 }) => {
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
@@ -47,6 +49,7 @@ const PricingPage = ({
           <PricingCard
             key={plan.id}
             plan={plan}
+            units={units}
             isPopular={plan.metadata?.zuplo_most_popular === "true"}
             isSubscribed={subscriptions.items.some((subscription) =>
               ["active", "canceled"].includes(subscription.status),

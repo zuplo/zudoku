@@ -5,6 +5,7 @@ import { formatPrice } from "./formatPrice.js";
 export const categorizeRateCards = (
   rateCards: RateCard[],
   currency?: string,
+  units?: Record<string, string>,
 ) => {
   const quotas: Quota[] = [];
   const features: Feature[] = [];
@@ -25,7 +26,9 @@ export const categorizeRateCards = (
         );
         if (overageTier?.unitPrice) {
           const amount = parseFloat(overageTier.unitPrice.amount);
-          overagePrice = `${formatPrice(amount, currency)}/unit`;
+          const unitLabel =
+            units?.[rc.key] ?? units?.[rc.featureKey ?? ""] ?? "unit";
+          overagePrice = `${formatPrice(amount, currency)}/${unitLabel}`;
         }
       }
       quotas.push({

@@ -6,6 +6,10 @@ import PricingPage from "./PricingPage.js";
 vi.mock("zudoku/components", async (importOriginal) => ({
   ...(await importOriginal()),
   Head: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  Slot: {
+    Target: () => null,
+    Source: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  },
 }));
 
 vi.mock("zudoku/router", () => ({
@@ -174,6 +178,49 @@ describe("PricingPage", () => {
     render(<PricingPage />);
 
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
+  });
+
+  it("Shows custom unit label in overage price when units config is provided", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "pro", "Pro"),
+        phases: [
+          {
+            key: "default",
+            name: "Default",
+            rateCards: [
+              {
+                type: "usage_based",
+                key: "api-requests",
+                name: "API Requests",
+                billingCadence: "P1M",
+                price: {
+                  type: "tiered",
+                  mode: "graduated",
+                  tiers: [
+                    { flatPrice: { amount: "0" }, upToAmount: "1000" },
+                    {
+                      flatPrice: { amount: "0" },
+                      unitPrice: { amount: "0.001" },
+                    },
+                  ],
+                },
+                entitlementTemplate: {
+                  type: "metered",
+                  issueAfterReset: 1000,
+                  isSoftLimit: true,
+                },
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage units={{ "api-requests": "request" }} />);
+
+    expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
   });
 
   it("Does not show 'Most Popular' badge when plan.metadata.zuplo_most_popular is not 'true' or missing", () => {
