@@ -78,6 +78,12 @@ responses/request bodies is passed as `JSONSchemaScalar`, which serializes the r
 through `handleCircularRefs()`. Media-type level `example`/`examples` are resolved into
 `ExampleItem` arrays by the GraphQL resolvers before reaching the client.
 
+## Polyfills
+
+`polyfills.ts` is a side-effect module imported in `main.tsx` and listed in `package.json`
+`sideEffects`. All browser polyfills must go in this file or be added as a separate entry in the
+`sideEffects` array, otherwise they will be tree-shaken in production builds.
+
 ## Bundle Size
 
 Heavy modules must never be statically imported from entry-path code (modules reachable from

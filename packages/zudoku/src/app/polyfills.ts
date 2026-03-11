@@ -15,3 +15,11 @@ if (typeof Object.groupBy === "undefined") {
     return result;
   };
 }
+
+if (typeof window !== "undefined" && !window.requestIdleCallback) {
+  window.requestIdleCallback = (cb: IdleRequestCallback) =>
+    Number(
+      setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 50 }), 1),
+    );
+  window.cancelIdleCallback = (id: number) => clearTimeout(id);
+}
