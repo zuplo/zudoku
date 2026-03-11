@@ -16,6 +16,8 @@ export type ZudokuMonetizationPluginOptions = {
   pricing?: {
     subtitle?: string;
     title?: string;
+    /** Order of plans by plan ID or key. Plans not listed are shown at the end. */
+    planOrder?: string[];
   };
 };
 
@@ -114,6 +116,7 @@ export const zuploMonetizationPlugin = createPlugin(
                 <PricingPage
                   subtitle={options?.pricing?.subtitle}
                   title={options?.pricing?.title}
+                  planOrder={options?.pricing?.planOrder}
                 />
               ),
             },

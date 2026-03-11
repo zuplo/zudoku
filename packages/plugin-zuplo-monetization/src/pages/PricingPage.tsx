@@ -9,15 +9,27 @@ import { PricingCard } from "./pricing/PricingCard";
 const PricingPage = ({
   subtitle = "See our pricing options and choose the one that best suits your needs.",
   title = "Pricing",
+  planOrder,
 }: {
   subtitle?: string;
   title?: string;
+  planOrder?: string[];
 }) => {
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
   const auth = useAuth();
 
   const { data: pricingTable } = usePlans();
+
+  const plans = planOrder
+    ? [...pricingTable.items].sort((a, b) => {
+        const aIndex = planOrder.findIndex((o) => o === a.id || o === a.key);
+        const bIndex = planOrder.findIndex((o) => o === b.id || o === b.key);
+        const aRank = aIndex === -1 ? Infinity : aIndex;
+        const bRank = bIndex === -1 ? Infinity : bIndex;
+        return aRank - bRank;
+      })
+    : pricingTable.items;
 
   const { data: subscriptions = { items: [] } } =
     useQuery<SubscriptionsResponse>({
@@ -43,7 +55,7 @@ const PricingPage = ({
         </p>
       </div>
       <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
-        {pricingTable.items.map((plan) => (
+        {plans.map((plan) => (
           <PricingCard
             key={plan.id}
             plan={plan}
