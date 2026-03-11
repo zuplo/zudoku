@@ -243,7 +243,7 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                 <Button
                   type="button"
                   variant="ghost"
-                  size="icon-xxs"
+                  size="icon-xs"
                   onClick={() => handleFileSelect(null)}
                 >
                   <XIcon size={14} />

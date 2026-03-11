@@ -1,10 +1,22 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { MenuIcon } from "lucide-react";
+import { deepEqual } from "fast-equals";
+import { ChevronDownIcon, MenuIcon, type LucideIcon } from "lucide-react";
 import { useState } from "react";
-import { useLocation } from "react-router";
+import { Link, useLocation } from "react-router";
+import { Button } from "zudoku/ui/Button.js";
 import { Separator } from "zudoku/ui/Separator.js";
 import { Skeleton } from "zudoku/ui/Skeleton.js";
+import {
+  isHeaderNavGroup,
+  type HeaderNavItem,
+  type HeaderNavLinkItem,
+} from "../../config/validators/HeaderNavigationSchema.js";
 import { useAuth } from "../authentication/hook.js";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/Collapsible.js";
 import {
   Drawer,
   DrawerContent,
@@ -12,24 +24,107 @@ import {
   DrawerTrigger,
 } from "../ui/Drawer.js";
 import { ClientOnly } from "./ClientOnly.js";
-import { useZudoku } from "./context/ZudokuContext.js";
+import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
-import { shouldShowItem } from "./navigation/utils.js";
+import { getFirstMatchingPath, shouldShowItem } from "./navigation/utils.js";
 import { PageProgress } from "./PageProgress.js";
-import { Search } from "./Search.js";
 import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
-import { TopNavItem, TopNavLink } from "./TopNavigation.js";
+
+const MobileHeaderNavLink = ({
+  item,
+  onClick,
+}: {
+  item: HeaderNavLinkItem;
+  onClick: () => void;
+}) => {
+  const Icon = item.icon as LucideIcon | undefined;
+  return (
+    <Link
+      to={item.to}
+      target={item.target}
+      rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+      onClick={onClick}
+      className="flex items-center font-medium gap-2 py-2 text-foreground/80 hover:text-foreground"
+    >
+      {Icon && <Icon size={16} />}
+      {item.label}
+    </Link>
+  );
+};
+
+const MobileHeaderNavItem = ({
+  item,
+  onNavigate,
+}: {
+  item: HeaderNavItem;
+  onNavigate: () => void;
+}) => {
+  if ("to" in item) {
+    const Icon = item.icon as LucideIcon | undefined;
+    return (
+      <li className="w-full">
+        <Link
+          to={item.to}
+          target={item.target}
+          rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+          onClick={onNavigate}
+          className="flex items-center gap-2 py-2 text-base font-medium"
+        >
+          {Icon && <Icon size={16} />}
+          {item.label}
+        </Link>
+      </li>
+    );
+  }
+
+  return (
+    <li className="w-full">
+      <Collapsible>
+        <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-base font-medium group">
+          {item.label}
+          <ChevronDownIcon className="size-4 transition-transform group-data-[state=open]:rotate-180" />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <ul className="flex flex-col border-l ms-1 ps-3 my-1">
+            {item.items.map((subItem) =>
+              isHeaderNavGroup(subItem) ? (
+                <li key={subItem.label} className="flex flex-col">
+                  <div className="text-sm text-muted-foreground py-2">
+                    {subItem.label}
+                  </div>
+                  {subItem.items.map((link) => (
+                    <MobileHeaderNavLink
+                      key={link.to}
+                      item={link}
+                      onClick={onNavigate}
+                    />
+                  ))}
+                </li>
+              ) : (
+                <li key={subItem.to}>
+                  <MobileHeaderNavLink item={subItem} onClick={onNavigate} />
+                </li>
+              ),
+            )}
+          </ul>
+        </CollapsibleContent>
+      </Collapsible>
+    </li>
+  );
+};
 
 export const MobileTopNavigation = () => {
   const context = useZudoku();
   const authState = useAuth();
   const location = useLocation();
+  const currentNav = useCurrentNavigation();
 
   const {
-    options: { navigation = [], site },
+    options: { header, navigation = [], site },
     getProfileMenuItems,
   } = context;
+  const headerNavigation = header?.navigation ?? [];
   const { isAuthenticated, profile, isAuthEnabled } = authState;
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -42,7 +137,7 @@ export const MobileTopNavigation = () => {
     <Drawer
       direction={site?.dir === "rtl" ? "left" : "right"}
       open={drawerOpen}
-      onOpenChange={(open) => setDrawerOpen(open)}
+      onOpenChange={setDrawerOpen}
     >
       <div className="flex lg:hidden justify-self-end">
         <DrawerTrigger className="lg:hidden">
@@ -51,65 +146,67 @@ export const MobileTopNavigation = () => {
         <PageProgress />
       </div>
       <DrawerContent
-        className="lg:hidden h-dvh inset-e-0 start-auto w-[320px] rounded-none"
+        className="lg:hidden h-dvh inset-e-0 start-auto w-[340px] rounded-none"
         aria-describedby={undefined}
       >
-        <div className="p-4 overflow-y-auto overscroll-none h-full flex flex-col justify-between">
-          <div>
+        <div className="py-2 h-full flex flex-col">
+          <div className="flex-1 overflow-y-auto overscroll-none">
             <VisuallyHidden>
               <DrawerTitle>Navigation</DrawerTitle>
             </VisuallyHidden>
-            <Search className="flex p-4" />
-            <ul className="flex flex-col items-center gap-4 p-4">
+            <ul className="flex flex-col gap-1 px-4">
+              {headerNavigation.map((item) => (
+                <MobileHeaderNavItem
+                  key={item.label}
+                  item={item}
+                  onNavigate={() => setDrawerOpen(false)}
+                />
+              ))}
+              {headerNavigation.length > 0 && <Separator className="my-2" />}
               <li className="empty:hidden">
                 <Slot.Target name="top-navigation-side" />
               </li>
 
-              {isAuthEnabled && (
-                <ClientOnly
-                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
-                >
-                  {!isAuthenticated ? (
-                    <li>
-                      <TopNavLink
-                        to={`/signin?redirect=${encodeURIComponent(location.pathname)}`}
-                        onClick={() => setDrawerOpen(false)}
-                      >
-                        Login
-                      </TopNavLink>
-                    </li>
-                  ) : (
-                    Object.values(getProfileMenuItems()).length > 0 && (
-                      <li>
-                        {profile?.name ? `${profile.name}` : "My Account"}
-                        {profile?.email && (
-                          <div className="font-normal text-muted-foreground">
-                            {profile.email}
-                          </div>
-                        )}
-                      </li>
-                    )
-                  )}
-                </ClientOnly>
-              )}
-              {filteredItems.map((item) =>
-                item.type === "separator" ? (
-                  <Separator className="w-full" key={item.label} />
-                ) : item.type !== "section" && item.type !== "filter" ? (
+              {filteredItems.map((item) => {
+                if (item.type === "separator") {
+                  return <Separator className="my-2" key={item.label} />;
+                }
+                if (item.type === "section" || item.type === "filter") {
+                  return null;
+                }
+                const path = getFirstMatchingPath(item);
+                const isActive = deepEqual(currentNav.topNavItem, item);
+                return (
                   <li key={item.label}>
-                    <button type="button" onClick={() => setDrawerOpen(false)}>
-                      <TopNavItem {...item} />
-                    </button>
+                    <Link
+                      to={path}
+                      onClick={() => setDrawerOpen(false)}
+                      className={`flex items-center gap-2 py-2 text-base font-medium ${isActive ? "text-foreground" : "text-foreground/75 hover:text-foreground"}`}
+                    >
+                      {item.icon && <item.icon size={16} />}
+                      {item.label}
+                    </Link>
                   </li>
-                ) : null,
-              )}
-              {isAuthEnabled && isAuthenticated && accountItems.length > 0 && (
+                );
+              })}
+              {isAuthEnabled && isAuthenticated && (
                 <ClientOnly
-                  fallback={<Skeleton className="rounded-sm h-5 w-24 mr-4" />}
+                  fallback={<Skeleton className="rounded-sm h-5 w-24" />}
                 >
+                  <Separator className="my-2" />
+                  <li className="py-2">
+                    <div className="text-base font-medium">
+                      {profile?.name ?? "My Account"}
+                    </div>
+                    {profile?.email && (
+                      <div className="text-sm text-muted-foreground">
+                        {profile.email}
+                      </div>
+                    )}
+                  </li>
                   {accountItems.map((i) => (
                     <li key={i.label}>
-                      <TopNavLink
+                      <Link
                         to={i.path ?? ""}
                         target={i.target}
                         rel={
@@ -118,21 +215,46 @@ export const MobileTopNavigation = () => {
                             : undefined
                         }
                         onClick={() => setDrawerOpen(false)}
+                        className="flex items-center py-2 text-base font-medium text-foreground/75 hover:text-foreground"
                       >
                         {i.label}
-                      </TopNavLink>
+                      </Link>
                     </li>
                   ))}
                 </ClientOnly>
               )}
-              <li>
-                <ThemeSwitch />
-              </li>
             </ul>
           </div>
-          {site?.showPoweredBy !== false && (
-            <PoweredByZudoku className="grow-0 justify-center gap-1" />
-          )}
+          <div className="border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] px-4 pt-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              {isAuthEnabled && (
+                <ClientOnly
+                  fallback={<Skeleton className="rounded-sm h-8 w-16" />}
+                >
+                  {isAuthenticated ? (
+                    <Button asChild variant="outline">
+                      <Link to="/signout" onClick={() => setDrawerOpen(false)}>
+                        Logout
+                      </Link>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="outline">
+                      <Link
+                        to={`/signin?redirect=${encodeURIComponent(location.pathname)}`}
+                        onClick={() => setDrawerOpen(false)}
+                      >
+                        Login
+                      </Link>
+                    </Button>
+                  )}
+                </ClientOnly>
+              )}
+              <ThemeSwitch />
+            </div>
+            {site?.showPoweredBy !== false && (
+              <PoweredByZudoku className="grow-0 justify-center gap-1" />
+            )}
+          </div>
         </div>
       </DrawerContent>
     </Drawer>

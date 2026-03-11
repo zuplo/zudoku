@@ -69,16 +69,20 @@ export const viteNavigationPlugin = (): Plugin => {
           2,
         );
 
+      const headerNavigationCode = stringifyWithIcons(
+        config.header?.navigation ?? [],
+      );
       const navigationCode = stringifyWithIcons(resolvedNavigation);
       const rulesCode = stringifyWithIcons(resolvedRules);
 
+      invariant(headerNavigationCode, "Failed to stringify header navigation");
       invariant(navigationCode, "Failed to stringify navigation");
       invariant(rulesCode, "Failed to stringify navigation rules");
 
       await writePluginDebugCode(
         config.__meta.rootDir,
         "navigation-plugin",
-        `export const navigation = ${navigationCode};\nexport const rules = ${rulesCode};`,
+        `export const headerNavigation = ${headerNavigationCode};\nexport const navigation = ${navigationCode};\nexport const rules = ${rulesCode};`,
         "js",
       );
 
@@ -93,6 +97,7 @@ export const viteNavigationPlugin = (): Plugin => {
 
       return [
         importStatement,
+        `export const configuredHeaderNavigation = ${headerNavigationCode};`,
         `export const configuredNavigation = ${navigationCode};`,
         `export const configuredNavigationRules = ${rulesCode};`,
       ].join("\n");

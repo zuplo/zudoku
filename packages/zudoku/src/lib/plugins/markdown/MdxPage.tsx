@@ -11,6 +11,7 @@ import {
 import { type PropsWithChildren, useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
+import { ButtonGroup } from "zudoku/ui/ButtonGroup.js";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -162,12 +163,11 @@ export const MdxPage = ({
               )}
             </div>
             {copyMarkdownConfig && (
-              <div className="flex items-center border rounded-md">
+              <ButtonGroup>
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={handleCopyMarkdown}
-                  className="rounded-r-none border-r gap-2 h-7"
                 >
                   {isCopied ? (
                     <CheckIcon size={14} className="text-emerald-600" />
@@ -178,11 +178,7 @@ export const MdxPage = ({
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon-xs"
-                      className="rounded-l-none"
-                    >
+                    <Button variant="outline" size="icon-sm">
                       <ChevronDownIcon size={14} />
                     </Button>
                   </DropdownMenuTrigger>
@@ -238,7 +234,7 @@ export const MdxPage = ({
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-              </div>
+              </ButtonGroup>
             )}
           </header>
         )}

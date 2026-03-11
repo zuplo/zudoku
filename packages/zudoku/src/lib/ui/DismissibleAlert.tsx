@@ -59,7 +59,7 @@ const DismissibleAlertAction = ({ children }: PropsWithChildren) => (
   <AlertAction>
     <DismissibleAlertCloseButton
       variant="ghost"
-      size="icon-xxs"
+      size="icon-xs"
       className="hover:text-current hover:bg-[color-mix(in_srgb,currentColor_10%,transparent)]!"
     >
       {children ?? <XIcon className="size-3.5" />}

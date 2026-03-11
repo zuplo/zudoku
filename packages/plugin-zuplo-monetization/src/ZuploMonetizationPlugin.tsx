@@ -1,7 +1,5 @@
 import { type ApiIdentity, createPlugin } from "zudoku";
-import { Button } from "zudoku/components";
 import { CreditCardIcon, StarsIcon } from "zudoku/icons";
-import { Link } from "zudoku/router";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
 import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
@@ -23,17 +21,14 @@ const PRICING_PATH = "/pricing";
 
 export const zuploMonetizationPlugin = createPlugin(
   (options?: ZudokuMonetizationPluginOptions) => ({
-    transformConfig: ({ merge }) =>
+    transformConfig: ({ config, merge }) =>
       merge({
-        apiKeys: {
-          enabled: false,
-        },
-        slots: {
-          "head-navigation-start": () => (
-            <Button asChild variant="ghost">
-              <Link to={PRICING_PATH}>Pricing</Link>
-            </Button>
-          ),
+        apiKeys: { enabled: false },
+        header: {
+          navigation: [
+            ...(config.header?.navigation ?? []),
+            { label: "Pricing", to: PRICING_PATH },
+          ],
         },
       }),
 

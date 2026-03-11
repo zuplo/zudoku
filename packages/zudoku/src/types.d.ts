@@ -9,6 +9,7 @@ declare module "virtual:zudoku-docs-plugin" {
 }
 
 declare module "virtual:zudoku-navigation" {
+  export const configuredHeaderNavigation: import("./config/validators/HeaderNavigationSchema.ts").HeaderNavigation;
   export const configuredNavigation: import("./config/validators/NavigationSchema.ts").Navigation;
   export const configuredNavigationRules: import("./config/validators/NavigationSchema.ts").ResolvedNavigationRule[];
 }
