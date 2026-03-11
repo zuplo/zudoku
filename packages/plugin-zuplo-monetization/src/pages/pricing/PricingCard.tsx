@@ -54,10 +54,12 @@ export const PricingCard = ({
   plan,
   isPopular = false,
   isSubscribed = false,
+  units,
 }: {
   plan: Plan;
   isPopular?: boolean;
   isSubscribed?: boolean;
+  units?: Record<string, string>;
 }) => {
   if (plan.phases.length === 0) return null;
 

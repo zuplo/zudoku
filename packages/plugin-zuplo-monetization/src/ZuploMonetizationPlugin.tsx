@@ -16,6 +16,7 @@ export type ZudokuMonetizationPluginOptions = {
   pricing?: {
     subtitle?: string;
     title?: string;
+    units?: Record<string, string>;
   };
 };
 
@@ -114,6 +115,7 @@ export const zuploMonetizationPlugin = createPlugin(
                 <PricingPage
                   subtitle={options?.pricing?.subtitle}
                   title={options?.pricing?.title}
+                  units={options?.pricing?.units}
                 />
               ),
             },
