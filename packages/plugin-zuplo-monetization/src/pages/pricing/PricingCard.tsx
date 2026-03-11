@@ -14,13 +14,19 @@ const PhaseSection = ({
   currency,
   showName,
   excludeKeys,
+  units,
 }: {
   phase: PlanPhase;
   currency?: string;
   showName: boolean;
   excludeKeys: Set<string>;
+  units?: Record<string, string>;
 }) => {
-  const { quotas, features } = categorizeRateCards(phase.rateCards, currency);
+  const { quotas, features } = categorizeRateCards(
+    phase.rateCards,
+    currency,
+    units,
+  );
 
   const filteredQuotas = quotas.filter((q) => !excludeKeys.has(q.key));
   const filteredFeatures = features.filter((f) => !excludeKeys.has(f.key));
@@ -135,6 +141,7 @@ export const PricingCard = ({
               currency={plan.currency}
               showName={hasMultiplePhases}
               excludeKeys={laterKeys}
+              units={units}
             />
           );
         })}
