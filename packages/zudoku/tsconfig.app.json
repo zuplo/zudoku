@@ -16,6 +16,7 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "isolatedModules": true,
+    "erasableSyntaxOnly": true,
     "jsx": "react-jsx",
     "types": ["vite/client", "@testing-library/jest-dom", "vitest/globals"],
     "paths": {

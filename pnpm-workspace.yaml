@@ -27,6 +27,14 @@ minimumReleaseAgeExclude:
   - zudoku
   - oxfmt
   - "@oxfmt/*"
+  - tailwind-merge
+  - tailwindcss
+  - "@tailwindcss/*"
+  - lucide-react
+  - vite
+  - rolldown
+  - "@oxc-project/*"
+  - "@rolldown/*"
 
 onlyBuiltDependencies:
   - esbuild
