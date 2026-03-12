@@ -15,6 +15,7 @@ export type ZudokuMonetizationPluginOptions = {
     subtitle?: string;
     title?: string;
     units?: Record<string, string>;
+    showYearlyPrice?: boolean;
   };
 };
 
@@ -111,6 +112,7 @@ export const zuploMonetizationPlugin = createPlugin(
                   subtitle={options?.pricing?.subtitle}
                   title={options?.pricing?.title}
                   units={options?.pricing?.units}
+                  showYearlyPrice={options?.pricing?.showYearlyPrice}
                 />
               ),
             },
