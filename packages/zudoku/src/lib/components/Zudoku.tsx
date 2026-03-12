@@ -17,7 +17,6 @@ import {
 } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
 import { MdxComponents } from "../util/MdxComponents.js";
-import "../util/requestIdleCallbackPolyfill.js";
 import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { SlotProvider } from "./context/SlotProvider.js";
 import { ViewportAnchorProvider } from "./context/ViewportAnchorContext.js";
