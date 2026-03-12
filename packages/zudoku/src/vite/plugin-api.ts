@@ -48,14 +48,13 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     processors,
   });
 
+  await fs.rm(tmpStoreDir, { recursive: true, force: true });
+  await fs.mkdir(tmpStoreDir, { recursive: true });
+  await schemaManager.processAllSchemas();
+
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      await fs.rm(tmpStoreDir, { recursive: true, force: true });
-      await fs.mkdir(tmpStoreDir, { recursive: true });
-
-      await schemaManager.processAllSchemas();
-
       schemaManager
         .getAllTrackedFiles()
         .forEach((file) => this.addWatchFile(file));

@@ -1,8 +1,7 @@
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build as esbuild } from "esbuild";
-import type { Rollup } from "vite";
-import { build as viteBuild } from "vite";
+import { createBuilder } from "vite";
 import { ZuploEnv } from "../app/env.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import {
@@ -19,21 +18,6 @@ import { prerender } from "./prerender/prerender.js";
 
 const DIST_DIR = "dist";
 
-const extractAssets = (result: Rollup.RollupOutput) => {
-  const jsEntry = result.output.find(
-    (o) => "isEntry" in o && o.isEntry,
-  )?.fileName;
-  const cssEntries = result.output
-    .filter((o) => o.fileName.endsWith(".css"))
-    .map((o) => o.fileName);
-
-  if (!jsEntry || cssEntries.length === 0) {
-    throw new Error("Build failed. No js or css assets found");
-  }
-
-  return { jsEntry, cssEntries };
-};
-
 export type BuildOptions = {
   dir: string;
   ssr?: boolean;
@@ -43,48 +27,55 @@ export type BuildOptions = {
 export async function runBuild(options: BuildOptions) {
   const { dir, ssr, adapter = "node" } = options;
 
-  // Build client and server bundles
-  const viteClientConfig = await getViteConfig(dir, {
+  const viteConfig = await getViteConfig(dir, {
     mode: "production",
     command: "build",
   });
-  const viteServerConfig = await getViteConfig(dir, {
-    mode: "production",
-    command: "build",
-    isSsrBuild: true,
-  });
 
-  const clientResult = await viteBuild(viteClientConfig);
-  const serverResult = await viteBuild({
-    ...viteServerConfig,
-    logLevel: "silent",
-  });
+  const builder = await createBuilder(viteConfig);
 
-  if (Array.isArray(clientResult) || !("output" in clientResult)) {
-    throw new Error("Client build failed");
-  }
-  if (Array.isArray(serverResult) || !("output" in serverResult)) {
-    throw new Error("Server build failed");
-  }
+  invariant(builder.environments.client, "Client environment is missing");
+  invariant(builder.environments.ssr, "SSR environment is missing");
+
+  const [clientResult, serverResult] = await Promise.all([
+    builder.build(builder.environments.client),
+    builder.build(builder.environments.ssr),
+  ]);
+
+  invariant(
+    clientResult && !Array.isArray(clientResult) && "output" in clientResult,
+    "Client build failed to produce valid output",
+  );
+  invariant(serverResult, "SSR build failed to produce valid output");
 
   const { config } = await loadZudokuConfig(
     { mode: "production", command: "build" },
     dir,
   );
 
-  const { jsEntry, cssEntries } = extractAssets(clientResult);
+  const base = viteConfig.base ?? "/";
+  const clientOutDir = viteConfig.environments?.client?.build?.outDir;
+  const serverOutDir = viteConfig.environments?.ssr?.build?.outDir;
+
+  invariant(clientOutDir, "Client build outDir is missing");
+  invariant(serverOutDir, "Server build outDir is missing");
+
+  const jsEntry = clientResult.output.find(
+    (o) => "isEntry" in o && o.isEntry,
+  )?.fileName;
+  const cssEntries = clientResult.output
+    .filter((o) => o.fileName.endsWith(".css"))
+    .map((o) => o.fileName);
+
+  if (!jsEntry || cssEntries.length === 0) {
+    throw new Error("Build failed. No js or css assets found");
+  }
 
   const html = getBuildHtml({
-    jsEntry: joinUrl(viteClientConfig.base, jsEntry),
-    cssEntries: cssEntries.map((css) => joinUrl(viteClientConfig.base, css)),
+    jsEntry: joinUrl(base, jsEntry),
+    cssEntries: cssEntries.map((css) => joinUrl(base, css)),
     dir: config.site?.dir,
   });
-
-  invariant(viteClientConfig.build?.outDir, "Client build outDir is missing");
-  invariant(viteServerConfig.build?.outDir, "Server build outDir is missing");
-
-  const clientOutDir = viteClientConfig.build.outDir;
-  const serverOutDir = viteServerConfig.build.outDir;
 
   if (ssr) {
     // SSR: bundle entry.js and remove index.html
@@ -115,7 +106,7 @@ type PrerenderOptions = {
   html: string;
   clientOutDir: string;
   serverOutDir: string;
-  serverResult: Rollup.RollupOutput;
+  serverResult: Awaited<ReturnType<typeof import("vite").build>>;
 };
 
 const runPrerender = async (options: PrerenderOptions) => {
