@@ -1,4 +1,4 @@
-import { Head, Heading } from "zudoku/components";
+import { Head, Heading, Slot } from "zudoku/components";
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { useQuery } from "zudoku/react-query";
 import { useDeploymentName } from "../hooks/useDeploymentName";
@@ -60,6 +60,7 @@ const PricingPage = ({
           />
         ))}
       </div>
+      <Slot.Target name="pricing-page-after" />
     </div>
   );
 };
