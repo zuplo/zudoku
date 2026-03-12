@@ -17,6 +17,7 @@ export const UrlQueryParams = () => {
     <>
       ?
       {parts.map((part, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: No other stable key
         <Fragment key={`${i}-${part}`}>
           {part}
           {i < parts.length - 1 && "&"}
