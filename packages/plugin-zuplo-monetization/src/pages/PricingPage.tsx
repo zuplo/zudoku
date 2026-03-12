@@ -10,10 +10,12 @@ const PricingPage = ({
   subtitle = "See our pricing options and choose the one that best suits your needs.",
   title = "Pricing",
   units,
+  showYearlyPrice = true,
 }: {
   subtitle?: string;
   title?: string;
   units?: Record<string, string>;
+  showYearlyPrice?: boolean;
 }) => {
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
@@ -50,6 +52,7 @@ const PricingPage = ({
             key={plan.id}
             plan={plan}
             units={units}
+            showYearlyPrice={showYearlyPrice}
             isPopular={plan.metadata?.zuplo_most_popular === "true"}
             isSubscribed={subscriptions.items.some((subscription) =>
               ["active", "canceled"].includes(subscription.status),

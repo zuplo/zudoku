@@ -223,6 +223,24 @@ describe("PricingPage", () => {
     expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
   });
 
+  it("Shows yearly price by default", () => {
+    mockPricingData.items = [makePlan("1", "starter", "Starter")];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    expect(screen.getByText(/\/year/)).toBeInTheDocument();
+  });
+
+  it("Hides yearly price when showYearlyPrice is false", () => {
+    mockPricingData.items = [makePlan("1", "starter", "Starter")];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage showYearlyPrice={false} />);
+
+    expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
+  });
+
   it("Does not show 'Most Popular' badge when plan.metadata.zuplo_most_popular is not 'true' or missing", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),

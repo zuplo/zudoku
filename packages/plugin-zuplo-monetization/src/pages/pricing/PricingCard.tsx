@@ -60,11 +60,13 @@ export const PricingCard = ({
   plan,
   isPopular = false,
   isSubscribed = false,
+  showYearlyPrice = true,
   units,
 }: {
   plan: Plan;
   isPopular?: boolean;
   isSubscribed?: boolean;
+  showYearlyPrice?: boolean;
   units?: Record<string, string>;
 }) => {
   if (plan.phases.length === 0) return null;
@@ -112,9 +114,11 @@ export const PricingCard = ({
               {!isFree && (
                 <>
                   <span className="text-muted-foreground text-sm">/mo</span>
-                  <div className="w-full text-sm text-muted-foreground mt-1">
-                    {formatPrice(price.yearly, plan.currency)}/year
-                  </div>
+                  {showYearlyPrice && (
+                    <div className="w-full text-sm text-muted-foreground mt-1">
+                      {formatPrice(price.yearly, plan.currency)}/year
+                    </div>
+                  )}
                 </>
               )}
             </>
