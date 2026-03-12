@@ -139,6 +139,7 @@ export const HeaderNavigation = () => {
     <NavigationMenu className={viewportAlign}>
       <NavigationMenuList>
         {items.map((item, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: Stable because it's statically defined in the config
           <HeaderNavItemComponent key={`${item.label}-${index}`} item={item} />
         ))}
       </NavigationMenuList>

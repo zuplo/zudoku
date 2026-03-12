@@ -118,7 +118,7 @@ export const CodeTabs = ({
         <TabsPrimitive.List className="flex items-center gap-1 flex-1 text-sm w-full px-1.5">
           {panels.map((panel, i) => (
             <TabsPrimitive.Trigger
-              key={`${i}-${panel.label}`}
+              key={[panel.label, panel.language].join(",")}
               value={String(i)}
               className={cn(
                 "relative flex items-center gap-1.5 px-2 py-1 text-sm",
@@ -144,7 +144,10 @@ export const CodeTabs = ({
         )}
       >
         {panels.map((panel, i) => (
-          <TabsPrimitive.Content key={`${i}-${panel.label}`} value={String(i)}>
+          <TabsPrimitive.Content
+            key={[panel.label, panel.language].join(",")}
+            value={String(i)}
+          >
             <HighlightedCode
               code={panel.code}
               language={panel.language}
