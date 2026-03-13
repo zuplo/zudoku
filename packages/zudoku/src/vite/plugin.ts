@@ -15,7 +15,7 @@ import viteMarkdownExportPlugin from "./plugin-markdown-export.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import { viteNavigationPlugin } from "./plugin-navigation.js";
 import { viteSearchPlugin } from "./plugin-search.js";
-import { viteShikiPlugin } from "./plugin-shiki-register.js";
+import { viteShikiPlugin } from "./plugin-shiki.js";
 import { viteThemePlugin } from "./plugin-theme.js";
 
 export default function vitePlugin(): PluginOption {
