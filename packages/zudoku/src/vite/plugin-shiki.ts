@@ -1,34 +1,23 @@
 import { fileURLToPath } from "node:url";
 import { bundledLanguagesInfo, type BundledLanguage } from "shiki";
-import type { Plugin, PluginOption } from "vite";
+import type { Plugin } from "vite";
 import { getCurrentConfig } from "../config/loader.js";
 import { defaultLanguages } from "../lib/shiki-constants.js";
 import { defaultHighlightOptions, highlighterPromise } from "../lib/shiki.js";
 
-const aliasToId = new Map(
-  bundledLanguagesInfo.flatMap((lang) =>
-    (lang.aliases ?? []).map((alias) => [alias, lang.id]),
-  ),
-);
-
-// Resolve either an alias or the original language id
-const resolveLang = (lang: BundledLanguage): string =>
-  aliasToId.get(lang) ?? lang;
-
-const viteShikiResolvePlugin = (): Plugin => {
-  return {
-    name: "vite-plugin-shiki-resolve",
-    enforce: "pre",
-    resolveId: {
-      filter: { id: /^@shikijs\/(langs|themes)\/.+$/ },
-      handler: (id) => fileURLToPath(import.meta.resolve(id)),
-    },
-  };
-};
-
-const viteShikiRegisterPlugin = (): Plugin => {
+export const viteShikiPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-shiki-register";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+
+  const aliasToId = new Map(
+    bundledLanguagesInfo.flatMap((lang) =>
+      (lang.aliases ?? []).map((alias) => [alias, lang.id]),
+    ),
+  );
+
+  // Resolve either an alias or the original language id
+  const resolveLang = (lang: BundledLanguage): string =>
+    aliasToId.get(lang) ?? lang;
 
   return {
     name: "vite-plugin-shiki-register",
@@ -40,13 +29,19 @@ const viteShikiRegisterPlugin = (): Plugin => {
         config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
       );
 
+      const shikiIds = [
+        ...languages.map((lang) => `@shikijs/langs/${resolveLang(lang)}`),
+        ...themes.map((theme) => `@shikijs/themes/${theme}`),
+      ];
+
       return {
-        optimizeDeps: {
-          include: [
-            ...languages.map((lang) => `@shikijs/langs/${resolveLang(lang)}`),
-            ...themes.map((theme) => `@shikijs/themes/${theme}`),
-          ],
+        resolve: {
+          alias: shikiIds.map((id) => ({
+            find: id,
+            replacement: fileURLToPath(import.meta.resolve(id)),
+          })),
         },
+        optimizeDeps: { include: shikiIds },
       };
     },
     resolveId(id) {
@@ -97,8 +92,3 @@ const viteShikiRegisterPlugin = (): Plugin => {
     },
   };
 };
-
-export const viteShikiPlugin = (): PluginOption => [
-  viteShikiResolvePlugin(),
-  viteShikiRegisterPlugin(),
-];

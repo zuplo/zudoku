@@ -187,6 +187,7 @@ export async function getViteConfig(
     },
     optimizeDeps: {
       entries: [path.posix.join(getZudokuRootDir(), "src/{app,lib}/**")],
+      exclude: ["zudoku"],
       include: [
         "@mdx-js/react",
         "react-dom/client",
