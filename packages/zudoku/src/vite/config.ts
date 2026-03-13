@@ -142,7 +142,7 @@ export async function getViteConfig(
       client: {
         build: {
           outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
-          emptyOutDir: true,
+          emptyOutDir: false,
           rolldownOptions: {
             input:
               configEnv.command === "build"
@@ -157,7 +157,7 @@ export async function getViteConfig(
           outDir: path.resolve(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
-          emptyOutDir: true,
+          emptyOutDir: false,
           rolldownOptions: {
             logLevel: "warn",
             checks: {
