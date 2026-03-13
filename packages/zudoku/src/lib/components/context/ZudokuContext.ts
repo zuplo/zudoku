@@ -4,6 +4,7 @@ import { matchPath, useLocation } from "react-router";
 import type { NavigationItem } from "../../../config/validators/NavigationSchema.js";
 import { useAuthState } from "../../authentication/state.js";
 import { applyRules } from "../../navigation/applyRules.js";
+import { joinUrl } from "../../util/joinUrl.js";
 import { CACHE_KEYS, useCache } from "../cache.js";
 import { getItemPath, traverseNavigation } from "../navigation/utils.js";
 import { ZudokuReactContext } from "./ZudokuReactContext.js";
@@ -59,16 +60,18 @@ export const useCurrentNavigation = () => {
   const location = useLocation();
   const loggedWarnings = useRef(new Set<string>());
 
+  const pathname = joinUrl(location.pathname);
+
   const navItem = traverseNavigation(navigation, (item, parentCategories) => {
     if (item.type === "link") return;
-    if (getItemPath(item) === location.pathname) {
+    if (getItemPath(item) === pathname) {
       return parentCategories.at(0) ?? item;
     }
   });
 
   const { data } = useSuspenseQuery({
-    queryFn: () => getPluginNavigation(location.pathname),
-    queryKey: ["plugin-navigation", location.pathname],
+    queryFn: () => getPluginNavigation(pathname),
+    queryKey: ["plugin-navigation", pathname],
   });
 
   let topNavItem = navItem;

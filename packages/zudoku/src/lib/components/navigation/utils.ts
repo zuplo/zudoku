@@ -87,18 +87,18 @@ export const getFirstMatchingPath = (item: NavigationItem): string => {
 };
 
 export const useCurrentItem = () => {
-  const location = useLocation();
+  const pathname = joinUrl(useLocation().pathname);
   const { navigation } = useCurrentNavigation();
 
   return traverseNavigation(navigation, (item) => {
-    if (item.type === "doc" && joinUrl(item.path) === location.pathname) {
+    if (item.type === "doc" && joinUrl(item.path) === pathname) {
       return item;
     }
   });
 };
 
 export const useIsCategoryOpen = (category: NavigationCategory) => {
-  const location = useLocation();
+  const pathname = joinUrl(useLocation().pathname);
 
   return traverseNavigationItem(category, (item) => {
     switch (item.type) {
@@ -106,10 +106,10 @@ export const useIsCategoryOpen = (category: NavigationCategory) => {
         if (!item.link) {
           return undefined;
         }
-        return joinUrl(item.link.path) === location.pathname ? true : undefined;
+        return joinUrl(item.link.path) === pathname ? true : undefined;
       case "custom-page":
       case "doc":
-        return joinUrl(item.path) === location.pathname ? true : undefined;
+        return joinUrl(item.path) === pathname ? true : undefined;
       default:
         return undefined;
     }
@@ -120,7 +120,7 @@ export const usePrevNext = (): {
   prev?: { label?: string; id: string };
   next?: { label?: string; id: string };
 } => {
-  const currentId = useLocation().pathname;
+  const currentId = joinUrl(useLocation().pathname);
   const { navigation } = useCurrentNavigation();
 
   let prev: { label?: string; id: string } | undefined;

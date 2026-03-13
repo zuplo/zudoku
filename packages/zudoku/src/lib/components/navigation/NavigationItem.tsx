@@ -135,8 +135,10 @@ export const NavigationItem = ({
             isActive:
               href ===
               (hasAnchor
-                ? [location.pathname, activeAnchor].filter(Boolean).join("#")
-                : location.pathname),
+                ? [joinUrl(location.pathname), activeAnchor]
+                    .filter(Boolean)
+                    .join("#")
+                : joinUrl(location.pathname)),
           })}
           onClick={onRequestClose}
         >
