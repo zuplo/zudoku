@@ -58,7 +58,6 @@
     "./react-query": "./src/lib/core/react-query.ts",
     "./icons": "./src/lib/icons.ts",
     "./vite": "./src/vite/index.ts",
-    "./tailwind": "./src/app/tailwind.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
     "./main.css": "./src/app/main.css",
@@ -71,6 +70,8 @@
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
+    "prepublishOnly": "tsx scripts/generate-publish-exports.ts",
+    "postpublish": "git checkout -- package.json",
     "clean": "rm -rf dist",
     "codegen": "graphql-codegen --config ./src/codegen.ts"
   },
