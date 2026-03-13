@@ -13,15 +13,14 @@ import {
   configuredNavigation,
   configuredNavigationRules,
 } from "virtual:zudoku-navigation";
-import { configuredRedirectPlugin } from "virtual:zudoku-redirect-plugin";
 import { configuredSearchPlugin } from "virtual:zudoku-search-plugin";
 import "virtual:zudoku-theme.css";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
 import { BuildCheck } from "../lib/components/BuildCheck.js";
-import { Meta } from "../lib/components/Meta.js";
 import "./main.css";
+import { Meta } from "../lib/components/Meta.js";
 import "./polyfills.js";
 import { StatusPage } from "../lib/components/StatusPage.js";
 import { isNavigationPlugin } from "../lib/core/plugins.js";
@@ -30,6 +29,7 @@ import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
 import { ZuploEnv } from "./env.js";
 import { processRoutes } from "./processRoutes.js";
+import { createRedirectLoader } from "./utils/createRedirectLoader.js";
 
 export const shikiReady: Promise<HighlighterCore> =
   import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
@@ -71,7 +71,6 @@ export const convertZudokuConfigToOptions = (
       ...(configuredDocsPlugin ? [configuredDocsPlugin] : []),
       ...configuredApiPlugins,
       ...(configuredSearchPlugin ? [configuredSearchPlugin] : []),
-      ...(configuredRedirectPlugin ? [configuredRedirectPlugin] : []),
       ...(configuredApiKeysPlugin ? [configuredApiKeysPlugin] : []),
       ...(configuredCustomPagesPlugin ? [configuredCustomPagesPlugin] : []),
       ...configuredApiCatalogPlugins,
@@ -133,6 +132,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
         </Zudoku>
       ),
       hydrateFallbackElement: <div>Loading...</div>,
+      loader: createRedirectLoader(config.redirects),
       children: [
         {
           element: (

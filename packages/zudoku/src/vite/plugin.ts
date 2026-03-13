@@ -14,7 +14,6 @@ import viteDocsPlugin from "./plugin-docs.js";
 import viteMarkdownExportPlugin from "./plugin-markdown-export.js";
 import viteMdxPlugin from "./plugin-mdx.js";
 import { viteNavigationPlugin } from "./plugin-navigation.js";
-import viteRedirectPlugin from "./plugin-redirect.js";
 import { viteSearchPlugin } from "./plugin-search.js";
 import { viteShikiRegisterPlugin } from "./plugin-shiki-register.js";
 import { viteThemePlugin } from "./plugin-theme.js";
@@ -35,7 +34,6 @@ export default function vitePlugin(): PluginOption {
     viteApiPlugin(),
     viteSearchPlugin(),
     viteAliasPlugin(),
-    viteRedirectPlugin(),
     viteMarkdownExportPlugin(),
     vitePluginSsrCss({ entries: ["zudoku/app/entry.server.tsx"] }),
     viteThemePlugin(),
