@@ -33,6 +33,7 @@ minimumReleaseAgeExclude:
   - lucide-react
   - vite
   - rolldown
+  - "@vitejs/plugin-react"
   - "@oxc-project/*"
   - "@rolldown/*"
 
