@@ -48,7 +48,6 @@
     "./plugins/api-keys": "./src/lib/plugins/api-keys/index.tsx",
     "./plugins/markdown": "./src/lib/plugins/markdown/index.tsx",
     "./plugins/openapi": "./src/lib/plugins/openapi/index.tsx",
-    "./plugins/redirect": "./src/lib/plugins/redirect/index.tsx",
     "./plugins/custom-pages": "./src/lib/plugins/custom-pages/index.tsx",
     "./plugins/search-inkeep": "./src/lib/plugins/search-inkeep/index.tsx",
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",

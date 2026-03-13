@@ -37,11 +37,6 @@ declare module "virtual:zudoku-custom-pages-plugin" {
     | undefined;
 }
 
-declare module "virtual:zudoku-redirect-plugin" {
-  export const configuredRedirectPlugin:
-    | import("./lib/core/plugins.ts").ZudokuPlugin
-    | undefined;
-}
 declare module "virtual:zudoku-config" {
   const config: import("./config/config.ts").ZudokuConfig;
   export default config;
