@@ -132,7 +132,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
         </Zudoku>
       ),
       hydrateFallbackElement: <div>Loading...</div>,
-      loader: createRedirectLoader(config.redirects),
+      loader: createRedirectLoader(config.redirects, config.basePath),
       children: [
         {
           element: (

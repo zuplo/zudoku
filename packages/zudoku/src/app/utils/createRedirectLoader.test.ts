@@ -47,4 +47,17 @@ describe("createRedirectLoader", () => {
     expect(result).toBeInstanceOf(Response);
     expect(result.headers.get("location")).toBe("/target");
   });
+
+  it("strips basePath before matching", () => {
+    const loader = createRedirectLoader(
+      [{ from: "/old", to: "/new" }],
+      "/base",
+    );
+    invariant(loader, "loader should be defined");
+    const result = loader({
+      request: new Request("http://localhost/base/old"),
+    }) as Response;
+    expect(result).toBeInstanceOf(Response);
+    expect(result.headers.get("location")).toBe("/new");
+  });
 });
