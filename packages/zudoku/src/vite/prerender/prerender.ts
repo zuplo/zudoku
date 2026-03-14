@@ -12,6 +12,7 @@ import { getBuildConfig } from "../../config/validators/BuildSchema.js";
 import type { ZudokuConfig } from "../../config/validators/validate.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
+import { joinUrl } from "../../lib/util/joinUrl.js";
 import type { MarkdownFileInfo } from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
@@ -76,6 +77,13 @@ export const prerender = async ({
   const routes = getRoutes(config);
   const paths = routesToPaths(routes);
   const rewrites = routesToRewrites(routes);
+
+  // Add redirect source paths so they get prerendered as redirects
+  if (config.redirects) {
+    for (const r of config.redirects) {
+      paths.push(joinUrl(r.from));
+    }
+  }
   const maxThreads =
     buildConfig?.prerender?.workers ?? Math.floor(os.cpus().length * 0.8);
 
