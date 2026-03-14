@@ -74,3 +74,8 @@ vitest.config.*.timestamp*
 
 
 .lycheecache
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
