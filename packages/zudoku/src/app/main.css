@@ -340,6 +340,10 @@
 }
 
 @layer utilities {
+  .stepper {
+    @apply my-4;
+  }
+
   .stepper > ol {
     --bullet-size: 1.75rem;
     --line-spacing: 0.25rem;
