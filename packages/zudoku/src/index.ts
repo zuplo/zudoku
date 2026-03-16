@@ -28,7 +28,6 @@ export { cn } from "./lib/ui/util.js";
 export { joinUrl } from "./lib/util/joinUrl.js";
 export {
   type ProblemJson,
-  getProblemJson,
   throwIfProblemJson,
 } from "./lib/util/problemJson.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";
