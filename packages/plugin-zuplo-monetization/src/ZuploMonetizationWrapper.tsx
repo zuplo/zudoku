@@ -60,6 +60,14 @@ export const queryClient = new QueryClient({
         );
 
         if (!response.ok) {
+          if (
+            response.headers
+              .get("content-type")
+              ?.includes("application/problem+json")
+          ) {
+            const data = await response.json();
+            throw new Error(data.detail ?? data.title);
+          }
           throw new Error("Failed to fetch request");
         }
 
