@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getProblemJson,
+  parseProblemResponse,
   type ProblemJson,
   throwIfProblemJson,
 } from "./problemJson.js";
@@ -162,20 +163,72 @@ describe("throwIfProblemJson", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("should not throw for non-problem+json error responses", async () => {
-    const body = { error: "something went wrong" };
+  it("should throw for non-problem+json error responses with status text", async () => {
+    const response = new Response("some error body", {
+      status: 500,
+      statusText: "Internal Server Error",
+      headers: { "content-type": "application/json" },
+    });
 
-    await expect(
-      throwIfProblemJson(
-        createResponse(body, { contentType: "application/json" }),
-      ),
-    ).resolves.toBeUndefined();
+    await expect(throwIfProblemJson(response)).rejects.toThrow(
+      "some error body",
+    );
   });
 
-  it("should not throw for error responses with invalid JSON", async () => {
+  it("should throw for error responses with invalid JSON", async () => {
     await expect(
       throwIfProblemJson(createResponse("not json")),
-    ).resolves.toBeUndefined();
+    ).rejects.toThrow();
+  });
+});
+
+describe("parseProblemResponse", () => {
+  it("should return problem json when content type is problem+json", async () => {
+    const body = {
+      type: "https://example.com/probs/error",
+      title: "Something failed",
+      detail: "Details here",
+    };
+    const result = await parseProblemResponse(createResponse(body));
+
+    expect(result.type).toBe("https://example.com/probs/error");
+    expect(result.title).toBe("Something failed");
+    expect(result.detail).toBe("Details here");
+    expect(result.status).toBe(400);
+  });
+
+  it("should return synthetic problem json for non-problem+json responses", async () => {
+    const response = new Response("plain error text", {
+      status: 502,
+      statusText: "Bad Gateway",
+      headers: { "content-type": "text/plain" },
+    });
+    const result = await parseProblemResponse(response);
+
+    expect(result.type).toBe("about:blank");
+    expect(result.title).toBe("Bad Gateway");
+    expect(result.status).toBe(502);
+    expect(result.detail).toBe("plain error text");
+  });
+
+  it("should use 'Unknown error' as title when statusText is empty", async () => {
+    const response = new Response(null, {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
+    const result = await parseProblemResponse(response);
+
+    expect(result.title).toBe("Unknown error");
+    expect(result.status).toBe(500);
+  });
+
+  it("should use response status when problem json has no status", async () => {
+    const body = { title: "Error" };
+    const result = await parseProblemResponse(
+      createResponse(body, { status: 422 }),
+    );
+
+    expect(result.status).toBe(422);
   });
 });
 
