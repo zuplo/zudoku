@@ -1,6 +1,6 @@
 import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
-import { CheckIcon, LockIcon } from "zudoku/icons";
+import { CheckIcon } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
 import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
@@ -18,9 +18,10 @@ import { formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import { queryClient } from "../ZuploMonetizationWrapper";
 
-const CheckoutConfirmPage = () => {
+const SubscriptionChangeConfirmPage = () => {
   const [search] = useSearchParams();
-  const planId = search.get("plan");
+  const planId = search.get("planId");
+  const subscriptionId = search.get("subscriptionId");
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const CheckoutConfirmPage = () => {
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
   if (!planId) throw new Error("Parameter `planId` missing");
+  if (!subscriptionId) throw new Error("Parameter `subscriptionId` missing");
 
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
   const { quotas, features } = categorizeRateCards(
@@ -39,8 +41,10 @@ const CheckoutConfirmPage = () => {
     ? formatDuration(selectedPlan.billingCadence)
     : null;
 
-  const createSubscriptionMutation = useMutation<Subscription>({
-    mutationKey: [`/v3/zudoku-metering/${deploymentName}/subscriptions`],
+  const changeMutation = useMutation<Subscription>({
+    mutationKey: [
+      `/v3/zudoku-metering/${deploymentName}/subscriptions/${subscriptionId}/change`,
+    ],
     meta: {
       context: zudoku,
       request: {
@@ -50,19 +54,23 @@ const CheckoutConfirmPage = () => {
     },
     onSuccess: async (subscription) => {
       await queryClient.invalidateQueries();
-      navigate(`/subscriptions/${subscription.id}`);
+      navigate(`/subscriptions/${subscription.id}`, {
+        state: {
+          planSwitched: {
+            newPlanName: selectedPlan?.name,
+          },
+        },
+      });
     },
   });
 
   return (
     <div className="w-full bg-muted min-h-screen flex items-center justify-center px-4 py-12 gap-4">
       <div className="max-w-2xl w-full">
-        {createSubscriptionMutation.isError && (
+        {changeMutation.isError && (
           <Alert className="mb-4" variant="destructive">
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              {createSubscriptionMutation.error.message}
-            </AlertDescription>
+            <AlertDescription>{changeMutation.error.message}</AlertDescription>
           </Alert>
         )}
         <Card className="p-8 w-full max-w-7xl">
@@ -72,17 +80,15 @@ const CheckoutConfirmPage = () => {
             </div>
           </div>
 
-          {/* Title and Message */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-card-foreground mb-3">
-              Review your subscription
+              Confirm plan change
             </h1>
             <p className="text-muted-foreground text-base">
-              Please confirm the details below before completing your purchase.
+              Please confirm the details below to change your subscription.
             </p>
           </div>
 
-          {/* Plan Details */}
           {selectedPlan && (
             <Card className="bg-muted/50">
               <CardHeader>
@@ -96,7 +102,7 @@ const CheckoutConfirmPage = () => {
                         {selectedPlan.name}
                       </span>
                       <span className="text-sm font-normal text-muted-foreground">
-                        {selectedPlan.description || "Selected plan"}
+                        {selectedPlan.description || "New plan"}
                       </span>
                     </div>
                   </div>
@@ -144,42 +150,36 @@ const CheckoutConfirmPage = () => {
             </Card>
           )}
 
-          {/* Action Buttons */}
           <div className="space-y-3 mt-4">
             <Button
               className="w-full"
-              onClick={() => createSubscriptionMutation.mutate()}
-              disabled={createSubscriptionMutation.isPending}
+              onClick={() => changeMutation.mutate()}
+              disabled={changeMutation.isPending}
             >
-              {createSubscriptionMutation.isPending
-                ? "Processing Payment..."
-                : "Confirm & Subscribe"}
+              {changeMutation.isPending
+                ? "Changing plan..."
+                : "Confirm & Change Plan"}
             </Button>
             <Button
               variant="ghost"
               className="w-full"
-              disabled={createSubscriptionMutation.isPending}
-              asChild={!createSubscriptionMutation.isPending}
+              disabled={changeMutation.isPending}
+              asChild={!changeMutation.isPending}
             >
-              <Link to="/pricing">Cancel</Link>
+              <Link to={`/subscriptions/${subscriptionId}`}>Cancel</Link>
             </Button>
           </div>
 
-          {/* Terms */}
           <div className="mt-6 pt-6 border-t text-center">
             <p className="text-xs text-muted-foreground">
               By confirming, you agree to our Terms of Service and Privacy
-              Policy. You can cancel anytime.
+              Policy.
             </p>
           </div>
         </Card>
-        <div className="flex items-center gap-2 text-muted-foreground text-xs item-center justify-center pt-4">
-          <LockIcon className="size-3" />
-          Your payment is secured by Stripe
-        </div>
       </div>
     </div>
   );
 };
 
-export default CheckoutConfirmPage;
+export default SubscriptionChangeConfirmPage;

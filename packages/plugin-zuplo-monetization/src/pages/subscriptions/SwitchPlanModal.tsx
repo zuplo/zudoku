@@ -8,8 +8,7 @@ import {
   CheckIcon,
   XIcon,
 } from "zudoku/icons";
-import { useMutation, useQueryClient } from "zudoku/react-query";
-import { useNavigate } from "zudoku/router";
+import { useMutation } from "zudoku/react-query";
 import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
 import {
@@ -33,6 +32,7 @@ import { Item, ItemContent, ItemDescription, ItemTitle } from "zudoku/ui/Item";
 import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import { usePlans } from "../../hooks/usePlans.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
+import { useUrlUtils } from "../../hooks/useUrlUtils.js";
 import type { Feature, Plan, Quota } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { formatPrice } from "../../utils/formatPrice.js";
@@ -352,33 +352,28 @@ const ConfirmSwitchAlert = ({
 }) => {
   const deploymentName = useDeploymentName();
   const context = useZudoku();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const { generateUrl } = useUrlUtils();
 
-  const mutation = useMutation<Subscription>({
-    mutationKey: [
-      `/v3/zudoku-metering/${deploymentName}/subscriptions/${switchTo.subscriptionId}/change`,
-    ],
+  const successUrl = new URL(generateUrl("/subscription-change-confirm"));
+  successUrl.searchParams.set("planId", switchTo.plan.id);
+  successUrl.searchParams.set("subscriptionId", switchTo.subscriptionId);
+
+  const mutation = useMutation<{ url: string }>({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
     meta: {
       context,
       request: {
         method: "POST",
-        body: JSON.stringify({ planId: switchTo.plan.id }),
+        body: JSON.stringify({
+          planId: switchTo.plan.id,
+          successURL: successUrl.toString(),
+          cancelURL: generateUrl(`/subscriptions/${switchTo.subscriptionId}`),
+        }),
       },
     },
     retry: false,
-    onSuccess: async (subscription) => {
-      await queryClient.invalidateQueries();
-      navigate(`/subscriptions/${subscription.id}`, {
-        state: {
-          planSwitched: {
-            mode: switchTo.mode,
-            newPlanName: switchTo.plan.name,
-          },
-        },
-      });
-      onRequestClose();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    onSuccess: (data) => {
+      window.location.href = data.url;
     },
   });
 

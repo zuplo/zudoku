@@ -5,6 +5,7 @@ import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ManagePaymentPage from "./pages/ManagePaymentPage";
 import PricingPage from "./pages/PricingPage";
+import SubscriptionChangeConfirmPage from "./pages/SubscriptionChangeConfirmPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
 import ZuploMonetizationWrapper, {
   queryClient,
@@ -101,6 +102,10 @@ export const zuploMonetizationPlugin = createPlugin(
               element: <CheckoutConfirmPage />,
             },
             {
+              path: "/subscription-change-confirm",
+              element: <SubscriptionChangeConfirmPage />,
+            },
+            {
               path: "/manage-payment",
               element: <ManagePaymentPage />,
             },
@@ -129,6 +134,7 @@ export const zuploMonetizationPlugin = createPlugin(
       return [
         "/checkout/*",
         "/checkout-confirm",
+        "/subscription-change-confirm",
         "/subscriptions/*",
         "/manage-payment",
       ];
