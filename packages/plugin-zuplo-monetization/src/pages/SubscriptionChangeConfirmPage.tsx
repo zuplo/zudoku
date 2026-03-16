@@ -12,19 +12,11 @@ import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
 import type { Subscription } from "../hooks/useSubscriptions";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
+import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
 import { formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import { queryClient } from "../ZuploMonetizationWrapper";
-
-const formatBillingCycle = (duration: string): string => {
-  if (duration === "month") return "monthly";
-  if (duration === "year") return "annually";
-  if (duration === "week") return "weekly";
-  if (duration === "day") return "daily";
-  if (duration.includes(" ")) return `every ${duration}`;
-  return `every ${duration}`;
-};
 
 const SubscriptionChangeConfirmPage = () => {
   const [search] = useSearchParams();

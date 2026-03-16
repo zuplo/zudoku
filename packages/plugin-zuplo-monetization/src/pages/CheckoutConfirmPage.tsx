@@ -12,22 +12,11 @@ import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
 import type { Subscription } from "../hooks/useSubscriptions";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
+import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
 import { formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import { queryClient } from "../ZuploMonetizationWrapper";
-
-const formatBillingCycle = (duration: string): string => {
-  // formatDuration returns: "month", "year", "2 months", "week", "2 weeks", etc.
-  if (duration === "month") return "monthly";
-  if (duration === "year") return "annually";
-  if (duration === "week") return "weekly";
-  if (duration === "day") return "daily";
-  // For plurals or other durations: "2 months" -> "every 2 months"
-  if (duration.includes(" ")) return `every ${duration}`;
-  // Fallback for edge cases
-  return `every ${duration}`;
-};
 
 const CheckoutConfirmPage = () => {
   const [search] = useSearchParams();
