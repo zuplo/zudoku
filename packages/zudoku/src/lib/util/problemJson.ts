@@ -23,14 +23,6 @@ const parseJsonSafe = async (response: Response) => {
   }
 };
 
-const parseTextSafe = async (response: Response) => {
-  try {
-    return await response.text();
-  } catch {
-    return;
-  }
-};
-
 const isProblemJsonContentType = (response: Response) => {
   const contentType = response.headers.get("content-type");
   return contentType?.includes(PROBLEM_JSON_CONTENT_TYPE) ?? false;
@@ -59,29 +51,6 @@ export const getProblemJson = async (
   const data = await parseJsonSafe(response);
 
   return normalizeProblemJson(data);
-};
-
-/**
- * Parses a non-ok response into a ProblemJson.
- * If the response has a problem+json content type, parses and returns it.
- * Otherwise, returns a synthetic ProblemJson describing an unknown error.
- */
-export const parseProblemResponse = async (
-  response: Response,
-): Promise<ProblemJson> => {
-  const problem = await getProblemJson(response);
-  if (problem) {
-    return { ...problem, status: problem.status ?? response.status };
-  }
-
-  const text = await parseTextSafe(response);
-
-  return {
-    type: DEFAULT_TYPE,
-    title: response.statusText || "Unknown error",
-    status: response.status,
-    detail: text || undefined,
-  };
 };
 
 export const throwIfProblemJson = async (response: Response) => {
