@@ -3,6 +3,7 @@ import {
   getProblemJson,
   parseProblemResponse,
   type ProblemJson,
+  throwIfNotOk,
   throwIfProblemJson,
 } from "./problemJson.js";
 
@@ -163,22 +164,59 @@ describe("throwIfProblemJson", () => {
     ).resolves.toBeUndefined();
   });
 
-  it("should throw for non-problem+json error responses with status text", async () => {
-    const response = new Response("some error body", {
-      status: 500,
-      statusText: "Internal Server Error",
-      headers: { "content-type": "application/json" },
-    });
+  it("should not throw for non-problem+json error responses", async () => {
+    const body = { error: "something went wrong" };
 
-    await expect(throwIfProblemJson(response)).rejects.toThrow(
-      "some error body",
+    await expect(
+      throwIfProblemJson(
+        createResponse(body, { contentType: "application/json" }),
+      ),
+    ).resolves.toBeUndefined();
+  });
+
+  it("should not throw for error responses with invalid JSON", async () => {
+    await expect(
+      throwIfProblemJson(createResponse("not json")),
+    ).resolves.toBeUndefined();
+  });
+});
+
+describe("throwIfNotOk", () => {
+  it("should throw with problem+json detail when available", async () => {
+    const body = {
+      type: "https://example.com/probs/out-of-credit",
+      title: "You do not have enough credit.",
+      detail: "Your current balance is 30, but that costs 50.",
+    };
+
+    await expect(throwIfNotOk(createResponse(body))).rejects.toThrow(
+      "Your current balance is 30, but that costs 50.",
     );
   });
 
-  it("should throw for error responses with invalid JSON", async () => {
+  it("should throw for non-problem+json error responses using body text", async () => {
+    const response = new Response("some error body", {
+      status: 500,
+      statusText: "Internal Server Error",
+      headers: { "content-type": "text/plain" },
+    });
+
+    await expect(throwIfNotOk(response)).rejects.toThrow("some error body");
+  });
+
+  it("should throw with status text when body is empty", async () => {
+    const response = new Response(null, {
+      status: 502,
+      statusText: "Bad Gateway",
+    });
+
+    await expect(throwIfNotOk(response)).rejects.toThrow("Bad Gateway");
+  });
+
+  it("should not throw for ok responses", async () => {
     await expect(
-      throwIfProblemJson(createResponse("not json")),
-    ).rejects.toThrow();
+      throwIfNotOk(createResponse({}, { status: 200 })),
+    ).resolves.toBeUndefined();
   });
 });
 

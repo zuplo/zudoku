@@ -30,6 +30,7 @@ export {
   type ProblemJson,
   getProblemJson,
   parseProblemResponse,
+  throwIfNotOk,
   throwIfProblemJson,
 } from "./lib/util/problemJson.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";

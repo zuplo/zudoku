@@ -1,4 +1,4 @@
-import { joinUrl, throwIfProblemJson, type ZudokuContext } from "zudoku";
+import { joinUrl, throwIfNotOk, type ZudokuContext } from "zudoku";
 import { ClientOnly } from "zudoku/components";
 import {
   type MutationFunctionContext,
@@ -59,7 +59,7 @@ export const queryClient = new QueryClient({
           q.meta?.context ? await q.meta.context.signRequest(request) : request,
         );
 
-        await throwIfProblemJson(response);
+        await throwIfNotOk(response);
 
         return response.json();
       },
@@ -119,7 +119,7 @@ export const queryClient = new QueryClient({
           m.meta?.context ? await m.meta.context.signRequest(request) : request,
         );
 
-        await throwIfProblemJson(response);
+        await throwIfNotOk(response);
 
         if (
           response.headers.get("content-type")?.includes("application/json")
