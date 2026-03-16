@@ -57,7 +57,9 @@ const ActiveSubscription = ({
           <CheckCheckIcon className="size-4" />
           <AlertTitle>Plan changed</AlertTitle>
           <AlertDescription>
-            You have successfully switched to {planSwitched.newPlanName}.
+            {planSwitched.newPlanName
+              ? `You have successfully switched to ${planSwitched.newPlanName}.`
+              : "Your plan has been successfully changed."}
           </AlertDescription>
           <DismissibleAlertAction />
         </DismissibleAlert>
