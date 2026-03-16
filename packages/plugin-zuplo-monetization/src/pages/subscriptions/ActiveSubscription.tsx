@@ -14,7 +14,7 @@ import { Usage, type UsageResult } from "./Usage";
 
 type LocationState = {
   planSwitched?: {
-    newPlanName: string;
+    newPlanName?: string;
   };
 };
 
