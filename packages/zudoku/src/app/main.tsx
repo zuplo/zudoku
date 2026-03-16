@@ -29,7 +29,7 @@ import type { ZudokuContextOptions } from "../lib/core/ZudokuContext.js";
 import { RouterError } from "../lib/errors/RouterError.js";
 import { ZuploEnv } from "./env.js";
 import { processRoutes } from "./processRoutes.js";
-import { createRedirectLoader } from "./utils/createRedirectLoader.js";
+import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
 
 export const shikiReady: Promise<HighlighterCore> =
   import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
@@ -121,6 +121,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   );
 
   return [
+    ...createRedirectRoutes(config.redirects),
     {
       element: (
         <Zudoku {...options} env={import.meta.env}>
@@ -132,7 +133,6 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
         </Zudoku>
       ),
       hydrateFallbackElement: <div>Loading...</div>,
-      loader: createRedirectLoader(config.redirects, config.basePath),
       children: [
         {
           element: (
