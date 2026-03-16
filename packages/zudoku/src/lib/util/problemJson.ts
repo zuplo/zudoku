@@ -92,14 +92,3 @@ export const throwIfProblemJson = async (response: Response) => {
     }
   }
 };
-
-/**
- * Throws for any non-ok response. Uses problem+json details when available,
- * otherwise constructs an error from the response status and body.
- */
-export const throwIfNotOk = async (response: Response) => {
-  if (!response.ok) {
-    const problem = await parseProblemResponse(response);
-    throw new Error(problem.detail ?? problem.title ?? "Unknown error");
-  }
-};

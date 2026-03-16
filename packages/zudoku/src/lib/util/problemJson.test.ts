@@ -3,7 +3,6 @@ import {
   getProblemJson,
   parseProblemResponse,
   type ProblemJson,
-  throwIfNotOk,
   throwIfProblemJson,
 } from "./problemJson.js";
 
@@ -181,44 +180,6 @@ describe("throwIfProblemJson", () => {
   });
 });
 
-describe("throwIfNotOk", () => {
-  it("should throw with problem+json detail when available", async () => {
-    const body = {
-      type: "https://example.com/probs/out-of-credit",
-      title: "You do not have enough credit.",
-      detail: "Your current balance is 30, but that costs 50.",
-    };
-
-    await expect(throwIfNotOk(createResponse(body))).rejects.toThrow(
-      "Your current balance is 30, but that costs 50.",
-    );
-  });
-
-  it("should throw for non-problem+json error responses using body text", async () => {
-    const response = new Response("some error body", {
-      status: 500,
-      statusText: "Internal Server Error",
-      headers: { "content-type": "text/plain" },
-    });
-
-    await expect(throwIfNotOk(response)).rejects.toThrow("some error body");
-  });
-
-  it("should throw with status text when body is empty", async () => {
-    const response = new Response(null, {
-      status: 502,
-      statusText: "Bad Gateway",
-    });
-
-    await expect(throwIfNotOk(response)).rejects.toThrow("Bad Gateway");
-  });
-
-  it("should not throw for ok responses", async () => {
-    await expect(
-      throwIfNotOk(createResponse({}, { status: 200 })),
-    ).resolves.toBeUndefined();
-  });
-});
 
 describe("parseProblemResponse", () => {
   it("should return problem json when content type is problem+json", async () => {
