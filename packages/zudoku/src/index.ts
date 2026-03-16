@@ -26,4 +26,8 @@ export type { MDXImport } from "./lib/plugins/markdown/index.js";
 export { defaultLanguages } from "./lib/shiki.js";
 export { cn } from "./lib/ui/util.js";
 export { joinUrl } from "./lib/util/joinUrl.js";
+export {
+  type ProblemJson,
+  throwIfProblemJson,
+} from "./lib/util/problemJson.js";
 export type { MdxComponentsType } from "./lib/util/MdxComponents.js";

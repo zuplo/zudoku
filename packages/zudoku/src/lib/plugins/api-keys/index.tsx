@@ -10,6 +10,7 @@ import type {
 import type { ZudokuContext } from "../../core/ZudokuContext.js";
 import invariant from "../../util/invariant.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { throwIfProblemJson } from "../../util/problemJson.js";
 import { SettingsApiKeys } from "./SettingsApiKeys.js";
 
 const DEFAULT_GATEWAY_URL = "https://api.zuploedge.com";
@@ -69,24 +70,6 @@ export interface ApiConsumer {
   expiresOn?: string;
   key?: ApiKey;
 }
-
-const parseJsonSafe = async (response: Response) => {
-  try {
-    return await response.json();
-  } catch {
-    return;
-  }
-};
-
-const throwIfProblemJson = async (response: Response) => {
-  const contentType = response.headers.get("content-type");
-  if (!response.ok && contentType?.includes("application/problem+json")) {
-    const data = await parseJsonSafe(response);
-    if (data.type && data.title) {
-      throw new Error(data.detail ?? data.title);
-    }
-  }
-};
 
 const developerHintOptions = {
   developerHint:

@@ -1,4 +1,4 @@
-import { joinUrl, type ZudokuContext } from "zudoku";
+import { joinUrl, throwIfProblemJson, type ZudokuContext } from "zudoku";
 import { ClientOnly } from "zudoku/components";
 import {
   type MutationFunctionContext,
@@ -59,15 +59,8 @@ export const queryClient = new QueryClient({
           q.meta?.context ? await q.meta.context.signRequest(request) : request,
         );
 
+        await throwIfProblemJson(response);
         if (!response.ok) {
-          if (
-            response.headers
-              .get("content-type")
-              ?.includes("application/problem+json")
-          ) {
-            const data = await response.json();
-            throw new Error(data.detail ?? data.title);
-          }
           throw new Error("Failed to fetch request");
         }
 
@@ -129,15 +122,8 @@ export const queryClient = new QueryClient({
           m.meta?.context ? await m.meta.context.signRequest(request) : request,
         );
 
+        await throwIfProblemJson(response);
         if (!response.ok) {
-          if (
-            response.headers
-              .get("content-type")
-              ?.includes("application/problem+json")
-          ) {
-            const data = await response.json();
-            throw new Error(data.detail ?? data.title);
-          }
           const errorText = await response.text();
           throw new Error(`Request failed: ${response.status} ${errorText}`);
         }
