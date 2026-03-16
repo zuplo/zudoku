@@ -1,3 +1,17 @@
 {
-  "policies": []
+  "policies": [
+    {
+      "name": "monetization",
+      "policyType": "monetization-inbound",
+      "handler": {
+        "module": "$import(@zuplo/runtime)",
+        "export": "MonetizationInboundPolicy",
+        "options": {
+          "meters": {
+            "api": 1
+          }
+        }
+      }
+    }
+  ]
 }
