@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import type { OpenAPIV3_1 } from "openapi-types";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { ConfigWithMeta } from "../../config/loader.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
@@ -190,7 +191,7 @@ describe("SchemaManager", () => {
           },
         },
       },
-    } as OpenAPIDocument;
+    } satisfies OpenAPIV3_1.Document;
 
     const schemaPath = path.join(tempDir, "openapi.json");
     await fs.writeFile(schemaPath, JSON.stringify(schemaWithRefs));
@@ -215,6 +216,57 @@ describe("SchemaManager", () => {
     expect(generatedCode).toContain("#/components/schemas/Base");
     expect(generatedCode).toContain("#/components/schemas/Item");
     expect(generatedCode).not.toContain('"allOf"');
+  });
+
+  it("should flatten allOf with $refs nested inside oneOf variants", async () => {
+    // Simulates bundle() output: shared base is inlined at oneOf/0/allOf/0 and
+    // referenced via $ref from oneOf/1/allOf/0. After flattening, allOf/0 is
+    // gone, so the $ref must be resolved before flattening or generateCode throws.
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test API", version: "1.0.0" },
+      components: {
+        schemas: {
+          Result: {
+            oneOf: [
+              {
+                allOf: [
+                  { type: "object", properties: { id: { type: "string" } } },
+                  { type: "object", properties: { a: { type: "string" } } },
+                ],
+              },
+              {
+                allOf: [
+                  { $ref: "#/components/schemas/Result/oneOf/0/allOf/0" },
+                  { type: "object", properties: { b: { type: "string" } } },
+                ],
+              },
+            ],
+          },
+        },
+      },
+    } satisfies OpenAPIV3_1.Document;
+
+    const schemaPath = path.join(tempDir, "openapi.json");
+    await fs.writeFile(schemaPath, JSON.stringify(schema));
+
+    const manager = new SchemaManager({
+      storeDir,
+      config: {
+        __meta,
+        apis: [{ type: "file", path: "test-api", input: schemaPath }],
+      },
+      processors: [flattenAllOfProcessor],
+    });
+
+    await expect(manager.processAllSchemas()).resolves.not.toThrow();
+
+    const oneOf =
+      manager.getLatestSchema("test-api")?.schema.components?.schemas?.Result
+        ?.oneOf;
+    expect(oneOf?.[1]).not.toHaveProperty("allOf");
+    expect(oneOf?.[1]).not.toHaveProperty("$ref");
+    expect(oneOf?.[1]?.properties).toHaveProperty("id");
   });
 
   it("should split same file into multiple versions using query params", async () => {

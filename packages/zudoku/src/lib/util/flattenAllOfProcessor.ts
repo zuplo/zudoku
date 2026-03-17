@@ -11,7 +11,42 @@ export const flattenAllOfProcessor: Processor = async ({ schema, file }) => {
     await parser.resolve(schema);
     const $refs = parser.$refs;
 
-    const flattened = traverse(schema, (spec) => {
+    // Pre-resolve all $refs inside allOf items throughout the schema before
+    // flattening. flattenAllOf recurses internally into oneOf/anyOf/properties
+    // without going through $ref resolution, so we must ensure all allOf items
+    // are resolved upfront. This prevents stale $ref keys from being merged
+    // into parent schemas when they point to paths removed during flattening.
+    const resolved = traverse(schema, (spec) => {
+      if (
+        !spec ||
+        typeof spec !== "object" ||
+        Array.isArray(spec) ||
+        !("allOf" in spec) ||
+        !Array.isArray(spec.allOf)
+      ) {
+        return spec;
+      }
+
+      const resolvedAllOf = spec.allOf.map((item) => {
+        if (
+          item &&
+          typeof item === "object" &&
+          "$ref" in item &&
+          typeof item.$ref === "string"
+        ) {
+          try {
+            return $refs.get(item.$ref) ?? item;
+          } catch {
+            return item;
+          }
+        }
+        return item;
+      });
+
+      return { ...spec, allOf: resolvedAllOf };
+    }) as OpenAPIDocument;
+
+    const flattened = traverse(resolved, (spec) => {
       if (!spec || typeof spec !== "object" || Array.isArray(spec)) {
         return spec;
       }
@@ -24,25 +59,6 @@ export const flattenAllOfProcessor: Processor = async ({ schema, file }) => {
         "oneOf" in spec;
 
       if (!isSchemaObject) return spec;
-
-      if ("allOf" in spec && Array.isArray(spec.allOf)) {
-        const resolvedAllOf = spec.allOf.map((item) => {
-          if (
-            item &&
-            typeof item === "object" &&
-            "$ref" in item &&
-            typeof item.$ref === "string"
-          ) {
-            try {
-              return $refs.get(item.$ref) ?? item;
-            } catch {
-              return item;
-            }
-          }
-          return item;
-        });
-        return flattenAllOf({ ...spec, allOf: resolvedAllOf }) as RecordAny;
-      }
 
       return flattenAllOf(spec) as RecordAny;
     }) as OpenAPIDocument;
