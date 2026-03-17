@@ -327,7 +327,9 @@ export class OpenIDAuthenticationProvider
   signOut = async (_: AuthActionContext) => {
     const { providerData } = useAuthState.getState();
     const idToken =
-      providerData?.type === "openid" ? providerData.idToken : undefined;
+      providerData?.type === "openid" || providerData?.type === undefined
+        ? providerData?.idToken
+        : undefined;
 
     useAuthState.getState().setLoggedOut();
 
