@@ -260,7 +260,11 @@ export const SchemaInfo = () => {
                           {tag.description && (
                             <ItemDescription asChild>
                               <Markdown
-                                components={{ p: ({ children }) => children }}
+                                components={{
+                                  // Because the description is wrapped in a <p> and a <Link> already
+                                  p: ({ children }) => children,
+                                  a: (props) => <span {...props} />,
+                                }}
                                 content={tag.description}
                                 className="prose-sm text-pretty"
                               />
