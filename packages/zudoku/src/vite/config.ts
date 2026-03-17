@@ -115,14 +115,10 @@ export async function getViteConfig(
       ]),
       ...publicVarsProcessEnvDefine,
     },
-    ssr: {
-      target: "node",
-      noExternal: [/zudoku/, "@mdx-js/react"],
-      external: ["@shikijs/themes", "@shikijs/langs"],
-    },
     server: {
       middlewareMode: true,
       open: true,
+      forwardConsole: false,
       watch: {
         ignored: [
           `${dir}/dist`,
@@ -137,37 +133,35 @@ export async function getViteConfig(
       sourcemap: true,
       target: "es2022",
       chunkSizeWarningLimit: 1500,
+      outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
+      emptyOutDir: false,
+      rolldownOptions: {
+        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        logLevel: process.env.ZUDOKU_ENV === "internal" ? "info" : "warn",
+        checks: {
+          pluginTimings: process.env.ZUDOKU_ENV === "internal",
+        },
+      },
     },
     environments: {
       client: {
         build: {
-          outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
-          emptyOutDir: false,
           rolldownOptions: {
-            input:
-              configEnv.command === "build"
-                ? "zudoku/app/entry.client.tsx"
-                : undefined,
-            external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+            input: "zudoku/app/entry.client.tsx",
           },
         },
       },
       ssr: {
+        resolve: {
+          noExternal: [/zudoku/, "@mdx-js/react"],
+          external: ["@shikijs/themes", "@shikijs/langs"],
+        },
         build: {
           outDir: path.resolve(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
-          emptyOutDir: false,
           rolldownOptions: {
-            logLevel: "warn",
-            checks: {
-              pluginTimings: process.env.ZUDOKU_ENV === "internal",
-            },
-            input:
-              configEnv.command === "build"
-                ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
-                : undefined,
-            external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+            input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
           },
         },
       },
