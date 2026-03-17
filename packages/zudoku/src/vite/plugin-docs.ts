@@ -141,27 +141,11 @@ const viteDocsPlugin = (): Plugin => {
         return `export const configuredDocsPlugin = undefined;`;
       }
 
-      const code: string[] = [
-        // IMPORTANT! This path here is important, we MUST resolve
-        // files here as Typescript from the appDir
-        config.__meta.mode === "internal"
-          ? `import { markdownPlugin } from "${config.__meta.moduleDir}/src/lib/plugins/markdown/index.tsx";`
-          : `import { markdownPlugin } from "zudoku/plugins/markdown";`,
+      const code = [
+        'import { markdownPlugin } from "zudoku/plugins/markdown";',
       ];
 
       const docsConfig = DocsConfigSchema.parse(config.docs ?? {});
-
-      // This is a workaround for a bug(?) in Vite where `import.meta.glob` failed us:
-      // - Root dir is `/path/to/docs`
-      // - The Markdown docs config is `/docs/**/*.md`
-      // - The basePath config is set to `/docs`
-      // This results in:
-      // > `Internal server error: Failed to resolve import "/some.md" from "virtual:zudoku-docs-plugins". Does the file exist?`
-      // Mind that the `docs` part that should be prepended is not in there
-      //
-      // This does only happen in dev SSR environments, so for prod the `basePath` is not added
-      const globImportBasePath =
-        process.env.NODE_ENV === "development" ? (config.basePath ?? "") : "";
 
       // Glob markdown files and resolve custom navigation paths
       const fileMapping = await resolveCustomNavigationPaths(
@@ -172,9 +156,7 @@ const viteDocsPlugin = (): Plugin => {
       // Transform file paths to import paths
       const globbedDocuments: Record<string, string> = {};
       for (const [routePath, file] of Object.entries(fileMapping)) {
-        const importPath = ensureLeadingSlash(
-          path.posix.join(globImportBasePath, file),
-        );
+        const importPath = ensureLeadingSlash(file);
         globbedDocuments[routePath] = importPath;
       }
 

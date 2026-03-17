@@ -195,6 +195,11 @@ export class DevServer {
 
     vite.middlewares.use(async (req, res) => {
       const url = req.originalUrl ?? req.url ?? "/";
+
+      if (url.startsWith("/.well-known/")) {
+        res.writeHead(404);
+        return res.end();
+      }
       const ssrEnvironment = vite.environments.ssr;
 
       if (!isRunnableDevEnvironment(ssrEnvironment)) {
