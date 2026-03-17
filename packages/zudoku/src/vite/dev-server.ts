@@ -116,7 +116,7 @@ export class DevServer {
     vite.middlewares.use((req, res, next) => {
       if (
         req.method === "GET" &&
-        req.url === "/" &&
+        req.originalUrl === "/" &&
         config.basePath &&
         config.basePath !== "/"
       ) {
