@@ -5,6 +5,8 @@ import {
 } from "@tanstack/react-query";
 import { HelmetProvider } from "@zudoku/react-helmet-async";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
+import { createRedirectRoutes } from "../../app/utils/createRedirectRoutes.js";
+import type { ZudokuRedirect } from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { useAuthState } from "../authentication/state.js";
 import { RenderContext } from "../components/context/RenderContext.js";
@@ -26,6 +28,7 @@ type StaticZudokuProps = ZudokuContextOptions & {
   queryData?: QueryData[];
   env?: Record<string, string>;
   isAuthenticated?: boolean;
+  redirects?: ZudokuRedirect[];
 };
 
 const getRoutesByOptions = (options: ZudokuContextOptions) => {
@@ -52,6 +55,7 @@ const StaticZudoku = ({
   queryData,
   env = {},
   isAuthenticated,
+  redirects,
   ...options
 }: StaticZudokuProps) => {
   if (isAuthenticated) {
@@ -93,6 +97,7 @@ const StaticZudoku = ({
   const routes = getRoutesByOptions(options);
   const router = createMemoryRouter(
     [
+      ...createRedirectRoutes(redirects),
       {
         element: (
           <Zudoku {...options} env={env}>

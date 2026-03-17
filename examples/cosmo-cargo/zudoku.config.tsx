@@ -322,6 +322,20 @@ const config: ZudokuConfig = {
       element: <div>Welcome to the VIP Lounge, exclusive Zuplo member!</div>,
     },
   ],
+  redirects: [
+    {
+      from: "/api-shipments/create-shipment",
+      to: "/api-shipments/shipment-management#post-shipments",
+    },
+    {
+      from: "/api-shipments/get-rates",
+      to: "/api-shipments/rates-and-billing#post-shipments-shipmentid-rates",
+    },
+    {
+      from: "/api-shipments/track-shipment",
+      to: "/api-shipments/tracking-and-notifications#get-shipments-shipmentid-events",
+    },
+  ],
   catalogs: {
     path: "catalog",
     label: "API Catalog",
