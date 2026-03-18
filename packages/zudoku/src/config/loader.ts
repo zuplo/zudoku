@@ -1,7 +1,6 @@
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
-import type { RollupOutput, RollupWatcher } from "rollup";
 import {
   type ConfigEnv,
   runnerImport,
@@ -104,23 +103,6 @@ async function loadZudokuConfigWithMeta(
   };
 
   return configWithMetadata;
-}
-
-export function findOutputPathOfServerConfig(
-  output: RollupOutput | RollupOutput[] | RollupWatcher,
-) {
-  if (Array.isArray(output)) {
-    throw new Error("Expected a single output, but got an array");
-  }
-  if ("output" in output) {
-    const result = output.output.find(
-      (o) => "isEntry" in o && o.isEntry && o.fileName === "zudoku.config.js",
-    );
-    if (result) {
-      return result.fileName;
-    }
-  }
-  throw new Error("Could not find server config output file");
 }
 
 function loadEnv(configEnv: ConfigEnv, rootDir: string) {

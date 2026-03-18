@@ -115,14 +115,10 @@ export async function getViteConfig(
       ]),
       ...publicVarsProcessEnvDefine,
     },
-    ssr: {
-      target: "node",
-      noExternal: [/zudoku/, "@mdx-js/react"],
-      external: ["@shikijs/themes", "@shikijs/langs"],
-    },
     server: {
       middlewareMode: true,
       open: true,
+      forwardConsole: false,
       watch: {
         ignored: [
           `${dir}/dist`,
@@ -134,28 +130,41 @@ export async function getViteConfig(
       },
     },
     build: {
-      ssr: configEnv.isSsrBuild,
       sourcemap: true,
       target: "es2022",
-      outDir: path.resolve(
-        path.join(
-          dir,
-          "dist",
-          config.basePath ?? "",
-          configEnv.isSsrBuild ? "server" : "",
-        ),
-      ),
-      emptyOutDir: true,
-      rollupOptions: {
-        input:
-          configEnv.command === "build"
-            ? configEnv.isSsrBuild
-              ? ["zudoku/app/entry.server.tsx", config.__meta.configPath]
-              : "zudoku/app/entry.client.tsx"
-            : undefined,
-        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
-      },
       chunkSizeWarningLimit: 1500,
+      outDir: path.resolve(path.join(dir, "dist", config.basePath ?? "")),
+      emptyOutDir: false,
+      rolldownOptions: {
+        external: [joinUrl(config.basePath, "/pagefind/pagefind.js")],
+        logLevel: process.env.ZUDOKU_ENV === "internal" ? "info" : "warn",
+        checks: {
+          pluginTimings: process.env.ZUDOKU_ENV === "internal",
+        },
+      },
+    },
+    environments: {
+      client: {
+        build: {
+          rolldownOptions: {
+            input: "zudoku/app/entry.client.tsx",
+          },
+        },
+      },
+      ssr: {
+        resolve: {
+          noExternal: [/zudoku/, "@mdx-js/react"],
+          external: ["@shikijs/themes", "@shikijs/langs"],
+        },
+        build: {
+          outDir: path.resolve(
+            path.join(dir, "dist", config.basePath ?? "", "server"),
+          ),
+          rolldownOptions: {
+            input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
+          },
+        },
+      },
     },
     experimental: {
       renderBuiltUrl(filename) {
@@ -171,12 +180,10 @@ export async function getViteConfig(
       },
     },
     optimizeDeps: {
-      esbuildOptions: {
-        target: "es2022",
-      },
       entries: [path.posix.join(getZudokuRootDir(), "src/{app,lib}/**")],
       exclude: ["zudoku"],
       include: [
+        "@mdx-js/react",
         "react-dom/client",
         "zudoku/icons",
         ...(process.env.SENTRY_DSN ? ["@sentry/react"] : []),
@@ -195,6 +202,8 @@ export async function getViteConfig(
       removePluginHookHandleHotUpdate: "warn",
       removePluginHookSsrArgument: "warn",
       removeServerHot: "warn",
+      removeServerPluginContainer: "warn",
+      removeServerReloadModule: "warn",
     },
   };
 
