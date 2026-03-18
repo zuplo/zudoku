@@ -153,7 +153,8 @@ export const getAllSlugs = (
   ops: GraphQLOperationObject[],
   schemaTags: TagObject[] = [],
 ): Slugs => {
-  const slugify = slugifyWithCounter();
+  const operationSlugify = slugifyWithCounter();
+  const tagSlugify = slugifyWithCounter();
 
   const tags = Array.from(
     new Set([
@@ -166,10 +167,10 @@ export const getAllSlugs = (
     operations: Object.fromEntries(
       ops.map((op) => [
         getOperationSlugKey(op),
-        createOperationSlug(slugify, op),
+        createOperationSlug(operationSlugify, op),
       ]),
     ),
-    tags: Object.fromEntries(tags.map((tag) => [tag, slugify(tag)])),
+    tags: Object.fromEntries(tags.map((tag) => [tag, tagSlugify(tag)])),
   };
 };
 
