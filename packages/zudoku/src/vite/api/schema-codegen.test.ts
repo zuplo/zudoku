@@ -230,6 +230,40 @@ describe("Generate OpenAPI schema module", () => {
     `);
   });
 
+  it("should not add suffix to tag slugs when operation summaries match tag names", () => {
+    const operations = getAllOperations({
+      "/agreements": {
+        get: {
+          tags: ["Agreements"],
+          summary: "Agreements",
+          responses: { "200": { description: "OK" } },
+        },
+        post: {
+          tags: ["Agreements"],
+          summary: "Create Agreement",
+          responses: { "201": { description: "Created" } },
+        },
+      },
+      "/assets": {
+        get: {
+          tags: ["Assets"],
+          summary: "Assets",
+          responses: { "200": { description: "OK" } },
+        },
+      },
+    });
+
+    const slugs = getAllSlugs(operations, [
+      { name: "Agreements" },
+      { name: "Assets" },
+    ]);
+
+    expect(slugs.tags).toStrictEqual({
+      Agreements: "agreements",
+      Assets: "assets",
+    });
+  });
+
   it("should generate correct code for circular refs", async () => {
     const input = {
       definitions: {
