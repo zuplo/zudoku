@@ -325,6 +325,12 @@ export class OpenIDAuthenticationProvider
   };
 
   signOut = async (_: AuthActionContext) => {
+    const { providerData } = useAuthState.getState();
+    const idToken =
+      providerData?.type === "openid" || providerData?.type === undefined
+        ? providerData?.idToken
+        : undefined;
+
     useAuthState.getState().setLoggedOut();
 
     const as = await this.getAuthServer();
@@ -340,11 +346,9 @@ export class OpenIDAuthenticationProvider
     // so we use the IdP logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
       logoutUrl = new URL(as.end_session_endpoint);
-      // TODO: get id_token and set hint
-      // const { id_token } = session;
-      // if (id_token) {
-      //   logoutUrl.searchParams.set("id_token_hint", id_token);
-      // }
+      if (idToken) {
+        logoutUrl.searchParams.set("id_token_hint", idToken);
+      }
       logoutUrl.searchParams.set(
         "post_logout_redirect_uri",
         redirectUrl.toString(),
