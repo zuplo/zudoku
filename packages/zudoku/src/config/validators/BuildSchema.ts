@@ -32,6 +32,7 @@ export const BuildConfigSchema = z.object({
   remarkPlugins: PluginConfigSchema.optional(),
   rehypePlugins: PluginConfigSchema.optional(),
   prerender: z.object({ workers: z.number().optional() }).optional(),
+  checkRelativeLinks: z.enum(["warn", "error"]).or(z.literal(false)).optional(),
 });
 
 const zudokuBuildConfigFiles = [
