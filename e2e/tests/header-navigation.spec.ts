@@ -39,7 +39,10 @@ test.describe("Header Navigation", () => {
   });
 
   test("has theme toggle button", async ({ page }) => {
-    const themeToggle = page.getByRole("button", { name: "Toggle theme" });
+    // After hydration, the aria-label changes to "Switch to light/dark mode"
+    const themeToggle = page
+      .getByRole("button", { name: /switch to (light|dark) mode/i })
+      .first();
     await expect(themeToggle).toBeVisible();
   });
 

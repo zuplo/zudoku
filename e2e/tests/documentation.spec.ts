@@ -3,7 +3,7 @@ import { expect, test } from "../fixtures/base.js";
 test.describe("Documentation Pages", () => {
   test("renders the main documentation page", async ({ page, navigateTo }) => {
     await navigateTo("/documentation");
-    const main = page.locator("main");
+    const main = page.locator("main").first();
     await expect(main).toBeVisible();
     await expect(page.locator("body")).toContainText("Cosmo Cargo");
   });
@@ -56,7 +56,7 @@ test.describe("Documentation Pages", () => {
   test("markdown content renders as HTML", async ({ page, navigateTo }) => {
     await navigateTo("/documentation");
     // Check that MDX content renders properly
-    const main = page.locator("main");
+    const main = page.locator("main").first();
     await expect(main).toBeVisible();
 
     // Should have rendered prose content with paragraphs

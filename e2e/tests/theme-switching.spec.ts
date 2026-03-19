@@ -16,10 +16,20 @@ test.describe("Theme Switching", () => {
     const html = page.locator("html");
     const initialClass = await html.getAttribute("class");
 
-    // Click theme toggle
-    const themeToggle = page.getByRole("button", { name: "Toggle theme" });
+    // After hydration, the button's aria-label changes from "Toggle theme"
+    // to "Switch to light mode" or "Switch to dark mode"
+    const themeToggle = page
+      .getByRole("button", { name: /switch to (light|dark) mode/i })
+      .first();
     await themeToggle.click();
-    await page.waitForTimeout(500);
+
+    // Wait for the theme class to actually change
+    await page.waitForFunction(
+      (prevClass) =>
+        document.documentElement.getAttribute("class") !== prevClass,
+      initialClass,
+      { timeout: 5_000 },
+    );
 
     const newClass = await html.getAttribute("class");
     expect(newClass).not.toBe(initialClass);
@@ -27,18 +37,19 @@ test.describe("Theme Switching", () => {
 
   test("theme toggle cycles through states", async ({ page }) => {
     const html = page.locator("html");
-    const themeToggle = page.getByRole("button", { name: "Toggle theme" });
-
-    // Ensure hydration is complete
-    await page.waitForTimeout(1000);
 
     const class1 = await html.getAttribute("class");
+
+    // After hydration, the button's aria-label is "Switch to light/dark mode"
+    const themeToggle = page
+      .getByRole("button", { name: /switch to (light|dark) mode/i })
+      .first();
     await themeToggle.click();
 
     // Wait for the theme class to actually change
     await page.waitForFunction(
-      (initialClass) =>
-        document.documentElement.getAttribute("class") !== initialClass,
+      (prevClass) =>
+        document.documentElement.getAttribute("class") !== prevClass,
       class1,
       { timeout: 5_000 },
     );

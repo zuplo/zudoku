@@ -6,7 +6,7 @@ test.describe("API Reference - Shipments", () => {
   });
 
   test("renders the API reference page", async ({ page }) => {
-    const main = page.locator("main");
+    const main = page.locator("main").first();
     await expect(main).toBeVisible();
   });
 
@@ -53,7 +53,7 @@ test.describe("API Reference - Operation Details", () => {
     await page.waitForTimeout(1000);
 
     // API operations should show request parameters, body, and responses
-    const main = page.locator("main");
+    const main = page.locator("main").first();
     const content = await main.textContent();
     expect(content).toBeTruthy();
   });

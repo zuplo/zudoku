@@ -90,7 +90,7 @@ test.describe("Client-side Navigation", () => {
     await expect(page).toHaveURL(/\/api-shipments/);
 
     // Content should be loaded
-    const main = page.locator("main");
+    const main = page.locator("main").first();
     await expect(main).toBeVisible();
     await expect(page.locator("body")).toContainText(/shipment/i);
   });
