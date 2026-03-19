@@ -1,4 +1,4 @@
-import type { ZudokuConfig } from "../../config/validators/validate.js";
+import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { getClerkFrontendApi } from "../authentication/providers/util.js";
 
 export const getIssuer = async (config: ZudokuConfig) => {

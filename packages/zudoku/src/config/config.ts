@@ -3,7 +3,7 @@ import type { BuildConfig } from "./validators/BuildSchema.js";
 import type {
   AuthenticationConfig,
   ZudokuConfig,
-} from "./validators/validate.js";
+} from "./validators/ZudokuConfig.js";
 
 export type ZudokuBuildConfig = BuildConfig;
 export type LoadedConfig = ConfigWithMeta;

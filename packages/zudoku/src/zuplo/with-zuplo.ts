@@ -1,4 +1,4 @@
-import type { ZudokuConfig } from "../config/validators/validate.js";
+import type { ZudokuConfig } from "../config/validators/ZudokuConfig.js";
 
 /**
  *  @deprecated `withZuplo` is no longer needed and will automatically be applied. It will be removed in a future version.

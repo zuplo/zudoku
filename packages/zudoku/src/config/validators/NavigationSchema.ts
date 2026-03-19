@@ -27,7 +27,7 @@ import type {
   NavigationRule,
   NavigationSortRule,
 } from "./InputNavigationSchema.js";
-import { DocsConfigSchema } from "./validate.js";
+import { DocsConfigSchema } from "./ZudokuConfig.js";
 
 type ReplaceFields<Base, Overrides> = Omit<Base, keyof Overrides> & Overrides;
 // string icons will be transformed to `LucideIcon` in `vite/plugin-navigation.ts`

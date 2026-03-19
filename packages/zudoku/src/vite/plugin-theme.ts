@@ -5,7 +5,7 @@ import { getCurrentConfig } from "../config/loader.js";
 import type {
   FontConfig,
   ZudokuConfig,
-} from "../config/validators/validate.js";
+} from "../config/validators/ZudokuConfig.js";
 import { defaultHighlightOptions } from "../lib/shiki.js";
 import { objectEntries } from "../lib/util/objectEntries.js";
 import {
