@@ -119,4 +119,19 @@ describe("check-external-deps", () => {
     await runCheck();
     expect(mockExit).not.toHaveBeenCalled();
   });
+
+  it("detects side-effect imports", async () => {
+    fakeFiles["src/app.ts"] = `import "undeclared-polyfill";`;
+    await runCheck();
+    expect(mockExit).toHaveBeenCalledWith(1);
+    expect(mockStderr).toHaveBeenCalledWith(
+      expect.stringContaining("undeclared-polyfill"),
+    );
+  });
+
+  it("detects export * re-exports", async () => {
+    fakeFiles["src/index.ts"] = `export * from "undeclared";`;
+    await runCheck();
+    expect(mockExit).toHaveBeenCalledWith(1);
+  });
 });

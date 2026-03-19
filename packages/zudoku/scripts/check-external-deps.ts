@@ -18,7 +18,9 @@ export const getImportedPackages = (source: string, filename: string) => {
   } = parseSync(filename, source);
 
   const importedPackages = staticImports.flatMap((imp) =>
-    imp.entries.every((e) => e.isType) ? [] : imp.moduleRequest.value,
+    imp.entries.length > 0 && imp.entries.every((e) => e.isType)
+      ? []
+      : imp.moduleRequest.value,
   );
   const reExportedPackages = staticExports.flatMap((exp) =>
     exp.entries.flatMap((e) =>
