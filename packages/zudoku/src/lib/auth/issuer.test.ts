@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ZudokuConfig } from "../../config/validators/validate.js";
+import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { getIssuer } from "./issuer.js";
 
 describe("getIssuer", () => {

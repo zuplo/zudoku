@@ -9,7 +9,7 @@ import type { getRoutesByConfig } from "../../app/main.js";
 import { logger } from "../../cli/common/logger.js";
 import { fileExists } from "../../config/file-exists.js";
 import { getBuildConfig } from "../../config/validators/BuildSchema.js";
-import type { ZudokuConfig } from "../../config/validators/validate.js";
+import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
@@ -192,7 +192,7 @@ export const prerender = async ({
   // Generate llms.txt files if markdown export is enabled
   if (config.docs) {
     const { DocsConfigSchema } =
-      await import("../../config/validators/validate.js");
+      await import("../../config/validators/ZudokuConfig.js");
     const { generateLlmsTxtFiles } = await import("../llms.js");
 
     const docsConfig = DocsConfigSchema.parse(config.docs);

@@ -1,7 +1,7 @@
 import logger from "loglevel";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter } from "react-router";
-import type { ZudokuConfig } from "../config/validators/validate.js";
+import type { ZudokuConfig } from "../config/validators/ZudokuConfig.js";
 import { Bootstrap } from "../lib/components/Bootstrap.js";
 import DemoAnnouncement from "../lib/demo/DemoAnnouncement.js";
 import "../lib/util/logInit.js";

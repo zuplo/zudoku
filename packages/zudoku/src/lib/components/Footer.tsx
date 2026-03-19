@@ -1,6 +1,6 @@
 import { ExternalLink as ExternalLinkIcon } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
-import type { FooterSocialIcons } from "../../config/validators/validate.js";
+import type { FooterSocialIcons } from "../../config/validators/ZudokuConfig.js";
 import { cn } from "../util/cn.js";
 import { AnchorLink } from "./AnchorLink.js";
 import { useZudoku } from "./index.js";
