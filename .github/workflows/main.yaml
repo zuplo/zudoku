@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.GH_ACTIONS_DEPLOY_KEY_RULE_BYPASS }}
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v5
         with:
           run_install: false
 
