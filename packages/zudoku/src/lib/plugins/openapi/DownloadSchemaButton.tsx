@@ -19,8 +19,10 @@ import { ClaudeLogo } from "../markdown/assets/ClaudeLogo.js";
 
 export const DownloadSchemaButton = ({
   downloadUrl,
+  schemaDownload,
 }: {
   downloadUrl: string;
+  schemaDownload?: { useInClaude?: boolean; useInChatGPT?: boolean };
 }) => {
   const [, copyToClipboard] = useCopyToClipboard();
 
@@ -81,28 +83,32 @@ export const DownloadSchemaButton = ({
             <CopyIcon size={14} />
             Copy to clipboard
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              const prompt = encodeURIComponent(
-                `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
-              );
-              window.open(`https://claude.ai/new?q=${prompt}`, "_blank");
-            }}
-          >
-            <ClaudeLogo className="size-4" />
-            Use in Claude
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              const prompt = encodeURIComponent(
-                `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
-              );
-              window.open(`https://chatgpt.com/?q=${prompt}`, "_blank");
-            }}
-          >
-            <ChatGPTLogo className="size-4" />
-            Use in ChatGPT
-          </DropdownMenuItem>
+          {schemaDownload?.useInClaude !== false && (
+            <DropdownMenuItem
+              onClick={() => {
+                const prompt = encodeURIComponent(
+                  `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
+                );
+                window.open(`https://claude.ai/new?q=${prompt}`, "_blank");
+              }}
+            >
+              <ClaudeLogo className="size-4" />
+              Use in Claude
+            </DropdownMenuItem>
+          )}
+          {schemaDownload?.useInChatGPT !== false && (
+            <DropdownMenuItem
+              onClick={() => {
+                const prompt = encodeURIComponent(
+                  `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
+                );
+                window.open(`https://chatgpt.com/?q=${prompt}`, "_blank");
+              }}
+            >
+              <ChatGPTLogo className="size-4" />
+              Use in ChatGPT
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </ButtonGroup>

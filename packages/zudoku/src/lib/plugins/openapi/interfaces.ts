@@ -78,6 +78,8 @@ type BaseOasConfig = {
     showInfoPage?: boolean;
     schemaDownload?: {
       enabled: boolean;
+      useInClaude?: boolean;
+      useInChatGPT?: boolean;
     };
     transformExamples?: TransformExamplesFn;
     generateCodeSnippet?: GenerateCodeSnippetFn;

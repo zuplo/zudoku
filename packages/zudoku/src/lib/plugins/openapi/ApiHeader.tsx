@@ -86,7 +86,10 @@ export const ApiHeader = ({
               </Select>
             )}
             {options?.schemaDownload?.enabled && downloadUrl && (
-              <DownloadSchemaButton downloadUrl={downloadUrl} />
+              <DownloadSchemaButton
+                downloadUrl={downloadUrl}
+                schemaDownload={options.schemaDownload}
+              />
             )}
           </div>
         </div>

@@ -70,7 +70,13 @@ const ApiOptionsSchema = z
     showVersionSelect: z.enum(["always", "if-available", "hide"]),
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
-    schemaDownload: z.object({ enabled: z.boolean() }).partial(),
+    schemaDownload: z
+      .object({
+        enabled: z.boolean(),
+        useInClaude: z.boolean(),
+        useInChatGPT: z.boolean(),
+      })
+      .partial(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),

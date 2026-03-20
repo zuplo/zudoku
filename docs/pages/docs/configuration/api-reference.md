@@ -209,7 +209,11 @@ const config = {
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
-      schemaDownload: { enabled: true }, // Enable schema download button
+      schemaDownload: {
+        enabled: true, // Enable schema download button
+        useInClaude: true, // Show "Use in Claude" option (default: true)
+        useInChatGPT: true, // Show "Use in ChatGPT" option (default: true)
+      },
     },
   },
 };
@@ -229,9 +233,12 @@ Available options:
 - `expandAllTags`: Control initial expanded state of tag categories (default: `true`)
 - `showInfoPage`: Show the API information page as the index route (default: `true`). When disabled,
   navigating to the API root redirects to the first tag instead
-- `schemaDownload`: Enable schema download functionality with `{ enabled: boolean }`. When enabled,
-  displays a button allowing users to download the OpenAPI schema, copy it to clipboard, open in a
-  new tab, or use it with AI tools like Claude and ChatGPT
+- `schemaDownload`: Enable schema download functionality. When enabled, displays a button allowing
+  users to download the OpenAPI schema, copy it to clipboard, open in a new tab, or use it with AI
+  tools like Claude and ChatGPT. Available sub-options:
+  - `enabled`: Enable or disable the schema download button
+  - `useInClaude`: Show the "Use in Claude" option (default: `true`)
+  - `useInChatGPT`: Show the "Use in ChatGPT" option (default: `true`)
 - `transformExamples`: Function to transform request/response examples before rendering. See
   [Transforming Examples](../guides/transforming-examples.md) for detailed usage
 - `generateCodeSnippet`: Function to generate custom code snippets for the API playground. See
@@ -252,7 +259,11 @@ const config = {
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
-      schemaDownload: { enabled: true }, // Enable schema download button
+      schemaDownload: {
+        enabled: true, // Enable schema download button
+        useInClaude: true, // Show "Use in Claude" option (default: true)
+        useInChatGPT: true, // Show "Use in ChatGPT" option (default: true)
+      },
     },
   },
   apis: {
