@@ -23,7 +23,11 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type {
+  MediaTypeObject,
+  SecuritySchemeIn,
+  SecuritySchemeType,
+} from "../graphql/graphql.js";
 import { useSelectedServer } from "../state.js";
 import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
@@ -130,9 +134,9 @@ export type SecurityRequirementProp = {
     scopes: Array<string>;
     scheme: {
       name: string;
-      type: string;
+      type: SecuritySchemeType;
       description?: string | null;
-      in?: string | null;
+      in?: SecuritySchemeIn | null;
       paramName?: string | null;
       scheme?: string | null;
       bearerFormat?: string | null;
@@ -173,9 +177,9 @@ export type PlaygroundContentProps = {
   security?: SecurityRequirementProp[] | null;
   securitySchemes?: Array<{
     name: string;
-    type: string;
+    type: SecuritySchemeType;
     description?: string | null;
-    in?: string | null;
+    in?: SecuritySchemeIn | null;
     paramName?: string | null;
     scheme?: string | null;
     bearerFormat?: string | null;
