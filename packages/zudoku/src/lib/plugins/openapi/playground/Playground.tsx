@@ -623,19 +623,20 @@ export const Playground = ({
                       identities={identities.data ?? []}
                       setValue={(value) => {
                         if (value === SECURITY_SCHEME_IDENTITY) {
-                          setShowAuthorizeDialog(true);
+                          const hasCredentials = Object.values(
+                            securityCredentials,
+                          ).some((c) => c.isAuthorized);
+                          if (!hasCredentials) {
+                            setShowAuthorizeDialog(true);
+                          }
                         }
                         setValue("identity", value);
                       }}
                       securitySchemes={
-                        securitySchemes.length > 0
-                          ? securitySchemes
-                          : undefined
+                        securitySchemes.length > 0 ? securitySchemes : undefined
                       }
                       securityCredentials={securityCredentials}
-                      onConfigureSecurity={() =>
-                        setShowAuthorizeDialog(true)
-                      }
+                      onConfigureSecurity={() => setShowAuthorizeDialog(true)}
                     />
                     {securitySchemes.length > 0 && (
                       <AuthorizeDialog
