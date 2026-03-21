@@ -13,9 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
+import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
-import { ChatGPTLogo } from "../markdown/assets/ChatGPTLogo.js";
-import { ClaudeLogo } from "../markdown/assets/ClaudeLogo.js";
 
 export const DownloadSchemaButton = ({
   downloadUrl,
@@ -23,6 +23,7 @@ export const DownloadSchemaButton = ({
   downloadUrl: string;
 }) => {
   const [, copyToClipboard] = useCopyToClipboard();
+  const { options } = useZudoku();
 
   const handleDownload: MouseEventHandler<HTMLAnchorElement> = async (e) => {
     const isExternal = downloadUrl.includes("://");
@@ -81,28 +82,11 @@ export const DownloadSchemaButton = ({
             <CopyIcon size={14} />
             Copy to clipboard
           </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              const prompt = encodeURIComponent(
-                `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
-              );
-              window.open(`https://claude.ai/new?q=${prompt}`, "_blank");
-            }}
-          >
-            <ClaudeLogo className="size-4" />
-            Use in Claude
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            onClick={() => {
-              const prompt = encodeURIComponent(
-                `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
-              );
-              window.open(`https://chatgpt.com/?q=${prompt}`, "_blank");
-            }}
-          >
-            <ChatGPTLogo className="size-4" />
-            Use in ChatGPT
-          </DropdownMenuItem>
+          <AiAssistantMenuItems
+            aiAssistants={options.aiAssistants}
+            getPageUrl={() => new URL(downloadUrl, window.location.href).href}
+            type="openapi"
+          />
         </DropdownMenuContent>
       </DropdownMenu>
     </ButtonGroup>

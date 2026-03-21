@@ -61,6 +61,30 @@ const LanguageOption = z.object({
   label: z.string().min(1),
 });
 
+const AiAssistantCustomSchema = z.object({
+  label: z.string(),
+  icon: z.custom<ReactNode>().optional(),
+  url: z.union([
+    z.string(),
+    z.custom<
+      (context: { pageUrl: string; type: "docs" | "openapi" }) => string
+    >((val) => typeof val === "function"),
+  ]),
+});
+
+export type AiAssistantCustom = z.infer<typeof AiAssistantCustomSchema>;
+
+const AiAssistantPresets = ["claude", "chatgpt"] as const;
+
+const AiAssistantsSchema = z
+  .union([
+    z.literal(false),
+    z.array(z.union([z.enum(AiAssistantPresets), AiAssistantCustomSchema])),
+  ])
+  .optional();
+
+export type AiAssistantsConfig = z.infer<typeof AiAssistantsSchema>;
+
 const ApiOptionsSchema = z
   .object({
     examplesLanguage: z.string(),
@@ -641,6 +665,7 @@ const BaseConfigSchema = z.object({
   apis: z.union([ApiSchema, z.array(ApiSchema)]),
   catalogs: z.union([ApiCatalogSchema, z.array(ApiCatalogSchema)]),
   apiKeys: ApiKeysSchema,
+  aiAssistants: AiAssistantsSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
   enableStatusPages: z.boolean().optional(),
