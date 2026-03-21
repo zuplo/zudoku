@@ -57,7 +57,7 @@ export const PlaygroundDialogWrapper = ({
 
   // Extract unique security schemes from the operation's security requirements
   const securitySchemes =
-    operation.security && !options?.disableSecurity
+    operation.security && options?.enableSecurity
       ? Array.from(
           new Map(
             operation.security.flatMap((req) =>
@@ -77,7 +77,7 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
-      security={options?.disableSecurity ? undefined : operation.security}
+      security={options?.enableSecurity ? operation.security : undefined}
       securitySchemes={securitySchemes}
     />
   );
