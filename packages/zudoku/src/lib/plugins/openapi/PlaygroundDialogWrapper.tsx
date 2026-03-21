@@ -52,6 +52,17 @@ export const PlaygroundDialogWrapper = ({
       defaultValue: p.schema?.default,
     }));
 
+  // Extract unique security schemes from the operation's security requirements
+  const securitySchemes = operation.security
+    ? Array.from(
+        new Map(
+          operation.security.flatMap((req) =>
+            req.schemes.map((s) => [s.scheme.name, s.scheme]),
+          ),
+        ).values(),
+      )
+    : [];
+
   return (
     <PlaygroundDialog
       server={server}
@@ -62,6 +73,8 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
+      security={operation.security}
+      securitySchemes={securitySchemes}
     />
   );
 };
