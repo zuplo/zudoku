@@ -261,7 +261,7 @@ const securitySchemeDescription = (scheme: {
 };
 
 export const SchemaInfo = () => {
-  const { input, type } = useOasConfig();
+  const { input, type, options } = useOasConfig();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const {
     data: { schema },
@@ -382,38 +382,39 @@ export const SchemaInfo = () => {
                 </div>
               </div>
             )}
-            {(schema.components?.securitySchemes?.length ?? 0) > 0 && (
-              <div>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
-                  <LockIcon size={14} />
-                  Security Schemes
+            {!options?.disableSecurity &&
+              (schema.components?.securitySchemes?.length ?? 0) > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+                    <LockIcon size={14} />
+                    Security Schemes
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {schema.components?.securitySchemes?.map((scheme) => (
+                      <Item key={scheme.name} variant="outline">
+                        <ItemContent>
+                          <ItemTitle className="flex items-center gap-2">
+                            {securitySchemeIcon(scheme.type)}
+                            {scheme.name}
+                          </ItemTitle>
+                          <ItemDescription>
+                            {scheme.description ??
+                              securitySchemeDescription(scheme)}
+                          </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                          <Badge
+                            variant="muted"
+                            className="text-[10px] font-mono"
+                          >
+                            {scheme.type}
+                          </Badge>
+                        </ItemActions>
+                      </Item>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {schema.components?.securitySchemes?.map((scheme) => (
-                    <Item key={scheme.name} variant="outline">
-                      <ItemContent>
-                        <ItemTitle className="flex items-center gap-2">
-                          {securitySchemeIcon(scheme.type)}
-                          {scheme.name}
-                        </ItemTitle>
-                        <ItemDescription>
-                          {scheme.description ??
-                            securitySchemeDescription(scheme)}
-                        </ItemDescription>
-                      </ItemContent>
-                      <ItemActions>
-                        <Badge
-                          variant="muted"
-                          className="text-[10px] font-mono"
-                        >
-                          {scheme.type}
-                        </Badge>
-                      </ItemActions>
-                    </Item>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
             {schema.webhooks.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
