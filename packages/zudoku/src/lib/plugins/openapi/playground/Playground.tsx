@@ -180,7 +180,7 @@ export type PlaygroundContentProps = {
     scheme?: string | null;
     bearerFormat?: string | null;
     openIdConnectUrl?: string | null;
-    flows?: any;
+    flows?: Record<string, unknown> | null;
   }>;
   requiresLogin?: boolean;
   onLogin?: () => void;

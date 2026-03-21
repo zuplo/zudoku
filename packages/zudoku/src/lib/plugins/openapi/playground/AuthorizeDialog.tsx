@@ -1,6 +1,7 @@
 import {
   CheckCircle2Icon,
   KeyRoundIcon,
+  LoaderIcon,
   LockIcon,
   LogOutIcon,
   ShieldCheckIcon,
@@ -164,7 +165,15 @@ const OAuth2SchemeForm = ({
   onAuthorize: (value: string) => void;
 }) => {
   const [token, setToken] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const flows = scheme.flows;
+  const hasClientCredentials = !!flows?.clientCredentials?.tokenUrl;
+  const hasAuthorizationCode =
+    !!flows?.authorizationCode?.tokenUrl &&
+    !!flows?.authorizationCode?.authorizationUrl;
 
   const allScopes = new Map<string, string>();
   for (const flow of [
@@ -180,8 +189,56 @@ const OAuth2SchemeForm = ({
     }
   }
 
+  const handleClientCredentials = async () => {
+    if (!flows?.clientCredentials?.tokenUrl) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { fetchClientCredentialsToken } =
+        await import("./oauth/clientCredentials.js");
+      const result = await fetchClientCredentialsToken({
+        tokenUrl: flows.clientCredentials.tokenUrl,
+        clientId,
+        clientSecret,
+        scopes: flows.clientCredentials.scopes.map((s) => s.name),
+      });
+      onAuthorize(result.access_token);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Token request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAuthorizationCode = async () => {
+    if (
+      !flows?.authorizationCode?.authorizationUrl ||
+      !flows?.authorizationCode?.tokenUrl
+    )
+      return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { performAuthorizationCodeFlow } =
+        await import("./oauth/authorizationCode.js");
+      const result = await performAuthorizationCodeFlow({
+        authorizationUrl: flows.authorizationCode.authorizationUrl,
+        tokenUrl: flows.authorizationCode.tokenUrl,
+        clientId,
+        scopes: flows.authorizationCode.scopes.map((s) => s.name),
+      });
+      onAuthorize(result.access_token);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Authorization flow failed",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       {allScopes.size > 0 && (
         <div className="flex flex-col gap-1">
           <Label className="text-xs text-muted-foreground">
@@ -200,18 +257,71 @@ const OAuth2SchemeForm = ({
           </div>
         </div>
       )}
-      <Label className="text-xs text-muted-foreground">Access Token</Label>
-      <div className="flex gap-2">
-        <Input
-          type="password"
-          placeholder="Enter access token"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          className="flex-1"
-        />
-        <Button size="sm" disabled={!token} onClick={() => onAuthorize(token)}>
-          Authorize
-        </Button>
+
+      {(hasClientCredentials || hasAuthorizationCode) && (
+        <div className="flex flex-col gap-2">
+          <Input
+            placeholder="Client ID"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
+          />
+          {hasClientCredentials && (
+            <Input
+              type="password"
+              placeholder="Client Secret"
+              value={clientSecret}
+              onChange={(e) => setClientSecret(e.target.value)}
+            />
+          )}
+          <div className="flex gap-2">
+            {hasClientCredentials && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!clientId || !clientSecret || loading}
+                onClick={handleClientCredentials}
+              >
+                {loading && <LoaderIcon size={14} className="animate-spin" />}
+                Client Credentials
+              </Button>
+            )}
+            {hasAuthorizationCode && (
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={!clientId || loading}
+                onClick={handleAuthorizationCode}
+              >
+                {loading && <LoaderIcon size={14} className="animate-spin" />}
+                Authorization Code
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {error && <p className="text-xs text-destructive">{error}</p>}
+
+      <div className="flex flex-col gap-1">
+        <Label className="text-xs text-muted-foreground">
+          Or enter a token directly
+        </Label>
+        <div className="flex gap-2">
+          <Input
+            type="password"
+            placeholder="Enter access token"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="flex-1"
+          />
+          <Button
+            size="sm"
+            disabled={!token}
+            onClick={() => onAuthorize(token)}
+          >
+            Authorize
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -225,6 +335,29 @@ const OpenIdConnectSchemeForm = ({
   onAuthorize: (value: string) => void;
 }) => {
   const [token, setToken] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleOidcFlow = async () => {
+    if (!scheme.openIdConnectUrl) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const { performOpenIdConnectFlow } =
+        await import("./oauth/openIdConnect.js");
+      const result = await performOpenIdConnectFlow({
+        openIdConnectUrl: scheme.openIdConnectUrl,
+        clientId,
+      });
+      onAuthorize(result.access_token);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "OIDC flow failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-2">
       {scheme.openIdConnectUrl && (
@@ -232,18 +365,45 @@ const OpenIdConnectSchemeForm = ({
           Discovery: {scheme.openIdConnectUrl}
         </div>
       )}
-      <Label className="text-xs text-muted-foreground">Access Token</Label>
-      <div className="flex gap-2">
-        <Input
-          type="password"
-          placeholder="Enter access token"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          className="flex-1"
-        />
-        <Button size="sm" disabled={!token} onClick={() => onAuthorize(token)}>
-          Authorize
-        </Button>
+      {scheme.openIdConnectUrl && (
+        <div className="flex flex-col gap-2">
+          <Input
+            placeholder="Client ID"
+            value={clientId}
+            onChange={(e) => setClientId(e.target.value)}
+          />
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!clientId || loading}
+            onClick={handleOidcFlow}
+          >
+            {loading && <LoaderIcon size={14} className="animate-spin" />}
+            Authorize via OpenID Connect
+          </Button>
+        </div>
+      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      <div className="flex flex-col gap-1">
+        <Label className="text-xs text-muted-foreground">
+          Or enter a token directly
+        </Label>
+        <div className="flex gap-2">
+          <Input
+            type="password"
+            placeholder="Enter access token"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            className="flex-1"
+          />
+          <Button
+            size="sm"
+            disabled={!token}
+            onClick={() => onAuthorize(token)}
+          >
+            Authorize
+          </Button>
+        </div>
       </div>
     </div>
   );
