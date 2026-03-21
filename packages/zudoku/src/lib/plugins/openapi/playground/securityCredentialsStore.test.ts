@@ -82,7 +82,7 @@ describe("useSecurityCredentialsStore", () => {
     store.setCredential("BasicAuth", { username: "user", password: "pass" });
 
     const updated = useSecurityCredentialsStore.getState();
-    expect(updated.credentials.BasicAuth.value).toEqual({
+    expect(updated.credentials.BasicAuth?.value).toEqual({
       username: "user",
       password: "pass",
     });
