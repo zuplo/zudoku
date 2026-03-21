@@ -70,7 +70,7 @@ jobs:
 
       - run: pnpm install nx --global
 
-      - uses: nrwl/nx-set-shas@v4
+      - uses: nrwl/nx-set-shas@v5
 
       # This must be a real github account otherwise vercel thows ugly errors
       - run: git config --global user.email "integrations@zuplo.com"
