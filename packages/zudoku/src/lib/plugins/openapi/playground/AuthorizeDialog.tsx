@@ -444,11 +444,17 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
       )}
       {!isAuthorized && (
         <>
-          {scheme.type === "apiKey" && (
+          {scheme.type === "apiKey" && scheme.in !== "cookie" && (
             <ApiKeySchemeForm
               scheme={scheme}
               onAuthorize={(value) => setCredential(scheme.name, value)}
             />
+          )}
+          {scheme.type === "apiKey" && scheme.in === "cookie" && (
+            <p className="text-xs text-muted-foreground italic">
+              Cookie-based API key authentication is not supported in the
+              browser playground due to fetch API restrictions.
+            </p>
           )}
           {scheme.type === "http" && scheme.scheme === "basic" && (
             <HttpBasicSchemeForm
