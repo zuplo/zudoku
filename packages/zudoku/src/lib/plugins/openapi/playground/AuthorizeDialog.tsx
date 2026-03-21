@@ -455,12 +455,20 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
               onAuthorize={(value) => setCredential(scheme.name, value)}
             />
           )}
-          {scheme.type === "http" && scheme.scheme !== "basic" && (
+          {scheme.type === "http" && scheme.scheme === "bearer" && (
             <HttpBearerSchemeForm
               scheme={scheme}
               onAuthorize={(value) => setCredential(scheme.name, value)}
             />
           )}
+          {scheme.type === "http" &&
+            scheme.scheme !== "basic" &&
+            scheme.scheme !== "bearer" && (
+              <p className="text-xs text-muted-foreground italic">
+                HTTP {scheme.scheme} authentication is not supported in the
+                playground. Configure it via custom headers.
+              </p>
+            )}
           {scheme.type === "oauth2" && (
             <OAuth2SchemeForm
               scheme={scheme}

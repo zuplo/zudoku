@@ -105,7 +105,7 @@ export const SecurityRequirements = ({
     <TooltipProvider delayDuration={150}>
       <div className="flex items-center gap-1.5 flex-wrap">
         {requirements.map((req, reqIdx) => {
-          const reqKey = req.schemes.map((s) => s.scheme.name).join("+");
+          const reqKey = `${reqIdx}-${req.schemes.map((s) => s.scheme.name).join("+")}`;
           return (
             <div key={reqKey} className="contents">
               {reqIdx > 0 && (

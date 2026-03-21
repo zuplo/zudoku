@@ -846,21 +846,7 @@ Components.implement({
     }),
     securitySchemes: t.field({
       type: [SecuritySchemeItem],
-      resolve: (parent) => {
-        const schemes = (parent as any).securitySchemes ?? {};
-        return Object.entries(schemes).map(([name, scheme]: [string, any]) => ({
-          name,
-          type: scheme.type,
-          description: scheme.description,
-          in: scheme.in,
-          paramName: scheme.name,
-          scheme: scheme.scheme,
-          bearerFormat: scheme.bearerFormat,
-          openIdConnectUrl: scheme.openIdConnectUrl,
-          flows: scheme.flows,
-          extensions: resolveExtensions(scheme),
-        }));
-      },
+      resolve: (_parent, _args, ctx) => resolveSecuritySchemes(ctx.schema),
       nullable: true,
     }),
   }),
