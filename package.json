@@ -18,6 +18,7 @@
     "reset": "nx reset && npm run build:clean",
     "clean": "git clean -Xfde !.env",
     "test": "vitest run --typecheck",
+    "test:coverage": "vitest run --typecheck --coverage",
     "size": "size-limit"
   },
   "engines": {

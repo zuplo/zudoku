@@ -2,6 +2,8 @@ name: Build
 on:
   workflow_call:
   pull_request:
+  push:
+    branches: [main]
 
 jobs:
   build:
@@ -12,6 +14,7 @@ jobs:
       actions: read
       contents: read
       id-token: write
+      pull-requests: write
 
     env:
       COREPACK_ENABLE_STRICT: 0
@@ -41,7 +44,47 @@ jobs:
 
       - run: pnpm check
       - run: nx run-many -t build:ci
-      - run: pnpm test
+      - run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Restore base coverage
+        if: github.event_name == 'pull_request'
+        id: base-coverage
+        uses: actions/cache/restore@v5
+        with:
+          path: coverage-base/coverage-summary.json
+          key: coverage-base-
+          restore-keys: coverage-base-
+
+      - name: Save base coverage
+        if: github.ref == 'refs/heads/main'
+        run: mkdir -p coverage-base && cp coverage/coverage-summary.json coverage-base/
+
+      - name: Save base coverage cache
+        if: github.ref == 'refs/heads/main'
+        uses: actions/cache/save@v5
+        with:
+          path: coverage-base/coverage-summary.json
+          key: coverage-base-${{ github.sha }}
+
+      - name: Coverage report comment (with comparison)
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          json-summary-compare-path: coverage-base/coverage-summary.json
+
+      - name: Coverage report comment
+        if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key == ''
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
 
       - name: Get Variables
         id: vars
