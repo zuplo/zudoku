@@ -55,6 +55,7 @@ import {
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
+export const SECURITY_SCHEME_IDENTITY = "__security_schemes";
 
 export type Header = {
   name: string;
@@ -211,6 +212,7 @@ export const Playground = ({
     servers.map((url) => ({ url })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
+  const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
@@ -330,12 +332,18 @@ export const Playground = ({
         },
       );
 
-      if (data.identity !== NO_IDENTITY) {
+      if (
+        data.identity !== NO_IDENTITY &&
+        data.identity !== SECURITY_SCHEME_IDENTITY
+      ) {
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
-      } else {
-        // No identity selected — apply security scheme credentials
+      } else if (
+        data.identity === SECURITY_SCHEME_IDENTITY ||
+        data.identity === NO_IDENTITY
+      ) {
+        // Apply security scheme credentials when explicitly selected or no identity
         applySecurityCredentials(request, security, securityCredentials);
       }
 
@@ -604,17 +612,31 @@ export const Playground = ({
                     <CollapsibleHeader>Authentication</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
-                    {identities.data?.length !== 0 && (
-                      <IdentitySelector
-                        value={identity}
-                        identities={identities.data ?? []}
-                        setValue={(value) => setValue("identity", value)}
-                      />
-                    )}
+                    <IdentitySelector
+                      value={identity}
+                      identities={identities.data ?? []}
+                      setValue={(value) => {
+                        if (value === SECURITY_SCHEME_IDENTITY) {
+                          setShowAuthorizeDialog(true);
+                        }
+                        setValue("identity", value);
+                      }}
+                      securitySchemes={
+                        securitySchemes.length > 0
+                          ? securitySchemes
+                          : undefined
+                      }
+                      securityCredentials={securityCredentials}
+                      onConfigureSecurity={() =>
+                        setShowAuthorizeDialog(true)
+                      }
+                    />
                     {securitySchemes.length > 0 && (
-                      <div className="p-3">
-                        <AuthorizeDialog securitySchemes={securitySchemes} />
-                      </div>
+                      <AuthorizeDialog
+                        securitySchemes={securitySchemes}
+                        open={showAuthorizeDialog}
+                        onOpenChange={setShowAuthorizeDialog}
+                      />
                     )}
                   </CollapsibleContent>
                 </Collapsible>

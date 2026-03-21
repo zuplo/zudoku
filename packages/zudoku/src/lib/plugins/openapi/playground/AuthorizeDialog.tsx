@@ -13,7 +13,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-  DialogTrigger,
 } from "zudoku/ui/Dialog.js";
 import { Input } from "zudoku/ui/Input.js";
 import { Label } from "zudoku/ui/Label.js";
@@ -488,10 +487,12 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
 
 export const AuthorizeDialog = ({
   securitySchemes,
-  children,
+  open,
+  onOpenChange,
 }: {
   securitySchemes: SecuritySchemeData[];
-  children?: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) => {
   const { credentials, clearAll } = useSecurityCredentialsStore();
   const authorizedCount = Object.values(credentials).filter(
@@ -501,20 +502,7 @@ export const AuthorizeDialog = ({
   if (securitySchemes.length === 0) return null;
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        {children ?? (
-          <Button variant="outline" size="sm" className="gap-1.5">
-            <LockIcon size={14} />
-            Authorize
-            {authorizedCount > 0 && (
-              <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-1.5 rounded-full">
-                {authorizedCount}
-              </span>
-            )}
-          </Button>
-        )}
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
         <DialogTitle>Authorize</DialogTitle>
         <DialogDescription>
