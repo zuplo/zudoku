@@ -83,11 +83,7 @@ const ApiKeySchemeForm = ({
           onChange={(e) => setValue(e.target.value)}
           className="flex-1"
         />
-        <Button
-          size="default"
-          disabled={!value}
-          onClick={() => onAuthorize(value)}
-        >
+        <Button size="lg" disabled={!value} onClick={() => onAuthorize(value)}>
           Authorize
         </Button>
       </div>
@@ -119,7 +115,7 @@ const HttpBasicSchemeForm = ({
           className="flex-1"
         />
         <Button
-          size="default"
+          size="lg"
           disabled={!username}
           onClick={() => onAuthorize({ username, password })}
         >
@@ -151,11 +147,7 @@ const HttpBearerSchemeForm = ({
           onChange={(e) => setValue(e.target.value)}
           className="flex-1"
         />
-        <Button
-          size="default"
-          disabled={!value}
-          onClick={() => onAuthorize(value)}
-        >
+        <Button size="lg" disabled={!value} onClick={() => onAuthorize(value)}>
           Authorize
         </Button>
       </div>
@@ -282,7 +274,7 @@ const OAuth2SchemeForm = ({
           <div className="flex gap-2">
             {hasClientCredentials && (
               <Button
-                size="default"
+                size="lg"
                 variant="outline"
                 disabled={!clientId || !clientSecret || loading}
                 onClick={handleClientCredentials}
@@ -293,7 +285,7 @@ const OAuth2SchemeForm = ({
             )}
             {hasAuthorizationCode && (
               <Button
-                size="default"
+                size="lg"
                 variant="outline"
                 disabled={!clientId || loading}
                 onClick={handleAuthorizationCode}
@@ -321,7 +313,7 @@ const OAuth2SchemeForm = ({
             className="flex-1"
           />
           <Button
-            size="default"
+            size="lg"
             disabled={!token}
             onClick={() => onAuthorize(token)}
           >
@@ -379,7 +371,7 @@ const OpenIdConnectSchemeForm = ({
             onChange={(e) => setClientId(e.target.value)}
           />
           <Button
-            size="default"
+            size="lg"
             variant="outline"
             disabled={!clientId || loading}
             onClick={handleOidcFlow}
@@ -403,7 +395,7 @@ const OpenIdConnectSchemeForm = ({
             className="flex-1"
           />
           <Button
-            size="default"
+            size="lg"
             disabled={!token}
             onClick={() => onAuthorize(token)}
           >
@@ -520,7 +512,7 @@ export const AuthorizeDialog = ({
           ))}
         </div>
         <div className="flex justify-end">
-          <Button size="default" onClick={() => onOpenChange(false)}>
+          <Button size="lg" onClick={() => onOpenChange(false)}>
             Close
           </Button>
         </div>
