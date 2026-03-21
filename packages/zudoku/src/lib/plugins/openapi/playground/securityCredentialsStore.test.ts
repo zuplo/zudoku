@@ -3,6 +3,7 @@ import {
   applySecurityCredentials,
   type BasicCredentials,
   getSecurityLockedHeaders,
+  getSecurityQueryParams,
   type SecurityCredential,
   useSecurityCredentialsStore,
 } from "./securityCredentialsStore.js";
@@ -238,7 +239,7 @@ describe("applySecurityCredentials", () => {
     expect(request.headers.get("X-API-Key")).toBe("my-key");
   });
 
-  it("should set apiKey cookie", () => {
+  it("should not set cookie header for apiKey in cookie (unsupported in browser)", () => {
     const security = [
       makeReq([
         {
@@ -253,7 +254,19 @@ describe("applySecurityCredentials", () => {
     applySecurityCredentials(request, security, {
       SessionAuth: cred("abc123"),
     });
-    expect(request.headers.get("Cookie")).toBe("session_id=abc123");
+    expect(request.headers.get("Cookie")).toBeNull();
+  });
+
+  it("should not set query param via applySecurityCredentials (use getSecurityQueryParams)", () => {
+    const security = [
+      makeReq([
+        { name: "ApiKey", type: "apiKey", in: "query", paramName: "api_key" },
+      ]),
+    ];
+    const request = makeRequest();
+    applySecurityCredentials(request, security, { ApiKey: cred("secret") });
+    // query params are not injected via applySecurityCredentials
+    expect(request.url).toBe("https://api.example.com/test");
   });
 
   it("should set bearer token", () => {
@@ -344,5 +357,47 @@ describe("applySecurityCredentials", () => {
     });
     expect(request.headers.get("X-Key")).toBeNull();
     expect(request.headers.get("Authorization")).toBeNull();
+  });
+});
+
+describe("getSecurityQueryParams", () => {
+  it("should return empty when no security", () => {
+    expect(getSecurityQueryParams(null, {})).toEqual([]);
+  });
+
+  it("should return query param for apiKey in query", () => {
+    const security = [
+      makeReq([
+        { name: "ApiKey", type: "apiKey", in: "query", paramName: "api_key" },
+      ]),
+    ];
+    const credentials = { ApiKey: cred("secret") };
+    expect(getSecurityQueryParams(security, credentials)).toEqual([
+      ["api_key", "secret"],
+    ]);
+  });
+
+  it("should not return query params for header apiKey", () => {
+    const security = [
+      makeReq([
+        {
+          name: "ApiKey",
+          type: "apiKey",
+          in: "header",
+          paramName: "X-Key",
+        },
+      ]),
+    ];
+    const credentials = { ApiKey: cred("secret") };
+    expect(getSecurityQueryParams(security, credentials)).toEqual([]);
+  });
+
+  it("should not return query params for unsatisfied requirements", () => {
+    const security = [
+      makeReq([
+        { name: "ApiKey", type: "apiKey", in: "query", paramName: "key" },
+      ]),
+    ];
+    expect(getSecurityQueryParams(security, {})).toEqual([]);
   });
 });

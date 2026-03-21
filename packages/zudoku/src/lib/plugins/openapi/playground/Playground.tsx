@@ -340,11 +340,8 @@ export const Playground = ({
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
-      } else if (
-        data.identity === SECURITY_SCHEME_IDENTITY ||
-        data.identity === NO_IDENTITY
-      ) {
-        // Apply security scheme credentials when explicitly selected or no identity
+      } else if (data.identity === SECURITY_SCHEME_IDENTITY) {
+        // Apply security scheme credentials only when explicitly selected
         applySecurityCredentials(request, security, securityCredentials);
       }
 

@@ -74,28 +74,59 @@ export const getSecurityLockedHeaders = (
 
   if (!satisfied) return [];
 
-  const headers: string[] = [];
+  const headers = new Set<string>();
   for (const { scheme } of satisfied.schemes) {
     switch (scheme.type) {
       case "apiKey":
         if (scheme.in === "header" && scheme.paramName) {
-          headers.push(scheme.paramName);
+          headers.add(scheme.paramName);
         }
         break;
       case "http":
       case "oauth2":
       case "openIdConnect":
-        headers.push("Authorization");
+        headers.add("Authorization");
         break;
     }
   }
-  return headers;
+  return Array.from(headers);
 };
 
 /**
- * Apply security credentials to a Request object.
+ * Get query parameters to inject from security credentials.
+ * Returns entries to append to the URL before creating the Request.
+ */
+export const getSecurityQueryParams = (
+  security: SecurityRequirement[] | null | undefined,
+  credentials: Record<string, SecurityCredential>,
+): Array<[string, string]> => {
+  if (!security) return [];
+
+  const satisfied = security.find((req) =>
+    req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
+  );
+
+  if (!satisfied) return [];
+
+  return satisfied.schemes.flatMap(({ scheme }) => {
+    const cred = credentials[scheme.name];
+    if (
+      !cred ||
+      scheme.type !== "apiKey" ||
+      scheme.in !== "query" ||
+      !scheme.paramName
+    )
+      return [];
+    return [[scheme.paramName, cred.value as string]];
+  });
+};
+
+/**
+ * Apply security credentials to a Request object's headers.
  * Finds the first security requirement where all schemes are authorized,
- * then injects the credentials.
+ * then injects the credentials. Query params and cookies are not handled
+ * here — use getSecurityQueryParams for query params. Cookie-based apiKey
+ * auth is not supported in the browser playground due to fetch restrictions.
  */
 export const applySecurityCredentials = (
   request: Request,
@@ -119,21 +150,9 @@ export const applySecurityCredentials = (
         const value = cred.value as string;
         if (scheme.in === "header" && scheme.paramName) {
           request.headers.set(scheme.paramName, value);
-        } else if (scheme.in === "query" && scheme.paramName) {
-          const url = new URL(request.url);
-          url.searchParams.set(scheme.paramName, value);
-          Object.defineProperty(request, "url", {
-            value: url.toString(),
-            writable: true,
-          });
-        } else if (scheme.in === "cookie" && scheme.paramName) {
-          const existing = request.headers.get("Cookie") ?? "";
-          const cookie = `${scheme.paramName}=${value}`;
-          request.headers.set(
-            "Cookie",
-            existing ? `${existing}; ${cookie}` : cookie,
-          );
         }
+        // query params are handled via getSecurityQueryParams before Request creation
+        // cookie-based apiKey is not supported in browser fetch
         break;
       }
       case "http": {
@@ -148,8 +167,6 @@ export const applySecurityCredentials = (
             "Authorization",
             `Bearer ${cred.value as string}`,
           );
-        } else {
-          request.headers.set("Authorization", cred.value as string);
         }
         break;
       }
