@@ -3,7 +3,7 @@ import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import colors from "picocolors";
 import { SitemapStream } from "sitemap";
-import type { ZudokuSiteMapConfig } from "../config/validators/validate.js";
+import type { ZudokuSiteMapConfig } from "../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 export async function generateSitemap({
   outputUrls,

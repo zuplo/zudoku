@@ -13,8 +13,8 @@ import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { runPluginTransformConfig } from "../lib/core/transform-config.js";
 import invariant from "../lib/util/invariant.js";
 import { fileExists } from "./file-exists.js";
-import type { ZudokuConfig } from "./validators/validate.js";
-import { validateConfig } from "./validators/validate.js";
+import type { ZudokuConfig } from "./validators/ZudokuConfig.js";
+import { validateConfig } from "./validators/ZudokuConfig.js";
 
 export type ConfigWithMeta = ZudokuConfig & {
   __meta: {

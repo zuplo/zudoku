@@ -1,6 +1,6 @@
 import type { MDXProps } from "mdx/types.js";
 import type { JSX } from "react";
-import type { ZudokuDocsConfig } from "../../../config/validators/validate.js";
+import type { ZudokuDocsConfig } from "../../../config/validators/ZudokuConfig.js";
 import type { Toc } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 

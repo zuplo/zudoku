@@ -8,7 +8,7 @@ import { upgrade, validate } from "@scalar/openapi-parser";
 import { deepEqual } from "fast-equals";
 import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
-import type { VersionConfig } from "../../config/validators/validate.js";
+import type { VersionConfig } from "../../config/validators/ZudokuConfig.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";

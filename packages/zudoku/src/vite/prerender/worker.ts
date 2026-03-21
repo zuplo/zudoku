@@ -3,7 +3,7 @@ import path from "node:path";
 import Piscina from "piscina";
 import { matchPath } from "react-router";
 import { ProtectedRoutesSchema } from "../../config/validators/ProtectedRoutesSchema.js";
-import type { ZudokuConfig } from "../../config/validators/validate.js";
+import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 import type { WorkerResult } from "./prerender.js";

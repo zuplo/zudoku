@@ -13,7 +13,7 @@ import { ZuploEnv } from "../app/env.js";
 import { logger } from "../cli/common/logger.js";
 import { getZudokuRootDir } from "../cli/common/package-json.js";
 import { loadZudokuConfig } from "../config/loader.js";
-import { CdnUrlSchema } from "../config/validators/validate.js";
+import { CdnUrlSchema } from "../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { findPackageRoot } from "./package-root.js";
 import vitePlugin from "./plugin.js";

@@ -1,5 +1,5 @@
 import { redirect, type RouteObject } from "react-router";
-import type { ZudokuRedirect } from "../../config/validators/validate.js";
+import type { ZudokuRedirect } from "../../config/validators/ZudokuConfig.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
 
 export const createRedirectRoutes = (
