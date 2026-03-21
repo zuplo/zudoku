@@ -241,4 +241,70 @@ describe("validateConfig", () => {
 
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
+
+  it("should accept schemaDownload with only enabled", () => {
+    const config = {
+      apis: {
+        type: "url" as const,
+        input: "https://example.com/openapi.json",
+        options: { schemaDownload: { enabled: true } },
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept schemaDownload with useInClaude and useInChatGPT set to false", () => {
+    const config = {
+      apis: {
+        type: "url" as const,
+        input: "https://example.com/openapi.json",
+        options: {
+          schemaDownload: {
+            enabled: true,
+            useInClaude: false,
+            useInChatGPT: false,
+          },
+        },
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should reject non-boolean values for schemaDownload.useInClaude", () => {
+    process.env.NODE_ENV = "production";
+
+    const config = {
+      apis: {
+        type: "url" as const,
+        input: "https://example.com/openapi.json",
+        options: {
+          schemaDownload: { enabled: true, useInClaude: "yes" },
+        },
+      },
+    };
+
+    expect(() => validateConfig(config)).toThrow();
+  });
+
+  it("should reject non-boolean values for schemaDownload.useInChatGPT", () => {
+    process.env.NODE_ENV = "production";
+
+    const config = {
+      apis: {
+        type: "url" as const,
+        input: "https://example.com/openapi.json",
+        options: {
+          schemaDownload: { enabled: true, useInChatGPT: 1 },
+        },
+      },
+    };
+
+    expect(() => validateConfig(config)).toThrow();
+  });
 });
