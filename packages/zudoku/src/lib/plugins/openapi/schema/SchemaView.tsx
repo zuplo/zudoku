@@ -1,5 +1,5 @@
 import { EyeIcon, EyeOffIcon, InfoIcon } from "lucide-react";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useId, useLayoutEffect, useRef, useState } from "react";
 import {
   Frame,
   FrameDescription,
@@ -82,14 +82,18 @@ const DeprecatedToggle = ({
   count,
   showDeprecated,
   onToggle,
+  controlsId,
 }: {
   count: number;
   showDeprecated: boolean;
   onToggle: () => void;
+  controlsId: string;
 }) => (
   <button
     type="button"
     onClick={onToggle}
+    aria-expanded={showDeprecated}
+    aria-controls={controlsId}
     className="text-xs text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
   >
     {showDeprecated ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
@@ -112,13 +116,15 @@ const ObjectSchemaView = ({
 }) => {
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
+  const deprecatedId = useId();
 
-  useEffect(() => {
+  // Upgrade hidden → hidden="until-found" so browser Cmd+F can find text inside.
+  // Uses useLayoutEffect to set the attribute before paint, avoiding flash.
+  // Managed imperatively because React types don't support "until-found" value.
+  useLayoutEffect(() => {
     const el = deprecatedRef.current;
     if (!el) return;
 
-    // Use hidden="until-found" so browser Cmd+F can find text inside.
-    // Managed imperatively because React types don't support "until-found" value.
     if (!showDeprecated) {
       el.setAttribute("hidden", "until-found");
     } else {
@@ -197,7 +203,9 @@ const ObjectSchemaView = ({
         <FramePanel className="p-0!">
           {itemsList}
           {deprecatedProperties && (
-            <div ref={deprecatedRef}>{deprecatedList}</div>
+            <div ref={deprecatedRef} id={deprecatedId} hidden={!showDeprecated}>
+              {deprecatedList}
+            </div>
           )}
           {additionalObjectProperties}
         </FramePanel>
@@ -222,6 +230,7 @@ const ObjectSchemaView = ({
               count={deprecatedProperties.length}
               showDeprecated={showDeprecated}
               onToggle={() => setShowDeprecated(!showDeprecated)}
+              controlsId={deprecatedId}
             />
           )}
         </FrameFooter>
