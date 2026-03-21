@@ -1,3 +1,4 @@
+import { useOasConfig } from "./context.js";
 import type {
   MediaTypeObject,
   OperationsFragmentFragment,
@@ -52,16 +53,19 @@ export const PlaygroundDialogWrapper = ({
       defaultValue: p.schema?.default,
     }));
 
+  const { options } = useOasConfig();
+
   // Extract unique security schemes from the operation's security requirements
-  const securitySchemes = operation.security
-    ? Array.from(
-        new Map(
-          operation.security.flatMap((req) =>
-            req.schemes.map((s) => [s.scheme.name, s.scheme]),
-          ),
-        ).values(),
-      )
-    : [];
+  const securitySchemes =
+    operation.security && !options?.disableSecurity
+      ? Array.from(
+          new Map(
+            operation.security.flatMap((req) =>
+              req.schemes.map((s) => [s.scheme.name, s.scheme]),
+            ),
+          ).values(),
+        )
+      : [];
 
   return (
     <PlaygroundDialog
@@ -73,7 +77,7 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
-      security={operation.security}
+      security={options?.disableSecurity ? undefined : operation.security}
       securitySchemes={securitySchemes}
     />
   );
