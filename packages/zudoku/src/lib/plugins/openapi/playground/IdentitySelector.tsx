@@ -1,4 +1,4 @@
-import { CheckCircle2Icon, LockIcon, SettingsIcon } from "lucide-react";
+import { CheckCircle2Icon, SettingsIcon } from "lucide-react";
 import { Button } from "zudoku/ui/Button.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
@@ -58,7 +58,6 @@ const IdentitySelector = ({
               id={SECURITY_SCHEME_IDENTITY}
             />
             <span className="flex items-center gap-2 flex-1">
-              <LockIcon size={14} />
               API Security
               {authorizedCount > 0 && (
                 <CheckCircle2Icon size={14} className="text-green-500" />
