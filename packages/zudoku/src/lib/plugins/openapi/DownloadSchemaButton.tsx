@@ -13,18 +13,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
+import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
-import { ChatGPTLogo } from "../markdown/assets/ChatGPTLogo.js";
-import { ClaudeLogo } from "../markdown/assets/ClaudeLogo.js";
 
 export const DownloadSchemaButton = ({
   downloadUrl,
-  schemaDownload,
 }: {
   downloadUrl: string;
-  schemaDownload?: { useInClaude?: boolean; useInChatGPT?: boolean };
 }) => {
   const [, copyToClipboard] = useCopyToClipboard();
+  const { options } = useZudoku();
 
   const handleDownload: MouseEventHandler<HTMLAnchorElement> = async (e) => {
     const isExternal = downloadUrl.includes("://");
@@ -51,6 +50,8 @@ export const DownloadSchemaButton = ({
       console.error("Failed to download schema:", error);
     }
   };
+
+  const resolvedUrl = new URL(downloadUrl, window.location.href).href;
 
   return (
     <ButtonGroup>
@@ -83,32 +84,10 @@ export const DownloadSchemaButton = ({
             <CopyIcon size={14} />
             Copy to clipboard
           </DropdownMenuItem>
-          {schemaDownload?.useInClaude !== false && (
-            <DropdownMenuItem
-              onClick={() => {
-                const prompt = encodeURIComponent(
-                  `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
-                );
-                window.open(`https://claude.ai/new?q=${prompt}`, "_blank");
-              }}
-            >
-              <ClaudeLogo className="size-4" />
-              Use in Claude
-            </DropdownMenuItem>
-          )}
-          {schemaDownload?.useInChatGPT !== false && (
-            <DropdownMenuItem
-              onClick={() => {
-                const prompt = encodeURIComponent(
-                  `Help me understand this API: ${new URL(downloadUrl, window.location.href).href}`,
-                );
-                window.open(`https://chatgpt.com/?q=${prompt}`, "_blank");
-              }}
-            >
-              <ChatGPTLogo className="size-4" />
-              Use in ChatGPT
-            </DropdownMenuItem>
-          )}
+          <AiAssistantMenuItems
+            aiAssistants={options.aiAssistants}
+            context={{ pageUrl: resolvedUrl, type: "openapi" }}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
     </ButtonGroup>

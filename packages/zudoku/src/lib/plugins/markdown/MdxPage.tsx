@@ -18,7 +18,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
+import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
 import { Toc } from "../../components/navigation/Toc.js";
@@ -31,8 +33,6 @@ import { Typography } from "../../components/Typography.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { slugify } from "../../util/slugify.js";
-import { ChatGPTLogo } from "./assets/ChatGPTLogo.js";
-import { ClaudeLogo } from "./assets/ClaudeLogo.js";
 import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
 
 declare global {
@@ -73,6 +73,7 @@ export const MdxPage = ({
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
   const location = useLocation();
+  const { options } = useZudoku();
   const [isCopied, setIsCopied] = useState(false);
 
   const title = frontmatter.title;
@@ -202,36 +203,13 @@ export const MdxPage = ({
                         Open Markdown page
                       </a>
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2"
-                      onClick={() => {
-                        const prompt = encodeURIComponent(
-                          `Help me understand this documentation page: ${window.location.href}`,
-                        );
-                        window.open(
-                          `https://claude.ai/new?q=${prompt}`,
-                          "_blank",
-                        );
+                    <AiAssistantMenuItems
+                      aiAssistants={options.aiAssistants}
+                      context={{
+                        pageUrl: window.location.href,
+                        type: "docs",
                       }}
-                    >
-                      <ClaudeLogo className="size-4" />
-                      Open in Claude
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="gap-2"
-                      onClick={() => {
-                        const prompt = encodeURIComponent(
-                          `Help me understand this documentation page: ${window.location.href}`,
-                        );
-                        window.open(
-                          `https://chatgpt.com/?q=${prompt}`,
-                          "_blank",
-                        );
-                      }}
-                    >
-                      <ChatGPTLogo className="size-4" />
-                      Open in ChatGPT
-                    </DropdownMenuItem>
+                    />
                   </DropdownMenuContent>
                 </DropdownMenu>
               </ButtonGroup>

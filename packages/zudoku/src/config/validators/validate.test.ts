@@ -256,19 +256,9 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
-  it("should accept schemaDownload with useInClaude and useInChatGPT set to false", () => {
+  it("should accept aiAssistants with preset strings", () => {
     const config = {
-      apis: {
-        type: "url" as const,
-        input: "https://example.com/openapi.json",
-        options: {
-          schemaDownload: {
-            enabled: true,
-            useInClaude: false,
-            useInChatGPT: false,
-          },
-        },
-      },
+      aiAssistants: ["claude", "chatgpt"],
     };
 
     validateConfig(config);
@@ -276,33 +266,53 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
-  it("should reject non-boolean values for schemaDownload.useInClaude", () => {
-    process.env.NODE_ENV = "production";
-
+  it("should accept aiAssistants set to false", () => {
     const config = {
-      apis: {
-        type: "url" as const,
-        input: "https://example.com/openapi.json",
-        options: {
-          schemaDownload: { enabled: true, useInClaude: "yes" },
-        },
-      },
+      aiAssistants: false as const,
     };
 
-    expect(() => validateConfig(config)).toThrow();
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
-  it("should reject non-boolean values for schemaDownload.useInChatGPT", () => {
+  it("should accept aiAssistants with custom entries", () => {
+    const config = {
+      aiAssistants: [
+        "claude",
+        {
+          label: "Open in MyAI",
+          url: "https://myai.com/?context={pageUrl}",
+        },
+      ],
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should accept aiAssistants with callback url", () => {
+    const config = {
+      aiAssistants: [
+        {
+          label: "Open in MyAI",
+          url: ({ pageUrl }: { pageUrl: string }) =>
+            `https://myai.com/?q=${pageUrl}`,
+        },
+      ],
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
+  it("should reject invalid aiAssistants preset", () => {
     process.env.NODE_ENV = "production";
 
     const config = {
-      apis: {
-        type: "url" as const,
-        input: "https://example.com/openapi.json",
-        options: {
-          schemaDownload: { enabled: true, useInChatGPT: 1 },
-        },
-      },
+      aiAssistants: ["invalid-preset"],
     };
 
     expect(() => validateConfig(config)).toThrow();
