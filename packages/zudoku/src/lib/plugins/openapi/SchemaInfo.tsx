@@ -67,6 +67,47 @@ const SchemaInfoQuery = graphql(/* GraphQL */ `
         schemas {
           name
         }
+        securitySchemes {
+          name
+          type
+          description
+          in
+          paramName
+          scheme
+          bearerFormat
+          openIdConnectUrl
+          flows {
+            implicit {
+              authorizationUrl
+              scopes {
+                name
+                description
+              }
+            }
+            password {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            clientCredentials {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            authorizationCode {
+              authorizationUrl
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+          }
+        }
       }
       webhooks {
         name
