@@ -12,6 +12,7 @@ jobs:
       actions: read
       contents: read
       id-token: write
+      pull-requests: write
 
     env:
       COREPACK_ENABLE_STRICT: 0
@@ -41,7 +42,20 @@ jobs:
 
       - run: pnpm check
       - run: nx run-many -t build:ci
-      - run: pnpm test
+      - run: npx vitest run --typecheck --coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+
+      - name: Coverage report comment
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
 
       - name: Get Variables
         id: vars
