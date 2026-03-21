@@ -42,20 +42,26 @@ export const SchemaPropertyItem = ({
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
+  const isDeprecated = group === "deprecated";
+
   if (isCircularRef(schema)) {
     return (
-      <Item>
+      <Item
+        className={cn(
+          isDeprecated && "opacity-50 hover:opacity-100 transition",
+        )}
+      >
         <ItemContent className="gap-y-2">
           <div>
             <ItemTitle className="inline me-2">
-              <code>{name}</code>
+              <code className={cn(isDeprecated && "line-through")}>{name}</code>
             </ItemTitle>
             {"\u200B"}
             <ParamInfos
               className="inline"
               schema={schema}
               extraItems={[
-                group !== "optional" && (
+                group === "required" && (
                   <span className="text-primary">required</span>
                 ),
                 <RecursiveIndicator key="circular-ref" />,
@@ -90,7 +96,9 @@ export const SchemaPropertyItem = ({
   );
 
   return (
-    <Item>
+    <Item
+      className={cn(isDeprecated && "opacity-50 hover:opacity-100 transition")}
+    >
       <ItemContent className="gap-y-2">
         <div>
           <ItemTitle className="inline me-2">
@@ -100,10 +108,12 @@ export const SchemaPropertyItem = ({
                 type="button"
                 className="hover:underline"
               >
-                <code>{name}</code>
+                <code className={cn(isDeprecated && "line-through")}>
+                  {name}
+                </code>
               </button>
             ) : (
-              <code>{name}</code>
+              <code className={cn(isDeprecated && "line-through")}>{name}</code>
             )}
           </ItemTitle>
           {"\u200B"}
@@ -111,7 +121,7 @@ export const SchemaPropertyItem = ({
             className="inline"
             schema={schema}
             extraItems={[
-              group !== "optional" && (
+              group === "required" && (
                 <span className="text-primary">required</span>
               ),
               isArrayCircularRef(schema) && (
