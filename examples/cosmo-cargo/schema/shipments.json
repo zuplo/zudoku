@@ -81,6 +81,9 @@
   "security": [
     {
       "ApiKeyAuth": []
+    },
+    {
+      "BearerAuth": []
     }
   ],
   "components": {
@@ -121,7 +124,40 @@
       "ApiKeyAuth": {
         "type": "apiKey",
         "in": "header",
-        "name": "X-API-Key"
+        "name": "X-API-Key",
+        "description": "API key passed via the `X-API-Key` header. Get your key from the [developer portal](https://developers.sh.example.com)."
+      },
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT bearer token obtained from the authentication service."
+      },
+      "OAuth2": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 authorization for advanced integrations.",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://auth.cosmocargo.com/oauth/authorize",
+            "tokenUrl": "https://auth.cosmocargo.com/oauth/token",
+            "refreshUrl": "https://auth.cosmocargo.com/oauth/refresh",
+            "scopes": {
+              "shipments:read": "Read shipment data",
+              "shipments:write": "Create and modify shipments",
+              "shipments:cancel": "Cancel shipments",
+              "billing:read": "View rates and invoices",
+              "admin": "Full administrative access"
+            }
+          },
+          "clientCredentials": {
+            "tokenUrl": "https://auth.cosmocargo.com/oauth/token",
+            "scopes": {
+              "shipments:read": "Read shipment data",
+              "shipments:write": "Create and modify shipments",
+              "billing:read": "View rates and invoices"
+            }
+          }
+        }
       }
     },
     "schemas": {
@@ -708,6 +744,11 @@
         "summary": "Create a new shipment",
         "description": "Creates a new shipment with the provided details.\n\nThis endpoint allows you to **create and register** a new shipment in the Cosmo Cargo platform. The shipment will be assigned a unique `trackingNumber` and will enter the `CREATED` status.\n\n### How to use with SDK\n\nHere's how to create a shipment using `@cosmo-cargo/sdk{:sh}`:\n\n```ts\nimport { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create(config);\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);\n```\n\n**Note:** Use the `X-Request-Priority` header to expedite processing for urgent shipments.",
         "operationId": "createShipment",
+        "security": [
+          { "ApiKeyAuth": [] },
+          { "BearerAuth": [] },
+          { "OAuth2": ["shipments:write"] }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
@@ -1196,8 +1237,9 @@
       "delete": {
         "tags": ["Shipment Management"],
         "summary": "Cancel shipment",
-        "description": "Cancel a shipment that hasn't been picked up yet",
+        "description": "Cancel a shipment that hasn't been picked up yet. Requires API key or OAuth2 with `shipments:cancel` scope.",
         "operationId": "cancelShipment",
+        "security": [{ "ApiKeyAuth": [] }, { "OAuth2": ["shipments:cancel"] }],
         "parameters": [
           {
             "name": "trackingNumber",
@@ -1898,8 +1940,9 @@
       "post": {
         "tags": ["International Shipping"],
         "summary": "Pay import duties",
-        "description": "Pay import duties and taxes for an international shipment",
+        "description": "Pay import duties and taxes for an international shipment. Requires both an API key **and** OAuth2 `billing:read` scope.",
         "operationId": "payDuties",
+        "security": [{ "ApiKeyAuth": [], "OAuth2": ["billing:read"] }],
         "parameters": [
           {
             "name": "shipmentId",
@@ -3626,8 +3669,9 @@
     "/health": {
       "get": {
         "summary": "Health check",
-        "description": "Check if the API is up and running",
+        "description": "Check if the API is up and running. This endpoint is public and requires no authentication.",
         "operationId": "healthCheck",
+        "security": [],
         "responses": {
           "200": {
             "description": "API is healthy",
@@ -3659,8 +3703,9 @@
     "/version": {
       "get": {
         "summary": "Get API version",
-        "description": "Get information about the current API version",
+        "description": "Get information about the current API version. This endpoint is public.",
         "operationId": "getVersion",
+        "security": [],
         "responses": {
           "200": {
             "description": "Version information",
