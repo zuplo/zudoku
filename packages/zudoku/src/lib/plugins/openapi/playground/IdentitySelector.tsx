@@ -1,4 +1,4 @@
-import { CheckCircle2Icon, SettingsIcon } from "lucide-react";
+import { SettingsIcon } from "lucide-react";
 import { Button } from "zudoku/ui/Button.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
@@ -21,9 +21,11 @@ const IdentitySelector = ({
   securityCredentials?: Record<string, SecurityCredential>;
   onConfigureSecurity?: () => void;
 }) => {
-  const authorizedCount = securityCredentials
-    ? Object.values(securityCredentials).filter((c) => c.isAuthorized).length
-    : 0;
+  const authorizedNames = securityCredentials
+    ? Object.entries(securityCredentials)
+        .filter(([, c]) => c.isAuthorized)
+        .map(([name]) => name)
+    : [];
 
   return (
     <div className="w-full overflow-hidden">
@@ -57,11 +59,16 @@ const IdentitySelector = ({
               value={SECURITY_SCHEME_IDENTITY}
               id={SECURITY_SCHEME_IDENTITY}
             />
-            <span className="flex items-center gap-2 flex-1">
-              API Security
-              {authorizedCount > 0 && (
-                <CheckCircle2Icon size={14} className="text-green-500" />
-              )}
+            <span className="flex items-center gap-2 flex-1 min-w-0">
+              <span className="truncate">
+                API Security
+                {authorizedNames.length > 0 && (
+                  <span className="text-muted-foreground">
+                    {" "}
+                    ({authorizedNames.join(", ")})
+                  </span>
+                )}
+              </span>
             </span>
             {value === SECURITY_SCHEME_IDENTITY && onConfigureSecurity && (
               <Button
