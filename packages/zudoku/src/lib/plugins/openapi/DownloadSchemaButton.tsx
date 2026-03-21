@@ -51,8 +51,6 @@ export const DownloadSchemaButton = ({
     }
   };
 
-  const resolvedUrl = new URL(downloadUrl, window.location.href).href;
-
   return (
     <ButtonGroup>
       <Button variant="outline" asChild>
@@ -86,7 +84,8 @@ export const DownloadSchemaButton = ({
           </DropdownMenuItem>
           <AiAssistantMenuItems
             aiAssistants={options.aiAssistants}
-            context={{ pageUrl: resolvedUrl, type: "openapi" }}
+            getPageUrl={() => new URL(downloadUrl, window.location.href).href}
+            type="openapi"
           />
         </DropdownMenuContent>
       </DropdownMenu>

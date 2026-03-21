@@ -205,10 +205,8 @@ export const MdxPage = ({
                     </DropdownMenuItem>
                     <AiAssistantMenuItems
                       aiAssistants={options.aiAssistants}
-                      context={{
-                        pageUrl: window.location.href,
-                        type: "docs",
-                      }}
+                      getPageUrl={() => window.location.href}
+                      type="docs"
                     />
                   </DropdownMenuContent>
                 </DropdownMenu>

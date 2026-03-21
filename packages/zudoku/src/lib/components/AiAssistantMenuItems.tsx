@@ -68,10 +68,12 @@ const DEFAULT_ASSISTANTS: AiAssistantsConfig = ["claude", "chatgpt"];
 
 export const AiAssistantMenuItems = ({
   aiAssistants,
-  context,
+  getPageUrl,
+  type,
 }: {
   aiAssistants: AiAssistantsConfig;
-  context: AiAssistantContext;
+  getPageUrl: () => string;
+  type: "docs" | "openapi";
 }) => {
   const config = aiAssistants ?? DEFAULT_ASSISTANTS;
 
@@ -83,13 +85,12 @@ export const AiAssistantMenuItems = ({
     const assistant = resolveAssistant(entry);
     if (!assistant) return null;
 
-    const url = assistant.getUrl(context);
-
     return (
       <DropdownMenuItem
         key={typeof entry === "string" ? entry : index}
         className="gap-2"
         onClick={() => {
+          const url = assistant.getUrl({ pageUrl: getPageUrl(), type });
           window.open(url, "_blank", "noopener,noreferrer");
         }}
       >
