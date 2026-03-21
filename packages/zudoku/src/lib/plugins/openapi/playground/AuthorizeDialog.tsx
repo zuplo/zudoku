@@ -16,7 +16,6 @@ import {
 } from "zudoku/ui/Dialog.js";
 import { Input } from "zudoku/ui/Input.js";
 import { Label } from "zudoku/ui/Label.js";
-import { Separator } from "zudoku/ui/Separator.js";
 import type {
   SecuritySchemeIn,
   SecuritySchemeType,
@@ -84,7 +83,11 @@ const ApiKeySchemeForm = ({
           onChange={(e) => setValue(e.target.value)}
           className="flex-1"
         />
-        <Button size="sm" disabled={!value} onClick={() => onAuthorize(value)}>
+        <Button
+          size="default"
+          disabled={!value}
+          onClick={() => onAuthorize(value)}
+        >
           Authorize
         </Button>
       </div>
@@ -116,7 +119,7 @@ const HttpBasicSchemeForm = ({
           className="flex-1"
         />
         <Button
-          size="sm"
+          size="default"
           disabled={!username}
           onClick={() => onAuthorize({ username, password })}
         >
@@ -148,7 +151,11 @@ const HttpBearerSchemeForm = ({
           onChange={(e) => setValue(e.target.value)}
           className="flex-1"
         />
-        <Button size="sm" disabled={!value} onClick={() => onAuthorize(value)}>
+        <Button
+          size="default"
+          disabled={!value}
+          onClick={() => onAuthorize(value)}
+        >
           Authorize
         </Button>
       </div>
@@ -275,7 +282,7 @@ const OAuth2SchemeForm = ({
           <div className="flex gap-2">
             {hasClientCredentials && (
               <Button
-                size="sm"
+                size="default"
                 variant="outline"
                 disabled={!clientId || !clientSecret || loading}
                 onClick={handleClientCredentials}
@@ -286,7 +293,7 @@ const OAuth2SchemeForm = ({
             )}
             {hasAuthorizationCode && (
               <Button
-                size="sm"
+                size="default"
                 variant="outline"
                 disabled={!clientId || loading}
                 onClick={handleAuthorizationCode}
@@ -314,7 +321,7 @@ const OAuth2SchemeForm = ({
             className="flex-1"
           />
           <Button
-            size="sm"
+            size="default"
             disabled={!token}
             onClick={() => onAuthorize(token)}
           >
@@ -372,7 +379,7 @@ const OpenIdConnectSchemeForm = ({
             onChange={(e) => setClientId(e.target.value)}
           />
           <Button
-            size="sm"
+            size="default"
             variant="outline"
             disabled={!clientId || loading}
             onClick={handleOidcFlow}
@@ -396,7 +403,7 @@ const OpenIdConnectSchemeForm = ({
             className="flex-1"
           />
           <Button
-            size="sm"
+            size="default"
             disabled={!token}
             onClick={() => onAuthorize(token)}
           >
@@ -494,16 +501,14 @@ export const AuthorizeDialog = ({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) => {
-  const { credentials, clearAll } = useSecurityCredentialsStore();
-  const authorizedCount = Object.values(credentials).filter(
-    (c) => c.isAuthorized,
-  ).length;
-
   if (securitySchemes.length === 0) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+      <DialogContent
+        className="max-w-lg max-h-[80vh] overflow-y-auto"
+        showCloseButton
+      >
         <DialogTitle>Authorize</DialogTitle>
         <DialogDescription>
           Configure authentication for API requests. Credentials are stored in
@@ -514,17 +519,11 @@ export const AuthorizeDialog = ({
             <SchemeEntry key={scheme.name} scheme={scheme} />
           ))}
         </div>
-        {authorizedCount > 0 && (
-          <>
-            <Separator />
-            <div className="flex justify-end">
-              <Button variant="outline" size="sm" onClick={clearAll}>
-                <LogOutIcon size={14} />
-                Clear All
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="flex justify-end">
+          <Button size="default" onClick={() => onOpenChange(false)}>
+            Close
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   );
