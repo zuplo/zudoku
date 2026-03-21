@@ -14,6 +14,7 @@ import { MCPEndpoint } from "./MCPEndpoint.js";
 import { OperationsFragment } from "./OperationList.js";
 import { ParameterList } from "./ParameterList.js";
 import { SchemaView } from "./schema/SchemaView.js";
+import { SecurityRequirements } from "./SecurityRequirements.js";
 import { Sidecar } from "./Sidecar.js";
 import { methodForColor } from "./util/methodToColor.js";
 
@@ -67,20 +68,23 @@ export const OperationListItem = ({
           {operation.summary}
         </Heading>
         {!isMCPEndpoint && (
-          <div className="text-sm flex gap-2 font-mono col-span-full">
-            <span className={methodForColor(operation.method)}>
-              {operation.method.toUpperCase()}
-            </span>
-            <SelectOnClick className="max-w-full truncate flex cursor-pointer">
-              {displayServerUrl && (
-                <div className="text-neutral-400 dark:text-neutral-500 truncate">
-                  {displayServerUrl.replace(/\/$/, "")}
+          <div className="flex flex-col gap-1.5 col-span-full">
+            <div className="text-sm flex gap-2 font-mono">
+              <span className={methodForColor(operation.method)}>
+                {operation.method.toUpperCase()}
+              </span>
+              <SelectOnClick className="max-w-full truncate flex cursor-pointer">
+                {displayServerUrl && (
+                  <div className="text-neutral-400 dark:text-neutral-500 truncate">
+                    {displayServerUrl.replace(/\/$/, "")}
+                  </div>
+                )}
+                <div className="text-neutral-900 dark:text-neutral-200">
+                  {operation.path}
                 </div>
-              )}
-              <div className="text-neutral-900 dark:text-neutral-200">
-                {operation.path}
-              </div>
-            </SelectOnClick>
+              </SelectOnClick>
+            </div>
+            <SecurityRequirements security={operation.security} />
           </div>
         )}
 
