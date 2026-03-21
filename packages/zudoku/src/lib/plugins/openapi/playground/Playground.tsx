@@ -25,6 +25,7 @@ import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
 import type { MediaTypeObject } from "../graphql/graphql.js";
 import { useSelectedServer } from "../state.js";
+import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
 import {
   CollapsibleHeader,
@@ -42,6 +43,11 @@ import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
+import {
+  applySecurityCredentials,
+  getSecurityLockedHeaders,
+  useSecurityCredentialsStore,
+} from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
@@ -119,6 +125,41 @@ export type PlaygroundResult = {
   };
 };
 
+export type SecurityRequirementProp = {
+  schemes: Array<{
+    scopes: Array<string>;
+    scheme: {
+      name: string;
+      type: string;
+      description?: string | null;
+      in?: string | null;
+      paramName?: string | null;
+      scheme?: string | null;
+      bearerFormat?: string | null;
+      openIdConnectUrl?: string | null;
+      flows?: {
+        implicit?: {
+          authorizationUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        password?: {
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        clientCredentials?: {
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        authorizationCode?: {
+          authorizationUrl?: string | null;
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+      } | null;
+    };
+  }>;
+};
+
 export type PlaygroundContentProps = {
   server?: string;
   servers?: string[];
@@ -129,6 +170,18 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: MediaTypeObject[];
+  security?: SecurityRequirementProp[] | null;
+  securitySchemes?: Array<{
+    name: string;
+    type: string;
+    description?: string | null;
+    in?: string | null;
+    paramName?: string | null;
+    scheme?: string | null;
+    bearerFormat?: string | null;
+    openIdConnectUrl?: string | null;
+    flows?: any;
+  }>;
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
@@ -144,6 +197,8 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
   examples,
+  security,
+  securitySchemes = [],
   requiresLogin = false,
   onLogin,
   onSignUp,
@@ -217,6 +272,12 @@ export const Playground = ({
     [identities.data, identity],
   );
 
+  const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
+  const securityLockedHeaders = useMemo(
+    () => getSecurityLockedHeaders(security, securityCredentials),
+    [security, securityCredentials],
+  );
+
   useEffect(() => {
     if (identity) {
       latestSetRememberedIdentity.current(identity);
@@ -270,6 +331,9 @@ export const Playground = ({
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
+      } else {
+        // No identity selected — apply security scheme credentials
+        applySecurityCredentials(request, security, securityCredentials);
       }
 
       const warningTimeout = setTimeout(
@@ -534,18 +598,26 @@ export const Playground = ({
               </Button>
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
-              {identities.data?.length !== 0 && (
+              {(identities.data?.length !== 0 ||
+                securitySchemes.length > 0) && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} aria-hidden="true" />
                     <CollapsibleHeader>Authentication</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
-                    <IdentitySelector
-                      value={identity}
-                      identities={identities.data ?? []}
-                      setValue={(value) => setValue("identity", value)}
-                    />
+                    {identities.data?.length !== 0 && (
+                      <IdentitySelector
+                        value={identity}
+                        identities={identities.data ?? []}
+                        setValue={(value) => setValue("identity", value)}
+                      />
+                    )}
+                    {securitySchemes.length > 0 && (
+                      <div className="p-3">
+                        <AuthorizeDialog securitySchemes={securitySchemes} />
+                      </div>
+                    )}
                   </CollapsibleContent>
                 </Collapsible>
               )}
@@ -567,7 +639,10 @@ export const Playground = ({
               <Headers
                 control={control}
                 schemaHeaders={headers}
-                lockedHeaders={authorizationFields?.headers}
+                lockedHeaders={[
+                  ...(authorizationFields?.headers ?? []),
+                  ...securityLockedHeaders,
+                ]}
               />
               {isBodySupported && <BodyPanel content={examples} />}
             </div>
