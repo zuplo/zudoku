@@ -152,17 +152,13 @@ export const MdxPage = ({
       </Helmet>
 
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
-        {(category || title) && (
-          <header className="flex items-start justify-between gap-4">
-            <div className="flex-1">
-              {category && <CategoryHeading>{category}</CategoryHeading>}
-              {title && (
-                <Heading level={1} id={slugify(title)}>
-                  {title}
-                </Heading>
-              )}
-            </div>
-            {copyMarkdownConfig && (
+        <header className="flow-root">
+          {copyMarkdownConfig && (
+            <div
+              className="float-end ms-4 mt-1"
+              role="group"
+              aria-label="Page actions"
+            >
               <ButtonGroup>
                 <Button
                   variant="outline"
@@ -235,9 +231,15 @@ export const MdxPage = ({
                   </DropdownMenuContent>
                 </DropdownMenu>
               </ButtonGroup>
-            )}
-          </header>
-        )}
+            </div>
+          )}
+          {category && <CategoryHeading>{category}</CategoryHeading>}
+          {title && (
+            <Heading level={1} id={slugify(title)}>
+              {title}
+            </Heading>
+          )}
+        </header>
 
         {frontmatter.draft && (
           <DeveloperHint>
