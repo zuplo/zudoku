@@ -2,6 +2,7 @@
 import SchemaBuilder from "@pothos/core";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
+import type { OpenAPIV3 } from "openapi-types";
 import {
   type CountableSlugify,
   slugifyWithCounter,
@@ -23,31 +24,28 @@ import type {
 } from "../parser/index.js";
 
 // Security scheme types for the GraphQL layer
+// Uses OpenAPI types where possible; adds `name` (the key from securitySchemes map)
+// and renames apiKey's `name` to `paramName` to avoid collision with the scheme key.
 type SecuritySchemeData = {
   name: string;
-  type: string;
+  type: OpenAPIV3.SecuritySchemeObject["type"];
   description?: string;
-  in?: string;
+  in?: OpenAPIV3.ApiKeySecurityScheme["in"];
   paramName?: string;
   scheme?: string;
   bearerFormat?: string;
   openIdConnectUrl?: string;
-  flows?: OAuthFlowsData;
+  flows?: OpenAPIV3.OAuth2SecurityScheme["flows"];
   extensions?: Record<string, any>;
 };
 
+type OAuthFlowsData = OpenAPIV3.OAuth2SecurityScheme["flows"];
+// Union of all flow shapes — each flow type has a different subset of fields
 type OAuthFlowData = {
   authorizationUrl?: string;
   tokenUrl?: string;
   refreshUrl?: string;
-  scopes: Record<string, string>;
-};
-
-type OAuthFlowsData = {
-  implicit?: OAuthFlowData;
-  password?: OAuthFlowData;
-  clientCredentials?: OAuthFlowData;
-  authorizationCode?: OAuthFlowData;
+  scopes: { [scope: string]: string };
 };
 
 type SecurityRequirementSchemeData = {
