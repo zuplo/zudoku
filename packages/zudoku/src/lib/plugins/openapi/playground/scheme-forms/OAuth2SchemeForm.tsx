@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
+import { useZudoku } from "zudoku/hooks";
 import { Button } from "zudoku/ui/Button.js";
 import { Input } from "zudoku/ui/Input.js";
 import { Label } from "zudoku/ui/Label.js";
@@ -16,6 +17,7 @@ export const OAuth2SchemeForm = ({
   const [token, setToken] = useState("");
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
+  const { options } = useZudoku();
   const flows = scheme.flows;
   const hasClientCredentials = !!flows?.clientCredentials?.tokenUrl;
   const hasAuthorizationCode =
@@ -68,6 +70,7 @@ export const OAuth2SchemeForm = ({
         tokenUrl: flows.authorizationCode.tokenUrl,
         clientId,
         scopes: flows.authorizationCode.scopes.map((s) => s.name),
+        basePath: options.basePath,
       });
     },
     onSuccess: (result) => onAuthorize(result.access_token),
