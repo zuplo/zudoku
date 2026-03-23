@@ -50,6 +50,7 @@ import { ResultPanel } from "./result-panel/ResultPanel.js";
 import {
   applySecurityCredentials,
   getSecurityLockedHeaders,
+  getSecurityQueryParams,
   useSecurityCredentialsStore,
 } from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
@@ -324,17 +325,30 @@ export const Playground = ({
           break;
       }
 
-      const request = new Request(
-        createUrl(server ?? selectedServer, url, data),
-        {
-          method,
-          headers,
-          body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
-        },
-      );
+      // Read fresh credentials from store to avoid stale closure
+      const freshCredentials =
+        useSecurityCredentialsStore.getState().credentials;
+
+      const requestUrl = createUrl(server ?? selectedServer, url, data);
+
+      // Inject apiKey query params before creating Request
+      if (data.identity === SECURITY_SCHEME_IDENTITY) {
+        for (const [key, value] of getSecurityQueryParams(
+          security,
+          freshCredentials,
+        )) {
+          requestUrl.searchParams.set(key, value);
+        }
+      }
+
+      const request = new Request(requestUrl, {
+        method,
+        headers,
+        body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
+      });
 
       if (data.identity === SECURITY_SCHEME_IDENTITY) {
-        applySecurityCredentials(request, security, securityCredentials);
+        applySecurityCredentials(request, security, freshCredentials);
       } else if (data.identity !== NO_IDENTITY) {
         await identities.data
           ?.find((i) => i.id === data.identity)

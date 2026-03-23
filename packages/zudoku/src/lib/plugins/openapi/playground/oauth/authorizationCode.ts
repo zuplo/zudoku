@@ -58,18 +58,28 @@ export const performAuthorizationCodeFlow = async ({
     code_verifier: codeVerifier,
   });
 
-  const response = await fetch(tokenUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  let response: Response;
+  try {
+    response = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error(
+        `Token exchange failed — this is likely a CORS issue. The token endpoint at ${tokenUrl} must include 'Access-Control-Allow-Origin: ${window.location.origin}' in its response headers.`,
+      );
+    }
+    throw err;
+  }
 
   if (!response.ok) {
     const text = await response.text();
     throw new Error(`Token exchange failed (${response.status}): ${text}`);
   }
 
-  return response.json();
+  return await response.json();
 };
 
 const openAuthPopup = (url: string, expectedState: string): Promise<string> =>
@@ -90,10 +100,15 @@ const openAuthPopup = (url: string, expectedState: string): Promise<string> =>
       return;
     }
 
+    const cleanup = () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+
     const interval = setInterval(() => {
       try {
         if (popup.closed) {
-          clearInterval(interval);
+          cleanup();
           reject(new Error("Authorization cancelled by user."));
           return;
         }
@@ -104,7 +119,7 @@ const openAuthPopup = (url: string, expectedState: string): Promise<string> =>
         const error = popupUrl.searchParams.get("error");
 
         if (error) {
-          clearInterval(interval);
+          cleanup();
           popup.close();
           const errorDesc = popupUrl.searchParams.get("error_description");
           reject(new Error(errorDesc ?? error));
@@ -112,7 +127,7 @@ const openAuthPopup = (url: string, expectedState: string): Promise<string> =>
         }
 
         if (code) {
-          clearInterval(interval);
+          cleanup();
           popup.close();
 
           if (state !== expectedState) {
@@ -127,10 +142,9 @@ const openAuthPopup = (url: string, expectedState: string): Promise<string> =>
       }
     }, 200);
 
-    // Timeout after 5 minutes
-    setTimeout(
+    const timeout = setTimeout(
       () => {
-        clearInterval(interval);
+        cleanup();
         if (!popup.closed) popup.close();
         reject(new Error("Authorization timed out."));
       },
