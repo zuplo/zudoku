@@ -18,11 +18,13 @@ export const performOpenIdConnectFlow = async ({
   clientId,
   scopes,
   redirectUri,
+  basePath,
 }: {
   openIdConnectUrl: string;
   clientId: string;
   scopes?: string[];
   redirectUri?: string;
+  basePath?: string;
 }): Promise<AuthorizationCodeResult> => {
   const config = await fetchOpenIdConfiguration(openIdConnectUrl);
 
@@ -32,6 +34,7 @@ export const performOpenIdConnectFlow = async ({
     clientId,
     scopes: scopes ?? ["openid"],
     redirectUri,
+    basePath,
   });
 };
 

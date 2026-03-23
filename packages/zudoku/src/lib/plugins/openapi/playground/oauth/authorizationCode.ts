@@ -18,19 +18,22 @@ export const performAuthorizationCodeFlow = async ({
   clientId,
   scopes,
   redirectUri,
+  basePath,
 }: {
   authorizationUrl: string;
   tokenUrl: string;
   clientId: string;
   scopes?: string[];
   redirectUri?: string;
+  basePath?: string;
 }): Promise<AuthorizationCodeResult> => {
   const codeVerifier = generateCodeVerifier();
   const codeChallenge = await generateCodeChallenge(codeVerifier);
   const state = generateCodeVerifier(); // reuse PKCE util for random string
 
   const effectiveRedirectUri =
-    redirectUri ?? `${window.location.origin}/oauth/callback`;
+    redirectUri ??
+    `${window.location.origin}${(basePath ?? "").replace(/\/$/, "")}/oauth/callback`;
 
   const authUrl = new URL(authorizationUrl);
   authUrl.searchParams.set("response_type", "code");

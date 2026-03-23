@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
+import { useZudoku } from "zudoku/hooks";
 import { Button } from "zudoku/ui/Button.js";
 import { Input } from "zudoku/ui/Input.js";
 import { Label } from "zudoku/ui/Label.js";
@@ -15,6 +16,7 @@ export const OpenIdConnectSchemeForm = ({
 }) => {
   const [token, setToken] = useState("");
   const [clientId, setClientId] = useState("");
+  const { options } = useZudoku();
 
   const oidcMutation = useMutation({
     mutationFn: async () => {
@@ -26,6 +28,7 @@ export const OpenIdConnectSchemeForm = ({
       return performOpenIdConnectFlow({
         openIdConnectUrl: scheme.openIdConnectUrl,
         clientId,
+        basePath: options.basePath,
       });
     },
     onSuccess: (result) => onAuthorize(result.access_token),
