@@ -267,6 +267,7 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
+          ...(securitySchemes.length > 0 ? [SECURITY_SCHEME_IDENTITY] : []),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
       },

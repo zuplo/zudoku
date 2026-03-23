@@ -68,8 +68,11 @@ export const getSecurityLockedHeaders = (
 ): string[] => {
   if (!security) return [];
 
-  const satisfied = security.find((req) =>
-    req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
+  // Skip empty requirements (anonymous access markers) — vacuous truth
+  const satisfied = security.find(
+    (req) =>
+      req.schemes.length > 0 &&
+      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
   );
 
   if (!satisfied) return [];
@@ -102,8 +105,10 @@ export const getSecurityQueryParams = (
 ): Array<[string, string]> => {
   if (!security) return [];
 
-  const satisfied = security.find((req) =>
-    req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
+  const satisfied = security.find(
+    (req) =>
+      req.schemes.length > 0 &&
+      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
   );
 
   if (!satisfied) return [];
@@ -135,8 +140,10 @@ export const applySecurityCredentials = (
 ): void => {
   if (!security) return;
 
-  const satisfied = security.find((req) =>
-    req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
+  const satisfied = security.find(
+    (req) =>
+      req.schemes.length > 0 &&
+      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
   );
 
   if (!satisfied) return;
