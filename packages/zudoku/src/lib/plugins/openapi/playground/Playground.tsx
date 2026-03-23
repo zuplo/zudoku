@@ -175,7 +175,7 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: MediaTypeObject[];
-  security?: SecurityRequirementProp[] | null;
+  security?: SecurityRequirementProp[];
   securitySchemes?: Array<{
     name: string;
     type: SecuritySchemeType;
@@ -334,16 +334,12 @@ export const Playground = ({
         },
       );
 
-      if (
-        data.identity !== NO_IDENTITY &&
-        data.identity !== SECURITY_SCHEME_IDENTITY
-      ) {
+      if (data.identity === SECURITY_SCHEME_IDENTITY) {
+        applySecurityCredentials(request, security, securityCredentials);
+      } else if (data.identity !== NO_IDENTITY) {
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
-      } else if (data.identity === SECURITY_SCHEME_IDENTITY) {
-        // Apply security scheme credentials only when explicitly selected
-        applySecurityCredentials(request, security, securityCredentials);
       }
 
       const warningTimeout = setTimeout(
@@ -634,6 +630,13 @@ export const Playground = ({
                         securitySchemes.length > 0 ? securitySchemes : undefined
                       }
                       securityCredentials={securityCredentials}
+                      applicableSchemeNames={
+                        new Set(
+                          security?.flatMap((req) =>
+                            req.schemes.map((s) => s.scheme.name),
+                          ) ?? [],
+                        )
+                      }
                       onConfigureSecurity={() => setShowAuthorizeDialog(true)}
                     />
                     {securitySchemes.length > 0 && (

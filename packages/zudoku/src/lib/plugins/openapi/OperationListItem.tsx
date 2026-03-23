@@ -84,7 +84,7 @@ export const OperationListItem = ({
                 </div>
               </SelectOnClick>
             </div>
-            {options?.enableSecurity && (
+            {!options?.disableSecurity && (
               <SecurityRequirements security={operation.security} />
             )}
           </div>

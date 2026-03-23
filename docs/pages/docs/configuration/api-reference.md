@@ -206,7 +206,7 @@ const config = {
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
-      enableSecurity: true, // Enable security scheme display and playground auth
+      disableSecurity: false, // Disable security scheme display and playground auth
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
@@ -225,8 +225,8 @@ Available options:
   identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
-- `enableSecurity`: Enable OpenAPI security scheme display (auth badges on operations, security
-  schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
+- `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
+  schemes section on the info page, and the Authorize dialog in the playground). Enabled by default
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
@@ -254,7 +254,7 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
-      enableSecurity: true, // Enable security scheme display and playground auth
+      disableSecurity: false, // Disable security scheme display and playground auth
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route

@@ -12,6 +12,7 @@ const IdentitySelector = ({
   value,
   securitySchemes,
   securityCredentials,
+  applicableSchemeNames,
   onConfigureSecurity,
 }: {
   identities?: ApiIdentity[];
@@ -19,11 +20,16 @@ const IdentitySelector = ({
   value?: string;
   securitySchemes?: Array<{ name: string; type: string }>;
   securityCredentials?: Record<string, SecurityCredential>;
+  applicableSchemeNames?: Set<string>;
   onConfigureSecurity?: () => void;
 }) => {
   const authorizedNames = securityCredentials
     ? Object.entries(securityCredentials)
-        .filter(([, c]) => c.isAuthorized)
+        .filter(
+          ([name, c]) =>
+            c.isAuthorized &&
+            (!applicableSchemeNames || applicableSchemeNames.has(name)),
+        )
         .map(([name]) => name)
     : [];
 
@@ -61,16 +67,12 @@ const IdentitySelector = ({
             />
             <span className="flex items-center gap-2 flex-1 min-w-0">
               <span className="truncate">
-                API Security
-                {authorizedNames.length > 0 && (
-                  <span className="text-muted-foreground">
-                    {" "}
-                    ({authorizedNames.join(", ")})
-                  </span>
-                )}
+                {authorizedNames.length > 0
+                  ? authorizedNames.join(", ")
+                  : "Configure"}
               </span>
             </span>
-            {value === SECURITY_SCHEME_IDENTITY && onConfigureSecurity && (
+            {onConfigureSecurity && (
               <Button
                 type="button"
                 variant="ghost"
