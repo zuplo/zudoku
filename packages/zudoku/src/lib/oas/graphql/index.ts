@@ -487,7 +487,7 @@ const SecurityRequirementItem = builder
 const resolveSecuritySchemes = (
   schema: OpenAPIDocument,
 ): SecuritySchemeData[] => {
-  const securitySchemes = (schema.components as any)?.securitySchemes ?? {};
+  const securitySchemes = schema.components?.securitySchemes ?? {};
   return Object.entries(securitySchemes).map(
     ([name, scheme]: [string, any]) => ({
       name,
@@ -505,17 +505,19 @@ const resolveSecuritySchemes = (
 };
 
 const resolveSecurityRequirements = (
-  securityArray: Array<Record<string, string[]>> | undefined,
+  securityArray: OpenAPIDocument["security"],
   securitySchemes: SecuritySchemeData[],
 ): SecurityRequirementData[] => {
   if (!securityArray) return [];
 
   return securityArray.map((req) => ({
-    schemes: Object.entries(req).flatMap(([schemeName, scopes]) => {
-      const scheme = securitySchemes.find((s) => s.name === schemeName);
-      if (!scheme) return [];
-      return [{ scheme, scopes }];
-    }),
+    schemes: Object.entries(req)
+      .filter(([key]) => !key.startsWith("__"))
+      .flatMap(([schemeName, scopes]) => {
+        const scheme = securitySchemes.find((s) => s.name === schemeName);
+        if (!scheme) return [];
+        return [{ scheme, scopes }];
+      }),
   }));
 };
 
@@ -794,8 +796,7 @@ const OperationItem = builder
         resolve: (parent, _, ctx) => {
           const securitySchemes = resolveSecuritySchemes(ctx.schema);
           // Operation-level security overrides global security
-          const securityArray =
-            parent.security ?? (ctx.schema.security as any[]) ?? undefined;
+          const securityArray = parent.security ?? ctx.schema.security;
           if (!securityArray) return null;
           return resolveSecurityRequirements(securityArray, securitySchemes);
         },
@@ -958,10 +959,7 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
       resolve: (root) => {
         const securitySchemes = resolveSecuritySchemes(root);
         if (!root.security) return null;
-        return resolveSecurityRequirements(
-          root.security as any[],
-          securitySchemes,
-        );
+        return resolveSecurityRequirements(root.security, securitySchemes);
       },
     }),
     extensions: t.field({
