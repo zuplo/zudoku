@@ -22,6 +22,7 @@ import type {
   ServerObject,
   TagObject,
 } from "../parser/index.js";
+import { GraphQLJSONSchema } from "./circular.js";
 
 // Security scheme types for the GraphQL layer
 // Uses OpenAPI types where possible; adds `name` (the key from securitySchemes map)
@@ -56,7 +57,6 @@ type SecurityRequirementSchemeData = {
 type SecurityRequirementData = {
   schemes: SecurityRequirementSchemeData[];
 };
-import { GraphQLJSONSchema } from "./circular.js";
 
 export type {
   EncodingObject,

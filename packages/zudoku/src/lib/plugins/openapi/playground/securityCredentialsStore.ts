@@ -9,7 +9,6 @@ export type SecurityCredentialValue = string | BasicCredentials;
 export type SecurityCredential = {
   value: SecurityCredentialValue;
   isAuthorized: boolean;
-  expiresAt?: number;
 };
 
 type SecurityCredentialsState = {

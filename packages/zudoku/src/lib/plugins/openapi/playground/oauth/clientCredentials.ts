@@ -50,5 +50,5 @@ export const fetchClientCredentialsToken = async ({
     throw new Error(`Token request failed (${response.status}): ${text}`);
   }
 
-  return response.json();
+  return await response.json();
 };

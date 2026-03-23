@@ -50,6 +50,7 @@ import { ResultPanel } from "./result-panel/ResultPanel.js";
 import {
   applySecurityCredentials,
   getSecurityLockedHeaders,
+  getSecurityQueryParams,
   useSecurityCredentialsStore,
 } from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
@@ -325,17 +326,29 @@ export const Playground = ({
       }
 
       const upperMethod = method.toUpperCase();
-      const request = new Request(
-        createUrl(server ?? selectedServer, url, data),
-        {
-          method: upperMethod,
-          headers,
-          body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
-        },
-      );
+
+      const freshCredentials =
+        useSecurityCredentialsStore.getState().credentials;
+
+      const requestUrl = createUrl(server ?? selectedServer, url, data);
 
       if (data.identity === SECURITY_SCHEME_IDENTITY) {
-        applySecurityCredentials(request, security, securityCredentials);
+        for (const [key, value] of getSecurityQueryParams(
+          security,
+          freshCredentials,
+        )) {
+          requestUrl.searchParams.set(key, value);
+        }
+      }
+
+      const request = new Request(requestUrl, {
+        method: upperMethod,
+        headers,
+        body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
+      });
+
+      if (data.identity === SECURITY_SCHEME_IDENTITY) {
+        applySecurityCredentials(request, security, freshCredentials);
       } else if (data.identity !== NO_IDENTITY) {
         await identities.data
           ?.find((i) => i.id === data.identity)

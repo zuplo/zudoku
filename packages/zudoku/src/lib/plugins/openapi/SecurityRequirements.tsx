@@ -71,11 +71,7 @@ const SchemeTooltipContent = ({
   scopes: string[];
 }) => (
   <div className="flex flex-col gap-1 max-w-xs">
-    <div className="text-xs capitalize">
-      {schemeLabel(scheme)}
-      {scheme.type === "apiKey" && scheme.in && ` in ${scheme.in}`}
-      {scheme.type === "http" && scheme.scheme && ` (${scheme.scheme})`}
-    </div>
+    <div className="text-xs capitalize">{schemeLabel(scheme)}</div>
     {scheme.description && (
       <Suspense fallback={<div className="text-xs">{scheme.description}</div>}>
         <Markdown

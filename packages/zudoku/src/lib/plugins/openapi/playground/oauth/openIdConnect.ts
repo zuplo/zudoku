@@ -41,11 +41,21 @@ export const performOpenIdConnectFlow = async ({
 export const fetchOpenIdConfiguration = async (
   url: string,
 ): Promise<OpenIDConfiguration> => {
-  const response = await fetch(url);
+  let response: Response;
+  try {
+    response = await fetch(url);
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error(
+        `Failed to fetch OpenID configuration — this is likely a CORS issue. The discovery endpoint at ${url} must allow cross-origin requests.`,
+      );
+    }
+    throw err;
+  }
   if (!response.ok) {
     throw new Error(
       `Failed to fetch OpenID configuration (${response.status})`,
     );
   }
-  return response.json();
+  return await response.json();
 };
