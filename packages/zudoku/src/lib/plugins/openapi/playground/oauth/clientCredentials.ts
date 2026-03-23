@@ -29,11 +29,21 @@ export const fetchClientCredentialsToken = async ({
     body.set("scope", scopes.join(" "));
   }
 
-  const response = await fetch(tokenUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body,
-  });
+  let response: Response;
+  try {
+    response = await fetch(tokenUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        `Token request to ${tokenUrl} failed. This is likely a CORS issue - the token endpoint must allow requests from ${window.location.origin}. Check the server's Access-Control-Allow-Origin header.`,
+      );
+    }
+    throw error;
+  }
 
   if (!response.ok) {
     const text = await response.text();

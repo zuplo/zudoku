@@ -382,7 +382,7 @@ export const SchemaInfo = () => {
                 </div>
               </div>
             )}
-            {options?.enableSecurity &&
+            {!options?.disableSecurity &&
               (schema.components?.securitySchemes?.length ?? 0) > 0 && (
                 <div>
                   <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">

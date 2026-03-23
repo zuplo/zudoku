@@ -1,5 +1,5 @@
 import { KeyRoundIcon, LockIcon, ShieldCheckIcon } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense, lazy } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import {
   Tooltip,
@@ -11,6 +11,12 @@ import type {
   SecuritySchemeIn,
   SecuritySchemeType,
 } from "./graphql/graphql.js";
+
+const Markdown = lazy(() =>
+  import("../../components/Markdown.js").then((m) => ({
+    default: m.Markdown,
+  })),
+);
 
 type SecurityScheme = {
   name: string;
@@ -65,24 +71,31 @@ const SchemeTooltipContent = ({
   scopes: string[];
 }) => (
   <div className="flex flex-col gap-1 max-w-xs">
-    <div className="font-medium">{scheme.name}</div>
-    <div className="text-xs text-muted-foreground capitalize">
-      {scheme.type}
+    <div className="text-xs capitalize">
+      {schemeLabel(scheme)}
       {scheme.type === "apiKey" && scheme.in && ` in ${scheme.in}`}
       {scheme.type === "http" && scheme.scheme && ` (${scheme.scheme})`}
     </div>
-    {scheme.description && <div className="text-xs">{scheme.description}</div>}
+    {scheme.description && (
+      <Suspense fallback={<div className="text-xs">{scheme.description}</div>}>
+        <Markdown
+          content={scheme.description}
+          className="prose-xs text-xs max-w-full"
+        />
+      </Suspense>
+    )}
     {scopes.length > 0 && (
       <div className="flex flex-col gap-0.5">
         <span className="text-xs text-muted-foreground">Required scopes:</span>
         <div className="flex flex-wrap gap-1">
           {scopes.map((scope) => (
-            <code
+            <Badge
               key={scope}
-              className="text-[10px] bg-muted px-1 py-0.5 rounded"
+              variant="muted"
+              className="text-[10px] px-1 py-0 h-auto font-mono"
             >
               {scope}
-            </code>
+            </Badge>
           ))}
         </div>
       </div>
