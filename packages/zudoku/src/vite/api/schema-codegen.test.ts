@@ -594,6 +594,47 @@ describe("Generate OpenAPI schema module", () => {
     expect(field.description).toBe("An alias with description");
   });
 
+  it("should handle bare $ref+siblings alias when paths comes before components", async () => {
+    const input = {
+      paths: {
+        "/x": {
+          get: {
+            responses: {
+              "200": {
+                content: {
+                  "application/json": {
+                    schema: { $ref: "#/components/schemas/Alias" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          Alias: {
+            $ref: "#/components/schemas/Base",
+            description: "An alias",
+          },
+          Base: { type: "string" },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(generateCode(input));
+
+    const alias = schema.components.schemas.Alias;
+    expect(alias.type).toBe("string");
+    expect(alias.description).toBe("An alias");
+
+    const fromPath =
+      schema.paths["/x"].get.responses["200"].content["application/json"]
+        .schema;
+    expect(fromPath.type).toBe("string");
+    expect(fromPath.description).toBe("An alias");
+  });
+
   it("should preserve $ref sibling properties in nested refs", async () => {
     const input: OpenAPIV3_1.Document = {
       openapi: "3.1.0",

@@ -120,8 +120,9 @@ export const generateCode = (schema: RecordAny, filePath?: string) => {
   const toCode = (obj: RecordAny) =>
     replaceMarkers(stringify(setRefMarkers(obj, refMap)), mergedRefs);
 
-  // Pass 1: Populate all base refs (with sibling markers so nested
-  // $ref+sibling combinations are preserved)
+  // Pass 1: Populate all base refs. Bare $ref+siblings aliases are deferred
+  // until all regular base refs are populated (ordering is DFS-dependent).
+  const deferred: string[] = [];
   for (const [refPath, index] of refMap) {
     const value = lookup(schema, refPath, filePath);
 
@@ -131,20 +132,18 @@ export const generateCode = (schema: RecordAny, filePath?: string) => {
       continue;
     }
 
-    // When a base ref is itself a bare $ref+siblings (e.g. A: { $ref: "#/Base", description: "..." }),
-    // populate directly from the referenced base + siblings instead of going through the
-    // merged var which is still empty at this point
     const siblingEntry =
       value.__uniqueRefKey && siblingsMap.get(value.__uniqueRefKey);
-    const code = siblingEntry
-      ? `__refMap["${siblingEntry.refPath}"], ${stringify(siblingEntry.siblings)}`
-      : toCode(value);
+    const target = siblingEntry ? deferred : lines;
 
-    lines.push(
-      `Object.assign(__refs[${index}], ${code});`,
+    target.push(
+      siblingEntry
+        ? `Object.assign(__refs[${index}], __refMap["${siblingEntry.refPath}"], ${stringify(siblingEntry.siblings)});`
+        : `Object.assign(__refs[${index}], ${toCode(value)});`,
       `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
     );
   }
+  lines.push(...deferred);
 
   // Pass 2: Populate merged objects (refs with sibling overrides like description)
   for (const [uniqueKey, { refPath, siblings }] of siblingsMap) {
