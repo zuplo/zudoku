@@ -3,7 +3,7 @@ import { Button } from "zudoku/ui/Button.js";
 import { Label } from "zudoku/ui/Label.js";
 import { RadioGroup, RadioGroupItem } from "zudoku/ui/RadioGroup.js";
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
-import { NO_IDENTITY, SECURITY_SCHEME_IDENTITY } from "./Playground.js";
+import { NO_IDENTITY, SECURITY_SCHEME_PREFIX } from "./Playground.js";
 import type { SecurityCredential } from "./securityCredentialsStore.js";
 
 const IdentitySelector = ({
@@ -12,84 +12,77 @@ const IdentitySelector = ({
   value,
   securitySchemes,
   securityCredentials,
-  applicableSchemeNames,
-  onConfigureSecurity,
+  onConfigureScheme,
 }: {
   identities?: ApiIdentity[];
   setValue: (value: string) => void;
   value?: string;
   securitySchemes?: Array<{ name: string; type: string }>;
   securityCredentials?: Record<string, SecurityCredential>;
-  applicableSchemeNames?: Set<string>;
-  onConfigureSecurity?: () => void;
-}) => {
-  const authorizedNames = securityCredentials
-    ? Object.entries(securityCredentials)
-        .filter(
-          ([name, c]) =>
-            c.isAuthorized &&
-            (!applicableSchemeNames || applicableSchemeNames.has(name)),
-        )
-        .map(([name]) => name)
-    : [];
-
-  return (
-    <div className="w-full overflow-hidden">
-      <RadioGroup
-        onValueChange={(value) => setValue(value)}
-        value={value}
-        defaultValue={NO_IDENTITY}
-        className="gap-0"
-        disabled={
-          identities?.length === 0 &&
-          (!securitySchemes || securitySchemes.length === 0)
-        }
-      >
-        {[{ id: NO_IDENTITY, label: "None" }, ...(identities ?? [])].map(
-          (identity) => (
-            <Label
-              key={identity.id}
-              className="h-10 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75"
-            >
-              <RadioGroupItem value={identity.id} id={identity.id} />
-              <span>{identity.label}</span>
-            </Label>
-          ),
-        )}
-        {securitySchemes && securitySchemes.length > 0 && (
+  onConfigureScheme?: (schemeName: string) => void;
+}) => (
+  <div className="w-full overflow-hidden">
+    <RadioGroup
+      onValueChange={(value) => setValue(value)}
+      value={value}
+      defaultValue={NO_IDENTITY}
+      className="gap-0"
+    >
+      {[{ id: NO_IDENTITY, label: "None" }, ...(identities ?? [])].map(
+        (identity) => (
           <Label
-            key={SECURITY_SCHEME_IDENTITY}
+            key={identity.id}
             className="h-10 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75"
           >
-            <RadioGroupItem
-              value={SECURITY_SCHEME_IDENTITY}
-              id={SECURITY_SCHEME_IDENTITY}
-            />
-            <span className="flex items-center gap-2 flex-1 min-w-0">
-              <span className="truncate">
-                {authorizedNames.length > 0
-                  ? authorizedNames.join(", ")
-                  : "Configure"}
-              </span>
-            </span>
-            {onConfigureSecurity && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                onClick={(e) => {
-                  e.preventDefault();
-                  onConfigureSecurity();
-                }}
-              >
-                <SettingsIcon size={14} />
-              </Button>
-            )}
+            <RadioGroupItem value={identity.id} id={identity.id} />
+            <span>{identity.label}</span>
           </Label>
-        )}
-      </RadioGroup>
-    </div>
-  );
-};
+        ),
+      )}
+      {securitySchemes && securitySchemes.length > 0 && (
+        <>
+          <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b">
+            Security
+          </div>
+          {securitySchemes.map((scheme) => {
+            const schemeId = `${SECURITY_SCHEME_PREFIX}${scheme.name}`;
+            const isAuthorized =
+              securityCredentials?.[scheme.name]?.isAuthorized ?? false;
+            const isSelected = value === schemeId;
+            return (
+              <Label
+                key={schemeId}
+                className="h-10 items-center border-b font-normal flex gap-4 pl-7 pr-4 py-4 cursor-pointer hover:bg-accent/75"
+              >
+                <RadioGroupItem value={schemeId} id={schemeId} />
+                <span className="flex-1 truncate">
+                  {scheme.name}
+                  {!isAuthorized && (
+                    <span className="text-muted-foreground ml-1.5 text-xs">
+                      (not configured)
+                    </span>
+                  )}
+                </span>
+                {isSelected && onConfigureScheme && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onConfigureScheme(scheme.name);
+                    }}
+                  >
+                    <SettingsIcon size={14} />
+                  </Button>
+                )}
+              </Label>
+            );
+          })}
+        </>
+      )}
+    </RadioGroup>
+  </div>
+);
 
 export default IdentitySelector;
