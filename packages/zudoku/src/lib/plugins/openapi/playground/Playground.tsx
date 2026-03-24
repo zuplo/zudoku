@@ -56,7 +56,7 @@ import {
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
-export const SECURITY_SCHEME_IDENTITY = "__security_schemes";
+export const SECURITY_SCHEME_PREFIX = "__security:";
 
 export type Header = {
   name: string;
@@ -268,7 +268,7 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
-          ...(securitySchemes.length > 0 ? [SECURITY_SCHEME_IDENTITY] : []),
+          ...securitySchemes.map((s) => `${SECURITY_SCHEME_PREFIX}${s.name}`),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
       },
@@ -281,10 +281,18 @@ export const Playground = ({
   );
 
   const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
-  const securityLockedHeaders = useMemo(
-    () => getSecurityLockedHeaders(security, securityCredentials),
-    [security, securityCredentials],
-  );
+
+  const selectedSchemeName = identity?.startsWith(SECURITY_SCHEME_PREFIX)
+    ? identity.slice(SECURITY_SCHEME_PREFIX.length)
+    : undefined;
+
+  const securityLockedHeaders = useMemo(() => {
+    if (!selectedSchemeName) return [];
+    return getSecurityLockedHeaders(security, {
+      [selectedSchemeName]:
+        securityCredentials[selectedSchemeName] ?? ({} as never),
+    });
+  }, [security, securityCredentials, selectedSchemeName]);
 
   useEffect(() => {
     if (identity) {
@@ -326,16 +334,22 @@ export const Playground = ({
       }
 
       const upperMethod = method.toUpperCase();
-
-      const freshCredentials =
-        useSecurityCredentialsStore.getState().credentials;
-
       const requestUrl = createUrl(server ?? selectedServer, url, data);
 
-      if (data.identity === SECURITY_SCHEME_IDENTITY) {
+      const isSecurityScheme =
+        data.identity?.startsWith(SECURITY_SCHEME_PREFIX) ?? false;
+
+      if (isSecurityScheme) {
+        const schemeName = data.identity?.slice(SECURITY_SCHEME_PREFIX.length);
+        const freshCredentials =
+          useSecurityCredentialsStore.getState().credentials;
+        const schemeCredentials =
+          schemeName && freshCredentials[schemeName]
+            ? { [schemeName]: freshCredentials[schemeName] }
+            : {};
         for (const [key, value] of getSecurityQueryParams(
           security,
-          freshCredentials,
+          schemeCredentials,
         )) {
           requestUrl.searchParams.set(key, value);
         }
@@ -347,8 +361,15 @@ export const Playground = ({
         body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
       });
 
-      if (data.identity === SECURITY_SCHEME_IDENTITY) {
-        applySecurityCredentials(request, security, freshCredentials);
+      if (isSecurityScheme) {
+        const schemeName = data.identity?.slice(SECURITY_SCHEME_PREFIX.length);
+        const freshCredentials =
+          useSecurityCredentialsStore.getState().credentials;
+        const schemeCredentials =
+          schemeName && freshCredentials[schemeName]
+            ? { [schemeName]: freshCredentials[schemeName] }
+            : {};
+        applySecurityCredentials(request, security, schemeCredentials);
       } else if (data.identity !== NO_IDENTITY) {
         await identities.data
           ?.find((i) => i.id === data.identity)
@@ -629,11 +650,11 @@ export const Playground = ({
                       value={identity}
                       identities={identities.data ?? []}
                       setValue={(value) => {
-                        if (value === SECURITY_SCHEME_IDENTITY) {
-                          const hasCredentials = Object.values(
-                            securityCredentials,
-                          ).some((c) => c.isAuthorized);
-                          if (!hasCredentials) {
+                        if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
+                          const schemeName = value.slice(
+                            SECURITY_SCHEME_PREFIX.length,
+                          );
+                          if (!securityCredentials[schemeName]?.isAuthorized) {
                             setShowAuthorizeDialog(true);
                           }
                         }
@@ -643,18 +664,13 @@ export const Playground = ({
                         securitySchemes.length > 0 ? securitySchemes : undefined
                       }
                       securityCredentials={securityCredentials}
-                      applicableSchemeNames={
-                        new Set(
-                          security?.flatMap((req) =>
-                            req.schemes.map((s) => s.scheme.name),
-                          ) ?? [],
-                        )
-                      }
-                      onConfigureSecurity={() => setShowAuthorizeDialog(true)}
+                      onConfigureScheme={() => setShowAuthorizeDialog(true)}
                     />
-                    {securitySchemes.length > 0 && (
+                    {selectedSchemeName && (
                       <AuthorizeDialog
-                        securitySchemes={securitySchemes}
+                        securitySchemes={securitySchemes.filter(
+                          (s) => s.name === selectedSchemeName,
+                        )}
                         open={showAuthorizeDialog}
                         onOpenChange={setShowAuthorizeDialog}
                       />
