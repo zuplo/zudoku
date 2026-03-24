@@ -17,7 +17,7 @@ import type {
 import type {
   AiAssistantsConfig,
   FooterSchema,
-} from "../../config/validators/validate.js";
+} from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { SlotType } from "../components/context/SlotProvider.js";

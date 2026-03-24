@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
 import { describe, expect, it } from "vitest";
-import type { AiAssistantsConfig } from "../../../config/validators/validate.js";
+import type { AiAssistantsConfig } from "../../../config/validators/ZudokuConfig.js";
 import { ZudokuProvider } from "../../components/context/ZudokuProvider.js";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";

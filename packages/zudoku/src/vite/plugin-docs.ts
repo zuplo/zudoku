@@ -7,7 +7,7 @@ import {
   type NavigationItem,
   NavigationResolver,
 } from "../config/validators/NavigationSchema.js";
-import { DocsConfigSchema } from "../config/validators/validate.js";
+import { DocsConfigSchema } from "../config/validators/ZudokuConfig.js";
 import { traverseNavigation } from "../lib/components/navigation/utils.js";
 import { joinUrl } from "../lib/util/joinUrl.js";
 import { readFrontmatter } from "../lib/util/readFrontmatter.js";

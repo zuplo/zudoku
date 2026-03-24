@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { validateConfig } from "./validate.js";
+import { validateConfig } from "./ZudokuConfig.js";
 
 const mockConsoleLog = vi.spyOn(console, "log").mockImplementation(() => {});
 

@@ -1,6 +1,6 @@
 import { KeyRoundIcon } from "lucide-react";
 import type { RouteObject } from "react-router";
-import type { ApiKeysOptions } from "../../../config/validators/validate.js";
+import type { ApiKeysOptions } from "../../../config/validators/ZudokuConfig.js";
 import type { UseAuthReturn } from "../../authentication/hook.js";
 import type {
   ApiIdentityPlugin,

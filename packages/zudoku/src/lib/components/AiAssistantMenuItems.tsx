@@ -3,7 +3,7 @@ import { DropdownMenuItem } from "zudoku/ui/DropdownMenu.js";
 import type {
   AiAssistantCustom,
   AiAssistantsConfig,
-} from "../../config/validators/validate.js";
+} from "../../config/validators/ZudokuConfig.js";
 import { ChatGPTLogo } from "../plugins/markdown/assets/ChatGPTLogo.js";
 import { ClaudeLogo } from "../plugins/markdown/assets/ClaudeLogo.js";
 

@@ -6,7 +6,7 @@ import {
 import { HelmetProvider } from "@zudoku/react-helmet-async";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { createRedirectRoutes } from "../../app/utils/createRedirectRoutes.js";
-import type { ZudokuRedirect } from "../../config/validators/validate.js";
+import type { ZudokuRedirect } from "../../config/validators/ZudokuConfig.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { useAuthState } from "../authentication/state.js";
 import { RenderContext } from "../components/context/RenderContext.js";
