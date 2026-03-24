@@ -14,7 +14,10 @@ import type {
   ProtectedRouteResult,
   ProtectedRoutesInput,
 } from "../../config/validators/ProtectedRoutesSchema.js";
-import type { FooterSchema } from "../../config/validators/validate.js";
+import type {
+  AiAssistantsConfig,
+  FooterSchema,
+} from "../../config/validators/validate.js";
 import type { AuthenticationPlugin } from "../authentication/authentication.js";
 import { type AuthState, useAuthState } from "../authentication/state.js";
 import type { SlotType } from "../components/context/SlotProvider.js";
@@ -100,6 +103,7 @@ export type ZudokuContextOptions = {
   metadata?: Metadata;
   site?: Site;
   header?: HeaderConfig;
+  aiAssistants?: AiAssistantsConfig;
   authentication?: AuthenticationPlugin;
   navigation?: Navigation;
   navigationRules?: ResolvedNavigationRule[];
