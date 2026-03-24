@@ -15,6 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
 import type { Item, Subscription } from "../../hooks/useSubscriptions";
+import { formatDurationInterval } from "../../utils/formatDuration.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
 export type UsageResult = {
@@ -64,6 +65,9 @@ const UsageItem = ({
   item?: Item;
   subscription?: Subscription;
 }) => {
+  const billingPeriod = item?.billingCadence
+    ? formatDurationInterval(item.billingCadence)
+    : "monthly";
   const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
   const overageTier =
     item?.price?.tiers?.find((t) => !t.upToAmount) ??
@@ -80,7 +84,7 @@ const UsageItem = ({
         {hasOverage && isSoftLimit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
-            <AlertTitle>You've exceeded your monthly quota</AlertTitle>
+            <AlertTitle>You've exceeded your {billingPeriod} quota</AlertTitle>
             <AlertDescription>
               Additional usage is being charged at the overage rate
               {rate ? ` ($${Number(rate).toFixed(2)}/call)` : ""}. Upgrade to a
@@ -102,7 +106,7 @@ const UsageItem = ({
         {isAtLimit && !isSoftLimit && (
           <Alert variant="destructive" className="mb-4">
             <AlertTriangleIcon className="size-4 text-red-600 shrink-0" />
-            <AlertTitle>You've reached your monthly limit</AlertTitle>
+            <AlertTitle>You've reached your {billingPeriod} limit</AlertTitle>
             <AlertDescription>
               Requests beyond your quota are blocked. Upgrade to a higher plan
               for more usage.
@@ -145,7 +149,7 @@ const UsageItem = ({
           className={cn("mb-3 h-2", dangerZone && "bg-destructive")}
         />
         <p className="text-xs text-muted-foreground">
-          {meter.balance.toLocaleString()} remaining this month
+          {meter.balance.toLocaleString()} remaining this billing period
         </p>
       </CardContent>
     </Card>

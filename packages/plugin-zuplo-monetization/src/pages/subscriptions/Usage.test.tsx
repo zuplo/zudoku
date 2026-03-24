@@ -140,6 +140,28 @@ describe("Usage - UsageItem", () => {
     expect(screen.getByText(/0 used/)).toBeInTheDocument();
   });
 
+  it("uses billing cadence for period labels", () => {
+    const weeklyItem = {
+      ...softLimitItem,
+      billingCadence: "P1W",
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[weeklyItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your weekly quota"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/remaining this billing period/),
+    ).toBeInTheDocument();
+  });
+
   it("defaults to soft limit when item is missing", () => {
     render(
       <Usage

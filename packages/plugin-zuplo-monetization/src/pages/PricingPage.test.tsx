@@ -241,6 +241,21 @@ describe("PricingPage", () => {
     expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
   });
 
+  it("Shows billing interval from plan.billingCadence", () => {
+    mockPricingData.items = [
+      {
+        ...makePlan("1", "starter", "Starter"),
+        billingCadence: "P1W",
+      },
+    ];
+    mockSubscriptionData.items = [];
+
+    render(<PricingPage />);
+
+    expect(screen.getByText("/week")).toBeInTheDocument();
+    expect(screen.queryByText("/mo")).not.toBeInTheDocument();
+  });
+
   it("Does not show 'Most Popular' badge when plan.metadata.zuplo_most_popular is not 'true' or missing", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),

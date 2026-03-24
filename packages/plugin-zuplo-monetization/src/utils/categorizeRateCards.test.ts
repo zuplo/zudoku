@@ -145,6 +145,40 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].overagePrice).toMatch(/\/unit$/);
   });
 
+  it("falls back to billingCadence for period when usagePeriod is missing", () => {
+    const rc: RateCard = {
+      type: "usage_based",
+      key: "jobs",
+      name: "Jobs",
+      featureKey: "jobs",
+      billingCadence: "P1W",
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 500,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas[0].period).toBe("week");
+  });
+
+  it("falls back to 'month' when both usagePeriod and billingCadence are missing", () => {
+    const rc: RateCard = {
+      type: "flat_fee",
+      key: "jobs",
+      name: "Jobs",
+      featureKey: "jobs",
+      billingCadence: null,
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 500,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc]);
+    expect(quotas[0].period).toBe("month");
+  });
+
   it("excludes overage price when isSoftLimit is false", () => {
     const { quotas } = categorizeRateCards([
       makeMeteredRateCard({

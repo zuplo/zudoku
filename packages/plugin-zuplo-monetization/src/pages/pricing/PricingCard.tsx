@@ -76,6 +76,7 @@ export const PricingCard = ({
 
   const isCustom = plan.metadata?.isCustom === true;
   const hasMultiplePhases = plan.phases.length > 1;
+  const billingInterval = formatDuration(plan.billingCadence);
 
   return (
     <div
@@ -113,8 +114,10 @@ export const PricingCard = ({
               </span>
               {!isFree && (
                 <>
-                  <span className="text-muted-foreground text-sm">/mo</span>
-                  {showYearlyPrice && (
+                  <span className="text-muted-foreground text-sm">
+                    /{billingInterval}
+                  </span>
+                  {showYearlyPrice && price.yearly > 0 && (
                     <div className="w-full text-sm text-muted-foreground mt-1">
                       {formatPrice(price.yearly, plan.currency)}/year
                     </div>
