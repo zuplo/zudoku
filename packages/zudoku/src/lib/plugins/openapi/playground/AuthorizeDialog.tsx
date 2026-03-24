@@ -1,4 +1,5 @@
 import {
+  CheckCircle2Icon,
   KeyRoundIcon,
   LockIcon,
   LogOutIcon,
@@ -51,6 +52,7 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
         </div>
         {isAuthorized && (
           <div className="flex items-center gap-2">
+            <CheckCircle2Icon size={14} className="text-muted-foreground" />
             <span className="text-xs text-muted-foreground">Configured</span>
             <Button
               variant="ghost"
