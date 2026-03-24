@@ -445,6 +445,276 @@ describe("Generate OpenAPI schema module", () => {
     expect(code).toContain('"error": __refMap["#/components/schemas/Pet"]');
   });
 
+  // --- Additional coverage for existing behaviour ---
+
+  it("should resolve $ref pointing to another $ref (chained refs)", async () => {
+    const input = {
+      components: {
+        schemas: {
+          A: { type: "string" },
+          B: { $ref: "#/components/schemas/A" },
+        },
+      },
+      result: { $ref: "#/components/schemas/B" },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    expect(schema.result.type).toBe("string");
+  });
+
+  it("should preserve object identity for same $ref used in multiple places", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Shared: { type: "object", properties: { id: { type: "string" } } },
+          A: {
+            type: "object",
+            properties: { ref: { $ref: "#/components/schemas/Shared" } },
+          },
+          B: {
+            type: "object",
+            properties: { ref: { $ref: "#/components/schemas/Shared" } },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    // Both should point to the exact same object
+    expect(schema.components.schemas.A.properties.ref).toBe(
+      schema.components.schemas.B.properties.ref,
+    );
+  });
+
+  it("should handle $ref to deeply nested path", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Outer: {
+            type: "object",
+            properties: {
+              inner: {
+                type: "object",
+                properties: { value: { type: "number" } },
+              },
+            },
+          },
+        },
+      },
+      result: { $ref: "#/components/schemas/Outer" },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    expect(schema.result.properties.inner.properties.value.type).toBe("number");
+  });
+
+  it("should handle schema with no $refs", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Simple: { type: "string" },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    expect(schema.components.schemas.Simple.type).toBe("string");
+  });
+
+  it("should handle $ref with siblings that is also referenced without siblings", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Base: {
+            type: "object",
+            properties: { id: { type: "string" } },
+          },
+          WithDesc: {
+            type: "object",
+            properties: {
+              data: {
+                $ref: "#/components/schemas/Base",
+                description: "With description",
+              },
+            },
+          },
+          WithoutDesc: {
+            type: "object",
+            properties: {
+              data: { $ref: "#/components/schemas/Base" },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+
+    // Sibling version has description
+    expect(schema.components.schemas.WithDesc.properties.data.description).toBe(
+      "With description",
+    );
+    expect(
+      schema.components.schemas.WithDesc.properties.data.properties.id.type,
+    ).toBe("string");
+
+    // Plain version has NO description
+    expect(
+      schema.components.schemas.WithoutDesc.properties.data.description,
+    ).toBeUndefined();
+    expect(
+      schema.components.schemas.WithoutDesc.properties.data.properties.id.type,
+    ).toBe("string");
+  });
+
+  it("should handle circular ref with sibling description", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Node: {
+            type: "object",
+            properties: {
+              child: {
+                $ref: "#/components/schemas/Node",
+                description: "Recursive child node",
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+    const node = schema.components.schemas.Node;
+
+    // The child should be the same object (circular) with the description
+    expect(node.properties.child.description).toBe("Recursive child node");
+    expect(node.properties.child.type).toBe("object");
+    // It should be the merged object (not identical to node, because it has extra description)
+    expect(node.properties.child).not.toBe(node);
+  });
+
+  // --- Tests for #2191: $ref sibling descriptions in nested referenced schemas ---
+
+  it("should preserve $ref sibling descriptions in nested referenced schemas (#2191)", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Child: { type: "string" },
+          ObjectContainingRef: {
+            type: "object",
+            properties: {
+              child: {
+                $ref: "#/components/schemas/Child",
+                description: "Description for ObjectContainingRef.child",
+              },
+            },
+          },
+          Parent: {
+            type: "object",
+            properties: {
+              childObject: {
+                type: "object",
+                properties: {
+                  child: {
+                    $ref: "#/components/schemas/Child",
+                    description: "Inline description for childObject.child",
+                  },
+                },
+              },
+              childObjectRef: {
+                $ref: "#/components/schemas/ObjectContainingRef",
+              },
+              childObjectArray: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    child: {
+                      $ref: "#/components/schemas/Child",
+                      description:
+                        "Inline description for childObjectArray.[].child",
+                    },
+                  },
+                },
+              },
+              childObjectArrayRef: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/ObjectContainingRef",
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+
+    // Top-level component — should always work
+    expect(
+      schema.components.schemas.ObjectContainingRef.properties.child
+        .description,
+    ).toBe("Description for ObjectContainingRef.child");
+
+    // Inline object — should work
+    expect(
+      schema.components.schemas.Parent.properties.childObject.properties.child
+        .description,
+    ).toBe("Inline description for childObject.child");
+
+    // $ref'd object nested inside Parent — the reported bug
+    expect(
+      schema.components.schemas.Parent.properties.childObjectRef.properties
+        .child.description,
+    ).toBe("Description for ObjectContainingRef.child");
+
+    // Inline array items — should work
+    expect(
+      schema.components.schemas.Parent.properties.childObjectArray.items
+        .properties.child.description,
+    ).toBe("Inline description for childObjectArray.[].child");
+
+    // $ref'd array items — the reported bug
+    expect(
+      schema.components.schemas.Parent.properties.childObjectArrayRef.items
+        .properties.child.description,
+    ).toBe("Description for ObjectContainingRef.child");
+  });
+
+  it("should preserve siblings through multiple levels of $ref nesting", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Leaf: { type: "string" },
+          Mid: {
+            type: "object",
+            properties: {
+              leaf: {
+                $ref: "#/components/schemas/Leaf",
+                description: "Mid.leaf desc",
+              },
+            },
+          },
+          Top: {
+            type: "object",
+            properties: {
+              mid: { $ref: "#/components/schemas/Mid" },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+
+    // Through the $ref chain: Top -> Mid -> leaf (with sibling desc)
+    expect(
+      schema.components.schemas.Top.properties.mid.properties.leaf.description,
+    ).toBe("Mid.leaf desc");
+  });
+
   it("should handle OpenAPI v3.1 refs alongside description and summary", async () => {
     const input: OpenAPIV3_1.Document = {
       openapi: "3.1.0",
