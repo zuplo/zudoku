@@ -39,14 +39,27 @@ export const dereference = async (
         }
       } else {
         if ("$ref" in current && typeof current.$ref === "string") {
-          // Store the ref path before resolving
-          current.__$ref = current.$ref;
+          const { $ref, ...siblings } = current;
+          current.__$ref = $ref;
+          const hasSiblings = Object.keys(siblings).length > 0;
+
+          let result: unknown;
           for (const resolver of resolvers) {
-            const resolved = await resolver(current.$ref);
-            if (resolved) return await resolve(resolved, path);
+            const resolved = await resolver($ref);
+            if (resolved) {
+              result = await resolve(resolved, path);
+              break;
+            }
           }
-          const resolved = await resolveLocalRef(cloned, current.$ref);
-          return await resolve(resolved, path);
+          if (result === undefined) {
+            const resolved = await resolveLocalRef(cloned, $ref);
+            result = await resolve(resolved, path);
+          }
+
+          if (hasSiblings && isIndexableObject(result)) {
+            return { ...result, ...siblings };
+          }
+          return result;
         }
 
         for (const key in current) {
