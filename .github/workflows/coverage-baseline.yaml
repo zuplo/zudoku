@@ -1,0 +1,40 @@
+name: Coverage Baseline
+on:
+  push:
+    branches: [main]
+
+jobs:
+  coverage-baseline:
+    name: Save Coverage Baseline
+    runs-on:
+      group: ubuntu-large-runners
+
+    env:
+      COREPACK_ENABLE_STRICT: 0
+      ZUDOKU_INTERNAL_DEV: true
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - run: pnpm test:coverage
+
+      - run: mkdir -p coverage-base && cp coverage/coverage-summary.json coverage-base/
+
+      - name: Save base coverage cache
+        uses: actions/cache/save@v5
+        with:
+          path: coverage-base/coverage-summary.json
+          key: coverage-base-${{ github.sha }}

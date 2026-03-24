@@ -2,8 +2,6 @@ name: Build
 on:
   workflow_call:
   pull_request:
-  push:
-    branches: [main]
 
 jobs:
   build:
@@ -61,17 +59,6 @@ jobs:
           path: coverage-base/coverage-summary.json
           key: coverage-base-
           restore-keys: coverage-base-
-
-      - name: Save base coverage
-        if: github.ref == 'refs/heads/main'
-        run: mkdir -p coverage-base && cp coverage/coverage-summary.json coverage-base/
-
-      - name: Save base coverage cache
-        if: github.ref == 'refs/heads/main'
-        uses: actions/cache/save@v5
-        with:
-          path: coverage-base/coverage-summary.json
-          key: coverage-base-${{ github.sha }}
 
       - name: Coverage report comment (with comparison)
         if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork && steps.base-coverage.outputs.cache-matched-key != ''
