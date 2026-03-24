@@ -91,10 +91,11 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Version (Canary)
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
         run: nx release version --specifier 0.0.0-${{ steps.vars.outputs.sha_short }} --git-tag=false
 
       - name: Publish Modules
+        if: github.ref != 'refs/heads/main'
         run: pnpm publish --provenance --filter zudoku --filter create-zudoku --filter config --tag canary --no-git-checks
 
       - name: Build Examples
