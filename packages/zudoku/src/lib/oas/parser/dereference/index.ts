@@ -41,12 +41,27 @@ export const dereference = async (
         if ("$ref" in current && typeof current.$ref === "string") {
           // Store the ref path before resolving
           current.__$ref = current.$ref;
+
+          // Collect OAS 3.1 sibling properties to merge after resolution
+          const { $ref: _, __$ref: __, ...siblings } = current;
+          const hasSiblings = Object.keys(siblings).length > 0;
+
           for (const resolver of resolvers) {
             const resolved = await resolver(current.$ref);
-            if (resolved) return await resolve(resolved, path);
+            if (resolved) {
+              const result = await resolve(resolved, path);
+              if (hasSiblings && isIndexableObject(result)) {
+                return { ...result, ...siblings };
+              }
+              return result;
+            }
           }
           const resolved = await resolveLocalRef(cloned, current.$ref);
-          return await resolve(resolved, path);
+          const result = await resolve(resolved, path);
+          if (hasSiblings && isIndexableObject(result)) {
+            return { ...result, ...siblings };
+          }
+          return result;
         }
 
         for (const key in current) {

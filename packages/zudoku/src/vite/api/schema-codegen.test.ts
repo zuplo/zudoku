@@ -433,9 +433,10 @@ describe("Generate OpenAPI schema module", () => {
 
     const code = await generateCode(input);
 
-    // Ref with siblings uses a merged variable and preserves __$ref
+    // Merged placeholders are declared empty, then populated after base refs
+    expect(code).toContain("const __merged_0 = {};");
     expect(code).toContain(
-      'const __merged_0 = Object.assign({}, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
+      'Object.assign(__merged_0, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
     );
     expect(code).toContain(
       'Object.defineProperty(__merged_0, "__$ref", { value: __refMapPaths[0], enumerable: false });',
@@ -443,6 +444,94 @@ describe("Generate OpenAPI schema module", () => {
 
     // Plain ref uses direct reference
     expect(code).toContain('"error": __refMap["#/components/schemas/Pet"]');
+  });
+
+  it("should preserve $ref sibling descriptions in nested referenced schemas", async () => {
+    // Reproduces https://github.com/zuplo/zudoku/issues/2191
+    const input = {
+      components: {
+        schemas: {
+          Child: { type: "string" },
+          ObjectContainingRef: {
+            type: "object",
+            properties: {
+              child: {
+                $ref: "#/components/schemas/Child",
+                description: "Description for ObjectContainingRef.child",
+              },
+            },
+          },
+          Parent: {
+            type: "object",
+            properties: {
+              childObject: {
+                type: "object",
+                properties: {
+                  child: {
+                    $ref: "#/components/schemas/Child",
+                    description: "Inline description for childObject.child",
+                  },
+                },
+              },
+              childObjectRef: {
+                $ref: "#/components/schemas/ObjectContainingRef",
+              },
+              childObjectArray: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    child: {
+                      $ref: "#/components/schemas/Child",
+                      description:
+                        "Inline description for childObjectArray.[].child",
+                    },
+                  },
+                },
+              },
+              childObjectArrayRef: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/ObjectContainingRef",
+                },
+              },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(await generateCode(input));
+
+    // Top-level component view — should always work
+    expect(
+      schema.components.schemas.ObjectContainingRef.properties.child
+        .description,
+    ).toBe("Description for ObjectContainingRef.child");
+
+    // Inline object — should work
+    expect(
+      schema.components.schemas.Parent.properties.childObject.properties.child
+        .description,
+    ).toBe("Inline description for childObject.child");
+
+    // $ref'd object nested inside Parent — this is the reported bug
+    expect(
+      schema.components.schemas.Parent.properties.childObjectRef.properties
+        .child.description,
+    ).toBe("Description for ObjectContainingRef.child");
+
+    // Inline array items — should work
+    expect(
+      schema.components.schemas.Parent.properties.childObjectArray.items
+        .properties.child.description,
+    ).toBe("Inline description for childObjectArray.[].child");
+
+    // $ref'd array items — same bug
+    expect(
+      schema.components.schemas.Parent.properties.childObjectArrayRef.items
+        .properties.child.description,
+    ).toBe("Description for ObjectContainingRef.child");
   });
 
   it("should handle OpenAPI v3.1 refs alongside description and summary", async () => {

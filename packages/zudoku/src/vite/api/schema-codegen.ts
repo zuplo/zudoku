@@ -130,63 +130,71 @@ export const generateCode = (schema: RecordAny, filePath?: string) => {
    * Problem: When we have { $ref: "#/path", description: "text" }, we need to merge
    * the referenced schema with siblings using Object.assign(). But if we do this
    * before the referenced schema is populated, we merge with an empty object.
-
-   * Solution:
-   *   - Pass 1: Populate all base schemas in __refMap (ignoring siblings)
-   *   - Pass 2: Create merged objects that combine refs with their siblings
    *
-   * This ensures Object.assign() merges with populated schemas, not empty objects.
+   * Solution:
+   *   1. Declare empty placeholder objects for each merged ref upfront
+   *   2. Pass 1: Populate all base schemas in __refMap, referencing the placeholders
+   *      for any nested $ref nodes that have sibling properties
+   *   3. Pass 2: Populate the merged placeholders now that base refs are filled
+   *
+   * Because the placeholders are mutated in-place via Object.assign, any base ref
+   * that already holds a reference to a placeholder automatically sees the final
+   * merged content — including when the base ref is reached through another $ref.
    */
 
-  // Pass 1: Populate all base refs (ignoring siblings temporarily)
-  // This ensures all refs have their base properties before merging
-  const assignBaseRefs = () => {
-    for (const [refPath, index] of refMap) {
-      const value = lookup(schema, refPath, filePath);
-
-      if (!value) {
-        // biome-ignore lint/suspicious/noConsole: Logging allowed here
-        console.warn(`Could not find value for refPath: ${refPath}`);
-        continue;
-      }
-
-      const transformedValue = setRefMarkers(value, refMap, true);
-
-      lines.push(
-        `Object.assign(__refs[${index}], ${replaceRefMarkers(str(transformedValue))});`,
-        `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
-      );
-    }
-  };
-
-  // Pass 2: Create merged objects for refs with siblings
-  const createMergedRefs = () => {
-    if (siblingsMap.size === 0) return;
-
-    const mergedRefs = new Map<string, string>();
+  // Build merged variable name map and declare empty placeholders
+  const mergedRefs = new Map<string, string>();
+  if (siblingsMap.size > 0) {
     let mergedCounter = 0;
+    for (const [uniqueKey] of siblingsMap) {
+      mergedRefs.set(uniqueKey, `__merged_${mergedCounter++}`);
+    }
+    for (const varName of mergedRefs.values()) {
+      lines.push(`const ${varName} = {};`);
+    }
+  }
 
-    for (const [uniqueKey, { refPath, siblings }] of siblingsMap) {
-      const varName = `__merged_${mergedCounter++}`;
-      mergedRefs.set(uniqueKey, varName);
+  // Pass 1: Populate all base schemas in __refMap.
+  // Uses sibling-aware markers so nested $ref+sibling nodes reference the
+  // merged placeholders declared above.
+  for (const [refPath, index] of refMap) {
+    const value = lookup(schema, refPath, filePath);
 
-      // Create merged object and preserve __$ref
-      const refIndex = refMap.get(refPath);
-      lines.push(
-        `const ${varName} = Object.assign({}, __refMap["${refPath}"], ${str(siblings)});`,
-        `Object.defineProperty(${varName}, "__$ref", { value: __refMapPaths[${refIndex}], enumerable: false });`,
-      );
+    if (!value) {
+      // biome-ignore lint/suspicious/noConsole: Logging allowed here
+      console.warn(`Could not find value for refPath: ${refPath}`);
+      continue;
     }
 
-    return mergedRefs;
-  };
+    const transformedValue = setRefMarkers(value, refMap);
+    let code = replaceRefMarkers(str(transformedValue));
+    if (mergedRefs.size > 0) {
+      code = replaceSiblingRefMarkers(code, mergedRefs);
+    }
 
-  assignBaseRefs();
-  const mergedRefs = createMergedRefs();
+    lines.push(
+      `Object.assign(__refs[${index}], ${code});`,
+      `Object.defineProperty(__refs[${index}], "__$ref", { value: __refMapPaths[${index}], enumerable: false });`,
+    );
+  }
+
+  // Pass 2: Populate merged placeholders (base refs are now filled, so
+  // Object.assign copies the full referenced schema into the placeholder)
+  for (const [uniqueKey, { refPath, siblings }] of siblingsMap) {
+    const varName = mergedRefs.get(uniqueKey);
+    const refIndex = refMap.get(refPath);
+    lines.push(
+      `Object.assign(${varName}, __refMap["${refPath}"], ${str(siblings)});`,
+      `Object.defineProperty(${varName}, "__$ref", { value: __refMapPaths[${refIndex}], enumerable: false });`,
+    );
+  }
+
   const transformed = setRefMarkers(schema, refMap);
 
   let finalCode = replaceRefMarkers(str(transformed));
-  if (mergedRefs) finalCode = replaceSiblingRefMarkers(finalCode, mergedRefs);
+  if (mergedRefs.size > 0) {
+    finalCode = replaceSiblingRefMarkers(finalCode, mergedRefs);
+  }
 
   lines.push(`export const schema = ${finalCode};`);
 
