@@ -39,48 +39,41 @@ const IdentitySelector = ({
           </Label>
         ),
       )}
-      {securitySchemes && securitySchemes.length > 0 && (
-        <>
-          <div className="px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wide border-b">
-            Security
-          </div>
-          {securitySchemes.map((scheme) => {
-            const schemeId = `${SECURITY_SCHEME_PREFIX}${scheme.name}`;
-            const isAuthorized =
-              securityCredentials?.[scheme.name]?.isAuthorized ?? false;
-            const isSelected = value === schemeId;
-            return (
-              <Label
-                key={schemeId}
-                className="h-10 items-center border-b font-normal flex gap-4 pl-7 pr-4 py-4 cursor-pointer hover:bg-accent/75"
-              >
-                <RadioGroupItem value={schemeId} id={schemeId} />
-                <span className="flex-1 truncate">
-                  {scheme.name}
-                  {!isAuthorized && (
-                    <span className="text-muted-foreground ml-1.5 text-xs">
-                      (not configured)
-                    </span>
-                  )}
+      {securitySchemes?.map((scheme) => {
+        const schemeId = `${SECURITY_SCHEME_PREFIX}${scheme.name}`;
+        const isAuthorized =
+          securityCredentials?.[scheme.name]?.isAuthorized ?? false;
+        const isSelected = value === schemeId;
+        return (
+          <Label
+            key={schemeId}
+            className="h-10 items-center border-b font-normal flex gap-4 p-4 cursor-pointer hover:bg-accent/75"
+          >
+            <RadioGroupItem value={schemeId} id={schemeId} />
+            <span className="flex-1 truncate">
+              {scheme.name}
+              {!isAuthorized && (
+                <span className="text-muted-foreground ml-1.5 text-xs">
+                  (not configured)
                 </span>
-                {isSelected && onConfigureScheme && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onConfigureScheme(scheme.name);
-                    }}
-                  >
-                    <SettingsIcon size={14} />
-                  </Button>
-                )}
-              </Label>
-            );
-          })}
-        </>
-      )}
+              )}
+            </span>
+            {isSelected && onConfigureScheme && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-xs"
+                onClick={(e) => {
+                  e.preventDefault();
+                  onConfigureScheme(scheme.name);
+                }}
+              >
+                <SettingsIcon size={14} />
+              </Button>
+            )}
+          </Label>
+        );
+      })}
     </RadioGroup>
   </div>
 );
