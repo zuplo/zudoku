@@ -433,9 +433,10 @@ describe("Generate OpenAPI schema module", () => {
 
     const code = await generateCode(input);
 
-    // Ref with siblings uses a merged variable and preserves __$ref
+    // Merged placeholders are declared empty, then populated after base refs
+    expect(code).toContain("const __merged_0 = {};");
     expect(code).toContain(
-      'const __merged_0 = Object.assign({}, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
+      'Object.assign(__merged_0, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
     );
     expect(code).toContain(
       'Object.defineProperty(__merged_0, "__$ref", { value: __refMapPaths[0], enumerable: false });',
