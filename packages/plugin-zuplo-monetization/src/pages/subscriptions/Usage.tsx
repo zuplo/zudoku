@@ -15,7 +15,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Progress } from "zudoku/ui/Progress";
 import type { Item, Subscription } from "../../hooks/useSubscriptions";
-import { formatDurationInterval } from "../../utils/formatDuration.js";
+import { formatDurationAdjective } from "../../utils/formatDuration.js";
 import { SwitchPlanModal } from "./SwitchPlanModal";
 
 export type UsageResult = {
@@ -65,9 +65,10 @@ const UsageItem = ({
   item?: Item;
   subscription?: Subscription;
 }) => {
-  const billingPeriod = item?.billingCadence
-    ? formatDurationInterval(item.billingCadence)
-    : "monthly";
+  const cadence =
+    item?.included?.entitlement?.usagePeriod?.intervalISO ??
+    item?.billingCadence;
+  const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
   const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
   const overageTier =
     item?.price?.tiers?.find((t) => !t.upToAmount) ??

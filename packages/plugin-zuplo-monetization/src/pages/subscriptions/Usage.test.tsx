@@ -162,6 +162,51 @@ describe("Usage - UsageItem", () => {
     ).toBeInTheDocument();
   });
 
+  it("prefers usagePeriod over billingCadence", () => {
+    const itemWithUsagePeriod = {
+      ...softLimitItem,
+      billingCadence: "P1M",
+      included: {
+        ...softLimitItem.included,
+        entitlement: {
+          ...softLimitItem.included.entitlement,
+          usagePeriod: { anchor: "", interval: "week", intervalISO: "P1W" },
+        },
+      },
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[itemWithUsagePeriod]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your weekly quota"),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to billing period for multi-unit cadences", () => {
+    const quarterlyItem = {
+      ...softLimitItem,
+      billingCadence: "P3M",
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[quarterlyItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your billing period quota"),
+    ).toBeInTheDocument();
+  });
+
   it("defaults to soft limit when item is missing", () => {
     render(
       <Usage
