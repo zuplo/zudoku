@@ -433,9 +433,10 @@ describe("Generate OpenAPI schema module", () => {
 
     const code = await generateCode(input);
 
-    // Ref with siblings uses a merged variable and preserves __$ref
+    // Merged vars are pre-declared as empty objects, then populated after base refs
+    expect(code).toContain("const __merged_0 = {};");
     expect(code).toContain(
-      'const __merged_0 = Object.assign({}, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
+      'Object.assign(__merged_0, __refMap["#/components/schemas/Pet"], {\n  "description": "The pet data"\n});',
     );
     expect(code).toContain(
       'Object.defineProperty(__merged_0, "__$ref", { value: __refMapPaths[0], enumerable: false });',
@@ -532,5 +533,215 @@ describe("Generate OpenAPI schema module", () => {
         "type": "object",
       }
     `);
+  });
+
+  it("should handle circular refs with sibling properties", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Node: {
+            type: "object",
+            properties: {
+              parent: {
+                $ref: "#/components/schemas/Node",
+                description: "The parent node",
+              },
+              name: { type: "string" },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(generateCode(input));
+    const node = schema.components.schemas.Node;
+
+    expect(node.properties.parent.description).toBe("The parent node");
+    expect(node.properties.parent.type).toBe("object");
+    // The merged object should contain the circular ref's properties
+    expect(node.properties.parent.properties.name).toEqual({
+      type: "string",
+    });
+  });
+
+  it("should handle named schema that is itself a $ref with siblings", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Base: { type: "string" },
+          Alias: {
+            $ref: "#/components/schemas/Base",
+            description: "An alias with description",
+          },
+          Consumer: {
+            type: "object",
+            properties: {
+              field: { $ref: "#/components/schemas/Alias" },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(generateCode(input));
+
+    const alias = schema.components.schemas.Alias;
+    expect(alias.type).toBe("string");
+    expect(alias.description).toBe("An alias with description");
+
+    const field = schema.components.schemas.Consumer.properties.field;
+    expect(field.type).toBe("string");
+    expect(field.description).toBe("An alias with description");
+  });
+
+  it("should handle bare $ref+siblings alias when paths comes before components", async () => {
+    const input = {
+      paths: {
+        "/x": {
+          get: {
+            responses: {
+              "200": {
+                content: {
+                  "application/json": {
+                    schema: { $ref: "#/components/schemas/Alias" },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      components: {
+        schemas: {
+          Alias: {
+            $ref: "#/components/schemas/Base",
+            description: "An alias",
+          },
+          Base: { type: "string" },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(generateCode(input));
+
+    const alias = schema.components.schemas.Alias;
+    expect(alias.type).toBe("string");
+    expect(alias.description).toBe("An alias");
+
+    const fromPath =
+      schema.paths["/x"].get.responses["200"].content["application/json"]
+        .schema;
+    expect(fromPath.type).toBe("string");
+    expect(fromPath.description).toBe("An alias");
+  });
+
+  it("should preserve $ref sibling properties in nested refs", async () => {
+    const input: OpenAPIV3_1.Document = {
+      openapi: "3.1.0",
+      info: { title: "Test API", version: "1.0.0" },
+      components: {
+        schemas: {
+          Child: { type: "string" },
+          ObjectContainingRef: {
+            type: "object",
+            properties: {
+              child: {
+                $ref: "#/components/schemas/Child",
+                description: "Description for ObjectContainingRef.child",
+              },
+            },
+          },
+          Parent: {
+            type: "object",
+            properties: {
+              childObjectRef: {
+                $ref: "#/components/schemas/ObjectContainingRef",
+              },
+            },
+          },
+        },
+      },
+      paths: {},
+    };
+
+    const { schema } = await executeCode(generateCode(input));
+
+    // The nested description should be preserved when accessed through Parent
+    const childProp =
+      schema.components.schemas.Parent.properties.childObjectRef.properties
+        .child;
+    expect(childProp.description).toBe(
+      "Description for ObjectContainingRef.child",
+    );
+    expect(childProp.type).toBe("string");
+  });
+
+  it("should produce structurally equivalent output with refs resolved", async () => {
+    const base = { type: "string", description: "A base type" };
+    const withSiblings = {
+      type: "object",
+      properties: {
+        field: { ...base, description: "Overridden" },
+        plain: base,
+      },
+    };
+    const nested = {
+      type: "object",
+      properties: {
+        ref: withSiblings,
+        arr: { type: "array", items: withSiblings },
+      },
+    };
+
+    const { schema } = await executeCode(
+      generateCode({
+        components: {
+          schemas: {
+            Base: base,
+            WithSiblings: {
+              type: "object",
+              properties: {
+                field: {
+                  $ref: "#/components/schemas/Base",
+                  description: "Overridden",
+                },
+                plain: { $ref: "#/components/schemas/Base" },
+              },
+            },
+            Nested: {
+              type: "object",
+              properties: {
+                ref: { $ref: "#/components/schemas/WithSiblings" },
+                arr: {
+                  type: "array",
+                  items: { $ref: "#/components/schemas/WithSiblings" },
+                },
+              },
+            },
+          },
+        },
+        paths: {
+          "/test": {
+            get: {
+              responses: {
+                "200": {
+                  content: {
+                    "application/json": {
+                      schema: { $ref: "#/components/schemas/Nested" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    );
+
+    expect(schema.components.schemas.Nested).toEqual(nested);
+    expect(
+      schema.paths["/test"].get.responses["200"].content["application/json"]
+        .schema,
+    ).toEqual(nested);
   });
 });
