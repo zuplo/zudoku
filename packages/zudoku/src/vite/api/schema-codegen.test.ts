@@ -564,6 +564,36 @@ describe("Generate OpenAPI schema module", () => {
     });
   });
 
+  it("should handle named schema that is itself a $ref with siblings", async () => {
+    const input = {
+      components: {
+        schemas: {
+          Base: { type: "string" },
+          Alias: {
+            $ref: "#/components/schemas/Base",
+            description: "An alias with description",
+          },
+          Consumer: {
+            type: "object",
+            properties: {
+              field: { $ref: "#/components/schemas/Alias" },
+            },
+          },
+        },
+      },
+    };
+
+    const { schema } = await executeCode(generateCode(input));
+
+    const alias = schema.components.schemas.Alias;
+    expect(alias.type).toBe("string");
+    expect(alias.description).toBe("An alias with description");
+
+    const field = schema.components.schemas.Consumer.properties.field;
+    expect(field.type).toBe("string");
+    expect(field.description).toBe("An alias with description");
+  });
+
   it("should preserve $ref sibling properties in nested refs", async () => {
     const input: OpenAPIV3_1.Document = {
       openapi: "3.1.0",

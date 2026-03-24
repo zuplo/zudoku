@@ -148,6 +148,28 @@ describe("dereference", () => {
     expect(items.properties.child.description).toBe("Array item child desc");
   });
 
+  it("should drop siblings on circular $ref (sentinel is not an object)", async () => {
+    const result = await deref({
+      definitions: {
+        Node: {
+          type: "object",
+          properties: {
+            parent: {
+              $ref: "#/definitions/Node",
+              description: "The parent node",
+            },
+            name: { type: "string" },
+          },
+        },
+      },
+    });
+
+    // Circular refs resolve to the sentinel string, siblings can't be merged
+    expect(result.definitions.Node.properties.parent).toBe(
+      "$[Circular Reference]",
+    );
+  });
+
   it("should not merge siblings when $ref resolves to a non-object", async () => {
     const result = await deref({
       definitions: {

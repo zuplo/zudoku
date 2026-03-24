@@ -120,7 +120,8 @@ export const generateCode = (schema: RecordAny, filePath?: string) => {
   const toCode = (obj: RecordAny) =>
     replaceMarkers(stringify(setRefMarkers(obj, refMap)), mergedRefs);
 
-  // Pass 1: Populate all base refs (with sibling markers so nested $ref+sibling combinations are preserved)
+  // Pass 1: Populate all base refs (with sibling markers so nested
+  // $ref+sibling combinations are preserved)
   for (const [refPath, index] of refMap) {
     const value = lookup(schema, refPath, filePath);
 
@@ -130,7 +131,14 @@ export const generateCode = (schema: RecordAny, filePath?: string) => {
       continue;
     }
 
-    const code = toCode(value);
+    // When a base ref is itself a bare $ref+siblings (e.g. A: { $ref: "#/Base", description: "..." }),
+    // populate directly from the referenced base + siblings instead of going through the
+    // merged var which is still empty at this point
+    const siblingEntry =
+      value.__uniqueRefKey && siblingsMap.get(value.__uniqueRefKey);
+    const code = siblingEntry
+      ? `__refMap["${siblingEntry.refPath}"], ${stringify(siblingEntry.siblings)}`
+      : toCode(value);
 
     lines.push(
       `Object.assign(__refs[${index}], ${code});`,
