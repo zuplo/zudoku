@@ -191,6 +191,7 @@ const LogoSchema = z.object({
   alt: z.string().optional(),
   width: z.string().or(z.number()).optional(),
   href: z.string().optional(),
+  reloadDocument: z.boolean().optional(),
 });
 
 export const FooterSocialIcons = [

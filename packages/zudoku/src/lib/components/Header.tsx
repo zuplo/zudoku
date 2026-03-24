@@ -131,7 +131,6 @@ const ProfileMenu = () => {
     </ClientOnly>
   );
 };
-
 export const Header = memo(function HeaderInner() {
   const context = useZudoku();
   const {
@@ -167,7 +166,11 @@ export const Header = memo(function HeaderInner() {
         <PageProgress />
         <div className="max-w-screen-2xl mx-auto flex lg:grid lg:grid-cols-[1fr_auto_1fr] gap-2 items-center justify-between h-(--top-header-height) px-4 lg:px-8 border-transparent">
           <div className="flex items-center gap-4 min-w-0 justify-self-start">
-            <Link to={site?.logo?.href ?? "/"} className="shrink-0">
+            <Link
+              to={site?.logo?.href ?? "/"}
+              reloadDocument={site?.logo?.reloadDocument ?? true}
+              className="shrink-0"
+            >
               <div className="flex items-center gap-3.5">
                 {site?.logo ? (
                   <>

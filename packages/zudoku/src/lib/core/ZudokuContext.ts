@@ -79,6 +79,7 @@ type Site = Partial<{
     width?: string | number;
     alt?: string;
     href?: string;
+    reloadDocument?: boolean;
   };
   banner?: {
     message: ReactNode;
