@@ -56,8 +56,13 @@ export const dereference = async (
             result = await resolve(resolved, path);
           }
 
-          if (hasSiblings && isIndexableObject(result)) {
-            return { ...result, ...siblings };
+          if (hasSiblings) {
+            if (result === CIRCULAR_REF) {
+              return { ...siblings };
+            }
+            if (isIndexableObject(result)) {
+              return { ...result, ...siblings };
+            }
           }
           return result;
         }

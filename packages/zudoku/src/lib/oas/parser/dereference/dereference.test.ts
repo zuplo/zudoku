@@ -2,8 +2,9 @@
 import { describe, expect, it } from "vitest";
 import { dereference } from "./index.js";
 
+// structuredClone avoids hitting the module-level cache across tests
 const deref = (schema: Record<string, any>) =>
-  dereference(schema) as Promise<Record<string, any>>;
+  dereference(structuredClone(schema)) as Promise<Record<string, any>>;
 
 describe("dereference", () => {
   it("should preserve sibling properties on $ref", async () => {
@@ -148,7 +149,7 @@ describe("dereference", () => {
     expect(items.properties.child.description).toBe("Array item child desc");
   });
 
-  it("should drop siblings on circular $ref (sentinel is not an object)", async () => {
+  it("should preserve siblings on circular $ref", async () => {
     const result = await deref({
       definitions: {
         Node: {
@@ -164,10 +165,101 @@ describe("dereference", () => {
       },
     });
 
-    // Circular refs resolve to the sentinel string, siblings can't be merged
-    expect(result.definitions.Node.properties.parent).toBe(
-      "$[Circular Reference]",
+    expect(result.definitions.Node.properties.parent).toEqual({
+      description: "The parent node",
+    });
+  });
+
+  it("should preserve multiple sibling properties alongside $ref", async () => {
+    const result = await deref({
+      components: {
+        schemas: {
+          Base: {
+            type: "object",
+            properties: { id: { type: "string" } },
+          },
+        },
+      },
+      result: {
+        $ref: "#/components/schemas/Base",
+        description: "desc",
+        summary: "sum",
+      },
+    });
+
+    expect(result.result.type).toBe("object");
+    expect(result.result.description).toBe("desc");
+    expect(result.result.summary).toBe("sum");
+  });
+
+  it("should preserve siblings in all #2191 variants", async () => {
+    const result = await deref({
+      components: {
+        schemas: {
+          Child: { type: "string" },
+          ObjectContainingRef: {
+            type: "object",
+            properties: {
+              child: {
+                $ref: "#/components/schemas/Child",
+                description: "Description for ObjectContainingRef.child",
+              },
+            },
+          },
+          Parent: {
+            type: "object",
+            properties: {
+              childObject: {
+                type: "object",
+                properties: {
+                  child: {
+                    $ref: "#/components/schemas/Child",
+                    description: "Inline description for childObject.child",
+                  },
+                },
+              },
+              childObjectRef: {
+                $ref: "#/components/schemas/ObjectContainingRef",
+              },
+              childObjectArray: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    child: {
+                      $ref: "#/components/schemas/Child",
+                      description:
+                        "Inline description for childObjectArray.[].child",
+                    },
+                  },
+                },
+              },
+              childObjectArrayRef: {
+                type: "array",
+                items: {
+                  $ref: "#/components/schemas/ObjectContainingRef",
+                },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const parent = result.components.schemas.Parent;
+
+    expect(parent.properties.childObject.properties.child.description).toBe(
+      "Inline description for childObject.child",
     );
+    expect(parent.properties.childObjectRef.properties.child.description).toBe(
+      "Description for ObjectContainingRef.child",
+    );
+    expect(
+      parent.properties.childObjectArray.items.properties.child.description,
+    ).toBe("Inline description for childObjectArray.[].child");
+    expect(
+      parent.properties.childObjectArrayRef.items.properties.child.description,
+    ).toBe("Description for ObjectContainingRef.child");
   });
 
   it("should not merge siblings when $ref resolves to a non-object", async () => {
