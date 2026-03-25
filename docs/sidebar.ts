@@ -70,6 +70,7 @@ export const docs: Navigation = [
     icon: "lock",
     items: [
       "docs/configuration/authentication",
+      "docs/configuration/oauth-security-schemes",
       "docs/configuration/protected-routes",
       {
         type: "category",
