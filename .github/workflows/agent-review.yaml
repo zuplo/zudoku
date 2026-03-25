@@ -1,0 +1,211 @@
+name: Agent PR Review
+
+on:
+  workflow_run:
+    workflows: ["Public Package Build"]
+    types: [completed]
+
+concurrency:
+  group: agent-review-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  agent-review:
+    name: AI Visual Review
+    # Only run when the preview build succeeded and was triggered by a PR
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      actions: read
+
+    steps:
+      - name: Get PR details and deployment URL
+        id: pr
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // Resolve the PR number — workflow_run.pull_requests can be empty for fork PRs
+            let prNumber = context.payload.workflow_run.pull_requests?.[0]?.number;
+
+            if (!prNumber) {
+              const headSha = context.payload.workflow_run.head_sha;
+              const { data: associatedPrs } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: headSha,
+              });
+              prNumber = associatedPrs.find(pr => pr.state === 'open')?.number;
+            }
+
+            if (!prNumber) {
+              core.info('No PR found for this workflow run — skipping');
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            core.setOutput('skip', 'false');
+            core.setOutput('number', prNumber);
+
+            // Get deployment URL from the preview build comment on the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const deployComment = comments.find(c =>
+              c.user.login === 'github-actions[bot]' &&
+              c.body.includes('Preview build of published Zudoku package')
+            );
+
+            const urlMatch = deployComment?.body?.match(/(https:\/\/[^\s*]+\.pages\.dev)/);
+            if (!urlMatch) {
+              core.setFailed('Could not find Cosmo Cargo deployment URL in PR comments');
+              return;
+            }
+
+            core.setOutput('deployment_url', urlMatch[1]);
+            core.info(`Found PR #${prNumber} with deployment at ${urlMatch[1]}`);
+
+      - name: Verify PR is from a trusted source
+        if: steps.pr.outputs.skip != 'true'
+        id: trust
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: parseInt('${{ steps.pr.outputs.number }}'),
+            });
+
+            const isExternal = !pr.head.repo || pr.head.repo.full_name !== pr.base.repo.full_name;
+            const hasLabel = pr.labels.some(l => l.name === 'approve public build');
+
+            if (isExternal && !hasLabel) {
+              core.setFailed('External PR without "approve public build" label — skipping for safety');
+              return;
+            }
+
+            core.info(isExternal ? 'External PR approved via label' : 'Internal PR — trusted');
+
+      # Safe: only reaches here for internal PRs or fork PRs approved via 'approve public build' label
+      - uses: actions/checkout@v6
+        if: steps.pr.outputs.skip != 'true'
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 1
+
+      - name: Install agent-browser
+        if: steps.pr.outputs.skip != 'true'
+        run: |
+          npm install -g agent-browser
+          agent-browser install
+        env:
+          AGENT_BROWSER_IDLE_TIMEOUT_MS: "120000"
+
+      - name: Run Claude Code Agent Review
+        if: steps.pr.outputs.skip != 'true'
+        id: claude
+        # pinned to v1 tag commit
+        uses: anthropics/claude-code-action@ff9acae5886d41a99ed4ec14b7dc147d55834722 # v1
+        env:
+          AGENT_BROWSER_IDLE_TIMEOUT_MS: "120000"
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            Carefully review https://github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}/
+
+            Identify areas that might be affected by this change and use a browser to test them
+            on the preview deployment for Cosmo Cargo at: ${{ steps.pr.outputs.deployment_url }}
+
+            Use `agent-browser` to browse the deployment and take screenshots:
+              1. `agent-browser open <url>` to navigate
+              2. `agent-browser snapshot -i` to get a structured view of the page with element refs
+              3. `agent-browser click @ref` to interact with elements
+              4. `agent-browser screenshot <name>.png` to capture screenshots
+
+            Test each area that might be affected by the PR changes. Provide screenshots of the
+            affected areas. Note if something is not like expected or crashes.
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(agent-browser *)",
+                  "Bash(git diff *)",
+                  "Bash(git log *)",
+                  "Bash(git show *)",
+                  "WebFetch"
+                ]
+              }
+            }
+
+      - name: Post review comment on PR
+        if: steps.pr.outputs.skip != 'true' && always()
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const prNumber = parseInt('${{ steps.pr.outputs.number }}');
+            const executionFile = '${{ steps.claude.outputs.execution_file }}';
+
+            if (!executionFile || !fs.existsSync(executionFile)) {
+              core.info('No execution file found — Claude may have posted directly to the PR');
+              return;
+            }
+
+            // Check if Claude already posted a comment on the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const alreadyPosted = comments.some(c =>
+              c.body.includes('Agent PR Review') &&
+              c.updated_at > new Date(Date.now() - 10 * 60 * 1000).toISOString()
+            );
+
+            if (alreadyPosted) {
+              core.info('Review comment already posted by the action');
+              return;
+            }
+
+            // Read the execution output and post it
+            try {
+              const raw = fs.readFileSync(executionFile, 'utf8');
+              const messages = JSON.parse(raw);
+
+              // Extract the assistant's final text response
+              const assistantMessages = messages
+                .filter(m => m.role === 'assistant' && m.type === 'text')
+                .map(m => m.content || m.text)
+                .filter(Boolean);
+
+              const reviewBody = assistantMessages.length > 0
+                ? assistantMessages[assistantMessages.length - 1]
+                : 'Agent review completed — see the workflow run for details.';
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `## Agent PR Review\n\n${reviewBody}\n\n---\n_Review by Claude Code Agent — [workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})_`,
+              });
+            } catch (err) {
+              core.warning(`Failed to parse execution file: ${err.message}`);
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `## Agent PR Review\n\nThe agent review completed. See the [workflow run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}) for full details.\n\n---\n_Review by Claude Code Agent_`,
+              });
+            }
