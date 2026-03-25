@@ -6,6 +6,7 @@ export const categorizeRateCards = (
   rateCards: RateCard[],
   currency?: string,
   units?: Record<string, string>,
+  planBillingCadence?: string | null,
 ) => {
   const quotas: Quota[] = [];
   const features: Feature[] = [];
@@ -39,7 +40,9 @@ export const categorizeRateCards = (
           ? formatDuration(et.usagePeriod)
           : rc.billingCadence
             ? formatDuration(rc.billingCadence)
-            : "month",
+            : planBillingCadence
+              ? formatDuration(planBillingCadence)
+              : "month",
         overagePrice,
       });
     } else if (et.type === "boolean") {

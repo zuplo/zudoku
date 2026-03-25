@@ -13,25 +13,23 @@ const PhaseSection = ({
   phase,
   currency,
   showName,
-  excludeKeys,
+  billingCadence,
   units,
 }: {
   phase: PlanPhase;
   currency?: string;
   showName: boolean;
-  excludeKeys: Set<string>;
+  billingCadence?: string;
   units?: Record<string, string>;
 }) => {
   const { quotas, features } = categorizeRateCards(
     phase.rateCards,
     currency,
     units,
+    billingCadence,
   );
 
-  const filteredQuotas = quotas.filter((q) => !excludeKeys.has(q.key));
-  const filteredFeatures = features.filter((f) => !excludeKeys.has(f.key));
-
-  if (filteredQuotas.length === 0 && filteredFeatures.length === 0) return null;
+  if (quotas.length === 0 && features.length === 0) return null;
 
   return (
     <div className="space-y-2">
@@ -46,10 +44,10 @@ const PhaseSection = ({
           )}
         </div>
       )}
-      {filteredQuotas.map((quota) => (
+      {quotas.map((quota) => (
         <QuotaItem key={quota.key} quota={quota} />
       ))}
-      {filteredFeatures.map((feature) => (
+      {features.map((feature) => (
         <FeatureItem key={feature.key} feature={feature} />
       ))}
     </div>
@@ -135,19 +133,14 @@ export const PricingCard = ({
       </div>
 
       <div className="space-y-4 mb-6 grow">
-        {plan.phases.map((phase, index) => {
-          const laterKeys = new Set(
-            plan.phases
-              .slice(index + 1)
-              .flatMap((p) => p.rateCards.map((rc) => rc.featureKey ?? rc.key)),
-          );
+        {plan.phases.map((phase) => {
           return (
             <PhaseSection
               key={phase.key}
               phase={phase}
               currency={plan.currency}
               showName={hasMultiplePhases}
-              excludeKeys={laterKeys}
+              billingCadence={plan.billingCadence}
               units={units}
             />
           );
