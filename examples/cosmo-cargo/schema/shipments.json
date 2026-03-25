@@ -168,7 +168,9 @@
           },
           "trackingNumber": {
             "type": "string",
-            "pattern": "^[A-Z0-9]{10,20}$"
+            "pattern": "^[A-Z0-9]{10,20}$",
+            "deprecated": true,
+            "description": "Use the `tracking` endpoint instead. This field will be removed in a future version."
           },
           "createdAt": {
             "type": "string",
@@ -218,7 +220,10 @@
             "description": "Empty object for future extensibility",
             "properties": {}
           },
-          "legacyId": {},
+          "legacyId": {
+            "deprecated": true,
+            "description": "Legacy identifier from the old system. Use `id` instead."
+          },
           "customFields": {
             "type": "object",
             "description": "Dictionary of custom string fields that can be added to the shipment",
