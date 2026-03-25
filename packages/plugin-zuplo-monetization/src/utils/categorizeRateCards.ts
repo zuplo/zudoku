@@ -36,13 +36,11 @@ export const categorizeRateCards = (
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: et.issueAfterReset,
-        period: et.usagePeriod
-          ? formatDuration(et.usagePeriod)
-          : rc.billingCadence
-            ? formatDuration(rc.billingCadence)
-            : planBillingCadence
-              ? formatDuration(planBillingCadence)
-              : "month",
+        period: rc.billingCadence
+          ? formatDuration(rc.billingCadence)
+          : planBillingCadence
+            ? formatDuration(planBillingCadence)
+            : "month",
         overagePrice,
       });
     } else if (et.type === "boolean") {

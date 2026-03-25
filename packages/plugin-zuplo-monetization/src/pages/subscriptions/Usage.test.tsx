@@ -166,7 +166,7 @@ describe("Usage - UsageItem", () => {
     ).toBeInTheDocument();
   });
 
-  it("prefers usagePeriod over billingCadence", () => {
+  it("uses billingCadence even when usagePeriod is present", () => {
     const itemWithUsagePeriod = {
       ...softLimitItem,
       billingCadence: "P1M",
@@ -188,7 +188,7 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(
-      screen.getByText("You've exceeded your weekly quota"),
+      screen.getByText("You've exceeded your monthly quota"),
     ).toBeInTheDocument();
   });
 

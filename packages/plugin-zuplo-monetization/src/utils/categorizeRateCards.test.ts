@@ -6,7 +6,6 @@ const makeMeteredRateCard = (
   overrides: Partial<{
     isSoftLimit: boolean;
     issueAfterReset: number;
-    usagePeriod: string;
     tiers: Array<{
       flatPrice?: { amount: string };
       unitPrice?: { amount: string };
@@ -26,7 +25,6 @@ const makeMeteredRateCard = (
     type: "metered",
     issueAfterReset: overrides.issueAfterReset ?? 1000,
     isSoftLimit: overrides.isSoftLimit,
-    usagePeriod: overrides.usagePeriod ?? "P1M",
   },
 });
 
@@ -145,7 +143,7 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].overagePrice).toMatch(/\/unit$/);
   });
 
-  it("falls back to billingCadence for period when usagePeriod is missing", () => {
+  it("uses rc billingCadence for period", () => {
     const rc: RateCard = {
       type: "usage_based",
       key: "jobs",
@@ -162,7 +160,24 @@ describe("categorizeRateCards", () => {
     expect(quotas[0].period).toBe("week");
   });
 
-  it("falls back to 'month' when both usagePeriod and billingCadence are missing", () => {
+  it("falls back to planBillingCadence when rc billingCadence is missing", () => {
+    const rc: RateCard = {
+      type: "flat_fee",
+      key: "jobs",
+      name: "Jobs",
+      featureKey: "jobs",
+      billingCadence: null,
+      price: null,
+      entitlementTemplate: {
+        type: "metered",
+        issueAfterReset: 500,
+      },
+    };
+    const { quotas } = categorizeRateCards([rc], undefined, undefined, "P1Y");
+    expect(quotas[0].period).toBe("year");
+  });
+
+  it("falls back to 'month' when both billingCadences are missing", () => {
     const rc: RateCard = {
       type: "flat_fee",
       key: "jobs",
