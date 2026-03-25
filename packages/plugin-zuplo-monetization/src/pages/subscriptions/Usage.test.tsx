@@ -1,8 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Item } from "../../hooks/useSubscriptions.js";
 import type { MeteredEntitlement } from "./Usage.js";
 import { Usage } from "./Usage.js";
+
+vi.mock("./SwitchPlanModal", () => ({
+  SwitchPlanModal: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 const makeUsage = (meter: Partial<MeteredEntitlement> = {}) => ({
   $schema: "",
@@ -204,6 +208,26 @@ describe("Usage - UsageItem", () => {
     );
     expect(
       screen.getByText("You've exceeded your billing period quota"),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to subscription billingCadence when item has no cadence", () => {
+    const itemNoCadence = { ...softLimitItem } as Item;
+    const subscription = {
+      billingCadence: "P1W",
+    } as import("../../hooks/useSubscriptions.js").Subscription;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[itemNoCadence]}
+        subscription={subscription}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your weekly quota"),
     ).toBeInTheDocument();
   });
 

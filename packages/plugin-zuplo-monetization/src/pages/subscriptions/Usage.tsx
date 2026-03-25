@@ -67,7 +67,8 @@ const UsageItem = ({
 }) => {
   const cadence =
     item?.included?.entitlement?.usagePeriod?.intervalISO ??
-    item?.billingCadence;
+    item?.billingCadence ??
+    subscription?.billingCadence;
   const billingPeriod = cadence ? formatDurationAdjective(cadence) : "monthly";
   const isSoftLimit = item?.included?.entitlement?.isSoftLimit ?? true;
   const overageTier =
