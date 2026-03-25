@@ -58,11 +58,17 @@ Configure the site's logo with different versions for light and dark themes:
         dark: "/dark-logo.png"
       },
       alt: "Company Logo",
-      width: "120px" // optional width
+      width: "120px", // optional width
+      href: "/", // optional link target (defaults to "/")
+      reloadDocument: true, // optional, defaults to true
     }
   }
 }
 ```
+
+The `reloadDocument` option controls whether clicking the logo triggers a full page reload (`true`,
+the default) or uses client-side SPA navigation (`false`). A full reload is useful when your landing
+page is served by a different system (e.g. a CMS) outside of Zudoku.
 
 #### Colors & Theme
 
