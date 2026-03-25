@@ -16,8 +16,6 @@ import type { SecuritySchemeType } from "../graphql/graphql.js";
 import { ApiKeySchemeForm } from "./scheme-forms/ApiKeySchemeForm.js";
 import { HttpBasicSchemeForm } from "./scheme-forms/HttpBasicSchemeForm.js";
 import { HttpBearerSchemeForm } from "./scheme-forms/HttpBearerSchemeForm.js";
-import { OAuth2SchemeForm } from "./scheme-forms/OAuth2SchemeForm.js";
-import { OpenIdConnectSchemeForm } from "./scheme-forms/OpenIdConnectSchemeForm.js";
 import type { SecuritySchemeData } from "./scheme-forms/types.js";
 import { useSecurityCredentialsStore } from "./securityCredentialsStore.js";
 
@@ -101,17 +99,11 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
                 playground. Configure it via custom headers.
               </p>
             )}
-          {scheme.type === "oauth2" && (
-            <OAuth2SchemeForm
-              scheme={scheme}
-              onAuthorize={(value) => setCredential(scheme.name, value)}
-            />
-          )}
-          {scheme.type === "openIdConnect" && (
-            <OpenIdConnectSchemeForm
-              scheme={scheme}
-              onAuthorize={(value) => setCredential(scheme.name, value)}
-            />
+          {(scheme.type === "oauth2" || scheme.type === "openIdConnect") && (
+            <p className="text-xs text-muted-foreground italic">
+              {scheme.type === "oauth2" ? "OAuth 2.0" : "OpenID Connect"}{" "}
+              authentication is not yet supported in the playground.
+            </p>
           )}
           {scheme.type === "mutualTLS" && (
             <p className="text-xs text-muted-foreground italic">
