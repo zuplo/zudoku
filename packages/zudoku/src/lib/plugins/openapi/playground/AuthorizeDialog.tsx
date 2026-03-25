@@ -100,9 +100,17 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
               </p>
             )}
           {(scheme.type === "oauth2" || scheme.type === "openIdConnect") && (
-            <p className="text-xs text-muted-foreground italic">
+            <p className="text-xs text-muted-foreground">
               {scheme.type === "oauth2" ? "OAuth 2.0" : "OpenID Connect"}{" "}
-              authentication is not yet supported in the playground.
+              requires a Zudoku authentication provider.{" "}
+              <a
+                href="https://zudoku.dev/docs/configuration/oauth-security-schemes"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground"
+              >
+                Learn how to configure it
+              </a>
             </p>
           )}
           {scheme.type === "mutualTLS" && (
