@@ -6,12 +6,20 @@ export const useUrlUtils = () => {
   const basePath = z.options.basePath;
 
   return {
-    generateUrl: (path: string) => {
+    generateUrl: (
+      path: string,
+      { searchParams }: { searchParams?: Record<string, string> } = {},
+    ) => {
       if (!window.location.origin) {
         throw new Error("Only works in browser environment");
       }
 
-      return joinUrl(window.location.origin, basePath, path);
+      return joinUrl(
+        window.location.origin,
+        basePath,
+        path,
+        searchParams ? `?${new URLSearchParams(searchParams)}` : undefined,
+      );
     },
   };
 };

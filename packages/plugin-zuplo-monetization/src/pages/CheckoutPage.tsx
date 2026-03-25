@@ -19,8 +19,6 @@ const CheckoutPage = () => {
   if (!planId) {
     throw new Error(`missing planId in URL`);
   }
-  const successUrl = new URL(generateUrl("/checkout-confirm"));
-  successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
     queryKey: [
@@ -34,7 +32,9 @@ const CheckoutPage = () => {
         method: "POST",
         body: JSON.stringify({
           planId,
-          successURL: successUrl.toString(),
+          successURL: generateUrl("/checkout-confirm", {
+            searchParams: { planId },
+          }),
           cancelURL: generateUrl("/pricing"),
         }),
       },

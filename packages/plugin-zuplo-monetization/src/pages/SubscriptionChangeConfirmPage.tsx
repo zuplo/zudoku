@@ -56,13 +56,7 @@ const SubscriptionChangeConfirmPage = () => {
       await queryClient.invalidateQueries();
       navigate(
         `/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`,
-        {
-          state: {
-            planSwitched: {
-              newPlanName: selectedPlan?.name,
-            },
-          },
-        },
+        { state: { planSwitched: { newPlanName: selectedPlan?.name } } },
       );
     },
   });
