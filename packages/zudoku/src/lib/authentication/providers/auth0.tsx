@@ -42,7 +42,7 @@ class Auth0AuthenticationProvider
     }
   };
 
-  signOut = async (_: AuthActionContext): Promise<void> => {
+  signOut = async ({ navigate }: AuthActionContext): Promise<void> => {
     const as = await this.getAuthServer();
 
     const { providerData } = useAuthState.getState();
@@ -80,6 +80,7 @@ class Auth0AuthenticationProvider
       // const logoutUrl = new URL(`${this.issuer.replace(/\/$/, "")}/v2/logout`);
       // logoutUrl.searchParams.set("returnTo", redirectUrl.toString());
       // don't support the deprecated logout today
+      navigate(this.redirectToAfterSignOut, { replace: true });
     }
   };
 }

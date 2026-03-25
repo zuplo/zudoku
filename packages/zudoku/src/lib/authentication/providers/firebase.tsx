@@ -349,7 +349,7 @@ class FirebaseAuthenticationProvider
     ];
   };
 
-  signOut = async () => {
+  signOut = async ({ navigate }: AuthActionContext) => {
     await signOut(this.auth);
 
     useAuthState.setState({
@@ -358,6 +358,8 @@ class FirebaseAuthenticationProvider
       profile: undefined,
       providerData: undefined,
     });
+
+    navigate("/", { replace: true });
   };
 
   onPageLoad = async () => {
