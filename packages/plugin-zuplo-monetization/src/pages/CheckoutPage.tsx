@@ -1,7 +1,7 @@
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
-import { Link, useParams } from "zudoku/router";
+import { Link, useSearchParams } from "zudoku/router";
 import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import { RedirectPage } from "../components/RedirectPage.js";
@@ -9,7 +9,8 @@ import { useDeploymentName } from "../hooks/useDeploymentName";
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
 const CheckoutPage = () => {
-  const { planId } = useParams();
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get("planId");
   const zudoku = useZudoku();
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();
@@ -18,8 +19,6 @@ const CheckoutPage = () => {
   if (!planId) {
     throw new Error(`missing planId in URL`);
   }
-  const successUrl = new URL(generateUrl("/checkout-confirm"));
-  successUrl.searchParams.set("plan", planId);
 
   const checkoutLink = useQuery<{ url: string }>({
     queryKey: [
@@ -33,7 +32,9 @@ const CheckoutPage = () => {
         method: "POST",
         body: JSON.stringify({
           planId,
-          successURL: successUrl.toString(),
+          successURL: generateUrl("/checkout-confirm", {
+            searchParams: { planId },
+          }),
           cancelURL: generateUrl("/pricing"),
         }),
       },

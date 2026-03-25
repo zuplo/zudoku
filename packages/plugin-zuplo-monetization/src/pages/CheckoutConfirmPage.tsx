@@ -20,7 +20,7 @@ import { queryClient } from "../ZuploMonetizationWrapper";
 
 const CheckoutConfirmPage = () => {
   const [search] = useSearchParams();
-  const planId = search.get("plan");
+  const planId = search.get("planId");
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
   const navigate = useNavigate();
@@ -50,7 +50,9 @@ const CheckoutConfirmPage = () => {
     },
     onSuccess: async (subscription) => {
       await queryClient.invalidateQueries();
-      navigate(`/subscriptions/${subscription.id}`);
+      navigate(
+        `/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`,
+      );
     },
   });
 

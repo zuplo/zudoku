@@ -54,13 +54,10 @@ const SubscriptionChangeConfirmPage = () => {
     },
     onSuccess: async (subscription) => {
       await queryClient.invalidateQueries();
-      navigate(`/subscriptions/${subscription.id}`, {
-        state: {
-          planSwitched: {
-            newPlanName: selectedPlan?.name,
-          },
-        },
-      });
+      navigate(
+        `/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`,
+        { state: { planSwitched: { newPlanName: selectedPlan?.name } } },
+      );
     },
   });
 
@@ -166,7 +163,11 @@ const SubscriptionChangeConfirmPage = () => {
               disabled={changeMutation.isPending}
               asChild={!changeMutation.isPending}
             >
-              <Link to={`/subscriptions/${subscriptionId}`}>Cancel</Link>
+              <Link
+                to={`/subscriptions?${new URLSearchParams({ subscriptionId: subscriptionId ?? "" })}`}
+              >
+                Cancel
+              </Link>
             </Button>
           </div>
 

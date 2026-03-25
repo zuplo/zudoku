@@ -354,10 +354,6 @@ const ConfirmSwitchAlert = ({
   const context = useZudoku();
   const { generateUrl } = useUrlUtils();
 
-  const successUrl = new URL(generateUrl("/subscription-change-confirm"));
-  successUrl.searchParams.set("planId", switchTo.plan.id);
-  successUrl.searchParams.set("subscriptionId", switchTo.subscriptionId);
-
   const mutation = useMutation<{ url: string }>({
     mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
     meta: {
@@ -366,8 +362,15 @@ const ConfirmSwitchAlert = ({
         method: "POST",
         body: JSON.stringify({
           planId: switchTo.plan.id,
-          successURL: successUrl.toString(),
-          cancelURL: generateUrl(`/subscriptions/${switchTo.subscriptionId}`),
+          successURL: generateUrl(`/subscription-change-confirm`, {
+            searchParams: {
+              planId: switchTo.plan.id,
+              subscriptionId: switchTo.subscriptionId,
+            },
+          }),
+          cancelURL: generateUrl("/subscriptions", {
+            searchParams: { subscriptionId: switchTo.subscriptionId },
+          }),
         }),
       },
     },

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Head, Heading } from "zudoku/components";
-import { useParams } from "zudoku/router";
+import { useSearchParams } from "zudoku/router";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { useSubscriptions } from "../hooks/useSubscriptions";
@@ -10,7 +10,8 @@ import { SubscriptionsList } from "./subscriptions/SubscriptionsList";
 const SubscriptionsPage = () => {
   const deploymentName = useDeploymentName();
   const { data } = useSubscriptions(deploymentName);
-  const { subscriptionId } = useParams();
+  const [searchParams] = useSearchParams();
+  const subscriptionId = searchParams.get("subscriptionId");
   const subscriptions = data?.items ?? [];
 
   const activeSubscription = useMemo(() => {

@@ -1,4 +1,3 @@
-import { LogOutIcon } from "lucide-react";
 import type {
   CommonPlugin,
   NavigationPlugin,
@@ -29,13 +28,6 @@ export class CoreAuthenticationPlugin implements PluginInterface {
   }
 
   getProfileMenuItems() {
-    return [
-      {
-        label: "Logout",
-        path: "/signout",
-        category: "bottom",
-        icon: LogOutIcon,
-      } as const,
-    ];
+    return [];
   }
 }
