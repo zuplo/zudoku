@@ -157,7 +157,7 @@ export const PricingCard = ({
         </Button>
       ) : (
         <Button variant={isPopular ? "default" : "secondary"} asChild>
-          <Link to={`/checkout/${plan.id}`}>Subscribe</Link>
+          <Link to={`/checkout?planId=${plan.id}`}>Subscribe</Link>
         </Button>
       )}
     </div>

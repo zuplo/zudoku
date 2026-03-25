@@ -94,7 +94,7 @@ export const zuploMonetizationPlugin = createPlugin(
           },
           children: [
             {
-              path: "/checkout/:planId?",
+              path: "/checkout",
               element: <CheckoutPage />,
             },
             {
@@ -123,7 +123,7 @@ export const zuploMonetizationPlugin = createPlugin(
             },
             {
               handle: { layout: "default" },
-              path: "/subscriptions/:subscriptionId?",
+              path: "/subscriptions",
               element: <SubscriptionsPage />,
             },
           ],
@@ -132,10 +132,10 @@ export const zuploMonetizationPlugin = createPlugin(
     },
     getProtectedRoutes: () => {
       return [
-        "/checkout/*",
+        "/checkout",
         "/checkout-confirm",
         "/subscription-change-confirm",
-        "/subscriptions/*",
+        "/subscriptions",
         "/manage-payment",
       ];
     },

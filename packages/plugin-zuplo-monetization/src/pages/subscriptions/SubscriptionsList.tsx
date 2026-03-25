@@ -112,7 +112,10 @@ const SubscriptionItem = ({
     subscription.activeTo && new Date(subscription.activeTo) > new Date();
 
   return (
-    <Link to={`/subscriptions/${subscription.id}`} key={subscription.id}>
+    <Link
+      to={`/subscriptions?subscriptionId=${subscription.id}`}
+      key={subscription.id}
+    >
       <Item
         size="sm"
         key={subscription.id}

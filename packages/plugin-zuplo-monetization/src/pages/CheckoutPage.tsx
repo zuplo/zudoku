@@ -1,7 +1,7 @@
 import { useAuth, useZudoku } from "zudoku/hooks";
 import { ShieldIcon } from "zudoku/icons";
 import { useQuery } from "zudoku/react-query";
-import { Link, useParams } from "zudoku/router";
+import { Link, useSearchParams } from "zudoku/router";
 import { Alert, AlertAction, AlertDescription } from "zudoku/ui/Alert";
 import { Button } from "zudoku/ui/Button";
 import { RedirectPage } from "../components/RedirectPage.js";
@@ -9,7 +9,8 @@ import { useDeploymentName } from "../hooks/useDeploymentName";
 import { useUrlUtils } from "../hooks/useUrlUtils";
 
 const CheckoutPage = () => {
-  const { planId } = useParams();
+  const [searchParams] = useSearchParams();
+  const planId = searchParams.get("planId");
   const zudoku = useZudoku();
   const auth = useAuth();
   const { generateUrl } = useUrlUtils();

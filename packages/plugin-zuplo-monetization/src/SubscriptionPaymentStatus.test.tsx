@@ -98,7 +98,7 @@ const seedAndRender = async (
       <StaticZudoku
         env={{ ZUPLO_PUBLIC_DEPLOYMENT_NAME: DEPLOYMENT }}
         plugins={[zuploMonetizationPlugin()]}
-        path={`/subscriptions/${SUB_ID}`}
+        path={`/subscriptions?subscriptionId=${SUB_ID}`}
         isAuthenticated
       />,
     );
