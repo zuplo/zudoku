@@ -19,7 +19,8 @@
     "dist",
     "cli.js",
     "src",
-    "client.d.ts"
+    "client.d.ts",
+    "docs"
   ],
   "bin": {
     "zudoku": "./cli.js"

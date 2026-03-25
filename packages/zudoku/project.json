@@ -7,12 +7,12 @@
       "command": "node ./cli.js"
     },
     "build:ci": {
-      "dependsOn": ["build", "build:standalone", "typecheck"],
+      "dependsOn": ["build", "build:standalone", "typecheck", "copy:docs"],
       "executor": "nx:noop"
     },
     "publish:local": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build", "build:ci"],
+      "dependsOn": ["build:ci"],
       "options": {
         "cwd": "packages/zudoku",
         "commands": [
@@ -31,6 +31,16 @@
         "{projectRoot}/tsdown.config.ts",
         "{projectRoot}/package.json"
       ],
+      "cache": true
+    },
+    "copy:docs": {
+      "command": "rm -rf docs && rsync -a --include='*/' --include='*.md' --include='*.mdx' --exclude='*' ../../docs/pages/docs/ docs/",
+      "options": { "cwd": "packages/zudoku" },
+      "inputs": [
+        "{workspaceRoot}/docs/pages/docs/**/*.md",
+        "{workspaceRoot}/docs/pages/docs/**/*.mdx"
+      ],
+      "outputs": ["{projectRoot}/docs"],
       "cache": true
     },
     "typecheck": {
