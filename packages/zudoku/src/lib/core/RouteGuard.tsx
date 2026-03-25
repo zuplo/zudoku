@@ -132,15 +132,11 @@ export const RouteGuard = () => {
     return result === false || result === REASON_CODES.UNAUTHORIZED;
   });
   const isBlocked = blocker.state === "blocked";
-  const intendedPath = isBlocked
-    ? blocker.location.pathname + blocker.location.search
-    : undefined;
 
   // Proceed after successful login
-  const intendedPathname = isBlocked ? blocker.location.pathname : undefined;
   useEffect(() => {
-    if (!auth.isAuthenticated || !intendedPathname) return;
-    const check = getAuthCheck(intendedPathname);
+    if (!auth.isAuthenticated || !isBlocked) return;
+    const check = getAuthCheck(blocker.location.pathname);
     if (!check) {
       blocker.proceed?.();
       return;
@@ -152,7 +148,7 @@ export const RouteGuard = () => {
     }
   }, [
     auth.isAuthenticated,
-    intendedPathname,
+    isBlocked,
     blocker,
     authCheckContext,
     getAuthCheck,
@@ -179,7 +175,9 @@ export const RouteGuard = () => {
   }
 
   const showDialog = needsToSignIn || isBlocked;
-  const redirectTo = intendedPath ?? location.pathname + location.search;
+  const redirectTo = isBlocked
+    ? blocker.location.pathname + blocker.location.search
+    : location.pathname + location.search;
 
   return (
     <>
