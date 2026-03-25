@@ -98,9 +98,6 @@ export const useAuth = () => {
       }
       // TODO: Should handle errors/state
       await authentication.signOut({ navigate });
-
-      // Redirect to home
-      void navigate("/", { replace: true });
     },
 
     signup: async (options?: AuthActionOptions) => {
