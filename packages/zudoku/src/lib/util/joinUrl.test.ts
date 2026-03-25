@@ -27,6 +27,10 @@ describe("joinUrl", () => {
     expect(
       joinUrl("https://example.com", "subscriptions?subscriptionId=sub-123"),
     ).toBe("https://example.com/subscriptions?subscriptionId=sub-123");
+
+    expect(
+      joinUrl("https://example.com/subscriptions", `?subscriptionId=sub-123`),
+    ).toBe("https://example.com/subscriptions?subscriptionId=sub-123");
   });
 
   // test("handles repeated dots and question marks", () => {

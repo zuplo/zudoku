@@ -368,7 +368,7 @@ const ConfirmSwitchAlert = ({
           planId: switchTo.plan.id,
           successURL: successUrl.toString(),
           cancelURL: generateUrl(
-            `/subscriptions?subscriptionId=${switchTo.subscriptionId}`,
+            `/subscriptions?subscriptionId=${encodeURIComponent(switchTo.subscriptionId)}`,
           ),
         }),
       },

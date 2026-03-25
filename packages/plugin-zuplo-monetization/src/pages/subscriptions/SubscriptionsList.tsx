@@ -113,8 +113,7 @@ const SubscriptionItem = ({
 
   return (
     <Link
-      to={`/subscriptions?subscriptionId=${subscription.id}`}
-      key={subscription.id}
+      to={`/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`}
     >
       <Item
         size="sm"

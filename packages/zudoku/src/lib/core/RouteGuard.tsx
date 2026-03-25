@@ -137,9 +137,10 @@ export const RouteGuard = () => {
     : undefined;
 
   // Proceed after successful login
+  const intendedPathname = isBlocked ? blocker.location.pathname : undefined;
   useEffect(() => {
-    if (!auth.isAuthenticated || !intendedPath) return;
-    const check = getAuthCheck(intendedPath);
+    if (!auth.isAuthenticated || !intendedPathname) return;
+    const check = getAuthCheck(intendedPathname);
     if (!check) {
       blocker.proceed?.();
       return;
@@ -151,7 +152,7 @@ export const RouteGuard = () => {
     }
   }, [
     auth.isAuthenticated,
-    intendedPath,
+    intendedPathname,
     blocker,
     authCheckContext,
     getAuthCheck,

@@ -50,7 +50,9 @@ const CheckoutConfirmPage = () => {
     },
     onSuccess: async (subscription) => {
       await queryClient.invalidateQueries();
-      navigate(`/subscriptions?subscriptionId=${subscription.id}`);
+      navigate(
+        `/subscriptions?subscriptionId=${encodeURIComponent(subscription.id)}`,
+      );
     },
   });
 
