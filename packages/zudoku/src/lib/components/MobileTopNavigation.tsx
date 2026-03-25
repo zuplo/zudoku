@@ -1,6 +1,11 @@
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { deepEqual } from "fast-equals";
-import { ChevronDownIcon, MenuIcon, type LucideIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  LogOutIcon,
+  MenuIcon,
+  type LucideIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
@@ -198,7 +203,7 @@ export const MobileTopNavigation = () => {
                     <div className="text-base font-medium">
                       {profile?.name ?? "My Account"}
                     </div>
-                    {profile?.email && (
+                    {profile?.email && profile.email !== profile?.name && (
                       <div className="text-sm text-muted-foreground">
                         {profile.email}
                       </div>
@@ -233,7 +238,16 @@ export const MobileTopNavigation = () => {
                 >
                   {isAuthenticated ? (
                     <Button asChild variant="outline">
-                      <Link to="/signout" onClick={() => setDrawerOpen(false)}>
+                      <Link
+                        to="/signout"
+                        onClick={() => setDrawerOpen(false)}
+                        className="flex items-center gap-2"
+                      >
+                        <LogOutIcon
+                          size={16}
+                          strokeWidth={1}
+                          absoluteStrokeWidth
+                        />
                         Logout
                       </Link>
                     </Button>

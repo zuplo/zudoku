@@ -1,3 +1,4 @@
+import { LogOutIcon } from "lucide-react";
 import { lazy, memo, Suspense } from "react";
 import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
@@ -92,7 +93,7 @@ const ProfileMenu = () => {
           <DropdownMenuContent className="w-56">
             <DropdownMenuLabel>
               {profile?.name ?? "My Account"}
-              {profile?.email && (
+              {profile?.email && profile.email !== profile?.name && (
                 <div className="font-normal text-muted-foreground">
                   {profile.email}
                 </div>
@@ -123,7 +124,10 @@ const ProfileMenu = () => {
               ))}
             <DropdownMenuSeparator />
             <Link to="/signout">
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem className="flex gap-2">
+                <LogOutIcon size={16} strokeWidth={1} absoluteStrokeWidth />
+                Logout
+              </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>
         </DropdownMenu>
