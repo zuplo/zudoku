@@ -67,7 +67,6 @@
     "./testing": "./src/lib/testing/index.tsx"
   },
   "scripts": {
-    "copy:docs": "rm -rf docs && rsync -a --include='*/' --include='*.md' --include='*.mdx' --exclude='*' ../../docs/pages/docs/ docs/",
     "build": "esbuild src/cli/cli.ts src/vite/prerender/worker.ts --outdir=dist/cli --entry-names=[name] --bundle --format=esm --packages=external --target=node20 --platform=node --log-level=error",
     "postbuild": "tsx scripts/check-external-deps.ts",
     "typecheck": "tsc --project tsconfig.app.json --noEmit",

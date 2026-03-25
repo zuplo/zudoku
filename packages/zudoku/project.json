@@ -12,7 +12,7 @@
     },
     "publish:local": {
       "executor": "nx:run-commands",
-      "dependsOn": ["build", "build:ci"],
+      "dependsOn": ["build:ci"],
       "options": {
         "cwd": "packages/zudoku",
         "commands": [

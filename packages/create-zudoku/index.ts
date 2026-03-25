@@ -49,7 +49,7 @@ const program = new Command(packageJson.name)
   .description(
     "Create a new Zudoku API documentation project.\n\nRun without arguments for an interactive setup, or use --yes for a quick start with sensible defaults.",
   )
-  .argument("[directory]", "Project directory (defaults to \"my-app\")")
+  .argument("[directory]", 'Project directory (defaults to "my-app")')
   .usage("[directory] [options]")
   .helpOption("-h, --help", "Display this help message.")
   .option("--ts, --typescript", "Initialize as a TypeScript project (default).")
