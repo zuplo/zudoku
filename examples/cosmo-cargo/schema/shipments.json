@@ -138,9 +138,8 @@
         "description": "OAuth 2.0 authorization for advanced integrations.",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "https://auth.cosmocargo.com/oauth/authorize",
-            "tokenUrl": "https://auth.cosmocargo.com/oauth/token",
-            "refreshUrl": "https://auth.cosmocargo.com/oauth/refresh",
+            "authorizationUrl": "https://zuplo-playground.us.auth0.com/authorize",
+            "tokenUrl": "https://zuplo-playground.us.auth0.com/oauth/token",
             "scopes": {
               "shipments:read": "Read shipment data",
               "shipments:write": "Create and modify shipments",
@@ -150,7 +149,7 @@
             }
           },
           "clientCredentials": {
-            "tokenUrl": "https://auth.cosmocargo.com/oauth/token",
+            "tokenUrl": "https://zuplo-playground.us.auth0.com/oauth/token",
             "scopes": {
               "shipments:read": "Read shipment data",
               "shipments:write": "Create and modify shipments",
