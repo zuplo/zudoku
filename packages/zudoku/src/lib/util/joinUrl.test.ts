@@ -20,14 +20,14 @@ describe("joinUrl", () => {
     );
   });
 
-  // test("handles query parameters", () => {
-  //   expect(joinUrl("https://example.com", "path?query=1")).toBe(
-  //     "https://example.com/path?query=1",
-  //   );
-  //   expect(joinUrl("https://example.com?base=1", "path?query=1")).toBe(
-  //     "https://example.com/path?query=1",
-  //   );
-  // });
+  test("handles query parameters", () => {
+    expect(joinUrl("https://example.com", "path?query=1")).toBe(
+      "https://example.com/path?query=1",
+    );
+    expect(
+      joinUrl("https://example.com", "subscriptions?subscriptionId=sub-123"),
+    ).toBe("https://example.com/subscriptions?subscriptionId=sub-123");
+  });
 
   // test("handles repeated dots and question marks", () => {
   //   expect(joinUrl("https://example.com", "path/../../../test")).toBe(

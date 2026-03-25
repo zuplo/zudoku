@@ -18,20 +18,23 @@ const normalizeParts = (
 interface ParsedParts {
   prefix: string;
   pathname: string[];
+  query: string;
 }
 
 const parseParts = (parts: string[]): ParsedParts => {
   const partsStr = parts.join("/");
-  const [, prefix = "", pathname = ""] = partsStr.match(defaultUrlRegExp) ?? [];
+  const [, prefix = "", pathname = "", query = ""] =
+    partsStr.match(defaultUrlRegExp) ?? [];
 
   return {
     prefix,
     pathname: pathname.split("/").filter((part) => part !== ""),
+    query,
   };
 };
 
 const buildUrl = (parsedParts: ParsedParts): string => {
-  const { prefix, pathname } = parsedParts;
+  const { prefix, pathname, query } = parsedParts;
   let url = prefix;
 
   if (pathname.length > 0) {
@@ -45,7 +48,7 @@ const buildUrl = (parsedParts: ParsedParts): string => {
     url = "/";
   }
 
-  return url;
+  return url + query;
 };
 
 export const joinUrl = (
