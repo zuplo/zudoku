@@ -35,6 +35,7 @@ import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { useUrlUtils } from "../../hooks/useUrlUtils.js";
 import type { Feature, Plan, Quota } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
+import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
 import { getPriceFromPlan } from "../../utils/getPriceFromPlan.js";
 
@@ -225,7 +226,8 @@ const PlanComparisonItem = ({
             <span className="text-primary font-medium">Free</span>
           ) : (
             <span className="text-primary font-medium text-lg">
-              {formatPrice(displayPrice, comparison.plan.currency)}/ mo
+              {formatPrice(displayPrice, comparison.plan.currency)}/
+              {formatDuration(comparison.plan.billingCadence)}
             </span>
           )}
         </div>

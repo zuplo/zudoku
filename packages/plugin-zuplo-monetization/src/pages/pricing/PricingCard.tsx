@@ -117,13 +117,11 @@ export const PricingCard = ({
                   <span className="text-muted-foreground text-sm">
                     /{billingInterval}
                   </span>
-                  {showYearlyPrice &&
-                    price.yearly > 0 &&
-                    billingInterval !== "year" && (
-                      <div className="w-full text-sm text-muted-foreground mt-1">
-                        {formatPrice(price.yearly, plan.currency)}/year
-                      </div>
-                    )}
+                  {showYearlyPrice && price.yearly > 0 && (
+                    <div className="w-full text-sm text-muted-foreground mt-1">
+                      {formatPrice(price.yearly, plan.currency)}/year
+                    </div>
+                  )}
                 </>
               )}
             </>
