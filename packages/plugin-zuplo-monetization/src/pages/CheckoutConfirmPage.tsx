@@ -11,6 +11,7 @@ import { QuotaItem } from "../components/QuotaItem";
 import { useDeploymentName } from "../hooks/useDeploymentName";
 import { usePlans } from "../hooks/usePlans";
 import type { Subscription } from "../hooks/useSubscriptions";
+import { useMonetizationConfig } from "../MonetizationContext";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
@@ -25,15 +26,17 @@ const CheckoutConfirmPage = () => {
   const deploymentName = useDeploymentName();
   const navigate = useNavigate();
   const { data: plans } = usePlans();
+  const { pricing } = useMonetizationConfig();
   const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
   if (!planId) throw new Error("Parameter `planId` missing");
 
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
-  const { quotas, features } = categorizeRateCards(
-    rateCards ?? [],
-    selectedPlan?.currency,
-  );
+  const { quotas, features } = categorizeRateCards(rateCards ?? [], {
+    currency: selectedPlan?.currency,
+    units: pricing?.units,
+    planBillingCadence: selectedPlan?.billingCadence,
+  });
   const price = selectedPlan ? getPriceFromPlan(selectedPlan) : null;
   const billingCycle = selectedPlan?.billingCadence
     ? formatDuration(selectedPlan.billingCadence)

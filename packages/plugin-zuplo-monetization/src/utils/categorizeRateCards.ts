@@ -4,9 +4,13 @@ import { formatPrice } from "./formatPrice.js";
 
 export const categorizeRateCards = (
   rateCards: RateCard[],
-  currency?: string,
-  units?: Record<string, string>,
+  options?: {
+    currency?: string;
+    units?: Record<string, string>;
+    planBillingCadence?: string | null;
+  },
 ) => {
+  const { currency, units, planBillingCadence } = options ?? {};
   const quotas: Quota[] = [];
   const features: Feature[] = [];
 
@@ -35,7 +39,11 @@ export const categorizeRateCards = (
         key: rc.featureKey ?? rc.key,
         name: rc.name,
         limit: et.issueAfterReset,
-        period: et.usagePeriod ? formatDuration(et.usagePeriod) : "Month",
+        period: rc.billingCadence
+          ? formatDuration(rc.billingCadence)
+          : planBillingCadence
+            ? formatDuration(planBillingCadence)
+            : "month",
         overagePrice,
       });
     } else if (et.type === "boolean") {

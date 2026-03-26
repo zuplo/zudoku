@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatDuration, formatDurationInterval } from "./formatDuration.js";
+import {
+  formatDuration,
+  formatDurationAdjective,
+  formatDurationInterval,
+} from "./formatDuration.js";
 
 describe("formatDuration", () => {
   it("returns 'month' for P1M", () => {
@@ -74,5 +78,23 @@ describe("formatDurationInterval", () => {
 
   it("returns raw string for invalid input", () => {
     expect(formatDurationInterval("invalid")).toBe("invalid");
+  });
+});
+
+describe("formatDurationAdjective", () => {
+  it("returns adjective for single-unit cadences", () => {
+    expect(formatDurationAdjective("P1M")).toBe("monthly");
+    expect(formatDurationAdjective("P1W")).toBe("weekly");
+    expect(formatDurationAdjective("P1Y")).toBe("yearly");
+    expect(formatDurationAdjective("P1D")).toBe("daily");
+  });
+
+  it("returns 'billing period' for multi-unit cadences", () => {
+    expect(formatDurationAdjective("P3M")).toBe("billing period");
+    expect(formatDurationAdjective("P2W")).toBe("billing period");
+  });
+
+  it("returns 'billing period' for invalid input", () => {
+    expect(formatDurationAdjective("invalid")).toBe("billing period");
   });
 });

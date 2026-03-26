@@ -3,6 +3,7 @@ import { Button } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { FeatureItem } from "../../components/FeatureItem";
 import { QuotaItem } from "../../components/QuotaItem";
+import { useMonetizationConfig } from "../../MonetizationContext";
 import type { Plan, PlanPhase } from "../../types/PlanType";
 import { categorizeRateCards } from "../../utils/categorizeRateCards";
 import { formatDuration } from "../../utils/formatDuration";
@@ -13,25 +14,21 @@ const PhaseSection = ({
   phase,
   currency,
   showName,
-  excludeKeys,
-  units,
+  billingCadence,
 }: {
   phase: PlanPhase;
   currency?: string;
   showName: boolean;
-  excludeKeys: Set<string>;
-  units?: Record<string, string>;
+  billingCadence?: string;
 }) => {
-  const { quotas, features } = categorizeRateCards(
-    phase.rateCards,
+  const { pricing } = useMonetizationConfig();
+  const { quotas, features } = categorizeRateCards(phase.rateCards, {
     currency,
-    units,
-  );
+    units: pricing?.units,
+    planBillingCadence: billingCadence,
+  });
 
-  const filteredQuotas = quotas.filter((q) => !excludeKeys.has(q.key));
-  const filteredFeatures = features.filter((f) => !excludeKeys.has(f.key));
-
-  if (filteredQuotas.length === 0 && filteredFeatures.length === 0) return null;
+  if (quotas.length === 0 && features.length === 0) return null;
 
   return (
     <div className="space-y-2">
@@ -46,10 +43,10 @@ const PhaseSection = ({
           )}
         </div>
       )}
-      {filteredQuotas.map((quota) => (
+      {quotas.map((quota) => (
         <QuotaItem key={quota.key} quota={quota} />
       ))}
-      {filteredFeatures.map((feature) => (
+      {features.map((feature) => (
         <FeatureItem key={feature.key} feature={feature} />
       ))}
     </div>
@@ -60,15 +57,13 @@ export const PricingCard = ({
   plan,
   isPopular = false,
   isSubscribed = false,
-  showYearlyPrice = true,
-  units,
 }: {
   plan: Plan;
   isPopular?: boolean;
   isSubscribed?: boolean;
-  showYearlyPrice?: boolean;
-  units?: Record<string, string>;
 }) => {
+  const { pricing } = useMonetizationConfig();
+
   if (plan.phases.length === 0) return null;
 
   const price = getPriceFromPlan(plan);
@@ -76,6 +71,7 @@ export const PricingCard = ({
 
   const isCustom = plan.metadata?.isCustom === true;
   const hasMultiplePhases = plan.phases.length > 1;
+  const billingInterval = formatDuration(plan.billingCadence);
 
   return (
     <div
@@ -113,8 +109,10 @@ export const PricingCard = ({
               </span>
               {!isFree && (
                 <>
-                  <span className="text-muted-foreground text-sm">/mo</span>
-                  {showYearlyPrice && (
+                  <span className="text-muted-foreground text-sm">
+                    /{billingInterval}
+                  </span>
+                  {pricing?.showYearlyPrice !== false && price.yearly > 0 && (
                     <div className="w-full text-sm text-muted-foreground mt-1">
                       {formatPrice(price.yearly, plan.currency)}/year
                     </div>
@@ -132,23 +130,15 @@ export const PricingCard = ({
       </div>
 
       <div className="space-y-4 mb-6 grow">
-        {plan.phases.map((phase, index) => {
-          const laterKeys = new Set(
-            plan.phases
-              .slice(index + 1)
-              .flatMap((p) => p.rateCards.map((rc) => rc.featureKey ?? rc.key)),
-          );
-          return (
-            <PhaseSection
-              key={phase.key}
-              phase={phase}
-              currency={plan.currency}
-              showName={hasMultiplePhases}
-              excludeKeys={laterKeys}
-              units={units}
-            />
-          );
-        })}
+        {plan.phases.map((phase) => (
+          <PhaseSection
+            key={phase.key}
+            phase={phase}
+            currency={plan.currency}
+            showName={hasMultiplePhases}
+            billingCadence={plan.billingCadence}
+          />
+        ))}
       </div>
 
       {isSubscribed ? (

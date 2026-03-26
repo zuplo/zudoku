@@ -33,3 +33,22 @@ export const formatDurationInterval = (iso: string): string => {
     return iso;
   }
 };
+
+/**
+ * Returns an adjective form suitable for possessive context
+ * e.g. "your monthly quota", "your weekly limit".
+ * Falls back to "billing period" for multi-unit cadences
+ * where "every 3 months" would be grammatically awkward.
+ */
+export const formatDurationAdjective = (iso: string): string => {
+  try {
+    const d = parse(iso);
+    if (d.years === 1) return "yearly";
+    if (d.months === 1) return "monthly";
+    if (d.weeks === 1) return "weekly";
+    if (d.days === 1) return "daily";
+    return "billing period";
+  } catch {
+    return "billing period";
+  }
+};

@@ -1,8 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Item } from "../../hooks/useSubscriptions.js";
 import type { MeteredEntitlement } from "./Usage.js";
 import { Usage } from "./Usage.js";
+
+vi.mock("./SwitchPlanModal", () => ({
+  SwitchPlanModal: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 const makeUsage = (meter: Partial<MeteredEntitlement> = {}) => ({
   $schema: "",
@@ -138,6 +142,93 @@ describe("Usage - UsageItem", () => {
       />,
     );
     expect(screen.getByText(/0 used/)).toBeInTheDocument();
+  });
+
+  it("uses billing cadence for period labels", () => {
+    const weeklyItem = {
+      ...softLimitItem,
+      billingCadence: "P1W",
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[weeklyItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your weekly quota"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/remaining this billing period/),
+    ).toBeInTheDocument();
+  });
+
+  it("uses billingCadence even when usagePeriod is present", () => {
+    const itemWithUsagePeriod = {
+      ...softLimitItem,
+      billingCadence: "P1M",
+      included: {
+        ...softLimitItem.included,
+        entitlement: {
+          ...softLimitItem.included.entitlement,
+          usagePeriod: { anchor: "", interval: "week", intervalISO: "P1W" },
+        },
+      },
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[itemWithUsagePeriod]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your monthly quota"),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to billing period for multi-unit cadences", () => {
+    const quarterlyItem = {
+      ...softLimitItem,
+      billingCadence: "P3M",
+    } as Item;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[quarterlyItem]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your billing period quota"),
+    ).toBeInTheDocument();
+  });
+
+  it("falls back to subscription billingCadence when item has no cadence", () => {
+    const itemNoCadence = { ...softLimitItem } as Item;
+    const subscription = {
+      billingCadence: "P1W",
+    } as import("../../hooks/useSubscriptions.js").Subscription;
+
+    render(
+      <Usage
+        usage={makeUsage({ balance: 0, usage: 1200, overage: 200 })}
+        isFetching={false}
+        currentItems={[itemNoCadence]}
+        subscription={subscription}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(
+      screen.getByText("You've exceeded your weekly quota"),
+    ).toBeInTheDocument();
   });
 
   it("defaults to soft limit when item is missing", () => {
