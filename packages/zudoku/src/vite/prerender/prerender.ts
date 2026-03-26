@@ -121,6 +121,7 @@ export const prerender = async ({
     filename: new URL("./worker.js", import.meta.url).href,
     idleTimeout: 5_000,
     maxThreads,
+    execArgv: ["--no-deprecation"],
     workerData: {
       template: html,
       distDir,

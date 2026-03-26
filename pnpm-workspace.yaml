@@ -24,15 +24,11 @@ minimumReleaseAge: 4320
 
 minimumReleaseAgeExclude:
   - zudoku
-  - glob
-  - pagefind
-  - "@pagefind/*"
-  - oxfmt
-  - "@oxfmt/*"
-  - tailwind-merge
-  - tailwindcss
-  - "@tailwindcss/*"
-  - lucide-react
+  - vite
+  - rolldown
+  - "@vitejs/plugin-react"
+  - "@oxc-project/*"
+  - "@rolldown/*"
 
 onlyBuiltDependencies:
   - esbuild

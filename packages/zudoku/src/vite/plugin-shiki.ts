@@ -5,19 +5,19 @@ import { getCurrentConfig } from "../config/loader.js";
 import { defaultLanguages } from "../lib/shiki-constants.js";
 import { defaultHighlightOptions, highlighterPromise } from "../lib/shiki.js";
 
-const aliasToId = new Map(
-  bundledLanguagesInfo.flatMap((lang) =>
-    (lang.aliases ?? []).map((alias) => [alias, lang.id]),
-  ),
-);
-
-// Resolve either an alias or the original language id
-const resolveLang = (lang: BundledLanguage): string =>
-  aliasToId.get(lang) ?? lang;
-
-export const viteShikiRegisterPlugin = (): Plugin => {
+export const viteShikiPlugin = (): Plugin => {
   const virtualModuleId = "virtual:zudoku-shiki-register";
   const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+
+  const aliasToId = new Map(
+    bundledLanguagesInfo.flatMap((lang) =>
+      (lang.aliases ?? []).map((alias) => [alias, lang.id]),
+    ),
+  );
+
+  // Resolve either an alias or the original language id
+  const resolveLang = (lang: BundledLanguage): string =>
+    aliasToId.get(lang) ?? lang;
 
   return {
     name: "vite-plugin-shiki-register",
@@ -29,22 +29,19 @@ export const viteShikiRegisterPlugin = (): Plugin => {
         config.syntaxHighlighting?.themes ?? defaultHighlightOptions.themes,
       );
 
+      const shikiIds = [
+        ...languages.map((lang) => `@shikijs/langs/${resolveLang(lang)}`),
+        ...themes.map((theme) => `@shikijs/themes/${theme}`),
+      ];
+
       return {
         resolve: {
-          alias: [
-            {
-              find: /^@shikijs\/(langs|themes)\/.+$/,
-              replacement: "$&",
-              customResolver: (id) => fileURLToPath(import.meta.resolve(id)),
-            },
-          ],
+          alias: shikiIds.map((id) => ({
+            find: id,
+            replacement: fileURLToPath(import.meta.resolve(id)),
+          })),
         },
-        optimizeDeps: {
-          include: [
-            ...languages.map((lang) => `@shikijs/langs/${resolveLang(lang)}`),
-            ...themes.map((theme) => `@shikijs/themes/${theme}`),
-          ],
-        },
+        optimizeDeps: { include: shikiIds },
       };
     },
     resolveId(id) {
