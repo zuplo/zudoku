@@ -344,7 +344,7 @@ class SupabaseAuthenticationProvider
     }
     useAuthState.getState().setLoggedOut();
 
-    navigate("/", { replace: true });
+    void navigate(this.config.redirectToAfterSignOut ?? "/", { replace: true });
   };
 
   onPageLoad = async () => {
