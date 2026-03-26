@@ -1,6 +1,7 @@
 import { type ApiIdentity, createPlugin } from "zudoku";
 import { CreditCardIcon, StarsIcon } from "zudoku/icons";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
+import type { MonetizationConfig } from "./MonetizationContext.js";
 import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ManagePaymentPage from "./pages/ManagePaymentPage";
@@ -11,19 +12,10 @@ import ZuploMonetizationWrapper, {
   queryClient,
 } from "./ZuploMonetizationWrapper";
 
-export type ZudokuMonetizationPluginOptions = {
-  pricing?: {
-    subtitle?: string;
-    title?: string;
-    units?: Record<string, string>;
-    showYearlyPrice?: boolean;
-  };
-};
-
 const PRICING_PATH = "/pricing";
 
 export const zuploMonetizationPlugin = createPlugin(
-  (options?: ZudokuMonetizationPluginOptions) => ({
+  (options: MonetizationConfig = {}) => ({
     transformConfig: ({ config, merge }) =>
       merge({
         apiKeys: { enabled: false },
@@ -88,10 +80,8 @@ export const zuploMonetizationPlugin = createPlugin(
     getRoutes: () => {
       return [
         {
-          Component: ZuploMonetizationWrapper,
-          handle: {
-            layout: "none",
-          },
+          element: <ZuploMonetizationWrapper options={options} />,
+          handle: { layout: "none" },
           children: [
             {
               path: "/checkout",
@@ -112,14 +102,7 @@ export const zuploMonetizationPlugin = createPlugin(
             {
               path: PRICING_PATH,
               handle: { layout: "default" },
-              element: (
-                <PricingPage
-                  subtitle={options?.pricing?.subtitle}
-                  title={options?.pricing?.title}
-                  units={options?.pricing?.units}
-                  showYearlyPrice={options?.pricing?.showYearlyPrice}
-                />
-              ),
+              element: <PricingPage />,
             },
             {
               handle: { layout: "default" },

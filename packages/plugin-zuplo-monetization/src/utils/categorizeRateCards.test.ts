@@ -74,8 +74,7 @@ describe("categorizeRateCards", () => {
           ],
         }),
       ],
-      undefined,
-      { requests: "API call" },
+      { units: { requests: "API call" } },
     );
     expect(quotas[0].overagePrice).toMatch(/\/API call$/);
   });
@@ -97,8 +96,8 @@ describe("categorizeRateCards", () => {
       },
       entitlementTemplate: { type: "metered", issueAfterReset: 1000 },
     };
-    const { quotas } = categorizeRateCards([rc], undefined, {
-      "feature-key": "request",
+    const { quotas } = categorizeRateCards([rc], {
+      units: { "feature-key": "request" },
     });
     expect(quotas[0].overagePrice).toMatch(/\/request$/);
   });
@@ -120,9 +119,8 @@ describe("categorizeRateCards", () => {
       },
       entitlementTemplate: { type: "metered", issueAfterReset: 1000 },
     };
-    const { quotas } = categorizeRateCards([rc], undefined, {
-      "rc-key": "token",
-      "feature-key": "request",
+    const { quotas } = categorizeRateCards([rc], {
+      units: { "rc-key": "token", "feature-key": "request" },
     });
     expect(quotas[0].overagePrice).toMatch(/\/token$/);
   });
@@ -137,8 +135,7 @@ describe("categorizeRateCards", () => {
           ],
         }),
       ],
-      undefined,
-      { "other-key": "something" },
+      { units: { "other-key": "something" } },
     );
     expect(quotas[0].overagePrice).toMatch(/\/unit$/);
   });
@@ -173,7 +170,9 @@ describe("categorizeRateCards", () => {
         issueAfterReset: 500,
       },
     };
-    const { quotas } = categorizeRateCards([rc], undefined, undefined, "P1Y");
+    const { quotas } = categorizeRateCards([rc], {
+      planBillingCadence: "P1Y",
+    });
     expect(quotas[0].period).toBe("year");
   });
 

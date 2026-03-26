@@ -4,10 +4,13 @@ import { formatPrice } from "./formatPrice.js";
 
 export const categorizeRateCards = (
   rateCards: RateCard[],
-  currency?: string,
-  units?: Record<string, string>,
-  planBillingCadence?: string | null,
+  options?: {
+    currency?: string;
+    units?: Record<string, string>;
+    planBillingCadence?: string | null;
+  },
 ) => {
+  const { currency, units, planBillingCadence } = options ?? {};
   const quotas: Quota[] = [];
   const features: Feature[] = [];
 

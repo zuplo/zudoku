@@ -3,6 +3,7 @@ import { Button } from "zudoku/components";
 import { Link } from "zudoku/router";
 import { FeatureItem } from "../../components/FeatureItem";
 import { QuotaItem } from "../../components/QuotaItem";
+import { useMonetizationConfig } from "../../MonetizationContext";
 import type { Plan, PlanPhase } from "../../types/PlanType";
 import { categorizeRateCards } from "../../utils/categorizeRateCards";
 import { formatDuration } from "../../utils/formatDuration";
@@ -14,20 +15,18 @@ const PhaseSection = ({
   currency,
   showName,
   billingCadence,
-  units,
 }: {
   phase: PlanPhase;
   currency?: string;
   showName: boolean;
   billingCadence?: string;
-  units?: Record<string, string>;
 }) => {
-  const { quotas, features } = categorizeRateCards(
-    phase.rateCards,
+  const { pricing } = useMonetizationConfig();
+  const { quotas, features } = categorizeRateCards(phase.rateCards, {
     currency,
-    units,
-    billingCadence,
-  );
+    units: pricing?.units,
+    planBillingCadence: billingCadence,
+  });
 
   if (quotas.length === 0 && features.length === 0) return null;
 
@@ -58,15 +57,13 @@ export const PricingCard = ({
   plan,
   isPopular = false,
   isSubscribed = false,
-  showYearlyPrice = true,
-  units,
 }: {
   plan: Plan;
   isPopular?: boolean;
   isSubscribed?: boolean;
-  showYearlyPrice?: boolean;
-  units?: Record<string, string>;
 }) => {
+  const { pricing } = useMonetizationConfig();
+
   if (plan.phases.length === 0) return null;
 
   const price = getPriceFromPlan(plan);
@@ -115,7 +112,7 @@ export const PricingCard = ({
                   <span className="text-muted-foreground text-sm">
                     /{billingInterval}
                   </span>
-                  {showYearlyPrice && price.yearly > 0 && (
+                  {pricing?.showYearlyPrice !== false && price.yearly > 0 && (
                     <div className="w-full text-sm text-muted-foreground mt-1">
                       {formatPrice(price.yearly, plan.currency)}/year
                     </div>
@@ -133,18 +130,15 @@ export const PricingCard = ({
       </div>
 
       <div className="space-y-4 mb-6 grow">
-        {plan.phases.map((phase) => {
-          return (
-            <PhaseSection
-              key={phase.key}
-              phase={phase}
-              currency={plan.currency}
-              showName={hasMultiplePhases}
-              billingCadence={plan.billingCadence}
-              units={units}
-            />
-          );
-        })}
+        {plan.phases.map((phase) => (
+          <PhaseSection
+            key={phase.key}
+            phase={phase}
+            currency={plan.currency}
+            showName={hasMultiplePhases}
+            billingCadence={plan.billingCadence}
+          />
+        ))}
       </div>
 
       {isSubscribed ? (

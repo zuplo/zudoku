@@ -33,7 +33,8 @@ import { useDeploymentName } from "../../hooks/useDeploymentName.js";
 import { usePlans } from "../../hooks/usePlans.js";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { useUrlUtils } from "../../hooks/useUrlUtils.js";
-import type { Feature, Plan, Quota } from "../../types/PlanType.js";
+import { useMonetizationConfig } from "../../MonetizationContext";
+import type { Plan } from "../../types/PlanType.js";
 import { categorizeRateCards } from "../../utils/categorizeRateCards.js";
 import { formatDuration } from "../../utils/formatDuration.js";
 import { formatPrice } from "../../utils/formatPrice.js";
@@ -68,6 +69,7 @@ const comparePlans = (
   targetPlan: Plan,
   currentIndex: number,
   targetIndex: number,
+  units?: Record<string, string>,
 ): PlanComparison => {
   const isUpgrade = targetIndex > currentIndex;
 
@@ -75,12 +77,20 @@ const comparePlans = (
   const targetPhase = targetPlan.phases.at(-1);
 
   const { quotas: currentQuotas, features: currentFeatures } = currentPhase
-    ? categorizeRateCards(currentPhase.rateCards, currentPlan?.currency)
-    : { quotas: [] as Quota[], features: [] as Feature[] };
+    ? categorizeRateCards(currentPhase.rateCards, {
+        currency: currentPlan?.currency,
+        units,
+        planBillingCadence: currentPlan?.billingCadence,
+      })
+    : { quotas: [], features: [] };
 
   const { quotas: targetQuotas, features: targetFeatures } = targetPhase
-    ? categorizeRateCards(targetPhase.rateCards, targetPlan.currency)
-    : { quotas: [] as Quota[], features: [] as Feature[] };
+    ? categorizeRateCards(targetPhase.rateCards, {
+        currency: targetPlan.currency,
+        units,
+        planBillingCadence: targetPlan.billingCadence,
+      })
+    : { quotas: [], features: [] };
 
   const quotaChanges: QuotaChange[] = [];
   const allQuotaKeys = new Set([
@@ -434,6 +444,7 @@ export const SwitchPlanModal = ({
   const [open, setOpen] = useState(false);
   const { data: plansData } = usePlans();
   const [switchTo, setSwitchTo] = useState<SwitchPlanTarget | null>(null);
+  const { pricing } = useMonetizationConfig();
 
   const currentPlan = plansData?.items.find(
     (p) => p.id === subscription.plan.id,
@@ -454,7 +465,13 @@ export const SwitchPlanModal = ({
       .filter((p) => p.id !== currentPlan.id)
       .map((plan) => {
         const targetIndex = plansData.items.indexOf(plan);
-        return comparePlans(currentPlan, plan, currentIndex, targetIndex);
+        return comparePlans(
+          currentPlan,
+          plan,
+          currentIndex,
+          targetIndex,
+          pricing?.units,
+        );
       });
 
     return {
@@ -466,7 +483,7 @@ export const SwitchPlanModal = ({
       ),
       privatePlans: allComparisons.filter((c) => isPrivatePlan(c.plan)),
     };
-  }, [plansData?.items, currentPlan]);
+  }, [plansData?.items, currentPlan, pricing?.units]);
 
   const switching = switchTo !== null;
 

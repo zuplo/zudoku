@@ -7,6 +7,10 @@ import {
   type QueryFunctionContext,
 } from "zudoku/react-query";
 import { Outlet } from "zudoku/router";
+import {
+  MonetizationContext,
+  type MonetizationConfig,
+} from "./MonetizationContext.js";
 
 declare module "zudoku/react-query" {
   interface Register {
@@ -140,14 +144,18 @@ export const queryClient = new QueryClient({
   },
 });
 
-export const ZuploMonetizationWrapper = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
+export const ZuploMonetizationWrapper = ({
+  options = {},
+}: {
+  options: MonetizationConfig;
+}) => (
+  <QueryClientProvider client={queryClient}>
+    <MonetizationContext value={options}>
       <ClientOnly>
         <Outlet />
       </ClientOnly>
-    </QueryClientProvider>
-  );
-};
+    </MonetizationContext>
+  </QueryClientProvider>
+);
 
 export default ZuploMonetizationWrapper;

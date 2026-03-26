@@ -1,5 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import {
+  MonetizationContext,
+  type MonetizationConfig,
+} from "../MonetizationContext.js";
 import type { Plan } from "../types/PlanType.js";
 import PricingPage from "./PricingPage.js";
 
@@ -71,6 +75,13 @@ const makePlan = (id: string, key: string, name: string): Plan => ({
   currency: "USD",
 });
 
+const renderWithConfig = (config: MonetizationConfig = {}) =>
+  render(
+    <MonetizationContext value={config}>
+      <PricingPage />
+    </MonetizationContext>,
+  );
+
 describe("PricingPage", () => {
   it("Shows 'Manage Subscriptions' if the user has any active subscriptions", () => {
     mockPricingData.items = [
@@ -80,7 +91,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [{ status: "active", plan: { id: "2" } }];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     const buttons = screen.getAllByText("Manage Subscriptions");
     expect(buttons).toHaveLength(3);
@@ -94,7 +105,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     const buttons = screen.getAllByText("Subscribe");
     expect(buttons).toHaveLength(3);
@@ -126,7 +137,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     expect(screen.getByText("No CC required")).toBeInTheDocument();
   });
@@ -159,7 +170,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     expect(screen.queryByText("No CC required")).not.toBeInTheDocument();
   });
@@ -175,7 +186,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     expect(screen.getByText("Most Popular")).toBeInTheDocument();
   });
@@ -218,7 +229,9 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage units={{ "api-requests": "request" }} />);
+    renderWithConfig({
+      pricing: { units: { "api-requests": "request" } },
+    });
 
     expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
   });
@@ -227,7 +240,7 @@ describe("PricingPage", () => {
     mockPricingData.items = [makePlan("1", "starter", "Starter")];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     expect(screen.getByText(/\/year/)).toBeInTheDocument();
   });
@@ -236,7 +249,7 @@ describe("PricingPage", () => {
     mockPricingData.items = [makePlan("1", "starter", "Starter")];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage showYearlyPrice={false} />);
+    renderWithConfig({ pricing: { showYearlyPrice: false } });
 
     expect(screen.queryByText(/\/year/)).not.toBeInTheDocument();
   });
@@ -250,7 +263,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     expect(screen.getByText("/week")).toBeInTheDocument();
     expect(screen.queryByText("/mo")).not.toBeInTheDocument();
@@ -267,7 +280,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage />);
+    renderWithConfig();
 
     expect(screen.queryByText("Most Popular")).not.toBeInTheDocument();
   });
