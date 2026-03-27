@@ -1,24 +1,15 @@
-import { CirclePlayIcon } from "lucide-react";
-import { type PropsWithChildren, Suspense, lazy } from "react";
 import { matchPath } from "react-router";
 import type { ZudokuPlugin } from "../../core/plugins.js";
-import { Button } from "../../ui/Button.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { GraphQLClient } from "./client/GraphQLClient.js";
 import { createQuery } from "./client/useCreateQuery.js";
 import type { GetNavigationOperationsQuery as GetNavigationOperationsQueryResult } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import type { OasPluginConfig } from "./interfaces.js";
-import type { PlaygroundContentProps } from "./playground/Playground.js";
+import { OpenPlaygroundButton } from "./OpenPlaygroundButton.js";
 import { buildTagCategories } from "./util/buildTagCategories.js";
 import { createNavigationCategory } from "./util/createNavigationCategory.js";
 import { getRoutes, getVersionMetadata } from "./util/getRoutes.js";
-
-const PlaygroundDialog = lazy(() =>
-  import("./playground/PlaygroundDialog.js").then((m) => ({
-    default: m.PlaygroundDialog,
-  })),
-);
 
 export const GetNavigationOperationsQuery = graphql(`
   query GetNavigationOperations($input: JSON!, $type: SchemaType!) {
@@ -79,37 +70,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
       }
     },
     getMdxComponents: () => ({
-      OpenPlaygroundButton: ({
-        server,
-        method = "get",
-        url = "/",
-        children,
-        ...props
-      }: PropsWithChildren<Partial<PlaygroundContentProps>>) => {
-        if (!server) {
-          throw new Error("Server is required");
-        }
-
-        return (
-          <Suspense>
-            <PlaygroundDialog
-              url={url}
-              method={method}
-              server={server}
-              {...props}
-            >
-              <Button className="gap-2 items-center" variant="outline">
-                {children ?? (
-                  <>
-                    Open in Playground
-                    <CirclePlayIcon size={16} />
-                  </>
-                )}
-              </Button>
-            </PlaygroundDialog>
-          </Suspense>
-        );
-      },
+      OpenPlaygroundButton,
     }),
     getNavigation: async (path, context) => {
       if (!matchPath({ path: basePath, end: false }, path)) {

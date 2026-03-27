@@ -1,8 +1,11 @@
+import { PlaygroundDialog, PlaygroundProvider } from "@zudoku/playground";
+import { useAuth } from "../../authentication/hook.js";
+import { useApiIdentities } from "../../components/context/ZudokuContext.js";
+import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import type {
   MediaTypeObject,
   OperationsFragmentFragment,
 } from "./graphql/graphql.js";
-import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -15,6 +18,10 @@ export const PlaygroundDialogWrapper = ({
   operation: OperationsFragmentFragment;
   examples?: MediaTypeObject[];
 }) => {
+  const identities = useApiIdentities();
+  const { isAuthEnabled, login, signup, isPending, isAuthenticated } =
+    useAuth();
+
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
     .sort((a, b) => (a.required && !b.required ? -1 : 1))
@@ -53,15 +60,31 @@ export const PlaygroundDialogWrapper = ({
     }));
 
   return (
-    <PlaygroundDialog
-      server={server}
-      servers={servers}
-      method={operation.method}
-      url={operation.path}
-      headers={headers}
-      queryParams={queryParams}
-      pathParams={pathParams}
-      examples={examples}
-    />
+    <PlaygroundProvider
+      renderCodeBlock={(props) => (
+        <SyntaxHighlight
+          className={props.className}
+          embedded={props.embedded}
+          fullHeight={props.fullHeight}
+          language={props.language}
+          code={props.code}
+        />
+      )}
+    >
+      <PlaygroundDialog
+        server={server}
+        servers={servers}
+        method={operation.method}
+        url={operation.path}
+        headers={headers}
+        queryParams={queryParams}
+        pathParams={pathParams}
+        examples={examples}
+        identities={identities.data ?? []}
+        requiresLogin={isAuthEnabled && !isAuthenticated && !isPending}
+        onLogin={() => login()}
+        onSignUp={() => signup()}
+      />
+    </PlaygroundProvider>
   );
 };
