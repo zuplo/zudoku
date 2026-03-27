@@ -23,6 +23,10 @@
       "types": "./src/components/*.tsx",
       "default": "./src/components/*.tsx"
     },
+    "./lib/createVariantComponent.js": {
+      "types": "./src/lib/createVariantComponent.tsx",
+      "default": "./src/lib/createVariantComponent.tsx"
+    },
     "./lib/*": {
       "types": "./src/lib/*.ts",
       "default": "./src/lib/*.ts"

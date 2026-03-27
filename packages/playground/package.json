@@ -1,0 +1,53 @@
+{
+  "name": "@zudoku/playground",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsdown src/index.ts",
+    "dev": "tsdown --watch",
+    "prepublishOnly": "pnpm build"
+  },
+  "publishConfig": {
+    "main": "./dist/index.mjs",
+    "types": "./dist/index.d.mts",
+    "exports": {
+      ".": {
+        "import": "./dist/index.mjs",
+        "types": "./dist/index.d.mts"
+      }
+    }
+  },
+  "dependencies": {
+    "@radix-ui/react-visually-hidden": "^1.2.3",
+    "@tanem/react-nprogress": "^5.0.51",
+    "@zudoku/ui": "workspace:*",
+    "motion": "^12.18.1",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@tanstack/react-query": "^5.80.7",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "lucide-react": "^0.577.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-hook-form": "^7.60.0",
+    "tsdown": "catalog:"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": ">=5.0.0",
+    "lucide-react": ">=0.577.0",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0",
+    "react-hook-form": ">=7.50.0"
+  }
+}
