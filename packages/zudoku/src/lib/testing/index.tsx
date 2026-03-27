@@ -120,7 +120,7 @@ const StaticZudoku = ({
         ],
       },
     ],
-    { initialEntries: [path] },
+    { initialEntries: [path], basename: options.basePath },
   );
 
   return (
