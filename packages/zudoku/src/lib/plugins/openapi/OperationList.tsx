@@ -49,6 +49,52 @@ export const OperationsFragment = graphql(/* GraphQL */ `
         summary
       }
     }
+    security {
+      schemes {
+        scopes
+        scheme {
+          name
+          type
+          description
+          in
+          paramName
+          scheme
+          bearerFormat
+          openIdConnectUrl
+          flows {
+            implicit {
+              authorizationUrl
+              scopes {
+                name
+                description
+              }
+            }
+            password {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            clientCredentials {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            authorizationCode {
+              authorizationUrl
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+          }
+        }
+      }
+    }
     requestBody {
       content {
         mediaType
