@@ -12,6 +12,7 @@ import type {
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
+import { LogoutCallbackHandler } from "../components/LogoutCallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
 import { AuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
@@ -37,6 +38,7 @@ declare module "../state.js" {
 }
 
 export const OPENID_CALLBACK_PATH = "/oauth/callback";
+export const OPENID_LOGOUT_CALLBACK_PATH = "/oauth/logout-callback";
 
 export class OpenIDAuthenticationProvider
   extends CoreAuthenticationPlugin
@@ -331,33 +333,38 @@ export class OpenIDAuthenticationProvider
         ? providerData?.idToken
         : undefined;
 
-    useAuthState.getState().setLoggedOut();
-
     const as = await this.getAuthServer();
 
-    const redirectUrl = new URL(window.location.origin);
-    redirectUrl.pathname = joinUrl(
-      import.meta.env.BASE_URL,
-      this.redirectToAfterSignOut,
-    );
-
-    let logoutUrl: URL;
-    // The endSessionEndpoint is set, the IdP supports some form of logout,
-    // so we use the IdP logout. Otherwise, just redirect the user to home
     if (as.end_session_endpoint) {
-      logoutUrl = new URL(as.end_session_endpoint);
+      // IdP supports external logout — redirect without clearing local state.
+      // State will be cleared in the logout callback after the IdP confirms.
+      const callbackUrl = new URL(window.location.origin);
+      callbackUrl.pathname = joinUrl(
+        import.meta.env.BASE_URL,
+        OPENID_LOGOUT_CALLBACK_PATH,
+      );
+
+      const logoutUrl = new URL(as.end_session_endpoint);
       if (idToken) {
         logoutUrl.searchParams.set("id_token_hint", idToken);
       }
       logoutUrl.searchParams.set(
         "post_logout_redirect_uri",
-        redirectUrl.toString(),
+        callbackUrl.toString(),
       );
-    } else {
-      logoutUrl = redirectUrl;
-    }
 
-    window.location.href = logoutUrl.toString();
+      window.location.href = logoutUrl.toString();
+    } else {
+      // No external logout endpoint — clear state immediately and redirect
+      useAuthState.getState().setLoggedOut();
+
+      const redirectUrl = new URL(window.location.origin);
+      redirectUrl.pathname = joinUrl(
+        import.meta.env.BASE_URL,
+        this.redirectToAfterSignOut,
+      );
+      window.location.href = redirectUrl.toString();
+    }
   };
 
   onPageLoad = async () => {
@@ -405,6 +412,11 @@ export class OpenIDAuthenticationProvider
     }
 
     useAuthState.setState({ isPending: false });
+  };
+
+  handleLogoutCallback = () => {
+    useAuthState.getState().setLoggedOut();
+    return this.redirectToAfterSignOut;
   };
 
   handleCallback = async () => {
@@ -502,6 +514,16 @@ export class OpenIDAuthenticationProvider
             >
               <CallbackHandler handleCallback={this.handleCallback} />
             </ErrorBoundary>
+          </ClientOnly>
+        ),
+      },
+      {
+        path: OPENID_LOGOUT_CALLBACK_PATH,
+        element: (
+          <ClientOnly>
+            <LogoutCallbackHandler
+              handleLogoutCallback={this.handleLogoutCallback}
+            />
           </ClientOnly>
         ),
       },

@@ -336,13 +336,15 @@ class SupabaseAuthenticationProvider
     ];
   };
 
-  signOut = async () => {
+  signOut = async ({ navigate }: AuthActionContext) => {
     const { error } = await this.client.auth.signOut({ scope: "local" });
     if (error) {
       // biome-ignore lint/suspicious: Logging is better than not doing anything
       console.error("Error signing out", error);
     }
     useAuthState.getState().setLoggedOut();
+
+    navigate("/", { replace: true });
   };
 
   onPageLoad = async () => {

@@ -341,8 +341,10 @@ const config: ZudokuConfig = {
     label: "API Catalog",
   },
   authentication: {
-    type: "clerk",
-    clerkPubKey: "pk_test_dG9sZXJhbnQtaG9ybmV0LTQ2LmNsZXJrLmFjY291bnRzLmRldiQ",
+    type: "auth0",
+    domain: "auth.zuplo.site",
+    clientId: "f8I87rdsCRo4nU2FHf0fHVwA9P7xi7Ml",
+    audience: "https://api.example.com/",
     redirectToAfterSignIn: "/documentation",
     redirectToAfterSignUp: "/documentation",
   },
