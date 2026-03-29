@@ -17,7 +17,7 @@ export const DeveloperHint = ({
   if (process.env.NODE_ENV !== "development") return null;
 
   return (
-    <Alert variant="info" className={className}>
+    <Alert variant="info" className={className} fit="loose">
       <InfoIcon />
       <AlertTitle>Developer hint</AlertTitle>
       <AlertDescription>

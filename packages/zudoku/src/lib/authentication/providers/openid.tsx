@@ -13,7 +13,7 @@ import type {
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
 import { OAuthErrorPage } from "../components/OAuthErrorPage.js";
-import { AuthorizationError } from "../errors.js";
+import { AuthorizationError, OAuthAuthorizationError } from "../errors.js";
 import { type UserProfile, useAuthState } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
@@ -104,6 +104,19 @@ export class OpenIDAuthenticationProvider
   protected setTokensFromResponse(response: oauth.TokenEndpointResponse) {
     if (!response.expires_in) {
       throw new AuthorizationError("No expires_in in response");
+    }
+
+    const accessToken = response.access_token;
+    if (accessToken.split(".").length !== 3) {
+      throw new OAuthAuthorizationError(
+        "The access token received is not a valid JWT.",
+        {
+          error: "configuration_error",
+          error_description:
+            "The authentication provider is issuing opaque tokens instead of JWTs. " +
+            "Ensure you have configured the correct `audience` in your authentication settings.",
+        },
+      );
     }
 
     const claims = response.id_token
