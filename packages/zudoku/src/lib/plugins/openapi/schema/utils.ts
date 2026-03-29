@@ -47,3 +47,48 @@ export const extractCircularRefInfo = (
 
   return ref.split(":")[1];
 };
+
+/**
+ * Filters out readOnly properties from a schema object.
+ * According to OpenAPI spec, readOnly properties should not be sent in requests.
+ *
+ * @param schema - The schema object to filter
+ * @returns A new schema object with readOnly properties removed
+ */
+export const filterReadOnlyProperties = (
+  schema: SchemaObject,
+): SchemaObject => {
+  // If no properties, return as is
+  if (!schema.properties || typeof schema.properties !== "object") {
+    return schema;
+  }
+
+  // Filter out readOnly properties
+  const filteredProperties = Object.fromEntries(
+    Object.entries(schema.properties).filter(
+      ([_key, value]) => !value?.readOnly,
+    ),
+  );
+
+  // Update required array to exclude readOnly fields
+  const filteredRequired = schema.required?.filter((fieldName) => {
+    const property = schema.properties?.[fieldName];
+    return !property?.readOnly;
+  });
+
+  // Build the result schema
+  const result: SchemaObject = {
+    ...schema,
+    properties: filteredProperties,
+  };
+
+  // Only include required if it has items
+  if (filteredRequired && filteredRequired.length > 0) {
+    result.required = filteredRequired;
+  } else {
+    // Remove required field if it was empty
+    delete result.required;
+  }
+
+  return result;
+};
