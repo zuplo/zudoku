@@ -1,20 +1,20 @@
 import type { RouteObject } from "react-router";
+import { Outlet } from "react-router";
+import { processRoutes } from "../../app/processRoutes.js";
+import { createRedirectRoutes } from "../../app/utils/createRedirectRoutes.js";
 import type { ZudokuConfig } from "../../config/config.js";
-import type { ZudokuContextOptions } from "../core/ZudokuContext.js";
 import type { HeaderNavigation } from "../../config/validators/HeaderNavigationSchema.js";
 import type {
   Navigation,
   ResolvedNavigationRule,
 } from "../../config/validators/NavigationSchema.js";
-import { isNavigationPlugin } from "../core/plugins.js";
-import { StatusPage } from "../components/StatusPage.js";
-import { RouterError } from "../errors/RouterError.js";
-import { Zudoku } from "../components/Zudoku.js";
-import { Outlet } from "react-router";
 import { Meta } from "../components/Meta.js";
+import { StatusPage } from "../components/StatusPage.js";
+import { Zudoku } from "../components/Zudoku.js";
+import { isNavigationPlugin } from "../core/plugins.js";
 import { RouteGuard } from "../core/RouteGuard.js";
-import { processRoutes } from "../../app/processRoutes.js";
-import { createRedirectRoutes } from "../../app/utils/createRedirectRoutes.js";
+import type { ZudokuContextOptions } from "../core/ZudokuContext.js";
+import { RouterError } from "../errors/RouterError.js";
 
 /**
  * Convert a ZudokuConfig to ZudokuContextOptions for embedded use.

@@ -1,9 +1,9 @@
-import { createBrowserRouter, createMemoryRouter } from "react-router";
 import type { PropsWithChildren } from "react";
+import { createBrowserRouter, createMemoryRouter } from "react-router";
 import type { ZudokuConfig } from "../../config/config.js";
 import { getRoutesFromConfig } from "../embedded/index.js";
-import { Bootstrap } from "./Bootstrap.js";
 import { openApiPlugin } from "../plugins/openapi/index.js";
+import { Bootstrap } from "./Bootstrap.js";
 
 export type OpenApiSource =
   | { type: "url"; url: string }
