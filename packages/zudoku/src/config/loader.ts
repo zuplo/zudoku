@@ -114,7 +114,11 @@ export function findOutputPathOfServerConfig(
   }
   if ("output" in output) {
     const result = output.output.find(
-      (o) => "isEntry" in o && o.isEntry && o.fileName === "zudoku.config.js",
+      (o) =>
+        "isEntry" in o &&
+        o.isEntry &&
+        (o.fileName === "zudoku.config.js" ||
+          o.fileName === "zudoku.config.mjs"),
     );
     if (result) {
       return result.fileName;
