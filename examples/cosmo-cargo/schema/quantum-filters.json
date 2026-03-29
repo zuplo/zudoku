@@ -1,0 +1,478 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Quantum Filter API",
+    "description": "The Quantum Filter API demonstrates advanced query parameter serialization for multi-dimensional cargo filtering across space-time coordinates. This API showcases different array parameter styles including comma-separated, space-delimited, pipe-delimited, and deep object notations.\n\n## Parameter Serialization Styles\n\nThis API demonstrates OpenAPI 3.0's parameter serialization styles for arrays:\n\n- **Form (exploded)**: `?ids=1&ids=2&ids=3` - Default for query params\n- **Form (not exploded)**: `?ids=1,2,3` - Comma-separated values\n- **Space Delimited**: `?ids=1%202%203` - Space-separated, URL encoded\n- **Pipe Delimited**: `?ids=1|2|3` - Pipe-separated values\n- **Deep Object**: `?filters[0]=val1&filters[1]=val2` - Indexed notation\n\n## Use Cases\n\nThese serialization styles are useful for:\n- Filtering shipments by multiple quantum states\n- Selecting coordinate systems across dimensions\n- Applying temporal range filters\n- Batch operations on cargo containers\n",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Cosmo Cargo API Support",
+      "email": "api@cosmocargo.com",
+      "url": "https://developers.cosmocargo.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.cosmocargo.com/v1",
+      "description": "Production API"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Quantum Filters",
+      "description": "Advanced filtering operations with various array serialization styles"
+    }
+  ],
+  "paths": {
+    "/quantum-shipments/search": {
+      "get": {
+        "operationId": "searchShipmentsFormExploded",
+        "summary": "Search shipments (form+exploded)",
+        "description": "Search shipments using form-style exploded array parameters (default).\n\nExample: `?statuses=pending&statuses=in_transit&statuses=delivered`\n\nThis is the default OpenAPI serialization style where each array element becomes a separate query parameter.",
+        "tags": ["Quantum Filters"],
+        "parameters": [
+          {
+            "name": "statuses",
+            "in": "query",
+            "description": "Filter by shipment statuses (form+exploded). Each status generates a separate query parameter.",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "pending",
+                  "in_transit",
+                  "delivered",
+                  "cancelled",
+                  "quantum_locked"
+                ]
+              },
+              "example": ["pending", "in_transit"]
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number for pagination",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved shipments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shipments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "status": { "type": "string" },
+                          "destination": { "type": "string" }
+                        }
+                      }
+                    },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quantum-shipments/filter": {
+      "get": {
+        "operationId": "filterShipmentsCommaSeparated",
+        "summary": "Filter shipments (comma-separated)",
+        "description": "Filter shipments using comma-separated array values.\n\nExample: `?dimensions=x,y,z&quantumStates=superposition,entangled`\n\nThis style is more compact and commonly used in APIs. The `explode: false` setting creates a single parameter with comma-separated values.",
+        "tags": ["Quantum Filters"],
+        "parameters": [
+          {
+            "name": "dimensions",
+            "in": "query",
+            "description": "Filter by spatial dimensions (comma-separated). Example: `x,y,z`",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["x", "y", "z", "w", "temporal"]
+              },
+              "example": ["x", "y", "z"]
+            }
+          },
+          {
+            "name": "quantumStates",
+            "in": "query",
+            "description": "Filter by quantum states (comma-separated)",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "superposition",
+                  "entangled",
+                  "collapsed",
+                  "decoherent"
+                ]
+              },
+              "example": ["superposition", "entangled"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of results to return",
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "minimum": 1,
+              "maximum": 1000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved filtered shipments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "shipments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "dimensions": {
+                            "type": "array",
+                            "items": { "type": "string" }
+                          },
+                          "quantumState": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/quantum-coordinates/batch": {
+      "get": {
+        "operationId": "batchQueryCoordinates",
+        "summary": "Batch coordinate query (space-delimited)",
+        "description": "Query multiple coordinates using space-delimited values.\n\nExample: `?coords=alpha%20beta%20gamma`\n\nSpace-delimited style is useful when coordinate names or identifiers naturally contain other separators. The spaces are URL-encoded as `%20`.",
+        "tags": ["Quantum Filters"],
+        "parameters": [
+          {
+            "name": "coords",
+            "in": "query",
+            "description": "Space-delimited list of coordinate system identifiers",
+            "required": true,
+            "style": "spaceDelimited",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "example": ["alpha", "beta", "gamma", "delta"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Coordinate data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "coordinates": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "system": { "type": "string" },
+                          "position": {
+                            "type": "array",
+                            "items": { "type": "number" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/warp-routes/validate": {
+      "get": {
+        "operationId": "validateWarpRoutes",
+        "summary": "Validate warp routes (pipe-delimited)",
+        "description": "Validate multiple warp route identifiers using pipe-delimited format.\n\nExample: `?routeIds=WR-001|WR-002|WR-003`\n\nPipe-delimited style is useful for route IDs and other identifiers that may contain commas or spaces. The pipe character (`|`) provides clear visual separation.",
+        "tags": ["Quantum Filters"],
+        "parameters": [
+          {
+            "name": "routeIds",
+            "in": "query",
+            "description": "Pipe-delimited list of warp route identifiers to validate",
+            "required": true,
+            "style": "pipeDelimited",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^WR-[0-9]{3}$"
+              },
+              "example": ["WR-001", "WR-002", "WR-003"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Validation results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "routeId": { "type": "string" },
+                          "valid": { "type": "boolean" },
+                          "stabilityIndex": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/temporal-filters/advanced": {
+      "get": {
+        "operationId": "advancedTemporalFilter",
+        "summary": "Advanced temporal filter (deep object)",
+        "description": "Apply advanced temporal filters using deep object notation.\n\nExample: `?timestamps[0]=2024-01-01T00:00:00Z&timestamps[1]=2024-12-31T23:59:59Z`\n\nDeep object style uses indexed bracket notation, useful for maintaining array order and complex filtering scenarios where index position matters.",
+        "tags": ["Quantum Filters"],
+        "parameters": [
+          {
+            "name": "timestamps",
+            "in": "query",
+            "description": "Array of ISO 8601 timestamps using deep object notation",
+            "required": false,
+            "style": "deepObject",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "example": [
+                "2024-01-01T00:00:00Z",
+                "2024-06-15T12:00:00Z",
+                "2024-12-31T23:59:59Z"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Temporal data retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "event": { "type": "string" },
+                          "location": { "type": "string" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cargo/multi-filter": {
+      "get": {
+        "operationId": "multiParameterFilter",
+        "summary": "Mixed parameter styles",
+        "description": "Demonstrates mixing different parameter types and serialization styles in a single endpoint.\n\nExample: `?page=1&sortBy=priority&containerIds=C-001,C-002,C-003&priorities=high&priorities=critical`\n\nThis endpoint shows how different parameter styles can coexist:\n- Scalar parameters (page, sortBy)\n- Comma-separated array (containerIds)\n- Exploded array (priorities)\n- Enum validation on all applicable fields",
+        "tags": ["Quantum Filters"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "minimum": 1
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "description": "Sort field",
+            "schema": {
+              "type": "string",
+              "enum": ["priority", "mass", "destination", "departure_time"],
+              "default": "priority"
+            }
+          },
+          {
+            "name": "containerIds",
+            "in": "query",
+            "description": "Filter by container IDs (comma-separated)",
+            "required": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^C-[0-9]{3}$"
+              },
+              "example": ["C-001", "C-002", "C-003"]
+            }
+          },
+          {
+            "name": "priorities",
+            "in": "query",
+            "description": "Filter by priority levels (exploded form)",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["low", "medium", "high", "critical", "quantum"]
+              },
+              "example": ["high", "critical"]
+            }
+          },
+          {
+            "name": "includeDimensions",
+            "in": "query",
+            "description": "Include specific dimension data (space-delimited)",
+            "required": false,
+            "style": "spaceDelimited",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["length", "width", "height", "temporal_offset"]
+              },
+              "example": ["length", "width", "height"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Filtered cargo containers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "containers": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string" },
+                          "priority": { "type": "string" },
+                          "mass": { "type": "number" },
+                          "destination": { "type": "string" },
+                          "dimensions": {
+                            "type": "object",
+                            "properties": {
+                              "length": { "type": "number" },
+                              "width": { "type": "number" },
+                              "height": { "type": "number" },
+                              "temporal_offset": { "type": "number" }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "pagination": {
+                      "type": "object",
+                      "properties": {
+                        "page": { "type": "integer" },
+                        "total": { "type": "integer" },
+                        "hasMore": { "type": "boolean" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for authentication"
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
