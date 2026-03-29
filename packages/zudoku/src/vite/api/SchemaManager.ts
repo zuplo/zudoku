@@ -10,6 +10,7 @@ import type { LoadedConfig } from "../../config/config.js";
 import type { Processor } from "../../config/validators/BuildSchema.js";
 import type { VersionConfig } from "../../config/validators/ZudokuConfig.js";
 import type { OpenAPIDocument } from "../../lib/oas/parser/index.js";
+import { injectSecurityParameters } from "../../lib/plugins/openapi/processors/injectSecurityParameters.js";
 import { ensureArray } from "../../lib/util/ensureArray.js";
 import { flattenAllOfProcessor } from "../../lib/util/flattenAllOfProcessor.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
@@ -97,6 +98,7 @@ export class SchemaManager {
     this.processors = [
       ({ schema }) => upgrade(schema).specification as OpenAPIDocument,
       flattenAllOfProcessor,
+      injectSecurityParameters(),
       ...processors,
     ];
   }
