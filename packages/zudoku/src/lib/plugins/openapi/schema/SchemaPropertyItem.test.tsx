@@ -8,7 +8,9 @@ import type { SchemaObject } from "../../../oas/parser/index.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 
 const wrapper = ({ children }: PropsWithChildren) => (
-  <I18nProvider messages={defaultMessages}>{children}</I18nProvider>
+  <I18nProvider messages={defaultMessages} locale="en">
+    {children}
+  </I18nProvider>
 );
 
 describe("SchemaPropertyItem", () => {

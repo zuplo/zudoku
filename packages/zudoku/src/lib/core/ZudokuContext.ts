@@ -125,6 +125,10 @@ export type ZudokuContextOptions = {
   locale?: {
     lang?: string;
     messages?: Record<string, string>;
+    locales?: Record<
+      string,
+      { label: string; messages?: Record<string, string> }
+    >;
   };
 };
 

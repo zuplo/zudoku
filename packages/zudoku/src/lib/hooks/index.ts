@@ -8,4 +8,5 @@ export {
 export { CACHE_KEYS, useCache } from "../components/cache.js";
 export { useZudoku } from "../components/context/ZudokuContext.js";
 export { useExposedProps } from "../util/useExposedProps.js";
+export { useLocale, useTranslation } from "../i18n/I18nContext.js";
 export { useEvent } from "./useEvent.js";

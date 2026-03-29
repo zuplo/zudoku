@@ -19,7 +19,9 @@ const createWrapper = (aiAssistants?: AiAssistantsConfig) => {
   return ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>
       <ZudokuProvider context={context}>
-        <I18nProvider messages={defaultMessages}>{children}</I18nProvider>
+        <I18nProvider messages={defaultMessages} locale="en">
+          {children}
+        </I18nProvider>
       </ZudokuProvider>
     </QueryClientProvider>
   );

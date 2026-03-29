@@ -85,6 +85,7 @@ export const convertZudokuConfigToOptions = (
     locale: {
       lang: config.locale?.lang ?? "en",
       messages: { ...defaultMessages, ...config.locale?.messages },
+      locales: config.locale?.locales,
     },
   };
 };

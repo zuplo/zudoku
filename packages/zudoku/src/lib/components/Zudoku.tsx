@@ -69,7 +69,11 @@ const ZudokuInner = memo(
         <PluginHeads plugins={props.plugins ?? []} location={location} />
         <ZudokuProvider context={zudokuContext}>
           <RouterEventsEmitter />
-          <I18nProvider messages={props.locale?.messages ?? {}}>
+          <I18nProvider
+            messages={props.locale?.messages ?? {}}
+            locale={props.locale?.lang ?? "en"}
+            locales={props.locale?.locales}
+          >
             <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
               <MDXProvider components={mdxComponents}>
                 <ThemeProvider attribute="class" disableTransitionOnChange>
