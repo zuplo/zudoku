@@ -3,6 +3,7 @@ import type {
   OperationsFragmentFragment,
 } from "./graphql/graphql.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
+import { generateSchemaExample } from "./util/generateSchemaExample.js";
 
 export const PlaygroundDialogWrapper = ({
   server,
@@ -18,38 +19,46 @@ export const PlaygroundDialogWrapper = ({
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
     .sort((a, b) => (a.required && !b.required ? -1 : 1))
-    .map((p) => ({
-      name: p.name,
-      defaultValue:
-        p.schema?.default ?? p.examples?.find((x) => x.value)?.value ?? "",
-      defaultActive: p.required ?? false,
-      isRequired: p.required ?? false,
-      enum: p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
-      type: p.schema?.type ?? "string",
-    }));
+    .map((p) => {
+      const schemaValue = generateSchemaExample(p.schema, p.name);
+      const fallbackValue = p.examples?.find((x) => x.value)?.value ?? "";
+      return {
+        name: p.name,
+        defaultValue: schemaValue ?? fallbackValue,
+        defaultActive: p.required ?? false,
+        isRequired: p.required ?? false,
+        enum:
+          p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
+        type: p.schema?.type ?? "string",
+      };
+    });
 
   const queryParams = operation.parameters
     ?.filter((p) => p.in === "query")
     .sort((a, b) => (a.required && !b.required ? -1 : 1))
-    .map((p) => ({
-      name: p.name,
-      defaultActive: p.required ?? false,
-      isRequired: p.required ?? false,
-      enum: p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
-      type: p.schema?.type ?? "string",
-      defaultValue: Array.isArray(p.schema?.default)
-        ? JSON.stringify(p.schema.default)
-        : p.schema?.default,
-      style: p.style ?? undefined,
-      explode: p.explode ?? undefined,
-      allowReserved: p.allowReserved ?? undefined,
-    }));
+    .map((p) => {
+      const schemaValue = generateSchemaExample(p.schema, p.name);
+      return {
+        name: p.name,
+        defaultActive: p.required ?? false,
+        isRequired: p.required ?? false,
+        enum:
+          p.schema?.type === "array" ? p.schema?.items?.enum : p.schema?.enum,
+        type: p.schema?.type ?? "string",
+        defaultValue: Array.isArray(schemaValue)
+          ? JSON.stringify(schemaValue)
+          : schemaValue,
+        style: p.style ?? undefined,
+        explode: p.explode ?? undefined,
+        allowReserved: p.allowReserved ?? undefined,
+      };
+    });
 
   const pathParams = operation.parameters
     ?.filter((p) => p.in === "path")
     .map((p) => ({
       name: p.name,
-      defaultValue: p.schema?.default,
+      defaultValue: generateSchemaExample(p.schema, p.name),
     }));
 
   return (
