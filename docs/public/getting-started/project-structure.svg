@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400">
+  <!-- Background -->
+  <rect width="600" height="400" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="300" y="30" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" font-weight="600" fill="#1f2937">
+    Zudoku Project Structure
+  </text>
+
+  <!-- Root folder -->
+  <g id="root">
+    <rect x="50" y="60" width="500" height="320" fill="#ffffff" stroke="#e5e7eb" stroke-width="2" rx="8"/>
+
+    <!-- Folder icon and name -->
+    <path d="M 70 80 L 70 90 L 100 90 L 105 80 Z" fill="#6366f1" opacity="0.2"/>
+    <rect x="70" y="90" width="450" height="20" fill="#6366f1" opacity="0.2" rx="2"/>
+    <text x="130" y="105" font-family="system-ui, monospace" font-size="14" font-weight="600" fill="#1f2937">
+      my-docs/
+    </text>
+
+    <!-- pages/ folder -->
+    <g transform="translate(0, 40)">
+      <path d="M 90 80 L 90 90 L 115 90 L 120 80 Z" fill="#10b981" opacity="0.2"/>
+      <rect x="90" y="90" width="200" height="20" fill="#10b981" opacity="0.2" rx="2"/>
+      <text x="130" y="105" font-family="system-ui, monospace" font-size="13" fill="#374151">
+        pages/
+      </text>
+      <text x="350" y="105" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">
+        📄 Your documentation content
+      </text>
+
+      <!-- index.mdx -->
+      <rect x="110" y="115" width="150" height="18" fill="#f3f4f6" rx="2"/>
+      <text x="120" y="128" font-family="system-ui, monospace" font-size="12" fill="#4b5563">
+        index.mdx
+      </text>
+    </g>
+
+    <!-- public/ folder -->
+    <g transform="translate(0, 100)">
+      <path d="M 90 80 L 90 90 L 115 90 L 120 80 Z" fill="#f59e0b" opacity="0.2"/>
+      <rect x="90" y="90" width="200" height="20" fill="#f59e0b" opacity="0.2" rx="2"/>
+      <text x="130" y="105" font-family="system-ui, monospace" font-size="13" fill="#374151">
+        public/
+      </text>
+      <text x="350" y="105" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">
+        🖼️  Static assets (images, fonts)
+      </text>
+    </g>
+
+    <!-- zudoku.config.tsx -->
+    <g transform="translate(0, 135)">
+      <rect x="90" y="95" width="180" height="18" fill="#dbeafe" rx="2"/>
+      <text x="100" y="108" font-family="system-ui, monospace" font-size="12" fill="#1e40af" font-weight="600">
+        zudoku.config.tsx
+      </text>
+      <text x="350" y="108" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">
+        ⚙️  Main configuration file
+      </text>
+    </g>
+
+    <!-- package.json -->
+    <g transform="translate(0, 160)">
+      <rect x="90" y="95" width="150" height="18" fill="#f3f4f6" rx="2"/>
+      <text x="100" y="108" font-family="system-ui, monospace" font-size="12" fill="#4b5563">
+        package.json
+      </text>
+      <text x="350" y="108" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">
+        📦 Dependencies and scripts
+      </text>
+    </g>
+
+    <!-- tsconfig.json -->
+    <g transform="translate(0, 185)">
+      <rect x="90" y="95" width="150" height="18" fill="#f3f4f6" rx="2"/>
+      <text x="100" y="108" font-family="system-ui, monospace" font-size="12" fill="#4b5563">
+        tsconfig.json
+      </text>
+      <text x="350" y="108" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">
+        📘 TypeScript configuration
+      </text>
+    </g>
+
+    <!-- vite.config.ts -->
+    <g transform="translate(0, 210)">
+      <rect x="90" y="95" width="150" height="18" fill="#f3f4f6" rx="2"/>
+      <text x="100" y="108" font-family="system-ui, monospace" font-size="12" fill="#4b5563">
+        vite.config.ts
+      </text>
+      <text x="350" y="108" font-family="system-ui, sans-serif" font-size="11" fill="#6b7280">
+        ⚡ Vite build config (optional)
+      </text>
+    </g>
+  </g>
+</svg>

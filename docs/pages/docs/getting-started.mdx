@@ -1,0 +1,406 @@
+---
+title: Getting Started
+description: A comprehensive guide to building your first Zudoku documentation site from scratch
+sidebar_icon: rocket
+---
+
+import { Alert } from "zudoku/components";
+
+# Getting Started with Zudoku
+
+Welcome to Zudoku! This guide will walk you through creating your first beautiful API documentation
+site in minutes. Whether you're documenting a REST API, building a developer portal, or creating
+product documentation, Zudoku provides everything you need.
+
+## What is Zudoku?
+
+Zudoku is a modern documentation framework built on React, Vite, and TypeScript that makes it easy
+to create beautiful, interactive API documentation and developer portals. Key features include:
+
+- **OpenAPI/Swagger Support** - Automatically generate interactive API references from OpenAPI
+  specifications
+- **MDX-Powered Content** - Write documentation with Markdown enhanced with React components
+- **Built-in Search** - Fast, client-side search with Pagefind
+- **Authentication** - Integrate with popular auth providers (Auth0, Clerk, Firebase, etc.)
+- **API Key Management** - Built-in portal for managing API keys and developer identities
+- **Customizable Theming** - Full control over colors, typography, and layout
+- **Fast & Modern** - Built with Vite for lightning-fast hot reloading and optimized production
+  builds
+
+## Getting Started Workflow
+
+Here's an overview of the typical workflow for creating a Zudoku documentation site:
+
+![Getting Started Workflow](/getting-started/workflow.svg)
+
+This guide will walk you through each of these steps in detail.
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+- **Node.js** `22.7.0+` (or `20.19+`) - [Download here](https://nodejs.org/)
+- A code editor (VS Code, Cursor, or your favorite editor)
+- A terminal/command prompt
+- Basic familiarity with npm/pnpm and command line
+
+<Alert variant="info">
+  **Tip:** We recommend using the latest LTS version of Node.js for the best experience.
+</Alert>
+
+## Installation
+
+<Stepper>
+
+### 1. Create Your Project
+
+Open your terminal and run:
+
+```bash
+npm create zudoku@latest
+```
+
+The CLI will ask you several questions to set up your project:
+
+![CLI Installation Prompts](/getting-started/cli-prompts.svg)
+
+Here's what each prompt means:
+
+**Project name:** Enter a name for your project directory (e.g., `my-docs`)
+
+**Select a template:**
+
+- **Empty** - Start with a minimal setup, perfect if you want full control
+- **Documentation** - Pre-configured for product/technical documentation with example content
+- **API Reference** - Optimized for API documentation with OpenAPI/Swagger integration
+
+**Add OpenAPI/Swagger file?**
+
+- Select "Yes" if you have an existing OpenAPI specification (JSON or YAML)
+- You can provide a file path or URL to your OpenAPI spec
+- Select "No" to skip and add it later
+
+**Add authentication?**
+
+- Choose from Auth0, Clerk, Firebase, Supabase, Azure AD, or skip
+- You can always add authentication later in the config file
+
+**Initialize git repository?**
+
+- Recommended: Choose "Yes" to track your changes with git
+
+<Alert variant="success">
+  **First Success! 🎉** Your Zudoku project is now created with all the necessary files and
+  dependencies installed.
+</Alert>
+
+### 2. Navigate to Your Project
+
+```bash
+cd my-docs
+```
+
+### 3. Explore the Project Structure
+
+Your new Zudoku project has the following structure:
+
+![Project Structure Diagram](/getting-started/project-structure.svg)
+
+```
+my-docs/
+├── pages/                  # Your documentation content (MDX/Markdown files)
+│   └── index.mdx          # Homepage
+├── public/                # Static assets (images, fonts, etc.)
+├── zudoku.config.tsx      # Main configuration file
+├── package.json           # Dependencies and scripts
+├── tsconfig.json          # TypeScript configuration
+└── vite.config.ts         # Vite build configuration (optional)
+```
+
+**Key Files:**
+
+- **`zudoku.config.tsx`** - Your site's main configuration (navigation, theme, APIs, auth)
+- **`pages/`** - All your documentation content goes here as `.md` or `.mdx` files
+- **`public/`** - Static files like images, logos, and other assets
+
+### 4. Start the Development Server
+
+```bash
+npm run dev
+```
+
+This starts the local development server at `http://localhost:3000`. The dev server includes:
+
+- **Hot Module Replacement (HMR)** - Changes appear instantly without full page reload
+- **Error Overlay** - Helpful error messages right in the browser
+- **Fast Refresh** - Preserves component state while editing
+
+<Alert variant="success">
+  **Second Success! 🎉** Your documentation site is now live! Visit `http://localhost:3000` to see
+  it in action.
+</Alert>
+
+</Stepper>
+
+## Your First Customizations
+
+Now that your site is running, let's make some quick customizations to see how easy Zudoku is to
+work with.
+
+### Update Site Metadata
+
+Open `zudoku.config.tsx` and update the basic site information:
+
+```tsx title="zudoku.config.tsx"
+import type { ZudokuConfig } from "zudoku";
+
+const config: ZudokuConfig = {
+  topNavigation: [
+    { id: "docs", label: "Documentation" },
+    { id: "api", label: "API Reference" },
+  ],
+  sidebar: {
+    docs: [
+      {
+        type: "category",
+        label: "Getting Started",
+        items: ["docs/introduction", "docs/quickstart"],
+      },
+    ],
+  },
+  // Customize your site metadata
+  metadata: {
+    title: "My Awesome API Documentation",
+    description: "Complete API reference and guides for developers",
+    logo: {
+      src: {
+        light: "/logo-light.svg",
+        dark: "/logo-dark.svg",
+      },
+      alt: "My API Logo",
+    },
+  },
+};
+
+export default config;
+```
+
+Save the file and watch your changes appear instantly in the browser!
+
+### Add Your First Documentation Page
+
+Create a new file at `pages/docs/introduction.mdx`:
+
+```mdx title="pages/docs/introduction.mdx"
+---
+title: Introduction
+description: Welcome to our API documentation
+---
+
+# Welcome to My API
+
+This is your introduction page. You can write content using:
+
+- **Markdown** for basic formatting
+- **MDX** to embed React components
+- **Code blocks** with syntax highlighting
+
+## Quick Example
+
+Here's a code sample:
+
+\`\`\`typescript import { APIClient } from "my-api-sdk";
+
+const client = new APIClient({ apiKey: process.env.API_KEY, });
+
+const result = await client.getData(); \`\`\`
+
+## What's Next?
+
+Learn how to [add API references](#) or [customize your theme](#).
+```
+
+The page will appear in your navigation automatically (or add it to `sidebar` in your config).
+
+### Customize Your Theme
+
+Zudoku supports full theme customization. Update your `zudoku.config.tsx`:
+
+```tsx title="zudoku.config.tsx"
+const config: ZudokuConfig = {
+  // ... other config
+  theme: {
+    light: {
+      primary: "#6366f1", // Indigo
+    },
+    dark: {
+      primary: "#818cf8", // Lighter indigo for dark mode
+    },
+  },
+};
+```
+
+<Alert variant="success">
+  **Third Success! 🎉** You've customized your site's metadata, added content, and changed the
+  theme. You're well on your way!
+</Alert>
+
+## Adding API Documentation
+
+One of Zudoku's most powerful features is automatic API reference generation from OpenAPI
+specifications.
+
+### Using a Local OpenAPI File
+
+1. Place your OpenAPI specification file in your project (e.g., `openapi.json` or `openapi.yaml`)
+
+2. Update `zudoku.config.tsx`:
+
+```tsx title="zudoku.config.tsx"
+const config: ZudokuConfig = {
+  // ... other config
+  apis: [
+    {
+      type: "file",
+      input: "./openapi.json",
+      navigationId: "api",
+    },
+  ],
+};
+```
+
+### Using a Remote OpenAPI URL
+
+```tsx title="zudoku.config.tsx"
+const config: ZudokuConfig = {
+  // ... other config
+  apis: [
+    {
+      type: "url",
+      input: "https://api.example.com/openapi.json",
+      navigationId: "api",
+    },
+  ],
+};
+```
+
+### Using Multiple APIs
+
+Zudoku can document multiple APIs in one site:
+
+```tsx title="zudoku.config.tsx"
+const config: ZudokuConfig = {
+  // ... other config
+  apis: [
+    {
+      type: "file",
+      input: "./api-v1.json",
+      navigationId: "api-v1",
+    },
+    {
+      type: "file",
+      input: "./api-v2.json",
+      navigationId: "api-v2",
+    },
+  ],
+  topNavigation: [
+    { id: "api-v1", label: "API v1" },
+    { id: "api-v2", label: "API v2" },
+  ],
+};
+```
+
+Visit your site and you'll see a fully interactive API reference with:
+
+- Organized endpoints by tags/operations
+- Request/response examples
+- Try-it-out playground
+- Authentication configuration
+- Schema documentation
+
+<Alert variant="success">
+  **Fourth Success! 🎉** You now have a fully functional API reference site!
+</Alert>
+
+## Building for Production
+
+When you're ready to deploy your documentation:
+
+```bash
+npm run build
+```
+
+This creates an optimized production build in the `dist/` folder with:
+
+- Minified and bundled JavaScript
+- Optimized CSS
+- Pre-rendered HTML for fast loading
+- Static assets with cache-friendly filenames
+
+The build output is a collection of static files that can be deployed to any hosting service.
+
+## Next Steps
+
+Now that you have a working Zudoku site, here are some paths to explore:
+
+### Enhance Your Content
+
+- **[Writing with Markdown/MDX](./writing.mdx)** - Learn about all the markdown features and
+  components available
+- **[Admonitions](./markdown/admonitions.md)** - Add callouts, warnings, and info boxes
+- **[Code Blocks](./markdown/code-blocks.md)** - Advanced syntax highlighting with file names, line
+  highlighting, and more
+- **[Mermaid Diagrams](./guides/mermaid.mdx)** - Create diagrams directly in your markdown
+
+### Configure Your Site
+
+- **[Navigation](./configuration/navigation.mdx)** - Customize sidebar and top navigation
+- **[Theme & Colors](./customization/colors-theme.mdx)** - Full theme customization guide
+- **[Search](./configuration/search.md)** - Configure and customize search functionality
+- **[Footer](./configuration/footer.mdx)** - Add links, social media, and custom content to your
+  footer
+
+### Add Advanced Features
+
+- **[Authentication](./configuration/authentication.md)** - Protect routes and integrate auth
+  providers
+- **[API Keys & Identities](./guides/managing-api-keys-and-identities.md)** - Build a developer
+  portal with API key management
+- **[Custom Pages](./guides/custom-pages.md)** - Create fully custom React pages
+- **[Environment Variables](./guides/environment-variables.md)** - Use environment-specific
+  configuration
+
+### Deploy Your Site
+
+- **[Deployment Overview](./deployment.md)** - Choose a hosting platform
+- **[Vercel](./deploy/vercel.md)** - One-click deploy to Vercel
+- **[Cloudflare Pages](./deploy/cloudflare-pages.md)** - Deploy to Cloudflare's edge network
+- **[GitHub Pages](./deploy/github-pages.md)** - Free hosting with GitHub Pages
+- **[Zuplo](./deploy/zuplo.md)** - Deploy to Zuplo's global edge network
+
+### Extend Zudoku
+
+- **[Custom Plugins](./custom-plugins.md)** - Create your own Zudoku plugins
+- **[Vite Configuration](./configuration/vite-config.md)** - Advanced Vite customization
+- **[Slots](./configuration/slots.mdx)** - Inject custom components into predefined locations
+
+## Getting Help
+
+- **[Examples](https://github.com/zuplo/zudoku/tree/main/examples)** - Check out example projects
+  for inspiration
+- **[Discord Community](https://discord.zudoku.dev)** - Get help and share ideas with other Zudoku
+  users
+- **[GitHub Issues](https://github.com/zuplo/zudoku/issues)** - Report bugs or request features
+
+## Video Walkthrough
+
+<Alert variant="info">
+  **Coming Soon:** We're creating comprehensive video tutorials covering project setup,
+  customization, and deployment. Check back soon or join our [Discord](https://discord.zudoku.dev)
+  for updates!
+</Alert>
+
+---
+
+**Ready to dive deeper?** Continue to the [Writing Guide](./writing.mdx) to learn how to create
+rich, interactive documentation content.
