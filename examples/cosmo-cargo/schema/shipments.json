@@ -713,6 +713,18 @@
         "summary": "Create a new shipment",
         "description": "Creates a new shipment with the provided details.\n\nThis endpoint allows you to **create and register** a new shipment in the Cosmo Cargo platform. The shipment will be assigned a unique `trackingNumber` and will enter the `CREATED` status.\n\n### How to use with SDK\n\nHere's how to create a shipment using `@cosmo-cargo/sdk{:sh}`:\n\n```ts\nimport { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create(config);\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);\n```\n\n**Note:** Use the `X-Request-Priority` header to expedite processing for urgent shipments.",
         "operationId": "createShipment",
+        "x-codeSamples": [
+          {
+            "lang": "javascript",
+            "label": "Node.js SDK",
+            "source": "import { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create({\n  recipientEmail: 'test@example.com',\n  recipientAddress: {\n    street: '123 Delivery St',\n    city: 'Shiptown',\n    state: 'ST',\n    country: 'US',\n    postalCode: '12345'\n  },\n  senderAddress: {\n    street: '456 Sender Ave',\n    city: 'Packageville',\n    state: 'ST',\n    country: 'US',\n    postalCode: '54321'\n  },\n  packages: [{\n    weight: 2.5,\n    dimensions: { length: 10, width: 8, height: 6 }\n  }]\n});\n\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);"
+          },
+          {
+            "lang": "python",
+            "label": "Python SDK",
+            "source": "from cosmo_cargo import CosmoCargoClient\n\nclient = CosmoCargoClient(api_key=os.environ['COSMO_API_KEY'])\n\nshipment = client.shipments.create(\n    recipient_email='test@example.com',\n    recipient_address={\n        'street': '123 Delivery St',\n        'city': 'Shiptown',\n        'state': 'ST',\n        'country': 'US',\n        'postal_code': '12345'\n    },\n    sender_address={\n        'street': '456 Sender Ave',\n        'city': 'Packageville',\n        'state': 'ST',\n        'country': 'US',\n        'postal_code': '54321'\n    },\n    packages=[{\n        'weight': 2.5,\n        'dimensions': {'length': 10, 'width': 8, 'height': 6}\n    }]\n)\n\nprint(f'Shipment created: {shipment.tracking_number}')"
+          }
+        ],
         "parameters": [
           {
             "$ref": "#/components/parameters/CorrelationId"
