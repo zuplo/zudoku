@@ -25,8 +25,23 @@ SENTRY_DSN=https://your-sentry-dsn
 
 ## Release management
 
-However this does not handle release management for you. For that you can
-[create a custom `vite.config.ts`](./vite-config) and use the `@sentry/vite-plugin` plugin.
+Release management in Sentry allows you to track which version of your application code is running
+in production. By associating errors with specific releases, you can:
+
+- **Identify when issues were introduced**: Quickly pinpoint which deployment introduced a bug by
+  seeing if an error is new, resurfaced, or already resolved in a specific release
+- **Track regressions**: Easily spot when previously fixed issues reappear after a new deployment
+- **Prioritize debugging**: Focus on newly introduced issues from recent releases rather than
+  historical problems
+- **Verify fixes**: Confirm that bug fixes are working by checking if errors stop appearing in newer
+  releases
+- **Monitor release health**: Get immediate feedback on the quality and stability of each
+  deployment, including crash rates and affected users
+
+By default, Zudoku's Sentry integration does not automatically configure release tracking. To enable
+it, you'll need to [create a custom `vite.config.ts`](./vite-config) and use the
+`@sentry/vite-plugin` plugin, which will automatically upload source maps and notify Sentry of new
+releases during your build process.
 
 ```ts
 import { sentryVitePlugin } from "@sentry/vite-plugin";
