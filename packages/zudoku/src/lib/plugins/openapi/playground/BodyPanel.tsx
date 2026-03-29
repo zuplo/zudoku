@@ -2,6 +2,7 @@ import {
   ChevronDownIcon,
   FileInput,
   Grid2x2PlusIcon,
+  ListIcon,
   PaperclipIcon,
   ScanTextIcon,
   XIcon,
@@ -28,18 +29,27 @@ import ExamplesDropdown from "./ExamplesDropdown.js";
 import ParamsGrid from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
 import { MultipartField } from "./request-panel/MultipartField.js";
+import { UrlencodedField } from "./request-panel/UrlencodedField.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
 export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
   const { register, setValue, watch, control } =
     useFormContext<PlaygroundForm>();
   const examples = (content ?? []).flatMap((e) => e.examples);
-  const [headers, file, bodyMode, body, multipartFormFields] = watch([
+  const [
+    headers,
+    file,
+    bodyMode,
+    body,
+    multipartFormFields,
+    urlencodedFormFields,
+  ] = watch([
     "headers",
     "file",
     "bodyMode",
     "body",
     "multipartFormFields",
+    "urlencodedFormFields",
   ]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,6 +104,15 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
     },
   });
 
+  const urlencodedManager = useKeyValueFieldManager<
+    PlaygroundForm,
+    "urlencodedFormFields"
+  >({
+    control,
+    name: "urlencodedFormFields",
+    defaultValue: { name: "", value: "", active: false },
+  });
+
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger className="items-center">
@@ -117,6 +136,11 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                     <>
                       <PaperclipIcon size={14} />
                       File
+                    </>
+                  ) : bodyMode === "urlencoded" ? (
+                    <>
+                      <ListIcon size={14} />
+                      Form URL Encoded
                     </>
                   ) : (
                     <>
@@ -148,6 +172,18 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                   <span className="flex-1">File</span>
                   <span>
                     {file && (
+                      <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                    )}
+                  </span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={() => setValue("bodyMode", "urlencoded")}
+                  className="gap-2"
+                >
+                  <ListIcon size={14} strokeWidth={1.5} />
+                  <span className="flex-1">Form URL Encoded</span>
+                  <span>
+                    {urlencodedFormFields?.some((field) => field.active) && (
                       <div className="w-1.5 h-1.5 bg-primary rounded-full" />
                     )}
                   </span>
@@ -255,6 +291,17 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
               </span>
             )}
           </div>
+        )}
+        {bodyMode === "urlencoded" && (
+          <ParamsGrid>
+            {urlencodedManager.fields.map((field, index) => (
+              <UrlencodedField
+                key={field.id}
+                index={index}
+                manager={urlencodedManager}
+              />
+            ))}
+          </ParamsGrid>
         )}
         {bodyMode === "multipart" && (
           <ParamsGrid>
