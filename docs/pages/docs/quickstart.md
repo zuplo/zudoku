@@ -24,8 +24,14 @@ have you up and running with a modern, customizable site that your developers wi
    npm create zudoku@latest
    ```
 
-   The CLI will walk you through setting up your project with interactive prompts. Choose from
-   templates like API documentation, developer portals, or start from scratch.
+   The CLI will walk you through setting up your project with interactive prompts. You'll be asked
+   about TypeScript, ESLint, and other configuration options.
+
+   <Callout type="info">
+     **New to the CLI?** Check out our [CLI Installation Steps
+     Explainer](./guides/cli-installation-steps.md) to understand what each prompt does and why it's
+     there.
+   </Callout>
 
 1. **Navigate to your project:**
 
