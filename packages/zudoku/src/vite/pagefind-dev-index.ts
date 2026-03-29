@@ -52,6 +52,7 @@ export async function* buildPagefindDevIndex(
   const template = getDevHtml({
     jsEntry: "/__z/entry.client.tsx",
     dir: config.site?.dir,
+    lang: config.locale?.lang,
   });
   const transformedTemplate = await vite.transformIndexHtml("/", template);
 

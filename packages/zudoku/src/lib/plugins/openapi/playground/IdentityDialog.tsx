@@ -11,6 +11,7 @@ import {
 } from "zudoku/ui/Dialog.js";
 import { Label } from "zudoku/ui/Label.js";
 import type { ApiIdentity } from "../../../core/ZudokuContext.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import IdentitySelector from "./IdentitySelector.js";
 
 const IdentityDialog = ({
@@ -30,15 +31,18 @@ const IdentityDialog = ({
   }) => void;
   identities: ApiIdentity[];
 }) => {
+  const { t } = useTranslation();
   const [identity, setIdentity] = useState<string | undefined>(undefined);
   const [rememberedIdentity, setRememberedIdentity] = useState<boolean>(false);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogTitle>Select an auth identity</DialogTitle>
+        <DialogTitle>
+          {t("openapi.playground.identity.selectTitle")}
+        </DialogTitle>
         <DialogDescription>
-          Please select an identity for this request.
+          {t("openapi.playground.identity.selectDescription")}
         </DialogDescription>
         <Card className="max-h-80 overflow-auto">
           <IdentitySelector
@@ -58,13 +62,15 @@ const IdentityDialog = ({
                 )
               }
             />
-            <Label htmlFor="remember">Remember my choice</Label>
+            <Label htmlFor="remember">
+              {t("openapi.playground.identity.rememberChoice")}
+            </Label>
           </div>
 
           <Button
             onClick={() => onSubmit({ identity: identity, rememberedIdentity })}
           >
-            Send
+            {t("common.send")}
           </Button>
         </DialogFooter>
       </DialogContent>

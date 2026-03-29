@@ -1,6 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "zudoku/ui/Button.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import { SelectOnClick } from "./SelectOnClick.js";
 
@@ -13,6 +14,7 @@ export const EnumValues = ({
   className?: string;
   maxVisibleValues?: number;
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   if (!values.length) return null;
@@ -23,7 +25,9 @@ export const EnumValues = ({
 
   return (
     <div className={cn("flex flex-wrap gap-1.5", className)}>
-      <span className="text-muted-foreground">Enum values:</span>
+      <span className="text-muted-foreground">
+        {t("openapi.schema.enumValues")}
+      </span>
       {visibleValues.map((value) => (
         <div key={value}>
           <SelectOnClick className="border rounded-sm px-1 font-mono">
@@ -41,13 +45,17 @@ export const EnumValues = ({
           {isOpen ? (
             <div className="flex items-center gap-1">
               <ChevronUpIcon size={12} />
-              <span className="text-muted-foreground">show less</span>
+              <span className="text-muted-foreground">
+                {t("openapi.schema.showLess")}
+              </span>
             </div>
           ) : (
             <div className="flex items-center gap-1">
               <ChevronDownIcon size={12} />
               <span className="text-muted-foreground">
-                show {values.length - maxVisibleValues} more
+                {t("openapi.schema.showMore", {
+                  count: values.length - maxVisibleValues,
+                })}
               </span>
             </div>
           )}

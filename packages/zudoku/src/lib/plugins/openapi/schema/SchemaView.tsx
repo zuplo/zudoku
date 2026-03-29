@@ -9,6 +9,7 @@ import {
 } from "zudoku/ui/Frame.js";
 import { ItemGroup, ItemSeparator } from "zudoku/ui/Item.js";
 import { Markdown } from "../../../components/Markdown.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { ConstValue } from "../components/ConstValue.js";
 import { EnumValues } from "../components/EnumValues.js";
@@ -88,20 +89,26 @@ const DeprecatedToggle = ({
   showDeprecated: boolean;
   onToggle: () => void;
   controlsId: string;
-}) => (
-  <button
-    type="button"
-    onClick={onToggle}
-    aria-expanded={showDeprecated}
-    aria-controls={controlsId}
-    className="text-xs text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
-  >
-    {showDeprecated ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
-    {showDeprecated
-      ? "Hide deprecated fields"
-      : `Show ${count} deprecated field${count !== 1 ? "s" : ""}`}
-  </button>
-);
+}) => {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={showDeprecated}
+      aria-controls={controlsId}
+      className="text-xs text-muted-foreground flex items-center gap-1.5 hover:text-foreground transition-colors cursor-pointer"
+    >
+      {showDeprecated ? <EyeOffIcon size={14} /> : <EyeIcon size={14} />}
+      {showDeprecated
+        ? t("openapi.schema.hideDeprecatedFields")
+        : t("openapi.schema.showDeprecatedFields", {
+            count,
+            s: count !== 1 ? "s" : "",
+          })}
+    </button>
+  );
+};
 
 const ObjectSchemaView = ({
   schema,
@@ -114,6 +121,7 @@ const ObjectSchemaView = ({
   cardHeader?: React.ReactNode;
   embedded?: boolean;
 }) => {
+  const { t } = useTranslation();
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
   const deprecatedId = useId();
@@ -153,7 +161,7 @@ const ObjectSchemaView = ({
     return properties ? { group, properties } : [];
   });
 
-  const deprecatedProperties = groupedProperties["deprecated"];
+  const deprecatedProperties = groupedProperties.deprecated;
 
   const additionalObjectProperties = typeof schema.additionalProperties ===
     "object" && <SchemaView schema={schema.additionalProperties} embedded />;
@@ -219,7 +227,7 @@ const ObjectSchemaView = ({
               rel="noopener noreferrer"
               target="_blank"
             >
-              Additional properties are allowed
+              {t("openapi.schema.additionalProperties")}
               <InfoIcon size={14} />
             </a>
           ) : (
@@ -250,13 +258,14 @@ export const SchemaView = ({
   cardHeader?: React.ReactNode;
   embedded?: boolean;
 }) => {
+  const { t } = useTranslation();
   if (!schema || Object.keys(schema).length === 0) {
     return (
       <Frame>
         {cardHeader}
         <FramePanel>
           <div className="text-sm text-muted-foreground italic">
-            No data returned
+            {t("openapi.schema.noDataReturned")}
           </div>
         </FramePanel>
       </Frame>

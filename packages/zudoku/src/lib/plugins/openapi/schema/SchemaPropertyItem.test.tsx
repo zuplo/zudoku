@@ -1,8 +1,17 @@
 // @vitest-environment happy-dom
 import { render, screen } from "@testing-library/react";
+import type { PropsWithChildren } from "react";
 import { describe, expect, it } from "vitest";
+import { I18nProvider } from "../../../i18n/I18nContext.js";
+import { defaultMessages } from "../../../i18n/messages.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
+
+const wrapper = ({ children }: PropsWithChildren) => (
+  <I18nProvider messages={defaultMessages} locale="en">
+    {children}
+  </I18nProvider>
+);
 
 describe("SchemaPropertyItem", () => {
   // Use schemas without description to avoid Markdown component
@@ -18,6 +27,7 @@ describe("SchemaPropertyItem", () => {
         schema={baseSchema}
         group="optional"
       />,
+      { wrapper },
     );
 
     const code = screen.getByText("myField");
@@ -32,6 +42,7 @@ describe("SchemaPropertyItem", () => {
         schema={baseSchema}
         group="required"
       />,
+      { wrapper },
     );
 
     const code = screen.getByText("myField");
@@ -50,6 +61,7 @@ describe("SchemaPropertyItem", () => {
         schema={deprecatedSchema}
         group="deprecated"
       />,
+      { wrapper },
     );
 
     const code = screen.getByText("myField");
@@ -68,6 +80,7 @@ describe("SchemaPropertyItem", () => {
         schema={deprecatedSchema}
         group="deprecated"
       />,
+      { wrapper },
     );
 
     const item = container.querySelector("[data-slot='item']");
@@ -82,6 +95,7 @@ describe("SchemaPropertyItem", () => {
         schema={baseSchema}
         group="optional"
       />,
+      { wrapper },
     );
 
     const item = container.querySelector("[data-slot='item']");
@@ -95,6 +109,7 @@ describe("SchemaPropertyItem", () => {
         schema={baseSchema}
         group="required"
       />,
+      { wrapper },
     );
 
     expect(screen.getByText("required")).toBeInTheDocument();
@@ -107,6 +122,7 @@ describe("SchemaPropertyItem", () => {
         schema={baseSchema}
         group="optional"
       />,
+      { wrapper },
     );
 
     expect(screen.queryByText("required")).not.toBeInTheDocument();
@@ -124,6 +140,7 @@ describe("SchemaPropertyItem", () => {
         schema={deprecatedSchema}
         group="deprecated"
       />,
+      { wrapper },
     );
 
     expect(screen.queryByText("required")).not.toBeInTheDocument();

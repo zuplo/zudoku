@@ -1,5 +1,6 @@
 import { UnlinkIcon } from "lucide-react";
 import { Link, useParams } from "react-router";
+import { useTranslation } from "../i18n/I18nContext.js";
 import { CategoryHeading } from "./CategoryHeading.js";
 import { DeveloperHint } from "./DeveloperHint.js";
 import { Heading } from "./Heading.js";
@@ -7,6 +8,7 @@ import { Typography } from "./Typography.js";
 
 export const NotFoundPage = () => {
   const params = useParams();
+  const { t } = useTranslation();
 
   return (
     <Typography
@@ -15,7 +17,7 @@ export const NotFoundPage = () => {
     >
       <CategoryHeading>404</CategoryHeading>
       <Heading level={1} className="flex gap-3.5 items-center">
-        Page not found
+        {t("notFound.title")}
         <UnlinkIcon size={24} />
       </Heading>
       <DeveloperHint>
@@ -26,12 +28,8 @@ export const NotFoundPage = () => {
         and add some content to make this error go away. By default{" "}
         <code>DOCUMENT_ROOT</code> is the `pages` directory.
       </DeveloperHint>
-      <p>
-        It seems that the page you are looking for does not exist or may have
-        been moved. Please check the URL for any typos or use the navigation
-        menu to find the correct page.
-      </p>
-      <Link to="/">Go back home</Link>
+      <p>{t("notFound.description")}</p>
+      <Link to="/">{t("notFound.goHome")}</Link>
     </Typography>
   );
 };

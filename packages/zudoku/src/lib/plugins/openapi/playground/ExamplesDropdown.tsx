@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import type { ExampleItem, MediaTypeObject } from "../graphql/graphql.js";
 
 const ExamplesDropdown = ({
@@ -18,6 +19,7 @@ const ExamplesDropdown = ({
   examples: MediaTypeObject[];
   onSelect: (example: ExampleItem, mediaType: string) => void;
 }) => {
+  const { t } = useTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -26,7 +28,7 @@ const ExamplesDropdown = ({
           size="sm"
           className="hover:bg-accent hover:brightness-95 gap-2"
         >
-          Use Example
+          {t("openapi.playground.examples.useExample")}
           <PlusCircleIcon size={14} />
         </Button>
       </DropdownMenuTrigger>

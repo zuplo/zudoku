@@ -608,7 +608,21 @@ export const CdnUrlSchema = z
   })
   .optional();
 
+const LocaleDefinitionSchema = z.object({
+  label: z.string(),
+  messages: z.record(z.string(), z.string()).optional(),
+});
+
+const LocaleSchema = z
+  .object({
+    lang: z.string().optional(),
+    messages: z.record(z.string(), z.string()).optional(),
+    locales: z.record(z.string(), LocaleDefinitionSchema).optional(),
+  })
+  .optional();
+
 const BaseConfigSchema = z.object({
+  locale: LocaleSchema,
   slots: z.record(z.string(), z.custom<SlotType>()),
   /**
    * @deprecated Use `slots` instead

@@ -4,8 +4,12 @@ import type {
   ZudokuConfig,
   ZudokuContext,
 } from "zudoku";
+import { LanguageSwitcher } from "zudoku/components";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
+import { es } from "./src/locales/es";
+import { fr } from "./src/locales/fr";
+import { ja } from "./src/locales/ja";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -31,6 +35,17 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 }
 
 const config: ZudokuConfig = {
+  // Localization: runtime language switcher with 4 languages.
+  // The LanguageSwitcher component is placed in the header via slots.
+  locale: {
+    lang: "en",
+    locales: {
+      en: { label: "English" },
+      es: { label: "Español", messages: es },
+      fr: { label: "Français", messages: fr },
+      ja: { label: "日本語", messages: ja },
+    },
+  },
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
@@ -184,6 +199,9 @@ const config: ZudokuConfig = {
         width: 120,
       },
     },
+  },
+  slots: {
+    "head-navigation-end": () => <LanguageSwitcher />,
   },
   plugins: [
     new CosmoCargoApiIdentityPlugin(),

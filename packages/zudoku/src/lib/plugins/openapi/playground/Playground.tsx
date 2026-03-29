@@ -20,6 +20,7 @@ import {
 import { TooltipProvider } from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { useHotkey } from "../../../hooks/useHotkey.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
@@ -148,6 +149,7 @@ export const Playground = ({
   onLogin,
   onSignUp,
 }: PlaygroundContentProps) => {
+  const { t } = useTranslation();
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
   );
@@ -359,9 +361,7 @@ export const Playground = ({
         clearTimeout(warningTimeout);
         setShowLongRunningWarning(false);
         if (error instanceof TypeError) {
-          throw new Error(
-            "The request failed, possibly due to network issues or CORS policy.",
-          );
+          throw new Error(t("openapi.playground.requestFailedNetwork"));
         } else {
           throw error;
         }
@@ -524,7 +524,9 @@ export const Playground = ({
                 }}
                 className="w-18"
               >
-                {queryMutation.isPending ? "Cancel" : "Send"}
+                {queryMutation.isPending
+                  ? t("openapi.playground.cancel")
+                  : t("openapi.playground.send")}
               </Button>
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
@@ -532,7 +534,9 @@ export const Playground = ({
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} />
-                    <CollapsibleHeader>Authentication</CollapsibleHeader>
+                    <CollapsibleHeader>
+                      {t("openapi.playground.authentication")}
+                    </CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <IdentitySelector
@@ -548,7 +552,9 @@ export const Playground = ({
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <ShapesIcon size={16} />
-                    <CollapsibleHeader>Path Parameters</CollapsibleHeader>
+                    <CollapsibleHeader>
+                      {t("openapi.playground.pathParameters")}
+                    </CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
                     <PathParams url={url} control={control} />
@@ -578,7 +584,7 @@ export const Playground = ({
                     <kbd className="text-foreground border rounded m-0.5 px-1 py-0.5 capitalize">
                       {hotkeyLabel.join(" + ")}
                     </kbd>{" "}
-                    to send a request
+                    {t("openapi.playground.sendHint")}
                   </span>
                 </div>
               }

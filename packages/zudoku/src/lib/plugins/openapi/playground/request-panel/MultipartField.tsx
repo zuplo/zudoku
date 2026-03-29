@@ -2,6 +2,7 @@ import { PaperclipIcon, TrashIcon } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "zudoku/components";
 import { Checkbox } from "zudoku/ui/Checkbox.js";
+import { useTranslation } from "../../../../i18n/I18nContext.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
 import {
   ParamsGridInput,
@@ -19,6 +20,7 @@ type MultipartFieldProps = {
 };
 
 export const MultipartField = ({ index, manager }: MultipartFieldProps) => {
+  const { t } = useTranslation();
   const fieldFileInputRef = useRef<HTMLInputElement>(null);
   const fieldValue = manager.getValue(index, "value");
 
@@ -30,7 +32,7 @@ export const MultipartField = ({ index, manager }: MultipartFieldProps) => {
       />
       <ParamsGridInput
         {...manager.getNameInputProps(index)}
-        placeholder="Key"
+        placeholder={t("openapi.playground.field.key")}
       />
       <div className="flex items-center gap-1 flex-1">
         {fieldValue instanceof File ? (
@@ -58,7 +60,7 @@ export const MultipartField = ({ index, manager }: MultipartFieldProps) => {
           <>
             <ParamsGridInput
               {...manager.getValueInputProps(index)}
-              placeholder="Value"
+              placeholder={t("openapi.playground.field.value")}
             />
             <input
               ref={fieldFileInputRef}
@@ -77,7 +79,7 @@ export const MultipartField = ({ index, manager }: MultipartFieldProps) => {
               variant="ghost"
               size="icon-xs"
               onClick={() => fieldFileInputRef.current?.click()}
-              title="Attach file"
+              title={t("openapi.playground.body.attachFile")}
               className="opacity-0 focus-visible:opacity-100 group-hover:opacity-100 group-hover:brightness-95 transition-opacity"
             >
               <PaperclipIcon size={14} />

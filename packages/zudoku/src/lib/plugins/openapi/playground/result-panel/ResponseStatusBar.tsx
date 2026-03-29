@@ -1,4 +1,5 @@
 import { useCallback, useLayoutEffect, useRef } from "react";
+import { useTranslation } from "../../../../i18n/I18nContext.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
 
 const ResponseCodeCircle = ({ status }: { status?: number }) => {
@@ -70,6 +71,7 @@ export const ResponseStatusBar = ({
   isFinished: boolean;
   progress: number;
 }) => {
+  const { t } = useTranslation();
   const statusCodeMap: Record<number, string> = {
     200: "OK",
     201: "Created",
@@ -86,19 +88,24 @@ export const ResponseStatusBar = ({
   return (
     <div className="relative shrink-0 flex h-10 text-xs gap-4 px-4 items-center justify-between font-mono border-b">
       <div className="flex items-center gap-2">
-        <ResponseCodeCircle status={status} /> {status ?? "Sending Request..."}
+        <ResponseCodeCircle status={status} />{" "}
+        {status ?? t("openapi.playground.result.sendingRequest")}
         {status ? ` ${statusCodeMap[status]}` : ""}
       </div>
       <div className="flex gap-2">
         <div>
-          <span className="text-muted-foreground">Size</span>{" "}
+          <span className="text-muted-foreground">
+            {t("openapi.playground.response.size")}
+          </span>{" "}
           <span className="inline-block text-end min-w-[5ch]">
             {size ? humanFileSize(size) : "- B"}
           </span>
         </div>
 
         <div>
-          <span className="text-muted-foreground">Time</span>{" "}
+          <span className="text-muted-foreground">
+            {t("openapi.playground.response.time")}
+          </span>{" "}
           {time !== undefined ? `${time.toFixed(0)}` : <RealTimeCounter />}
           ms
         </div>

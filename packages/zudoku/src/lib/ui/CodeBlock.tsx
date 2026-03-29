@@ -1,6 +1,7 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import { type ReactNode, useRef } from "react";
 import { LanguageIcon } from "../components/LanguageIcon.js";
+import { useTranslation } from "../i18n/I18nContext.js";
 import { cn } from "../util/cn.js";
 import { useCopyToClipboard } from "../util/useCopyToClipboard.js";
 
@@ -10,11 +11,12 @@ export const CopyCodeButton = ({
   contentRef: React.RefObject<HTMLDivElement | null>;
 }) => {
   const [isCopied, copyToClipboard] = useCopyToClipboard();
+  const { t } = useTranslation();
   return (
     <button
       type="button"
-      aria-label="Copy code"
-      title="Copy code"
+      aria-label={t("code.copyCode")}
+      title={t("code.copyCode")}
       className={cn(
         "transition p-1.5 mx-1 rounded-lg",
         !isCopied && "hover:bg-accent hover:brightness-95",

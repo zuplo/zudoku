@@ -1,4 +1,5 @@
 import { type Control, Controller, useFieldArray } from "react-hook-form";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { ColorizedParam } from "../ColorizedParam.js";
 import ParamsGrid, { ParamsGridInput, ParamsGridItem } from "./ParamsGrid.js";
 import type { PlaygroundForm } from "./Playground.js";
@@ -10,6 +11,7 @@ export const PathParams = ({
   control: Control<PlaygroundForm>;
   url: string;
 }) => {
+  const { t } = useTranslation();
   const { fields } = useFieldArray<PlaygroundForm, "pathParams">({
     control,
     name: "pathParams",
@@ -42,7 +44,11 @@ export const PathParams = ({
               control={control}
               name={`pathParams.${i}.value`}
               render={({ field }) => (
-                <ParamsGridInput {...field} required placeholder="Value" />
+                <ParamsGridInput
+                  {...field}
+                  required
+                  placeholder={t("openapi.playground.field.value")}
+                />
               )}
             />
           </div>

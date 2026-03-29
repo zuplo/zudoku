@@ -2,6 +2,7 @@ import { CheckIcon, CopyIcon, ExternalLinkIcon } from "lucide-react";
 import { useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import { Typography } from "../../components/Typography.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { Button } from "../../ui/Button.js";
 import { Callout } from "../../ui/Callout.js";
 import { Card } from "../../ui/Card.js";
@@ -18,6 +19,7 @@ export const MCPEndpoint = ({
   data?: boolean | Record<string, unknown>;
   summary?: string;
 }) => {
+  const { t } = useTranslation();
   const [isCopied, setIsCopied] = useState(false);
   const mcpUrl = `${(serverUrl ?? "").replace(/\/+$/, "")}/mcp`;
 
@@ -71,18 +73,11 @@ export const MCPEndpoint = ({
     <Card className="p-6 mb-6 max-w-screen-md">
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold mb-2">MCP Endpoint</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            {t("mcp.endpointTitle")}
+          </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Copy the url to connect any{" "}
-            <a
-              href="https://modelcontextprotocol.io/"
-              target="_blank"
-              rel="noopener"
-              className="text-primary hover:underline"
-            >
-              MCP
-            </a>
-            -compatible AI tool
+            {t("mcp.endpointDescription")}
           </p>
 
           <div
@@ -109,19 +104,21 @@ export const MCPEndpoint = ({
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-2">AI Tool Configuration</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            {t("mcp.configurationTitle")}
+          </h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Choose your AI tool and copy the configuration to get started.
+            {t("mcp.configurationDescription")}
           </p>
 
           <hr className="my-4" />
 
           <Tabs defaultValue="claude" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="claude">Claude</TabsTrigger>
-              <TabsTrigger value="chatgpt">ChatGPT</TabsTrigger>
-              <TabsTrigger value="cursor">Cursor</TabsTrigger>
-              <TabsTrigger value="vscode">VS Code</TabsTrigger>
+              <TabsTrigger value="claude">{t("mcp.tab.claude")}</TabsTrigger>
+              <TabsTrigger value="chatgpt">{t("mcp.tab.chatgpt")}</TabsTrigger>
+              <TabsTrigger value="cursor">{t("mcp.tab.cursor")}</TabsTrigger>
+              <TabsTrigger value="vscode">{t("mcp.tab.vscode")}</TabsTrigger>
             </TabsList>
 
             <Typography className="text-sm max-w-full">
@@ -163,7 +160,7 @@ export const MCPEndpoint = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  View official docs
+                  {t("mcp.viewOfficialDocs")}
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
               </TabsContent>
@@ -197,7 +194,7 @@ export const MCPEndpoint = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  View official docs
+                  {t("mcp.viewOfficialDocs")}
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
               </TabsContent>
@@ -226,7 +223,7 @@ export const MCPEndpoint = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  View official docs
+                  {t("mcp.viewOfficialDocs")}
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
               </TabsContent>
@@ -260,7 +257,7 @@ export const MCPEndpoint = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
-                  View official docs
+                  {t("mcp.viewOfficialDocs")}
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
               </TabsContent>

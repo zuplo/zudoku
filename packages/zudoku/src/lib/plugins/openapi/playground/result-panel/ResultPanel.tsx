@@ -2,6 +2,7 @@ import type { UseMutationResult } from "@tanstack/react-query";
 import { SendIcon, UnplugIcon } from "lucide-react";
 import { Spinner } from "zudoku/components";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert.js";
+import { useTranslation } from "../../../../i18n/I18nContext.js";
 import { Button } from "../../../../ui/Button.js";
 import { cn } from "../../../../util/cn.js";
 import type { PlaygroundResult } from "../Playground.js";
@@ -24,6 +25,7 @@ export const ResultPanel = ({
   progress: number;
   tip?: React.ReactNode;
 }) => {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col overflow-y-auto h-[80vh] bg-muted/50">
       {(queryMutation.isPending || queryMutation.data) && (
@@ -39,7 +41,9 @@ export const ResultPanel = ({
         <div className="max-w-2/3 mx-auto mt-20">
           <Alert>
             <UnplugIcon size={24} strokeWidth={1.5} className="me-5" />
-            <AlertTitle>Request failed</AlertTitle>
+            <AlertTitle>
+              {t("openapi.playground.result.requestFailed")}
+            </AlertTitle>
             <AlertDescription>
               {queryMutation.error.message ||
                 String(queryMutation.error) ||
@@ -67,7 +71,7 @@ export const ResultPanel = ({
                 showLongRunningWarning && "opacity-100 pointer-events-auto",
               )}
             >
-              Looks like the request is taking longer than expected.
+              {t("openapi.playground.result.longRunning")}
               <Button
                 type="button"
                 onClick={onCancel}
@@ -75,7 +79,7 @@ export const ResultPanel = ({
                 className="w-fit"
                 variant="outline"
               >
-                Cancel
+                {t("openapi.playground.cancel")}
               </Button>
             </div>
           </div>
@@ -89,7 +93,7 @@ export const ResultPanel = ({
               strokeWidth={1.2}
             />
             <span className="text-[16px] font-semibold text-muted-foreground">
-              Send your first request
+              {t("openapi.playground.result.sendFirstRequest")}
             </span>
             {tip}
           </div>

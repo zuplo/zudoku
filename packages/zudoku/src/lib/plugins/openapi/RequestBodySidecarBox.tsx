@@ -5,6 +5,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import type { MediaTypeObject } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
@@ -27,6 +28,8 @@ export const RequestBodySidecarBox = ({
   selectedContentIndex: number;
   selectedExampleIndex: number;
 }) => {
+  const { t } = useTranslation();
+
   if (content.length === 0) return null;
 
   return (
@@ -38,13 +41,13 @@ export const RequestBodySidecarBox = ({
               <Button
                 variant="ghost"
                 className="size-fit px-1 py-1 -my-1"
-                aria-label="Toggle request body examples"
+                aria-label={t("openapi.sidecar.toggleRequestBodyExamples")}
               >
                 <ChevronsDownUpIcon className="size-[1em] group-data-[state=closed]/collapsible:hidden" />
                 <ChevronsUpDownIcon className="size-[1em] group-data-[state=open]/collapsible:hidden" />
               </Button>
             </CollapsibleTrigger>
-            Example Request Body
+            {t("openapi.sidecar.exampleRequestBody")}
           </span>
         </SidecarBox.Head>
         <CollapsibleContent>

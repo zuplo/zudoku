@@ -9,6 +9,8 @@ import { describe, expect, it } from "vitest";
 import type { AiAssistantsConfig } from "../../../config/validators/ZudokuConfig.js";
 import { ZudokuProvider } from "../../components/context/ZudokuProvider.js";
 import { ZudokuContext } from "../../core/ZudokuContext.js";
+import { I18nProvider } from "../../i18n/I18nContext.js";
+import { defaultMessages } from "../../i18n/messages.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 
 const createWrapper = (aiAssistants?: AiAssistantsConfig) => {
@@ -16,7 +18,11 @@ const createWrapper = (aiAssistants?: AiAssistantsConfig) => {
   const context = new ZudokuContext({ aiAssistants }, queryClient, {});
   return ({ children }: PropsWithChildren) => (
     <QueryClientProvider client={queryClient}>
-      <ZudokuProvider context={context}>{children}</ZudokuProvider>
+      <ZudokuProvider context={context}>
+        <I18nProvider messages={defaultMessages} locale="en">
+          {children}
+        </I18nProvider>
+      </ZudokuProvider>
     </QueryClientProvider>
   );
 };

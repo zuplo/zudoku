@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { Button } from "../../ui/Button.js";
 import { CreateApiKey } from "./CreateApiKey.js";
 import type { ApiKeyService } from "./index.js";
@@ -31,8 +32,9 @@ export const CreateApiKeyDialog = ({
   trigger,
   buttonVariant = "outline",
 }: CreateApiKeyDialogProps) => {
+  const { t } = useTranslation();
   const defaultTrigger = (
-    <Button variant={buttonVariant}>Create API Key</Button>
+    <Button variant={buttonVariant}>{t("apiKeys.createKey")}</Button>
   );
 
   return (
@@ -40,7 +42,7 @@ export const CreateApiKeyDialog = ({
       <DialogTrigger asChild>{trigger ?? defaultTrigger}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create API Key</DialogTitle>
+          <DialogTitle>{t("apiKeys.createKey")}</DialogTitle>
         </DialogHeader>
         <CreateApiKey service={service} onOpenChange={onOpenChange} />
       </DialogContent>

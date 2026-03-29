@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
 import { Textarea } from "zudoku/ui/Textarea.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import { humanFileSize } from "../../../util/humanFileSize.js";
 import type { MediaTypeObject } from "../graphql/graphql.js";
@@ -31,6 +32,7 @@ import { MultipartField } from "./request-panel/MultipartField.js";
 import { useKeyValueFieldManager } from "./request-panel/useKeyValueFieldManager.js";
 
 export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
+  const { t } = useTranslation();
   const { register, setValue, watch, control } =
     useFormContext<PlaygroundForm>();
   const examples = (content ?? []).flatMap((e) => e.examples);
@@ -99,7 +101,7 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
       <CollapsibleHeaderTrigger className="items-center">
         <FileInput size={16} />
         <CollapsibleHeader className="flex items-center justify-between">
-          Body
+          {t("openapi.playground.body")}
           <div className="flex items-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -111,17 +113,17 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                   {bodyMode === "text" ? (
                     <>
                       <ScanTextIcon size={14} />
-                      Text
+                      {t("openapi.playground.body.text")}
                     </>
                   ) : bodyMode === "file" ? (
                     <>
                       <PaperclipIcon size={14} />
-                      File
+                      {t("openapi.playground.body.file")}
                     </>
                   ) : (
                     <>
                       <Grid2x2PlusIcon size={14} />
-                      Multipart
+                      {t("openapi.playground.body.multipart")}
                     </>
                   )}
                   <ChevronDownIcon size={14} />
@@ -133,7 +135,9 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                   className="gap-2"
                 >
                   <ScanTextIcon size={14} />
-                  <span className="flex-1">Text</span>
+                  <span className="flex-1">
+                    {t("openapi.playground.body.text")}
+                  </span>
                   <span>
                     {body.length > 0 && (
                       <div className="w-1.5 h-1.5 bg-primary rounded-full" />
@@ -145,7 +149,9 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                   className="gap-2"
                 >
                   <PaperclipIcon size={14} />
-                  <span className="flex-1">File</span>
+                  <span className="flex-1">
+                    {t("openapi.playground.body.file")}
+                  </span>
                   <span>
                     {file && (
                       <div className="w-1.5 h-1.5 bg-primary rounded-full" />
@@ -157,7 +163,9 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
                   className="gap-2"
                 >
                   <Grid2x2PlusIcon size={14} strokeWidth={1.5} />
-                  <span className="flex-1">Multipart</span>
+                  <span className="flex-1">
+                    {t("openapi.playground.body.multipart")}
+                  </span>
                   <span>
                     {multipartFormFields?.some((field) => field.active) && (
                       <div className="w-1.5 h-1.5 bg-primary rounded-full" />
@@ -201,13 +209,13 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
             className={cn(
               "w-full px-4 py-2.5 h-64 font-mono md:text-xs border-none rounded-none focus-visible:ring-0 transition-colors",
             )}
-            placeholder="Body content"
+            placeholder={t("openapi.playground.body.placeholder")}
           />
         )}
         {bodyMode === "file" && (
           <div
             role="region"
-            aria-label="File upload drop zone"
+            aria-label={t("openapi.playground.body.fileDropZone")}
             className={cn(
               "flex flex-col items-center justify-center gap-4 min-h-[300px]",
             )}
@@ -251,7 +259,7 @@ export const BodyPanel = ({ content }: { content?: MediaTypeObject[] }) => {
               </div>
             ) : (
               <span className="text-lg font-semibold text-muted-foreground">
-                Select or drop a file
+                {t("openapi.playground.body.selectOrDropFile")}
               </span>
             )}
           </div>

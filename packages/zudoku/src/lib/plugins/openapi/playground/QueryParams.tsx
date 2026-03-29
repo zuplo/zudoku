@@ -4,6 +4,7 @@ import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
 import { MultiSelect } from "../../../components/MultiSelect.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import {
   CollapsibleHeader,
   CollapsibleHeaderTrigger,
@@ -24,6 +25,7 @@ export const QueryParams = ({
   control: Control<PlaygroundForm>;
   schemaQueryParams: QueryParam[];
 }) => {
+  const { t } = useTranslation();
   const { watch } = useFormContext<PlaygroundForm>();
   const watchedQueryParams = watch("queryParams");
 
@@ -52,7 +54,9 @@ export const QueryParams = ({
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
         <Unlink2Icon size={16} />
-        <CollapsibleHeader>Query Parameters</CollapsibleHeader>
+        <CollapsibleHeader>
+          {t("openapi.playground.queryParameters")}
+        </CollapsibleHeader>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">
         <ParamsGrid>
@@ -74,7 +78,7 @@ export const QueryParams = ({
                       <Autocomplete
                         {...nameInputProps}
                         value={String(manager.getValue(i, "name"))}
-                        placeholder="Name"
+                        placeholder={t("openapi.playground.field.name")}
                         options={schemaQueryParams.map((param) => param.name)}
                         onChange={(v) => manager.setValue(i, "name", v)}
                         onSelect={(v) =>
@@ -83,14 +87,21 @@ export const QueryParams = ({
                       />
                     </ParamsGridInput>
                   ) : (
-                    <ParamsGridInput {...nameInputProps} placeholder="Name" />
+                    <ParamsGridInput
+                      {...nameInputProps}
+                      placeholder={t("openapi.playground.field.name")}
+                    />
                   )
                 ) : (
                   <ParamsGridInput asChild>
                     <label
                       className="flex items-center cursor-pointer gap-1"
                       htmlFor={`queryParams.${i}.active`}
-                      title={requiredFields[i] ? "Required field" : undefined}
+                      title={
+                        requiredFields[i]
+                          ? t("openapi.playground.field.requiredField")
+                          : undefined
+                      }
                     >
                       {watchedQueryParams[i]?.name}
                       {requiredFields[i] && <span>&nbsp;*</span>}
@@ -116,8 +127,8 @@ export const QueryParams = ({
                     </ParamsGridInput>
                   ) : !hasEnum ? (
                     <ParamsGridInput
-                      placeholder="Value"
-                      aria-label="Query parameter value"
+                      placeholder={t("openapi.playground.field.value")}
+                      aria-label={t("openapi.playground.field.queryParamValue")}
                       {...valueInputProps}
                     />
                   ) : (
