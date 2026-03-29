@@ -16,7 +16,7 @@ import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
 import { UnionView } from "./UnionView.js";
-import { isArrayType, isBasicType } from "./utils.js";
+import { filterReadOnlyProperties, isArrayType, isBasicType } from "./utils.js";
 
 const renderMarkdown = (content?: string) =>
   content && (
@@ -108,11 +108,13 @@ const ObjectSchemaView = ({
   defaultOpen,
   cardHeader,
   embedded,
+  context,
 }: {
   schema: SchemaObject;
   defaultOpen: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  context?: "request" | "response";
 }) => {
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
@@ -136,12 +138,16 @@ const ObjectSchemaView = ({
     return () => el.removeEventListener("beforematch", handler);
   }, [showDeprecated]);
 
+  // Filter out readOnly properties when displaying request schemas
+  const processedSchema =
+    context === "request" ? filterReadOnlyProperties(schema) : schema;
+
   const groupedProperties = Object.groupBy(
-    Object.entries(schema.properties ?? {}),
+    Object.entries(processedSchema.properties ?? {}),
     ([propertyName, property]) => {
       return property.deprecated
         ? "deprecated"
-        : schema.required?.includes(propertyName)
+        : processedSchema.required?.includes(propertyName)
           ? "required"
           : "optional";
     },
@@ -153,10 +159,16 @@ const ObjectSchemaView = ({
     return properties ? { group, properties } : [];
   });
 
-  const deprecatedProperties = groupedProperties["deprecated"];
+  const deprecatedProperties = groupedProperties.deprecated;
 
-  const additionalObjectProperties = typeof schema.additionalProperties ===
-    "object" && <SchemaView schema={schema.additionalProperties} embedded />;
+  const additionalObjectProperties =
+    typeof processedSchema.additionalProperties === "object" && (
+      <SchemaView
+        schema={processedSchema.additionalProperties}
+        embedded
+        context={context}
+      />
+    );
 
   const itemsList = nonDeprecatedGroups.map(({ group, properties }, index) => (
     <Fragment key={group}>
@@ -192,9 +204,9 @@ const ObjectSchemaView = ({
   return (
     <Frame>
       {cardHeader}
-      {schema.description && (
+      {processedSchema.description && (
         <FrameHeader>
-          <FrameDescription>{schema.description}</FrameDescription>
+          <FrameDescription>{processedSchema.description}</FrameDescription>
         </FrameHeader>
       )}
       {(nonDeprecatedGroups.length > 0 ||
@@ -210,9 +222,10 @@ const ObjectSchemaView = ({
           {additionalObjectProperties}
         </FramePanel>
       )}
-      {(schema.additionalProperties === true || deprecatedProperties) && (
+      {(processedSchema.additionalProperties === true ||
+        deprecatedProperties) && (
         <FrameFooter className="flex-row items-center justify-between">
-          {schema.additionalProperties === true ? (
+          {processedSchema.additionalProperties === true ? (
             <a
               className="text-sm flex items-center gap-1 hover:underline"
               href="https://swagger.io/docs/specification/v3_0/data-models/dictionaries/"
@@ -244,11 +257,13 @@ export const SchemaView = ({
   defaultOpen = false,
   cardHeader,
   embedded,
+  context,
 }: {
   schema?: SchemaObject | null;
   defaultOpen?: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  context?: "request" | "response";
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
@@ -282,7 +297,12 @@ export const SchemaView = ({
     };
 
     return (
-      <SchemaView schema={wrappedSchema} cardHeader={cardHeader} defaultOpen />
+      <SchemaView
+        schema={wrappedSchema}
+        cardHeader={cardHeader}
+        defaultOpen
+        context={context}
+      />
     );
   }
 
@@ -293,6 +313,7 @@ export const SchemaView = ({
         defaultOpen={defaultOpen}
         cardHeader={cardHeader}
         embedded={embedded}
+        context={context}
       />
     );
   }
