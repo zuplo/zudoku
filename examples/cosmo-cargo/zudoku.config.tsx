@@ -6,6 +6,7 @@ import type {
 } from "zudoku";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
+import { es } from "./src/locales/es";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -31,6 +32,12 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 }
 
 const config: ZudokuConfig = {
+  // Localization: swap `es` with `fr` or `ja` (from ./src/locales/) to
+  // see the full UI translated. Remove this block entirely for English.
+  locale: {
+    lang: "es",
+    messages: es,
+  },
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
