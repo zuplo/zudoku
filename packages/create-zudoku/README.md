@@ -25,6 +25,9 @@ project:
 
 Select **Yes** to install the necessary types/dependencies and create a new TS project.
 
+For a detailed explanation of each prompt and what happens when you answer yes or no, see the
+[CLI Installation Steps Explainer](../../docs/pages/docs/guides/cli-installation-steps.md).
+
 ### Non-interactive
 
 You can also pass command line arguments to set up a new project non-interactively. See
