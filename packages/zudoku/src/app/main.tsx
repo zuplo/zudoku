@@ -93,17 +93,31 @@ export const getRoutesByOptions = (
     ...(options.authentication ? [options.authentication] : []),
   ];
 
-  const routes = allPlugins
-    .flatMap((plugin) => (isNavigationPlugin(plugin) ? plugin.getRoutes() : []))
+  const pluginRoutes = allPlugins.flatMap((plugin) =>
+    isNavigationPlugin(plugin) ? plugin.getRoutes() : [],
+  );
+
+  // Check if a custom catch-all route exists
+  const customCatchAll = pluginRoutes.find((route) => route.path === "*");
+
+  const routes = pluginRoutes
     .concat(
       enableStatusPages
         ? [400, 404, 500].map((statusCode) => ({
             path: `/${statusCode}`,
-            element: <StatusPage statusCode={statusCode} />,
+            // Use custom catch-all element if it exists, otherwise use default StatusPage
+            element: customCatchAll?.element ?? (
+              <StatusPage statusCode={statusCode} />
+            ),
           }))
         : [],
     )
-    .concat([{ path: "*", element: <StatusPage statusCode={404} /> }])
+    .concat([
+      {
+        path: "*",
+        element: customCatchAll?.element ?? <StatusPage statusCode={404} />,
+      },
+    ])
     .map((route) => ({
       ...route,
       errorElement: <RouterError className="w-full m-0" />,
@@ -118,7 +132,7 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
   const options = convertZudokuConfigToOptions(config);
   const routes = getRoutesByOptions(
     options,
-    import.meta.env.IS_ZUPLO || config.enableStatusPages,
+    import.meta.env.IS_ZUPLO || (config.enableStatusPages ?? true),
   );
 
   return [
