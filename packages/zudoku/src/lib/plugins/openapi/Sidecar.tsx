@@ -52,11 +52,17 @@ export const Sidecar = ({
   selectedResponse,
   globalSelectedServer,
   shouldLazyHighlight,
+  securitySchemes,
+  rootSecurity,
 }: {
   operation: OperationsFragmentFragment;
   selectedResponse?: string;
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
+  // biome-ignore lint/suspicious/noExplicitAny: Security schemes structure matches OpenAPI spec which is dynamic
+  securitySchemes?: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Security requirements structure matches OpenAPI spec which is dynamic
+  rootSecurity?: any;
 }) => {
   const { options } = useOasConfig();
   const auth = useAuthState();
@@ -229,6 +235,8 @@ export const Sidecar = ({
                   servers={operation.servers.map((server) => server.url)}
                   operation={operation}
                   examples={requestBodyContent ?? undefined}
+                  securitySchemes={securitySchemes}
+                  rootSecurity={rootSecurity}
                 />
               )}
             </div>

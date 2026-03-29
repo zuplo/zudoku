@@ -38,6 +38,7 @@ export type Scalars = {
 export type Components = {
   __typename?: "Components";
   schemas?: Maybe<Array<SchemaItem>>;
+  securitySchemes?: Maybe<Scalars["JSONObject"]["output"]>;
 };
 
 export type EncodingItem = {
@@ -79,6 +80,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
+  security?: Maybe<Scalars["JSON"]["output"]>;
   servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
@@ -147,6 +149,7 @@ export type Schema = {
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
+  security?: Maybe<Scalars["JSON"]["output"]>;
   servers: Array<Server>;
   summary?: Maybe<Scalars["String"]["output"]>;
   tag?: Maybe<SchemaTag>;
@@ -260,6 +263,7 @@ export type OperationsFragmentFragment = {
   path: string;
   deprecated?: boolean | null;
   extensions?: any | null;
+  security?: any | null;
   servers: Array<{
     __typename?: "Server";
     url: string;
@@ -341,7 +345,12 @@ export type OperationsForTagQuery = {
     title: string;
     url?: string | null;
     version: string;
+    security?: any | null;
     servers: Array<{ __typename?: "Server"; url: string }>;
+    components?: {
+      __typename?: "Components";
+      securitySchemes?: any | null;
+    } | null;
     tag?: {
       __typename?: "SchemaTag";
       name?: string | null;
@@ -537,6 +546,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   path
   deprecated
   extensions
+  security
   servers {
     url
     description
@@ -623,6 +633,10 @@ export const OperationsForTagDocument = new TypedDocumentString(`
     title
     url
     version
+    security
+    components {
+      securitySchemes
+    }
     tag(slug: $tag, untagged: $untagged) {
       name
       description
@@ -654,6 +668,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   path
   deprecated
   extensions
+  security
   servers {
     url
     description
