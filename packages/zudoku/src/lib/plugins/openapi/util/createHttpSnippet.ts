@@ -1,5 +1,6 @@
 import { HTTPSnippet } from "@zudoku/httpsnippet";
 import type { OperationsFragmentFragment } from "../graphql/graphql.js";
+import { substituteServerVariables } from "./substituteServerVariables.js";
 
 const toFormDataParams = (text?: string) => {
   const stringify = (v: unknown) =>
@@ -41,10 +42,18 @@ export const createHttpSnippet = ({
       }
     : exampleBody;
 
+  // Find the matching server object to get variables
+  const serverObject = operation.servers.find((s) => s.url === selectedServer);
+
+  // Substitute server variables with their default values to prevent URL encoding of {variables}
+  const processedServer = serverObject
+    ? substituteServerVariables(serverObject)
+    : selectedServer;
+
   return new HTTPSnippet({
     method: operation.method.toUpperCase(),
     url:
-      selectedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
+      processedServer + operation.path.replaceAll("{", ":").replaceAll("}", ""),
     postData,
     headers: [
       ...(exampleBody.text

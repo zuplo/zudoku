@@ -178,6 +178,7 @@ enum SchemaType {
 type Server {
   description: String
   url: String!
+  variables: JSON
 }
 
 type TagItem {

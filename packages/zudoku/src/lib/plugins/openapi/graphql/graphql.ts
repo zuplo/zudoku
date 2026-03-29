@@ -217,6 +217,7 @@ export type Server = {
   __typename?: "Server";
   description?: Maybe<Scalars["String"]["output"]>;
   url: Scalars["String"]["output"];
+  variables?: Maybe<Scalars["JSON"]["output"]>;
 };
 
 export type TagItem = {
@@ -264,6 +265,7 @@ export type OperationsFragmentFragment = {
     __typename?: "Server";
     url: string;
     description?: string | null;
+    variables?: any | null;
   }>;
   parameters?: Array<{
     __typename?: "ParameterItem";
@@ -540,6 +542,7 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   servers {
     url
     description
+    variables
   }
   parameters {
     name
@@ -657,6 +660,7 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   servers {
     url
     description
+    variables
   }
   parameters {
     name
