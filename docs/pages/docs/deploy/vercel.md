@@ -62,24 +62,15 @@ By default Vercel looks for a directory named `public`, but the Zudoku build wil
 After this is complete, your site will build and Vercel will respond with the URL for you to test
 it.
 
-:::tip{title="Clean URLs"}
+:::tip{title="Clean URLs and Redirects"}
 
-You will almost certainly want to enable clean URLs for your site. This will remove the `.html`
-extension from your URLs. You can do this by adding a `cleanUrls` property to your `vercel.json`
-file. See the
-[Vercel Configuration](https://vercel.com/docs/projects/project-configuration#cleanurls) for more
-information.
+Zudoku automatically generates Vercel Build Output API v3 configuration that includes:
 
-:::
+- **Clean URLs**: All `.html` files are automatically accessible without the `.html` extension
+  (e.g., `/documentation` instead of `/documentation.html`)
+- **Redirects**: Any redirects configured in your Zudoku configuration are automatically applied
 
-:::caution{title="Redirects"}
-
-If you have redirects configured in your Zuplo configuration, you will need to also add those to
-your `vercel.json` file. See the
-[Vercel Configuration](https://vercel.com/docs/projects/project-configuration#redirects) for more
-information.
-
-This is a current limitation. See [#115](https://github.com/zuplo/zudoku/issues/151).
+No additional configuration in `vercel.json` is required for these features to work.
 
 :::
 
