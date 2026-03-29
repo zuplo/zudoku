@@ -532,6 +532,14 @@ const OperationItem = builder
             : (ctx.schema.servers ?? []);
         },
       }),
+      security: t.field({
+        type: JSONScalar,
+        resolve: (parent, _, ctx) => {
+          // Return operation-level security if defined, otherwise fall back to global security
+          return parent.security ?? (ctx.schema as any).security ?? null;
+        },
+        nullable: true,
+      }),
       requestBody: t.field({
         type: RequestBodyObject,
         resolve: (parent) => ({
@@ -622,6 +630,7 @@ const SchemaItem = builder
 
 const Components = builder.objectRef<{
   schemas?: Record<string, SchemaObject>;
+  securitySchemes?: Record<string, any>;
 }>("Components");
 
 Components.implement({
@@ -635,6 +644,11 @@ Components.implement({
           extensions: resolveExtensions(schema),
         }));
       },
+      nullable: true,
+    }),
+    securitySchemes: t.field({
+      type: JSONObjectScalar,
+      resolve: (parent) => parent.securitySchemes ?? null,
       nullable: true,
     }),
   }),
@@ -740,6 +754,11 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
     components: t.field({
       type: Components,
       resolve: (root) => root.components,
+      nullable: true,
+    }),
+    security: t.field({
+      type: JSONScalar,
+      resolve: (root) => (root as any).security ?? null,
       nullable: true,
     }),
     extensions: t.field({

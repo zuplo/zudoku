@@ -24,10 +24,16 @@ export const OperationListItem = ({
   operationFragment,
   globalSelectedServer,
   shouldLazyHighlight,
+  securitySchemes,
+  rootSecurity,
 }: {
   operationFragment: FragmentType<typeof OperationsFragment>;
   globalSelectedServer?: string;
   shouldLazyHighlight?: boolean;
+  // biome-ignore lint/suspicious/noExplicitAny: Security schemes structure matches OpenAPI spec which is dynamic
+  securitySchemes?: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Security requirements structure matches OpenAPI spec which is dynamic
+  rootSecurity?: any;
 }) => {
   const operation = useFragment(OperationsFragment, operationFragment);
   const groupedParameters = Object.groupBy(
@@ -175,6 +181,8 @@ export const OperationListItem = ({
             operation={operation}
             globalSelectedServer={globalSelectedServer}
             shouldLazyHighlight={shouldLazyHighlight}
+            securitySchemes={securitySchemes}
+            rootSecurity={rootSecurity}
           />
         ))}
       </div>
