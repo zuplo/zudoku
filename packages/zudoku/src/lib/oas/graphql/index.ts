@@ -307,6 +307,11 @@ const ServerItem = builder.objectRef<ServerObject>("Server").implement({
   fields: (t) => ({
     url: t.exposeString("url"),
     description: t.exposeString("description", { nullable: true }),
+    variables: t.field({
+      type: JSONScalar,
+      resolve: (parent) => parent.variables ?? null,
+      nullable: true,
+    }),
   }),
 });
 
