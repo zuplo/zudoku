@@ -28,6 +28,11 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     path
     deprecated
     extensions
+    codeSamples {
+      lang
+      label
+      source
+    }
     servers {
       url
       description

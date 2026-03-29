@@ -35,6 +35,13 @@ export type Scalars = {
   JSONSchema: { input: any; output: any };
 };
 
+export type CodeSample = {
+  __typename?: "CodeSample";
+  label?: Maybe<Scalars["String"]["output"]>;
+  lang: Scalars["String"]["output"];
+  source: Scalars["String"]["output"];
+};
+
 export type Components = {
   __typename?: "Components";
   schemas?: Maybe<Array<SchemaItem>>;
@@ -69,6 +76,7 @@ export type MediaTypeObject = {
 
 export type OperationItem = {
   __typename?: "OperationItem";
+  codeSamples?: Maybe<Array<CodeSample>>;
   contentTypes: Array<Scalars["String"]["output"]>;
   deprecated?: Maybe<Scalars["Boolean"]["output"]>;
   description?: Maybe<Scalars["String"]["output"]>;
@@ -260,6 +268,12 @@ export type OperationsFragmentFragment = {
   path: string;
   deprecated?: boolean | null;
   extensions?: any | null;
+  codeSamples?: Array<{
+    __typename?: "CodeSample";
+    lang: string;
+    label?: string | null;
+    source: string;
+  }> | null;
   servers: Array<{
     __typename?: "Server";
     url: string;
@@ -537,6 +551,11 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
   path
   deprecated
   extensions
+  codeSamples {
+    lang
+    label
+    source
+  }
   servers {
     url
     description
@@ -654,6 +673,11 @@ export const OperationsForTagDocument = new TypedDocumentString(`
   path
   deprecated
   extensions
+  codeSamples {
+    lang
+    label
+    source
+  }
   servers {
     url
     description

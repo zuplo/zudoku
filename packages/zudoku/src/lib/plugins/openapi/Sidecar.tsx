@@ -67,7 +67,28 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+  // Merge configured languages with any custom code samples from x-codeSamples
+  const customLanguages = (operation.codeSamples ?? []).map((sample) => ({
+    value: sample.lang,
+    label: sample.label ?? sample.lang,
+  }));
+
+  const baseLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+
+  // Create a map to deduplicate and prefer custom labels
+  const languageMap = new Map<string, { value: string; label: string }>();
+
+  // First add base languages
+  for (const lang of baseLanguages) {
+    languageMap.set(lang.value, lang);
+  }
+
+  // Then add custom languages (overriding base if same lang)
+  for (const lang of customLanguages) {
+    languageMap.set(lang.value, lang);
+  }
+
+  const supportedLanguages = Array.from(languageMap.values());
 
   const preferredLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
@@ -133,6 +154,15 @@ export const Sidecar = ({
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    // Check if there's a custom code sample for the selected language
+    const customCodeSample = operation.codeSamples?.find(
+      (sample) => sample.lang === selectedLang,
+    );
+
+    if (customCodeSample) {
+      return customCodeSample.source;
+    }
+
     const converted = options?.generateCodeSnippet?.({
       selectedLang,
       selectedServer,
@@ -143,6 +173,11 @@ export const Sidecar = ({
     });
 
     if (converted) return converted;
+
+    // Only generate code snippets if not disabled
+    if (options?.disableGeneratedExamples) {
+      return undefined;
+    }
 
     const snippet = createHttpSnippet({
       operation,
@@ -260,7 +295,9 @@ export const Sidecar = ({
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
         />
-      ) : transformedRequestBodyContent && currentExampleCode ? (
+      ) : transformedRequestBodyContent &&
+        currentExampleCode &&
+        !options?.disableGeneratedExamples ? (
         <GeneratedExampleSidecarBox
           isOnScreen={isOnScreen}
           shouldLazyHighlight={shouldLazyHighlight}
@@ -287,7 +324,7 @@ export const Sidecar = ({
                 : response.content,
           }))}
         />
-      ) : (
+      ) : !options?.disableGeneratedExamples ? (
         <ResponsesSidecarBox
           isGenerated
           isOnScreen={isOnScreen}
@@ -303,7 +340,7 @@ export const Sidecar = ({
             })),
           }))}
         />
-      )}
+      ) : null}
     </aside>
   );
 };

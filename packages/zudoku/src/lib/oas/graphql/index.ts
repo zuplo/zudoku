@@ -382,6 +382,20 @@ const EncodingItem = builder
     }),
   });
 
+const CodeSample = builder
+  .objectRef<{
+    lang: string;
+    label?: string;
+    source: string;
+  }>("CodeSample")
+  .implement({
+    fields: (t) => ({
+      lang: t.exposeString("lang"),
+      label: t.exposeString("label", { nullable: true }),
+      source: t.exposeString("source"),
+    }),
+  });
+
 const ExampleItem = builder
   .objectRef<ExampleObject & { name: string }>("ExampleItem")
   .implement({
@@ -595,6 +609,34 @@ const OperationItem = builder
         nullable: true,
       }),
       deprecated: t.exposeBoolean("deprecated", { nullable: true }),
+      codeSamples: t.field({
+        type: [CodeSample],
+        resolve: (parent) => {
+          // Support both x-codeSamples (newer) and x-code-samples (legacy) formats
+          const codeSamples =
+            (parent as any)["x-codeSamples"] ??
+            (parent as any)["x-code-samples"];
+
+          if (!Array.isArray(codeSamples)) {
+            return [];
+          }
+
+          return codeSamples
+            .filter(
+              (sample: any) =>
+                typeof sample === "object" &&
+                sample !== null &&
+                typeof sample.lang === "string" &&
+                typeof sample.source === "string",
+            )
+            .map((sample: any) => ({
+              lang: sample.lang,
+              label: sample.label,
+              source: sample.source,
+            }));
+        },
+        nullable: true,
+      }),
       extensions: t.field({
         type: JSONObjectScalar,
         resolve: (parent) => resolveExtensions(parent),

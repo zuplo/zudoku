@@ -2,6 +2,12 @@ schema {
   query: Query
 }
 
+type CodeSample {
+  label: String
+  lang: String!
+  source: String!
+}
+
 type Components {
   schemas: [SchemaItem!]
 }
@@ -46,6 +52,7 @@ type MediaTypeObject {
 }
 
 type OperationItem {
+  codeSamples: [CodeSample!]
   contentTypes: [String!]!
   deprecated: Boolean
   description: String
