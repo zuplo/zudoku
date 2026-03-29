@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 450" width="700" height="450">
+  <!-- Background -->
+  <rect width="700" height="450" fill="#1e1e1e"/>
+
+  <!-- Terminal Header -->
+  <rect width="700" height="35" fill="#323232"/>
+  <circle cx="20" cy="17.5" r="6" fill="#ff5f56"/>
+  <circle cx="40" cy="17.5" r="6" fill="#ffbd2e"/>
+  <circle cx="60" cy="17.5" r="6" fill="#27c93f"/>
+  <text x="350" y="24" text-anchor="middle" font-family="system-ui, monospace" font-size="12" fill="#cccccc">
+    Terminal — npm create zudoku@latest
+  </text>
+
+  <!-- Terminal Content -->
+  <g font-family="ui-monospace, monospace" font-size="13">
+    <!-- Command -->
+    <text x="20" y="65" fill="#4ec9b0">$</text>
+    <text x="35" y="65" fill="#d4d4d4">npm create zudoku@latest</text>
+
+    <!-- CLI Output Line 1 -->
+    <text x="20" y="95" fill="#9cdcfe">create-zudoku</text>
+    <text x="130" y="95" fill="#d4d4d4">v2.0.0</text>
+
+    <!-- Prompt 1: Project name -->
+    <text x="20" y="125" fill="#ce9178">?</text>
+    <text x="35" y="125" fill="#d4d4d4">Project name:</text>
+    <text x="165" y="125" fill="#569cd6">my-docs</text>
+
+    <!-- Prompt 2: Template -->
+    <text x="20" y="155" fill="#ce9178">?</text>
+    <text x="35" y="155" fill="#d4d4d4">Select a template:</text>
+    <text x="20" y="175" fill="#4ec9b0">  ○</text>
+    <text x="50" y="175" fill="#d4d4d4">Empty</text>
+    <text x="20" y="195" fill="#4ec9b0">  ●</text>
+    <text x="50" y="195" fill="#4ec9b0">Documentation</text>
+    <text x="240" y="195" fill="#6a9955">← Start here for product docs</text>
+    <text x="20" y="215" fill="#4ec9b0">  ○</text>
+    <text x="50" y="215" fill="#d4d4d4">API Reference</text>
+
+    <!-- Prompt 3: OpenAPI -->
+    <text x="20" y="245" fill="#ce9178">?</text>
+    <text x="35" y="245" fill="#d4d4d4">Add OpenAPI/Swagger file?</text>
+    <text x="20" y="265" fill="#4ec9b0">  ●</text>
+    <text x="50" y="265" fill="#4ec9b0">Yes</text>
+    <text x="20" y="285" fill="#4ec9b0">  ○</text>
+    <text x="50" y="285" fill="#d4d4d4">No</text>
+
+    <!-- Prompt 4: OpenAPI path -->
+    <text x="20" y="315" fill="#ce9178">?</text>
+    <text x="35" y="315" fill="#d4d4d4">OpenAPI file path or URL:</text>
+    <text x="270" y="315" fill="#569cd6">./openapi.json</text>
+
+    <!-- Prompt 5: Auth -->
+    <text x="20" y="345" fill="#ce9178">?</text>
+    <text x="35" y="345" fill="#d4d4d4">Add authentication?</text>
+    <text x="20" y="365" fill="#4ec9b0">  ○</text>
+    <text x="50" y="365" fill="#d4d4d4">Auth0</text>
+    <text x="20" y="385" fill="#4ec9b0">  ○</text>
+    <text x="50" y="385" fill="#d4d4d4">Clerk</text>
+    <text x="20" y="405" fill="#4ec9b0">  ●</text>
+    <text x="50" y="405" fill="#4ec9b0">Skip for now</text>
+    <text x="220" y="405" fill="#6a9955">← Add later in config</text>
+
+    <!-- Success message -->
+    <text x="20" y="435" fill="#4ec9b0">✓</text>
+    <text x="35" y="435" fill="#4ec9b0">Project created successfully!</text>
+  </g>
+</svg>

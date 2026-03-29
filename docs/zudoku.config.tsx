@@ -66,9 +66,9 @@ const config: ZudokuConfig = {
     type: "pagefind",
   },
   redirects: [
-    { from: "/docs", to: "/docs/quickstart" },
-    { from: "/getting-started", to: "/docs/quickstart" },
-    { from: "/app-quickstart", to: "/docs/quickstart" },
+    { from: "/docs", to: "/docs/getting-started" },
+    { from: "/getting-started", to: "/docs/getting-started" },
+    { from: "/app-quickstart", to: "/docs/getting-started" },
     { from: "/components", to: "/components/callout" },
     { from: "/configuration/page", to: "/configuration/site" },
   ],

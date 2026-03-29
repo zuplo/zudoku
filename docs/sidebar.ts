@@ -7,20 +7,15 @@ import type { Navigation } from "zudoku";
 
 export const docs: Navigation = [
   { type: "filter", placeholder: "Filter documentation" },
-  "docs/quickstart",
-  // {
-  //   type: "category",
-  //   label: "Getting started",
-  //   icon: "circle-play",
-  //   items: [
-  //     {
-  //       type: "custom-page",
-  //       path: "docs/introduction",
-  //       label: "Introduction",
-  //       element: <Introduction />,
-  //     },
-  //   ],
-  // },
+  {
+    type: "category",
+    label: "Getting Started",
+    icon: "rocket",
+    items: [
+      "docs/getting-started",
+      "docs/quickstart",
+    ],
+  },
   {
     type: "category",
     label: "Configuration",
