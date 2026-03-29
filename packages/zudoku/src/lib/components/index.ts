@@ -11,6 +11,11 @@ export { type CustomSlotNames, Slot } from "./Slot.js";
 export { Spinner } from "./Spinner.js";
 export { Typography } from "./Typography.js";
 export { Zudoku } from "./Zudoku.js";
+export {
+  ZudokuEmbedded,
+  type OpenApiSource,
+  type ZudokuEmbeddedProps,
+} from "./ZudokuEmbedded.js";
 
 //
 

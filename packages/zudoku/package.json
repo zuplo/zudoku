@@ -54,6 +54,7 @@
     "./plugins/search-pagefind": "./src/lib/plugins/search-pagefind/index.tsx",
     "./plugins/api-catalog": "./src/lib/plugins/api-catalog/index.tsx",
     "./components": "./src/lib/components/index.ts",
+    "./embedded": "./src/lib/embedded/index.tsx",
     "./mermaid": "./src/lib/components/Mermaid.tsx",
     "./router": "./src/lib/core/router.ts",
     "./react-query": "./src/lib/core/react-query.ts",
