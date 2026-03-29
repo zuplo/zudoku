@@ -1,5 +1,5 @@
-import { memo } from "react";
-import { useZudoku } from "../components/context/ZudokuContext.js";
+import { memo, useContext } from "react";
+import { ZudokuReactContext } from "../components/context/ZudokuReactContext.js";
 import { useHighlighter } from "../hooks/useHighlighter.js";
 import { highlight } from "../shiki.js";
 import { CodeBlock, type CodeBlockProps } from "./CodeBlock.js";
@@ -14,7 +14,14 @@ export const HighlightedCode = ({
   language?: string;
   meta?: string;
 }) => {
-  const { syntaxHighlighting } = useZudoku().options;
+  const context = useContext(ZudokuReactContext);
+
+  if (!context) {
+    throw new Error("useZudoku must be used within a ZudokuProvider.");
+  }
+
+  const { syntaxHighlighting } = context.options;
+  // useHighlighter handles context initialization and suspends if needed
   const highlighter = useHighlighter();
 
   return highlight(
