@@ -477,6 +477,17 @@ const config: ZudokuConfig = {
       path: "/catalog/api-fleet-ops",
       categories: [{ label: "General", tags: ["Fleet Command"] }],
     },
+    {
+      type: "file",
+      input: "./schema/quantum-filters.json",
+      path: "/catalog/api-quantum-filters",
+      categories: [
+        {
+          label: "Developer",
+          tags: ["Query Parameters", "Advanced Filtering"],
+        },
+      ],
+    },
   ],
   theme: {
     light: {
