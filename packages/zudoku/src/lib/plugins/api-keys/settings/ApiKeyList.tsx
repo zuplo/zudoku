@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useZudoku } from "../../../components/context/ZudokuContext.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import { ZudokuError } from "../../../util/invariant.js";
 import { CreateApiKeyDialog } from "../CreateApiKeyDialog.js";
@@ -8,6 +9,7 @@ import type { ApiKeyService } from "../index.js";
 import ApiKeyItem from "./ApiKeyItem.js";
 
 export const ApiKeyList = ({ service }: { service: ApiKeyService }) => {
+  const { t } = useTranslation();
   const context = useZudoku();
 
   const { data } = useSuspenseQuery({
@@ -37,9 +39,9 @@ export const ApiKeyList = ({ service }: { service: ApiKeyService }) => {
       {data.length === 0 ? (
         <div className="flex col-span-full flex-col justify-center gap-4 items-center p-8 border rounded-sm bg-muted/30 text-muted-foreground">
           <p className="text-center">
-            You have no API keys yet.
+            {t("apiKeys.emptyState")}
             <br />
-            {service.createKey && "Get started and create your first key."}
+            {service.createKey && t("apiKeys.emptyStateHint")}
           </p>
           {service.createKey && (
             <CreateApiKeyDialog

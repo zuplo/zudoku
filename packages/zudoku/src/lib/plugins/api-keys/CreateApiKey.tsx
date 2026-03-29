@@ -14,6 +14,7 @@ import {
 } from "zudoku/ui/Select.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { useAuth } from "../../hooks/index.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { Button } from "../../ui/Button.js";
 import { Input } from "../../ui/Input.js";
 import type { ApiKeyService } from "./index.js";
@@ -27,6 +28,7 @@ export const CreateApiKey = ({
   service: ApiKeyService;
   onOpenChange: (open: boolean) => void;
 }) => {
+  const { t } = useTranslation();
   const context = useZudoku();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -48,7 +50,7 @@ export const CreateApiKey = ({
 
       return service.createKey({
         apiKey: {
-          description: description || "Secret Key",
+          description: description || t("apiKeys.defaultName"),
           expiresOn: expiresOnDate,
         },
         context,
@@ -78,14 +80,14 @@ export const CreateApiKey = ({
     >
       {createKeyMutation.error && (
         <Alert variant="destructive" className="mb-4">
-          <AlertTitle>Error</AlertTitle>
+          <AlertTitle>{t("common.error")}</AlertTitle>
           <AlertDescription>{createKeyMutation.error.message}</AlertDescription>
         </Alert>
       )}
       <div className="flex gap-2 flex-col text-sm font-medium">
-        Name
+        {t("apiKeys.name")}
         <Input {...form.register("description")} />
-        Expiration
+        {t("apiKeys.expiration")}
         <Select
           onValueChange={(value) => form.setValue("expiresOn", value)}
           defaultValue={form.getValues("expiresOn")}
@@ -97,19 +99,19 @@ export const CreateApiKey = ({
             <SelectGroup>
               {[7, 30, 60, 90].map((option) => (
                 <SelectItem value={String(option)} key={option}>
-                  {option} days
+                  {t("apiKeys.days", { count: option })}
                 </SelectItem>
               ))}
-              <SelectItem value="never">Never</SelectItem>
+              <SelectItem value="never">{t("apiKeys.never")}</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">{t("common.cancel")}</Button>
           </DialogClose>
           <ActionButton type="submit" isPending={createKeyMutation.isPending}>
-            Generate Key
+            {t("apiKeys.generateKey")}
           </ActionButton>
         </DialogFooter>
       </div>

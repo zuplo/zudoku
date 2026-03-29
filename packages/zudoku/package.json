@@ -61,6 +61,7 @@
     "./vite": "./src/vite/index.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
+    "./i18n": "./src/lib/i18n/index.ts",
     "./main.css": "./src/app/main.css",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
     "./with-zuplo": "./src/zuplo/with-zuplo.ts",

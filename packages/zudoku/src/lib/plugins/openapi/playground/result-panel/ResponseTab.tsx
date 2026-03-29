@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "zudoku/ui/Select.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
+import { useTranslation } from "../../../../i18n/I18nContext.js";
 import { cn } from "../../../../util/cn.js";
 import createVariantComponent from "../../../../util/createVariantComponent.js";
 import { humanFileSize } from "../../../../util/humanFileSize.js";
@@ -156,6 +157,7 @@ export const ResponseTab = ({
   fileName?: string;
   blob?: Blob;
 }) => {
+  const { t } = useTranslation();
   const detectedLanguage = detectLanguage(headers);
   const jsonContent = tryParseJson(body);
   const beautifiedBody = jsonContent || body;
@@ -191,7 +193,9 @@ export const ResponseTab = ({
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
           <CornerDownRightIcon size={14} />
-          <CollapsibleHeader>Request Headers</CollapsibleHeader>
+          <CollapsibleHeader>
+            {t("openapi.playground.response.requestHeaders")}
+          </CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-[2fr_3fr] gap-x-6 text-sm">
@@ -206,8 +210,9 @@ export const ResponseTab = ({
             {request.headers.length > MAX_HEADERS_TO_SHOW && (
               <Collapsible className="col-span-full grid-cols-subgrid grid group">
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
-                  Show {request.headers.length - MAX_HEADERS_TO_SHOW} more
-                  headers
+                  {t("openapi.playground.response.showMoreHeaders", {
+                    count: request.headers.length - MAX_HEADERS_TO_SHOW,
+                  })}
                   <PlusCircleIcon size={12} className="text-muted-foreground" />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
@@ -220,7 +225,9 @@ export const ResponseTab = ({
                       </Row>
                     ))}
                   <CollapsibleTrigger className="justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
-                    Hide {request.headers.length - MAX_HEADERS_TO_SHOW} headers
+                    {t("openapi.playground.response.hideHeaders", {
+                      count: request.headers.length - MAX_HEADERS_TO_SHOW,
+                    })}
                     <MinusCircleIcon
                       size={12}
                       className="text-muted-foreground"
@@ -236,7 +243,9 @@ export const ResponseTab = ({
       <Collapsible defaultOpen>
         <CollapsibleHeaderTrigger>
           <CornerDownLeftIcon size={14} />
-          <CollapsibleHeader>Response Headers</CollapsibleHeader>
+          <CollapsibleHeader>
+            {t("openapi.playground.response.responseHeaders")}
+          </CollapsibleHeader>
         </CollapsibleHeaderTrigger>
         <CollapsibleContent>
           <div className="grid grid-cols-[2fr_3fr] gap-x-6 text-sm">
@@ -249,7 +258,9 @@ export const ResponseTab = ({
             {sortedHeaders.length > MAX_HEADERS_TO_SHOW && (
               <Collapsible className="col-span-full grid-cols-subgrid grid group">
                 <CollapsibleTrigger className="data-[state=open]:hidden justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
-                  Show {sortedHeaders.length - MAX_HEADERS_TO_SHOW} more headers
+                  {t("openapi.playground.response.showMoreHeaders", {
+                    count: sortedHeaders.length - MAX_HEADERS_TO_SHOW,
+                  })}
                   <PlusCircleIcon size={12} className="text-muted-foreground" />
                 </CollapsibleTrigger>
                 <CollapsibleContent className="col-span-full grid grid-cols-subgrid">
@@ -262,7 +273,9 @@ export const ResponseTab = ({
                       </Row>
                     ))}
                   <CollapsibleTrigger className="justify-center col-span-2 text-xs text-muted-foreground hover:text-primary border-b h-8 flex items-center gap-2">
-                    Hide {sortedHeaders.length - MAX_HEADERS_TO_SHOW} headers
+                    {t("openapi.playground.response.hideHeaders", {
+                      count: sortedHeaders.length - MAX_HEADERS_TO_SHOW,
+                    })}
                     <MinusCircleIcon
                       size={12}
                       className="text-muted-foreground"
@@ -278,7 +291,7 @@ export const ResponseTab = ({
       <div className="flex gap-2 justify-between items-center border-b px-2 flex-0">
         <CollapsibleHeader className="flex items-center gap-2">
           <SquareCodeIcon size={14} />
-          Response body
+          {t("openapi.playground.response.responseBody")}
         </CollapsibleHeader>
         {jsonContent && !isBinary && (
           <Select
@@ -288,12 +301,20 @@ export const ResponseTab = ({
             }
           >
             <SelectTrigger className="max-w-32 border-0 bg-transparent">
-              <SelectValue placeholder="View" />
+              <SelectValue
+                placeholder={t("openapi.playground.response.view")}
+              />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="formatted">Formatted</SelectItem>
-              <SelectItem value="raw">Raw</SelectItem>
-              <SelectItem value="types">Types</SelectItem>
+              <SelectItem value="formatted">
+                {t("openapi.playground.response.formatted")}
+              </SelectItem>
+              <SelectItem value="raw">
+                {t("openapi.playground.response.raw")}
+              </SelectItem>
+              <SelectItem value="types">
+                {t("openapi.playground.response.types")}
+              </SelectItem>
             </SelectContent>
           </Select>
         )}
@@ -310,10 +331,11 @@ export const ResponseTab = ({
           ) : (
             <div className="p-4 text-center">
               <div className="flex flex-col items-center gap-4">
-                <div className="text-lg font-semibold">Binary Content</div>
+                <div className="text-lg font-semibold">
+                  {t("openapi.playground.response.binaryContent")}
+                </div>
                 <div className="text-sm text-muted-foreground">
-                  This response contains binary data that cannot be displayed as
-                  text.
+                  {t("openapi.playground.response.binaryDescription")}
                 </div>
                 <Button
                   onClick={handleDownload}
@@ -321,7 +343,10 @@ export const ResponseTab = ({
                   disabled={!blob}
                 >
                   <DownloadIcon className="h-4 w-4" />
-                  Download {fileName || "file"} ({humanFileSize(size)})
+                  {t("openapi.playground.response.download", {
+                    fileName: fileName || "file",
+                    fileSize: humanFileSize(size),
+                  })}
                 </Button>
               </div>
             </div>

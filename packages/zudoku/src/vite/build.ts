@@ -78,6 +78,7 @@ export async function runBuild(options: BuildOptions) {
     jsEntry: joinUrl(viteClientConfig.base, jsEntry),
     cssEntries: cssEntries.map((css) => joinUrl(viteClientConfig.base, css)),
     dir: config.site?.dir,
+    lang: config.locale?.lang,
   });
 
   invariant(viteClientConfig.build?.outDir, "Client build outDir is missing");

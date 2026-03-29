@@ -16,6 +16,7 @@ import {
   type ZudokuContextOptions,
 } from "../core/ZudokuContext.js";
 import { TopLevelError } from "../errors/TopLevelError.js";
+import { I18nProvider } from "../i18n/I18nContext.js";
 import { MdxComponents } from "../util/MdxComponents.js";
 import { RouterEventsEmitter } from "./context/RouterEventsEmitter.js";
 import { SlotProvider } from "./context/SlotProvider.js";
@@ -68,15 +69,17 @@ const ZudokuInner = memo(
         <PluginHeads plugins={props.plugins ?? []} location={location} />
         <ZudokuProvider context={zudokuContext}>
           <RouterEventsEmitter />
-          <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
-            <MDXProvider components={mdxComponents}>
-              <ThemeProvider attribute="class" disableTransitionOnChange>
-                <ViewportAnchorProvider>
-                  {children ?? <Outlet />}
-                </ViewportAnchorProvider>
-              </ThemeProvider>
-            </MDXProvider>
-          </SlotProvider>
+          <I18nProvider messages={props.locale?.messages ?? {}}>
+            <SlotProvider slots={props.slots ?? props.UNSAFE_slotlets}>
+              <MDXProvider components={mdxComponents}>
+                <ThemeProvider attribute="class" disableTransitionOnChange>
+                  <ViewportAnchorProvider>
+                    {children ?? <Outlet />}
+                  </ViewportAnchorProvider>
+                </ThemeProvider>
+              </MDXProvider>
+            </SlotProvider>
+          </I18nProvider>
         </ZudokuProvider>
       </>
     );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Item, ItemActions, ItemContent, ItemTitle } from "zudoku/ui/Item.js";
 import { InlineCode } from "../../../components/InlineCode.js";
 import { Markdown } from "../../../components/Markdown.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import type { SchemaObject } from "../../../oas/parser/index.js";
 import { Button } from "../../../ui/Button.js";
 import { cn } from "../../../util/cn.js";
@@ -20,12 +21,19 @@ import {
   isComplexType,
 } from "./utils.js";
 
-const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => (
-  <InlineCode className="inline-flex items-center gap-1.5 text-xs translate-y-0.5">
-    <RefreshCcwDotIcon size={13} />
-    <span>{circularProp ? `${circularProp} (circular)` : "circular"}</span>
-  </InlineCode>
-);
+const RecursiveIndicator = ({ circularProp }: { circularProp?: string }) => {
+  const { t } = useTranslation();
+  return (
+    <InlineCode className="inline-flex items-center gap-1.5 text-xs translate-y-0.5">
+      <RefreshCcwDotIcon size={13} />
+      <span>
+        {circularProp
+          ? `${circularProp} (${t("openapi.schema.circular")})`
+          : t("openapi.schema.circular")}
+      </span>
+    </InlineCode>
+  );
+};
 
 export const SchemaPropertyItem = ({
   name,
@@ -40,6 +48,7 @@ export const SchemaPropertyItem = ({
   defaultOpen?: boolean;
   showCollapseButton?: boolean;
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   const isDeprecated = group === "deprecated";
@@ -62,7 +71,9 @@ export const SchemaPropertyItem = ({
               schema={schema}
               extraItems={[
                 group === "required" && (
-                  <span className="text-primary">required</span>
+                  <span className="text-primary">
+                    {t("openapi.schema.required")}
+                  </span>
                 ),
                 <RecursiveIndicator key="circular-ref" />,
               ]}
@@ -122,7 +133,9 @@ export const SchemaPropertyItem = ({
             schema={schema}
             extraItems={[
               group === "required" && (
-                <span className="text-primary">required</span>
+                <span className="text-primary">
+                  {t("openapi.schema.required")}
+                </span>
               ),
               isArrayCircularRef(schema) && (
                 <RecursiveIndicator
@@ -154,7 +167,7 @@ export const SchemaPropertyItem = ({
             size="icon"
             className="rounded-full"
             onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle properties"
+            aria-label={t("openapi.schema.toggleProperties")}
           >
             {isOpen ? <MinusIcon size={16} /> : <PlusIcon size={16} />}
           </Button>

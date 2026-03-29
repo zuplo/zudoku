@@ -1,13 +1,15 @@
 export function getDevHtml({
   jsEntry,
   dir,
+  lang = "en",
 }: {
   jsEntry: string;
   dir?: "ltr" | "rtl";
+  lang?: string;
 }) {
   return `
 <!doctype html>
-<html lang="en" ${dir ? `dir="${dir}"` : ""}>
+<html lang="${lang}" ${dir ? `dir="${dir}"` : ""}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
@@ -26,10 +28,12 @@ export function getBuildHtml({
   jsEntry,
   cssEntries,
   dir,
+  lang = "en",
 }: {
   jsEntry: string;
   cssEntries: string[];
   dir?: "ltr" | "rtl";
+  lang?: string;
 }) {
   const cssLinks = cssEntries
     .map((css) => `    <link rel="stylesheet" crossorigin href="${css}">`)
@@ -37,7 +41,7 @@ export function getBuildHtml({
 
   return `
 <!doctype html>
-<html lang="en" ${dir ? `dir="${dir}"` : ""}>
+<html lang="${lang}" ${dir ? `dir="${dir}"` : ""}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">

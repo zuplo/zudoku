@@ -15,6 +15,7 @@ import {
 } from "zudoku/ui/DropdownMenu.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { useCopyToClipboard } from "../../util/useCopyToClipboard.js";
 
 export const DownloadSchemaButton = ({
@@ -22,6 +23,7 @@ export const DownloadSchemaButton = ({
 }: {
   downloadUrl: string;
 }) => {
+  const { t } = useTranslation();
   const [, copyToClipboard] = useCopyToClipboard();
   const { options } = useZudoku();
 
@@ -56,7 +58,7 @@ export const DownloadSchemaButton = ({
       <Button variant="outline" asChild>
         <a href={downloadUrl} download onClick={handleDownload}>
           <DownloadIcon />
-          Download schema
+          {t("openapi.download.schema")}
         </a>
       </Button>
       <DropdownMenu>
@@ -69,7 +71,7 @@ export const DownloadSchemaButton = ({
           <DropdownMenuItem asChild>
             <a href={downloadUrl} target="_blank" rel="noopener noreferrer">
               <ExternalLinkIcon size={14} />
-              Open in new tab
+              {t("openapi.download.openInNewTab")}
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem
@@ -80,7 +82,7 @@ export const DownloadSchemaButton = ({
             }}
           >
             <CopyIcon size={14} />
-            Copy to clipboard
+            {t("common.copyToClipboard")}
           </DropdownMenuItem>
           <AiAssistantMenuItems
             aiAssistants={options.aiAssistants}

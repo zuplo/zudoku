@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
 import { Label } from "zudoku/ui/Label.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 
 const RequestLoginDialog = ({
   open,
@@ -23,6 +24,7 @@ const RequestLoginDialog = ({
   setOpen: (open: boolean) => void;
   onSkip?: (rememberSkip: boolean) => void;
 }) => {
+  const { t } = useTranslation();
   const [rememberSkip, setRememberSkip] = useState(false);
 
   const handleSkip = () => {
@@ -33,31 +35,30 @@ const RequestLoginDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
-        <DialogTitle>Welcome to the Playground!</DialogTitle>
+        <DialogTitle>{t("openapi.playground.login.title")}</DialogTitle>
         <DialogDescription>
-          The Playground is a tool for developers to test and explore our APIs.
-          To use the Playground, you need to login.
+          {t("openapi.playground.login.description")}
         </DialogDescription>
         <Label className="flex items-center gap-2 font-normal">
           <Checkbox
             checked={rememberSkip}
             onCheckedChange={(checked) => setRememberSkip(checked === true)}
           />
-          Don't show this again
+          {t("openapi.playground.login.dontShowAgain")}
         </Label>
         <DialogFooter className="flex gap-2 sm:justify-between">
           <Button type="button" variant="outline" onClick={handleSkip}>
-            Skip
+            {t("openapi.playground.login.skip")}
           </Button>
           <div className="flex gap-2">
             {onSignUp && (
               <Button type="button" variant="outline" onClick={onSignUp}>
-                Sign Up
+                {t("openapi.playground.login.signUp")}
               </Button>
             )}
             {onLogin && (
               <Button type="button" variant="default" onClick={onLogin}>
-                Login
+                {t("openapi.playground.login.login")}
               </Button>
             )}
           </div>

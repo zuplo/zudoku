@@ -30,6 +30,7 @@ import {
 import { Input } from "zudoku/ui/Input.js";
 import { useZudoku } from "../../../components/context/ZudokuContext.js";
 import type { ZudokuContext } from "../../../core/ZudokuContext.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import type { ApiConsumer } from "../index.js";
 import { RevealApiKey } from "./RevealApiKey.js";
@@ -52,6 +53,7 @@ const ApiKeyItem = ({
     context: ZudokuContext,
   ) => Promise<void>;
 }) => {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editingLabel, setEditingLabel] = useState(consumer.label);
   const queryClient = useQueryClient();
@@ -242,12 +244,26 @@ const ApiKeyItem = ({
             <FrameDescription>
               {consumer.createdOn && (
                 <div>
-                  Created on {new Date(consumer.createdOn).toLocaleDateString()}
+                  {t("apiKeys.created", {
+                    timeAgo: new Date(consumer.createdOn).toLocaleDateString(),
+                  })}
                 </div>
               )}
               {consumer.expiresOn && (
                 <div>
-                  Expires on {new Date(consumer.expiresOn).toLocaleDateString()}
+                  {t("apiKeys.expiresIn", {
+                    count: Math.ceil(
+                      (new Date(consumer.expiresOn).getTime() - Date.now()) /
+                        (1000 * 60 * 60 * 24),
+                    ),
+                    dayLabel:
+                      Math.ceil(
+                        (new Date(consumer.expiresOn).getTime() - Date.now()) /
+                          (1000 * 60 * 60 * 24),
+                      ) === 1
+                        ? "day"
+                        : "days",
+                  })}
                 </div>
               )}
             </FrameDescription>
@@ -265,14 +281,16 @@ const ApiKeyItem = ({
                 disabled={isEditing}
               >
                 <PencilLineIcon size={16} />
-                <span className="hidden md:block">Edit label</span>
+                <span className="hidden md:block">
+                  {t("apiKeys.editLabel")}
+                </span>
               </Button>
             )}
             {onRollKey && (
               <Dialog>
                 <DialogTrigger asChild>
                   <Button
-                    title="Roll this key"
+                    title={t("apiKeys.rollKeyTooltip")}
                     variant="ghost"
                     disabled={rollKeyMutation.isPending}
                     className="flex items-center gap-2"
@@ -283,19 +301,21 @@ const ApiKeyItem = ({
                         rollKeyMutation.isPending ? "animate-spin" : undefined
                       }
                     />
-                    <span className="hidden md:block">Roll key</span>
+                    <span className="hidden md:block">
+                      {t("apiKeys.rollKey")}
+                    </span>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>Roll API Key</DialogTitle>
+                    <DialogTitle>{t("apiKeys.rollDialog.title")}</DialogTitle>
                     <DialogDescription>
-                      Are you sure you want to roll this API key?
+                      {t("apiKeys.rollDialog.description")}
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
                     <DialogClose asChild>
-                      <Button variant="outline">Cancel</Button>
+                      <Button variant="outline">{t("common.cancel")}</Button>
                     </DialogClose>
                     <DialogClose asChild>
                       <Button
@@ -303,7 +323,7 @@ const ApiKeyItem = ({
                           rollKeyMutation.mutate(consumer.id);
                         }}
                       >
-                        Roll Key
+                        {t("apiKeys.rollDialog.confirm")}
                       </Button>
                     </DialogClose>
                   </DialogFooter>

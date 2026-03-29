@@ -2,6 +2,7 @@ import * as Collapsible from "@radix-ui/react-collapsible";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { Markdown } from "../../components/Markdown.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import type { SchemaObject } from "../../oas/graphql/index.js";
 import { Button } from "../../ui/Button.js";
 import { Item, ItemActions, ItemContent, ItemTitle } from "../../ui/Item.js";
@@ -33,6 +34,7 @@ export const ParameterListItem = ({
   group: ParameterGroup;
   id: string;
 }) => {
+  const { t } = useTranslation();
   const paramSchema = getParameterSchema(parameter);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -96,7 +98,9 @@ export const ParameterListItem = ({
             schema={paramSchema}
             extraItems={[
               parameter.required && (
-                <span className="text-primary">required</span>
+                <span className="text-primary">
+                  {t("openapi.schema.required")}
+                </span>
               ),
               parameter.style && `style: ${parameter.style}`,
               parameter.explode && `explode: ${parameter.explode}`,
@@ -131,7 +135,7 @@ export const ParameterListItem = ({
             size="icon"
             className="rounded-full"
             onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle parameter"
+            aria-label={t("openapi.parameters.toggleParameter")}
           >
             {isOpen ? <MinusIcon size={16} /> : <PlusIcon size={16} />}
           </Button>

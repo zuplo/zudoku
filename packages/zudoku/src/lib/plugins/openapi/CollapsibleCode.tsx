@@ -6,6 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "zudoku/ui/Collapsible.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { cn } from "../../util/cn.js";
 import useIsomorphicLayoutEffect from "../../util/useIsomorphicLayoutEffect.js";
 
@@ -20,6 +21,7 @@ export const CollapsibleCode = ({
   children: ReactNode;
   maxHeight?: number;
 }) => {
+  const { t } = useTranslation();
   const contentRef = useRef<HTMLDivElement | null>(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [open, setOpen] = useState(false);
@@ -62,7 +64,7 @@ export const CollapsibleCode = ({
             <div>
               <Button variant="outline" className="hidden group-hover:flex">
                 <UnfoldVerticalIcon size={14} className="me-1.5" />
-                Click to expand
+                {t("code.clickToExpand")}
               </Button>
             </div>
           </CollapsibleTrigger>
@@ -77,7 +79,7 @@ export const CollapsibleCode = ({
         >
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
-              Collapse
+              {t("code.collapse")}
               <FoldVerticalIcon size={14} className="ms-1.5" />
             </Button>
           </CollapsibleTrigger>

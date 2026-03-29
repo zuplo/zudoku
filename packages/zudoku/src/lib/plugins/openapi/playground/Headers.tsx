@@ -4,6 +4,7 @@ import { Checkbox } from "zudoku/ui/Checkbox.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
 import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip.js";
 import { Autocomplete } from "../../../components/Autocomplete.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import {
   CollapsibleHeader,
@@ -35,6 +36,7 @@ export const Headers = ({
   schemaHeaders: Header[];
   lockedHeaders?: string[];
 }) => {
+  const { t } = useTranslation();
   const { watch, formState } = useFormContext<PlaygroundForm>();
   const watchedHeaders = watch("headers");
 
@@ -69,7 +71,7 @@ export const Headers = ({
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
         <TableOfContentsIcon size={14} />
-        <CollapsibleHeader>Headers</CollapsibleHeader>
+        <CollapsibleHeader>{t("openapi.playground.headers")}</CollapsibleHeader>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">
         <div className="flex flex-col gap-2">
@@ -88,7 +90,7 @@ export const Headers = ({
                     </ParamsGridItem>
                   </TooltipTrigger>
                   <TooltipContent alignOffset={10} side="bottom" align="start">
-                    <p>This header is set by the selected authentication.</p>
+                    <p>{t("openapi.playground.header.lockedByAuth")}</p>
                   </TooltipContent>
                 </Tooltip>
               ))}
@@ -133,8 +135,7 @@ export const Headers = ({
                         align="start"
                       >
                         <p>
-                          This header will be overwritten by the selected
-                          authentication.
+                          {t("openapi.playground.header.overwrittenByAuth")}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -142,7 +143,7 @@ export const Headers = ({
                       <Autocomplete
                         {...nameInputProps}
                         value={String(manager.getValue(i, "name"))}
-                        placeholder="Name"
+                        placeholder={t("openapi.playground.field.name")}
                         options={[...missingHeaders, ...headerOptions]}
                         onChange={(v) => manager.setValue(i, "name", v)}
                         onSelect={(v) =>
@@ -153,7 +154,7 @@ export const Headers = ({
                     <div className="flex items-center gap-2">
                       {!hasEnum ? (
                         <ParamsGridInput
-                          placeholder="Value"
+                          placeholder={t("openapi.playground.field.value")}
                           autoComplete="off"
                           {...valueInputProps}
                         />

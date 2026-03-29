@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "zudoku/ui/Dialog.js";
 import { Secret } from "zudoku/ui/Secret.js";
+import { useTranslation } from "../../../i18n/I18nContext.js";
 import { cn } from "../../../util/cn.js";
 import type { ApiKey } from "../index.js";
 
@@ -24,6 +25,7 @@ export const RevealApiKey = ({
   onDeleteKey: () => void;
   className?: string;
 }) => {
+  const { t } = useTranslation();
   const [revealed, setRevealed] = useState(false);
 
   const { key, description, createdOn, expiresOn } = apiKey;
@@ -51,21 +53,22 @@ export const RevealApiKey = ({
         <div className="flex gap-1 mt-0.5 text-nowrap">
           {createdOn && (
             <span className="text-xs text-muted-foreground">
-              Created {getTimeAgo(createdOn)}.
+              {t("apiKeys.created", { timeAgo: getTimeAgo(createdOn) })}
             </span>
           )}{" "}
           {expiresOn && expiresSoon && (
             <span className="text-xs text-primary">
-              Expires in {daysUntilExpiry}{" "}
-              {daysUntilExpiry === 1 ? "day" : "days"}.
+              {t("apiKeys.expiresIn", {
+                count: daysUntilExpiry,
+                dayLabel: daysUntilExpiry === 1 ? "day" : "days",
+              })}
             </span>
           )}
           {expiresOn && isExpired && (
             <span className="text-xs text-primary">
-              Expired{" "}
               {daysUntilExpiry === 0
-                ? "today."
-                : `${daysUntilExpiry * -1} days ago.`}
+                ? t("apiKeys.expiredToday")
+                : t("apiKeys.expiredDaysAgo", { count: daysUntilExpiry * -1 })}
             </span>
           )}
         </div>
@@ -80,14 +83,14 @@ export const RevealApiKey = ({
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Delete API Key</DialogTitle>
+                <DialogTitle>{t("apiKeys.deleteDialog.title")}</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to delete this API key?
+                  {t("apiKeys.deleteDialog.description")}
                 </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button variant="outline">{t("common.cancel")}</Button>
                 </DialogClose>
                 <DialogClose asChild>
                   <Button
@@ -95,7 +98,7 @@ export const RevealApiKey = ({
                       onDeleteKey();
                     }}
                   >
-                    Delete
+                    {t("common.delete")}
                   </Button>
                 </DialogClose>
               </DialogFooter>

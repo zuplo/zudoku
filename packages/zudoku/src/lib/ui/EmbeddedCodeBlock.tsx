@@ -1,6 +1,7 @@
 import { CheckIcon, CopyIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { useRef, useState } from "react";
+import { useTranslation } from "../i18n/I18nContext.js";
 import { cn } from "../util/cn.js";
 import { Button } from "./Button.js";
 
@@ -29,6 +30,7 @@ export const EmbeddedCodeBlock = ({
 }: CodeBlockProps & { fullHeight?: boolean }) => {
   const [isCopied, setIsCopied] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   if (!children) return null;
 
@@ -91,7 +93,7 @@ export const EmbeddedCodeBlock = ({
           ) : (
             <CopyIcon className="shrink-0" size={13} />
           )}
-          {showCopyText && "Copy"}
+          {showCopyText && t("code.copy")}
         </Button>
       )}
     </div>

@@ -12,11 +12,13 @@ import {
 import { useVerifiedEmail } from "../../authentication/hook.js";
 import { Slot } from "../../components/Slot.js";
 import { ErrorMessage } from "../../errors/ErrorMessage.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { CreateApiKeyDialog } from "./CreateApiKeyDialog.js";
 import type { ApiKeyService } from "./index.js";
 import { ApiKeyList } from "./settings/ApiKeyList.js";
 
 export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
+  const { t } = useTranslation();
   const [isCreateApiKeyOpen, setIsCreateApiKeyOpen] = useState(false);
   const auth = useAuth();
   const { supportsEmailVerification, requestEmailVerification, refresh } =
@@ -27,7 +29,7 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
       <Slot.Target name="api-keys-list-page" />
 
       <div className="flex justify-between pb-3">
-        <h1 className="font-medium text-2xl">API Keys</h1>
+        <h1 className="font-medium text-2xl">{t("apiKeys.title")}</h1>
 
         {service.createKey && (
           <CreateApiKeyDialog
@@ -37,25 +39,25 @@ export const SettingsApiKeys = ({ service }: { service: ApiKeyService }) => {
           />
         )}
       </div>
-      <p>Create, manage, and monitor your API keys</p>
+      <p>{t("apiKeys.description")}</p>
 
       <Slot.Target name="api-keys-list-page-before-keys" />
       {auth.profile?.emailVerified === false ? (
         <Item variant="outline" className="mt-4">
           <ItemContent>
-            <ItemTitle>Verified email required</ItemTitle>
+            <ItemTitle>{t("apiKeys.emailVerification.required")}</ItemTitle>
             <ItemDescription>
-              You need to verify your email to access API keys.
+              {t("apiKeys.emailVerification.message")}
             </ItemDescription>
           </ItemContent>
           <ItemActions>
-            <Button onClick={refresh}>Refresh</Button>
+            <Button onClick={refresh}>{t("apiKeys.refresh")}</Button>
           </ItemActions>
 
           {supportsEmailVerification && (
             <ItemActions>
               <Button onClick={() => requestEmailVerification()}>
-                Request verification
+                {t("apiKeys.requestVerification")}
               </Button>
             </ItemActions>
           )}

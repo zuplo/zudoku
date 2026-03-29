@@ -122,6 +122,10 @@ export type ZudokuContextOptions = {
     highlighterPromise: Promise<HighlighterCore>;
     themes?: { light: BundledTheme; dark: BundledTheme };
   };
+  locale?: {
+    lang?: string;
+    messages?: Record<string, string>;
+  };
 };
 
 export const normalizeProtectedRoutes = (

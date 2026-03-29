@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { useTranslation } from "../i18n/I18nContext.js";
 import { ErrorPage } from "./ErrorPage.js";
 import { NotFoundPage } from "./NotFoundPage.js";
 
@@ -7,89 +8,25 @@ type StatusPageProps = {
   message?: ReactNode;
 };
 
-const getDefaultContent = (
-  statusCode: number,
-): { title: string; message: string } => {
-  switch (statusCode) {
-    case 400:
-      return {
-        title: "Bad Request",
-        message:
-          "The request could not be understood by the server due to malformed syntax.",
-      };
-    case 403:
-      return {
-        title: "Forbidden",
-        message: "You don't have permission to access this resource.",
-      };
-    case 404:
-      return {
-        title: "Not Found",
-        message: "The requested resource could not be found.",
-      };
-    case 405:
-      return {
-        title: "Method Not Allowed",
-        message:
-          "The request method is not supported for the requested resource.",
-      };
-    case 414:
-      return {
-        title: "Request URI Too Large",
-        message: "The request URI is too large.",
-      };
-    case 416:
-      return {
-        title: "Range Not Satisfiable",
-        message: "The server cannot satisfy the request range.",
-      };
-    case 500:
-      return {
-        title: "Internal Server Error",
-        message: "An unexpected error occurred while processing your request.",
-      };
-    case 501:
-      return {
-        title: "Not Implemented",
-        message:
-          "The server does not support the functionality required to fulfill the request.",
-      };
-    case 502:
-      return {
-        title: "Bad Gateway",
-        message:
-          "The server received an invalid response from the upstream server.",
-      };
-    case 503:
-      return {
-        title: "Service Unavailable",
-        message: "The server is temporarily unable to handle the request.",
-      };
-    case 504:
-      return {
-        title: "Gateway Timeout",
-        message:
-          "The server did not receive a timely response from the upstream server.",
-      };
-    default:
-      return {
-        title: "An error occurred",
-        message: "Something went wrong while processing your request.",
-      };
-  }
-};
+const KNOWN_STATUS_CODES = [
+  400, 403, 404, 405, 414, 416, 500, 501, 502, 503, 504,
+];
 
 export const StatusPage = ({ statusCode, message }: StatusPageProps) => {
+  const { t } = useTranslation();
+
   if (statusCode === 404) {
     return <NotFoundPage />;
   }
 
-  const defaultContent = getDefaultContent(statusCode);
+  const statusKey = KNOWN_STATUS_CODES.includes(statusCode)
+    ? statusCode
+    : "default";
 
   return (
     <ErrorPage
-      title={defaultContent.title}
-      message={message ?? defaultContent.message}
+      title={t(`status.${statusKey}.title`)}
+      message={message ?? t(`status.${statusKey}.message`)}
       category={statusCode}
     />
   );

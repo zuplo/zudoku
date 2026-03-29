@@ -30,6 +30,7 @@ import {
 } from "../../components/navigation/utils.js";
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { slugify } from "../../util/slugify.js";
@@ -102,7 +103,11 @@ export const MdxPage = ({
   const editUrl = editConfig
     ? editConfig.url.replaceAll("{filePath}", __filepath)
     : null;
-  const editText = editConfig ? editConfig.text || "Edit this page" : null;
+  const { t } = useTranslation();
+
+  const editText = editConfig
+    ? editConfig.text || t("docs.editThisPage")
+    : null;
 
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
@@ -158,7 +163,7 @@ export const MdxPage = ({
             <div
               className="float-end ms-4 mt-1"
               role="group"
-              aria-label="Page actions"
+              aria-label={t("docs.pageActions")}
             >
               <ButtonGroup>
                 <Button
@@ -171,7 +176,7 @@ export const MdxPage = ({
                   ) : (
                     <CopyIcon size={14} />
                   )}
-                  <span>Copy page</span>
+                  <span>{t("docs.copyPage")}</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -187,7 +192,7 @@ export const MdxPage = ({
                       }
                     >
                       <Link2Icon className="size-4" />
-                      Copy link to page
+                      {t("docs.copyLinkToPage")}
                     </DropdownMenuItem>
                     <DropdownMenuItem className="gap-2" asChild>
                       <a
@@ -196,7 +201,7 @@ export const MdxPage = ({
                         rel="noopener noreferrer"
                       >
                         <ExternalLinkIcon className="size-4" />
-                        Open Markdown page
+                        {t("docs.openMarkdownPage")}
                       </a>
                     </DropdownMenuItem>
                     <AiAssistantMenuItems
@@ -217,11 +222,7 @@ export const MdxPage = ({
           )}
         </header>
 
-        {frontmatter.draft && (
-          <DeveloperHint>
-            This page is a draft and is not visible in production.
-          </DeveloperHint>
-        )}
+        {frontmatter.draft && <DeveloperHint>{t("docs.draft")}</DeveloperHint>}
 
         <MdxComponent
           components={{ ...useMDXComponents(), ...MarkdownHeadings }}
@@ -254,7 +255,7 @@ export const MdxPage = ({
                       timeStyle: "medium",
                     })}
                   >
-                    Last modified on{" "}
+                    {t("docs.lastModifiedOn")}
                     <time dateTime={lastModifiedDate.toISOString()}>
                       {lastModifiedDate.toLocaleDateString("en-US", {
                         dateStyle: "long",

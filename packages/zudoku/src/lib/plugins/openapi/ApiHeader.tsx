@@ -9,6 +9,7 @@ import {
 } from "zudoku/ui/Select.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { Heading } from "../../components/Heading.js";
+import { useTranslation } from "../../i18n/I18nContext.js";
 import { useOasConfig } from "./context.js";
 import { DownloadSchemaButton } from "./DownloadSchemaButton.js";
 import { buildVersionSwitchUrl } from "./util/getRoutes.js";
@@ -28,6 +29,7 @@ export const ApiHeader = ({
   children,
   tag,
 }: ApiHeaderProps) => {
+  const { t } = useTranslation();
   const { input, type, versions, version, options } = useOasConfig();
   const navigate = useNavigate();
 
@@ -74,7 +76,7 @@ export const ApiHeader = ({
                 disabled={!hasMultipleVersions}
               >
                 <SelectTrigger className="w-[180px]" size="sm">
-                  <SelectValue placeholder="Select version" />
+                  <SelectValue placeholder={t("openapi.version.select")} />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(versions).map(([v, { label }]) => (
