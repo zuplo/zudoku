@@ -125,7 +125,7 @@ const runPrerender = async (options: PrerenderOptions) => {
   const serverConfigFilename = findOutputPathOfServerConfig(serverResult);
 
   try {
-    const { workerResults, rewrites } = await prerender({
+    const { workerResults, rewrites, paths } = await prerender({
       html,
       dir,
       basePath: config.basePath,
@@ -164,6 +164,7 @@ const runPrerender = async (options: PrerenderOptions) => {
       config,
       redirects: workerResults.flatMap((r) => r.redirect ?? []),
       rewrites,
+      outputPaths: paths,
     });
 
     if (ZuploEnv.isZuplo && issuer) {
