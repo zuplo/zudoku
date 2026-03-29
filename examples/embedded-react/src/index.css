@@ -1,0 +1,107 @@
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.app-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.app-header p {
+  margin: 0.5rem 0 0;
+  opacity: 0.9;
+  font-size: 0.9rem;
+}
+
+.app-container {
+  display: flex;
+  height: calc(100vh - 80px);
+}
+
+.sidebar {
+  width: 250px;
+  background: #f8f9fa;
+  border-right: 1px solid #e9ecef;
+  overflow-y: auto;
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin: 0;
+}
+
+.sidebar-nav button {
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #495057;
+  transition: all 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-nav button:hover {
+  background: #e9ecef;
+  color: #212529;
+}
+
+.sidebar-nav button.active {
+  background: #e7f1ff;
+  color: #0d6efd;
+  border-left-color: #0d6efd;
+  font-weight: 500;
+}
+
+.content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.example-controls {
+  padding: 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e9ecef;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.example-controls label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #495057;
+}
+
+.example-controls select {
+  padding: 0.5rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  min-width: 200px;
+}
+
+.embedded-container {
+  height: 100%;
+  overflow: auto;
+}
