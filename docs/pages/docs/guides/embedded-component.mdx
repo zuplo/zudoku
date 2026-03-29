@@ -1,0 +1,341 @@
+# Embedding Zudoku in Your Application
+
+Zudoku can be embedded as a React component in your application, similar to how Swagger UI is embedded. This allows you to dynamically display API documentation within your app.
+
+## Installation
+
+First, ensure you have Zudoku installed:
+
+```bash
+npm install zudoku react react-dom react-router
+```
+
+## Basic Usage
+
+The `ZudokuEmbedded` component accepts OpenAPI specifications in three formats: URL, raw string, or parsed JSON object.
+
+### Using a URL
+
+```tsx
+import { ZudokuEmbedded } from "zudoku/components";
+import "zudoku/main.css";
+
+function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <ZudokuEmbedded
+        openApi={{
+          type: "url",
+          url: "https://api.example.com/openapi.json"
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Using a Raw String
+
+```tsx
+import { ZudokuEmbedded } from "zudoku/components";
+import "zudoku/main.css";
+
+const openapiYaml = `
+openapi: 3.0.0
+info:
+  title: My API
+  version: 1.0.0
+paths:
+  /users:
+    get:
+      summary: Get users
+      responses:
+        '200':
+          description: Success
+`;
+
+function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <ZudokuEmbedded
+        openApi={{
+          type: "string",
+          content: openapiYaml
+        }}
+      />
+    </div>
+  );
+}
+```
+
+### Using a Parsed Object
+
+```tsx
+import { ZudokuEmbedded } from "zudoku/components";
+import "zudoku/main.css";
+
+const openapiSpec = {
+  openapi: "3.0.0",
+  info: {
+    title: "My API",
+    version: "1.0.0"
+  },
+  paths: {
+    "/users": {
+      get: {
+        summary: "Get users",
+        responses: {
+          "200": {
+            description: "Success"
+          }
+        }
+      }
+    }
+  }
+};
+
+function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <ZudokuEmbedded
+        openApi={{
+          type: "object",
+          spec: openapiSpec
+        }}
+      />
+    </div>
+  );
+}
+```
+
+## Configuration Options
+
+The `ZudokuEmbedded` component accepts several configuration options:
+
+```tsx
+<ZudokuEmbedded
+  openApi={{
+    type: "url",
+    url: "https://api.example.com/openapi.json"
+  }}
+  // Custom site configuration
+  config={{
+    site: {
+      title: "My API Documentation",
+      logo: {
+        src: {
+          light: "/logo-light.png",
+          dark: "/logo-dark.png"
+        }
+      }
+    },
+    navigation: [
+      {
+        type: "link",
+        label: "API Reference",
+        to: "/"
+      }
+    ]
+  }}
+  // Base path for routing (default: "/")
+  basePath="/docs"
+  // Use memory router for non-browser environments (default: false)
+  useMemoryRouter={false}
+  // Custom server URL for API requests
+  serverUrl="https://api.example.com"
+  // OpenAPI plugin options
+  options={{
+    disablePlayground: false,
+    disableSidecar: false,
+    expandAllTags: true,
+    showInfoPage: true,
+    disableGeneratedExamples: false
+  }}
+/>
+```
+
+## OpenAPI Plugin Options
+
+- `disablePlayground`: Disable the interactive API playground
+- `disableSidecar`: Disable the code examples sidebar
+- `expandAllTags`: Expand all operation tags by default
+- `showInfoPage`: Show the API info page
+- `disableGeneratedExamples`: Disable automatically generated code examples
+
+## Dynamic OpenAPI Specs
+
+You can dynamically update the OpenAPI specification by changing the component props:
+
+```tsx
+import { useState } from "react";
+import { ZudokuEmbedded } from "zudoku/components";
+import "zudoku/main.css";
+
+function App() {
+  const [apiUrl, setApiUrl] = useState("https://api.example.com/v1/openapi.json");
+
+  return (
+    <div>
+      <select onChange={(e) => setApiUrl(e.target.value)} value={apiUrl}>
+        <option value="https://api.example.com/v1/openapi.json">API v1</option>
+        <option value="https://api.example.com/v2/openapi.json">API v2</option>
+      </select>
+
+      <div style={{ height: "calc(100vh - 50px)" }}>
+        <ZudokuEmbedded
+          openApi={{
+            type: "url",
+            url: apiUrl
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+## Styling
+
+Make sure to import the Zudoku CSS file:
+
+```tsx
+import "zudoku/main.css";
+```
+
+The embedded component will inherit the theme from your application. You can customize the theme using CSS variables or Tailwind CSS classes.
+
+## Advanced Configuration
+
+For more advanced configuration options, you can use the full `ZudokuConfig` type:
+
+```tsx
+import { ZudokuEmbedded } from "zudoku/components";
+import type { ZudokuConfig } from "zudoku";
+import "zudoku/main.css";
+
+const config: Partial<ZudokuConfig> = {
+  site: {
+    title: "My API",
+    showPoweredBy: false
+  },
+  metadata: {
+    title: "My API - %s",
+    description: "Complete API documentation",
+    favicon: "https://example.com/favicon.ico"
+  }
+};
+
+function App() {
+  return (
+    <div style={{ height: "100vh" }}>
+      <ZudokuEmbedded
+        openApi={{
+          type: "url",
+          url: "https://api.example.com/openapi.json"
+        }}
+        config={config}
+      />
+    </div>
+  );
+}
+```
+
+## Integration with React Router
+
+If you're using React Router in your application, you may want to use the `basePath` prop to avoid routing conflicts:
+
+```tsx
+import { Routes, Route } from "react-router-dom";
+import { ZudokuEmbedded } from "zudoku/components";
+import "zudoku/main.css";
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route
+        path="/docs/*"
+        element={
+          <ZudokuEmbedded
+            openApi={{
+              type: "url",
+              url: "https://api.example.com/openapi.json"
+            }}
+            basePath="/docs"
+          />
+        }
+      />
+    </Routes>
+  );
+}
+```
+
+## TypeScript Support
+
+The component is fully typed with TypeScript:
+
+```tsx
+import { ZudokuEmbedded, type OpenApiSource, type ZudokuEmbeddedProps } from "zudoku/components";
+
+const openApiSource: OpenApiSource = {
+  type: "url",
+  url: "https://api.example.com/openapi.json"
+};
+
+const props: ZudokuEmbeddedProps = {
+  openApi: openApiSource,
+  basePath: "/docs",
+  options: {
+    disablePlayground: false
+  }
+};
+
+function App() {
+  return <ZudokuEmbedded {...props} />;
+}
+```
+
+## Common Issues
+
+### Routing Conflicts
+
+If you experience routing conflicts with your existing React Router setup, try:
+1. Using a unique `basePath` for the embedded component
+2. Wrapping the component in a `Route` with a wildcard path (`/docs/*`)
+3. Using `useMemoryRouter={true}` to isolate the routing
+
+### Styling Issues
+
+If styles are not applied correctly:
+1. Ensure you've imported `zudoku/main.css`
+2. Check that your bundler can handle CSS imports
+3. Verify that CSS is being loaded in the correct order
+
+### Performance
+
+For better performance with large OpenAPI specifications:
+1. Consider lazy-loading the component
+2. Use the `disableGeneratedExamples` option
+3. Load the OpenAPI spec asynchronously
+
+```tsx
+import { lazy, Suspense } from "react";
+
+const ZudokuEmbedded = lazy(() =>
+  import("zudoku/components").then(mod => ({ default: mod.ZudokuEmbedded }))
+);
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ZudokuEmbedded
+        openApi={{
+          type: "url",
+          url: "https://api.example.com/openapi.json"
+        }}
+      />
+    </Suspense>
+  );
+}
+```
