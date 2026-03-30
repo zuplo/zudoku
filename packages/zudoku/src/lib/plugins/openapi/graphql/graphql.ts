@@ -38,6 +38,7 @@ export type Scalars = {
 export type Components = {
   __typename?: "Components";
   schemas?: Maybe<Array<SchemaItem>>;
+  securitySchemes?: Maybe<Array<SecuritySchemeItem>>;
 };
 
 export type EncodingItem = {
@@ -67,6 +68,28 @@ export type MediaTypeObject = {
   schema?: Maybe<Scalars["JSONSchema"]["output"]>;
 };
 
+export type OAuthFlowItem = {
+  __typename?: "OAuthFlowItem";
+  authorizationUrl?: Maybe<Scalars["String"]["output"]>;
+  refreshUrl?: Maybe<Scalars["String"]["output"]>;
+  scopes: Array<OAuthScopeItem>;
+  tokenUrl?: Maybe<Scalars["String"]["output"]>;
+};
+
+export type OAuthFlowsItem = {
+  __typename?: "OAuthFlowsItem";
+  authorizationCode?: Maybe<OAuthFlowItem>;
+  clientCredentials?: Maybe<OAuthFlowItem>;
+  implicit?: Maybe<OAuthFlowItem>;
+  password?: Maybe<OAuthFlowItem>;
+};
+
+export type OAuthScopeItem = {
+  __typename?: "OAuthScopeItem";
+  description: Scalars["String"]["output"];
+  name: Scalars["String"]["output"];
+};
+
 export type OperationItem = {
   __typename?: "OperationItem";
   contentTypes: Array<Scalars["String"]["output"]>;
@@ -79,6 +102,7 @@ export type OperationItem = {
   path: Scalars["String"]["output"];
   requestBody?: Maybe<RequestBodyObject>;
   responses: Array<ResponseItem>;
+  security?: Maybe<Array<SecurityRequirementItem>>;
   servers: Array<Server>;
   slug: Scalars["String"]["output"];
   summary?: Maybe<Scalars["String"]["output"]>;
@@ -147,6 +171,7 @@ export type Schema = {
   openapi: Scalars["String"]["output"];
   operations: Array<OperationItem>;
   paths: Array<PathItem>;
+  security?: Maybe<Array<SecurityRequirementItem>>;
   servers: Array<Server>;
   summary?: Maybe<Scalars["String"]["output"]>;
   tag?: Maybe<SchemaTag>;
@@ -212,6 +237,40 @@ export type SchemaTag = {
 };
 
 export type SchemaType = "file" | "raw" | "url";
+
+export type SecurityRequirementItem = {
+  __typename?: "SecurityRequirementItem";
+  schemes: Array<SecurityRequirementScheme>;
+};
+
+export type SecurityRequirementScheme = {
+  __typename?: "SecurityRequirementScheme";
+  scheme: SecuritySchemeItem;
+  scopes: Array<Scalars["String"]["output"]>;
+};
+
+export type SecuritySchemeIn = "cookie" | "header" | "query";
+
+export type SecuritySchemeItem = {
+  __typename?: "SecuritySchemeItem";
+  bearerFormat?: Maybe<Scalars["String"]["output"]>;
+  description?: Maybe<Scalars["String"]["output"]>;
+  extensions?: Maybe<Scalars["JSONObject"]["output"]>;
+  flows?: Maybe<OAuthFlowsItem>;
+  in?: Maybe<SecuritySchemeIn>;
+  name: Scalars["String"]["output"];
+  openIdConnectUrl?: Maybe<Scalars["String"]["output"]>;
+  paramName?: Maybe<Scalars["String"]["output"]>;
+  scheme?: Maybe<Scalars["String"]["output"]>;
+  type: SecuritySchemeType;
+};
+
+export type SecuritySchemeType =
+  | "apiKey"
+  | "http"
+  | "mutualTLS"
+  | "oauth2"
+  | "openIdConnect";
 
 export type Server = {
   __typename?: "Server";
@@ -283,6 +342,64 @@ export type OperationsFragmentFragment = {
       value?: any | null;
       summary?: string | null;
     }> | null;
+  }> | null;
+  security?: Array<{
+    __typename?: "SecurityRequirementItem";
+    schemes: Array<{
+      __typename?: "SecurityRequirementScheme";
+      scopes: Array<string>;
+      scheme: {
+        __typename?: "SecuritySchemeItem";
+        name: string;
+        type: SecuritySchemeType;
+        description?: string | null;
+        in?: SecuritySchemeIn | null;
+        paramName?: string | null;
+        scheme?: string | null;
+        bearerFormat?: string | null;
+        openIdConnectUrl?: string | null;
+        flows?: {
+          __typename?: "OAuthFlowsItem";
+          implicit?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          password?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          clientCredentials?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          authorizationCode?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+        } | null;
+      };
+    }>;
   }> | null;
   requestBody?: {
     __typename?: "RequestBodyObject";
@@ -415,6 +532,57 @@ export type SchemaInfoQuery = {
     components?: {
       __typename?: "Components";
       schemas?: Array<{ __typename?: "SchemaItem"; name: string }> | null;
+      securitySchemes?: Array<{
+        __typename?: "SecuritySchemeItem";
+        name: string;
+        type: SecuritySchemeType;
+        description?: string | null;
+        in?: SecuritySchemeIn | null;
+        paramName?: string | null;
+        scheme?: string | null;
+        bearerFormat?: string | null;
+        openIdConnectUrl?: string | null;
+        flows?: {
+          __typename?: "OAuthFlowsItem";
+          implicit?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          password?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          clientCredentials?: {
+            __typename?: "OAuthFlowItem";
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+          authorizationCode?: {
+            __typename?: "OAuthFlowItem";
+            authorizationUrl?: string | null;
+            tokenUrl?: string | null;
+            scopes: Array<{
+              __typename?: "OAuthScopeItem";
+              name: string;
+              description: string;
+            }>;
+          } | null;
+        } | null;
+      }> | null;
     } | null;
     webhooks: Array<{
       __typename?: "WebhookItem";
@@ -558,6 +726,52 @@ export const OperationsFragmentFragmentDoc = new TypedDocumentString(
       summary
     }
   }
+  security {
+    schemes {
+      scopes
+      scheme {
+        name
+        type
+        description
+        in
+        paramName
+        scheme
+        bearerFormat
+        openIdConnectUrl
+        flows {
+          implicit {
+            authorizationUrl
+            scopes {
+              name
+              description
+            }
+          }
+          password {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          clientCredentials {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          authorizationCode {
+            authorizationUrl
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+        }
+      }
+    }
+  }
   requestBody {
     content {
       mediaType
@@ -675,6 +889,52 @@ export const OperationsForTagDocument = new TypedDocumentString(`
       summary
     }
   }
+  security {
+    schemes {
+      scopes
+      scheme {
+        name
+        type
+        description
+        in
+        paramName
+        scheme
+        bearerFormat
+        openIdConnectUrl
+        flows {
+          implicit {
+            authorizationUrl
+            scopes {
+              name
+              description
+            }
+          }
+          password {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          clientCredentials {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          authorizationCode {
+            authorizationUrl
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+        }
+      }
+    }
+  }
   requestBody {
     content {
       mediaType
@@ -750,6 +1010,47 @@ export const SchemaInfoDocument = new TypedDocumentString(`
     components {
       schemas {
         name
+      }
+      securitySchemes {
+        name
+        type
+        description
+        in
+        paramName
+        scheme
+        bearerFormat
+        openIdConnectUrl
+        flows {
+          implicit {
+            authorizationUrl
+            scopes {
+              name
+              description
+            }
+          }
+          password {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          clientCredentials {
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+          authorizationCode {
+            authorizationUrl
+            tokenUrl
+            scopes {
+              name
+              description
+            }
+          }
+        }
       }
     }
     webhooks {

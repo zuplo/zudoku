@@ -23,8 +23,13 @@ import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
 import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
-import type { MediaTypeObject } from "../graphql/graphql.js";
+import type {
+  MediaTypeObject,
+  SecuritySchemeIn,
+  SecuritySchemeType,
+} from "../graphql/graphql.js";
 import { useSelectedServer } from "../state.js";
+import { AuthorizeDialog } from "./AuthorizeDialog.js";
 import BodyPanel from "./BodyPanel.js";
 import {
   CollapsibleHeader,
@@ -42,9 +47,16 @@ import { UrlPath } from "./request-panel/UrlPath.js";
 import { UrlQueryParams } from "./request-panel/UrlQueryParams.js";
 import RequestLoginDialog from "./RequestLoginDialog.js";
 import { ResultPanel } from "./result-panel/ResultPanel.js";
+import {
+  applySecurityCredentials,
+  getSecurityLockedHeaders,
+  getSecurityQueryParams,
+  useSecurityCredentialsStore,
+} from "./securityCredentialsStore.js";
 import { useRememberSkipLoginDialog } from "./useRememberSkipLoginDialog.js";
 
 export const NO_IDENTITY = "__none";
+export const SECURITY_SCHEME_PREFIX = "__security:";
 
 export type Header = {
   name: string;
@@ -119,6 +131,41 @@ export type PlaygroundResult = {
   };
 };
 
+export type SecurityRequirementProp = {
+  schemes: Array<{
+    scopes: Array<string>;
+    scheme: {
+      name: string;
+      type: SecuritySchemeType;
+      description?: string | null;
+      in?: SecuritySchemeIn | null;
+      paramName?: string | null;
+      scheme?: string | null;
+      bearerFormat?: string | null;
+      openIdConnectUrl?: string | null;
+      flows?: {
+        implicit?: {
+          authorizationUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        password?: {
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        clientCredentials?: {
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+        authorizationCode?: {
+          authorizationUrl?: string | null;
+          tokenUrl?: string | null;
+          scopes: Array<{ name: string; description: string }>;
+        } | null;
+      } | null;
+    };
+  }>;
+};
+
 export type PlaygroundContentProps = {
   server?: string;
   servers?: string[];
@@ -129,6 +176,18 @@ export type PlaygroundContentProps = {
   pathParams?: PathParam[];
   defaultBody?: string;
   examples?: MediaTypeObject[];
+  security?: SecurityRequirementProp[];
+  securitySchemes?: Array<{
+    name: string;
+    type: SecuritySchemeType;
+    description?: string | null;
+    in?: SecuritySchemeIn | null;
+    paramName?: string | null;
+    scheme?: string | null;
+    bearerFormat?: string | null;
+    openIdConnectUrl?: string | null;
+    flows?: Record<string, unknown> | null;
+  }>;
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
@@ -144,6 +203,8 @@ export const Playground = ({
   pathParams = [],
   defaultBody = "",
   examples,
+  security,
+  securitySchemes = [],
   requiresLogin = false,
   onLogin,
   onSignUp,
@@ -152,6 +213,7 @@ export const Playground = ({
     servers.map((url) => ({ url })),
   );
   const [showSelectIdentity, setShowSelectIdentity] = useState(false);
+  const [showAuthorizeDialog, setShowAuthorizeDialog] = useState(false);
   const identities = useApiIdentities();
   const { setRememberedIdentity, getRememberedIdentity } = useIdentityStore();
   const [, startTransition] = useTransition();
@@ -206,6 +268,7 @@ export const Playground = ({
             : [{ name: "", value: "", active: false }],
         identity: getRememberedIdentity([
           NO_IDENTITY,
+          ...securitySchemes.map((s) => `${SECURITY_SCHEME_PREFIX}${s.name}`),
           ...(identities.data?.map((i) => i.id) ?? []),
         ]),
       },
@@ -216,6 +279,20 @@ export const Playground = ({
     () => identities.data?.find((i) => i.id === identity)?.authorizationFields,
     [identities.data, identity],
   );
+
+  const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
+
+  const selectedSchemeName = identity?.startsWith(SECURITY_SCHEME_PREFIX)
+    ? identity.slice(SECURITY_SCHEME_PREFIX.length)
+    : undefined;
+
+  const securityLockedHeaders = useMemo(() => {
+    if (!selectedSchemeName) return [];
+    return getSecurityLockedHeaders(security, {
+      [selectedSchemeName]:
+        securityCredentials[selectedSchemeName] ?? ({} as never),
+    });
+  }, [security, securityCredentials, selectedSchemeName]);
 
   useEffect(() => {
     if (identity) {
@@ -256,16 +333,42 @@ export const Playground = ({
           break;
       }
 
-      const request = new Request(
-        createUrl(server ?? selectedServer, url, data),
-        {
-          method,
-          headers,
-          body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
-        },
-      );
+      const requestUrl = createUrl(server ?? selectedServer, url, data);
 
-      if (data.identity !== NO_IDENTITY) {
+      const isSecurityScheme =
+        data.identity?.startsWith(SECURITY_SCHEME_PREFIX) ?? false;
+
+      // Inject apiKey query params before creating Request
+      if (isSecurityScheme) {
+        const schemeName = data.identity!.slice(SECURITY_SCHEME_PREFIX.length);
+        const freshCredentials =
+          useSecurityCredentialsStore.getState().credentials;
+        const schemeCredentials = freshCredentials[schemeName]
+          ? { [schemeName]: freshCredentials[schemeName] }
+          : {};
+        for (const [key, value] of getSecurityQueryParams(
+          security,
+          schemeCredentials,
+        )) {
+          requestUrl.searchParams.set(key, value);
+        }
+      }
+
+      const request = new Request(requestUrl, {
+        method,
+        headers,
+        body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
+      });
+
+      if (isSecurityScheme) {
+        const schemeName = data.identity!.slice(SECURITY_SCHEME_PREFIX.length);
+        const freshCredentials =
+          useSecurityCredentialsStore.getState().credentials;
+        const schemeCredentials = freshCredentials[schemeName]
+          ? { [schemeName]: freshCredentials[schemeName] }
+          : {};
+        applySecurityCredentials(request, security, schemeCredentials);
+      } else if (data.identity !== NO_IDENTITY) {
         await identities.data
           ?.find((i) => i.id === data.identity)
           ?.authorizeRequest(request);
@@ -528,7 +631,8 @@ export const Playground = ({
               </Button>
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
-              {identities.data?.length !== 0 && (
+              {(identities.data?.length !== 0 ||
+                securitySchemes.length > 0) && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
                     <IdCardLanyardIcon size={16} />
@@ -538,8 +642,32 @@ export const Playground = ({
                     <IdentitySelector
                       value={identity}
                       identities={identities.data ?? []}
-                      setValue={(value) => setValue("identity", value)}
+                      setValue={(value) => {
+                        if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
+                          const schemeName = value.slice(
+                            SECURITY_SCHEME_PREFIX.length,
+                          );
+                          if (!securityCredentials[schemeName]?.isAuthorized) {
+                            setShowAuthorizeDialog(true);
+                          }
+                        }
+                        setValue("identity", value);
+                      }}
+                      securitySchemes={
+                        securitySchemes.length > 0 ? securitySchemes : undefined
+                      }
+                      securityCredentials={securityCredentials}
+                      onConfigureScheme={() => setShowAuthorizeDialog(true)}
                     />
+                    {selectedSchemeName && (
+                      <AuthorizeDialog
+                        securitySchemes={securitySchemes.filter(
+                          (s) => s.name === selectedSchemeName,
+                        )}
+                        open={showAuthorizeDialog}
+                        onOpenChange={setShowAuthorizeDialog}
+                      />
+                    )}
                   </CollapsibleContent>
                 </Collapsible>
               )}
@@ -561,7 +689,10 @@ export const Playground = ({
               <Headers
                 control={control}
                 schemaHeaders={headers}
-                lockedHeaders={authorizationFields?.headers}
+                lockedHeaders={[
+                  ...(authorizationFields?.headers ?? []),
+                  ...securityLockedHeaders,
+                ]}
               />
               {isBodySupported && <BodyPanel content={examples} />}
             </div>

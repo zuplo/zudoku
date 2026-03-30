@@ -364,6 +364,7 @@ const config: ZudokuConfig = {
       path: "api-shipments",
       categories: [{ label: "General", tags: ["Shipments"] }],
       options: {
+        disableSecurity: false,
         transformExamples: ({ content, auth }) => {
           if (!auth.isAuthenticated) {
             return content;

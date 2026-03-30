@@ -206,6 +206,7 @@ const config = {
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: true, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
@@ -224,6 +225,9 @@ Available options:
   (display name) and `language` (code identifier)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
+- `disableSecurity`: Disable OpenAPI security scheme display (auth badges on operations, security
+  schemes section on the info page, and the Authorize dialog in the playground). Disabled by default
+  (`true`). Set to `false` to enable security scheme support
 - `showVersionSelect`: Control version selector visibility
   - `"if-available"`: Show version selector only when multiple versions exist (default)
   - `"always"`: Always show version selector (disabled if only one version)
@@ -251,6 +255,7 @@ const config = {
       examplesLanguage: "shell", // Default language for code examples
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
+      disableSecurity: true, // Disable security scheme display and playground auth (default)
       showVersionSelect: "if-available", // Control version selector visibility
       expandAllTags: false, // Control initial expanded state of tag categories
       showInfoPage: true, // Show API information page as the index route
