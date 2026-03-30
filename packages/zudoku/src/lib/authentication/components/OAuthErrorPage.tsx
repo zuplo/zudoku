@@ -13,19 +13,17 @@ const errorDetailsMap: Record<string, { message: string }> = {
       "The authentication request was invalid. Please try signing in again.",
   },
   unauthorized_client: {
-    message:
-      "This application is not authorized to access your account. Please contact support.",
+    message: "This application is not authorized to access your account.",
   },
   access_denied: {
     message:
       "You denied access to this application. To continue, please sign in and grant access.",
   },
   unsupported_response_type: {
-    message:
-      "The authentication method is not supported. Please contact support.",
+    message: "The authentication method is not supported.",
   },
   invalid_scope: {
-    message: "The requested permissions are invalid. Please contact support.",
+    message: "The requested permissions are invalid.",
   },
   server_error: {
     message:
@@ -37,15 +35,14 @@ const errorDetailsMap: Record<string, { message: string }> = {
   },
   // Token errors
   invalid_client: {
-    message: "Invalid application credentials. Please contact support.",
+    message: "Invalid application credentials.",
   },
   invalid_grant: {
     message:
       "The authentication code has expired or is invalid. Please sign in again.",
   },
   unsupported_grant_type: {
-    message:
-      "The authentication method is not supported. Please contact support.",
+    message: "The authentication method is not supported.",
   },
   // Custom errors
   invalid_state: {
@@ -64,8 +61,7 @@ const errorDetailsMap: Record<string, { message: string }> = {
     message: "Your authentication session has expired. Please sign in again.",
   },
   configuration_error: {
-    message:
-      "There is an issue with the authentication configuration. Please contact support.",
+    message: "There is an issue with the authentication configuration.",
   },
   unknown_error: {
     message:
