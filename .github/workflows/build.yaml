@@ -101,6 +101,12 @@ jobs:
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
 
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E Tests
+        run: pnpm test:e2e
+
       - name: Check Bundle Size
         run: pnpm size
 

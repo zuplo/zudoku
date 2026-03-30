@@ -121,10 +121,9 @@ test("playground dialog opens from operation", async ({ page }) => {
   });
 
   // Playground trigger is a DialogTrigger with a play icon
-  const playButtons = page.locator('[data-slot="dialog-trigger"]');
-  expect(await playButtons.count()).toBeGreaterThan(0);
-
-  await playButtons.first().click();
+  const playButton = page.locator('[data-slot="dialog-trigger"]').first();
+  await playButton.waitFor({ state: "visible" });
+  await playButton.click();
   await expect(page.getByRole("dialog")).toBeVisible();
 
   // Skip the login prompt if it appears (cosmo-cargo has auth configured)
