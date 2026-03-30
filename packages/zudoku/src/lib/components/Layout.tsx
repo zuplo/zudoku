@@ -12,9 +12,9 @@ import { Slot } from "./Slot.js";
 import { Spinner } from "./Spinner.js";
 
 const LoadingFallback = () => (
-  <main className="col-span-full row-span-full grid place-items-center">
+  <div className="col-span-full row-span-full grid place-items-center">
     <Spinner />
-  </main>
+  </div>
 );
 
 export const Layout = ({ children }: { children?: ReactNode }) => {
