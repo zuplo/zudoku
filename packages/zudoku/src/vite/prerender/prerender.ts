@@ -224,7 +224,14 @@ export const prerender = async ({
 
     if (!docsConfig.publishMarkdown) {
       await Promise.all(
-        markdownFileInfos.map((info) => rm(info.filePath).catch(() => {})),
+        markdownFileInfos.map((info) => {
+          const segments =
+            info.routePath === "/"
+              ? ["index"]
+              : info.routePath.split("/").filter(Boolean);
+          const outputPath = `${path.join(distDir, ...segments)}.md`;
+          return rm(outputPath).catch(() => {});
+        }),
       );
     }
   }
