@@ -49,6 +49,12 @@ const processMarkdownFile = async (
  *
  * It also writes metadata to markdown-info.json used by the llms.txt generator.
  */
+export const getMarkdownOutputPath = (distDir: string, routePath: string) => {
+  const segments =
+    routePath === "/" ? ["index"] : routePath.split("/").filter(Boolean);
+  return `${path.join(distDir, ...segments)}.md`;
+};
+
 const viteMarkdownExportPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
   let markdownFileInfos: MarkdownFileInfo[] = [];
@@ -180,12 +186,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
             content: finalMarkdown,
           });
 
-          const segments =
-            routePath === "/"
-              ? ["index"]
-              : routePath.split("/").filter(Boolean);
-
-          const outputPath = `${path.join(distDir, ...segments)}.md`;
+          const outputPath = getMarkdownOutputPath(distDir, routePath);
 
           await mkdir(path.dirname(outputPath), { recursive: true });
 
