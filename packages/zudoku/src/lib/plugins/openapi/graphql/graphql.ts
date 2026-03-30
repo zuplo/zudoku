@@ -412,10 +412,6 @@ export type SchemaInfoQuery = {
       name?: string | null;
       description?: string | null;
     }>;
-    components?: {
-      __typename?: "Components";
-      schemas?: Array<{ __typename?: "SchemaItem"; name: string }> | null;
-    } | null;
     webhooks: Array<{
       __typename?: "WebhookItem";
       name: string;
@@ -746,11 +742,6 @@ export const SchemaInfoDocument = new TypedDocumentString(`
     tags {
       name
       description
-    }
-    components {
-      schemas {
-        name
-      }
     }
     webhooks {
       name
