@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { cn } from "zudoku";
 import { useZudoku } from "zudoku/hooks";
-import { CalendarIcon, CircleAlert } from "zudoku/icons";
+import { CalendarIcon, InfoIcon } from "zudoku/icons";
 import { useMutation, useQueryClient } from "zudoku/react-query";
 import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
@@ -72,12 +72,14 @@ export const CancelSubscriptionDialog = ({
             </AlertDescription>
           </Alert>
 
-          <Alert variant="destructive">
-            <CircleAlert className="size-4" />
-            <AlertTitle>This action cannot be undone</AlertTitle>
+          <Alert variant="info">
+            <InfoIcon className="size-4" />
+            <AlertTitle>You can still resume before then</AlertTitle>
             <AlertDescription>
-              Once cancelled, you will not be able to recover this plan or its
-              associated settings. You would need to subscribe again.
+              Until {formatDate(billingPeriodEnd)}, you can remove this
+              cancellation from Manage subscription if you change your mind.
+              After your billing period ends, this plan will not renew and you
+              would need to subscribe again to continue.
             </AlertDescription>
           </Alert>
 
