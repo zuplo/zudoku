@@ -146,4 +146,103 @@ describe("redirect routes integration", () => {
       expect(screen.getByTestId("overview")).toHaveTextContent("Overview Page");
     });
   });
+
+  it("redirect from root path works", async () => {
+    await act(async () => {
+      render(
+        <StaticZudoku
+          path="/"
+          redirects={[{ from: "/", to: "/docs/overview" }]}
+          plugins={[testPage("Overview Page")]}
+        />,
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("overview")).toHaveTextContent("Overview Page");
+    });
+  });
+});
+
+const basePathPage = (text: string): ZudokuPlugin & NavigationPlugin => ({
+  getRoutes: () => [
+    {
+      path: "/docs/overview",
+      element: <div data-testid="overview">{text}</div>,
+      handle: { layout: "none" },
+    },
+    {
+      path: "/docs/guide",
+      element: (
+        <div data-testid="guide">
+          <Link to="/old-path">Old link</Link>
+        </div>
+      ),
+      handle: { layout: "none" },
+    },
+  ],
+});
+
+describe("redirect routes with basePath", () => {
+  it("renders page at basePath-prefixed URL", async () => {
+    await act(async () => {
+      render(
+        <StaticZudoku
+          path="/app/docs/overview"
+          basePath="/app"
+          plugins={[basePathPage("Overview with basePath")]}
+        />,
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("overview")).toHaveTextContent(
+        "Overview with basePath",
+      );
+    });
+  });
+
+  it("redirects work with basePath", async () => {
+    await act(async () => {
+      render(
+        <StaticZudoku
+          path="/app/old-path"
+          basePath="/app"
+          redirects={[{ from: "/old-path", to: "/docs/overview" }]}
+          plugins={[basePathPage("Redirected with basePath")]}
+        />,
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("overview")).toHaveTextContent(
+        "Redirected with basePath",
+      );
+    });
+  });
+
+  it("client-side redirect navigation works with basePath", async () => {
+    await act(async () => {
+      render(
+        <StaticZudoku
+          path="/app/docs/guide"
+          basePath="/app"
+          redirects={[{ from: "/old-path", to: "/docs/overview" }]}
+          plugins={[basePathPage("Redirected via link")]}
+        />,
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("guide")).toBeInTheDocument();
+    });
+
+    await userEvent.click(screen.getByText("Old link"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("overview")).toHaveTextContent(
+        "Redirected via link",
+      );
+    });
+  });
 });

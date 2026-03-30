@@ -18,6 +18,7 @@ dist
 tmp
 /out-tsc
 pagefind/
+test-results/
 
 # dependencies
 node_modules

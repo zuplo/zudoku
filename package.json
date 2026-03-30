@@ -19,7 +19,8 @@
     "clean": "git clean -Xfde !.env",
     "test": "vitest run --typecheck",
     "test:coverage": "vitest run --typecheck --coverage",
-    "size": "size-limit"
+    "size": "size-limit",
+    "test:e2e": "playwright test"
   },
   "engines": {
     "node": ">=20.19.0 <21.0.0 || >=22.12.0",
@@ -29,11 +30,13 @@
     "@biomejs/biome": "2.4.6",
     "@nx/vite": "22.5.4",
     "@nx/web": "22.5.4",
+    "@playwright/test": "^1.58.2",
     "@size-limit/file": "^12.0.1",
     "@vitest/coverage-v8": "4.0.18",
     "lefthook": "2.1.2",
     "nx": "22.5.4",
     "oxfmt": "0.36.0",
+    "publint": "^0.3.18",
     "size-limit": "^12.0.1",
     "typescript": "5.9.3",
     "vitest": "4.0.18"

@@ -61,7 +61,6 @@
     "./vite": "./src/vite/index.ts",
     "./app/*": "./src/app/*",
     "./hooks": "./src/lib/hooks/index.ts",
-    "./main.css": "./src/app/main.css",
     "./processors/*": "./src/lib/plugins/openapi/processors/*.ts",
     "./with-zuplo": "./src/zuplo/with-zuplo.ts",
     "./testing": "./src/lib/testing/index.tsx"
@@ -72,7 +71,7 @@
     "typecheck": "tsc --project tsconfig.app.json --noEmit",
     "generate:types": "tsx scripts/generate-types.js && tsx scripts/generate-flat-config.js",
     "build:standalone": "vite build --mode standalone --config vite.standalone.config.ts --log-level=error",
-    "prepublishOnly": "tsx scripts/generate-publish-exports.ts",
+    "prepublishOnly": "tsx scripts/generate-publish-exports.ts && publint .",
     "postpublish": "git checkout -- package.json",
     "clean": "rm -rf dist",
     "codegen": "graphql-codegen --config ./src/codegen.ts"
