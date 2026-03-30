@@ -104,6 +104,7 @@ export const docs: Navigation = [
       "docs/guides/using-multiple-apis",
       "docs/guides/managing-api-keys-and-identities",
       "docs/guides/navigation-rules",
+      "docs/guides/redirects",
       "docs/guides/transforming-examples",
       "docs/guides/processors",
     ],
