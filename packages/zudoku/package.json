@@ -195,7 +195,7 @@
     "yaml": "2.8.3",
     "yargs": "18.0.0",
     "zod": "4.3.6",
-    "zustand": "5.0.11"
+    "zustand": "5.0.12"
   },
   "devDependencies": {
     "@clerk/clerk-js": "^5.125.3",
