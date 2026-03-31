@@ -11,15 +11,17 @@ import { cn } from "../../util/cn.js";
 
 export const MCPEndpoint = ({
   serverUrl,
+  operationPath,
   summary,
   data,
 }: {
   serverUrl?: string;
+  operationPath?: string;
   data?: boolean | Record<string, unknown>;
   summary?: string;
 }) => {
   const [isCopied, setIsCopied] = useState(false);
-  const mcpUrl = `${(serverUrl ?? "").replace(/\/+$/, "")}/mcp`;
+  const mcpUrl = `${(serverUrl ?? "").replace(/\/+$/, "")}${operationPath ?? "/mcp"}`;
 
   const name =
     typeof data === "boolean"
@@ -29,11 +31,8 @@ export const MCPEndpoint = ({
   const claudeConfig = `{
   "mcpServers": {
     "${name}": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "${mcpUrl}"
-      ]
+      "type": "http",
+      "url": "${mcpUrl}"
     }
   }
 }`;
@@ -47,6 +46,14 @@ export const MCPEndpoint = ({
 }`;
 
   const chatgptConfig = mcpUrl;
+
+  const genericConfig = `{
+  "mcpServers": {
+    "${name}": {
+      "url": "${mcpUrl}"
+    }
+  }
+}`;
 
   const vscodeConfig = `{
   "servers": {
@@ -117,11 +124,12 @@ export const MCPEndpoint = ({
           <hr className="my-4" />
 
           <Tabs defaultValue="claude" className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="claude">Claude</TabsTrigger>
               <TabsTrigger value="chatgpt">ChatGPT</TabsTrigger>
               <TabsTrigger value="cursor">Cursor</TabsTrigger>
               <TabsTrigger value="vscode">VS Code</TabsTrigger>
+              <TabsTrigger value="generic">Generic</TabsTrigger>
             </TabsList>
 
             <Typography className="text-sm max-w-full">
@@ -261,6 +269,34 @@ export const MCPEndpoint = ({
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
                 >
                   View official docs
+                  <ExternalLinkIcon className="h-3 w-3" />
+                </a>
+              </TabsContent>
+
+              <TabsContent value="generic" className="space-y-3">
+                <p>
+                  Generic <InlineCode>.mcp.json</InlineCode> configuration
+                  format that works with most MCP-compatible AI tools.
+                </p>
+                <SyntaxHighlight
+                  showLanguageIndicator
+                  title=".mcp.json"
+                  language="json"
+                  code={genericConfig}
+                  className="mt-2"
+                />
+                <p className="text-sm text-muted-foreground">
+                  Place this file in your project root or the appropriate
+                  configuration directory for your AI tool. The exact location
+                  depends on your specific tool.
+                </p>
+                <a
+                  href="https://modelcontextprotocol.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  Learn more about MCP
                   <ExternalLinkIcon className="h-3 w-3" />
                 </a>
               </TabsContent>
