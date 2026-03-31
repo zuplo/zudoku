@@ -201,8 +201,8 @@ const config = {
     options: {
       examplesLanguage: "shell", // Default language for code examples
       supportedLanguages: [
-        { label: "cURL", language: "shell" },
-        { label: "JavaScript", language: "javascript" },
+        { value: "shell", label: "cURL" },
+        { value: "javascript", label: "JavaScript" },
       ],
       disablePlayground: false, // Disable the interactive API playground
       disableSidecar: false, // Disable the sidecar completely
@@ -220,8 +220,8 @@ const config = {
 Available options:
 
 - `examplesLanguage`: Set default language for code examples
-- `supportedLanguages`: Array of language options for code examples. Each option has `label`
-  (display name) and `language` (code identifier)
+- `supportedLanguages`: Array of language options for code examples. Each option has `value` (code
+  identifier) and `label` (display name)
 - `disablePlayground`: Disable the interactive API playground globally
 - `disableSidecar`: Disable the sidecar panel completely
 - `showVersionSelect`: Control version selector visibility

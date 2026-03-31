@@ -157,11 +157,15 @@ const navigationPlugin: ZudokuPlugin = {
       },
     ];
   },
-  getSidebar: async (path: string) => {
-    // Return custom sidebar items
-    return {
-      items: [{ id: "custom", label: "Custom Page" }],
-    };
+  getNavigation: async (path: string, context) => {
+    // Return custom navigation items
+    return [
+      {
+        type: "link",
+        to: "/custom",
+        label: "Custom Page",
+      },
+    ];
   },
 };
 ```

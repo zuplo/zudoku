@@ -45,7 +45,6 @@ one of several types. At the simplest level you may only have links and categori
       "to": "/api",
       "label": "API Reference",
       "icon": "code",
-      "description": "Complete API documentation",
       "badge": {
         "label": "v2.0",
         "color": "blue"
@@ -58,13 +57,17 @@ one of several types. At the simplest level you may only have links and categori
 
 ## Navigation Items
 
-Navigation items can be of these types: `category`, `doc`, `link`, or `custom-page`.
+Navigation items can be of these types: `category`, `doc`, `link`, `custom-page`, `separator`,
+`section`, or `filter`.
 
 - `link`: A direct link to a page or external URL.
 - `category`: A group of links that can be expanded or collapsed.
-- `doc`: A reference to a document by it's file path: `file`.
-- `custom-pages`: A custom page that is made of a React component, see
+- `doc`: A reference to a document by its file path: `file`.
+- `custom-page`: A custom page that is made of a React component, see
   [Custom Pages](../guides/custom-pages.md)
+- `separator`: A visual separator line between navigation items.
+- `section`: A non-collapsible label/heading in the sidebar.
+- `filter`: Adds a filter/search input to the sidebar for quick filtering of navigation items.
 
 ### `type: link`
 
@@ -87,7 +90,7 @@ type NavigationLink = {
   to: string;
   label: string;
   icon?: string; // Lucide icon name
-  description?: string;
+  target?: "_self" | "_blank";
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
@@ -98,7 +101,6 @@ type NavigationLink = {
     | "always"
     | "hide"
     | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
-  target?: "_self" | "_blank";
 };
 ```
 </details>
@@ -247,6 +249,7 @@ type NavigationCustomPage = {
   label?: string;
   element: any;
   icon?: string; // Lucide icon name
+  layout?: "default" | "none"; // Page layout mode
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
@@ -262,6 +265,40 @@ type NavigationCustomPage = {
 ```
 
 </details>
+
+### `type: separator`
+
+A visual separator line between navigation items. Useful for visually grouping items in the sidebar.
+
+```json
+{
+  "type": "separator"
+}
+```
+
+### `type: section`
+
+A non-collapsible label/heading in the sidebar. Unlike categories, sections don't wrap child items -
+they simply display a label.
+
+```json
+{
+  "type": "section",
+  "label": "Advanced Topics"
+}
+```
+
+### `type: filter`
+
+Adds a filter/search input to the sidebar that allows users to quickly filter navigation items. You
+can customize the placeholder text.
+
+```json
+{
+  "type": "filter",
+  "placeholder": "Filter documentation"
+}
+```
 
 ## Display Control
 

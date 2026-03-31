@@ -149,8 +149,7 @@ docs: {
 
 #### `showLastModified`
 
-**Type:** `boolean`  
-**Default:** `false`
+**Type:** `boolean` **Default:** `true`
 
 Whether to show the last modified date by default.
 
