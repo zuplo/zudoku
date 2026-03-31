@@ -1,23 +1,37 @@
 import type { Plan } from "../types/PlanType";
 
 type PurchaseDetailsTax = {
-  amount?: string | number;
+  currency: string;
+  subtotal: number;
+  total: number;
+  taxAmount: number;
+  taxInclusive: boolean;
+  taxes: Array<{
+    name: string;
+    type: string;
+    taxType: string;
+    jurisdiction: string;
+    code: string;
+  }>;
+  items: Array<{
+    amount: number;
+    taxAmount: number;
+  }>;
 };
 
 export type PurchaseDetailsResponse =
-  | (Plan & { tax?: PurchaseDetailsTax })
-  | { plan: Plan; tax?: PurchaseDetailsTax };
+  Plan & { tax?: PurchaseDetailsTax };
 
 export const getPlanFromPurchaseDetails = (
   response: PurchaseDetailsResponse,
 ) => {
-  return "plan" in response ? response.plan : response;
+  return response;
 };
 
 export const getTaxAmountFromPurchaseDetails = (
   response: PurchaseDetailsResponse,
 ) => {
-  const taxAmount = response?.tax?.amount;
+  const taxAmount = response?.tax?.taxAmount;
   const numericAmount =
     typeof taxAmount === "number"
       ? taxAmount
@@ -28,4 +42,21 @@ export const getTaxAmountFromPurchaseDetails = (
   }
 
   return numericAmount;
+};
+
+export const getTaxLabelFromPurchaseDetails = (
+  response: PurchaseDetailsResponse,
+) => {
+  const taxes = response.tax?.taxes ?? [];
+  const hasVatTax = taxes.some(
+    (tax) => tax.taxType?.toLowerCase() === "vat",
+  );
+
+  return hasVatTax ? "VAT" : "tax";
+};
+
+export const isTaxInclusiveFromPurchaseDetails = (
+  response: PurchaseDetailsResponse,
+) => {
+  return response.tax?.taxInclusive === true;
 };

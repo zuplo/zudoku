@@ -20,6 +20,8 @@ import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import {
   getPlanFromPurchaseDetails,
   getTaxAmountFromPurchaseDetails,
+  getTaxLabelFromPurchaseDetails,
+  isTaxInclusiveFromPurchaseDetails,
 } from "../utils/purchaseDetails";
 import { queryClient } from "../ZuploMonetizationWrapper";
 
@@ -37,6 +39,8 @@ const CheckoutConfirmPage = () => {
 
   const selectedPlan = getPlanFromPurchaseDetails(purchaseDetails.data);
   const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
+  const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
+  const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
   const { quotas, features } = categorizeRateCards(rateCards ?? [], {
     currency: selectedPlan?.currency,
@@ -123,7 +127,9 @@ const CheckoutConfirmPage = () => {
                       )}
                       {taxAmount != null && (
                         <div className="text-xs text-muted-foreground font-normal mt-1">
-                          + {formatPrice(taxAmount, selectedPlan?.currency)} VAT
+                          {taxInclusive
+                            ? `${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
+                            : `+ ${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
                         </div>
                       )}
                     </div>
