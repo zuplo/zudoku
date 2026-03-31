@@ -256,12 +256,13 @@ export const Playground = ({
           break;
       }
 
+      const upperMethod = method.toUpperCase();
       const request = new Request(
         createUrl(server ?? selectedServer, url, data),
         {
-          method,
+          method: upperMethod,
           headers,
-          body: ["GET", "HEAD"].includes(method.toUpperCase()) ? null : body,
+          body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
         },
       );
 
