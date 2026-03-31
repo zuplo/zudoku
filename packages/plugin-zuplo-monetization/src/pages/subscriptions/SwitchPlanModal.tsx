@@ -9,17 +9,7 @@ import {
   XIcon,
 } from "zudoku/icons";
 import { useMutation } from "zudoku/react-query";
-import { ActionButton } from "zudoku/ui/ActionButton";
 import { Alert, AlertDescription } from "zudoku/ui/Alert";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "zudoku/ui/AlertDialog";
 import { Button } from "zudoku/ui/Button";
 import {
   Dialog,
@@ -204,16 +194,30 @@ const modeLabelMap: Record<SwitchPlanTarget["mode"], string> = {
   private: "Switch",
 };
 
+const isSwitchPlanTarget = (value: unknown): value is SwitchPlanTarget => {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  if (!("subscriptionId" in value) || !("plan" in value) || !("mode" in value)) {
+    return false;
+  }
+
+  return true;
+};
+
 const PlanComparisonItem = ({
   comparison,
   subscriptionId,
   mode,
   onRequestChange,
+  isSwitching,
 }: {
   comparison: PlanComparison;
   subscriptionId: string;
   mode: SwitchPlanTarget["mode"];
   onRequestChange: (switchTo: SwitchPlanTarget) => void;
+  isSwitching: boolean;
 }) => {
   const price = getPriceFromPlan(comparison.plan);
   const isCustom = comparison.plan.key === "enterprise";
@@ -256,6 +260,7 @@ const PlanComparisonItem = ({
               })
             }
             size="sm"
+            disabled={isSwitching}
           >
             {modeLabelMap[mode]}
           </Button>
@@ -355,86 +360,6 @@ export type SwitchPlanTarget = {
   mode: "upgrade" | "downgrade" | "private";
 };
 
-const ConfirmSwitchAlert = ({
-  switchTo,
-  onRequestClose,
-}: {
-  switchTo: SwitchPlanTarget;
-  onRequestClose: () => void;
-}) => {
-  const deploymentName = useDeploymentName();
-  const context = useZudoku();
-  const { generateUrl } = useUrlUtils();
-
-  const mutation = useMutation<{ url: string }>({
-    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
-    meta: {
-      context,
-      request: {
-        method: "POST",
-        body: JSON.stringify({
-          planId: switchTo.plan.id,
-          successURL: generateUrl(`/subscription-change-confirm`, {
-            searchParams: {
-              planId: switchTo.plan.id,
-              subscriptionId: switchTo.subscriptionId,
-            },
-          }),
-          cancelURL: generateUrl("/subscriptions", {
-            searchParams: { subscriptionId: switchTo.subscriptionId },
-          }),
-        }),
-      },
-    },
-    retry: false,
-    onSuccess: (data) => {
-      window.location.href = data.url;
-    },
-  });
-
-  return (
-    <AlertDialog open={true} onOpenChange={onRequestClose}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            Confirm{" "}
-            {switchTo.mode === "private"
-              ? "plan change"
-              : switchTo.mode === "upgrade"
-                ? "upgrade"
-                : "downgrade"}
-          </AlertDialogTitle>
-          {mutation.isError && (
-            <Alert variant="destructive">
-              <AlertDescription className="first-letter:uppercase">
-                {mutation.error.message}
-              </AlertDescription>
-            </Alert>
-          )}
-          <AlertDialogDescription>
-            {switchTo.mode === "private"
-              ? `Are you sure you want to switch to ${switchTo.plan.name}? This will take effect immediately.`
-              : switchTo.mode === "upgrade"
-                ? `Are you sure you want to upgrade to ${switchTo.plan.name}? This will take effect immediately.`
-                : `Are you sure you want to downgrade to ${switchTo.plan.name}? This will take effect at the start of your next billing cycle.`}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={mutation.isPending}>
-            Cancel
-          </AlertDialogCancel>
-          <ActionButton
-            isPending={mutation.isPending}
-            onClick={() => mutation.mutate()}
-          >
-            {modeLabelMap[switchTo.mode]}
-          </ActionButton>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
-};
-
 export const SwitchPlanModal = ({
   subscription,
   children,
@@ -443,8 +368,48 @@ export const SwitchPlanModal = ({
 }>) => {
   const [open, setOpen] = useState(false);
   const { data: plansData } = usePlans();
-  const [switchTo, setSwitchTo] = useState<SwitchPlanTarget | null>(null);
   const { pricing } = useMonetizationConfig();
+  const deploymentName = useDeploymentName();
+  const context = useZudoku();
+  const { generateUrl } = useUrlUtils();
+
+  const switchPlanMutation = useMutation<
+    { url: string },
+    Error,
+    SwitchPlanTarget
+  >({
+    mutationKey: [`/v3/zudoku-metering/${deploymentName}/stripe/checkout`],
+    meta: {
+      context,
+      request: (variables) => {
+        if (!isSwitchPlanTarget(variables)) {
+          throw new Error("Invalid switch plan request");
+        }
+
+        const switchTo = variables;
+        return {
+          method: "POST",
+          body: JSON.stringify({
+            planId: switchTo.plan.id,
+            successURL: generateUrl(`/subscription-change-confirm`, {
+              searchParams: {
+                planId: switchTo.plan.id,
+                subscriptionId: switchTo.subscriptionId,
+                mode: switchTo.mode,
+              },
+            }),
+            cancelURL: generateUrl("/subscriptions", {
+              searchParams: { subscriptionId: switchTo.subscriptionId },
+            }),
+          }),
+        };
+      },
+    },
+    retry: false,
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+  });
 
   const currentPlan = plansData?.items.find(
     (p) => p.id === subscription.plan.id,
@@ -485,16 +450,8 @@ export const SwitchPlanModal = ({
     };
   }, [plansData?.items, currentPlan, pricing?.units]);
 
-  const switching = switchTo !== null;
-
   return (
     <>
-      {switching && (
-        <ConfirmSwitchAlert
-          switchTo={switchTo}
-          onRequestClose={() => setSwitchTo(null)}
-        />
-      )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>
           {children ?? (
@@ -511,6 +468,13 @@ export const SwitchPlanModal = ({
               </DialogTitle>
             </DialogHeader>
             <div className="mt-4 space-y-6">
+              {switchPlanMutation.isError && (
+                <Alert variant="destructive">
+                  <AlertDescription className="first-letter:uppercase">
+                    {switchPlanMutation.error.message}
+                  </AlertDescription>
+                </Alert>
+              )}
               {currentPlan && (
                 <Item variant="outline">
                   <ItemContent>
@@ -542,7 +506,10 @@ export const SwitchPlanModal = ({
                         comparison={comparison}
                         subscriptionId={subscription.id}
                         mode="upgrade"
-                        onRequestChange={setSwitchTo}
+                        onRequestChange={(target) =>
+                          switchPlanMutation.mutate(target)
+                        }
+                        isSwitching={switchPlanMutation.isPending}
                       />
                     ))}
                   </div>
@@ -569,7 +536,10 @@ export const SwitchPlanModal = ({
                         comparison={comparison}
                         subscriptionId={subscription.id}
                         mode="downgrade"
-                        onRequestChange={setSwitchTo}
+                        onRequestChange={(target) =>
+                          switchPlanMutation.mutate(target)
+                        }
+                        isSwitching={switchPlanMutation.isPending}
                       />
                     ))}
                   </div>
@@ -596,7 +566,10 @@ export const SwitchPlanModal = ({
                         comparison={comparison}
                         subscriptionId={subscription.id}
                         mode="private"
-                        onRequestChange={setSwitchTo}
+                        onRequestChange={(target) =>
+                          switchPlanMutation.mutate(target)
+                        }
+                        isSwitching={switchPlanMutation.isPending}
                       />
                     ))}
                   </div>
