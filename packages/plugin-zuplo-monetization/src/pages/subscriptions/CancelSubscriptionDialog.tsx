@@ -68,7 +68,9 @@ export const CancelSubscriptionDialog = ({
               Your plan will be canceled at the end of your billing cycle.
             </AlertTitle>
             <AlertDescription>
-              You'll retain access until {formatDate(billingPeriodEnd)}
+              You'll retain access until {formatDate(billingPeriodEnd)}. After
+              your billing period ends, this plan will not renew and you would
+              need to subscribe again to continue.
             </AlertDescription>
           </Alert>
 
@@ -76,10 +78,9 @@ export const CancelSubscriptionDialog = ({
             <InfoIcon className="size-4" />
             <AlertTitle>You can still resume before then</AlertTitle>
             <AlertDescription>
-              Until {formatDate(billingPeriodEnd)}, you can remove this
-              cancellation from Manage subscription if you change your mind.
-              After your billing period ends, this plan will not renew and you
-              would need to subscribe again to continue.
+              If you change your mind you have until{" "}
+              {formatDate(billingPeriodEnd)} to remove this cancellation from
+              Manage subscription.
             </AlertDescription>
           </Alert>
 
@@ -102,7 +103,7 @@ export const CancelSubscriptionDialog = ({
             <p
               className={cn(
                 "text-xs text-destructive transition-opacity opacity-0",
-                confirmationText && !isConfirmed && "opacity-100",
+                confirmationText && !isConfirmed && "opacity-100"
               )}
             >
               Please type the plan name exactly as shown
