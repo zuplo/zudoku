@@ -153,7 +153,7 @@ const ObjectSchemaView = ({
     return properties ? { group, properties } : [];
   });
 
-  const deprecatedProperties = groupedProperties["deprecated"];
+  const deprecatedProperties = groupedProperties.deprecated;
 
   const additionalObjectProperties = typeof schema.additionalProperties ===
     "object" && <SchemaView schema={schema.additionalProperties} embedded />;
