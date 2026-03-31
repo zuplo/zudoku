@@ -3,7 +3,12 @@ import { useZudoku } from "zudoku/hooks";
 import { CheckIcon, LockIcon } from "zudoku/icons";
 import { useMutation, useQuery } from "zudoku/react-query";
 import { Link, useNavigate, useSearchParams } from "zudoku/router";
-import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
 import { FeatureItem } from "../components/FeatureItem";
@@ -111,6 +116,15 @@ const CheckoutConfirmPage = () => {
       );
     },
   });
+  const confirmButtonDisabled =
+    createSubscriptionMutation.isPending || !selectedPlan;
+  const confirmButtonLabel = createSubscriptionMutation.isPending
+    ? "Processing Payment..."
+    : purchaseDetails.isPending
+      ? "Loading plan details..."
+      : purchaseDetails.isError
+        ? "Could not load plan details"
+        : "Confirm & Subscribe";
 
   return (
     <div className="w-full bg-muted min-h-screen flex items-center justify-center px-4 py-12 gap-4">
@@ -119,6 +133,18 @@ const CheckoutConfirmPage = () => {
           <Alert className="mb-4" variant="destructive">
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{purchaseDetails.error.message}</AlertDescription>
+            <AlertAction>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void purchaseDetails.refetch()}
+                disabled={purchaseDetails.isFetching}
+              >
+                {purchaseDetails.isFetching
+                  ? "Retrying..."
+                  : "Retry loading details"}
+              </Button>
+            </AlertAction>
           </Alert>
         )}
         {createSubscriptionMutation.isError && (
@@ -218,13 +244,9 @@ const CheckoutConfirmPage = () => {
             <Button
               className="w-full"
               onClick={() => createSubscriptionMutation.mutate()}
-              disabled={createSubscriptionMutation.isPending || !selectedPlan}
+              disabled={confirmButtonDisabled}
             >
-              {createSubscriptionMutation.isPending
-                ? "Processing Payment..."
-                : purchaseDetails.isPending
-                  ? "Loading plan details..."
-                  : "Confirm & Subscribe"}
+              {confirmButtonLabel}
             </Button>
             <Button
               variant="ghost"
