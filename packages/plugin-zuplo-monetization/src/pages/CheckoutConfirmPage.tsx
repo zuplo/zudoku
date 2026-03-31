@@ -1,14 +1,9 @@
 import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import { CheckIcon, LockIcon } from "zudoku/icons";
-import { useMutation, useQuery } from "zudoku/react-query";
+import { useMutation, useSuspenseQuery } from "zudoku/react-query";
 import { Link, useNavigate, useSearchParams } from "zudoku/router";
-import {
-  Alert,
-  AlertAction,
-  AlertDescription,
-  AlertTitle,
-} from "zudoku/ui/Alert";
+import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
 import { FeatureItem } from "../components/FeatureItem";
@@ -32,34 +27,16 @@ type PurchaseDetailsResponse =
   | (Plan & { tax?: PurchaseDetailsTax })
   | { plan: Plan; tax?: PurchaseDetailsTax };
 
-const getPlanFromPurchaseDetails = (
-  response: PurchaseDetailsResponse | undefined,
-) => {
-  if (!response) {
-    return;
-  }
-
-  if ("plan" in response) {
-    return response.plan;
-  }
-
-  return response;
+const getPlanFromPurchaseDetails = (response: PurchaseDetailsResponse) => {
+  return "plan" in response ? response.plan : response;
 };
 
-const getTaxAmountFromPurchaseDetails = (
-  response: PurchaseDetailsResponse | undefined,
-) => {
-  if (!response || !("tax" in response)) {
-    return;
-  }
-
-  const amount = response.tax?.amount;
-  if (amount == null) {
-    return;
-  }
-
+const getTaxAmountFromPurchaseDetails = (response: PurchaseDetailsResponse) => {
+  const taxAmount = response?.tax?.amount;
   const numericAmount =
-    typeof amount === "number" ? amount : Number.parseFloat(amount);
+    typeof taxAmount === "number"
+      ? taxAmount
+      : Number.parseFloat(taxAmount ?? "");
 
   if (!Number.isFinite(numericAmount)) {
     return;
@@ -78,7 +55,7 @@ const CheckoutConfirmPage = () => {
 
   if (!planId) throw new Error("Parameter `planId` missing");
 
-  const purchaseDetails = useQuery<PurchaseDetailsResponse>({
+  const purchaseDetails = useSuspenseQuery<PurchaseDetailsResponse>({
     queryKey: [
       `/v3/zudoku-metering/${deploymentName}/plans/${planId}/purchase-details`,
     ],
@@ -116,37 +93,10 @@ const CheckoutConfirmPage = () => {
       );
     },
   });
-  const confirmButtonDisabled =
-    createSubscriptionMutation.isPending || !selectedPlan;
-  const confirmButtonLabel = createSubscriptionMutation.isPending
-    ? "Processing Payment..."
-    : purchaseDetails.isPending
-      ? "Loading plan details..."
-      : purchaseDetails.isError
-        ? "Could not load plan details"
-        : "Confirm & Subscribe";
 
   return (
     <div className="w-full bg-muted min-h-screen flex items-center justify-center px-4 py-12 gap-4">
       <div className="max-w-2xl w-full">
-        {purchaseDetails.isError && (
-          <Alert className="mb-4" variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{purchaseDetails.error.message}</AlertDescription>
-            <AlertAction>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => void purchaseDetails.refetch()}
-                disabled={purchaseDetails.isFetching}
-              >
-                {purchaseDetails.isFetching
-                  ? "Retrying..."
-                  : "Retry loading details"}
-              </Button>
-            </AlertAction>
-          </Alert>
-        )}
         {createSubscriptionMutation.isError && (
           <Alert className="mb-4" variant="destructive">
             <AlertTitle>Error</AlertTitle>
@@ -244,9 +194,11 @@ const CheckoutConfirmPage = () => {
             <Button
               className="w-full"
               onClick={() => createSubscriptionMutation.mutate()}
-              disabled={confirmButtonDisabled}
+              disabled={createSubscriptionMutation.isPending || !selectedPlan}
             >
-              {confirmButtonLabel}
+              {createSubscriptionMutation.isPending
+                ? "Processing Payment..."
+                : "Confirm & Subscribe"}
             </Button>
             <Button
               variant="ghost"
