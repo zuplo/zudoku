@@ -1,6 +1,7 @@
 ---
 title: Documenting MCP Servers
 sidebar_icon: bot
+zuplo: false
 ---
 
 Zudoku can render a dedicated MCP endpoint UI for any OpenAPI operation that has the `x-mcp-server`
