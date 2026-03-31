@@ -103,7 +103,7 @@ export const CancelSubscriptionDialog = ({
             <p
               className={cn(
                 "text-xs text-destructive transition-opacity opacity-0",
-                confirmationText && !isConfirmed && "opacity-100"
+                confirmationText && !isConfirmed && "opacity-100",
               )}
             >
               Please type the plan name exactly as shown
