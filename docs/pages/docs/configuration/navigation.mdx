@@ -95,6 +95,7 @@ type NavigationLink = {
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
+    invert?: boolean;
   };
   display?:
     | "auth"
@@ -222,6 +223,7 @@ type NavigationDoc = {
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
+    invert?: boolean;
   };
   display?:
     | "auth"
@@ -557,6 +559,9 @@ sidebar_label: Short Title
 
 In this example, the document's title remains "My Long Title," but the sidebar displays "Short
 Title."
+
+For the complete list of supported frontmatter properties, see
+[Frontmatter](/docs/markdown/frontmatter).
 
 ## Common Patterns
 
