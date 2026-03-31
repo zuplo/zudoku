@@ -8,7 +8,7 @@
         "export": "MonetizationInboundPolicy",
         "options": {
           "meters": {
-            "api": 1
+            "requests": 1
           }
         }
       }

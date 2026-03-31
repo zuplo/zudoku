@@ -191,7 +191,7 @@ describe("PricingPage", () => {
             rateCards: [
               {
                 type: "usage_based",
-                key: "api-requests",
+                key: "requests",
                 name: "API Requests",
                 billingCadence: "P1M",
                 price: {
@@ -218,7 +218,7 @@ describe("PricingPage", () => {
     ];
     mockSubscriptionData.items = [];
 
-    render(<PricingPage units={{ "api-requests": "request" }} />);
+    render(<PricingPage units={{ requests: "request" }} />);
 
     expect(screen.getByText(/\/request after quota/)).toBeInTheDocument();
   });
