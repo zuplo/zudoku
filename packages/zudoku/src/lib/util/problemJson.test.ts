@@ -188,6 +188,20 @@ describe("throwIfProblemJson", () => {
     ).rejects.toThrow(body.detail);
   });
 
+  it("should throw title for application/json when body is RFC 7807-like (title + status)", async () => {
+    const body = {
+      type: "https://zup.fail/http-status/400",
+      title: "Bad Request",
+      status: 400,
+    };
+
+    await expect(
+      throwIfProblemJson(
+        createResponse(body, { contentType: "application/json" }),
+      ),
+    ).rejects.toThrow(body.title);
+  });
+
   it("should not throw for error responses with invalid JSON", async () => {
     await expect(
       throwIfProblemJson(createResponse("not json")),

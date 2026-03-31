@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useZudoku } from "zudoku/hooks";
 import { CalendarIcon, CircleSlashIcon } from "zudoku/icons";
 import { useMutation, useQueryClient } from "zudoku/react-query";
@@ -47,15 +48,28 @@ export const RestoreSubscriptionDialog = ({
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      restoreSubscriptionMutation.reset();
+    }
+  }, [open, restoreSubscriptionMutation]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    if (!nextOpen) {
+      restoreSubscriptionMutation.reset();
+    }
+    onOpenChange(nextOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Resume subscription</DialogTitle>
           <DialogDescription>
             You scheduled <span className="font-medium">{planName}</span> to
-            end. You can still change your mind before the current billing period
-            ends.
+            end. You can still change your mind before the current billing
+            period ends.
           </DialogDescription>
         </DialogHeader>
 
@@ -65,8 +79,8 @@ export const RestoreSubscriptionDialog = ({
             <AlertTitle>What happens if you resume</AlertTitle>
             <AlertDescription className="space-y-2">
               <p>
-                Your access stays in place until{" "}
-                {formatDate(billingPeriodEnd)} either way.
+                Your access stays in place until {formatDate(billingPeriodEnd)}{" "}
+                either way.
               </p>
               <p>
                 Confirming will remove the pending cancellation. Your
@@ -98,7 +112,7 @@ export const RestoreSubscriptionDialog = ({
           >
             Resume subscription
           </ActionButton>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          <Button variant="ghost" onClick={() => handleOpenChange(false)}>
             Keep cancellation
           </Button>
         </div>
