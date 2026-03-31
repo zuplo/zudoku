@@ -99,7 +99,9 @@ const SubscriptionChangeConfirmPage = () => {
             <h1 className="text-2xl font-bold text-card-foreground mb-3">
               Confirm plan change
             </h1>
-            <p className="text-muted-foreground text-base">{effectiveChangeMessage}</p>
+            <p className="text-muted-foreground text-base">
+              {effectiveChangeMessage}
+            </p>
             <p className="text-muted-foreground text-base">
               Please confirm the details below to change your subscription.
             </p>

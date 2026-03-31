@@ -19,8 +19,7 @@ type PurchaseDetailsTax = {
   }>;
 };
 
-export type PurchaseDetailsResponse =
-  Plan & { tax?: PurchaseDetailsTax };
+export type PurchaseDetailsResponse = Plan & { tax?: PurchaseDetailsTax };
 
 export const getPlanFromPurchaseDetails = (
   response: PurchaseDetailsResponse,
@@ -48,9 +47,7 @@ export const getTaxLabelFromPurchaseDetails = (
   response: PurchaseDetailsResponse,
 ) => {
   const taxes = response.tax?.taxes ?? [];
-  const hasVatTax = taxes.some(
-    (tax) => tax.taxType?.toLowerCase() === "vat",
-  );
+  const hasVatTax = taxes.some((tax) => tax.taxType?.toLowerCase() === "vat");
 
   return hasVatTax ? "VAT" : "tax";
 };

@@ -199,7 +199,11 @@ const isSwitchPlanTarget = (value: unknown): value is SwitchPlanTarget => {
     return false;
   }
 
-  if (!("subscriptionId" in value) || !("plan" in value) || !("mode" in value)) {
+  if (
+    !("subscriptionId" in value) ||
+    !("plan" in value) ||
+    !("mode" in value)
+  ) {
     return false;
   }
 
@@ -383,7 +387,9 @@ export const SwitchPlanModal = ({
       context,
       request: (variables) => {
         if (!isSwitchPlanTarget(variables)) {
-          throw new Error("Invalid switch plan request");
+          throw new Error(
+            "Couldn't start the plan change. Please refresh and try again.",
+          );
         }
 
         const switchTo = variables;
@@ -451,134 +457,132 @@ export const SwitchPlanModal = ({
   }, [plansData?.items, currentPlan, pricing?.units]);
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          {children ?? (
-            <Button variant="outline" size="sm">
-              <ArrowLeftRightIcon /> Switch Plan
-            </Button>
-          )}
-        </DialogTrigger>
-        <DialogContent>
-          <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
-            <DialogHeader className="text-center">
-              <DialogTitle className="text-xl font-semibold">
-                Change Your Plan
-              </DialogTitle>
-            </DialogHeader>
-            <div className="mt-4 space-y-6">
-              {switchPlanMutation.isError && (
-                <Alert variant="destructive">
-                  <AlertDescription className="first-letter:uppercase">
-                    {switchPlanMutation.error.message}
-                  </AlertDescription>
-                </Alert>
-              )}
-              {currentPlan && (
-                <Item variant="outline">
-                  <ItemContent>
-                    <ItemTitle>Current Plan</ItemTitle>
-                    <ItemDescription className="text-lg font-bold">
-                      {currentPlan.name}
-                    </ItemDescription>
-                  </ItemContent>
-                </Item>
-              )}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {children ?? (
+          <Button variant="outline" size="sm">
+            <ArrowLeftRightIcon /> Switch Plan
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent>
+        <div className="sm:max-w-2xl max-h-[70vh] overflow-y-auto ">
+          <DialogHeader className="text-center">
+            <DialogTitle className="text-xl font-semibold">
+              Change Your Plan
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 space-y-6">
+            {switchPlanMutation.isError && (
+              <Alert variant="destructive">
+                <AlertDescription className="first-letter:uppercase">
+                  {switchPlanMutation.error.message}
+                </AlertDescription>
+              </Alert>
+            )}
+            {currentPlan && (
+              <Item variant="outline">
+                <ItemContent>
+                  <ItemTitle>Current Plan</ItemTitle>
+                  <ItemDescription className="text-lg font-bold">
+                    {currentPlan.name}
+                  </ItemDescription>
+                </ItemContent>
+              </Item>
+            )}
 
-              {upgrades.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpIcon className="size-5 text-muted-foreground" />
-                      <span className="font-medium text-primary">
-                        Upgrade Options
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Takes effect immediately
+            {upgrades.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ArrowUpIcon className="size-5 text-muted-foreground" />
+                    <span className="font-medium text-primary">
+                      Upgrade Options
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {upgrades.map((comparison) => (
-                      <PlanComparisonItem
-                        key={comparison.plan.id}
-                        comparison={comparison}
-                        subscriptionId={subscription.id}
-                        mode="upgrade"
-                        onRequestChange={(target) =>
-                          switchPlanMutation.mutate(target)
-                        }
-                        isSwitching={switchPlanMutation.isPending}
-                      />
-                    ))}
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Takes effect immediately
+                  </span>
                 </div>
-              )}
+                <div className="space-y-3">
+                  {upgrades.map((comparison) => (
+                    <PlanComparisonItem
+                      key={comparison.plan.id}
+                      comparison={comparison}
+                      subscriptionId={subscription.id}
+                      mode="upgrade"
+                      onRequestChange={(target) =>
+                        switchPlanMutation.mutate(target)
+                      }
+                      isSwitching={switchPlanMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {downgrades.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowDownIcon className="size-5 text-primary" />
-                      <span className="font-medium text-foreground">
-                        Downgrade Options
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Takes effect next billing cycle
+            {downgrades.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ArrowDownIcon className="size-5 text-primary" />
+                    <span className="font-medium text-foreground">
+                      Downgrade Options
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {downgrades.map((comparison) => (
-                      <PlanComparisonItem
-                        key={comparison.plan.id}
-                        comparison={comparison}
-                        subscriptionId={subscription.id}
-                        mode="downgrade"
-                        onRequestChange={(target) =>
-                          switchPlanMutation.mutate(target)
-                        }
-                        isSwitching={switchPlanMutation.isPending}
-                      />
-                    ))}
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Takes effect next billing cycle
+                  </span>
                 </div>
-              )}
+                <div className="space-y-3">
+                  {downgrades.map((comparison) => (
+                    <PlanComparisonItem
+                      key={comparison.plan.id}
+                      comparison={comparison}
+                      subscriptionId={subscription.id}
+                      mode="downgrade"
+                      onRequestChange={(target) =>
+                        switchPlanMutation.mutate(target)
+                      }
+                      isSwitching={switchPlanMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
 
-              {privatePlans.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <ArrowLeftRightIcon className="size-5 text-muted-foreground" />
-                      <span className="font-medium text-foreground">
-                        Private Plan Option
-                      </span>
-                    </div>
-                    <span className="text-sm text-muted-foreground">
-                      Takes effect immediately
+            {privatePlans.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <ArrowLeftRightIcon className="size-5 text-muted-foreground" />
+                    <span className="font-medium text-foreground">
+                      Private Plan Option
                     </span>
                   </div>
-                  <div className="space-y-3">
-                    {privatePlans.map((comparison) => (
-                      <PlanComparisonItem
-                        key={comparison.plan.id}
-                        comparison={comparison}
-                        subscriptionId={subscription.id}
-                        mode="private"
-                        onRequestChange={(target) =>
-                          switchPlanMutation.mutate(target)
-                        }
-                        isSwitching={switchPlanMutation.isPending}
-                      />
-                    ))}
-                  </div>
+                  <span className="text-sm text-muted-foreground">
+                    Takes effect immediately
+                  </span>
                 </div>
-              )}
-            </div>
+                <div className="space-y-3">
+                  {privatePlans.map((comparison) => (
+                    <PlanComparisonItem
+                      key={comparison.plan.id}
+                      comparison={comparison}
+                      subscriptionId={subscription.id}
+                      mode="private"
+                      onRequestChange={(target) =>
+                        switchPlanMutation.mutate(target)
+                      }
+                      isSwitching={switchPlanMutation.isPending}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
