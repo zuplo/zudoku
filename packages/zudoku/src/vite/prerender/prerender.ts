@@ -13,7 +13,10 @@ import type { ZudokuConfig } from "../../config/validators/ZudokuConfig.js";
 import { runPluginTransformConfig } from "../../lib/core/transform-config.js";
 import invariant from "../../lib/util/invariant.js";
 import { joinUrl } from "../../lib/util/joinUrl.js";
-import type { MarkdownFileInfo } from "../plugin-markdown-export.js";
+import {
+  getMarkdownOutputPath,
+  type MarkdownFileInfo,
+} from "../plugin-markdown-export.js";
 import { isTTY, throttle, writeLine } from "../reporter.js";
 import { generateSitemap } from "../sitemap.js";
 import { routesToPaths, routesToRewrites } from "./utils.js";
@@ -224,7 +227,13 @@ export const prerender = async ({
 
     if (!docsConfig.publishMarkdown) {
       await Promise.all(
-        markdownFileInfos.map((info) => rm(info.filePath).catch(() => {})),
+        markdownFileInfos.map((info) => {
+          const outputPath = getMarkdownOutputPath(distDir, info.routePath);
+          if (!path.resolve(outputPath).startsWith(path.resolve(distDir))) {
+            return;
+          }
+          return rm(outputPath).catch(() => {});
+        }),
       );
     }
   }
