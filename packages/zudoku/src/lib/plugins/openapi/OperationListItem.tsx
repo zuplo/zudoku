@@ -88,6 +88,7 @@ export const OperationListItem = ({
           <div className="col-span-full">
             <MCPEndpoint
               serverUrl={displayServerUrl}
+              operationPath={operation.path}
               summary={operation.summary ?? undefined}
               data={operation.extensions?.["x-mcp-server"]}
             />
