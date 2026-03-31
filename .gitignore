@@ -75,3 +75,6 @@ vitest.config.*.timestamp*
 
 
 .lycheecache
+
+.env.local
+.eslintcache

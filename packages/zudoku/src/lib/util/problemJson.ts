@@ -41,6 +41,26 @@ const normalizeProblemJson = (data: unknown): ProblemJson | undefined => {
   } as ProblemJson;
 };
 
+/** Some gateways return RFC 7807-shaped bodies with `application/json`. */
+const normalizeProblemJsonIfProblemLike = (
+  data: unknown,
+): ProblemJson | undefined => {
+  if (typeof data !== "object" || data === null || Array.isArray(data)) {
+    return;
+  }
+
+  const record = data as Record<string, unknown>;
+  const hasDetail = typeof record.detail === "string";
+  const hasTitle = typeof record.title === "string";
+  const hasStatus = typeof record.status === "number";
+
+  if (!hasDetail && !(hasTitle && hasStatus)) {
+    return;
+  }
+
+  return normalizeProblemJson(data);
+};
+
 export const getProblemJson = async (
   response: Response,
 ): Promise<ProblemJson | undefined> => {
@@ -54,8 +74,23 @@ export const getProblemJson = async (
 };
 
 export const throwIfProblemJson = async (response: Response) => {
-  if (!response.ok) {
+  if (response.ok) {
+    return;
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (isProblemJsonContentType(response)) {
     const problem = await getProblemJson(response);
+    if (problem) {
+      throw new Error(problem.detail ?? problem.title ?? "Unknown error");
+    }
+    return;
+  }
+
+  if (contentType.includes("application/json")) {
+    const data = await parseJsonSafe(response.clone());
+    const problem = normalizeProblemJsonIfProblemLike(data);
     if (problem) {
       throw new Error(problem.detail ?? problem.title ?? "Unknown error");
     }

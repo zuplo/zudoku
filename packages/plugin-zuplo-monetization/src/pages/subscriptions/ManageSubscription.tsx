@@ -4,9 +4,9 @@ import { CreditCardIcon, RefreshCcw, Settings } from "zudoku/icons";
 import { Button } from "zudoku/ui/Button";
 import { Card, CardContent } from "zudoku/ui/Card";
 import { Separator } from "zudoku/ui/Separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "zudoku/ui/Tooltip";
 import type { Subscription } from "../../hooks/useSubscriptions.js";
 import { CancelSubscriptionDialog } from "./CancelSubscriptionDialog.js";
+import { RestoreSubscriptionDialog } from "./RestoreSubscriptionDialog.js";
 import { SwitchPlanModal } from "./SwitchPlanModal.js";
 
 export const ManageSubscription = ({
@@ -17,6 +17,13 @@ export const ManageSubscription = ({
   planName: string;
 }) => {
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
+
+  const billingPeriodEnd =
+    subscription.alignment.currentAlignedBillingPeriod.to;
+  const canResumeCanceledSubscription =
+    subscription.status === "canceled" &&
+    new Date(billingPeriodEnd) > new Date();
 
   return (
     <Card>
@@ -25,7 +32,14 @@ export const ManageSubscription = ({
         onOpenChange={setCancelDialogOpen}
         planName={planName}
         subscriptionId={subscription.id}
-        billingPeriodEnd={subscription.alignment.currentAlignedBillingPeriod.to}
+        billingPeriodEnd={billingPeriodEnd}
+      />
+      <RestoreSubscriptionDialog
+        open={restoreDialogOpen}
+        onOpenChange={setRestoreDialogOpen}
+        planName={planName}
+        subscriptionId={subscription.id}
+        billingPeriodEnd={billingPeriodEnd}
       />
       <CardContent className="p-6">
         <div className="flex gap-4">
@@ -51,26 +65,24 @@ export const ManageSubscription = ({
               {subscription.status === "active" && (
                 <SwitchPlanModal subscription={subscription} />
               )}
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCancelDialogOpen(true)}
-                      title="You can only cancel your subscription if it is not active."
-                      disabled={subscription.status !== "active"}
-                    >
-                      Cancel subscription
-                    </Button>
-                  </div>
-                </TooltipTrigger>
-                {subscription.status === "canceled" && (
-                  <TooltipContent>
-                    Your subscription is already cancelled.
-                  </TooltipContent>
-                )}
-              </Tooltip>
+              {subscription.status === "active" && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCancelDialogOpen(true)}
+                >
+                  Cancel subscription
+                </Button>
+              )}
+              {canResumeCanceledSubscription && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setRestoreDialogOpen(true)}
+                >
+                  Resume subscription
+                </Button>
+              )}
 
               <Button asChild size="sm" variant="secondary">
                 <Link to="/manage-payment">
