@@ -218,9 +218,7 @@ const CheckoutConfirmPage = () => {
             <Button
               className="w-full"
               onClick={() => createSubscriptionMutation.mutate()}
-              disabled={
-                createSubscriptionMutation.isPending || !selectedPlan
-              }
+              disabled={createSubscriptionMutation.isPending || !selectedPlan}
             >
               {createSubscriptionMutation.isPending
                 ? "Processing Payment..."
