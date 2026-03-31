@@ -4,14 +4,15 @@ sidebar_icon: bot
 zuplo: false
 ---
 
-Zudoku can render a dedicated MCP endpoint UI for any OpenAPI operation that has the `x-mcp-server`
-extension. When detected, the operation page replaces the standard request/response view with an MCP
-card showing the endpoint URL, a copy button, and tabbed installation instructions for Claude,
-ChatGPT, Cursor, and VS Code.
+Zudoku can render a dedicated [MCP](https://modelcontextprotocol.io/) endpoint UI for any OpenAPI
+operation that has the `x-mcp-server` extension. When detected, the operation page replaces the
+standard request/response view with an MCP card showing the endpoint URL, a copy button, and tabbed
+installation instructions for Claude, ChatGPT, Cursor, VS Code, and a generic config.
 
 ## Adding the extension
 
-Add the `x-mcp-server` extension to a `POST` operation in your OpenAPI spec:
+Add the `x-mcp-server` extension to an operation in your OpenAPI spec. While MCP servers typically
+use `POST`, the extension works on any HTTP method:
 
 ```json title="openapi.json (paths section)"
 {
@@ -49,13 +50,16 @@ Add the `x-mcp-server` extension to a `POST` operation in your OpenAPI spec:
 The UI will display beneath the operation heading, showing the full MCP URL derived from the server
 URL and the operation path.
 
+You can also use the shorthand `"x-mcp-server": true` to enable the MCP UI without specifying any
+metadata. In this case, the operation's `summary` is used as the server name.
+
 ## Extension properties
 
-| Property  | Type     | Required | Description                                                                |
-| --------- | -------- | -------- | -------------------------------------------------------------------------- |
-| `name`    | `string` | Yes      | Display name used in the generated client configuration snippets           |
-| `version` | `string` | No       | Version metadata (included for completeness; not currently rendered in UI) |
-| `tools`   | `array`  | No       | Tools metadata (used by Zuplo enrichment; not currently rendered in UI)    |
+| Property  | Type     | Required | Description                                                                                                                  |
+| --------- | -------- | -------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `name`    | `string` | No       | Display name used in the generated client configuration snippets. Falls back to the operation `summary`, then `"mcp-server"` |
+| `version` | `string` | No       | Version metadata (included for completeness; not currently rendered in UI)                                                   |
+| `tools`   | `array`  | No       | Tools metadata (used by Zuplo enrichment; not currently rendered in UI)                                                      |
 
 Each tool in the `tools` array has:
 
@@ -133,7 +137,8 @@ This is a minimal but complete OpenAPI spec that produces an MCP endpoint page:
 }
 ```
 
-Then reference this spec in your Zudoku config:
+Then reference this spec in your Zudoku config (see
+[API Reference](/docs/configuration/api-reference) for full `apis` configuration):
 
 ```tsx title="zudoku.config.tsx"
 import type { ZudokuConfig } from "zudoku";
@@ -168,16 +173,17 @@ When Zudoku detects the `x-mcp-server` extension on an operation, the page shows
 
 - **MCP Endpoint card** with the full URL and a copy button
 - **AI Tool Configuration** tabs with setup instructions for:
-  - **Claude** — configuration for `claude_desktop_config.json`
+  - **Claude** — `claude_desktop_config.json` using native HTTP transport
   - **ChatGPT** — connector setup via Settings
   - **Cursor** — `mcp.json` configuration (global or project-level)
   - **VS Code** — `.vscode/mcp.json` for GitHub Copilot
+  - **Generic** — standard `mcp.json` format compatible with most MCP clients
 
-The standard request body, parameters, and sidecar panels are hidden for MCP endpoints since they
-use a different interaction model.
+The standard method badge, request body, parameters, and sidecar panels are hidden for MCP endpoints
+since they use a different interaction model.
 
 ## Using with Zuplo
 
 If you are using [Zuplo](https://zuplo.com) to host your API, the `x-mcp-server` extension is
-automatically added to operations that use the `mcpServerHandler`. No manual schema changes are
+automatically added to POST operations that use the `mcpServerHandler`. No manual schema changes are
 needed. See the [Zuplo MCP documentation](https://zuplo.com/docs/handlers/mcp-handler) for details.
