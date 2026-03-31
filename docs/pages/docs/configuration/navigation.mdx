@@ -68,7 +68,8 @@ Navigation items can be of these types: `category`, `doc`, `link`, `custom-page`
   [Custom Pages](../guides/custom-pages.md)
 - `separator`: A horizontal line to visually divide sidebar items.
 - `section`: A non-interactive heading label to group sidebar items.
-- `filter`: An inline search input that filters items in its parent category.
+- `filter`: An inline search input that filters navigation items. Multiple filter inputs share the
+  same search query.
 
 ### `type: link`
 
@@ -109,7 +110,8 @@ type NavigationLink = {
 ### `type: category`
 
 The `category` type groups related items under a collapsible section. The `label` is the displayed
-text, and the `items` array contains documents, links, or other categories.
+text, and the `items` array can contain any navigation item type (documents, links, categories,
+custom pages, separators, sections, and filters).
 
 ```json
 {
@@ -134,7 +136,7 @@ text, and the `items` array contains documents, links, or other categories.
 type NavigationCategory = {
   type: "category";
   icon?: string; // Lucide icon name
-  items: Array<NavigationDoc | NavigationLink | NavigationCategory | NavigationCustomPage>;
+  items: Array<NavigationItem>; // any navigation item type, including string shorthands for docs
   label: string;
   collapsible?: boolean;
   collapsed?: boolean;
@@ -421,8 +423,8 @@ type NavigationSection = {
 
 ### `type: filter`
 
-An inline search input that filters items within its parent category. When the user types, only
-matching items are shown.
+An inline search input that updates the shared navigation filter. When the user types, the query is
+applied across the sidebar so that only matching items remain visible.
 
 ```tsx
 {
