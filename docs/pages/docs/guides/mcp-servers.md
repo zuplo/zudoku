@@ -13,7 +13,7 @@ ChatGPT, Cursor, and VS Code.
 
 Add the `x-mcp-server` extension to a `POST` operation in your OpenAPI spec:
 
-```json title="openapi.json"
+```json title="openapi.json (paths section)"
 {
   "paths": {
     "/mcp": {
@@ -51,11 +51,11 @@ URL and the operation path.
 
 ## Extension properties
 
-| Property  | Type     | Required | Description                           |
-| --------- | -------- | -------- | ------------------------------------- |
-| `name`    | `string` | Yes      | Display name for the MCP server       |
-| `version` | `string` | No       | Version string shown in the UI        |
-| `tools`   | `array`  | No       | List of tools the MCP server provides |
+| Property  | Type     | Required | Description                                                                |
+| --------- | -------- | -------- | -------------------------------------------------------------------------- |
+| `name`    | `string` | Yes      | Display name used in the generated client configuration snippets           |
+| `version` | `string` | No       | Version metadata (included for completeness; not currently rendered in UI) |
+| `tools`   | `array`  | No       | Tools metadata (used by Zuplo enrichment; not currently rendered in UI)    |
 
 Each tool in the `tools` array has:
 
