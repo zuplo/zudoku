@@ -145,7 +145,7 @@ export const OperationListItem = ({
                       ""
                     )}
                   </Heading>
-                  <SchemaView schema={schema} />
+                  <SchemaView schema={schema} context="request" />
                 </div>
               ),
             )}
