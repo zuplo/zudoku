@@ -54,6 +54,28 @@ type FeatureChange = {
   change: "added" | "removed" | "upgraded" | "downgraded" | "same";
 };
 
+// Collect all feature keys across ALL phases to detect cross-category matches
+// (e.g. a key that's a boolean feature in one plan but a metered quota in another)
+const getAllKeysAcrossPhases = (
+  plan: Plan,
+  units?: Record<string, string>,
+): { quotaKeys: Set<string>; featureKeys: Set<string> } => {
+  const quotaKeys = new Set<string>();
+  const featureKeys = new Set<string>();
+
+  for (const phase of plan.phases) {
+    const { quotas, features } = categorizeRateCards(phase.rateCards, {
+      currency: plan.currency,
+      units,
+      planBillingCadence: plan.billingCadence,
+    });
+    for (const q of quotas) quotaKeys.add(q.key);
+    for (const f of features) featureKeys.add(f.key);
+  }
+
+  return { quotaKeys, featureKeys };
+};
+
 const comparePlans = (
   currentPlan: Plan | undefined,
   targetPlan: Plan,
@@ -63,6 +85,7 @@ const comparePlans = (
 ): PlanComparison => {
   const isUpgrade = targetIndex > currentIndex;
 
+  // Use the last phase (permanent steady state) for comparison values
   const currentPhase = currentPlan?.phases.at(-1);
   const targetPhase = targetPlan.phases.at(-1);
 
@@ -81,6 +104,12 @@ const comparePlans = (
         planBillingCadence: targetPlan.billingCadence,
       })
     : { quotas: [], features: [] };
+
+  // Look across ALL phases to detect cross-category keys
+  const currentAllKeys = currentPlan
+    ? getAllKeysAcrossPhases(currentPlan, units)
+    : { quotaKeys: new Set<string>(), featureKeys: new Set<string>() };
+  const targetAllKeys = getAllKeysAcrossPhases(targetPlan, units);
 
   const quotaChanges: QuotaChange[] = [];
   const allQuotaKeys = new Set([
@@ -106,6 +135,18 @@ const comparePlans = (
         change,
       });
     } else if (target && !current) {
+      // Cross-category: feature in current plan becomes quota in target, show value
+      if (currentAllKeys.featureKeys.has(key)) {
+        quotaChanges.push({
+          key: key ?? "",
+          name: target.name,
+          currentValue: null,
+          newValue: target.limit,
+          period: target.period,
+          change: "same",
+        });
+        continue;
+      }
       quotaChanges.push({
         key: key ?? "",
         name: target.name,
@@ -115,6 +156,8 @@ const comparePlans = (
         change: "added",
       });
     } else if (current && !target) {
+      // Cross-category: quota in current becomes feature in target, show as feature
+      if (targetAllKeys.featureKeys.has(key)) continue;
       quotaChanges.push({
         key: key ?? "",
         name: current.name,
@@ -149,6 +192,17 @@ const comparePlans = (
         change,
       });
     } else if (target && !current) {
+      // Cross-category: quota in current becomes feature in target, show as "same"
+      if (currentAllKeys.quotaKeys.has(key)) {
+        featureChanges.push({
+          key: key ?? "",
+          name: target.name,
+          currentValue: true,
+          newValue: target.value ?? true,
+          change: "same",
+        });
+        continue;
+      }
       featureChanges.push({
         key: key ?? "",
         name: target.name,
@@ -157,6 +211,8 @@ const comparePlans = (
         change: "added",
       });
     } else if (current && !target) {
+      // Cross-category: feature in current becomes quota in target, handled in quota loop
+      if (targetAllKeys.quotaKeys.has(key)) continue;
       featureChanges.push({
         key: key ?? "",
         name: current.name,
@@ -228,8 +284,7 @@ const PlanComparisonItem = ({
   const displayPrice = price.monthly;
 
   const hasChanges =
-    comparison.quotaChanges.some((q) => q.change !== "same") ||
-    comparison.featureChanges.some((f) => f.change !== "same");
+    comparison.quotaChanges.length > 0 || comparison.featureChanges.length > 0;
 
   return (
     <div className="border rounded-lg p-4">
@@ -273,85 +328,95 @@ const PlanComparisonItem = ({
 
       {hasChanges && (
         <div className="space-y-1.5">
-          {comparison.quotaChanges
-            .filter((q) => q.change !== "same")
-            .map((quota) => (
-              <div key={quota.key} className="flex items-center gap-2 text-sm">
-                <ChangeIndicator change={quota.change} />
-                <span className="font-medium">{quota.name}:</span>
-                {quota.change === "added" ? (
-                  <span className="text-green-600">Now included</span>
-                ) : quota.change === "removed" ? (
-                  <span className="text-destructive">No longer included</span>
-                ) : (
-                  <>
-                    <span className="text-muted-foreground">
-                      {quota.currentValue?.toLocaleString()}/{quota.period}
-                    </span>
-                    <span className="text-muted-foreground">→</span>
-                    <span
-                      className={cn(
-                        "font-medium",
-                        quota.change === "increase"
-                          ? "text-primary"
-                          : "text-amber-600",
-                      )}
-                    >
-                      {quota.newValue?.toLocaleString()}/{quota.period}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+          {comparison.quotaChanges.map((quota) => (
+            <div key={quota.key} className="flex items-center gap-2 text-sm">
+              <ChangeIndicator change={quota.change} />
+              <span className="font-medium">{quota.name}:</span>
+              {quota.change === "same" ? (
+                <span className="text-muted-foreground">
+                  {(quota.newValue ?? quota.currentValue)?.toLocaleString()}/
+                  {quota.period}
+                </span>
+              ) : quota.change === "added" ? (
+                <span className="text-green-600">Now included</span>
+              ) : quota.change === "removed" ? (
+                <span className="text-destructive">No longer included</span>
+              ) : (
+                <>
+                  <span className="text-muted-foreground">
+                    {quota.currentValue?.toLocaleString()}/{quota.period}
+                  </span>
+                  <span className="text-muted-foreground">→</span>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      quota.change === "increase"
+                        ? "text-primary"
+                        : "text-amber-600",
+                    )}
+                  >
+                    {quota.newValue?.toLocaleString()}/{quota.period}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
 
-          {comparison.featureChanges
-            .filter((f) => f.change !== "same")
-            .map((feature) => (
-              <div
-                key={feature.key}
-                className="flex items-center gap-2 text-sm"
-              >
-                {feature.change === "added" ? (
-                  <>
-                    <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
-                    <span className="text-muted-foreground font-medium">
-                      {feature.name}
-                    </span>
-                    <span className="text-green-600">—</span>
-                    <span className="text-green-600">Now included</span>
-                  </>
-                ) : feature.change === "removed" ? (
-                  <>
-                    <XIcon className="w-4 h-4 text-destructive shrink-0" />
-                    <span className="font-medium">{feature.name}</span>
-                    <span className="text-destructive">—</span>
-                    <span className="text-destructive">No longer included</span>
-                  </>
-                ) : (
-                  <>
-                    <ChangeIndicator change={feature.change} />
-                    <span className="">{feature.name}:</span>
-                    <span className="text-muted-foreground">
-                      {typeof feature.currentValue === "string"
-                        ? feature.currentValue
-                        : "Included"}
-                    </span>
-                    <span className="text-muted-foreground">→</span>
-                    <span
-                      className={cn(
-                        feature.change === "upgraded"
-                          ? "text-green-600"
-                          : "text-destructive",
-                      )}
-                    >
-                      {typeof feature.newValue === "string"
-                        ? feature.newValue
-                        : "Included"}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+          {comparison.featureChanges.map((feature) => (
+            <div key={feature.key} className="flex items-center gap-2 text-sm">
+              {feature.change === "same" ? (
+                <>
+                  <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="text-muted-foreground">
+                    {feature.name}
+                    {typeof feature.newValue === "string"
+                      ? `: ${feature.newValue}`
+                      : typeof feature.currentValue === "string"
+                        ? `: ${feature.currentValue}`
+                        : ""}
+                  </span>
+                </>
+              ) : feature.change === "added" ? (
+                <>
+                  <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="text-muted-foreground font-medium">
+                    {feature.name}
+                  </span>
+                  <span className="text-green-600">—</span>
+                  <span className="text-green-600">Now included</span>
+                </>
+              ) : feature.change === "removed" ? (
+                <>
+                  <XIcon className="w-4 h-4 text-destructive shrink-0" />
+                  <span className="font-medium">{feature.name}</span>
+                  <span className="text-destructive">—</span>
+                  <span className="text-destructive">No longer included</span>
+                </>
+              ) : (
+                <>
+                  <ChangeIndicator change={feature.change} />
+                  <span className="">{feature.name}:</span>
+                  <span className="text-muted-foreground">
+                    {typeof feature.currentValue === "string"
+                      ? feature.currentValue
+                      : "Included"}
+                  </span>
+                  <span className="text-muted-foreground">→</span>
+                  <span
+                    className={cn(
+                      feature.change === "upgraded"
+                        ? "text-green-600"
+                        : "text-destructive",
+                    )}
+                  >
+                    {typeof feature.newValue === "string"
+                      ? feature.newValue
+                      : "Included"}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>
