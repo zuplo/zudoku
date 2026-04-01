@@ -256,6 +256,18 @@ describe("validateConfig", () => {
     expect(mockConsoleLog).not.toHaveBeenCalled();
   });
 
+  it('should accept metadata robots values like "noindex, nofollow"', () => {
+    const config = {
+      metadata: {
+        robots: "noindex, nofollow",
+      },
+    };
+
+    validateConfig(config);
+
+    expect(mockConsoleLog).not.toHaveBeenCalled();
+  });
+
   it("should accept aiAssistants with preset strings", () => {
     const config = {
       aiAssistants: ["claude", "chatgpt"],
