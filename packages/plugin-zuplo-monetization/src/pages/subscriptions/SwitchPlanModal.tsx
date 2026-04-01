@@ -284,8 +284,7 @@ const PlanComparisonItem = ({
   const displayPrice = price.monthly;
 
   const hasChanges =
-    comparison.quotaChanges.length > 0 ||
-    comparison.featureChanges.length > 0;
+    comparison.quotaChanges.length > 0 || comparison.featureChanges.length > 0;
 
   return (
     <div className="border rounded-lg p-4">
@@ -330,38 +329,38 @@ const PlanComparisonItem = ({
       {hasChanges && (
         <div className="space-y-1.5">
           {comparison.quotaChanges.map((quota) => (
-              <div key={quota.key} className="flex items-center gap-2 text-sm">
-                <ChangeIndicator change={quota.change} />
-                <span className="font-medium">{quota.name}:</span>
-                {quota.change === "same" ? (
+            <div key={quota.key} className="flex items-center gap-2 text-sm">
+              <ChangeIndicator change={quota.change} />
+              <span className="font-medium">{quota.name}:</span>
+              {quota.change === "same" ? (
+                <span className="text-muted-foreground">
+                  {(quota.newValue ?? quota.currentValue)?.toLocaleString()}/
+                  {quota.period}
+                </span>
+              ) : quota.change === "added" ? (
+                <span className="text-green-600">Now included</span>
+              ) : quota.change === "removed" ? (
+                <span className="text-destructive">No longer included</span>
+              ) : (
+                <>
                   <span className="text-muted-foreground">
-                    {(quota.newValue ?? quota.currentValue)?.toLocaleString()}/
-                    {quota.period}
+                    {quota.currentValue?.toLocaleString()}/{quota.period}
                   </span>
-                ) : quota.change === "added" ? (
-                  <span className="text-green-600">Now included</span>
-                ) : quota.change === "removed" ? (
-                  <span className="text-destructive">No longer included</span>
-                ) : (
-                  <>
-                    <span className="text-muted-foreground">
-                      {quota.currentValue?.toLocaleString()}/{quota.period}
-                    </span>
-                    <span className="text-muted-foreground">→</span>
-                    <span
-                      className={cn(
-                        "font-medium",
-                        quota.change === "increase"
-                          ? "text-primary"
-                          : "text-amber-600",
-                      )}
-                    >
-                      {quota.newValue?.toLocaleString()}/{quota.period}
-                    </span>
-                  </>
-                )}
-              </div>
-            ))}
+                  <span className="text-muted-foreground">→</span>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      quota.change === "increase"
+                        ? "text-primary"
+                        : "text-amber-600",
+                    )}
+                  >
+                    {quota.newValue?.toLocaleString()}/{quota.period}
+                  </span>
+                </>
+              )}
+            </div>
+          ))}
 
           {comparison.featureChanges.map((feature) => (
             <div key={feature.key} className="flex items-center gap-2 text-sm">
@@ -476,14 +475,8 @@ export const SwitchPlanModal = ({
     },
   });
 
-  // DEV: override with ?mockPlan=developer or ?mockPlan=test
-  const mockPlanKey =
-    import.meta.env.DEV && typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("mockPlan")
-      : null;
-
   const currentPlan = plansData?.items.find(
-    (p) => p.key === (mockPlanKey ?? subscription.plan.key),
+    (p) => p.key === subscription.plan.key,
   );
 
   const { upgrades, downgrades, privatePlans } = useMemo(() => {
