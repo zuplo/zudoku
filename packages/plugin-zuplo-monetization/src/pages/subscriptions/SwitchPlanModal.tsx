@@ -367,7 +367,14 @@ const PlanComparisonItem = ({
               {feature.change === "same" ? (
                 <>
                   <CheckIcon className="w-4 h-4 text-green-600 shrink-0" />
-                  <span className="text-muted-foreground">{feature.name}</span>
+                  <span className="text-muted-foreground">
+                    {feature.name}
+                    {typeof feature.newValue === "string"
+                      ? `: ${feature.newValue}`
+                      : typeof feature.currentValue === "string"
+                        ? `: ${feature.currentValue}`
+                        : ""}
+                  </span>
                 </>
               ) : feature.change === "added" ? (
                 <>
