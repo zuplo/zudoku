@@ -9,7 +9,7 @@ import { Separator } from "zudoku/ui/Separator";
 import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
 import { useDeploymentName } from "../hooks/useDeploymentName";
-import { usePlans } from "../hooks/usePlans";
+import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
 import type { Subscription } from "../hooks/useSubscriptions";
 import { useMonetizationConfig } from "../MonetizationContext";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
@@ -17,22 +17,33 @@ import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
 import { formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
+import {
+  getPlanFromPurchaseDetails,
+  getTaxAmountFromPurchaseDetails,
+  getTaxLabelFromPurchaseDetails,
+  isTaxInclusiveFromPurchaseDetails,
+} from "../utils/purchaseDetails";
 import { queryClient } from "../ZuploMonetizationWrapper";
 
 const SubscriptionChangeConfirmPage = () => {
   const [search] = useSearchParams();
   const planId = search.get("planId");
   const subscriptionId = search.get("subscriptionId");
+  const mode = search.get("mode");
   const zudoku = useZudoku();
   const deploymentName = useDeploymentName();
   const navigate = useNavigate();
-  const { data: plans } = usePlans();
   const { pricing } = useMonetizationConfig();
-  const selectedPlan = plans?.items?.find((plan) => plan.id === planId);
 
   if (!planId) throw new Error("Parameter `planId` missing");
   if (!subscriptionId) throw new Error("Parameter `subscriptionId` missing");
 
+  const purchaseDetails = usePurchaseDetails(planId);
+
+  const selectedPlan = getPlanFromPurchaseDetails(purchaseDetails.data);
+  const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
+  const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
+  const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
   const { quotas, features } = categorizeRateCards(rateCards ?? [], {
     currency: selectedPlan?.currency,
@@ -43,6 +54,10 @@ const SubscriptionChangeConfirmPage = () => {
   const billingCycle = selectedPlan?.billingCadence
     ? formatDuration(selectedPlan.billingCadence)
     : null;
+  const effectiveChangeMessage =
+    mode === "downgrade"
+      ? "This change will take effect at the start of your next billing cycle."
+      : "This change will take effect immediately.";
 
   const changeMutation = useMutation<Subscription>({
     mutationKey: [
@@ -85,6 +100,9 @@ const SubscriptionChangeConfirmPage = () => {
               Confirm plan change
             </h1>
             <p className="text-muted-foreground text-base">
+              {effectiveChangeMessage}
+            </p>
+            <p className="text-muted-foreground text-base">
               Please confirm the details below to change your subscription.
             </p>
           </div>
@@ -114,6 +132,13 @@ const SubscriptionChangeConfirmPage = () => {
                       {billingCycle && (
                         <div className="text-sm text-muted-foreground font-normal">
                           Billed {formatBillingCycle(billingCycle)}
+                        </div>
+                      )}
+                      {taxAmount != null && (
+                        <div className="text-xs text-muted-foreground font-normal mt-1">
+                          {taxInclusive
+                            ? `${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
+                            : `+ ${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
                         </div>
                       )}
                     </div>

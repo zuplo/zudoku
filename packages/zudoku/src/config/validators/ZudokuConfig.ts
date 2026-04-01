@@ -506,6 +506,11 @@ const MetadataSchema = z
     authors: z.array(z.string()),
     creator: z.string(),
     publisher: z.string(),
+    robots: z
+      .string()
+      .describe(
+        'Sets the contents of the `meta[name="robots"]` tag. For example: `noindex, nofollow`.',
+      ),
   })
   .partial();
 

@@ -1,7 +1,7 @@
 import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import { CheckIcon, LockIcon } from "zudoku/icons";
-import { useMutation, useSuspenseQuery } from "zudoku/react-query";
+import { useMutation } from "zudoku/react-query";
 import { Link, useNavigate, useSearchParams } from "zudoku/router";
 import { Alert, AlertDescription, AlertTitle } from "zudoku/ui/Alert";
 import { Card, CardContent, CardHeader, CardTitle } from "zudoku/ui/Card";
@@ -9,41 +9,21 @@ import { Separator } from "zudoku/ui/Separator";
 import { FeatureItem } from "../components/FeatureItem";
 import { QuotaItem } from "../components/QuotaItem";
 import { useDeploymentName } from "../hooks/useDeploymentName";
+import { usePurchaseDetails } from "../hooks/usePurchaseDetails";
 import type { Subscription } from "../hooks/useSubscriptions";
 import { useMonetizationConfig } from "../MonetizationContext";
-import type { Plan } from "../types/PlanType";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
 import { formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
+import {
+  getPlanFromPurchaseDetails,
+  getTaxAmountFromPurchaseDetails,
+  getTaxLabelFromPurchaseDetails,
+  isTaxInclusiveFromPurchaseDetails,
+} from "../utils/purchaseDetails";
 import { queryClient } from "../ZuploMonetizationWrapper";
-
-type PurchaseDetailsTax = {
-  amount?: string | number;
-};
-
-type PurchaseDetailsResponse =
-  | (Plan & { tax?: PurchaseDetailsTax })
-  | { plan: Plan; tax?: PurchaseDetailsTax };
-
-const getPlanFromPurchaseDetails = (response: PurchaseDetailsResponse) => {
-  return "plan" in response ? response.plan : response;
-};
-
-const getTaxAmountFromPurchaseDetails = (response: PurchaseDetailsResponse) => {
-  const taxAmount = response?.tax?.amount;
-  const numericAmount =
-    typeof taxAmount === "number"
-      ? taxAmount
-      : Number.parseFloat(taxAmount ?? "");
-
-  if (!Number.isFinite(numericAmount)) {
-    return;
-  }
-
-  return numericAmount;
-};
 
 const CheckoutConfirmPage = () => {
   const [search] = useSearchParams();
@@ -55,17 +35,12 @@ const CheckoutConfirmPage = () => {
 
   if (!planId) throw new Error("Parameter `planId` missing");
 
-  const purchaseDetails = useSuspenseQuery<PurchaseDetailsResponse>({
-    queryKey: [
-      `/v3/zudoku-metering/${deploymentName}/plans/${planId}/purchase-details`,
-    ],
-    meta: {
-      context: zudoku,
-    },
-  });
+  const purchaseDetails = usePurchaseDetails(planId);
 
   const selectedPlan = getPlanFromPurchaseDetails(purchaseDetails.data);
   const taxAmount = getTaxAmountFromPurchaseDetails(purchaseDetails.data);
+  const taxLabel = getTaxLabelFromPurchaseDetails(purchaseDetails.data);
+  const taxInclusive = isTaxInclusiveFromPurchaseDetails(purchaseDetails.data);
   const rateCards = selectedPlan?.phases.at(-1)?.rateCards;
   const { quotas, features } = categorizeRateCards(rateCards ?? [], {
     currency: selectedPlan?.currency,
@@ -152,7 +127,9 @@ const CheckoutConfirmPage = () => {
                       )}
                       {taxAmount != null && (
                         <div className="text-xs text-muted-foreground font-normal mt-1">
-                          + {formatPrice(taxAmount, selectedPlan?.currency)} VAT
+                          {taxInclusive
+                            ? `${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
+                            : `+ ${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
                         </div>
                       )}
                     </div>

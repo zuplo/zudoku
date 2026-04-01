@@ -11,7 +11,8 @@ import { Book, Code, FileText } from "zudoku/icons";
 
 Zudoku uses a single `navigation` array to control both the top navigation tabs and the sidebar.
 Items at the root of this array appear as tabs, and nested items build the sidebar tree. Navigation
-entries can be links, document references, categories or custom pages.
+entries can be links, document references, categories, custom pages, separators, sections, or
+filters.
 
 ## Basic configuration
 
@@ -65,9 +66,10 @@ Navigation items can be of these types: `category`, `doc`, `link`, `custom-page`
 - `doc`: A reference to a document by its file path: `file`.
 - `custom-page`: A custom page that is made of a React component, see
   [Custom Pages](../guides/custom-pages.md)
-- `separator`: A visual separator line between navigation items.
-- `section`: A non-collapsible label/heading in the sidebar.
-- `filter`: Adds a filter/search input to the sidebar for quick filtering of navigation items.
+- `separator`: A horizontal line to visually divide sidebar items.
+- `section`: A non-interactive heading label to group sidebar items.
+- `filter`: An inline search input that filters navigation items. Multiple filter inputs share the
+  same search query.
 
 ### `type: link`
 
@@ -94,6 +96,7 @@ type NavigationLink = {
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
+    invert?: boolean;
   };
   display?:
     | "auth"
@@ -108,7 +111,8 @@ type NavigationLink = {
 ### `type: category`
 
 The `category` type groups related items under a collapsible section. The `label` is the displayed
-text, and the `items` array contains `id`s of documents, links, or other categories.
+text, and the `items` array can contain any navigation item type (documents, links, categories,
+custom pages, separators, sections, and filters).
 
 ```json
 {
@@ -133,11 +137,11 @@ text, and the `items` array contains `id`s of documents, links, or other categor
 type NavigationCategory = {
   type: "category";
   icon?: string; // Lucide icon name
-  items: Array<NavigationDoc | NavigationLink | NavigationCategory | NavigationCustomPage>;
+  items: Array<NavigationItem>; // any navigation item type, including string shorthands for docs
   label: string;
   collapsible?: boolean;
   collapsed?: boolean;
-  link?: string | { type: "doc"; file: string; label?: string };
+  link?: string | { type: "doc"; file: string; label?: string; path?: string };
   display?:
     | "auth"
     | "anon"
@@ -148,6 +152,50 @@ type NavigationCategory = {
 ```
 
 </details>
+
+#### Category links
+
+A category can have a `link` property that makes the category label itself clickable, navigating to
+a document. This is useful when you want a category that acts as both a group and a landing page.
+
+The `link` can be a simple string pointing to a file path, or an object for more control:
+
+```tsx title="String shorthand"
+{
+  type: "category",
+  label: "Configuration",
+  link: "docs/configuration/overview",
+  items: [
+    "docs/configuration/navigation",
+    "docs/configuration/site",
+  ],
+}
+```
+
+```tsx title="Object form with custom path"
+{
+  type: "category",
+  label: "Documentation",
+  link: {
+    type: "doc",
+    file: "home.md",
+    path: "/",
+  },
+  items: [
+    "guides/getting-started",
+    "guides/advanced",
+  ],
+}
+```
+
+The object form supports these properties:
+
+| Property | Type     | Description                                              |
+| -------- | -------- | -------------------------------------------------------- |
+| `type`   | `"doc"`  | Must be `"doc"`                                          |
+| `file`   | `string` | Path to the markdown file                                |
+| `label`  | `string` | Override the label (defaults to the document title)      |
+| `path`   | `string` | Custom URL path (overrides the default file-based route) |
 
 ### `type: doc`
 
@@ -175,6 +223,7 @@ type NavigationDoc = {
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
+    invert?: boolean;
   };
   display?:
     | "auth"
@@ -225,6 +274,37 @@ Learn more in the [Markdown documentation](/docs/markdown/overview)
 The `path` property allows you to customize the URL path for a document. By default, Zudoku uses the
 file path to generate the URL, but you can override this behavior by specifying a custom path.
 
+```tsx title="Serving a doc at the root URL"
+{
+  type: "doc",
+  file: "home.md",
+  path: "/",
+  label: "Home",
+}
+```
+
+```tsx title="Custom slug"
+{
+  type: "doc",
+  file: "guides/getting-started.md",
+  path: "/start-here",
+  label: "Start Here",
+}
+```
+
+When a file has a custom path, it will only be accessible at that custom path, not at its original
+file-based path. See [Documentation - Custom Paths](/docs/configuration/docs#custom-paths) for more
+details.
+
+:::note
+
+Avoid naming files `index.md` or `index.mdx` and relying on their default path. Some hosting
+providers (e.g. Vercel) automatically strip `/index` from URLs with a redirect, which can cause
+routing issues. Instead, give files descriptive names and use the `path` property to serve them at
+the desired URL.
+
+:::
+
 ### `type: custom-page`
 
 Custom pages allow you to create standalone pages that are not tied to a Markdown document. This is
@@ -249,7 +329,7 @@ type NavigationCustomPage = {
   label?: string;
   element: any;
   icon?: string; // Lucide icon name
-  layout?: "default" | "none"; // Page layout mode
+  layout?: "default" | "none";
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
@@ -266,39 +346,119 @@ type NavigationCustomPage = {
 
 </details>
 
+Set `layout: "none"` to render the page without the default Zudoku layout (header, sidebar, footer).
+This is useful for fully custom landing pages.
+
 ### `type: separator`
 
-A visual separator line between navigation items. Useful for visually grouping items in the sidebar.
+A visual divider line in the sidebar. Use separators to create visual breaks between groups of
+items.
 
-```json
+```tsx
 {
-  "type": "separator"
+  type: "category",
+  label: "Documentation",
+  items: [
+    "guides/getting-started",
+    "guides/installation",
+    { type: "separator" },
+    "guides/advanced",
+    "guides/troubleshooting",
+  ],
 }
 ```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationSeparator = {
+  type: "separator";
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
+};
+```
+
+</details>
 
 ### `type: section`
 
-A non-collapsible label/heading in the sidebar. Unlike categories, sections don't wrap child items -
-they simply display a label.
+A non-interactive heading label in the sidebar. Sections are rendered as small uppercase text and
+are useful for labeling groups of items without adding a collapsible wrapper.
 
-```json
+```tsx
 {
-  "type": "section",
-  "label": "Advanced Topics"
+  type: "category",
+  label: "Documentation",
+  items: [
+    { type: "section", label: "Getting Started" },
+    "guides/quickstart",
+    "guides/installation",
+    { type: "section", label: "Advanced" },
+    "guides/plugins",
+    "guides/deployment",
+  ],
 }
 ```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationSection = {
+  type: "section";
+  label: string;
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
+};
+```
+
+</details>
 
 ### `type: filter`
 
-Adds a filter/search input to the sidebar that allows users to quickly filter navigation items. You
-can customize the placeholder text.
+An inline search input that updates the shared navigation filter. When the user types, the query is
+applied across the sidebar so that only matching items remain visible.
 
-```json
+```tsx
 {
-  "type": "filter",
-  "placeholder": "Filter documentation"
+  type: "category",
+  label: "Documentation",
+  items: [
+    { type: "filter", placeholder: "Filter documentation" },
+    "guides/getting-started",
+    "guides/installation",
+    "guides/authentication",
+    "guides/deployment",
+  ],
 }
 ```
+
+<details>
+<summary>**TypeScript type declaration**</summary>
+
+```ts
+type NavigationFilter = {
+  type: "filter";
+  placeholder?: string;
+  display?:
+    | "auth"
+    | "anon"
+    | "always"
+    | "hide"
+    | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
+};
+```
+
+</details>
 
 ## Display Control
 
@@ -399,6 +559,94 @@ sidebar_label: Short Title
 
 In this example, the document's title remains "My Long Title," but the sidebar displays "Short
 Title."
+
+For the complete list of supported frontmatter properties, see
+[Frontmatter](/docs/markdown/frontmatter).
+
+## Common Patterns
+
+### Serving a document at the root URL
+
+To make a markdown document accessible at `/`, use the `path` property to override the default
+file-based route:
+
+```tsx title="Standalone root doc"
+navigation: [
+  {
+    type: "doc",
+    file: "home.md",
+    path: "/",
+    label: "Home",
+  },
+],
+```
+
+```tsx title="Category with root landing page"
+navigation: [
+  {
+    type: "category",
+    label: "Documentation",
+    link: {
+      type: "doc",
+      file: "home.md",
+      path: "/",
+    },
+    items: [
+      "guides/getting-started",
+      "guides/installation",
+    ],
+  },
+],
+```
+
+### Landing page with hidden tab
+
+Use a `custom-page` with `display: "hide"` and `layout: "none"` to create a full-page landing
+experience that doesn't appear in the navigation tabs:
+
+```tsx
+navigation: [
+  {
+    type: "custom-page",
+    path: "/",
+    display: "hide",
+    layout: "none",
+    element: <LandingPage />,
+  },
+  {
+    type: "category",
+    label: "Documentation",
+    items: ["docs/quickstart", "docs/installation"],
+  },
+],
+```
+
+### Organized sidebar with sections and separators
+
+Combine `section`, `separator`, and `filter` items to create a well-structured sidebar:
+
+```tsx
+navigation: [
+  {
+    type: "category",
+    label: "Documentation",
+    items: [
+      { type: "filter", placeholder: "Filter documentation" },
+      { type: "section", label: "Getting Started" },
+      "guides/quickstart",
+      "guides/installation",
+      { type: "separator" },
+      { type: "section", label: "Advanced" },
+      {
+        type: "category",
+        label: "Plugins",
+        icon: "blocks",
+        items: ["plugins/overview", "plugins/custom"],
+      },
+    ],
+  },
+],
+```
 
 ## Navigation Rules
 

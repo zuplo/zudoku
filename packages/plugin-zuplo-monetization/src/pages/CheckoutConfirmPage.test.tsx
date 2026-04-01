@@ -76,7 +76,15 @@ describe("CheckoutConfirmPage", () => {
   beforeEach(() => {
     testState.purchaseData.data = {
       ...makePlan(),
-      tax: { amount: 0 },
+      tax: {
+        currency: "usd",
+        subtotal: 4900,
+        taxAmount: 0,
+        total: 4900,
+        taxInclusive: false,
+        taxes: [],
+        items: [],
+      },
     };
     testState.mutation.mutate = vi.fn();
     testState.mutation.isPending = false;
@@ -95,22 +103,18 @@ describe("CheckoutConfirmPage", () => {
     expect(screen.getByText("For teams")).toBeInTheDocument();
   });
 
-  it("renders plan details from a wrapped { plan, tax } response", () => {
-    testState.purchaseData.data = {
-      plan: makePlan({ name: "Business", description: "Scale up" }),
-      tax: { amount: 1 },
-    };
-
-    renderPage("/?planId=plan-1");
-
-    expect(screen.getByText("Business")).toBeInTheDocument();
-    expect(screen.getByText("Scale up")).toBeInTheDocument();
-  });
-
-  it("shows VAT line when tax amount is a number and plan is paid", () => {
+  it("shows VAT line when taxType is vat and plan is paid", () => {
     testState.purchaseData.data = {
       ...makePlan(),
-      tax: { amount: 12.5 },
+      tax: {
+        currency: "gbp",
+        subtotal: 4900,
+        taxAmount: 12.5,
+        total: 4912.5,
+        taxInclusive: false,
+        taxes: [{ taxType: "VAT" }],
+        items: [],
+      },
     };
 
     renderPage("/?planId=plan-1");
@@ -119,34 +123,69 @@ describe("CheckoutConfirmPage", () => {
     expect(screen.getByText(/VAT/)).toBeInTheDocument();
   });
 
-  it("parses string tax amount for VAT line", () => {
+  it("shows generic tax label when tax type is not vat", () => {
     testState.purchaseData.data = {
       ...makePlan(),
-      tax: { amount: "3.25" },
+      tax: {
+        currency: "usd",
+        subtotal: 4900,
+        taxAmount: 3.25,
+        total: 4903.25,
+        taxInclusive: false,
+        taxes: [{ taxType: "sales_tax" }],
+        items: [],
+      },
     };
 
     renderPage("/?planId=plan-1");
 
-    expect(screen.getByText(/\$3\.25/)).toBeInTheDocument();
+    expect(screen.getByText(/\+ \$3\.25 tax/)).toBeInTheDocument();
   });
 
-  it("does not show VAT line when tax is missing", () => {
+  it("shows included tax label when taxInclusive is true", () => {
+    testState.purchaseData.data = {
+      ...makePlan(),
+      tax: {
+        currency: "usd",
+        subtotal: 4900,
+        taxAmount: 4,
+        total: 4904,
+        taxInclusive: true,
+        taxes: [{ taxType: "sales_tax" }],
+        items: [],
+      },
+    };
+
+    renderPage("/?planId=plan-1");
+
+    expect(screen.getByText(/tax included/)).toBeInTheDocument();
+  });
+
+  it("does not show tax line when tax is missing", () => {
     testState.purchaseData.data = { ...makePlan() };
 
     renderPage("/?planId=plan-1");
 
-    expect(screen.queryByText(/VAT/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tax|VAT/)).not.toBeInTheDocument();
   });
 
-  it("does not show VAT line when tax amount is not a finite number", () => {
+  it("does not show tax line when tax amount is not a finite number", () => {
     testState.purchaseData.data = {
       ...makePlan(),
-      tax: { amount: "not-a-number" },
+      tax: {
+        currency: "usd",
+        subtotal: 4900,
+        taxAmount: Number.NaN,
+        total: 4900,
+        taxInclusive: false,
+        taxes: [],
+        items: [],
+      },
     };
 
     renderPage("/?planId=plan-1");
 
-    expect(screen.queryByText(/VAT/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tax|VAT/)).not.toBeInTheDocument();
   });
 
   it("shows Free for a zero-priced plan and omits VAT line", () => {
@@ -171,13 +210,21 @@ describe("CheckoutConfirmPage", () => {
           },
         ],
       }),
-      tax: { amount: 5 },
+      tax: {
+        currency: "usd",
+        subtotal: 0,
+        taxAmount: 5,
+        total: 5,
+        taxInclusive: false,
+        taxes: [{ taxType: "sales_tax" }],
+        items: [],
+      },
     };
 
     renderPage("/?planId=plan-1");
 
     expect(screen.getAllByText("Free").length).toBeGreaterThanOrEqual(1);
-    expect(screen.queryByText(/VAT/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tax|VAT/)).not.toBeInTheDocument();
   });
 
   it("throws when planId search param is missing", () => {
@@ -194,13 +241,13 @@ describe("CheckoutConfirmPage", () => {
     expect(screen.getByText("Card declined")).toBeInTheDocument();
   });
 
-  it("disables confirm when selected plan is missing", () => {
-    testState.purchaseData.data = { plan: undefined } as unknown;
+  it("disables confirm while mutation is pending", () => {
+    testState.mutation.isPending = true;
 
     renderPage("/?planId=plan-1");
 
     expect(
-      screen.getByRole("button", { name: /Confirm & Subscribe/ }),
+      screen.getByRole("button", { name: /Processing Payment.../ }),
     ).toBeDisabled();
   });
 });
