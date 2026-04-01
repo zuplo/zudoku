@@ -140,10 +140,12 @@ export function generateOutput({
   config,
   redirects,
   rewrites = [],
+  outputPaths = [],
 }: {
   config: LoadedConfig;
   redirects: Array<{ from: string; to: string }>;
   rewrites?: RouteRewrite[];
+  outputPaths?: string[];
 }): Config {
   const routes: Route[] = [];
 
@@ -185,12 +187,27 @@ export function generateOutput({
     }
   }
 
+  // Generate overrides for clean URLs support
+  const overrides: OverrideConfig = {};
+  for (const urlPath of outputPaths) {
+    const filename = urlPath === "/" ? "index.html" : `${urlPath}.html`;
+    const cleanPath = urlPath === "/" ? "/" : urlPath;
+
+    // Skip if filename and cleanPath are the same
+    if (filename !== cleanPath) {
+      overrides[filename.startsWith("/") ? filename.slice(1) : filename] = {
+        path: cleanPath,
+      };
+    }
+  }
+
   const output: Config = {
     version: 3,
     framework: {
       version: pkgJson.version,
     },
     routes,
+    ...(Object.keys(overrides).length > 0 && { overrides }),
   };
 
   return output;
@@ -202,13 +219,15 @@ export async function writeOutput(
     config,
     redirects,
     rewrites,
+    outputPaths,
   }: {
     config: LoadedConfig;
     redirects: Array<{ from: string; to: string }>;
     rewrites?: RouteRewrite[];
+    outputPaths?: string[];
   },
 ) {
-  const output = generateOutput({ config, redirects, rewrites });
+  const output = generateOutput({ config, redirects, rewrites, outputPaths });
   // For now we are putting this in the dist folder, eventually we can
   // expand this to support the full vercel build output API
 

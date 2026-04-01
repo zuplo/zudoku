@@ -238,5 +238,5 @@ export const prerender = async ({
     }
   }
 
-  return { workerResults, rewrites };
+  return { workerResults, rewrites, paths };
 };
