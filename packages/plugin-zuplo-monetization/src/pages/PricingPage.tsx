@@ -46,18 +46,27 @@ const PricingPage = () => {
             "See our pricing options and choose the one that best suits your needs."}
         </p>
       </div>
-      <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
-        {pricingTable.items.map((plan) => (
-          <PricingCard
-            key={plan.id}
-            plan={plan}
-            isPopular={plan.metadata?.zuplo_most_popular === "true"}
-            isSubscribed={subscriptions.items.some((subscription) =>
-              ["active", "canceled"].includes(subscription.status),
-            )}
-          />
-        ))}
-      </div>
+      {pricingTable.items.length === 0 ? (
+        <div className="text-center py-12 text-muted-foreground">
+          <p>No plans are currently available.</p>
+          <p className="text-sm mt-2">
+            Make sure your plans are set up and published.
+          </p>
+        </div>
+      ) : (
+        <div className="w-full grid grid-cols-1 sm:grid-cols-[repeat(auto-fit,minmax(300px,max-content))] justify-center gap-6">
+          {pricingTable.items.map((plan) => (
+            <PricingCard
+              key={plan.id}
+              plan={plan}
+              isPopular={plan.metadata?.zuplo_most_popular === "true"}
+              isSubscribed={subscriptions.items.some((subscription) =>
+                ["active", "canceled"].includes(subscription.status),
+              )}
+            />
+          ))}
+        </div>
+      )}
       <Slot.Target name="pricing-page-after" />
     </div>
   );
