@@ -82,18 +82,6 @@ Set the text direction for your site. This is useful for right-to-left languages
 }
 ```
 
-#### Powered By
-
-Control whether the "Powered by Zudoku" badge is shown:
-
-```tsx title=zudoku.config.tsx
-{
-  site: {
-    showPoweredBy: false, // Hide the powered by badge
-  }
-}
-```
-
 #### Colors & Theme
 
 We allow you to fully customize all colors, borders, etc - read more about it in
