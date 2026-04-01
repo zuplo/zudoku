@@ -418,7 +418,7 @@ export const SwitchPlanModal = ({
   });
 
   const currentPlan = plansData?.items.find(
-    (p) => p.id === subscription.plan.id,
+    (p) => p.key === subscription.plan.key,
   );
 
   const { upgrades, downgrades, privatePlans } = useMemo(() => {

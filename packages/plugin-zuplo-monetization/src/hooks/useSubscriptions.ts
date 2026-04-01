@@ -220,5 +220,13 @@ export const useSubscriptions = (environmentName: string) => {
   return useSuspenseQuery<SubscriptionsResponse>({
     queryKey: [`/v3/zudoku-metering/${environmentName}/subscriptions`],
     meta: { context: zudoku },
+    select: (data) => ({
+      ...data,
+      items: [...data.items].sort((a, b) => {
+        if (a.status === "active" && b.status !== "active") return -1;
+        if (a.status !== "active" && b.status === "active") return 1;
+        return 0;
+      }),
+    }),
   });
 };

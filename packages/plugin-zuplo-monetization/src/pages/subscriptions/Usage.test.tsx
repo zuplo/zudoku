@@ -244,4 +244,16 @@ describe("Usage - UsageItem", () => {
       screen.getByText("You've exceeded your monthly quota"),
     ).toBeInTheDocument();
   });
+
+  it("shows feature key as title when item is not found", () => {
+    render(
+      <Usage
+        usage={makeUsage({ balance: 500, usage: 500, overage: 0 })}
+        isFetching={false}
+        currentItems={[]}
+        isPendingFirstPayment={false}
+      />,
+    );
+    expect(screen.getByText("requests")).toBeInTheDocument();
+  });
 });
