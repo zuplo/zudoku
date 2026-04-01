@@ -83,6 +83,20 @@ const renderWithConfig = (config: MonetizationConfig = {}) =>
   );
 
 describe("PricingPage", () => {
+  it("Shows a helpful message when no plans are available", () => {
+    mockPricingData.items = [];
+    mockSubscriptionData.items = [];
+
+    renderWithConfig();
+
+    expect(
+      screen.getByText("No plans are currently available."),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Make sure your plans are set up and published."),
+    ).toBeInTheDocument();
+  });
+
   it("Shows 'Manage Subscriptions' if the user has any active subscriptions", () => {
     mockPricingData.items = [
       makePlan("1", "starter", "Starter"),
