@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { type ApiIdentity, createPlugin } from "zudoku";
 import { CreditCardIcon, StarsIcon } from "zudoku/icons";
 import type { SubscriptionsResponse } from "./hooks/useSubscriptions";
@@ -6,8 +7,10 @@ import CheckoutConfirmPage from "./pages/CheckoutConfirmPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ManagePaymentPage from "./pages/ManagePaymentPage";
 import PricingPage from "./pages/PricingPage";
+import { PricingPageSkeleton } from "./pages/PricingPageSkeleton";
 import SubscriptionChangeConfirmPage from "./pages/SubscriptionChangeConfirmPage";
 import SubscriptionsPage from "./pages/SubscriptionsPage";
+import { SubscriptionsPageSkeleton } from "./pages/SubscriptionsPageSkeleton";
 import ZuploMonetizationWrapper, {
   queryClient,
 } from "./ZuploMonetizationWrapper";
@@ -79,6 +82,7 @@ export const zuploMonetizationPlugin = createPlugin(
     ],
     getRoutes: () => {
       return [
+        // Full-page routes without Layout (checkout, redirects, etc.)
         {
           element: <ZuploMonetizationWrapper options={options} />,
           handle: { layout: "none" },
@@ -99,15 +103,27 @@ export const zuploMonetizationPlugin = createPlugin(
               path: "/manage-payment",
               element: <ManagePaymentPage />,
             },
+          ],
+        },
+        // Routes that share the default Layout with other plugins
+        {
+          element: <ZuploMonetizationWrapper options={options} />,
+          children: [
             {
               path: PRICING_PATH,
-              handle: { layout: "default" },
-              element: <PricingPage />,
+              element: (
+                <Suspense fallback={<PricingPageSkeleton />}>
+                  <PricingPage />
+                </Suspense>
+              ),
             },
             {
-              handle: { layout: "default" },
               path: "/subscriptions",
-              element: <SubscriptionsPage />,
+              element: (
+                <Suspense fallback={<SubscriptionsPageSkeleton />}>
+                  <SubscriptionsPage />
+                </Suspense>
+              ),
             },
           ],
         },
