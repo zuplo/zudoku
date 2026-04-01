@@ -39,6 +39,7 @@ export const Meta = ({ children }: PropsWithChildren) => {
         ))}
         {meta?.creator && <meta name="creator" content={meta.creator} />}
         {meta?.publisher && <meta name="publisher" content={meta.publisher} />}
+        {meta?.robots && <meta name="robots" content={meta.robots} />}
       </Helmet>
       {children}
     </>

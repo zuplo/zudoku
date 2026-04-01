@@ -65,6 +65,7 @@ type Metadata = Partial<{
   authors: string[];
   creator: string;
   publisher: string;
+  robots: string;
 }>;
 
 type Site = Partial<{
