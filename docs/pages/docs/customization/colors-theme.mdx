@@ -214,6 +214,29 @@ const config = {
 };
 ```
 
+### Layout CSS Variables
+
+Zudoku exposes several CSS variables for controlling layout dimensions. These can be overridden
+using `customCss`:
+
+| Variable             | Default         | Description          |
+| -------------------- | --------------- | -------------------- |
+| `--side-nav-width`   | `--spacing(72)` | Sidebar width        |
+| `--header-height`    | (auto)          | Header height        |
+| `--padding-nav-item` | (theme default) | Sidebar item padding |
+
+```ts title="Example: wider sidebar"
+const config = {
+  theme: {
+    customCss: `
+      :root {
+        --side-nav-width: 320px;
+      }
+    `,
+  },
+};
+```
+
 ## Default Theme
 
 Zudoku comes with a built-in default theme based on
