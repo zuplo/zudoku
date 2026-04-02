@@ -50,23 +50,38 @@ export const apiCatalogPlugin = ({
   items: ApiCatalogItem[];
   filterCatalogItems?: FilterCatalogItemsFn;
 }): ZudokuPlugin => {
-  const paths = Object.fromEntries(
-    categories.flatMap((category) =>
-      [undefined, ...category.tags].map((tag) => [
-        joinUrl(path, tag ? getKey(category.label, tag) : undefined),
-        tag,
-      ]),
-    ),
-  );
+  // When categories is empty, create a path map with just the base path
+  const paths = categories.length === 0
+    ? Object.fromEntries([[joinUrl(path), undefined]])
+    : Object.fromEntries(
+        categories.flatMap((category) =>
+          [undefined, ...category.tags].map((tag) => [
+            joinUrl(path, tag ? getKey(category.label, tag) : undefined),
+            tag,
+          ]),
+        ),
+      );
 
   return {
-    getNavigation: async (currentPath) => {
+    getNavigation: async (currentPath, _context) => {
       const matches = Object.keys(paths).some((path) =>
         matchPath(path, currentPath),
       );
 
       if (!matches) {
         return [];
+      }
+
+      // If there are no categories, just show the overview link
+      if (categories.length === 0) {
+        return [
+          {
+            type: "link",
+            to: joinUrl(path),
+            label: "Overview",
+            badge: { label: String(items.length), color: "outline" },
+          },
+        ];
       }
 
       const navigation: NavigationItem[] = categories.map((category) => ({
