@@ -31,6 +31,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     servers {
       url
       description
+      variables
     }
     parameters {
       name
