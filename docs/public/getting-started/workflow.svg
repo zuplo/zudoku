@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <!-- Background -->
+  <rect width="800" height="600" fill="#fafafa"/>
+
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" font-weight="600" fill="#1f2937">
+    Getting Started Workflow
+  </text>
+
+  <!-- Step 1: Create Project -->
+  <g id="step1">
+    <rect x="300" y="70" width="200" height="80" fill="#6366f1" rx="8"/>
+    <text x="400" y="95" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#ffffff">
+      1. Create Project
+    </text>
+    <text x="400" y="115" text-anchor="middle" font-family="system-ui, monospace" font-size="11" fill="#e0e7ff">
+      npm create zudoku@latest
+    </text>
+    <text x="400" y="135" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#c7d2fe">
+      Choose template &amp; options
+    </text>
+  </g>
+
+  <!-- Arrow down -->
+  <path d="M 400 150 L 400 180" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 2: Navigate -->
+  <g id="step2">
+    <rect x="300" y="180" width="200" height="60" fill="#10b981" rx="8"/>
+    <text x="400" y="205" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#ffffff">
+      2. Navigate to Project
+    </text>
+    <text x="400" y="225" text-anchor="middle" font-family="system-ui, monospace" font-size="11" fill="#d1fae5">
+      cd my-docs
+    </text>
+  </g>
+
+  <!-- Arrow down -->
+  <path d="M 400 240 L 400 270" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 3: Start Dev Server -->
+  <g id="step3">
+    <rect x="300" y="270" width="200" height="60" fill="#f59e0b" rx="8"/>
+    <text x="400" y="295" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#ffffff">
+      3. Start Dev Server
+    </text>
+    <text x="400" y="315" text-anchor="middle" font-family="system-ui, monospace" font-size="11" fill="#fef3c7">
+      npm run dev
+    </text>
+  </g>
+
+  <!-- Arrow splits into three paths -->
+  <path d="M 400 330 L 400 360" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 400 360 L 150 360 L 150 390" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 400 360 L 400 390" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 400 360 L 650 360 L 650 390" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 4a: Add Content -->
+  <g id="step4a">
+    <rect x="50" y="390" width="200" height="70" fill="#8b5cf6" rx="8"/>
+    <text x="150" y="415" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#ffffff">
+      4a. Add Content
+    </text>
+    <text x="150" y="435" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#e9d5ff">
+      Create .mdx files in
+    </text>
+    <text x="150" y="450" text-anchor="middle" font-family="system-ui, monospace" font-size="10" fill="#e9d5ff">
+      pages/ directory
+    </text>
+  </g>
+
+  <!-- Step 4b: Add API Docs -->
+  <g id="step4b">
+    <rect x="300" y="390" width="200" height="70" fill="#ec4899" rx="8"/>
+    <text x="400" y="415" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#ffffff">
+      4b. Add API Docs
+    </text>
+    <text x="400" y="435" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#fce7f3">
+      Configure OpenAPI in
+    </text>
+    <text x="400" y="450" text-anchor="middle" font-family="system-ui, monospace" font-size="10" fill="#fce7f3">
+      zudoku.config.tsx
+    </text>
+  </g>
+
+  <!-- Step 4c: Customize Theme -->
+  <g id="step4c">
+    <rect x="550" y="390" width="200" height="70" fill="#06b6d4" rx="8"/>
+    <text x="650" y="415" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#ffffff">
+      4c. Customize Theme
+    </text>
+    <text x="650" y="435" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#cffafe">
+      Update colors &amp; branding
+    </text>
+    <text x="650" y="450" text-anchor="middle" font-family="system-ui, monospace" font-size="10" fill="#cffafe">
+      in config
+    </text>
+  </g>
+
+  <!-- Arrows merge back -->
+  <path d="M 150 460 L 150 490 L 400 490" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 400 460 L 400 490" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <path d="M 650 460 L 650 490 L 400 490" stroke="#94a3b8" stroke-width="2" marker-end="url(#arrowhead)"/>
+
+  <!-- Step 5: Build & Deploy -->
+  <g id="step5">
+    <rect x="300" y="490" width="200" height="70" fill="#14b8a6" rx="8"/>
+    <text x="400" y="515" text-anchor="middle" font-family="system-ui, sans-serif" font-size="13" font-weight="600" fill="#ffffff">
+      5. Build &amp; Deploy
+    </text>
+    <text x="400" y="535" text-anchor="middle" font-family="system-ui, monospace" font-size="11" fill="#ccfbf1">
+      npm run build
+    </text>
+    <text x="400" y="550" text-anchor="middle" font-family="system-ui, sans-serif" font-size="10" fill="#ccfbf1">
+      Deploy to Vercel, Cloudflare, etc.
+    </text>
+  </g>
+
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#94a3b8"/>
+    </marker>
+  </defs>
+</svg>
