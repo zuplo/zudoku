@@ -147,7 +147,7 @@ files:
 ---
 title: My Page Title
 description: Page description for SEO
-navigation_icon: book
+sidebar_icon: book
 category: Getting Started
 ---
 

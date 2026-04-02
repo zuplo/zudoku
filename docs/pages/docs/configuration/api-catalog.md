@@ -100,8 +100,8 @@ const config = {
   catalogs: {
     path: "/catalog",
     label: "API Catalog",
-    filterItems: (items, { auth: AuthState }) => {
-      return items.filter((items) => items.tags.includes(auth));
+    filterItems: (items, { auth }) => {
+      return items.filter((item) => item.tags.includes("public"));
     },
   },
   // ...

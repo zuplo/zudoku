@@ -92,6 +92,7 @@ type NavigationLink = {
   to: string;
   label: string;
   icon?: string; // Lucide icon name
+  target?: "_self" | "_blank";
   badge?: {
     label: string;
     color: "green" | "blue" | "yellow" | "red" | "purple" | "indigo" | "gray" | "outline";
@@ -103,7 +104,6 @@ type NavigationLink = {
     | "always"
     | "hide"
     | ((params: { context: ZudokuContext; auth: UseAuthReturn }) => boolean);
-  target?: "_self" | "_blank";
 };
 ```
 </details>

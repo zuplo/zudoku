@@ -15,8 +15,8 @@ authentication provider you use.
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, Supabase, Azure B2C, and any OpenID provider that supports the OpenID
-Connect protocol.
+Zudoku supports Clerk, Auth0, Supabase, Firebase, Azure B2C, and any OpenID provider that supports
+the OpenID Connect protocol (including PingFederate).
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -95,6 +95,32 @@ When configuring your OpenID provider, you will need to set the following:
 
 By default, the scopes "openid", "profile", and "email" are requested. You can customize these by
 providing your own array of scopes.
+
+### Firebase
+
+For Firebase authentication, you will need your Firebase project configuration. You can find this in
+the Firebase console under Project Settings.
+
+```typescript title="zudoku.config.ts"
+{
+  // ...
+  authentication: {
+    type: "firebase",
+    apiKey: "<your-firebase-api-key>",
+    authDomain: "<your-project>.firebaseapp.com",
+    projectId: "<your-project-id>",
+    appId: "<your-app-id>",
+    providers: ["google", "github", "password"], // Optional
+  },
+  // ...
+}
+```
+
+The `providers` option configures which sign-in methods are available. Supported providers include:
+`google`, `facebook`, `twitter`, `github`, `microsoft`, `apple`, `yahoo`, `password`, `phone`, and
+`emailLink`.
+
+For detailed setup instructions, see the [Firebase setup guide](./authentication-firebase.md).
 
 ### Supabase
 
