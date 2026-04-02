@@ -75,11 +75,16 @@ export type PathParam = {
 
 export type PlaygroundForm = {
   body: string;
-  bodyMode?: "text" | "file" | "multipart";
+  bodyMode?: "text" | "file" | "multipart" | "urlencoded";
   file?: File | null;
   multipartFormFields: Array<{
     name: string;
     value: File | string;
+    active: boolean;
+  }>;
+  urlencodedFormFields: Array<{
+    name: string;
+    value: string;
     active: boolean;
   }>;
   queryParams: Array<{
@@ -179,6 +184,7 @@ export const Playground = ({
         bodyMode: "text",
         file: null,
         multipartFormFields: [],
+        urlencodedFormFields: [],
         queryParams:
           queryParams.length > 0
             ? queryParams.map((param) => ({
@@ -249,6 +255,16 @@ export const Playground = ({
 
           body = formData;
           headers.delete("Content-Type");
+          break;
+        }
+        case "urlencoded": {
+          const params = new URLSearchParams();
+          data.urlencodedFormFields
+            ?.filter((field) => field.name && field.active)
+            .forEach((field) => params.append(field.name, field.value));
+
+          body = params.toString();
+          headers.set("Content-Type", "application/x-www-form-urlencoded");
           break;
         }
         default:
