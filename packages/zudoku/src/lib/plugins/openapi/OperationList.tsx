@@ -28,6 +28,7 @@ export const OperationsFragment = graphql(/* GraphQL */ `
     path
     deprecated
     extensions
+    security
     servers {
       url
       description
@@ -105,6 +106,10 @@ const OperationsForTagQuery = graphql(/* GraphQL */ `
       title
       url
       version
+      security
+      components {
+        securitySchemes
+      }
       tag(slug: $tag, untagged: $untagged) {
         name
         description
@@ -264,6 +269,8 @@ export const OperationList = ({
               operationFragment={fragment}
               globalSelectedServer={globalSelectedServer}
               shouldLazyHighlight={shouldLazyHighlight}
+              securitySchemes={schema.components?.securitySchemes}
+              rootSecurity={schema.security}
             />
             <hr className="my-10" />
           </div>

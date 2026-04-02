@@ -4,6 +4,7 @@ schema {
 
 type Components {
   schemas: [SchemaItem!]
+  securitySchemes: JSONObject
 }
 
 type EncodingItem {
@@ -56,6 +57,7 @@ type OperationItem {
   path: String!
   requestBody: RequestBodyObject
   responses: [ResponseItem!]!
+  security: JSON
   servers: [Server!]!
   slug: String!
   summary: String
@@ -124,6 +126,7 @@ type Schema {
     untagged: Boolean
   ): [OperationItem!]!
   paths: [PathItem!]!
+  security: JSON
   servers: [Server!]!
   summary: String
   tag(name: String, slug: String, untagged: Boolean): SchemaTag

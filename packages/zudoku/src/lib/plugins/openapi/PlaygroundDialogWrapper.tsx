@@ -9,11 +9,17 @@ export const PlaygroundDialogWrapper = ({
   servers,
   operation,
   examples,
+  securitySchemes,
+  rootSecurity,
 }: {
   server?: string;
   servers?: string[];
   operation: OperationsFragmentFragment;
   examples?: MediaTypeObject[];
+  // biome-ignore lint/suspicious/noExplicitAny: Security schemes structure matches OpenAPI spec which is dynamic
+  securitySchemes?: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Security requirements structure matches OpenAPI spec which is dynamic
+  rootSecurity?: any;
 }) => {
   const headers = operation.parameters
     ?.filter((p) => p.in === "header")
@@ -62,6 +68,8 @@ export const PlaygroundDialogWrapper = ({
       queryParams={queryParams}
       pathParams={pathParams}
       examples={examples}
+      security={operation.security ?? rootSecurity}
+      securitySchemes={securitySchemes}
     />
   );
 };

@@ -132,6 +132,10 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  // biome-ignore lint/suspicious/noExplicitAny: Security requirements structure matches OpenAPI spec which is dynamic
+  security?: any;
+  // biome-ignore lint/suspicious/noExplicitAny: Security schemes structure matches OpenAPI spec which is dynamic
+  securitySchemes?: any;
 };
 
 export const Playground = ({
@@ -147,6 +151,8 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  security,
+  securitySchemes,
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -541,6 +547,60 @@ export const Playground = ({
                       identities={identities.data ?? []}
                       setValue={(value) => setValue("identity", value)}
                     />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {security && securitySchemes && (
+                <Collapsible>
+                  <CollapsibleHeaderTrigger>
+                    <ShapesIcon size={16} />
+                    <CollapsibleHeader>Security Requirements</CollapsibleHeader>
+                  </CollapsibleHeaderTrigger>
+                  <CollapsibleContent className="CollapsibleContent">
+                    <div className="p-4 space-y-3">
+                      <div className="text-xs text-muted-foreground">
+                        This operation requires one of the following security
+                        schemes:
+                      </div>
+                      {Array.isArray(security) &&
+                        security.map((requirement) => {
+                          const schemeName = Object.keys(requirement)[0];
+                          if (!schemeName) return null;
+
+                          const scopes = requirement[schemeName] || [];
+                          const scheme = securitySchemes[schemeName];
+
+                          if (!scheme) return null;
+
+                          return (
+                            <div
+                              key={schemeName}
+                              className="border rounded-md p-3 space-y-2 text-xs"
+                            >
+                              <div className="font-semibold">{schemeName}</div>
+                              <div className="text-muted-foreground">
+                                Type: {scheme.type}
+                              </div>
+                              {scheme.scheme && (
+                                <div className="text-muted-foreground">
+                                  Scheme: {scheme.scheme}
+                                </div>
+                              )}
+                              {scheme.description && (
+                                <div className="text-muted-foreground">
+                                  {scheme.description}
+                                </div>
+                              )}
+                              {scopes.length > 0 && (
+                                <div className="text-muted-foreground">
+                                  Scopes: {scopes.join(", ")}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                    </div>
                   </CollapsibleContent>
                 </Collapsible>
               )}
