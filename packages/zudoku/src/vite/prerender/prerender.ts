@@ -64,8 +64,13 @@ export const prerender = async ({
   const serverConfigPath = pathToFileURL(
     path.join(distDir, "server", serverConfigFilename),
   ).href;
+
+  // Check for both .mjs and .js extensions
+  const entryServerMjs = path.join(distDir, "server/entry.server.mjs");
+  const entryServerJs = path.join(distDir, "server/entry.server.js");
+  const entryServerExists = await fileExists(entryServerMjs);
   const entryServerPath = pathToFileURL(
-    path.join(distDir, "server/entry.server.js"),
+    entryServerExists ? entryServerMjs : entryServerJs,
   ).href;
 
   const rawConfig: ZudokuConfig = await import(serverConfigPath).then(

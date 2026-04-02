@@ -216,7 +216,12 @@ const bundleSSREntry = async (options: SSREntryOptions) => {
       target: "es2022",
       format: "esm",
       outfile: path.join(serverOutDir, "entry.js"),
-      external: ["./entry.server.js", "./zudoku.config.js"],
+      external: [
+        "./entry.server.js",
+        "./entry.server.mjs",
+        "./zudoku.config.js",
+        "./zudoku.config.mjs",
+      ],
       nodePaths: [path.join(packageRoot, "node_modules")],
       banner: { js: "// Bundled SSR entry" },
     });
