@@ -1,0 +1,174 @@
+name: npm publish monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: npm-publish-monitor
+  cancel-in-progress: true
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    env:
+      INCIDENT_IO_ALERT_URL: https://api.incident.io/v2/alert_events/http/01J85NBDXG21QA8DK915TYMVVW
+      PUBLISH_MONITOR_REPORT_PATH: ${{ runner.temp }}/publish-monitor-report.json
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: ".tool-versions"
+
+      - name: Check npm publishes
+        id: check
+        run: node scripts/check-npm-publishes.mjs
+
+      - name: Open or update alert issue
+        if: ${{ failure() }}
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require("node:fs");
+            const reportPath = process.env.PUBLISH_MONITOR_REPORT_PATH;
+
+            if (!reportPath || !fs.existsSync(reportPath)) {
+              core.warning("No publish monitor report found; skipping issue creation.");
+              return;
+            }
+
+            const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+
+            if (report.status !== "detected") {
+              core.notice(`Monitor failed without a publish detection (status: ${report.status ?? "unknown"}).`);
+              return;
+            }
+
+            const title = "Urgent: unexpected npm publish detected";
+            const rows = report.detections.flatMap(({ packageName, unexpectedPublishes }) =>
+              unexpectedPublishes.map(
+                ({ version, publishedAt }) => `| \`${packageName}\` | \`${version}\` | ${publishedAt} |`,
+              ),
+            );
+            const body = [
+              "Unexpected npm publishes were detected by the temporary Zudoku publish monitor.",
+              "",
+              `- Baseline: ${report.capturedAt}`,
+              `- Checked at: ${report.checkedAt}`,
+              `- Monitor expires: ${report.expiresAt}`,
+              "",
+              "| Package | Version | Published at |",
+              "| --- | --- | --- |",
+              ...rows,
+              "",
+              `Workflow run: ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`,
+            ].join("\n");
+
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: "open",
+              per_page: 100,
+            });
+
+            const existing = issues.find((issue) => issue.title === title);
+
+            if (existing) {
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+              core.notice(`Updated alert issue #${existing.number}.`);
+              return;
+            }
+
+            const created = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+            });
+
+            core.notice(`Created alert issue #${created.data.number}.`);
+
+      - name: Create Incident
+        if: ${{ failure() }}
+        shell: bash
+        env:
+          INCIDENT_IO_WEBHOOK_KEY: ${{ secrets.INCIDENT_IO_WEBHOOK_KEY }}
+        run: |
+          if [ ! -f "$PUBLISH_MONITOR_REPORT_PATH" ]; then
+            echo "No publish monitor report found; skipping incident.io alert."
+            exit 0
+          fi
+
+          if [ -z "$INCIDENT_IO_WEBHOOK_KEY" ]; then
+            echo "INCIDENT_IO_WEBHOOK_KEY is not configured for this repository; skipping incident.io alert."
+            exit 0
+          fi
+
+          INCIDENT_PAYLOAD=$(node <<'NODE'
+          const fs = require("node:fs");
+          const reportPath = process.env.PUBLISH_MONITOR_REPORT_PATH;
+          const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+          const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+
+          if (report.status !== "detected") {
+            process.exit(0);
+          }
+
+          const lines = report.detections.flatMap(({ packageName, unexpectedPublishes }) =>
+            unexpectedPublishes.map(
+              ({ version, publishedAt }) => `- ${packageName}@${version} at ${publishedAt}`,
+            ),
+          );
+
+          const payload = {
+            title: "Unexpected Zudoku npm publish detected",
+            description: [
+              "The temporary Zudoku npm publish monitor detected a new publish after the baseline window.",
+              "",
+              `Baseline: ${report.capturedAt}`,
+              `Checked at: ${report.checkedAt}`,
+              "",
+              ...lines,
+            ].join("\n"),
+            status: "firing",
+            source_url: runUrl,
+            metadata: {
+              service: "zudoku-publish-monitor",
+              priority: "urgent",
+              repository: process.env.GITHUB_REPOSITORY,
+            },
+          };
+
+          process.stdout.write(JSON.stringify(payload));
+          NODE
+          )
+
+          if [ -z "$INCIDENT_PAYLOAD" ]; then
+            echo "Monitor did not detect a publish; skipping incident.io alert."
+            exit 0
+          fi
+
+          curl --request POST \
+            --url "$INCIDENT_IO_ALERT_URL" \
+            --header "Authorization: Bearer $INCIDENT_IO_WEBHOOK_KEY" \
+            --header 'Content-Type: application/json' \
+            --data "$INCIDENT_PAYLOAD"
+
+      - name: Upload monitor report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: publish-monitor-report
+          path: ${{ env.PUBLISH_MONITOR_REPORT_PATH }}
