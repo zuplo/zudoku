@@ -80,10 +80,6 @@ jobs:
           repositories: zudoku
           permission-contents: write
 
-      - name: Configure git auth for zudoku
-        run: |
-          git remote set-url origin https://x-access-token:${{ steps.zudoku-release-token.outputs.token }}@github.com/zuplo/zudoku.git
-
       - name: Commit and tag
         run: |
           git config user.email "integrations@zuplo.com"
@@ -91,7 +87,13 @@ jobs:
           git add packages/plugin-zuplo-monetization/package.json
           git commit -m "chore(release): @zuplo/zudoku-plugin-monetization v${{ steps.version.outputs.version }} [skip ci]"
           git tag "monetization-v${{ steps.version.outputs.version }}"
-          git push origin main --follow-tags
+
+      - name: Push Git Changes
+        env:
+          ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+        run: |
+          auth_header=$(printf 'x-access-token:%s' "$ZUDOKU_RELEASE_TOKEN" | base64 -w0)
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth_header" push origin main --follow-tags
 
       - name: Generate a token
         id: app-token
