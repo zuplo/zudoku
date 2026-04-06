@@ -33,7 +33,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ssh-key: ${{ secrets.GH_ACTIONS_DEPLOY_KEY_RULE_BYPASS }}
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v5
         with:
@@ -69,6 +69,20 @@ jobs:
       - name: Publish
         working-directory: packages/plugin-zuplo-monetization
         run: pnpm publish --provenance --access public --tag latest --no-git-checks
+
+      - name: Generate zudoku release token
+        id: zudoku-release-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ZUDOKU_RELEASE_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_RELEASE_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: zudoku
+          permission-contents: write
+
+      - name: Configure git auth for zudoku
+        run: |
+          git remote set-url origin https://x-access-token:${{ steps.zudoku-release-token.outputs.token }}@github.com/zuplo/zudoku.git
 
       - name: Commit and tag
         run: |
