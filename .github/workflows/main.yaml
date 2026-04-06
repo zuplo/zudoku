@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-          ssh-key: ${{ secrets.GH_ACTIONS_DEPLOY_KEY_RULE_BYPASS }}
+          persist-credentials: false
 
       - uses: pnpm/action-setup@v5
         with:
@@ -105,9 +105,24 @@ jobs:
 
       - run: echo "ZUDOKU_VERSION=$(node --print 'require(`./packages/zudoku/package.json`).version')" >> $GITHUB_ENV
 
+      - name: Generate zudoku release token
+        if: env.IS_RELEASE == 'true'
+        id: zudoku-release-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.ZUDOKU_RELEASE_APP_ID }}
+          private-key: ${{ secrets.ZUDOKU_RELEASE_APP_PRIVATE_KEY }}
+          owner: zuplo
+          repositories: zudoku
+          permission-contents: write
+
       - name: Push Git Changes
         if: env.IS_RELEASE == 'true'
-        run: git push origin main --follow-tags
+        env:
+          ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
+        run: |
+          auth_header=$(printf 'x-access-token:%s' "$ZUDOKU_RELEASE_TOKEN" | base64 -w0)
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth_header" push origin main --follow-tags
 
       - uses: actions/github-script@v8
         name: ${{ env.IS_RELEASE == 'true' && 'Create Release' || 'Create Pre-release' }}
