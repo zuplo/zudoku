@@ -77,7 +77,6 @@ Supabase integration is **OAuth only**: email/password and magic links are not s
 
    From your Supabase project dashboard, go to **Authentication** → **Configuration** → **URL
    Configuration** and update:
-
    - **Site URL**: Your primary deployed URL (for example `https://docs.example.com`), or
      `http://localhost:3000` while developing locally.
    - **Redirect URLs**: Include your Zudoku site origin(s), for example:
