@@ -415,7 +415,6 @@ const AuthenticationSchema = z.discriminatedUnion("type", [
           "apple",
           "yahoo",
           "password",
-          "phone",
           "emailLink",
         ]),
       )

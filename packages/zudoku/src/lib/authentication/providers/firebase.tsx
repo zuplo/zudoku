@@ -241,7 +241,7 @@ class FirebaseAuthenticationProvider
               password: string,
             ) => {
               try {
-                useAuthState.setState({ isPending: false });
+                useAuthState.setState({ isPending: true });
                 const result = await signInWithEmailAndPassword(
                   this.auth,
                   email,
@@ -384,11 +384,11 @@ class FirebaseAuthenticationProvider
   }
 }
 
-const supabaseAuth: AuthenticationProviderInitializer<
+const firebaseAuth: AuthenticationProviderInitializer<
   FirebaseAuthenticationConfig
 > = (options) => new FirebaseAuthenticationProvider(options);
 
-export default supabaseAuth;
+export default firebaseAuth;
 
 const getProviderForId = async (providerId: string) => {
   switch (providerId) {

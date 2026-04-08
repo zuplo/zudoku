@@ -32,7 +32,7 @@ const loadClerk = (publishableKey: string): Promise<Clerk> => {
     const frontendApiUrl = getClerkFrontendApi(publishableKey);
 
     const script = document.createElement("script");
-    script.src = `https://${frontendApiUrl}/npm/@clerk/clerk-js@5/dist/clerk.browser.js`;
+    script.src = `https://${frontendApiUrl}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`;
     script.async = true;
     script.crossOrigin = "anonymous";
     script.dataset.clerkPublishableKey = publishableKey;
