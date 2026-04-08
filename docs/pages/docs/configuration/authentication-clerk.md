@@ -68,23 +68,23 @@ that provides 10,000 monthly active users.
 
 4. **Configure Redirect URLs (Optional)**
 
-   If you need custom redirect behavior, configure the allowed redirect URLs in Clerk:
-   - Go to **Paths** in your Clerk dashboard
-   - Add your production, preview, and local development URLs to the allowed redirect URLs
-   - Common patterns:
-     - Production: `https://your-site.com/oauth/callback`
-     - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
-     - Local Development: `http://localhost:3000/oauth/callback`
+   If you need custom redirect behavior after sign-in or sign-up, you can configure this in your
+   Zudoku config:
 
-5. **Install Clerk Dependencies**
-
-   Add `@clerk/clerk-js` to your project dependencies:
-
-   ```bash
-   npm install @clerk/clerk-js
+   ```typescript
+   authentication: {
+     type: "clerk",
+     clerkPubKey: "<your-clerk-publishable-key>",
+     jwtTemplateName: "<your-clerk-jwt-template-name>",
+     redirectToAfterSignIn: "/docs",
+     redirectToAfterSignUp: "/getting-started",
+     redirectToAfterSignOut: "/",
+   },
    ```
 
-   </Stepper>
+   You should also ensure your site's domain is added as an allowed origin in the Clerk dashboard.
+
+</Stepper>
 
 ## Troubleshooting
 

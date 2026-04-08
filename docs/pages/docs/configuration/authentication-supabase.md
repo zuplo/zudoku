@@ -338,8 +338,8 @@ CREATE TRIGGER on_auth_user_created
 6. **CORS Errors**: Check that your site's domain is properly configured in Supabase's allowed URLs
    under **Authentication** → **URL Configuration**.
 
-7. **Authentication Not Working**: Make sure you have installed all required dependencies:
-   `@supabase/supabase-js`, `@supabase/auth-ui-react`, and `@supabase/auth-ui-shared`.
+7. **Authentication Not Working**: Make sure you have installed `@supabase/supabase-js` in your
+   project dependencies.
 
 ## Next Steps
 

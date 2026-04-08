@@ -117,7 +117,7 @@ the Firebase console under Project Settings.
 ```
 
 The `providers` option configures which sign-in methods are available. Supported providers include:
-`google`, `facebook`, `twitter`, `github`, `microsoft`, `apple`, `yahoo`, `password`, `phone`, and
+`google`, `facebook`, `twitter`, `github`, `microsoft`, `apple`, `yahoo`, `password`, and
 `emailLink`.
 
 For detailed setup instructions, see the [Firebase setup guide](./authentication-firebase.md).
@@ -132,7 +132,7 @@ provider to use.
   // ...
   authentication: {
     type: "supabase",
-    provider: "github",
+    providers: ["github"],
     supabaseUrl: "https://your-project.supabase.co",
     supabaseKey: "<your-supabase-key>",
     redirectToAfterSignUp: "/",
@@ -143,10 +143,10 @@ provider to use.
 }
 ```
 
-The `provider` option can be any of Supabase Auth's supported providers, such as `apple`, `azure`,
-`bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`, `keycloak`,
-`linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`, `twitter`,
-`workos`, `zoom`, or `fly`.
+The `providers` option accepts an array of Supabase Auth's supported providers, such as `apple`,
+`azure`, `bitbucket`, `discord`, `facebook`, `figma`, `github`, `gitlab`, `google`, `kakao`,
+`keycloak`, `linkedin`, `linkedin_oidc`, `notion`, `slack`, `slack_oidc`, `spotify`, `twitch`,
+`twitter`, `workos`, `zoom`, or `fly`.
 
 ### Azure B2C
 
