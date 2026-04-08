@@ -167,7 +167,7 @@ const runPrerender = async (options: PrerenderOptions) => {
     });
 
     if (ZuploEnv.isZuplo && issuer) {
-      const provider = config.authentication?.type ?? "none";
+      const provider = config.authentication?.type;
 
       await writeFile(
         path.join(dir, DIST_DIR, ".output/zuplo.json"),
