@@ -92,8 +92,8 @@ jobs:
         env:
           ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
         run: |
-          auth_header=$(printf 'x-access-token:%s' "$ZUDOKU_RELEASE_TOKEN" | base64 -w0)
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth_header" push origin main --follow-tags
+          git remote set-url origin "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git"
+          git push origin main --follow-tags
 
       - name: Generate a token
         id: app-token
