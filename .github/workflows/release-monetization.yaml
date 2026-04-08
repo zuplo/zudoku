@@ -86,14 +86,14 @@ jobs:
           git config user.name "Zuplo Integrations"
           git add packages/plugin-zuplo-monetization/package.json
           git commit -m "chore(release): @zuplo/zudoku-plugin-monetization v${{ steps.version.outputs.version }} [skip ci]"
-          git tag "monetization-v${{ steps.version.outputs.version }}"
+          git tag -a "monetization-v${{ steps.version.outputs.version }}" -m "Release monetization v${{ steps.version.outputs.version }}"
 
       - name: Push Git Changes
         env:
           ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
         run: |
-          git remote set-url origin "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git"
-          git push origin main --follow-tags
+          echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
+          git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
 
       - name: Generate a token
         id: app-token
