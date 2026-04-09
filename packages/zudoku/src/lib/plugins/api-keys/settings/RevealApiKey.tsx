@@ -74,8 +74,8 @@ export const RevealApiKey = ({
         {expiresOn && onDeleteKey && (
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <TrashIcon size={16} />
+              <Button variant="ghost" size="icon" aria-label="Delete API key">
+                <TrashIcon size={16} aria-hidden="true" />
               </Button>
             </DialogTrigger>
             <DialogContent>

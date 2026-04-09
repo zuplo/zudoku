@@ -102,7 +102,7 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
                 {children ?? (
                   <>
                     Open in Playground
-                    <CirclePlayIcon size={16} />
+                    <CirclePlayIcon size={16} aria-hidden="true" />
                   </>
                 )}
               </Button>

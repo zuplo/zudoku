@@ -51,7 +51,7 @@ export const QueryParams = ({
   return (
     <Collapsible defaultOpen>
       <CollapsibleHeaderTrigger>
-        <Unlink2Icon size={16} />
+        <Unlink2Icon size={16} aria-hidden="true" />
         <CollapsibleHeader>Query Parameters</CollapsibleHeader>
       </CollapsibleHeaderTrigger>
       <CollapsibleContent className="CollapsibleContent">

@@ -498,15 +498,20 @@ export const Playground = ({
                     }}
                     variant="ghost"
                     size="icon-xs"
+                    aria-label="Copy URL"
                     className={cn(
                       "hover:opacity-100 transition",
                       isCopied ? "text-emerald-600 opacity-100" : "opacity-50",
                     )}
                   >
                     {isCopied ? (
-                      <CheckIcon className="text-green-500" size={14} />
+                      <CheckIcon
+                        className="text-green-500"
+                        size={14}
+                        aria-hidden="true"
+                      />
                     ) : (
-                      <CopyIcon size={14} />
+                      <CopyIcon size={14} aria-hidden="true" />
                     )}
                   </Button>
                 </div>
@@ -532,7 +537,7 @@ export const Playground = ({
               {identities.data?.length !== 0 && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
-                    <IdCardLanyardIcon size={16} />
+                    <IdCardLanyardIcon size={16} aria-hidden="true" />
                     <CollapsibleHeader>Authentication</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
@@ -548,7 +553,7 @@ export const Playground = ({
               {sortedPathParams.length > 0 && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
-                    <ShapesIcon size={16} />
+                    <ShapesIcon size={16} aria-hidden="true" />
                     <CollapsibleHeader>Path Parameters</CollapsibleHeader>
                   </CollapsibleHeaderTrigger>
                   <CollapsibleContent className="CollapsibleContent">
