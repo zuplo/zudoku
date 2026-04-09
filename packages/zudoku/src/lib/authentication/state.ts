@@ -87,5 +87,6 @@ export interface UserProfile {
   emailVerified: boolean;
   name: string | undefined;
   pictureUrl: string | undefined;
-  [key: string]: string | boolean | undefined;
+  claims?: Record<string, unknown>;
+  [key: string]: string | boolean | Record<string, unknown> | undefined;
 }

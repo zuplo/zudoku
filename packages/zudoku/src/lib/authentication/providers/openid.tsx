@@ -19,6 +19,30 @@ import { type UserProfile, useAuthState } from "../state.js";
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
 
+// Standard OIDC userinfo fields that are mapped to named UserProfile properties.
+// Everything else is treated as a custom claim.
+const KNOWN_USERINFO_FIELDS = new Set([
+  "sub",
+  "email",
+  "email_verified",
+  "name",
+  "picture",
+]);
+
+const extractCustomClaims = (
+  userInfo: Record<string, unknown>,
+): Record<string, unknown> | undefined => {
+  const custom: Record<string, unknown> = {};
+  let hasCustom = false;
+  for (const [key, value] of Object.entries(userInfo)) {
+    if (!KNOWN_USERINFO_FIELDS.has(key)) {
+      custom[key] = value;
+      hasCustom = true;
+    }
+  }
+  return hasCustom ? custom : undefined;
+};
+
 export interface OpenIdProviderData {
   // just for easy migration we also allow for undefined type. can be removed in the future.
   type: "openid" | undefined;
@@ -204,6 +228,7 @@ export class OpenIDAuthenticationProvider
       name: userInfo.name,
       emailVerified: userInfo.email_verified ?? emailVerified ?? false,
       pictureUrl: userInfo.picture,
+      claims: extractCustomClaims(userInfo),
     };
 
     useAuthState.setState({
@@ -483,12 +508,12 @@ export class OpenIDAuthenticationProvider
     const userInfo = await userInfoResponse.json();
 
     const profile: UserProfile = {
-      ...userInfo,
       sub: userInfo.sub,
       email: userInfo.email,
       name: userInfo.name,
       emailVerified: userInfo.email_verified ?? claims?.email_verified ?? false,
       pictureUrl: userInfo.picture,
+      claims: extractCustomClaims(userInfo),
     };
 
     useAuthState.setState({
