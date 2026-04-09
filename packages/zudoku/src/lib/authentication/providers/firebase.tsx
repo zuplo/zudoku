@@ -249,6 +249,7 @@ class FirebaseAuthenticationProvider
                 );
                 await this.setUserLoggedIn(result.user);
               } catch (error) {
+                useAuthState.setState({ isPending: false });
                 throw Error(getFirebaseErrorMessage(error), { cause: error });
               }
             }}

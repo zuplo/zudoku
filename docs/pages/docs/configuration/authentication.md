@@ -125,7 +125,7 @@ For detailed setup instructions, see the [Firebase setup guide](./authentication
 ### Supabase
 
 To use Supabase as your authentication provider, supply your project's URL, API key, and the OAuth
-provider to use.
+providers to use.
 
 ```typescript title="zudoku.config.ts"
 {
