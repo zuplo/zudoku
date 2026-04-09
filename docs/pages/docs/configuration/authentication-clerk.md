@@ -99,8 +99,9 @@ that provides 10,000 monthly active users.
 3. **Redirect Issues**: Check that your domain is added to the allowed redirect URLs in Clerk if
    using custom redirects.
 
-4. **ReferenceError: can't access lexical declaration 'xxx' before initialization**: Make sure you
-   have installed Clerk to your project.
+4. **ReferenceError: can't access lexical declaration 'xxx' before initialization**: This can happen
+   if the Clerk CDN script fails to load. Check your network connectivity and ensure your
+   publishable key is valid.
 
 ## Next Steps
 
