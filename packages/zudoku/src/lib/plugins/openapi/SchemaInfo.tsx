@@ -1,7 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import {
-  BracesIcon,
   GlobeIcon,
   InfoIcon,
   KeyRoundIcon,
@@ -70,9 +69,6 @@ const SchemaInfoQuery = graphql(/* GraphQL */ `
         description
       }
       components {
-        schemas {
-          name
-        }
         securitySchemes {
           name
           type
@@ -357,25 +353,6 @@ export const SchemaInfo = () => {
                             </ItemDescription>
                           )}
                         </ItemContent>
-                      </Link>
-                    </Item>
-                  ))}
-                </div>
-              </div>
-            )}
-            {(schema.components?.schemas?.length ?? 0) > 0 && (
-              <div>
-                <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
-                  <BracesIcon size={14} />
-                  Schemas
-                </div>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-4">
-                  {schema.components?.schemas?.map((s) => (
-                    <Item key={s.name} variant="outline" title={s.name} asChild>
-                      <Link to={`~schemas#${slugify(s.name)}`}>
-                        <span className="text-sm font-medium leading-snug truncate">
-                          {s.name}
-                        </span>
                       </Link>
                     </Item>
                   ))}

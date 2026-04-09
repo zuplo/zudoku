@@ -531,7 +531,6 @@ export type SchemaInfoQuery = {
     }>;
     components?: {
       __typename?: "Components";
-      schemas?: Array<{ __typename?: "SchemaItem"; name: string }> | null;
       securitySchemes?: Array<{
         __typename?: "SecuritySchemeItem";
         name: string;
@@ -1008,9 +1007,6 @@ export const SchemaInfoDocument = new TypedDocumentString(`
       description
     }
     components {
-      schemas {
-        name
-      }
       securitySchemes {
         name
         type
