@@ -6,6 +6,7 @@ import { AnchorLink } from "../components/AnchorLink.js";
 import { Framed } from "../components/Framed.js";
 import { Heading } from "../components/Heading.js";
 import { InlineCode } from "../components/InlineCode.js";
+import { ScreenshotFrame } from "../components/ScreenshotFrame.js";
 import { HIGHLIGHT_CODE_BLOCK_CLASS } from "../shiki-constants.js";
 import { Badge } from "../ui/Badge.js";
 import { Button } from "../ui/Button.js";
@@ -48,6 +49,7 @@ export const MdxComponents = {
     );
   },
   Framed,
+  ScreenshotFrame,
   h1: ({ children, id }) => (
     <Heading level={1} id={id}>
       {children}

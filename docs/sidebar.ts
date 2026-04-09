@@ -145,6 +145,7 @@ export const components: Navigation = [
       "docs/components/callout",
       "docs/components/badge",
       "docs/components/card",
+      "docs/components/screenshot-frame",
       "docs/components/icons",
       "docs/components/markdown",
       "docs/components/typography",
