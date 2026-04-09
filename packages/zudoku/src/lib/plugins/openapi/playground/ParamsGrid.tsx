@@ -35,10 +35,11 @@ export const ParamsGridRemoveButton = ({
     )}
     onClick={onClick}
     type="button"
+    aria-label="Remove"
     // In the last row the remove button will be hidden by the ParamsGridItem selector
     data-slot="remove-button"
   >
-    <XIcon size={14} />
+    <XIcon size={14} aria-hidden="true" />
   </Button>
 );
 

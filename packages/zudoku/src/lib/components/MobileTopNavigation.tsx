@@ -145,8 +145,8 @@ export const MobileTopNavigation = () => {
       onOpenChange={setDrawerOpen}
     >
       <div className="flex lg:hidden justify-self-end">
-        <DrawerTrigger className="lg:hidden">
-          <MenuIcon size={22} />
+        <DrawerTrigger className="lg:hidden" aria-label="Open navigation menu">
+          <MenuIcon size={22} aria-hidden="true" />
         </DrawerTrigger>
         <PageProgress />
       </div>

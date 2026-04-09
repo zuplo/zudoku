@@ -21,7 +21,7 @@ type ResolvedAssistant = {
 const PRESETS: Record<string, ResolvedAssistant> = {
   claude: {
     label: "Use in Claude",
-    icon: <ClaudeLogo className="size-4" />,
+    icon: <ClaudeLogo className="size-4" aria-hidden="true" />,
     getUrl: ({ pageUrl, type }) => {
       const contextText =
         type === "openapi" ? "this API" : "this documentation page";
@@ -33,7 +33,7 @@ const PRESETS: Record<string, ResolvedAssistant> = {
   },
   chatgpt: {
     label: "Use in ChatGPT",
-    icon: <ChatGPTLogo className="size-4" />,
+    icon: <ChatGPTLogo className="size-4" aria-hidden="true" />,
     getUrl: ({ pageUrl, type }) => {
       const contextText =
         type === "openapi" ? "this API" : "this documentation page";

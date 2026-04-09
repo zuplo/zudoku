@@ -56,10 +56,13 @@ const NavigationCategoryInner = ({
       }}
       variant="ghost"
       size="icon"
+      aria-label={open ? "Collapse section" : "Expand section"}
+      aria-expanded={open}
       className="size-6 hover:bg-[hsl(from_var(--accent)_h_s_calc(l+6*var(--dark)))]"
     >
       <ChevronRightIcon
         size={16}
+        aria-hidden="true"
         className={cn(
           hasInteracted && "transition",
           "shrink-0 group-data-[state=open]:rotate-90 rtl:rotate-180",

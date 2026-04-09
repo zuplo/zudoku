@@ -106,11 +106,12 @@ export const Secret = ({
             onReveal?.(!revealed);
           }}
           size="icon-xs"
+          aria-label={revealed ? "Hide secret" : "Reveal secret"}
         >
           {revealed ? (
-            <EyeOffIcon className="size-3.5" />
+            <EyeOffIcon className="size-3.5" aria-hidden="true" />
           ) : (
-            <EyeIcon className="size-3.5" />
+            <EyeIcon className="size-3.5" aria-hidden="true" />
           )}
         </Button>
       )}
@@ -121,11 +122,12 @@ export const Secret = ({
           onCopy?.(secret);
         }}
         size="icon-xs"
+        aria-label="Copy to clipboard"
       >
         {isCopied ? (
-          <CheckIcon className="size-3.5" />
+          <CheckIcon className="size-3.5" aria-hidden="true" />
         ) : (
-          <CopyIcon className="size-3.5" />
+          <CopyIcon className="size-3.5" aria-hidden="true" />
         )}
       </Button>
     </div>
