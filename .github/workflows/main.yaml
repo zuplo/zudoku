@@ -121,8 +121,8 @@ jobs:
         env:
           ZUDOKU_RELEASE_TOKEN: ${{ steps.zudoku-release-token.outputs.token }}
         run: |
-          auth_header=$(printf 'x-access-token:%s' "$ZUDOKU_RELEASE_TOKEN" | base64 -w0)
-          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth_header" push origin main --follow-tags
+          echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
+          git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
 
       - uses: actions/github-script@v8
         name: ${{ env.IS_RELEASE == 'true' && 'Create Release' || 'Create Pre-release' }}

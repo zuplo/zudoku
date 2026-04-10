@@ -167,16 +167,24 @@ export const MdxPage = ({
                   onClick={handleCopyMarkdown}
                 >
                   {isCopied ? (
-                    <CheckIcon size={14} className="text-emerald-600" />
+                    <CheckIcon
+                      size={14}
+                      className="text-emerald-600"
+                      aria-hidden="true"
+                    />
                   ) : (
-                    <CopyIcon size={14} />
+                    <CopyIcon size={14} aria-hidden="true" />
                   )}
                   <span>Copy page</span>
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon-sm">
-                      <ChevronDownIcon size={14} />
+                    <Button
+                      variant="outline"
+                      size="icon-sm"
+                      aria-label="More actions"
+                    >
+                      <ChevronDownIcon size={14} aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -186,7 +194,7 @@ export const MdxPage = ({
                         void navigator.clipboard.writeText(window.location.href)
                       }
                     >
-                      <Link2Icon className="size-4" />
+                      <Link2Icon className="size-4" aria-hidden="true" />
                       Copy link to page
                     </DropdownMenuItem>
                     <DropdownMenuItem className="gap-2" asChild>
@@ -195,7 +203,10 @@ export const MdxPage = ({
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <ExternalLinkIcon className="size-4" />
+                        <ExternalLinkIcon
+                          className="size-4"
+                          aria-hidden="true"
+                        />
                         Open Markdown page
                       </a>
                     </DropdownMenuItem>
@@ -240,7 +251,7 @@ export const MdxPage = ({
                       rel="noopener noreferrer"
                       className="flex items-center gap-1"
                     >
-                      <EditIcon size={12} />
+                      <EditIcon size={12} aria-hidden="true" />
                       {editText}
                     </a>
                   </Button>

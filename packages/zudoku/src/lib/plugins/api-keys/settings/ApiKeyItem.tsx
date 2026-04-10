@@ -181,19 +181,19 @@ const ApiKeyItem = ({
     <>
       {rollKeyMutation.isError && (
         <Alert variant="destructive" className="mb-4">
-          <CircleSlashIcon size={16} />
+          <CircleSlashIcon size={16} aria-hidden="true" />
           <AlertTitle>{rollKeyMutation.error.message}</AlertTitle>
         </Alert>
       )}
       {updateConsumerMutation.isError && (
         <Alert variant="destructive" className="mb-4">
-          <CircleSlashIcon size={16} />
+          <CircleSlashIcon size={16} aria-hidden="true" />
           <AlertTitle>{updateConsumerMutation.error.message}</AlertTitle>
         </Alert>
       )}
       {deleteKeyMutation.isError && (
         <Alert variant="destructive" className="mb-4">
-          <CircleSlashIcon size={16} />
+          <CircleSlashIcon size={16} aria-hidden="true" />
           <AlertTitle>{deleteKeyMutation.error.message}</AlertTitle>
         </Alert>
       )}
@@ -224,15 +224,17 @@ const ApiKeyItem = ({
                     variant="ghost"
                     onClick={handleSaveEdit}
                     disabled={!editingLabel.trim()}
+                    aria-label="Save"
                   >
-                    <CheckIcon size={16} />
+                    <CheckIcon size={16} aria-hidden="true" />
                   </Button>
                   <Button
                     size="icon"
                     variant="ghost"
                     onClick={() => setIsEditing(false)}
+                    aria-label="Cancel"
                   >
-                    <XIcon size={16} />
+                    <XIcon size={16} aria-hidden="true" />
                   </Button>
                 </div>
               </div>

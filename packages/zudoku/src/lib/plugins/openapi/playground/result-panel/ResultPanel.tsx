@@ -38,7 +38,12 @@ export const ResultPanel = ({
       {queryMutation.error ? (
         <div className="max-w-2/3 mx-auto mt-20">
           <Alert>
-            <UnplugIcon size={24} strokeWidth={1.5} className="me-5" />
+            <UnplugIcon
+              size={24}
+              strokeWidth={1.5}
+              className="me-5"
+              aria-hidden="true"
+            />
             <AlertTitle>Request failed</AlertTitle>
             <AlertDescription>
               {queryMutation.error.message ||
@@ -87,6 +92,7 @@ export const ResultPanel = ({
               size={64}
               className="text-muted-foreground"
               strokeWidth={1.2}
+              aria-hidden="true"
             />
             <span className="text-[16px] font-semibold text-muted-foreground">
               Send your first request

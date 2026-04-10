@@ -33,11 +33,12 @@ const CopyButton = ({ url }: { url: string }) => {
       }}
       variant="ghost"
       size="icon-xs"
+      aria-label="Copy endpoint URL"
     >
       {isCopied ? (
-        <CheckIcon className="text-green-600" size={14} />
+        <CheckIcon className="text-green-600" size={14} aria-hidden="true" />
       ) : (
-        <CopyIcon size={14} strokeWidth={1.3} />
+        <CopyIcon size={14} strokeWidth={1.3} aria-hidden="true" />
       )}
     </Button>
   );
@@ -68,6 +69,7 @@ export const Endpoint = () => {
           }
           value={selectedServer}
           showChevrons={servers.length > 1}
+          aria-label="Select server endpoint"
           options={servers.map((server) => ({
             value: server.url,
             label: server.url,
