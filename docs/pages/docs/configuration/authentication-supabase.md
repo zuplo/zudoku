@@ -2,79 +2,163 @@
 title: Supabase Setup
 sidebar_label: Supabase
 description:
-  Learn how to set up Supabase authentication for Zudoku, leveraging Supabase's built-in auth
-  providers for secure documentation access.
+  Learn how to set up Supabase authentication for Zudoku using email and password or OAuth providers
+  for secure documentation access.
 ---
 
 Supabase is an open-source Firebase alternative that provides authentication, database, and storage
 services. This guide shows you how to integrate Supabase authentication with your Zudoku
 documentation site.
 
+You can use **email and password** (Supabase signs users in with an email address and password),
+**OAuth providers** (GitHub, Google, and so on), or both. Follow the section that matches how you
+want users to sign in.
+
 ## Prerequisites
 
 You'll need a Supabase project. If you don't have one,
 [create a free Supabase project](https://supabase.com/dashboard) to get started.
 
-## Setup Steps
+## Setup Steps for Email and Password
+
+Use this path when users should sign up and sign in with an email address and password managed by
+Supabase.
 
 <Stepper>
+
+<a id="configure-email-sign-in"></a>
+
+1. **Enable email authentication in Supabase**
+
+   In your [Supabase Dashboard](https://supabase.com/dashboard):
+   - Select the project you are going to use
+   - Go to **Authentication** → **Configuration** → **Sign In / Providers**
+   - Under **Email**, ensure **Email sign-in** is enabled
+   - Decide whether new users must confirm their email before signing in (see **Confirm email** in
+     the same area). If confirmation is required, Supabase sends a link that returns users to your
+     Zudoku portal (see [Authentication Routes](#authentication-routes))
+
+2. **Copy your Supabase URL and publishable key**
+
+   From your Supabase project dashboard:
+   - Go to **Project Settings** → **Integrations** → **Data API**
+   - Copy your **API URL** (looks like `https://your-project-id.supabase.co`)
+   - Go to **Configuration** → **API Keys**
+   - Copy your **publishable** key (looks like `sb_publishable_...`)
+
+3. **Configure Zudoku**
+
+   Add the following to your [Zudoku configuration file](./overview.md). Omit `providers` or set it
+   to an empty array when you are only using email and password:
+
+   ```ts title="zudoku.config.ts"
+   export default {
+     // ... other configuration
+     authentication: {
+       type: "supabase",
+       providers: [],
+       supabaseUrl: "https://your-project.supabase.co",
+       supabaseKey: "<your-publishable-key>",
+     },
+     // ... other configuration
+   };
+   ```
+
+4. **Install Supabase dependencies**
+
+   Install the packages Zudoku expects for the Supabase client and auth UI:
+
+   ```bash
+   npm install @supabase/supabase-js
+   ```
+
+5. **Configure redirect URLs in Supabase**
+
+   Supabase only redirects to URLs you allow. This matters for **email confirmation**, **password
+   reset**, and **magic links** (if you use them elsewhere).
+
+   From your Supabase project dashboard, go to **Authentication** → **Configuration** → **URL
+   Configuration** and set:
+   - **Site URL**: Your primary deployed URL (for example `https://docs.example.com`), or
+     `http://localhost:3000` while developing locally.
+   - **Redirect URLs**: Include every origin where your docs run, with a path wildcard so deep links
+     work, for example:
+     - Production: `https://docs.example.com/**`
+     - Local dev: `http://localhost:3000/**`
+
+   Use the same origins and [base path](./overview.md) you use in the browser.
+
+</Stepper>
+
+## Setup Steps for Authentication Providers
+
+Use this path when users should sign in with OAuth (for example GitHub or Google). Set
+`onlyThirdPartyProviders: true` if you do not want email and password fields on the sign-in and
+sign-up pages.
+
+<Stepper>
+
+<a id="configure-authentication-provider"></a>
 
 1. **Configure Authentication Provider**
 
    In your [Supabase Dashboard](https://supabase.com/dashboard):
-   - Navigate to **Authentication** → **Providers**
+   - Select the Supabase project you are going to use
+   - Navigate to **Authentication** → **Configuration** → **Sign In / Providers**
    - Enable your preferred authentication provider (GitHub, Google, Azure, etc.)
-   - Configure the provider settings:
-     - **Redirect URL**: `https://your-project.supabase.co/auth/v1/callback`
-     - Copy any required credentials (Client ID, Client Secret) from the provider
+   - Follow the Supabase configuration documentation for that provider
 
-2. **Get Your Project Credentials**
+2. **Copy your Supabase URL and publishable key**
 
    From your Supabase project dashboard:
-   - Go to **Settings** → **Data API**
-   - Copy your **Project URL** (looks like `https://your-project.supabase.co`)
-   - Go to **Settings** → **API Keys**
-   - Copy your **anon public** API key
+   - Go to **Project Settings** → **Integrations** → **Data API**
+   - Copy your **API URL** (looks like `https://your-project-id.supabase.co`)
+   - Go to **Configuration** → **API Keys**
+   - Copy your **publishable** key (looks like `sb_publishable_...`)
 
 3. **Configure Zudoku**
 
-   Add the Supabase configuration to your [Zudoku configuration file](./overview.md):
+   Add the following to your [Zudoku configuration file](./overview.md), using the API URL and
+   publishable key from the previous step. Include every OAuth provider you enabled in Supabase in
+   the `providers` array (see [Supported Providers](#supported-providers)):
 
    ```ts title="zudoku.config.ts"
    export default {
      // ... other configuration
      authentication: {
        type: "supabase",
-       providers: ["github"], // one or more providers
+       providers: ["github"], // one or more providers — required for OAuth sign-in
        supabaseUrl: "https://your-project.supabase.co",
-       supabaseKey: "<your-anon-public-key>",
+       supabaseKey: "<your-publishable-key>",
      },
      // ... other configuration
    };
    ```
 
-   You can configure multiple providers:
+4. **Install Supabase dependencies**
 
-   ```ts title="zudoku.config.ts"
-   export default {
-     // ... other configuration
-     authentication: {
-       type: "supabase",
-       providers: ["github", "google", "azure"],
-       supabaseUrl: "https://your-project.supabase.co",
-       supabaseKey: "<your-anon-public-key>",
-     },
-     // ... other configuration
-   };
-   ```
-
-4. **Install Supabase Dependencies**
-
-   Add `@supabase/supabase-js` to your project dependencies:
+   Install the Supabase client and auth UI packages your Zudoku project expects:
 
    ```bash
-   npm install @supabase/supabase-js @supabase/auth-ui-shared @supabase/auth-ui-react
+   npm install @supabase/supabase-js
    ```
+
+5. **Configure redirect URLs in Supabase**
+
+   Supabase only redirects back to URLs you allow. Add every environment where users sign in:
+
+   From your Supabase project dashboard, go to **Authentication** → **Configuration** → **URL
+   Configuration** and update:
+   - **Site URL**: Your primary deployed URL (for example `https://docs.example.com`), or
+     `http://localhost:3000` while developing locally.
+   - **Redirect URLs**: Include your Zudoku site origin(s), for example:
+     - Production: `https://docs.example.com/**`
+     - Local dev: `http://localhost:3000/**`
+     - Preview deployments: a pattern your host uses, such as `https://*.vercel.app/**`, if
+       applicable.
+
+   Use the same paths you use in the browser (including any [base path](./overview.md) prefix). If
+   OAuth redirects fail or send users to the wrong host, this section is usually the cause.
 
 </Stepper>
 
@@ -104,13 +188,43 @@ array:
 - `zoom` - Zoom
 - `fly` - Fly.io
 
-:::info
+## Email and Password with OAuth
 
-Email/password authentication does not need to be specified as a provider because it is enabled by
-default in Supabase. To disable email/password authentication and only use OAuth providers, set
-`onlyThirdPartyProviders: true` in your configuration.
+To offer **both** email/password and OAuth buttons, leave `onlyThirdPartyProviders` unset (or set it
+to `false`) and list your OAuth providers in `providers`. Complete
+[Enable email authentication in Supabase](#configure-email-sign-in) and
+[Configure Authentication Provider](#configure-authentication-provider) as needed, then use a config
+similar to:
 
-:::
+```ts title="zudoku.config.ts"
+export default {
+  authentication: {
+    type: "supabase",
+    providers: ["github", "google"],
+    supabaseUrl: "https://your-project.supabase.co",
+    supabaseKey: "<your-publishable-key>",
+  },
+};
+```
+
+## Configuring Multiple Providers
+
+Complete [Configure Authentication Provider](#configure-authentication-provider) in the Supabase
+dashboard for each provider you need, then list them in the `providers` array:
+
+```ts title="zudoku.config.ts"
+export default {
+  // ... other configuration
+  authentication: {
+    type: "supabase",
+    onlyThirdPartyProviders: true,
+    providers: ["github", "google", "azure"],
+    supabaseUrl: "https://your-project.supabase.co",
+    supabaseKey: "<your-publishable-key>",
+  },
+  // ... other configuration
+};
+```
 
 ## Configuration Options
 
@@ -120,18 +234,18 @@ All available configuration options for Supabase authentication:
 authentication: {
   type: "supabase",
 
-  // Provider configuration (required)
-  // Array of one or more OAuth providers to enable
+  // OAuth providers to show as buttons (optional for email/password-only; required for OAuth)
+  // See Supported Providers — values must match Supabase provider IDs
   providers: ["google", "github"],
 
   // Supabase credentials (required)
   supabaseUrl: "https://your-project.supabase.co",
-  supabaseKey: "<your-anon-public-key>",
+  supabaseKey: "<your-publishable-key>",
 
   // Optional: Custom base path for auth routes (default: "/")
   basePath: "/docs",
 
-  // Optional: Disable email/password authentication, only use OAuth providers
+  // Optional: When true, sign-in and sign-up pages show only OAuth buttons (no email/password)
   onlyThirdPartyProviders: true,
 
   // Optional: Redirect URLs after authentication events
@@ -145,9 +259,9 @@ authentication: {
 
 The Supabase authentication provider automatically creates the following routes:
 
-- `/signin` - Sign in page with configured providers
-- `/signup` - Sign up page with configured providers
-- `/signout` - Sign out endpoint
+- `/signin` - Sign in (email and password when enabled, plus any configured OAuth providers)
+- `/signup` - Sign up (same as sign-in)
+- `/signout` - Sign out
 
 If you configure a custom `basePath`, these routes will be prefixed with that path (e.g.,
 `/docs/signin`).
@@ -202,22 +316,29 @@ CREATE TRIGGER on_auth_user_created
 
 ### Common Issues
 
-1. **"At least one provider must be provided" Error**: You must configure the `providers` option in
-   your authentication configuration with at least one authentication provider in the array.
+1. **OAuth sign-in shows no provider buttons**: For OAuth-only setups, add at least one provider ID
+   to the `providers` array that matches a provider you enabled in Supabase. For **email and
+   password only**, you can use `providers: []` — see
+   [Setup Steps for Email and Password](#setup-steps-for-email-and-password).
 
-2. **Invalid API Key**: Ensure you're using the `anon public` key, not the `service_role` key from
-   your Supabase project settings.
+2. **Email/password fields when you want OAuth only**: Set `onlyThirdPartyProviders: true` so the
+   sign-in and sign-up screens show only OAuth buttons. Leave this unset (or `false`) when you want
+   email and password fields — see
+   [Setup Steps for Email and Password](#setup-steps-for-email-and-password).
 
-3. **Provider Not Working**: Verify the provider is enabled in your Supabase dashboard and properly
+3. **Invalid API key**: Use the **publishable** client key in `supabaseKey`, not the **secret**
+   (service role) key.
+
+4. **Provider Not Working**: Verify the provider is enabled in your Supabase dashboard and properly
    configured with the correct redirect URLs.
 
-4. **Redirect URLs**: For local development, update your redirect URLs in both Supabase and the
+5. **Redirect URLs**: For local development, update your redirect URLs in both Supabase and the
    OAuth provider to include `http://localhost:3000`.
 
-5. **CORS Errors**: Check that your site's domain is properly configured in Supabase's allowed URLs
+6. **CORS Errors**: Check that your site's domain is properly configured in Supabase's allowed URLs
    under **Authentication** → **URL Configuration**.
 
-6. **Authentication Not Working**: Make sure you have installed all required dependencies:
+7. **Authentication Not Working**: Make sure you have installed all required dependencies:
    `@supabase/supabase-js`, `@supabase/auth-ui-react`, and `@supabase/auth-ui-shared`.
 
 ## Next Steps

@@ -38,8 +38,6 @@ onlyBuiltDependencies:
   - esbuild
 
 overrides:
-  "@supabase/auth-ui-react>react": "catalog:"
-  "@supabase/auth-ui-react>react-dom": "catalog:"
   bs58: ">=6"
   immutable: ">=3.8.3 <4"
   js-yaml: ">=4.1.1"
