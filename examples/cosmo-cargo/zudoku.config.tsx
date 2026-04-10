@@ -255,7 +255,12 @@ const config: ZudokuConfig = {
           icon: "telescope",
           collapsed: false,
           label: "Space Operations",
-          items: ["shipping-process", "tracking", "quantum-express"],
+          items: [
+            "shipping-process",
+            "tracking",
+            "quantum-express",
+            "ship-states",
+          ],
         },
         "global",
         { type: "separator" },

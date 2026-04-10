@@ -1,0 +1,13 @@
+# Ship States Reference
+
+A vessel can be in one of the following states. You can query the current state using the
+`getShipStatus()` method from the `@cosmo-cargo/fleet-sdk` package.
+
+| State          | Description                                                                                                                   |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `docked`       | The ship is docked at a station and not consuming fuel. Cargo can be loaded or unloaded.                                      |
+| `launching`    | The ship is preparing for departure. This typically takes just a few milliseconds.                                            |
+| `cruising`     | The ship has reached warp velocity and is traveling to its destination.                                                       |
+| `decelerating` | The ship is slowing down before arrival. No new cargo transfers can be initiated.                                             |
+| `landing`      | The ship is performing docking procedures.                                                                                    |
+| `standby`      | The ship has been scaled-to-zero. It isn't consuming resources but will automatically launch when there are queued shipments. |

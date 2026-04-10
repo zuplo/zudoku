@@ -55,6 +55,10 @@
   a {
     @apply font-normal underline-offset-4 hover:text-primary;
   }
+  td code,
+  th code {
+    @apply whitespace-nowrap;
+  }
   blockquote {
     @apply not-italic text-neutral-500/75 dark:text-neutral-400;
     /* Disable adding quote marks to block-quotes: https://github.com/tailwindlabs/tailwindcss-typography/issues/66 */
