@@ -124,7 +124,7 @@ jobs:
           echo "::add-mask::${ZUDOKU_RELEASE_TOKEN}"
           git push "https://x-access-token:${ZUDOKU_RELEASE_TOKEN}@github.com/zuplo/zudoku.git" main --follow-tags
 
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         name: ${{ env.IS_RELEASE == 'true' && 'Create Release' || 'Create Pre-release' }}
         id: create-release
         if: github.ref == 'refs/heads/main'
