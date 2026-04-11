@@ -1,6 +1,6 @@
 import type { ParameterItem } from "../graphql/graphql.js";
 
-export type PrefillMode = "example" | "default" | "none";
+export type PrefillMode = "example" | "default" | "all" | "none";
 
 export const getSchemaExample = (schema: ParameterItem["schema"]): unknown => {
   if (!schema) return undefined;
@@ -25,6 +25,10 @@ export const resolveParamValue = (
     return schemaExample ?? paramExample ?? schemaDefault;
   }
 
-  // "default" — backwards-compatible behaviour
-  return schemaDefault ?? paramExample ?? schemaExample;
+  if (mode === "all") {
+    return schemaDefault ?? paramExample ?? schemaExample;
+  }
+
+  // "default" — strict backwards-compatible behaviour, only schema.default
+  return schemaDefault;
 };

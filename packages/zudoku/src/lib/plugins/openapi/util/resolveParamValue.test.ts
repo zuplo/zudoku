@@ -120,6 +120,36 @@ describe("resolveParamValue", () => {
       ).toBe("def");
     });
 
+    it("does not fall back to parameter-level examples", () => {
+      expect(
+        resolveParamValue(
+          param({ paramExamples: [{ name: "e1", value: "pex" }] }),
+          "default",
+        ),
+      ).toBeUndefined();
+    });
+
+    it("does not fall back to schema.example", () => {
+      expect(
+        resolveParamValue(param({ schemaExample: "ex" }), "default"),
+      ).toBeUndefined();
+    });
+
+    it("returns undefined when nothing is set", () => {
+      expect(resolveParamValue(param({}), "default")).toBeUndefined();
+    });
+  });
+
+  describe('mode = "all"', () => {
+    it("returns schema.default when available", () => {
+      expect(
+        resolveParamValue(
+          param({ schemaDefault: "def", schemaExample: "ex" }),
+          "all",
+        ),
+      ).toBe("def");
+    });
+
     it("falls back to parameter-level example", () => {
       expect(
         resolveParamValue(
@@ -127,19 +157,19 @@ describe("resolveParamValue", () => {
             schemaExample: "ex",
             paramExamples: [{ name: "e1", value: "pex" }],
           }),
-          "default",
+          "all",
         ),
       ).toBe("pex");
     });
 
     it("falls back to schema.example when no default or param examples", () => {
-      expect(resolveParamValue(param({ schemaExample: "ex" }), "default")).toBe(
+      expect(resolveParamValue(param({ schemaExample: "ex" }), "all")).toBe(
         "ex",
       );
     });
 
     it("returns undefined when nothing is set", () => {
-      expect(resolveParamValue(param({}), "default")).toBeUndefined();
+      expect(resolveParamValue(param({}), "all")).toBeUndefined();
     });
   });
 });
