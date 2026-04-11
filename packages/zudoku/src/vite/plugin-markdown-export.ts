@@ -55,6 +55,30 @@ export const getMarkdownOutputPath = (distDir: string, routePath: string) => {
   return `${path.join(distDir, ...segments)}.md`;
 };
 
+/**
+ * Converts a pathname (e.g. location.pathname) to the corresponding
+ * markdown URL segment. Handles the root path "/" → "/index" mapping
+ * so the URL becomes "/index.md" instead of "/.md".
+ */
+export const getMarkdownPathname = (pathname: string): string =>
+  pathname === "/" ? "/index" : pathname;
+
+/**
+ * Resolves a .md request URL to the route path used in the file mapping.
+ * Reverses the "/index" → "/" mapping from getMarkdownPathname so the
+ * middleware can look up the correct file.
+ */
+export const resolveMarkdownRoutePath = (
+  requestUrl: string,
+  basePath: string,
+): string => {
+  let routePath = joinUrl(
+    requestUrl.slice(basePath.length).replace(/\.mdx?$/, ""),
+  );
+  if (routePath === "/index") routePath = "/";
+  return routePath;
+};
+
 const viteMarkdownExportPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
   let markdownFileInfos: MarkdownFileInfo[] = [];
@@ -126,11 +150,7 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
 
         const basePath = joinUrl(config.basePath);
-        let routePath = joinUrl(
-          req.url.slice(basePath.length).replace(/\.mdx?$/, ""),
-        );
-        // Handle /index.md -> / mapping (consistent with getMarkdownOutputPath)
-        if (routePath === "/index") routePath = "/";
+        const routePath = resolveMarkdownRoutePath(req.url, basePath);
         const filePath = markdownFiles[routePath];
 
         if (!filePath) return next();
