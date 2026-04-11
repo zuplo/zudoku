@@ -173,10 +173,10 @@ When Zudoku detects the `x-mcp-server` extension on an operation, the page shows
 
 - **MCP Endpoint card** with the full URL and a copy button
 - **AI Tool Configuration** tabs with setup instructions for:
-  - **Claude** — `claude_desktop_config.json` using native HTTP transport
+  - **Claude** — add via Integrations UI or `claude_desktop_config.json` using `mcp-remote`
   - **ChatGPT** — connector setup via Settings
   - **Cursor** — `mcp.json` configuration (global or project-level)
-  - **VS Code** — `.vscode/mcp.json` for GitHub Copilot
+  - **VS Code** — `.vscode/mcp.json` with native HTTP transport for GitHub Copilot
   - **Generic** — standard `mcp.json` format compatible with most MCP clients
 
 The standard method badge, request body, parameters, and sidecar panels are hidden for MCP endpoints
