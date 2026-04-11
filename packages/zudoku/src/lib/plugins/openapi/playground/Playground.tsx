@@ -5,8 +5,16 @@ import {
   CopyIcon,
   IdCardLanyardIcon,
   ShapesIcon,
+  WandSparklesIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { Button } from "zudoku/ui/Button.js";
 import { Collapsible, CollapsibleContent } from "zudoku/ui/Collapsible.js";
@@ -17,7 +25,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "zudoku/ui/Select.js";
-import { TooltipProvider } from "zudoku/ui/Tooltip.js";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "zudoku/ui/Tooltip.js";
 import { useApiIdentities } from "../../../components/context/ZudokuContext.js";
 import { useHotkey } from "../../../hooks/useHotkey.js";
 import { cn } from "../../../util/cn.js";
@@ -25,6 +38,7 @@ import { useCopyToClipboard } from "../../../util/useCopyToClipboard.js";
 import { useLatest } from "../../../util/useLatest.js";
 import type { MediaTypeObject } from "../graphql/graphql.js";
 import { useSelectedServer } from "../state.js";
+import { generateSchemaExample } from "../util/generateSchemaExample.js";
 import BodyPanel from "./BodyPanel.js";
 import {
   CollapsibleHeader,
@@ -49,6 +63,7 @@ export const NO_IDENTITY = "__none";
 export type Header = {
   name: string;
   defaultValue?: string;
+  exampleValue?: string;
   defaultActive?: boolean;
   isRequired?: boolean;
   enum?: string[];
@@ -58,6 +73,7 @@ export type Header = {
 export type QueryParam = {
   name: string;
   defaultValue?: string;
+  exampleValue?: string;
   defaultActive?: boolean;
   isRequired?: boolean;
   enum?: string[];
@@ -70,6 +86,7 @@ export type QueryParam = {
 export type PathParam = {
   name: string;
   defaultValue?: string;
+  exampleValue?: string;
   isRequired?: boolean;
 };
 
@@ -421,6 +438,85 @@ export const Playground = ({
   );
   const [isCopied, copyToClipboard] = useCopyToClipboard();
 
+  const latestGetValues = useLatest(form.getValues);
+
+  const handleLoadSampleValues = useCallback(() => {
+    // Fill headers with example values
+    let newHeaders =
+      headers.length > 0
+        ? headers.map((header) => ({
+            name: header.name,
+            value: header.exampleValue ?? header.defaultValue ?? "",
+            active:
+              Boolean(header.exampleValue ?? header.defaultValue) ||
+              (header.defaultActive ?? false),
+          }))
+        : latestGetValues.current("headers");
+
+    // Fill query params with example values
+    const newQueryParams =
+      queryParams.length > 0
+        ? queryParams.map((param) => ({
+            name: param.name,
+            value: param.exampleValue ?? param.defaultValue ?? "",
+            active:
+              Boolean(param.exampleValue ?? param.defaultValue) ||
+              (param.defaultActive ?? false),
+            enum: param.enum ?? [],
+            type: param.type,
+            style: param.style,
+            explode: param.explode,
+            allowReserved: param.allowReserved,
+          }))
+        : latestGetValues.current("queryParams");
+
+    // Fill path params with example values
+    const newPathParams = sortedPathParams.map((param) => ({
+      name: param.name,
+      value: param.exampleValue ?? param.defaultValue ?? "",
+    }));
+
+    // Fill body from examples or schema
+    const firstMediaType = isBodySupported ? examples?.[0] : undefined;
+    if (firstMediaType) {
+      const firstExample = firstMediaType.examples?.[0];
+      let bodyValue: string | undefined;
+
+      if (firstExample?.value != null) {
+        bodyValue = JSON.stringify(firstExample.value, null, 2);
+      } else if (firstMediaType.schema) {
+        const generated = generateSchemaExample(firstMediaType.schema);
+        if (generated != null) {
+          bodyValue = JSON.stringify(generated, null, 2);
+        }
+      }
+
+      if (bodyValue !== undefined) {
+        setValue("body", bodyValue);
+        newHeaders = [
+          ...newHeaders.filter((h) => h.name.toLowerCase() !== "content-type"),
+          {
+            name: "Content-Type",
+            value: firstMediaType.mediaType,
+            active: true,
+          },
+        ];
+      }
+    }
+
+    setValue("headers", newHeaders);
+    setValue("queryParams", newQueryParams);
+    setValue("pathParams", newPathParams);
+  }, [
+    headers,
+    queryParams,
+    sortedPathParams,
+    isBodySupported,
+    examples,
+    setValue,
+    latestGetValues,
+  ]);
+
   return (
     <FormProvider
       {...{ register, control, handleSubmit, watch, setValue, ...form }}
@@ -534,6 +630,25 @@ export const Playground = ({
               </Button>
             </div>
             <div className="relative overflow-y-auto h-[80vh]">
+              <div className="flex items-center justify-end px-2 py-1 border-b">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-muted-foreground hover:text-foreground"
+                      onClick={handleLoadSampleValues}
+                    >
+                      <WandSparklesIcon size={14} aria-hidden="true" />
+                      Load sample values
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    Fill all fields with example values from the schema
+                  </TooltipContent>
+                </Tooltip>
+              </div>
               {identities.data?.length !== 0 && (
                 <Collapsible defaultOpen>
                   <CollapsibleHeaderTrigger>
