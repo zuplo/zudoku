@@ -106,6 +106,33 @@ const findOperationsInDocument = (
   return tools;
 };
 
+// Normalizes both the old `files` format and the new `operations` format
+// into a common structure: Map<filePath, operationId[]>
+const resolveFileOperations = (options: RecordAny): Map<string, string[]> => {
+  const fileMap = new Map<string, string[]>();
+
+  // New format: options.operations = [{ file, id }, ...]
+  if (Array.isArray(options.operations)) {
+    for (const op of options.operations) {
+      if (!op.file || !op.id) continue;
+      const ids = fileMap.get(op.file) ?? [];
+      ids.push(op.id);
+      fileMap.set(op.file, ids);
+    }
+    return fileMap;
+  }
+
+  // Old format: options.files = [{ path, operationIds }, ...]
+  if (Array.isArray(options.files)) {
+    for (const fileConfig of options.files) {
+      if (!fileConfig.path || !fileConfig.operationIds) continue;
+      fileMap.set(fileConfig.path, fileConfig.operationIds);
+    }
+  }
+
+  return fileMap;
+};
+
 // Enriches an OpenAPI schema with x-mcp-server data based on the Zuplo MCP server handler
 export const enrichWithZuploMcpServerData = ({
   rootDir,
@@ -128,24 +155,21 @@ export const enrichWithZuploMcpServerData = ({
       if (!operation?.["x-zuplo-route"]) return node;
 
       const handler = operation["x-zuplo-route"]?.handler;
-      if (handler?.export !== "mcpServerHandler" || !handler.options?.files)
+      if (handler?.export !== "mcpServerHandler" || !handler.options)
         return node;
+
+      const fileOperations = resolveFileOperations(handler.options);
+      if (fileOperations.size === 0) return node;
 
       const tools: ExtensionMcpServerTool[] = [];
 
-      for (const fileConfig of handler.options.files) {
-        if (!fileConfig.path || !fileConfig.operationIds) continue;
-
-        const resolvedPath = path.resolve(rootDir, "../", fileConfig.path);
+      for (const [filePath, operationIds] of fileOperations) {
+        const resolvedPath = path.resolve(rootDir, "../", filePath);
         const fileContent = await fs.readFile(resolvedPath, "utf-8");
         const document = JSON.parse(fileContent);
 
         if (document) {
-          const fileTools = findOperationsInDocument(
-            document,
-            fileConfig.operationIds,
-          );
-
+          const fileTools = findOperationsInDocument(document, operationIds);
           tools.push(...fileTools);
         }
       }

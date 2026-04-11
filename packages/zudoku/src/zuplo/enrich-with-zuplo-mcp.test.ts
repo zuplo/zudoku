@@ -221,4 +221,100 @@ describe("enrichWithZuploMcpServerData", () => {
     // Verify x-zuplo-route was removed
     expect(mcpOperation["x-zuplo-route"]).toBeUndefined();
   });
+
+  it("should support new operations format (options.operations)", async () => {
+    const apiFilePath = path.join(tempDir, "config", "routes.oas.json");
+    await fs.mkdir(path.join(tempDir, "config"), { recursive: true });
+    await fs.writeFile(
+      apiFilePath,
+      JSON.stringify({
+        openapi: "3.1.0",
+        info: { title: "Routes API", version: "1.0.0" },
+        paths: {
+          "/todos/{id}": {
+            put: {
+              operationId: "update-todo",
+              summary: "Update a todo",
+              responses: { "200": { description: "OK" } },
+            },
+            delete: {
+              operationId: "delete-todo",
+              summary: "Delete a todo",
+              responses: { "200": { description: "OK" } },
+            },
+          },
+          "/todos": {
+            post: {
+              operationId: "create-todo",
+              summary: "Create a todo",
+              responses: { "201": { description: "Created" } },
+            },
+          },
+        },
+      }),
+    );
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            description: "Default MCP Server",
+            operationId: "mcp-endpoint",
+            "x-zuplo-route": {
+              corsPolicy: "none",
+              handler: {
+                export: "mcpServerHandler",
+                module: "$import(@zuplo/runtime)",
+                options: {
+                  operations: [
+                    {
+                      file: "./config/routes.oas.json",
+                      id: "update-todo",
+                    },
+                    {
+                      file: "./config/routes.oas.json",
+                      id: "delete-todo",
+                    },
+                    {
+                      file: "./config/routes.oas.json",
+                      id: "create-todo",
+                    },
+                  ],
+                },
+              },
+              policies: { inbound: [] },
+            },
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const processor = enrichWithZuploMcpServerData({ rootDir });
+    const result = await processor({
+      schema,
+      file: "test.json",
+      params: {},
+      dereference: async (s) => s,
+    });
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const mcpOperation = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(mcpOperation?.["x-mcp-server"]).toBeDefined();
+
+    const mcpServer = mcpOperation["x-mcp-server"] as {
+      name: string;
+      tools: Array<{ name: string; description: string }>;
+    };
+    expect(mcpServer.name).toBe("MCP Server");
+    expect(mcpServer.tools).toHaveLength(3);
+    expect(mcpServer.tools.map((t) => t.name)).toEqual([
+      "update-todo",
+      "delete-todo",
+      "create-todo",
+    ]);
+  });
 });
