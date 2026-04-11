@@ -79,6 +79,16 @@ type BaseOasConfig = {
     schemaDownload?: {
       enabled: boolean;
     };
+    /**
+     * Controls which values are used to pre-fill the API playground fields.
+     *
+     * - `"example"` – prioritize `schema.example` / `schema.examples` over `schema.default`
+     * - `"default"` – prioritize `schema.default` over examples (current behaviour)
+     * - `"none"` – leave all fields empty
+     *
+     * @default "default"
+     */
+    playgroundPrefillWith?: "example" | "default" | "none";
     transformExamples?: TransformExamplesFn;
     generateCodeSnippet?: GenerateCodeSnippetFn;
   };

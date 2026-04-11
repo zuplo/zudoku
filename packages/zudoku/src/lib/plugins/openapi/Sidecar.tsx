@@ -229,6 +229,7 @@ export const Sidecar = ({
                   servers={operation.servers.map((server) => server.url)}
                   operation={operation}
                   examples={requestBodyContent ?? undefined}
+                  prefillWith={options?.playgroundPrefillWith}
                 />
               )}
             </div>
