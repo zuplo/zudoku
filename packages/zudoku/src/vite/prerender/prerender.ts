@@ -47,6 +47,12 @@ export const getRedirectUrls = (
     }),
   );
 
+export async function resolveEntryServerPath(distDir: string): Promise<string> {
+  const mjsPath = path.join(distDir, "server/entry.server.mjs");
+  const jsPath = path.join(distDir, "server/entry.server.js");
+  return (await fileExists(mjsPath)) ? mjsPath : jsPath;
+}
+
 export const prerender = async ({
   html,
   dir,
@@ -65,7 +71,7 @@ export const prerender = async ({
     path.join(distDir, "server", serverConfigFilename),
   ).href;
   const entryServerPath = pathToFileURL(
-    path.join(distDir, "server/entry.server.js"),
+    await resolveEntryServerPath(distDir),
   ).href;
 
   const rawConfig: ZudokuConfig = await import(serverConfigPath).then(
