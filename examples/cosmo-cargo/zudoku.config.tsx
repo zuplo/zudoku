@@ -5,7 +5,6 @@ import type {
   ZudokuContext,
 } from "zudoku";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
-import { Landingpage } from "./src/Landingpage";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -238,9 +237,10 @@ const config: ZudokuConfig = {
   ],
   navigation: [
     {
-      type: "custom-page",
+      type: "doc",
+      file: "welcome",
       path: "/",
-      element: <Landingpage />,
+      label: "Home",
     },
     {
       type: "category",
@@ -248,7 +248,12 @@ const config: ZudokuConfig = {
       icon: "book-open",
       items: [
         { type: "filter", placeholder: "Filter documentation" },
-        "documentation",
+        {
+          type: "doc",
+          file: "documentation",
+          path: "getting-started",
+          label: "Getting Started",
+        },
         { type: "section", label: "Operations" },
         {
           type: "category",
