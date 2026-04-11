@@ -107,7 +107,9 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
-  const markdownUrl = joinUrl(basePath, `${location.pathname}.md`);
+  const markdownPathname =
+    location.pathname === "/" ? "/index" : location.pathname;
+  const markdownUrl = joinUrl(basePath, `${markdownPathname}.md`);
 
   const handleCopyMarkdown = async () => {
     const response = await fetch(markdownUrl);

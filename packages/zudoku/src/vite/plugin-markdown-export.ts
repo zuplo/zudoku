@@ -126,9 +126,11 @@ const viteMarkdownExportPlugin = (): Plugin => {
         }
 
         const basePath = joinUrl(config.basePath);
-        const routePath = joinUrl(
+        let routePath = joinUrl(
           req.url.slice(basePath.length).replace(/\.mdx?$/, ""),
         );
+        // Handle /index.md -> / mapping (consistent with getMarkdownOutputPath)
+        if (routePath === "/index") routePath = "/";
         const filePath = markdownFiles[routePath];
 
         if (!filePath) return next();
