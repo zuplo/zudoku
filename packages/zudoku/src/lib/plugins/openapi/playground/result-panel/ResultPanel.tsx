@@ -63,7 +63,13 @@ export const ResultPanel = ({
           isBinary={queryMutation.data.isBinary}
           fileName={queryMutation.data.fileName}
           blob={queryMutation.data.blob}
-          typeName={responseSchemas?.[String(queryMutation.data.status)]}
+          typeName={
+            responseSchemas?.[String(queryMutation.data.status)] ??
+            responseSchemas?.[
+              `${Math.floor(queryMutation.data.status / 100)}XX`
+            ] ??
+            responseSchemas?.default
+          }
         />
       ) : queryMutation.isPending ? (
         <div className="grid place-items-center h-full">

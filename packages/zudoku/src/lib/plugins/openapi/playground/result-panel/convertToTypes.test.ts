@@ -30,6 +30,31 @@ describe("convertToTypes", () => {
     const result = convertToTypes(null, "NullType");
     expect(result.lines[0]).toBe("type NullType = null;");
   });
+
+  it("should sanitize type names with spaces into PascalCase", () => {
+    const result = convertToTypes({ id: 1 }, "Root Schema");
+    expect(result.lines[0]).toMatch(/^type RootSchema = /);
+  });
+
+  it("should sanitize type names with special characters", () => {
+    const result = convertToTypes({ id: 1 }, "my-error_type.v2");
+    expect(result.lines[0]).toMatch(/^type MyErrorTypeV2 = /);
+  });
+
+  it("should fall back to GeneratedType for names starting with digits", () => {
+    const result = convertToTypes({ id: 1 }, "123invalid");
+    expect(result.lines[0]).toMatch(/^type GeneratedType = /);
+  });
+
+  it("should fall back to GeneratedType for empty string", () => {
+    const result = convertToTypes({ id: 1 }, "");
+    expect(result.lines[0]).toMatch(/^type GeneratedType = /);
+  });
+
+  it("should fall back to GeneratedType for all-special-chars name", () => {
+    const result = convertToTypes({ id: 1 }, "---");
+    expect(result.lines[0]).toMatch(/^type GeneratedType = /);
+  });
 });
 
 describe("generateInterface", () => {
