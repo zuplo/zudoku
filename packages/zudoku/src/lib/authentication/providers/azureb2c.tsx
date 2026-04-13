@@ -69,7 +69,6 @@ export class AzureB2CAuthPlugin
       },
       cache: {
         cacheLocation: "sessionStorage",
-        storeAuthStateInCookie: false,
       },
     });
 

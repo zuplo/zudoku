@@ -160,8 +160,8 @@ When the prompt parameter is omitted (empty string), Auth0 will:
 
 2. **CORS Errors**: Add your site's domain to the Allowed Web Origins in Auth0.
 
-3. **Authentication Loop**: Check that your Auth0 domain includes the protocol (`https://`) but no
-   trailing slash.
+3. **Authentication Loop**: Check that your Auth0 domain is a plain hostname only (e.g.,
+   `your-domain.us.auth0.com`) without a protocol prefix (`https://`) or trailing slash.
 
 4. **Token Validation Errors**: Ensure the audience in your Zudoku configuration matches the
    identifier of the Auth0 API you created.
