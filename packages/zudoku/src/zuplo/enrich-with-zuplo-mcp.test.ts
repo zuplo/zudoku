@@ -7,6 +7,18 @@ import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtens
 import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
 import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
 
+const mcpRouteHandler = (operations: Array<{ file: string; id: string }>) => ({
+  "x-zuplo-route": {
+    corsPolicy: "none",
+    handler: {
+      export: "mcpServerHandler",
+      module: "$import(@zuplo/runtime)",
+      options: { operations },
+    },
+    policies: { inbound: [] },
+  },
+});
+
 describe("enrichWithZuploMcpServerData", () => {
   let tempDir: string;
   let rootDir: string;
@@ -14,37 +26,39 @@ describe("enrichWithZuploMcpServerData", () => {
   beforeEach(async () => {
     tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "zudoku-mcp-test-"));
     // rootDir is a subdirectory because the enrichment resolves files
-    // relative to path.resolve(rootDir, "../", fileConfig.path)
+    // relative to path.resolve(rootDir, "../", file)
     rootDir = path.join(tempDir, "config");
-    await fs.mkdir(rootDir);
+    await fs.mkdir(path.join(tempDir, "config", "routes"), { recursive: true });
   });
 
   afterEach(async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   });
 
-  const createReferencedApiFile = async (filePath: string) => {
-    const apiSchema = {
+  const writeApiFile = (relativePath: string, schema: object) =>
+    fs.writeFile(path.join(tempDir, relativePath), JSON.stringify(schema));
+
+  const processorArg = (s: OpenAPIDocument) => ({
+    schema: s,
+    file: "test.json",
+    params: {},
+    dereference: async (s: OpenAPIDocument) => s,
+  });
+
+  it("should set x-mcp-server on operations with mcpServerHandler", async () => {
+    await writeApiFile("config/routes.oas.json", {
       openapi: "3.1.0",
-      info: { title: "Referenced API", version: "1.0.0" },
+      info: { title: "Routes API", version: "1.0.0" },
       paths: {
         "/users": {
           get: {
-            operationId: "getUsers",
+            operationId: "get-users",
             summary: "Get all users",
-            description: "Retrieve all users from the system",
             responses: { "200": { description: "OK" } },
           },
         },
       },
-    };
-    await fs.writeFile(filePath, JSON.stringify(apiSchema));
-  };
-
-  it("should set x-mcp-server on operations with mcpServerHandler", async () => {
-    const apiFilePath = path.join(tempDir, "api.json");
-    await createReferencedApiFile(apiFilePath);
-    // rootDir/../api.json should resolve to tempDir/api.json
+    });
 
     const schema = {
       openapi: "3.1.0",
@@ -53,45 +67,54 @@ describe("enrichWithZuploMcpServerData", () => {
         "/mcp": {
           post: {
             summary: "MCP Server",
-            operationId: "mcpEndpoint",
-            "x-zuplo-route": {
-              handler: {
-                export: "mcpServerHandler",
-                options: {
-                  files: [
-                    {
-                      path: "api.json",
-                      operationIds: ["getUsers"],
-                    },
-                  ],
-                },
-              },
-            },
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler([
+              { file: "./config/routes.oas.json", id: "get-users" },
+            ]),
             responses: { "200": { description: "MCP response" } },
           },
         },
       },
     } as unknown as OpenAPIDocument;
 
-    const processor = enrichWithZuploMcpServerData({ rootDir });
-    const result = await processor({
-      schema,
-      file: "test.json",
-      params: {},
-      dereference: async (s) => s,
-    });
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
 
-    const mcpOperation = result.paths?.["/mcp"]?.post as Record<string, any>;
-    expect(mcpOperation?.["x-mcp-server"]).toBeDefined();
-    expect(mcpOperation["x-mcp-server"].name).toBe("MCP Server");
-    expect(mcpOperation["x-mcp-server"].tools).toHaveLength(1);
-    expect(mcpOperation["x-mcp-server"].tools[0].name).toBe("getUsers");
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op?.["x-mcp-server"]).toBeDefined();
+    expect(op["x-mcp-server"].name).toBe("MCP Server");
+    expect(op["x-mcp-server"].tools).toHaveLength(1);
+    expect(op["x-mcp-server"].tools[0].name).toBe("get-users");
   });
 
-  it("should preserve x-mcp-server after removeExtensions strips x-zuplo-*", async () => {
-    const apiFilePath = path.join(tempDir, "api.json");
-    await createReferencedApiFile(apiFilePath);
-    // rootDir/../api.json should resolve to tempDir/api.json
+  it("should group operations from the same file", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/todos/{id}": {
+          put: {
+            operationId: "update-todo",
+            summary: "Update a todo",
+            responses: { "200": { description: "OK" } },
+          },
+          delete: {
+            operationId: "delete-todo",
+            summary: "Delete a todo",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+        "/todos": {
+          post: {
+            operationId: "create-todo",
+            summary: "Create a todo",
+            responses: { "201": { description: "Created" } },
+          },
+        },
+      },
+    });
 
     const schema = {
       openapi: "3.1.0",
@@ -100,57 +123,44 @@ describe("enrichWithZuploMcpServerData", () => {
         "/mcp": {
           post: {
             summary: "MCP Server",
-            operationId: "mcpEndpoint",
-            "x-zuplo-route": {
-              handler: {
-                export: "mcpServerHandler",
-                options: {
-                  files: [
-                    {
-                      path: "api.json",
-                      operationIds: ["getUsers"],
-                    },
-                  ],
-                },
-              },
-            },
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler([
+              { file: "./config/routes.oas.json", id: "update-todo" },
+              { file: "./config/routes.oas.json", id: "delete-todo" },
+              { file: "./config/routes.oas.json", id: "create-todo" },
+            ]),
             responses: { "200": { description: "MCP response" } },
           },
         },
       },
     } as unknown as OpenAPIDocument;
 
-    // Run enrichment
-    const enrichProcessor = enrichWithZuploMcpServerData({ rootDir });
-    const enriched = await enrichProcessor({
-      schema,
-      file: "test.json",
-      params: {},
-      dereference: async (s) => s,
-    });
+    const result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(schema),
+    );
 
-    // Run removeExtensions (should strip x-zuplo-* but keep x-mcp-server)
-    const cleanProcessor = removeExtensions({
-      shouldRemove: (key) => key.startsWith("x-zuplo"),
-    });
-    const cleaned = cleanProcessor({
-      schema: enriched,
-      file: "test.json",
-      params: {},
-      dereference: async (s) => s,
-    });
-
-    const mcpOperation = cleaned.paths?.["/mcp"]?.post as Record<string, any>;
-    expect(mcpOperation?.["x-mcp-server"]).toBeDefined();
-    expect(mcpOperation["x-mcp-server"].name).toBe("MCP Server");
-    // x-zuplo-route should be removed
-    expect(mcpOperation["x-zuplo-route"]).toBeUndefined();
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].tools).toHaveLength(3);
+    expect(
+      op["x-mcp-server"].tools.map((t: { name: string }) => t.name),
+    ).toEqual(["update-todo", "delete-todo", "create-todo"]);
   });
 
   it("should preserve x-mcp-server through full processor chain", async () => {
-    const apiFilePath = path.join(tempDir, "api.json");
-    await createReferencedApiFile(apiFilePath);
-    // rootDir/../api.json should resolve to tempDir/api.json
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
 
     const schema = {
       openapi: "3.1.0",
@@ -159,27 +169,17 @@ describe("enrichWithZuploMcpServerData", () => {
         "/mcp": {
           post: {
             summary: "MCP Server",
-            operationId: "mcpEndpoint",
-            "x-zuplo-route": {
-              handler: {
-                export: "mcpServerHandler",
-                options: {
-                  files: [
-                    {
-                      path: "api.json",
-                      operationIds: ["getUsers"],
-                    },
-                  ],
-                },
-              },
-            },
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler([
+              { file: "./config/routes.oas.json", id: "get-users" },
+            ]),
             responses: { "200": { description: "MCP response" } },
           },
         },
         "/users": {
           get: {
             summary: "Get Users",
-            operationId: "getUsers",
+            operationId: "get-users",
             "x-internal": true,
             responses: { "200": { description: "OK" } },
           },
@@ -187,134 +187,29 @@ describe("enrichWithZuploMcpServerData", () => {
       },
     } as unknown as OpenAPIDocument;
 
-    const processorArg = (s: OpenAPIDocument) => ({
-      schema: s,
-      file: "test.json",
-      params: {},
-      dereference: async (s: OpenAPIDocument) => s,
-    });
-
     // 1. removePaths (remove x-internal operations)
     let result = removePaths({
       shouldRemove: ({ operation }) => operation["x-internal"],
     })(processorArg(schema));
 
-    // Verify internal operations were removed but MCP path kept
     expect(result.paths?.["/users"]?.get).toBeUndefined();
     expect(result.paths?.["/mcp"]).toBeDefined();
 
     // 2. enrichWithZuploMcpServerData
-    const enrichProcessor = enrichWithZuploMcpServerData({ rootDir });
-    result = await enrichProcessor(processorArg(result));
+    result = await enrichWithZuploMcpServerData({ rootDir })(
+      processorArg(result),
+    );
 
     // 3. removeExtensions (strip x-zuplo-*)
     result = removeExtensions({
       shouldRemove: (key) => key.startsWith("x-zuplo"),
     })(processorArg(result));
 
-    // Verify x-mcp-server survived the full pipeline
-    const mcpOperation = result.paths?.["/mcp"]?.post as Record<string, any>;
-    expect(mcpOperation?.["x-mcp-server"]).toBeDefined();
-    expect(mcpOperation["x-mcp-server"].name).toBe("MCP Server");
-    expect(mcpOperation["x-mcp-server"].tools).toHaveLength(1);
-
-    // Verify x-zuplo-route was removed
-    expect(mcpOperation["x-zuplo-route"]).toBeUndefined();
-  });
-
-  it("should support new operations format (options.operations)", async () => {
-    const apiFilePath = path.join(tempDir, "config", "routes.oas.json");
-    await fs.mkdir(path.join(tempDir, "config"), { recursive: true });
-    await fs.writeFile(
-      apiFilePath,
-      JSON.stringify({
-        openapi: "3.1.0",
-        info: { title: "Routes API", version: "1.0.0" },
-        paths: {
-          "/todos/{id}": {
-            put: {
-              operationId: "update-todo",
-              summary: "Update a todo",
-              responses: { "200": { description: "OK" } },
-            },
-            delete: {
-              operationId: "delete-todo",
-              summary: "Delete a todo",
-              responses: { "200": { description: "OK" } },
-            },
-          },
-          "/todos": {
-            post: {
-              operationId: "create-todo",
-              summary: "Create a todo",
-              responses: { "201": { description: "Created" } },
-            },
-          },
-        },
-      }),
-    );
-
-    const schema = {
-      openapi: "3.1.0",
-      info: { title: "Test MCP API", version: "1.0.0" },
-      paths: {
-        "/mcp": {
-          post: {
-            summary: "MCP Server",
-            description: "Default MCP Server",
-            operationId: "mcp-endpoint",
-            "x-zuplo-route": {
-              corsPolicy: "none",
-              handler: {
-                export: "mcpServerHandler",
-                module: "$import(@zuplo/runtime)",
-                options: {
-                  operations: [
-                    {
-                      file: "./config/routes.oas.json",
-                      id: "update-todo",
-                    },
-                    {
-                      file: "./config/routes.oas.json",
-                      id: "delete-todo",
-                    },
-                    {
-                      file: "./config/routes.oas.json",
-                      id: "create-todo",
-                    },
-                  ],
-                },
-              },
-              policies: { inbound: [] },
-            },
-            responses: { "200": { description: "MCP response" } },
-          },
-        },
-      },
-    } as unknown as OpenAPIDocument;
-
-    const processor = enrichWithZuploMcpServerData({ rootDir });
-    const result = await processor({
-      schema,
-      file: "test.json",
-      params: {},
-      dereference: async (s) => s,
-    });
-
     // biome-ignore lint/suspicious/noExplicitAny: test assertion
-    const mcpOperation = result.paths?.["/mcp"]?.post as Record<string, any>;
-    expect(mcpOperation?.["x-mcp-server"]).toBeDefined();
-
-    const mcpServer = mcpOperation["x-mcp-server"] as {
-      name: string;
-      tools: Array<{ name: string; description: string }>;
-    };
-    expect(mcpServer.name).toBe("MCP Server");
-    expect(mcpServer.tools).toHaveLength(3);
-    expect(mcpServer.tools.map((t) => t.name)).toEqual([
-      "update-todo",
-      "delete-todo",
-      "create-todo",
-    ]);
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op?.["x-mcp-server"]).toBeDefined();
+    expect(op["x-mcp-server"].name).toBe("MCP Server");
+    expect(op["x-mcp-server"].tools).toHaveLength(1);
+    expect(op["x-zuplo-route"]).toBeUndefined();
   });
 });
