@@ -6,6 +6,7 @@ import type {
 } from "zudoku";
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
+import { NotFound } from "./src/NotFound";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -31,6 +32,7 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 }
 
 const config: ZudokuConfig = {
+  notFoundPage: <NotFound />,
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
