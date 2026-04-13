@@ -118,6 +118,7 @@ export type ZudokuContextOptions = {
   mdx?: {
     components?: MdxComponentsType;
   };
+  notFoundPage?: ReactNode;
   protectedRoutes?: ProtectedRoutesInput;
   syntaxHighlighting?: {
     highlighterPromise: Promise<HighlighterCore>;
@@ -150,6 +151,7 @@ export class ZudokuContext {
   public readonly queryClient: QueryClient;
   public readonly options: ZudokuContextOptions;
   public readonly env: Record<string, string | undefined>;
+  public readonly notFoundPage?: ReactNode;
   public readonly protectedRoutes: ReturnType<typeof normalizeProtectedRoutes>;
   private readonly plugins: NonNullable<ZudokuContextOptions["plugins"]>;
   private readonly emitter = createNanoEvents<ZudokuEvents>();
@@ -163,6 +165,7 @@ export class ZudokuContext {
     this.queryClient = queryClient;
     this.env = env;
     this.options = options;
+    this.notFoundPage = options.notFoundPage;
     this.plugins = options.plugins ?? [];
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.getAuthState = useAuthState.getState;

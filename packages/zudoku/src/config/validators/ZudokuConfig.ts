@@ -673,6 +673,7 @@ const BaseConfigSchema = z.object({
   aiAssistants: AiAssistantsSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
+  notFoundPage: z.custom<NonNullable<ReactNode>>().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,
