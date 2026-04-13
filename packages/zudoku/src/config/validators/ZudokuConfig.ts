@@ -95,6 +95,7 @@ const ApiOptionsSchema = z
     expandAllTags: z.boolean(),
     showInfoPage: z.boolean(),
     schemaDownload: z.object({ enabled: z.boolean() }).partial(),
+    userAgent: z.string(),
     transformExamples: z.custom<TransformExamplesFn>(
       (val) => typeof val === "function",
     ),

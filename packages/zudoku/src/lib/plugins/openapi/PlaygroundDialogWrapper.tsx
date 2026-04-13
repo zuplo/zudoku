@@ -83,6 +83,7 @@ export const PlaygroundDialogWrapper = ({
           : undefined
       }
       securitySchemes={securitySchemes}
+      userAgent={options?.userAgent}
     />
   );
 };

@@ -80,6 +80,7 @@ type BaseOasConfig = {
     schemaDownload?: {
       enabled: boolean;
     };
+    userAgent?: string;
     transformExamples?: TransformExamplesFn;
     generateCodeSnippet?: GenerateCodeSnippetFn;
   };

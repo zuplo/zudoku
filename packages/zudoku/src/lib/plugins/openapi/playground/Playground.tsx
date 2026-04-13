@@ -191,6 +191,7 @@ export type PlaygroundContentProps = {
   requiresLogin?: boolean;
   onLogin?: () => void;
   onSignUp?: () => void;
+  userAgent?: string;
 };
 
 export const Playground = ({
@@ -208,6 +209,7 @@ export const Playground = ({
   requiresLogin = false,
   onLogin,
   onSignUp,
+  userAgent = "Zudoku Playground",
 }: PlaygroundContentProps) => {
   const { selectedServer, setSelectedServer } = useSelectedServer(
     servers.map((url) => ({ url })),
@@ -358,6 +360,8 @@ export const Playground = ({
         }
       }
 
+      headers.set("User-Agent", userAgent);
+
       const request = new Request(requestUrl, {
         method: upperMethod,
         headers,
@@ -450,7 +454,7 @@ export const Playground = ({
             url: request.url,
             headers: [
               ["Host", url.host],
-              ["User-Agent", "Zudoku Playground"],
+              ["User-Agent", userAgent],
               ...Array.from(request.headers.entries()),
             ],
             body: requestBody,
