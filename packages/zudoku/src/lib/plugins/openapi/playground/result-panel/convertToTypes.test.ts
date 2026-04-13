@@ -1,5 +1,36 @@
 import { describe, expect, it } from "vitest";
-import { generateInterface } from "./convertToTypes.js";
+import { convertToTypes, generateInterface } from "./convertToTypes.js";
+
+describe("convertToTypes", () => {
+  it("should use GeneratedType as default type name", () => {
+    const result = convertToTypes({ id: 1, name: "test" });
+    expect(result.lines[0]).toBe(
+      "type GeneratedType = {\n  id: number;\n  name: string;\n};",
+    );
+  });
+
+  it("should use custom type name when provided", () => {
+    const result = convertToTypes({ id: 1, name: "test" }, "ErrorDetails");
+    expect(result.lines[0]).toBe(
+      "type ErrorDetails = {\n  id: number;\n  name: string;\n};",
+    );
+  });
+
+  it("should use custom type name for primitive values", () => {
+    const result = convertToTypes("hello", "MyString");
+    expect(result.lines[0]).toBe("type MyString = string;");
+  });
+
+  it("should use custom type name for arrays", () => {
+    const result = convertToTypes([1, 2, 3], "NumberList");
+    expect(result.lines[0]).toBe("type NumberList = number[];");
+  });
+
+  it("should use custom type name for null", () => {
+    const result = convertToTypes(null, "NullType");
+    expect(result.lines[0]).toBe("type NullType = null;");
+  });
+});
 
 describe("generateInterface", () => {
   it("should handle primitive types", () => {

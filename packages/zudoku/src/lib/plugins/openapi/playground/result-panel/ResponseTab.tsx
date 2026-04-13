@@ -150,6 +150,7 @@ export const ResponseTab = ({
   isBinary = false,
   fileName,
   blob,
+  typeName,
 }: {
   body?: string;
   headers: Array<[string, string]>;
@@ -163,6 +164,7 @@ export const ResponseTab = ({
   isBinary?: boolean;
   fileName?: string;
   blob?: Blob;
+  typeName?: string;
 }) => {
   const detectedLanguage = detectLanguage(headers);
   const jsonContent = tryParseJson(body);
@@ -172,9 +174,9 @@ export const ResponseTab = ({
   );
 
   const types = useQuery({
-    queryKey: ["types", beautifiedBody],
+    queryKey: ["types", beautifiedBody, typeName],
     queryFn: async () => {
-      return convertToTypes(JSON.parse(beautifiedBody));
+      return convertToTypes(JSON.parse(beautifiedBody), typeName);
     },
     enabled: view === "types" && !isBinary,
   });

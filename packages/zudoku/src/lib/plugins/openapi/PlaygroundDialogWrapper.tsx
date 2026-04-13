@@ -58,6 +58,18 @@ export const PlaygroundDialogWrapper = ({
     ? []
     : extractOperationSecuritySchemes(operation);
 
+  const responseSchemas = Object.fromEntries(
+    operation.responses.flatMap((response) => {
+      const schema = response.content?.find(
+        (c) => c.mediaType === "application/json",
+      )?.schema;
+      if (schema?.title) {
+        return [[response.statusCode, schema.title]];
+      }
+      return [];
+    }),
+  );
+
   return (
     <PlaygroundDialog
       server={server}
@@ -74,6 +86,7 @@ export const PlaygroundDialogWrapper = ({
           : undefined
       }
       securitySchemes={securitySchemes}
+      responseSchemas={responseSchemas}
     />
   );
 };
