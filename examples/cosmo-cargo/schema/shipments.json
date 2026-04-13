@@ -1258,6 +1258,38 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Shipment not found or already delivered",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Shipment cannot be cancelled in its current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "currentStatus": {
+                      "type": "string",
+                      "description": "Current shipment status preventing cancellation"
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
