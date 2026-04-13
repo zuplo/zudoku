@@ -29,8 +29,11 @@ export function generateInterface(obj: JsonObject, _indentation = ""): string {
   return lines.join("\n");
 }
 
-export function convertToTypes(json: JsonValue): { lines: string[] } {
+export function convertToTypes(
+  json: JsonValue,
+  typeName = "GeneratedType",
+): { lines: string[] } {
   const typeDefinition = inferType(json);
-  const lines = [`type GeneratedType = ${typeDefinition};`];
+  const lines = [`type ${typeName} = ${typeDefinition};`];
   return { lines };
 }
