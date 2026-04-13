@@ -43,7 +43,6 @@ const IdentitySelector = ({
         const schemeId = `${SECURITY_SCHEME_PREFIX}${scheme.name}`;
         const isAuthorized =
           securityCredentials?.[scheme.name]?.isAuthorized ?? false;
-        const isSelected = value === schemeId;
         return (
           <Label
             key={schemeId}
@@ -58,7 +57,7 @@ const IdentitySelector = ({
                 </span>
               )}
             </span>
-            {isSelected && onConfigureScheme && (
+            {onConfigureScheme && (
               <Button
                 type="button"
                 variant="ghost"

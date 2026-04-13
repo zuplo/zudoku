@@ -397,9 +397,18 @@ export const SchemaInfo = () => {
                             {securitySchemeIcon(scheme.type)}
                             {scheme.name}
                           </ItemTitle>
-                          <ItemDescription>
-                            {scheme.description ??
-                              securitySchemeDescription(scheme)}
+                          <ItemDescription asChild>
+                            <Markdown
+                              content={
+                                scheme.description ??
+                                securitySchemeDescription(scheme)
+                              }
+                              className="prose-sm text-pretty"
+                              components={{
+                                p: ({ children }) => children,
+                                a: (props) => <span {...props} />,
+                              }}
+                            />
                           </ItemDescription>
                         </ItemContent>
                         <ItemActions>

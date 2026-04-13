@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogTitle,
 } from "zudoku/ui/Dialog.js";
+import { Markdown } from "../../../components/Markdown.js";
 import type { SecuritySchemeType } from "../graphql/graphql.js";
 import { ApiKeySchemeForm } from "./scheme-forms/ApiKeySchemeForm.js";
 import { HttpBasicSchemeForm } from "./scheme-forms/HttpBasicSchemeForm.js";
@@ -64,7 +65,10 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
         )}
       </div>
       {scheme.description && (
-        <p className="text-xs text-muted-foreground">{scheme.description}</p>
+        <Markdown
+          content={scheme.description}
+          className="prose-xs text-xs text-muted-foreground max-w-full"
+        />
       )}
       {!isAuthorized && (
         <>
@@ -80,20 +84,22 @@ const SchemeEntry = ({ scheme }: { scheme: SecuritySchemeData }) => {
               browser playground due to fetch API restrictions.
             </p>
           )}
-          {scheme.type === "http" && scheme.scheme === "basic" && (
-            <HttpBasicSchemeForm
-              onAuthorize={(value) => setCredential(scheme.name, value)}
-            />
-          )}
-          {scheme.type === "http" && scheme.scheme === "bearer" && (
-            <HttpBearerSchemeForm
-              scheme={scheme}
-              onAuthorize={(value) => setCredential(scheme.name, value)}
-            />
-          )}
           {scheme.type === "http" &&
-            scheme.scheme !== "basic" &&
-            scheme.scheme !== "bearer" && (
+            scheme.scheme?.toLowerCase() === "basic" && (
+              <HttpBasicSchemeForm
+                onAuthorize={(value) => setCredential(scheme.name, value)}
+              />
+            )}
+          {scheme.type === "http" &&
+            scheme.scheme?.toLowerCase() === "bearer" && (
+              <HttpBearerSchemeForm
+                scheme={scheme}
+                onAuthorize={(value) => setCredential(scheme.name, value)}
+              />
+            )}
+          {scheme.type === "http" &&
+            scheme.scheme?.toLowerCase() !== "basic" &&
+            scheme.scheme?.toLowerCase() !== "bearer" && (
               <p className="text-xs text-muted-foreground italic">
                 HTTP {scheme.scheme} authentication is not supported in the
                 playground. Configure it via custom headers.

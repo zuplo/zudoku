@@ -162,13 +162,16 @@ export const applySecurityCredentials = (
         break;
       }
       case "http": {
-        if (scheme.scheme === "basic") {
+        const httpScheme = scheme.scheme?.toLowerCase();
+        if (httpScheme === "basic") {
           const { username, password } = cred.value as BasicCredentials;
-          request.headers.set(
-            "Authorization",
-            `Basic ${btoa(`${username}:${password}`)}`,
+          const encoded = btoa(
+            new Uint8Array(
+              new TextEncoder().encode(`${username}:${password}`),
+            ).reduce((s, b) => s + String.fromCharCode(b), ""),
           );
-        } else if (scheme.scheme === "bearer") {
+          request.headers.set("Authorization", `Basic ${encoded}`);
+        } else if (httpScheme === "bearer") {
           request.headers.set(
             "Authorization",
             `Bearer ${cred.value as string}`,
