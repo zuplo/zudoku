@@ -56,24 +56,17 @@ export const getMarkdownOutputPath = (distDir: string, routePath: string) => {
 };
 
 /**
- * Converts a pathname (e.g. location.pathname) to the corresponding
- * markdown URL segment. Handles the root path "/" → "/index" mapping
- * so the URL becomes "/index.md" instead of "/.md".
- */
-export const getMarkdownPathname = (pathname: string): string =>
-  pathname === "/" ? "/index" : pathname;
-
-/**
  * Resolves a .md request URL to the route path used in the file mapping.
- * Reverses the "/index" → "/" mapping from getMarkdownPathname so the
- * middleware can look up the correct file.
+ * Strips query/hash, removes the .md(x) extension, and reverses the
+ * "/index" → "/" mapping from getMarkdownPathname.
  */
 export const resolveMarkdownRoutePath = (
   requestUrl: string,
   basePath: string,
 ): string => {
+  const pathname = requestUrl.split(/[?#]/)[0] ?? requestUrl;
   let routePath = joinUrl(
-    requestUrl.slice(basePath.length).replace(/\.mdx?$/, ""),
+    pathname.slice(basePath.length).replace(/\.mdx?$/, ""),
   );
   if (routePath === "/index") routePath = "/";
   return routePath;

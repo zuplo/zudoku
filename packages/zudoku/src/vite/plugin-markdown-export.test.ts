@@ -1,8 +1,8 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { getMarkdownPathname } from "../lib/util/markdown.js";
 import {
   getMarkdownOutputPath,
-  getMarkdownPathname,
   resolveMarkdownRoutePath,
 } from "./plugin-markdown-export.js";
 
@@ -61,6 +61,19 @@ describe("resolveMarkdownRoutePath", () => {
 
   it("handles .mdx extension", () => {
     expect(resolveMarkdownRoutePath("/documentation.mdx", "/")).toBe(
+      "/documentation",
+    );
+  });
+
+  it("strips query string before resolving", () => {
+    expect(resolveMarkdownRoutePath("/index.md?t=123", "/")).toBe("/");
+    expect(resolveMarkdownRoutePath("/documentation.md?v=abc", "/")).toBe(
+      "/documentation",
+    );
+  });
+
+  it("strips hash before resolving", () => {
+    expect(resolveMarkdownRoutePath("/documentation.md#section", "/")).toBe(
       "/documentation",
     );
   });

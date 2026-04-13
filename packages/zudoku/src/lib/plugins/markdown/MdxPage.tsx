@@ -31,6 +31,7 @@ import {
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { getMarkdownPathname } from "../../util/markdown.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
 import { slugify } from "../../util/slugify.js";
 import type { MarkdownPluginDefaultOptions, MDXImport } from "./index.js";
@@ -107,9 +108,10 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
-  const markdownPathname =
-    location.pathname === "/" ? "/index" : location.pathname;
-  const markdownUrl = joinUrl(basePath, `${markdownPathname}.md`);
+  const markdownUrl = joinUrl(
+    basePath,
+    `${getMarkdownPathname(location.pathname)}.md`,
+  );
 
   const handleCopyMarkdown = async () => {
     const response = await fetch(markdownUrl);
