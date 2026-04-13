@@ -31,8 +31,8 @@ export const MCPEndpoint = ({
   const claudeConfig = `{
   "mcpServers": {
     "${name}": {
-      "type": "http",
-      "url": "${mcpUrl}"
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "${mcpUrl}"]
     }
   }
 }`;
@@ -58,11 +58,8 @@ export const MCPEndpoint = ({
   const vscodeConfig = `{
   "servers": {
     "${name}": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "${mcpUrl}"
-      ]
+      "type": "http",
+      "url": "${mcpUrl}"
     }
   }
 }`;
@@ -136,29 +133,27 @@ export const MCPEndpoint = ({
               <TabsContent value="claude" className="space-y-3">
                 <ol>
                   <li>
-                    Open Claude Desktop and click <strong>Settings</strong> in
-                    the lower corner
+                    Open Claude Desktop and navigate to{" "}
+                    <strong>Settings</strong>
                   </li>
                   <li>
-                    Navigate to <strong>Developer</strong> tab →{" "}
-                    <strong>Edit Config</strong>
+                    Go to <strong>Integrations</strong> →{" "}
+                    <strong>Add custom connector</strong> and paste the MCP URL
                   </li>
-                  <li>
-                    <span>Add this configuration to </span>
-                    <InlineCode>claude_desktop_config.json</InlineCode>:
-                    <SyntaxHighlight
-                      showLanguageIndicator
-                      title="claude_desktop_config.json"
-                      language="json"
-                      code={claudeConfig}
-                      className="mt-2"
-                    />
-                  </li>
-                  <li>
-                    Save the file and restart Claude Desktop. Look for the 🔨
-                    icon in the bottom-right corner.
-                  </li>
+                  <li>Save and the server will appear in your conversations</li>
                 </ol>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Alternatively, add to{" "}
+                  <InlineCode>claude_desktop_config.json</InlineCode> using{" "}
+                  <InlineCode>mcp-remote</InlineCode> (requires Node.js):
+                </p>
+                <SyntaxHighlight
+                  showLanguageIndicator
+                  title="claude_desktop_config.json"
+                  language="json"
+                  code={claudeConfig}
+                  className="mt-2"
+                />
                 <p className="text-xs text-muted-foreground mt-2">
                   macOS: ~/Library/Application
                   Support/Claude/claude_desktop_config.json
@@ -166,7 +161,7 @@ export const MCPEndpoint = ({
                   Windows: %APPDATA%\Claude\claude_desktop_config.json
                 </p>
                 <a
-                  href="https://docs.mcp.run/mcp-clients/claude-desktop/"
+                  href="https://modelcontextprotocol.io/quickstart/user"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
@@ -178,17 +173,15 @@ export const MCPEndpoint = ({
 
               <TabsContent value="chatgpt" className="space-y-3">
                 <Callout type="note" title="Requirements">
-                  ChatGPT Pro, Team, Enterprise, or Edu subscription. Note: MCP
-                  support is limited to read-only operations through Deep
-                  Research.
+                  ChatGPT Plus, Team, Enterprise, or Edu subscription.
                 </Callout>
                 <ol>
                   <li>
                     Go to <strong>Settings</strong> →{" "}
-                    <strong>Connectors</strong> → <strong>Connect</strong>
+                    <strong>Apps & Connectors</strong>
                   </li>
                   <li>
-                    Click <strong>Custom</strong> and add your MCP URL:
+                    Click <strong>Add connector</strong> and enter your MCP URL:
                     <InlineCode className="ml-2">{chatgptConfig}</InlineCode>
                   </li>
                   <li>Provide a name and description for your connector</li>
@@ -196,7 +189,6 @@ export const MCPEndpoint = ({
                     Save and enable the connector. Users must authenticate with
                     the connector before first use.
                   </li>
-                  <li>Access through Deep Research in your chat interface</li>
                 </ol>
 
                 <a
@@ -229,7 +221,7 @@ export const MCPEndpoint = ({
                   <li>Restart Cursor to apply the configuration</li>
                 </ol>
                 <a
-                  href="https://docs.cursor.com/en/context/mcp"
+                  href="https://cursor.com/docs/context/mcp"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
