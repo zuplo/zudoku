@@ -4,6 +4,11 @@ import type { Content } from "./interfaces.js";
 import { PlaygroundDialog } from "./playground/PlaygroundDialog.js";
 import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 
+const extractRefName = (ref: unknown): string | undefined => {
+  if (typeof ref !== "string") return undefined;
+  return ref.split("/").pop();
+};
+
 export const PlaygroundDialogWrapper = ({
   server,
   servers,
@@ -60,11 +65,14 @@ export const PlaygroundDialogWrapper = ({
 
   const responseSchemas = Object.fromEntries(
     operation.responses.flatMap((response) => {
-      const schema = response.content?.find(
-        (c) => c.mediaType === "application/json",
+      const schema = response.content?.find((c) =>
+        c.mediaType.includes("json"),
       )?.schema;
-      if (schema?.title) {
-        return [[response.statusCode, schema.title]];
+
+      const name = extractRefName(schema?.__$ref) ?? schema?.title;
+
+      if (name) {
+        return [[response.statusCode, name]];
       }
       return [];
     }),
