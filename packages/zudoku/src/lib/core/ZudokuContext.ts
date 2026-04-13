@@ -82,6 +82,7 @@ type Site = Partial<{
     href?: string;
     reloadDocument?: boolean;
   };
+  notFoundPage?: ReactNode;
   banner?: {
     message: ReactNode;
     color?: "note" | "tip" | "info" | "caution" | "danger" | (string & {});
@@ -118,7 +119,6 @@ export type ZudokuContextOptions = {
   mdx?: {
     components?: MdxComponentsType;
   };
-  notFoundPage?: ReactNode;
   protectedRoutes?: ProtectedRoutesInput;
   syntaxHighlighting?: {
     highlighterPromise: Promise<HighlighterCore>;
@@ -165,7 +165,7 @@ export class ZudokuContext {
     this.queryClient = queryClient;
     this.env = env;
     this.options = options;
-    this.notFoundPage = options.notFoundPage;
+    this.notFoundPage = options.site?.notFoundPage;
     this.plugins = options.plugins ?? [];
     this.authentication = this.plugins.find(isAuthenticationPlugin);
     this.getAuthState = useAuthState.getState;

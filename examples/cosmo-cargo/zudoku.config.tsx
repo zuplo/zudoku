@@ -32,7 +32,6 @@ export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
 }
 
 const config: ZudokuConfig = {
-  notFoundPage: <NotFound />,
   metadata: {
     title: "Cosmo Cargo Inc.",
   },
@@ -112,6 +111,7 @@ const config: ZudokuConfig = {
     llms: { llmsTxt: true, llmsTxtFull: true },
   },
   site: {
+    notFoundPage: <NotFound />,
     logo: {
       src: { light: "/logo-light.svg", dark: "/logo-dark.svg" },
       width: 130,

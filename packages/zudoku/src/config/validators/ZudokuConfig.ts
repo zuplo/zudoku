@@ -558,6 +558,7 @@ const SiteSchema = z
     dir: z.enum(["ltr", "rtl"]).optional(),
     logo: LogoSchema,
     showPoweredBy: z.boolean().optional(),
+    notFoundPage: z.custom<NonNullable<ReactNode>>(),
     banner: z.object({
       message: z.custom<NonNullable<ReactNode>>(),
       color: z
@@ -673,7 +674,6 @@ const BaseConfigSchema = z.object({
   aiAssistants: AiAssistantsSchema,
   redirects: z.array(Redirect),
   sitemap: SiteMapSchema,
-  notFoundPage: z.custom<NonNullable<ReactNode>>().optional(),
   enableStatusPages: z.boolean().optional(),
   defaults: z.object({
     apis: ApiOptionsSchema,

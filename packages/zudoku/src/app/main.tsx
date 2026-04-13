@@ -46,7 +46,6 @@ export const convertZudokuConfigToOptions = (
     basePath: config.basePath,
     canonicalUrlOrigin: config.canonicalUrlOrigin,
     aiAssistants: config.aiAssistants,
-    notFoundPage: config.notFoundPage,
     protectedRoutes: config.protectedRoutes,
     site: {
       ...config.site,
