@@ -17,6 +17,8 @@ import type { ResponseItem } from "./graphql/graphql.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { SidecarExamples } from "./SidecarExamples.js";
 
+type ResponseWithGenerated = ResponseItem & { isGenerated?: boolean };
+
 export const ResponsesSidecarBox = ({
   responses,
   selectedResponse,
@@ -24,7 +26,7 @@ export const ResponsesSidecarBox = ({
   shouldLazyHighlight,
   isGenerated,
 }: {
-  responses: ResponseItem[];
+  responses: ResponseWithGenerated[];
   selectedResponse?: string;
   isOnScreen: boolean;
   shouldLazyHighlight?: boolean;
@@ -49,6 +51,11 @@ export const ResponsesSidecarBox = ({
     setSelectedExampleIndex(0);
   }, [internalSelectedResponse]);
 
+  const selectedResponseItem = responses.find(
+    (r) => r.statusCode === internalSelectedResponse,
+  );
+  const showGeneratedTooltip = isGenerated || selectedResponseItem?.isGenerated;
+
   return (
     <Collapsible className="group/collapsible" defaultOpen>
       <SidecarBox.Root>
@@ -65,7 +72,7 @@ export const ResponsesSidecarBox = ({
               </Button>
             </CollapsibleTrigger>
             Example Responses
-            {isGenerated && (
+            {showGeneratedTooltip && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>

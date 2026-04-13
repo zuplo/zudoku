@@ -177,8 +177,43 @@ export const Sidecar = ({
         operation.extensions["x-zudoku-playground-enabled"] === undefined &&
         !options?.disablePlayground));
 
-  const hasResponseExamples = operation.responses.some((response) =>
-    response.content?.some((content) => (content.examples?.length ?? 0) > 0),
+  const responsesWithExamples = useMemo(
+    () =>
+      operation.responses.map((response) => {
+        const hasExplicitExamples = response.content?.some(
+          (content) => (content.examples?.length ?? 0) > 0,
+        );
+
+        const transformedContent =
+          response.content && options?.transformExamples
+            ? options.transformExamples({
+                auth,
+                type: "response",
+                context,
+                operation,
+                content: response.content,
+              })
+            : response.content;
+
+        return {
+          ...response,
+          isGenerated: !hasExplicitExamples,
+          content: hasExplicitExamples
+            ? transformedContent
+            : transformedContent?.map((content) => ({
+                ...content,
+                examples: content.schema
+                  ? [
+                      {
+                        name: "",
+                        value: generateSchemaExample(content.schema),
+                      },
+                    ]
+                  : content.examples,
+              })),
+        };
+      }),
+    [operation, options, auth, context],
   );
 
   return (
@@ -268,42 +303,12 @@ export const Sidecar = ({
         />
       ) : null}
 
-      {hasResponseExamples ? (
-        <ResponsesSidecarBox
-          isOnScreen={isOnScreen}
-          shouldLazyHighlight={shouldLazyHighlight}
-          selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content:
-              response.content && options?.transformExamples
-                ? options.transformExamples({
-                    auth,
-                    type: "response",
-                    context,
-                    operation,
-                    content: response.content,
-                  })
-                : response.content,
-          }))}
-        />
-      ) : (
-        <ResponsesSidecarBox
-          isGenerated
-          isOnScreen={isOnScreen}
-          shouldLazyHighlight={shouldLazyHighlight}
-          selectedResponse={selectedResponse}
-          responses={operation.responses.map((response) => ({
-            ...response,
-            content: response.content?.map((content) => ({
-              ...content,
-              examples: content.schema
-                ? [{ name: "", value: generateSchemaExample(content.schema) }]
-                : content.examples,
-            })),
-          }))}
-        />
-      )}
+      <ResponsesSidecarBox
+        isOnScreen={isOnScreen}
+        shouldLazyHighlight={shouldLazyHighlight}
+        selectedResponse={selectedResponse}
+        responses={responsesWithExamples}
+      />
     </aside>
   );
 };

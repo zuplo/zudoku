@@ -1065,6 +1065,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InterplanetaryShipment"
+                },
+                "examples": {
+                  "standardShipment": {
+                    "summary": "Standard interplanetary shipment",
+                    "value": {
+                      "trackingNumber": "IP-2287-MARS-00142",
+                      "origin": {
+                        "planet": "Earth",
+                        "facility": "Cape Canaveral Orbital Hub"
+                      },
+                      "destination": {
+                        "planet": "Mars",
+                        "facility": "Olympus Mons Distribution Center"
+                      },
+                      "status": "IN_TRANSIT",
+                      "cargoType": "STANDARD",
+                      "weight": 2500,
+                      "estimatedArrival": "2287-06-15T14:30:00Z"
+                    }
+                  },
+                  "hazmatShipment": {
+                    "summary": "Hazardous materials shipment",
+                    "value": {
+                      "trackingNumber": "IP-2287-TITAN-00891",
+                      "origin": {
+                        "planet": "Earth",
+                        "facility": "Geneva Quantum Launch Pad"
+                      },
+                      "destination": {
+                        "planet": "Titan",
+                        "facility": "Kraken Mare Research Station"
+                      },
+                      "status": "CUSTOMS_HOLD",
+                      "cargoType": "HAZMAT",
+                      "weight": 750,
+                      "estimatedArrival": "2287-09-22T08:00:00Z"
+                    }
+                  }
                 }
               }
             }
@@ -1109,6 +1147,23 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InterplanetaryShipment"
+                },
+                "example": {
+                  "trackingNumber": "IP-2287-MARS-00142",
+                  "origin": {
+                    "planet": "Earth",
+                    "facility": "Cape Canaveral Orbital Hub"
+                  },
+                  "destination": {
+                    "planet": "Mars",
+                    "facility": "Olympus Mons Distribution Center"
+                  },
+                  "status": "IN_TRANSIT",
+                  "cargoType": "STANDARD",
+                  "weight": 2500,
+                  "estimatedArrival": "2287-06-15T14:30:00Z",
+                  "currentLocation": "Asteroid Belt Waypoint Alpha",
+                  "trajectory": "Hohmann transfer orbit"
                 }
               }
             }
