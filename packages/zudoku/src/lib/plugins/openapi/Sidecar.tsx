@@ -47,6 +47,21 @@ const EXAMPLE_LANGUAGES = [
   { value: "swift", label: "Swift" },
 ];
 
+type CodeSample = {
+  lang: string;
+  label?: string;
+  source: string;
+};
+
+const getCodeSamples = (
+  extensions: Record<string, unknown> | null | undefined,
+): CodeSample[] | undefined => {
+  const samples =
+    extensions?.["x-code-samples"] ?? extensions?.["x-codeSamples"];
+  if (!Array.isArray(samples) || samples.length === 0) return undefined;
+  return samples;
+};
+
 export const Sidecar = ({
   operation,
   selectedResponse,
@@ -67,7 +82,14 @@ export const Sidecar = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const [, startTransition] = useTransition();
 
-  const supportedLanguages = options?.supportedLanguages ?? EXAMPLE_LANGUAGES;
+  const codeSamples = getCodeSamples(operation.extensions);
+
+  const supportedLanguages = codeSamples
+    ? codeSamples.map((sample) => ({
+        value: sample.lang,
+        label: sample.label ?? sample.lang,
+      }))
+    : (options?.supportedLanguages ?? EXAMPLE_LANGUAGES);
 
   const preferredLang =
     searchParams.get("lang") ?? options?.examplesLanguage ?? "shell";
@@ -133,6 +155,11 @@ export const Sidecar = ({
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
   const httpSnippetCode = useMemo<string | undefined>(() => {
+    if (codeSamples) {
+      const match = codeSamples.find((s) => s.lang === selectedLang);
+      return match?.source;
+    }
+
     const converted = options?.generateCodeSnippet?.({
       selectedLang,
       selectedServer,
@@ -157,6 +184,7 @@ export const Sidecar = ({
 
     return getConverted(snippet, selectedLang);
   }, [
+    codeSamples,
     currentExampleCode,
     operation,
     selectedServer,
