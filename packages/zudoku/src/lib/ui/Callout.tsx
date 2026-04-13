@@ -5,7 +5,7 @@ import {
   type LucideIcon,
   ShieldAlertIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 import { cn } from "../util/cn.js";
 
 const stylesMap = {
@@ -37,12 +37,12 @@ const stylesMap = {
     Icon: InfoIcon as LucideIcon,
   },
   caution: {
-    border: "border-yellow-400 dark:border-yellow-400/25",
+    border: "border-yellow-500 dark:border-yellow-400/25",
     bg: "bg-yellow-100/60 dark:bg-yellow-400/10",
-    iconColor: "text-yellow-500 dark:text-yellow-300",
-    titleColor: "text-yellow-600 dark:text-yellow-300",
+    iconColor: "text-yellow-700 dark:text-yellow-300",
+    titleColor: "text-yellow-800 dark:text-yellow-300",
     textColor:
-      "text-yellow-700 dark:text-yellow-200 [&_a]:hover:text-yellow-800 [&_a]:dark:hover:text-yellow-300",
+      "text-amber-800 dark:text-yellow-200 [&_a]:hover:text-amber-900 [&_a]:dark:hover:text-yellow-300",
     Icon: AlertTriangleIcon as LucideIcon,
   },
   danger: {
@@ -73,9 +73,12 @@ export const Callout = ({
 }: CalloutProps) => {
   const { border, bg, iconColor, titleColor, textColor, Icon } =
     stylesMap[type];
+  const titleId = useId();
 
   return (
     <div
+      role="note"
+      aria-labelledby={title ? titleId : undefined}
       className={cn(
         "not-prose rounded-md border p-4 text-md my-2",
         icon &&
@@ -97,7 +100,11 @@ export const Callout = ({
           aria-hidden="true"
         />
       )}
-      {title && <h3 className={cn("font-medium", titleColor)}>{title}</h3>}
+      {title && (
+        <p id={titleId} className={cn("font-medium", titleColor)}>
+          {title}
+        </p>
+      )}
       <div
         className={cn(
           icon && "col-start-2",
