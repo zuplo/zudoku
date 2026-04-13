@@ -189,8 +189,8 @@ importers:
   examples/auth-supabase:
     dependencies:
       '@supabase/supabase-js':
-        specifier: ^2.98.0
-        version: 2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        specifier: ^2.103.0
+        version: 2.103.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
     devDependencies:
       react:
         specifier: 'catalog:'
@@ -5123,51 +5123,54 @@ packages:
     resolution: {integrity: sha512-w8CEY73X/7tw2KKlL3iOk679V9bWseE4GzNz3zlaYxcTjmcmWOathRb0emgo/QQ3eoNzmq68+2Y2gxluAv3xGw==}
     engines: {node: '>=12.16'}
 
+  '@supabase/auth-js@2.103.0':
+    resolution: {integrity: sha512-6zAanO6c+6gpHOlt5Lb9TlBBkJdZiUWkWCJKAxzkywBDcwaHlLJKXnjQGX6GyVCyKRR1e7sTq4re/yRTH6U/9A==}
+    engines: {node: '>=20.0.0'}
+
   '@supabase/auth-js@2.70.0':
     resolution: {integrity: sha512-BaAK/tOAZFJtzF1sE3gJ2FwTjLf4ky3PSvcvLGEgEmO4BSBkwWKu8l67rLLIBZPDnCyV7Owk2uPyKHa0kj5QGg==}
 
-  '@supabase/auth-js@2.98.0':
-    resolution: {integrity: sha512-GBH361T0peHU91AQNzOlIrjUZw9TZbB9YDRiyFgk/3Kvr3/Z1NWUZ2athWTfHhwNNi8IrW00foyFxQD9IO/Trg==}
+  '@supabase/functions-js@2.103.0':
+    resolution: {integrity: sha512-YrneV2NjskUkkmkZ2Jt2n3elBgbWzV4Y1M9MM370z2Zd5ZPFqFbY8KIoPwuNjtAGE9YrpKBxnbZqeF07BiN9Og==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/functions-js@2.4.4':
     resolution: {integrity: sha512-WL2p6r4AXNGwop7iwvul2BvOtuJ1YQy8EbOd0dhG1oN1q8el/BIRSFCFnWAMM/vJJlHWLi4ad22sKbKr9mvjoA==}
 
-  '@supabase/functions-js@2.98.0':
-    resolution: {integrity: sha512-N/xEyiNU5Org+d+PNCpv+TWniAXRzxIURxDYsS/m2I/sfAB/HcM9aM2Dmf5edj5oWb9GxID1OBaZ8NMmPXL+Lg==}
-    engines: {node: '>=20.0.0'}
-
   '@supabase/node-fetch@2.6.15':
     resolution: {integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==}
     engines: {node: 4.x || >=6.0.0}
 
+  '@supabase/phoenix@0.4.0':
+    resolution: {integrity: sha512-RHSx8bHS02xwfHdAbX5Lpbo6PXbgyf7lTaXTlwtFDPwOIw64NnVRwFAXGojHhjtVYI+PEPNSWwkL90f4agN3bw==}
+
   '@supabase/postgrest-js@1.19.4':
     resolution: {integrity: sha512-O4soKqKtZIW3olqmbXXbKugUtByD2jPa8kL2m2c1oozAO11uCcGrRhkZL0kVxjBLrXHE0mdSkFsMj7jDSfyNpw==}
 
-  '@supabase/postgrest-js@2.98.0':
-    resolution: {integrity: sha512-v6e9WeZuJijzUut8HyXu6gMqWFepIbaeaMIm1uKzei4yLg9bC9OtEW9O14LE/9ezqNbSAnSLO5GtOLFdm7Bpkg==}
+  '@supabase/postgrest-js@2.103.0':
+    resolution: {integrity: sha512-rC3sRxYdPZymkp2CZR1MiNQgbOleD01bGsW8VxEKRR5nMkLZ1NgAS1QTQf78Wh30czFyk505ZYr9Od8/mWT2TA==}
+    engines: {node: '>=20.0.0'}
+
+  '@supabase/realtime-js@2.103.0':
+    resolution: {integrity: sha512-gcPtXzZ6izyyBVf2of7K3dEt8CScPJn8VcSlQq6oWL9QoE1kqfQl0oFrOMHd5qrcADewxI7OxxosLB8W4XqtIQ==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/realtime-js@2.11.10':
     resolution: {integrity: sha512-SJKVa7EejnuyfImrbzx+HaD9i6T784khuw1zP+MBD7BmJYChegGxYigPzkKX8CK8nGuDntmeSD3fvriaH0EGZA==}
 
-  '@supabase/realtime-js@2.98.0':
-    resolution: {integrity: sha512-rOWt28uGyFipWOSd+n0WVMr9kUXiWaa7J4hvyLCIHjRFqWm1z9CaaKAoYyfYMC1Exn3WT8WePCgiVhlAtWC2yw==}
+  '@supabase/storage-js@2.103.0':
+    resolution: {integrity: sha512-DHmlvdAXwtOmZNbkIZi4lkobPR3XjIzoOgzoz5duMf6G+sDeY015YrzMJCnqdccuYr7X5x4yYuSwF//RoN2dvQ==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/storage-js@2.7.1':
     resolution: {integrity: sha512-asYHcyDR1fKqrMpytAS1zjyEfvxuOIp1CIXX7ji4lHHcJKqyk+sLl/Vxgm4sN6u8zvuUtae9e4kDxQP2qrwWBA==}
 
-  '@supabase/storage-js@2.98.0':
-    resolution: {integrity: sha512-tzr2mG+v7ILSAZSfZMSL9OPyIH4z1ikgQ8EcQTKfMRz4EwmlFt3UnJaGzSOxyvF5b+fc9So7qdSUWTqGgeLokQ==}
+  '@supabase/supabase-js@2.103.0':
+    resolution: {integrity: sha512-j/6q5+LtXbR/YOLSLhy7Na74RD1cV2v+KwIIuuqMEjk1JpLEEyu0ynwDHpGoxMncDQl+R5FogaVqZm+85lZvtw==}
     engines: {node: '>=20.0.0'}
 
   '@supabase/supabase-js@2.50.0':
     resolution: {integrity: sha512-M1Gd5tPaaghYZ9OjeO1iORRqbTWFEz/cF3pPubRnMPzA+A8SiUsXXWDP+DWsASZcjEcVEcVQIAF38i5wrijYOg==}
-
-  '@supabase/supabase-js@2.98.0':
-    resolution: {integrity: sha512-Ohc97CtInLwZyiSASz7tT9/Abm/vqnIbO9REp+PivVUII8UZsuI3bngRQnYgJdFoOIwvaEII1fX1qy8x0CyNiw==}
-    engines: {node: '>=20.0.0'}
 
   '@swc/helpers@0.5.18':
     resolution: {integrity: sha512-TXTnIcNJQEKwThMMqBXsZ4VGAza6bvN4pa41Rkqoio6QBKMvo+5lexeTMScGCIxtzgQJzElcvIltani+adC5PQ==}
@@ -14614,7 +14617,7 @@ snapshots:
       debug: 4.4.3
       invariant: 2.2.4
       metro: 0.83.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      metro-config: 0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       metro-core: 0.83.5
       semver: 7.7.4
     transitivePeerDependencies:
@@ -15409,11 +15412,15 @@ snapshots:
 
   '@stripe/stripe-js@5.6.0': {}
 
+  '@supabase/auth-js@2.103.0':
+    dependencies:
+      tslib: 2.8.1
+
   '@supabase/auth-js@2.70.0':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/auth-js@2.98.0':
+  '@supabase/functions-js@2.103.0':
     dependencies:
       tslib: 2.8.1
 
@@ -15421,21 +15428,29 @@ snapshots:
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/functions-js@2.98.0':
-    dependencies:
-      tslib: 2.8.1
-
   '@supabase/node-fetch@2.6.15':
     dependencies:
       whatwg-url: 5.0.0
+
+  '@supabase/phoenix@0.4.0': {}
 
   '@supabase/postgrest-js@1.19.4':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/postgrest-js@2.98.0':
+  '@supabase/postgrest-js@2.103.0':
     dependencies:
       tslib: 2.8.1
+
+  '@supabase/realtime-js@2.103.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+    dependencies:
+      '@supabase/phoenix': 0.4.0
+      '@types/ws': 8.18.1
+      tslib: 2.8.1
+      ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@supabase/realtime-js@2.11.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
@@ -15447,24 +15462,25 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/realtime-js@2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+  '@supabase/storage-js@2.103.0':
     dependencies:
-      '@types/phoenix': 1.6.6
-      '@types/ws': 8.18.1
+      iceberg-js: 0.8.1
       tslib: 2.8.1
-      ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
   '@supabase/storage-js@2.7.1':
     dependencies:
       '@supabase/node-fetch': 2.6.15
 
-  '@supabase/storage-js@2.98.0':
+  '@supabase/supabase-js@2.103.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
     dependencies:
-      iceberg-js: 0.8.1
-      tslib: 2.8.1
+      '@supabase/auth-js': 2.103.0
+      '@supabase/functions-js': 2.103.0
+      '@supabase/postgrest-js': 2.103.0
+      '@supabase/realtime-js': 2.103.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      '@supabase/storage-js': 2.103.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
@@ -15474,17 +15490,6 @@ snapshots:
       '@supabase/postgrest-js': 1.19.4
       '@supabase/realtime-js': 2.11.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@supabase/storage-js': 2.7.1
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-
-  '@supabase/supabase-js@2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
-    dependencies:
-      '@supabase/auth-js': 2.98.0
-      '@supabase/functions-js': 2.98.0
-      '@supabase/postgrest-js': 2.98.0
-      '@supabase/realtime-js': 2.98.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
-      '@supabase/storage-js': 2.98.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -18948,6 +18953,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  metro-config@0.83.5(bufferutil@4.1.0)(utf-8-validate@5.0.10):
+    dependencies:
+      connect: 3.7.0
+      flow-enums-runtime: 0.0.6
+      jest-validate: 29.7.0
+      metro: 0.83.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      metro-cache: 0.83.5
+      metro-core: 0.83.5
+      metro-runtime: 0.83.5
+      yaml: 2.8.3
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   metro-config@0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       connect: 3.7.0
@@ -19099,7 +19119,7 @@ snapshots:
       metro-babel-transformer: 0.83.5
       metro-cache: 0.83.5
       metro-cache-key: 0.83.5
-      metro-config: 0.83.5(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.5(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       metro-core: 0.83.5
       metro-file-map: 0.83.5
       metro-resolver: 0.83.5
