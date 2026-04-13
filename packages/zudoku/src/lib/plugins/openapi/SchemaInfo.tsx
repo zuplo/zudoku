@@ -4,7 +4,10 @@ import {
   BracesIcon,
   GlobeIcon,
   InfoIcon,
+  KeyRoundIcon,
+  LockIcon,
   MailIcon,
+  ShieldCheckIcon,
   TagIcon,
   WebhookIcon,
 } from "lucide-react";
@@ -28,7 +31,10 @@ import { slugify } from "../../util/slugify.js";
 import { ApiHeader } from "./ApiHeader.js";
 import { useCreateQuery } from "./client/useCreateQuery.js";
 import { useOasConfig } from "./context.js";
-import type { SchemaInfoQuery as SchemaInfoQueryType } from "./graphql/graphql.js";
+import type {
+  SchemaInfoQuery as SchemaInfoQueryType,
+  SecuritySchemeType,
+} from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
 import { useWarmupSchema } from "./util/useWarmupSchema.js";
 
@@ -66,6 +72,47 @@ const SchemaInfoQuery = graphql(/* GraphQL */ `
       components {
         schemas {
           name
+        }
+        securitySchemes {
+          name
+          type
+          description
+          in
+          paramName
+          scheme
+          bearerFormat
+          openIdConnectUrl
+          flows {
+            implicit {
+              authorizationUrl
+              scopes {
+                name
+                description
+              }
+            }
+            password {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            clientCredentials {
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+            authorizationCode {
+              authorizationUrl
+              tokenUrl
+              scopes {
+                name
+                description
+              }
+            }
+          }
         }
       }
       webhooks {
@@ -174,8 +221,47 @@ const InfoCardContent = ({
   );
 };
 
+const securitySchemeIcon = (type: SecuritySchemeType) => {
+  switch (type) {
+    case "apiKey":
+      return <KeyRoundIcon size={14} />;
+    case "http":
+      return <LockIcon size={14} />;
+    case "oauth2":
+      return <ShieldCheckIcon size={14} />;
+    case "openIdConnect":
+      return <ShieldCheckIcon size={14} />;
+    case "mutualTLS":
+      return <LockIcon size={14} />;
+  }
+};
+
+const securitySchemeDescription = (scheme: {
+  type: SecuritySchemeType;
+  in?: string | null;
+  paramName?: string | null;
+  scheme?: string | null;
+  bearerFormat?: string | null;
+  openIdConnectUrl?: string | null;
+}) => {
+  switch (scheme.type) {
+    case "apiKey":
+      return `API Key in ${scheme.in ?? "header"} (${scheme.paramName ?? "key"})`;
+    case "http":
+      return scheme.scheme === "bearer"
+        ? `Bearer token${scheme.bearerFormat ? ` (${scheme.bearerFormat})` : ""}`
+        : `HTTP ${scheme.scheme ?? "authentication"}`;
+    case "oauth2":
+      return "OAuth 2.0 authorization";
+    case "openIdConnect":
+      return "OpenID Connect";
+    case "mutualTLS":
+      return "Mutual TLS authentication";
+  }
+};
+
 export const SchemaInfo = () => {
-  const { input, type } = useOasConfig();
+  const { input, type, options } = useOasConfig();
   const query = useCreateQuery(SchemaInfoQuery, { input, type });
   const {
     data: { schema },
@@ -296,6 +382,48 @@ export const SchemaInfo = () => {
                 </div>
               </div>
             )}
+            {!options?.disableSecurity &&
+              (schema.components?.securitySchemes?.length ?? 0) > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+                    <LockIcon size={14} />
+                    Security Schemes
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {schema.components?.securitySchemes?.map((scheme) => (
+                      <Item key={scheme.name} variant="outline">
+                        <ItemContent>
+                          <ItemTitle className="flex items-center gap-2">
+                            {securitySchemeIcon(scheme.type)}
+                            {scheme.name}
+                          </ItemTitle>
+                          <ItemDescription asChild>
+                            <Markdown
+                              content={
+                                scheme.description ??
+                                securitySchemeDescription(scheme)
+                              }
+                              className="prose-sm text-pretty"
+                              components={{
+                                p: ({ children }) => children,
+                                a: (props) => <span {...props} />,
+                              }}
+                            />
+                          </ItemDescription>
+                        </ItemContent>
+                        <ItemActions>
+                          <Badge
+                            variant="muted"
+                            className="text-[10px] font-mono"
+                          >
+                            {scheme.type}
+                          </Badge>
+                        </ItemActions>
+                      </Item>
+                    ))}
+                  </div>
+                </div>
+              )}
             {schema.webhooks.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">

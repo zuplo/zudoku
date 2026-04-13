@@ -2,6 +2,7 @@
 import SchemaBuilder from "@pothos/core";
 import { GraphQLJSON, GraphQLJSONObject } from "graphql-type-json";
 import { createYoga, type YogaServerOptions } from "graphql-yoga";
+import type { OpenAPIV3 } from "openapi-types";
 import {
   type CountableSlugify,
   slugifyWithCounter,
@@ -22,6 +23,40 @@ import type {
   TagObject,
 } from "../parser/index.js";
 import { GraphQLJSONSchema } from "./circular.js";
+
+// Security scheme types for the GraphQL layer
+// Uses OpenAPI types where possible; adds `name` (the key from securitySchemes map)
+// and renames apiKey's `name` to `paramName` to avoid collision with the scheme key.
+type SecuritySchemeData = {
+  name: string;
+  type: OpenAPIV3.SecuritySchemeObject["type"];
+  description?: string;
+  in?: OpenAPIV3.ApiKeySecurityScheme["in"];
+  paramName?: string;
+  scheme?: string;
+  bearerFormat?: string;
+  openIdConnectUrl?: string;
+  flows?: OpenAPIV3.OAuth2SecurityScheme["flows"];
+  extensions?: Record<string, any>;
+};
+
+type OAuthFlowsData = OpenAPIV3.OAuth2SecurityScheme["flows"];
+// Union of all flow shapes — each flow type has a different subset of fields
+type OAuthFlowData = {
+  authorizationUrl?: string;
+  tokenUrl?: string;
+  refreshUrl?: string;
+  scopes: { [scope: string]: string };
+};
+
+type SecurityRequirementSchemeData = {
+  scheme: SecuritySchemeData;
+  scopes: string[];
+};
+
+type SecurityRequirementData = {
+  schemes: SecurityRequirementSchemeData[];
+};
 
 export type {
   EncodingObject,
@@ -328,6 +363,166 @@ const WebhookItem = builder.objectRef<WebhookData>("WebhookItem").implement({
   }),
 });
 
+// --- Security Scheme GraphQL Types ---
+
+const SecuritySchemeTypeEnum = builder.enumType("SecuritySchemeType", {
+  values: ["apiKey", "http", "oauth2", "openIdConnect", "mutualTLS"] as const,
+});
+
+const SecuritySchemeInEnum = builder.enumType("SecuritySchemeIn", {
+  values: ["header", "query", "cookie"] as const,
+});
+
+const OAuthScopeItem = builder
+  .objectRef<{ name: string; description: string }>("OAuthScopeItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      description: t.exposeString("description"),
+    }),
+  });
+
+const OAuthFlowItem = builder
+  .objectRef<OAuthFlowData>("OAuthFlowItem")
+  .implement({
+    fields: (t) => ({
+      authorizationUrl: t.exposeString("authorizationUrl", { nullable: true }),
+      tokenUrl: t.exposeString("tokenUrl", { nullable: true }),
+      refreshUrl: t.exposeString("refreshUrl", { nullable: true }),
+      scopes: t.field({
+        type: [OAuthScopeItem],
+        resolve: (parent) =>
+          Object.entries(parent.scopes ?? {}).map(([name, description]) => ({
+            name,
+            description,
+          })),
+      }),
+    }),
+  });
+
+const OAuthFlowsItem = builder
+  .objectRef<OAuthFlowsData>("OAuthFlowsItem")
+  .implement({
+    fields: (t) => ({
+      implicit: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.implicit ?? null,
+        nullable: true,
+      }),
+      password: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.password ?? null,
+        nullable: true,
+      }),
+      clientCredentials: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.clientCredentials ?? null,
+        nullable: true,
+      }),
+      authorizationCode: t.field({
+        type: OAuthFlowItem,
+        resolve: (parent) => parent.authorizationCode ?? null,
+        nullable: true,
+      }),
+    }),
+  });
+
+const SecuritySchemeItem = builder
+  .objectRef<SecuritySchemeData>("SecuritySchemeItem")
+  .implement({
+    fields: (t) => ({
+      name: t.exposeString("name"),
+      type: t.field({
+        type: SecuritySchemeTypeEnum,
+        resolve: (parent) =>
+          parent.type as typeof SecuritySchemeTypeEnum.$inferType,
+      }),
+      description: t.exposeString("description", { nullable: true }),
+      in: t.field({
+        type: SecuritySchemeInEnum,
+        resolve: (parent) =>
+          (parent.in as typeof SecuritySchemeInEnum.$inferType) ?? null,
+        nullable: true,
+      }),
+      paramName: t.exposeString("paramName", { nullable: true }),
+      scheme: t.exposeString("scheme", { nullable: true }),
+      bearerFormat: t.exposeString("bearerFormat", { nullable: true }),
+      openIdConnectUrl: t.exposeString("openIdConnectUrl", { nullable: true }),
+      flows: t.field({
+        type: OAuthFlowsItem,
+        resolve: (parent) => parent.flows ?? null,
+        nullable: true,
+      }),
+      extensions: t.field({
+        type: JSONObjectScalar,
+        resolve: (parent) => parent.extensions ?? null,
+        nullable: true,
+      }),
+    }),
+  });
+
+const SecurityRequirementScheme = builder
+  .objectRef<SecurityRequirementSchemeData>("SecurityRequirementScheme")
+  .implement({
+    fields: (t) => ({
+      scheme: t.field({
+        type: SecuritySchemeItem,
+        resolve: (parent) => parent.scheme,
+      }),
+      scopes: t.stringList({ resolve: (parent) => parent.scopes }),
+    }),
+  });
+
+const SecurityRequirementItem = builder
+  .objectRef<SecurityRequirementData>("SecurityRequirementItem")
+  .implement({
+    fields: (t) => ({
+      schemes: t.field({
+        type: [SecurityRequirementScheme],
+        resolve: (parent) => parent.schemes,
+      }),
+    }),
+  });
+
+const resolveSecuritySchemes = (
+  schema: OpenAPIDocument,
+): SecuritySchemeData[] => {
+  const securitySchemes = schema.components?.securitySchemes ?? {};
+  return Object.entries(securitySchemes).map(
+    ([name, scheme]: [string, any]) => ({
+      name,
+      type: scheme.type,
+      description: scheme.description,
+      in: scheme.in,
+      paramName: scheme.name, // apiKey's `name` field (parameter name)
+      scheme: scheme.scheme, // http scheme (e.g. "bearer", "basic")
+      bearerFormat: scheme.bearerFormat,
+      openIdConnectUrl: scheme.openIdConnectUrl,
+      flows: scheme.flows,
+      extensions: resolveExtensions(scheme),
+    }),
+  );
+};
+
+const resolveSecurityRequirements = (
+  securityArray: OpenAPIDocument["security"],
+  securitySchemes: SecuritySchemeData[],
+): SecurityRequirementData[] => {
+  if (!securityArray) return [];
+
+  return securityArray.map((req) => ({
+    schemes: Object.entries(req)
+      .filter(([key]) => !key.startsWith("__"))
+      .flatMap(([schemeName, scopes]) => {
+        const scheme = securitySchemes.find((s) => s.name === schemeName);
+        if (!scheme) return [];
+        return [{ scheme, scopes }];
+      }),
+  }));
+};
+
+// --- End Security Scheme GraphQL Types ---
+
 const resolveWebhooks = (schema: OpenAPIDocument): WebhookData[] => {
   const webhooks = (schema as any).webhooks ?? {};
   return Object.entries(webhooks).flatMap(([name, pathItem]: [string, any]) =>
@@ -595,6 +790,17 @@ const OperationItem = builder
         nullable: true,
       }),
       deprecated: t.exposeBoolean("deprecated", { nullable: true }),
+      security: t.field({
+        type: [SecurityRequirementItem],
+        nullable: true,
+        resolve: (parent, _, ctx) => {
+          const securitySchemes = resolveSecuritySchemes(ctx.schema);
+          // Operation-level security overrides global security
+          const securityArray = parent.security ?? ctx.schema.security;
+          if (!securityArray) return null;
+          return resolveSecurityRequirements(securityArray, securitySchemes);
+        },
+      }),
       extensions: t.field({
         type: JSONObjectScalar,
         resolve: (parent) => resolveExtensions(parent),
@@ -635,6 +841,11 @@ Components.implement({
           extensions: resolveExtensions(schema),
         }));
       },
+      nullable: true,
+    }),
+    securitySchemes: t.field({
+      type: [SecuritySchemeItem],
+      resolve: (_parent, _args, ctx) => resolveSecuritySchemes(ctx.schema),
       nullable: true,
     }),
   }),
@@ -741,6 +952,15 @@ const Schema = builder.objectRef<OpenAPIDocument>("Schema").implement({
       type: Components,
       resolve: (root) => root.components,
       nullable: true,
+    }),
+    security: t.field({
+      type: [SecurityRequirementItem],
+      nullable: true,
+      resolve: (root) => {
+        const securitySchemes = resolveSecuritySchemes(root);
+        if (!root.security) return null;
+        return resolveSecurityRequirements(root.security, securitySchemes);
+      },
     }),
     extensions: t.field({
       type: JSONObjectScalar,
