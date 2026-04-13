@@ -65,10 +65,12 @@ export const resolveMarkdownRoutePath = (
   basePath: string,
 ): string => {
   const pathname = requestUrl.split(/[?#]/)[0] ?? requestUrl;
-  let routePath = joinUrl(
+  const routePath = joinUrl(
     pathname.slice(basePath.length).replace(/\.mdx?$/, ""),
   );
-  if (routePath === "/index") routePath = "/";
+  if (routePath === "/index") {
+    return "/";
+  }
   return routePath;
 };
 
