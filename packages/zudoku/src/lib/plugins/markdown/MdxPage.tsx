@@ -107,8 +107,12 @@ export const MdxPage = ({
   const copyMarkdownConfig =
     frontmatter.copyPage !== false && defaultOptions?.copyPage !== false;
 
+  const fileBasename = __filepath
+    .split("/")
+    .pop()
+    ?.replace(/\.mdx?$/, "");
   const markdownPathname =
-    location.pathname === "/" ? "/index" : location.pathname;
+    location.pathname === "/" ? `/${fileBasename}` : location.pathname;
   const markdownUrl = joinUrl(basePath, `${markdownPathname}.md`);
 
   const handleCopyMarkdown = async () => {
