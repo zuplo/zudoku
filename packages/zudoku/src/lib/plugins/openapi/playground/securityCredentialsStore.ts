@@ -59,21 +59,27 @@ type SecurityRequirement = {
 };
 
 /**
+ * Find the first security requirement where all schemes have authorized credentials.
+ * Skips empty requirements (anonymous access markers).
+ */
+const findSatisfiedRequirement = (
+  security: SecurityRequirement[] | null | undefined,
+  credentials: Record<string, SecurityCredential>,
+) =>
+  security?.find(
+    (req) =>
+      req.schemes.length > 0 &&
+      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
+  );
+
+/**
  * Get the list of header names that will be auto-injected by security credentials.
  */
 export const getSecurityLockedHeaders = (
   security: SecurityRequirement[] | null | undefined,
   credentials: Record<string, SecurityCredential>,
 ): string[] => {
-  if (!security) return [];
-
-  // Skip empty requirements (anonymous access markers) — vacuous truth
-  const satisfied = security.find(
-    (req) =>
-      req.schemes.length > 0 &&
-      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
-  );
-
+  const satisfied = findSatisfiedRequirement(security, credentials);
   if (!satisfied) return [];
 
   const headers = new Set<string>();
@@ -102,14 +108,7 @@ export const getSecurityQueryParams = (
   security: SecurityRequirement[] | null | undefined,
   credentials: Record<string, SecurityCredential>,
 ): Array<[string, string]> => {
-  if (!security) return [];
-
-  const satisfied = security.find(
-    (req) =>
-      req.schemes.length > 0 &&
-      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
-  );
-
+  const satisfied = findSatisfiedRequirement(security, credentials);
   if (!satisfied) return [];
 
   return satisfied.schemes.flatMap(({ scheme }) => {
@@ -137,14 +136,7 @@ export const applySecurityCredentials = (
   security: SecurityRequirement[] | null | undefined,
   credentials: Record<string, SecurityCredential>,
 ): void => {
-  if (!security) return;
-
-  const satisfied = security.find(
-    (req) =>
-      req.schemes.length > 0 &&
-      req.schemes.every((s) => credentials[s.scheme.name]?.isAuthorized),
-  );
-
+  const satisfied = findSatisfiedRequirement(security, credentials);
   if (!satisfied) return;
 
   for (const { scheme } of satisfied.schemes) {
