@@ -336,17 +336,18 @@ export const Playground = ({
       const upperMethod = method.toUpperCase();
       const requestUrl = createUrl(server ?? selectedServer, url, data);
 
-      const isSecurityScheme =
-        data.identity?.startsWith(SECURITY_SCHEME_PREFIX) ?? false;
+      const schemeName = data.identity?.startsWith(SECURITY_SCHEME_PREFIX)
+        ? data.identity.slice(SECURITY_SCHEME_PREFIX.length)
+        : undefined;
 
-      if (isSecurityScheme) {
-        const schemeName = data.identity?.slice(SECURITY_SCHEME_PREFIX.length);
-        const freshCredentials =
-          useSecurityCredentialsStore.getState().credentials;
-        const schemeCredentials =
-          schemeName && freshCredentials[schemeName]
-            ? { [schemeName]: freshCredentials[schemeName] }
-            : {};
+      const schemeCredentials = (() => {
+        if (!schemeName) return {};
+        const cred =
+          useSecurityCredentialsStore.getState().credentials[schemeName];
+        return cred ? { [schemeName]: cred } : {};
+      })();
+
+      if (schemeName) {
         for (const [key, value] of getSecurityQueryParams(
           security,
           schemeCredentials,
@@ -361,14 +362,7 @@ export const Playground = ({
         body: ["GET", "HEAD"].includes(upperMethod) ? null : body,
       });
 
-      if (isSecurityScheme) {
-        const schemeName = data.identity?.slice(SECURITY_SCHEME_PREFIX.length);
-        const freshCredentials =
-          useSecurityCredentialsStore.getState().credentials;
-        const schemeCredentials =
-          schemeName && freshCredentials[schemeName]
-            ? { [schemeName]: freshCredentials[schemeName] }
-            : {};
+      if (schemeName) {
         applySecurityCredentials(request, security, schemeCredentials);
       } else if (data.identity !== NO_IDENTITY) {
         await identities.data
