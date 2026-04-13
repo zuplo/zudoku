@@ -287,10 +287,12 @@ export const Playground = ({
     : undefined;
 
   const securityLockedHeaders = useMemo(() => {
-    if (!selectedSchemeName) return [];
+    const cred = selectedSchemeName
+      ? securityCredentials[selectedSchemeName]
+      : undefined;
+    if (!selectedSchemeName || !cred) return [];
     return getSecurityLockedHeaders(security, {
-      [selectedSchemeName]:
-        securityCredentials[selectedSchemeName] ?? ({} as never),
+      [selectedSchemeName]: cred,
     });
   }, [security, securityCredentials, selectedSchemeName]);
 
