@@ -1,3 +1,4 @@
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   getMarkdownOutputPath,
@@ -6,18 +7,20 @@ import {
 
 describe("getMarkdownOutputPath", () => {
   it("maps root route to index.md", () => {
-    expect(getMarkdownOutputPath("/dist", "/")).toBe("/dist/index.md");
+    expect(getMarkdownOutputPath("/dist", "/")).toBe(
+      `${path.join("/dist", "index")}.md`,
+    );
   });
 
   it("maps simple route to corresponding .md file", () => {
     expect(getMarkdownOutputPath("/dist", "/documentation")).toBe(
-      "/dist/documentation.md",
+      `${path.join("/dist", "documentation")}.md`,
     );
   });
 
   it("maps nested route to corresponding .md file", () => {
     expect(getMarkdownOutputPath("/dist", "/docs/getting-started")).toBe(
-      "/dist/docs/getting-started.md",
+      `${path.join("/dist", "docs", "getting-started")}.md`,
     );
   });
 });
