@@ -59,9 +59,11 @@ class FirebaseAuthenticationProvider
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
   private readonly enableEmailLink: boolean;
+  private readonly redirectToAfterSignOut: string;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
+    this.redirectToAfterSignOut = config.redirectToAfterSignOut ?? "/";
 
     this.app = initializeApp({
       apiKey: config.apiKey,
@@ -350,7 +352,7 @@ class FirebaseAuthenticationProvider
     ];
   };
 
-  signOut = async () => {
+  signOut = async ({ navigate }: AuthActionContext) => {
     await signOut(this.auth);
 
     useAuthState.setState({
@@ -359,6 +361,8 @@ class FirebaseAuthenticationProvider
       profile: undefined,
       providerData: undefined,
     });
+
+    void navigate(this.redirectToAfterSignOut, { replace: true });
   };
 
   onPageLoad = async () => {
