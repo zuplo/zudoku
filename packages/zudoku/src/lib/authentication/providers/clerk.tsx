@@ -101,9 +101,9 @@ const clerkAuth: AuthenticationProviderInitializer<
         verifiedEmail?.emailAddress ??
         user.emailAddresses[0]?.emailAddress ??
         "",
-      name: user.fullName ?? "",
+      name: user.fullName ?? undefined,
       emailVerified: !!verifiedEmail?.emailAddress,
-      pictureUrl: user.imageUrl ?? "",
+      pictureUrl: user.imageUrl ?? undefined,
     };
   }
 
