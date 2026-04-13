@@ -56,12 +56,28 @@ export const getMarkdownOutputPath = (distDir: string, routePath: string) => {
 };
 
 /**
+ * Converts a pathname (e.g. location.pathname) to the corresponding
+ * markdown URL segment. Handles the root path "/" → "/index" mapping
+ * so the URL becomes "/index.md" instead of "/.md".
+ */
+export const getMarkdownPathname = (pathname: string): string =>
+  pathname === "/" ? "/index" : pathname;
+
+/**
  * Resolves a .md request URL to the route path used in the file mapping.
+ * Reverses the "/index" → "/" mapping from getMarkdownPathname so the
+ * middleware can look up the correct file.
  */
 export const resolveMarkdownRoutePath = (
   requestUrl: string,
   basePath: string,
-): string => joinUrl(requestUrl.slice(basePath.length).replace(/\.mdx?$/, ""));
+): string => {
+  let routePath = joinUrl(
+    requestUrl.slice(basePath.length).replace(/\.mdx?$/, ""),
+  );
+  if (routePath === "/index") routePath = "/";
+  return routePath;
+};
 
 const viteMarkdownExportPlugin = (): Plugin => {
   let markdownFiles: Record<string, string> = {};
@@ -85,14 +101,10 @@ const viteMarkdownExportPlugin = (): Plugin => {
         return;
       }
 
-      const baseMapping = await globMarkdownFiles(config, { absolute: true });
-      // Keep both original file-based routes and custom-path routes so that
-      // markdown URLs using the actual filename (e.g. /welcome.md for a file
-      // mapped to path "/") resolve correctly alongside the custom paths.
-      markdownFiles = {
-        ...baseMapping,
-        ...(await resolveCustomNavigationPaths(config, baseMapping)),
-      };
+      markdownFiles = await resolveCustomNavigationPaths(
+        config,
+        await globMarkdownFiles(config, { absolute: true }),
+      );
 
       // Filter out protected routes unless `includeProtected` is true
       if (!llmsConfig?.includeProtected) {
@@ -127,11 +139,10 @@ const viteMarkdownExportPlugin = (): Plugin => {
 
       if (!needsMdFiles) return;
 
-      const baseMapping = await globMarkdownFiles(config, { absolute: true });
-      markdownFiles = {
-        ...baseMapping,
-        ...(await resolveCustomNavigationPaths(config, baseMapping)),
-      };
+      markdownFiles = await resolveCustomNavigationPaths(
+        config,
+        await globMarkdownFiles(config, { absolute: true }),
+      );
 
       server.middlewares.use(async (req, res, next) => {
         if (req.method !== "GET" || !req.url?.endsWith(".md")) {

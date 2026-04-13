@@ -2,6 +2,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   getMarkdownOutputPath,
+  getMarkdownPathname,
   resolveMarkdownRoutePath,
 } from "./plugin-markdown-export.js";
 
@@ -25,7 +26,22 @@ describe("getMarkdownOutputPath", () => {
   });
 });
 
+describe("getMarkdownPathname", () => {
+  it("converts root pathname to /index", () => {
+    expect(getMarkdownPathname("/")).toBe("/index");
+  });
+
+  it("leaves non-root pathnames unchanged", () => {
+    expect(getMarkdownPathname("/documentation")).toBe("/documentation");
+    expect(getMarkdownPathname("/docs/guide")).toBe("/docs/guide");
+  });
+});
+
 describe("resolveMarkdownRoutePath", () => {
+  it("resolves /index.md back to root route /", () => {
+    expect(resolveMarkdownRoutePath("/index.md", "/")).toBe("/");
+  });
+
   it("resolves normal .md URLs to route paths", () => {
     expect(resolveMarkdownRoutePath("/documentation.md", "/")).toBe(
       "/documentation",
@@ -40,6 +56,7 @@ describe("resolveMarkdownRoutePath", () => {
     expect(resolveMarkdownRoutePath("/base/documentation.md", "/base")).toBe(
       "/documentation",
     );
+    expect(resolveMarkdownRoutePath("/base/index.md", "/base")).toBe("/");
   });
 
   it("handles .mdx extension", () => {
@@ -49,61 +66,41 @@ describe("resolveMarkdownRoutePath", () => {
   });
 });
 
-describe("issue #2269: markdown URL for root path with custom file", () => {
-  // Simulates the scenario: { type: "doc", file: "welcome", path: "/" }
-  // The middleware keeps both the original file route and the custom path route.
-  // MdxPage uses the actual filename for the root path URL.
+describe("roundtrip: getMarkdownPathname → resolveMarkdownRoutePath", () => {
+  const basePath = "/";
 
-  it("middleware resolves /welcome.md to the original file route", () => {
-    const markdownFiles: Record<string, string> = {
-      "/welcome": "/abs/path/pages/welcome.md", // original file route (kept)
-      "/": "/abs/path/pages/welcome.md", // custom path route
-    };
-
-    const routePath = resolveMarkdownRoutePath("/welcome.md", "/");
-    expect(routePath).toBe("/welcome");
-    expect(markdownFiles[routePath]).toBe("/abs/path/pages/welcome.md");
+  it("roundtrips root path correctly", () => {
+    const pathname = "/";
+    const markdownUrl = `${getMarkdownPathname(pathname)}.md`;
+    const resolved = resolveMarkdownRoutePath(markdownUrl, basePath);
+    expect(resolved).toBe(pathname);
   });
 
-  it("middleware still resolves non-root custom paths normally", () => {
-    // { type: "doc", file: "documentation", path: "getting-started" }
-    const markdownFiles: Record<string, string> = {
-      "/documentation": "/abs/path/pages/documentation.mdx", // original
-      "/getting-started": "/abs/path/pages/documentation.mdx", // custom
-    };
-
-    const routePath = resolveMarkdownRoutePath("/getting-started.md", "/");
-    expect(routePath).toBe("/getting-started");
-    expect(markdownFiles[routePath]).toBe("/abs/path/pages/documentation.mdx");
+  it("roundtrips normal path correctly", () => {
+    const pathname = "/documentation";
+    const markdownUrl = `${getMarkdownPathname(pathname)}.md`;
+    const resolved = resolveMarkdownRoutePath(markdownUrl, basePath);
+    expect(resolved).toBe(pathname);
   });
 
-  it("MdxPage derives filename from __filepath for root path", () => {
-    // This mirrors the logic in MdxPage.tsx
-    const __filepath = "pages/welcome.md";
-    const locationPathname = "/";
-
-    const fileBasename = __filepath
-      .split("/")
-      .pop()
-      ?.replace(/\.mdx?$/, "");
-    const markdownPathname =
-      locationPathname === "/" ? `/${fileBasename}` : locationPathname;
-
-    expect(markdownPathname).toBe("/welcome");
-    // The full URL would be /welcome.md — NOT /.md or /index.md
+  it("roundtrips nested path correctly", () => {
+    const pathname = "/docs/getting-started";
+    const markdownUrl = `${getMarkdownPathname(pathname)}.md`;
+    const resolved = resolveMarkdownRoutePath(markdownUrl, basePath);
+    expect(resolved).toBe(pathname);
   });
 
-  it("MdxPage uses location.pathname for non-root paths", () => {
-    const __filepath = "pages/documentation.mdx";
-    const locationPathname: string = "/getting-started";
+  it("roundtrips path with custom route (issue #2269)", () => {
+    // When file: "my-file" has path: "/", the browser pathname is "/"
+    // The markdown URL should roundtrip back to "/" so the middleware
+    // can find the file in the markdownFiles mapping
+    const pathname = "/";
+    const markdownUrl = `${getMarkdownPathname(pathname)}.md`;
 
-    const fileBasename = __filepath
-      .split("/")
-      .pop()
-      ?.replace(/\.mdx?$/, "");
-    const markdownPathname =
-      locationPathname === "/" ? `/${fileBasename}` : locationPathname;
+    // URL should be /index.md, NOT /.md
+    expect(markdownUrl).toBe("/index.md");
 
-    expect(markdownPathname).toBe("/getting-started");
+    const resolved = resolveMarkdownRoutePath(markdownUrl, basePath);
+    expect(resolved).toBe("/");
   });
 });
