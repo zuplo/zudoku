@@ -87,6 +87,44 @@ Set the text direction for your site. This is useful for right-to-left languages
 We allow you to fully customize all colors, borders, etc - read more about it in
 [Colors & Themes](/docs/customization/colors-theme)
 
+#### Custom 404 Page
+
+Replace the default "Page not found" page with your own component using the `notFoundPage` option:
+
+```tsx title=zudoku.config.tsx
+import { NotFound } from "./src/NotFound";
+
+const config = {
+  site: {
+    notFoundPage: <NotFound />,
+  },
+};
+```
+
+Your component will be rendered whenever a user navigates to a route that doesn't exist. This works
+in both development and production builds.
+
+Here's an example of a custom 404 component:
+
+```tsx title=src/NotFound.tsx
+import { Button, Link } from "zudoku/components";
+
+export const NotFound = () => (
+  <section className="flex items-center justify-center py-20">
+    <div className="text-center max-w-lg mx-auto">
+      <p className="text-6xl font-extrabold text-primary mb-4">404</p>
+      <h1 className="text-3xl font-bold mb-4">Page not found</h1>
+      <p className="text-muted-foreground mb-8">
+        The page you're looking for doesn't exist or has been moved.
+      </p>
+      <Button asChild>
+        <Link to="/">Go back home</Link>
+      </Button>
+    </div>
+  </section>
+);
+```
+
 ## Layout
 
 ### Banner
@@ -126,6 +164,7 @@ Here's a comprehensive example showing all available page configuration options:
       alt: "Company Logo",
       width: "100px",
     },
+    notFoundPage: <NotFound />,
     banner: {
       message: "Welcome to our documentation!",
       color: "info",

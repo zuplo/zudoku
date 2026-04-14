@@ -1,12 +1,18 @@
 import { UnlinkIcon } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { CategoryHeading } from "./CategoryHeading.js";
+import { useZudoku } from "./context/ZudokuContext.js";
 import { DeveloperHint } from "./DeveloperHint.js";
 import { Heading } from "./Heading.js";
 import { Typography } from "./Typography.js";
 
 export const NotFoundPage = () => {
   const params = useParams();
+  const { notFoundPage } = useZudoku();
+
+  if (notFoundPage) {
+    return <>{notFoundPage}</>;
+  }
 
   return (
     <Typography
