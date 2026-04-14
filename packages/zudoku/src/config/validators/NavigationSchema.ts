@@ -1,5 +1,6 @@
 import path from "node:path";
 import { glob } from "glob";
+import globParent from "glob-parent";
 import type { RootContent } from "hast";
 import type { LucideIcon } from "lucide-react";
 import type { Heading, PhrasingContent } from "mdast";
@@ -145,6 +146,24 @@ const isNavigationItem = (item: unknown): item is NavigationItem =>
 const toPosixPath = (filePath: string) =>
   filePath.split(path.win32.sep).join(path.posix.sep);
 
+const prettifyDirName = (name: string): string =>
+  name.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+type AutoNavFileInfo = {
+  routePath: string;
+  filePath: string;
+  label: string;
+  icon?: string;
+  display?: NavigationDoc["display"];
+  position?: number;
+  rich?: RootContent[];
+};
+
+type NavTreeNode = {
+  files: AutoNavFileInfo[];
+  dirs: Map<string, NavTreeNode>;
+};
+
 export type ResolvedNavigationInsertRule = Omit<
   NavigationInsertRule,
   "items"
@@ -163,10 +182,12 @@ export class NavigationResolver {
   private globFiles: string[] = [];
   private items: InputNavigationItem[] = [];
   private itemIndex = 0;
+  private hasExplicitNavigation: boolean;
 
   constructor(config: ConfigWithMeta) {
     this.rootDir = config.__meta.rootDir;
     this.globPatterns = DocsConfigSchema.parse(config.docs ?? {}).files;
+    this.hasExplicitNavigation = config.navigation !== undefined;
     this.items = config.navigation ?? [];
   }
 
@@ -180,6 +201,10 @@ export class NavigationResolver {
   }
 
   async resolve() {
+    if (!this.hasExplicitNavigation) {
+      return this.generateFromFileSystem();
+    }
+
     await this.initialize();
 
     const resolvedItems = await Promise.all(
@@ -348,5 +373,165 @@ export class NavigationResolver {
         };
       }
     }
+  }
+
+  private async generateFromFileSystem(): Promise<NavigationItem[]> {
+    const fileInfos: AutoNavFileInfo[] = [];
+    const seen = new Set<string>();
+
+    for (const globPattern of this.globPatterns) {
+      const globbedFiles = await glob(globPattern, {
+        root: this.rootDir,
+        ignore: ["**/node_modules/**", "**/.git/**", "**/dist/**"],
+        absolute: false,
+        posix: true,
+      });
+
+      const parent = globParent(globPattern).replace(/^\.?\//, "");
+
+      for (const file of globbedFiles) {
+        const relativePath = path.posix.relative(parent, file);
+        const routePath = relativePath.replace(/\.mdx?$/, "");
+
+        if (seen.has(routePath)) continue;
+        seen.add(routePath);
+
+        const absolutePath = path.resolve(this.rootDir, file);
+        const { data, content } = await readFrontmatter(absolutePath);
+
+        if (process.env.NODE_ENV !== "development" && data.draft === true) {
+          continue;
+        }
+
+        const richH1 = extractRichH1(content);
+        const label =
+          data.navigation_label ??
+          data.sidebar_label ??
+          data.title ??
+          richH1?.label ??
+          extractTitleFromContent(content) ??
+          prettifyDirName(path.posix.basename(routePath));
+
+        fileInfos.push({
+          routePath,
+          filePath: routePath,
+          label,
+          icon: data.navigation_icon ?? data.sidebar_icon,
+          display: data.navigation_display,
+          position: data.sidebar_position,
+          rich: richH1?.rich,
+        });
+      }
+    }
+
+    return this.buildNavigationTree(fileInfos);
+  }
+
+  private buildNavigationTree(files: AutoNavFileInfo[]): NavigationItem[] {
+    const root: NavTreeNode = { files: [], dirs: new Map() };
+
+    for (const file of files) {
+      const segments = file.routePath.split("/");
+      let current = root;
+
+      for (let i = 0; i < segments.length - 1; i++) {
+        const seg = segments[i];
+        if (seg == null) continue;
+        if (!current.dirs.has(seg)) {
+          current.dirs.set(seg, { files: [], dirs: new Map() });
+        }
+        const next = current.dirs.get(seg);
+        if (next == null) continue;
+        current = next;
+      }
+
+      current.files.push(file);
+    }
+
+    return this.treeToNavigation(root);
+  }
+
+  private treeToNavigation(node: NavTreeNode): NavigationItem[] {
+    // Identify files that match a directory name (become category links)
+    const dirLinkFiles = new Map<string, AutoNavFileInfo>();
+    for (const file of node.files) {
+      const fileName = file.routePath.split("/").pop() ?? "";
+      if (fileName && node.dirs.has(fileName)) {
+        dirLinkFiles.set(fileName, file);
+      }
+    }
+
+    type SortEntry =
+      | { kind: "file"; info: AutoNavFileInfo }
+      | {
+          kind: "dir";
+          name: string;
+          node: NavTreeNode;
+          linkFile?: AutoNavFileInfo;
+        };
+
+    const entries: SortEntry[] = [];
+
+    for (const file of node.files) {
+      const fileName = file.routePath.split("/").pop() ?? "";
+      if (!dirLinkFiles.has(fileName)) {
+        entries.push({ kind: "file", info: file });
+      }
+    }
+
+    for (const [dirName, childNode] of node.dirs) {
+      entries.push({
+        kind: "dir",
+        name: dirName,
+        node: childNode,
+        linkFile: dirLinkFiles.get(dirName),
+      });
+    }
+
+    // Positioned items first (by position), then alphabetical by label
+    entries.sort((a, b) => {
+      const posA = a.kind === "file" ? a.info.position : a.linkFile?.position;
+      const posB = b.kind === "file" ? b.info.position : b.linkFile?.position;
+
+      if (posA != null && posB != null) return posA - posB;
+      if (posA != null) return -1;
+      if (posB != null) return 1;
+
+      const labelA = a.kind === "file" ? a.info.label : prettifyDirName(a.name);
+      const labelB = b.kind === "file" ? b.info.label : prettifyDirName(b.name);
+      return labelA.localeCompare(labelB);
+    });
+
+    return entries.map((entry): NavigationItem => {
+      if (entry.kind === "file") {
+        return {
+          type: "doc",
+          file: entry.info.filePath,
+          label: entry.info.label,
+          icon: entry.info.icon,
+          display: entry.info.display,
+          path: entry.info.routePath,
+          rich: entry.info.rich,
+        } as NavigationDoc;
+      }
+
+      const categoryItems = this.treeToNavigation(entry.node);
+      const link: NavigationCategoryLinkDoc | undefined = entry.linkFile
+        ? {
+            type: "doc",
+            file: entry.linkFile.filePath,
+            label: entry.linkFile.label,
+            icon: entry.linkFile.icon,
+            path: entry.linkFile.routePath,
+          }
+        : undefined;
+
+      return {
+        type: "category",
+        label: entry.linkFile?.label ?? prettifyDirName(entry.name),
+        items: categoryItems,
+        link,
+      } as NavigationCategory;
+    });
   }
 }
