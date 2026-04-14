@@ -723,6 +723,23 @@
         "summary": "Create a new shipment",
         "description": "Creates a new shipment with the provided details.\n\nThis endpoint allows you to **create and register** a new shipment in the Cosmo Cargo platform. The shipment will be assigned a unique `trackingNumber` and will enter the `CREATED` status.\n\n### How to use with SDK\n\nHere's how to create a shipment using `@cosmo-cargo/sdk{:sh}`:\n\n```ts\nimport { CosmoCargoClient } from '@cosmo-cargo/sdk';\n\nconst client = new CosmoCargoClient({ key: process.env.COSMO_API_KEY });\n\nconst shipment = await client.shipments.create(config);\nconsole.log(`Shipment created: ${shipment.trackingNumber}`);\n```\n\n**Note:** Use the `X-Request-Priority` header to expedite processing for urgent shipments.",
         "operationId": "createShipment",
+        "x-code-samples": [
+          {
+            "lang": "shell",
+            "label": "cURL",
+            "source": "curl -X POST https://api.cosmocargo.com/v1/shipments \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: YOUR_API_KEY' \\\n  -d '{\n    \"recipientAddress\": {\n      \"name\": \"Zara Nebula\",\n      \"planet\": \"Mars\",\n      \"station\": \"Olympus Mons Hub\"\n    },\n    \"packages\": [{ \"weight\": 2.5, \"dimensions\": \"30x20x15\" }]\n  }'"
+          },
+          {
+            "lang": "js",
+            "label": "JavaScript",
+            "source": "const response = await fetch(\n  'https://api.cosmocargo.com/v1/shipments',\n  {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'X-API-Key': 'YOUR_API_KEY',\n    },\n    body: JSON.stringify({\n      recipientAddress: {\n        name: 'Zara Nebula',\n        planet: 'Mars',\n        station: 'Olympus Mons Hub',\n      },\n      packages: [{ weight: 2.5, dimensions: '30x20x15' }],\n    }),\n  },\n);\n\nconst shipment = await response.json();"
+          },
+          {
+            "lang": "python",
+            "label": "Python",
+            "source": "import requests\n\nresponse = requests.post(\n    'https://api.cosmocargo.com/v1/shipments',\n    headers={\n        'Content-Type': 'application/json',\n        'X-API-Key': 'YOUR_API_KEY',\n    },\n    json={\n        'recipientAddress': {\n            'name': 'Zara Nebula',\n            'planet': 'Mars',\n            'station': 'Olympus Mons Hub',\n        },\n        'packages': [{'weight': 2.5, 'dimensions': '30x20x15'}],\n    },\n)\n\nshipment = response.json()"
+          }
+        ],
         "security": [{ "ApiKeyAuth": [] }, { "BearerAuth": [] }],
         "parameters": [
           {
