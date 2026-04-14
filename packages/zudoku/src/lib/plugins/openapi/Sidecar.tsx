@@ -53,13 +53,31 @@ type CodeSample = {
   source: string;
 };
 
+const isCodeSample = (sample: unknown): sample is CodeSample => {
+  if (typeof sample !== "object" || sample === null) return false;
+
+  const { lang, label, source } = sample as {
+    lang?: unknown;
+    label?: unknown;
+    source?: unknown;
+  };
+
+  return (
+    typeof lang === "string" &&
+    typeof source === "string" &&
+    (label === undefined || typeof label === "string")
+  );
+};
+
 const getCodeSamples = (
   extensions: Record<string, unknown> | null | undefined,
 ): CodeSample[] | undefined => {
   const samples =
     extensions?.["x-code-samples"] ?? extensions?.["x-codeSamples"];
   if (!Array.isArray(samples) || samples.length === 0) return undefined;
-  return samples;
+
+  const validSamples = samples.filter(isCodeSample);
+  return validSamples.length > 0 ? validSamples : undefined;
 };
 
 export const Sidecar = ({

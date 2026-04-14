@@ -730,7 +730,7 @@
             "source": "curl -X POST https://api.cosmocargo.com/v1/shipments \\\n  -H 'Content-Type: application/json' \\\n  -H 'X-API-Key: YOUR_API_KEY' \\\n  -d '{\n    \"recipientAddress\": {\n      \"name\": \"Zara Nebula\",\n      \"planet\": \"Mars\",\n      \"station\": \"Olympus Mons Hub\"\n    },\n    \"packages\": [{ \"weight\": 2.5, \"dimensions\": \"30x20x15\" }]\n  }'"
           },
           {
-            "lang": "javascript",
+            "lang": "js",
             "label": "JavaScript",
             "source": "const response = await fetch(\n  'https://api.cosmocargo.com/v1/shipments',\n  {\n    method: 'POST',\n    headers: {\n      'Content-Type': 'application/json',\n      'X-API-Key': 'YOUR_API_KEY',\n    },\n    body: JSON.stringify({\n      recipientAddress: {\n        name: 'Zara Nebula',\n        planet: 'Mars',\n        station: 'Olympus Mons Hub',\n      },\n      packages: [{ weight: 2.5, dimensions: '30x20x15' }],\n    }),\n  },\n);\n\nconst shipment = await response.json();"
           },
