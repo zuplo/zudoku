@@ -15,12 +15,16 @@ const remarkPlugins = [remarkGfm];
 
 // rehype-raw parses HTML per the HTML spec which lowercases all tag names.
 // This plugin restores the original casing so react-markdown can match them
-// against the components map (e.g. <strictmode> -> <StrictMode>).
+// against the components map (e.g. <spacewarning> -> <SpaceWarning>).
+// Only remaps names that are PascalCase (contain an uppercase letter) to avoid
+// turning native HTML tags like <button> into their component overrides.
 const rehypeRestoreComponentCase: (
   componentNames: string[],
 ) => Plugin<[], Root> = (componentNames) => () => (tree) => {
   const lowerToOriginal = new Map(
-    componentNames.map((name) => [name.toLowerCase(), name]),
+    componentNames
+      .filter((name) => name !== name.toLowerCase())
+      .map((name) => [name.toLowerCase(), name]),
   );
   visit(tree, "element", (node) => {
     const original = lowerToOriginal.get(node.tagName);
