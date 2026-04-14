@@ -177,6 +177,7 @@
     "remark-directive-rehype": "1.0.0",
     "remark-frontmatter": "5.0.0",
     "remark-gfm": "4.0.1",
+    "remark-mdx": "3.0.1",
     "remark-mdx-frontmatter": "5.2.0",
     "rollup": "4.59.0",
     "semver": "7.7.4",
