@@ -66,27 +66,44 @@ async function loadZudokuConfigWithMeta(
 ): Promise<ConfigWithMeta> {
   const configPath = await getConfigFilePath(rootDir);
 
-  const { module, dependencies } = await runnerImport<{
-    default: ZudokuConfig;
-  }>(configPath, {
-    plugins: [virtualModuleStubPlugin],
-    environments: {
-      inline: {
-        resolve: {
-          // Prevent Node.js from trying to load zudoku's raw .ts source
-          // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
-          // when --experimental-strip-types is enabled. Uses regex to also
-          // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
-          noExternal: [/zudoku/],
+  let module: { default: ZudokuConfig };
+  let dependencies: string[];
+
+  try {
+    ({ module, dependencies } = await runnerImport<{
+      default: ZudokuConfig;
+    }>(configPath, {
+      plugins: [virtualModuleStubPlugin],
+      environments: {
+        inline: {
+          resolve: {
+            // Prevent Node.js from trying to load zudoku's raw .ts source
+            // directly, which fails with ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING
+            // when --experimental-strip-types is enabled. Uses regex to also
+            // catch plugins that re-export from zudoku (e.g. @zuplo/zudoku-plugin-*).
+            noExternal: [/zudoku/],
+          },
         },
       },
-    },
-    server: {
-      // this allows us to 'load' CSS files in the config
-      // see https://github.com/vitejs/vite/pull/19577
-      perEnvironmentStartEndDuringDev: true,
-    },
-  });
+      server: {
+        // this allows us to 'load' CSS files in the config
+        // see https://github.com/vitejs/vite/pull/19577
+        perEnvironmentStartEndDuringDev: true,
+      },
+    }));
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      `Invalid Zudoku configuration at ${colors.dim(configPath)}.\n\n${detail}\n\nCheck the logs above for more details.`,
+      { cause: error },
+    );
+  }
+
+  if (!module.default) {
+    throw new Error(
+      `Invalid Zudoku configuration at ${colors.dim(configPath)}.\n\nConfig file must have a default export.`,
+    );
+  }
 
   const config = module.default;
 
@@ -209,14 +226,17 @@ export async function loadZudokuConfig(
 
     return { config, envPrefix, publicEnv };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-
     if (config) {
-      // return the last valid config if it exists
+      // Log the error but return the last valid config
+      logger.error(
+        colors.red("Failed to reload config, using last valid config."),
+        { timestamp: true },
+      );
+      logger.error(error instanceof Error ? error.message : String(error));
       return { config, envPrefix, publicEnv };
     }
 
-    throw new Error(errorMessage, { cause: error });
+    throw error;
   } finally {
     await updateModifiedTimes();
   }

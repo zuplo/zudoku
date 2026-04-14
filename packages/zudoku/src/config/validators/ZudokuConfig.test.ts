@@ -41,7 +41,7 @@ describe("validateConfig", () => {
 
     expect(() => validateConfig(configWithValidAuth0))
       .toThrowErrorMatchingInlineSnapshot(`
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Clerk public key invalid, must start with pk_test or pk_live
         → at authentication.clerkPubKey]
     `);
@@ -142,7 +142,7 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
@@ -164,7 +164,7 @@ describe("validateConfig", () => {
       validateConfig(configWithInvalidAuth0Domain),
     ).toThrowErrorMatchingInlineSnapshot(
       `
-      [Error: Whoops, looks like there's an issue with your config:
+      [Error: Invalid Zudoku configuration:
       ✖ Domain must be a host only (e.g., 'example.com') without protocol or slashes
         → at authentication.domain]
     `,
