@@ -133,11 +133,6 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
           <Outlet />
         </Zudoku>
       ),
-      hydrateFallbackElement: (
-        <div className="grid min-h-screen place-items-center">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        </div>
-      ),
       children: [
         {
           element: (
