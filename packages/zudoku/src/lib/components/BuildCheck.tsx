@@ -79,7 +79,7 @@ export const BuildCheck = ({
             window.location.reload();
           }}
         >
-          Reload
+          Update now
         </Button>
       )}
     </div>
