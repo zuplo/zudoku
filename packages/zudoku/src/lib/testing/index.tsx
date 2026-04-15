@@ -4,6 +4,7 @@ import {
   type QueryKey,
 } from "@tanstack/react-query";
 import { HelmetProvider } from "@zudoku/react-helmet-async";
+import { Suspense } from "react";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { createRedirectRoutes } from "../../app/utils/createRedirectRoutes.js";
 import type { ZudokuRedirect } from "../../config/validators/ZudokuConfig.js";
@@ -39,7 +40,11 @@ const getRoutesByOptions = (options: ZudokuContextOptions) => {
 };
 
 const wrapWithLayout = (route: RouteObject) => ({
-  element: <Layout />,
+  element: (
+    <Suspense>
+      <Layout />
+    </Suspense>
+  ),
   children: [route],
 });
 
