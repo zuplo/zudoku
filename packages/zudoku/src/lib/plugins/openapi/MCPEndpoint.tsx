@@ -162,22 +162,21 @@ export const MCPEndpoint = ({
                 </Callout>
                 <ol>
                   <li>
-                    Go to <strong>Settings</strong> →{" "}
-                    <strong>Apps & Connectors</strong>
+                    Go to <strong>Settings</strong> → <strong>Apps</strong> →{" "}
+                    <strong>Advanced Settings</strong>
                   </li>
                   <li>
-                    Click <strong>Add connector</strong> and enter your MCP URL:
+                    Click <strong>Create app</strong> and fill out the form
+                  </li>
+                  <li>
+                    Enter the MCP server URL:
                     <InlineCode className="ml-2">{chatgptConfig}</InlineCode>
                   </li>
-                  <li>Provide a name and description for your connector</li>
-                  <li>
-                    Save and enable the connector. Users must authenticate with
-                    the connector before first use.
-                  </li>
+                  <li>Save and the app will be available in your conversations</li>
                 </ol>
 
                 <a
-                  href="https://help.openai.com/en/articles/11487775-connectors-in-chatgpt"
+                  href="https://developers.openai.com/apps-sdk/deploy/connect-chatgpt#create-a-connector"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
