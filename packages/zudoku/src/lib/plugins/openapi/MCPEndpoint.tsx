@@ -28,7 +28,7 @@ export const MCPEndpoint = ({
       ? (summary ?? "mcp-server")
       : (data?.name ?? summary ?? "mcp-server");
 
-  const claudeCodeCommand = `claude mcp add --transport http ${name} ${mcpUrl}`;
+  const claudeCodeCommand = `claude mcp add --transport http '${name}' '${mcpUrl}'`;
 
   const cursorConfig = `{
   "mcpServers": {
