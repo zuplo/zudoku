@@ -191,7 +191,11 @@ export const MCPEndpoint = ({
               <TabsContent value="cursor" className="space-y-3">
                 <ol>
                   <li>
-                    <span>Create or edit: </span>
+                    <span>
+                      Go to <strong>Settings</strong> →{" "}
+                      <strong>Tools & MCPs</strong> →{" "}
+                      <strong>New MCP Server</strong>, or edit:{" "}
+                    </span>
                     <InlineCode>~/.cursor/mcp.json</InlineCode>
                     <span> (global) or </span>
                     <InlineCode>.cursor/mcp.json</InlineCode>
