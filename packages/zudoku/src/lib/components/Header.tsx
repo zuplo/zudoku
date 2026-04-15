@@ -1,3 +1,4 @@
+import { Helmet } from "@zudoku/react-helmet-async";
 import { LogOutIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router";
@@ -167,6 +168,10 @@ export const Header = memo(function HeaderInner() {
               <div className="flex items-center gap-3.5">
                 {site?.logo ? (
                   <>
+                    <Helmet>
+                      <link rel="preload" as="image" href={logoLightSrc} />
+                      <link rel="preload" as="image" href={logoDarkSrc} />
+                    </Helmet>
                     <img
                       src={logoLightSrc}
                       alt={site.logo.alt ?? site.title}
