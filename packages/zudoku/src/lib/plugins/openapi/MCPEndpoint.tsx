@@ -28,14 +28,7 @@ export const MCPEndpoint = ({
       ? (summary ?? "mcp-server")
       : (data?.name ?? summary ?? "mcp-server");
 
-  const claudeConfig = `{
-  "mcpServers": {
-    "${name}": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "${mcpUrl}"]
-    }
-  }
-}`;
+  const claudeCodeCommand = `claude mcp add --transport http ${name} ${mcpUrl}`;
 
   const cursorConfig = `{
   "mcpServers": {
@@ -143,23 +136,15 @@ export const MCPEndpoint = ({
                   <li>Save and the server will appear in your conversations</li>
                 </ol>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Alternatively, add to{" "}
-                  <InlineCode>claude_desktop_config.json</InlineCode> using{" "}
-                  <InlineCode>mcp-remote</InlineCode> (requires Node.js):
+                  Alternatively, add it to Claude Code CLI by running:
                 </p>
                 <SyntaxHighlight
                   showLanguageIndicator
-                  title="claude_desktop_config.json"
-                  language="json"
-                  code={claudeConfig}
+                  title="Terminal"
+                  language="bash"
+                  code={claudeCodeCommand}
                   className="mt-2"
                 />
-                <p className="text-xs text-muted-foreground mt-2">
-                  macOS: ~/Library/Application
-                  Support/Claude/claude_desktop_config.json
-                  <br />
-                  Windows: %APPDATA%\Claude\claude_desktop_config.json
-                </p>
                 <a
                   href="https://modelcontextprotocol.io/quickstart/user"
                   target="_blank"
