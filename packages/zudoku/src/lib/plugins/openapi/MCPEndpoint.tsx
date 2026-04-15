@@ -137,7 +137,7 @@ export const MCPEndpoint = ({
                     <strong>Settings</strong>
                   </li>
                   <li>
-                    Go to <strong>Integrations</strong> →{" "}
+                    Go to <strong>Connectors</strong> →{" "}
                     <strong>Add custom connector</strong> and paste the MCP URL
                   </li>
                   <li>Save and the server will appear in your conversations</li>
