@@ -172,14 +172,12 @@ export const Header = memo(function HeaderInner() {
                       alt={site.logo.alt ?? site.title}
                       style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) dark:hidden"
-                      loading="lazy"
                     />
                     <img
                       src={logoDarkSrc}
                       alt={site.logo.alt ?? site.title}
                       style={{ width: site.logo.width }}
                       className="max-h-(--top-header-height) hidden dark:block"
-                      loading="lazy"
                     />
                   </>
                 ) : (
