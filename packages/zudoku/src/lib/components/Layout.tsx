@@ -31,9 +31,7 @@ export const Layout = ({ children }: { children?: ReactNode }) => {
   return (
     <TooltipProvider>
       <Slot.Target name="layout-before-head" />
-      <Suspense>
-        <Header />
-      </Suspense>
+      <Header />
       <Slot.Target name="layout-after-head" />
 
       <div

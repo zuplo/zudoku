@@ -1,6 +1,5 @@
 import { cx } from "class-variance-authority";
 import { deepEqual } from "fast-equals";
-import { Suspense } from "react";
 import { NavLink, type NavLinkProps } from "react-router";
 import { Separator } from "zudoku/ui/Separator.js";
 import type { NavigationItem } from "../../config/validators/NavigationSchema.js";
@@ -22,27 +21,24 @@ export const TopNavigation = () => {
   }
 
   return (
-    <Suspense>
-      <div className="items-center justify-between px-8 h-(--top-nav-height) hidden lg:flex text-sm relative">
-        <nav className="text-sm">
-          <ul className="flex flex-row items-center gap-8">
-            {filteredItems.map((item) =>
-              item.type === "separator" ? (
-                <li key={item.label} className="-mx-4 h-7">
-                  <Separator orientation="vertical" />
-                </li>
-              ) : item.type !== "section" && item.type !== "filter" ? (
-                <li key={item.label + item.type}>
-                  <TopNavItem {...item} />
-                </li>
-              ) : null,
-            )}
-          </ul>
-        </nav>
-        <Slot.Target name="top-navigation-side" />
-      </div>
-      {/* <PageProgress /> */}
-    </Suspense>
+    <div className="items-center justify-between px-8 h-(--top-nav-height) hidden lg:flex text-sm relative">
+      <nav className="text-sm">
+        <ul className="flex flex-row items-center gap-8">
+          {filteredItems.map((item) =>
+            item.type === "separator" ? (
+              <li key={item.label} className="-mx-4 h-7">
+                <Separator orientation="vertical" />
+              </li>
+            ) : item.type !== "section" && item.type !== "filter" ? (
+              <li key={item.label + item.type}>
+                <TopNavItem {...item} />
+              </li>
+            ) : null,
+          )}
+        </ul>
+      </nav>
+      <Slot.Target name="top-navigation-side" />
+    </div>
   );
 };
 
