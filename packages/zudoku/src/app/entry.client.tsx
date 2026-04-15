@@ -92,7 +92,9 @@ async function hydrateLazyRoutes(routes: RouteObject[]) {
   }
 }
 
-function render(routes: RouteObject[]) {
+async function render(routes: RouteObject[]) {
+  await hydrateLazyRoutes(routes);
+
   const router = createBrowserRouter(routes, {
     basename: config.basePath,
   });
