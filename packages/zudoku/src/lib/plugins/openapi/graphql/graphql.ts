@@ -528,6 +528,7 @@ export type SchemaInfoQuery = {
       __typename?: "SchemaTag";
       name?: string | null;
       description?: string | null;
+      extensions?: any | null;
     }>;
     components?: {
       __typename?: "Components";
@@ -1005,6 +1006,7 @@ export const SchemaInfoDocument = new TypedDocumentString(`
     tags {
       name
       description
+      extensions
     }
     components {
       securitySchemes {

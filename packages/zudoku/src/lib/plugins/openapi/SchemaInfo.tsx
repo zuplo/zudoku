@@ -67,6 +67,7 @@ const SchemaInfoQuery = graphql(/* GraphQL */ `
       tags {
         name
         description
+        extensions
       }
       components {
         securitySchemes {
@@ -276,8 +277,8 @@ export const SchemaInfo = () => {
     schema.externalDocs
   );
 
-  const tags = schema.tags.flatMap(({ name, description }) =>
-    name ? { name, description } : [],
+  const tags = schema.tags.flatMap(({ name, description, extensions }) =>
+    name ? { name, description, extensions } : [],
   );
 
   return (
@@ -338,7 +339,9 @@ export const SchemaInfo = () => {
                     <Item key={tag.name} variant="outline" asChild>
                       <Link to={slugify(tag.name)}>
                         <ItemContent>
-                          <ItemTitle>{tag.name}</ItemTitle>
+                          <ItemTitle>
+                            {tag.extensions?.["x-displayName"] ?? tag.name}
+                          </ItemTitle>
                           {tag.description && (
                             <ItemDescription asChild>
                               <Markdown
