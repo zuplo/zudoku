@@ -189,6 +189,7 @@ const viteDocsPlugin = (): Plugin => {
         `  basePath: "${config.basePath ?? ""}",`,
         `  fileImports,`,
         `  defaultOptions: ${JSON.stringify(docsConfig.defaultOptions)},`,
+        `  publishMarkdown: ${JSON.stringify(docsConfig.publishMarkdown)},`,
         `});`,
       );
 

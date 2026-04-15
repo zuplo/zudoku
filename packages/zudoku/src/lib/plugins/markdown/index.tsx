@@ -52,6 +52,7 @@ export const markdownPlugin = (
                 mdxComponent={Component}
                 {...props}
                 defaultOptions={options.defaultOptions}
+                publishMarkdown={options.publishMarkdown}
               />
             ),
           };

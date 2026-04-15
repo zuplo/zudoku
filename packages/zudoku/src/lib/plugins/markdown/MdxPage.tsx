@@ -62,6 +62,7 @@ export const MdxPage = ({
   basePath,
   frontmatter = {},
   defaultOptions,
+  publishMarkdown,
   __filepath,
   tableOfContents,
   excerpt,
@@ -70,6 +71,7 @@ export const MdxPage = ({
     basePath: string;
     mdxComponent: MDXImport["default"];
     defaultOptions?: MarkdownPluginDefaultOptions;
+    publishMarkdown?: boolean;
   }
 >) => {
   const categoryTitle = useCurrentItem()?.categoryLabel;
@@ -154,6 +156,9 @@ export const MdxPage = ({
       <Helmet>
         <title>{pageTitle}</title>
         {description && <meta name="description" content={description} />}
+        {publishMarkdown && (
+          <link rel="alternate" type="text/markdown" href={markdownUrl} />
+        )}
       </Helmet>
 
       <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
