@@ -172,7 +172,9 @@ export const MCPEndpoint = ({
                     Enter the MCP server URL:
                     <InlineCode className="ml-2">{chatgptConfig}</InlineCode>
                   </li>
-                  <li>Save and the app will be available in your conversations</li>
+                  <li>
+                    Save and the app will be available in your conversations
+                  </li>
                 </ol>
 
                 <a
