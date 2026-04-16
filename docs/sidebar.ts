@@ -62,6 +62,12 @@ export const docs: Navigation = [
     items: [
       "docs/configuration/api-reference",
       "docs/configuration/api-catalog",
+      {
+        type: "category",
+        label: "Supported Extensions",
+        icon: "puzzle",
+        items: ["docs/extensions/x-mcp"],
+      },
     ],
   },
   {
