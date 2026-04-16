@@ -3,6 +3,7 @@ import { LogOutIcon } from "lucide-react";
 import { memo } from "react";
 import { Link } from "react-router";
 import { Button } from "zudoku/ui/Button.js";
+import { Skeleton } from "zudoku/ui/Skeleton.js";
 import { useAuth } from "../authentication/hook.js";
 import type { ProfileNavigationItem } from "../core/plugins.js";
 import {
@@ -61,9 +62,13 @@ const ProfileMenu = () => {
   const context = useZudoku();
   const profileItems = context.getProfileMenuItems();
   const auth = useAuth();
-  const { isAuthEnabled, isAuthenticated, profile } = auth;
+  const { isAuthEnabled, isPending, isAuthenticated, profile } = auth;
 
   if (!isAuthEnabled) return null;
+
+  if (isPending) {
+    return <Skeleton className="rounded-sm h-8 w-16" />;
+  }
 
   return !isAuthenticated ? (
     <Button size="lg" variant="ghost" onClick={() => auth.login()}>
