@@ -1,0 +1,37 @@
+---
+title: Cloudflare SSR Example
+description: Zudoku running with server-side rendering on Cloudflare Workers.
+---
+
+## Cloudflare SSR
+
+This example demonstrates Zudoku with server-side rendering deployed to Cloudflare Workers.
+
+### How it works
+
+Pages are rendered on the server at request time using Cloudflare Workers. Static assets are served
+via Cloudflare's built-in asset handling.
+
+### Building and deploying
+
+```bash
+# Build with SSR for Cloudflare
+pnpm build
+
+# Preview locally with Wrangler
+pnpm preview
+
+# Deploy to Cloudflare
+pnpm deploy
+```
+
+### Configuration
+
+The build command uses the `--experimental-ssr` and `--adapter cloudflare` flags:
+
+```bash
+zudoku build --experimental-ssr --adapter cloudflare
+```
+
+The `wrangler.toml` at the project root configures the Workers entry point and static asset
+directory.
