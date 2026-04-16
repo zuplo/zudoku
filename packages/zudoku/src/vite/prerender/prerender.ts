@@ -90,6 +90,14 @@ export const prerender = async ({
   const maxThreads =
     buildConfig?.prerender?.workers ?? Math.floor(os.cpus().length * 0.8);
 
+  // Cap each worker's heap so V8 GCs aggressively before exhausting physical
+  // memory. Critical on no-swap environments like Linux containers (CodeBuild).
+  const totalMemMb = Math.floor(os.totalmem() / (1024 * 1024));
+  const reservedMb = 2048;
+  const maxOldGenerationSizeMb = Math.floor(
+    Math.max(totalMemMb - reservedMb, 1024) / maxThreads,
+  );
+
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
   let lastLogTime = start;
@@ -103,7 +111,7 @@ export const prerender = async ({
   if (!isTTY()) {
     logger.info(
       colors.dim(
-        `prerendering ${paths.length} routes using ${maxThreads} workers...`,
+        `prerendering ${paths.length} routes using ${maxThreads} workers (${maxOldGenerationSizeMb} MB heap per worker, ${totalMemMb} MB total system memory)...`,
       ),
     );
   }
@@ -124,6 +132,9 @@ export const prerender = async ({
     filename: new URL("./worker.js", import.meta.url).href,
     idleTimeout: 5_000,
     maxThreads,
+    resourceLimits: {
+      maxOldGenerationSizeMb,
+    },
     workerData: {
       template: html,
       distDir,
