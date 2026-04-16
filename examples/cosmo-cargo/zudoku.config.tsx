@@ -459,6 +459,17 @@ const config: ZudokuConfig = {
     },
     {
       type: "file",
+      input: "./schema/docs.json",
+      path: "/catalog/api-docs",
+      categories: [
+        {
+          label: "Documentation",
+          tags: ["Documentation"],
+        },
+      ],
+    },
+    {
+      type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
       categories: [{ label: "General", tags: ["Containers", "Booking"] }],
