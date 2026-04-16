@@ -62,6 +62,21 @@ export const docs: Navigation = [
     items: [
       "docs/configuration/api-reference",
       "docs/configuration/api-catalog",
+      {
+        type: "category",
+        label: "Supported Extensions",
+        icon: "puzzle",
+        items: [
+          "docs/openapi-extensions/x-mcp",
+          "docs/openapi-extensions/x-mcp-server",
+          "docs/openapi-extensions/x-code-samples",
+          "docs/openapi-extensions/x-tag-groups",
+          "docs/openapi-extensions/x-display-name",
+          "docs/openapi-extensions/x-zudoku-collapsed",
+          "docs/openapi-extensions/x-zudoku-collapsible",
+          "docs/openapi-extensions/x-zudoku-playground-enabled",
+        ],
+      },
     ],
   },
   {
