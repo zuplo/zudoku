@@ -137,13 +137,6 @@ export const prerender = async ({
     paths.map(async (urlPath) => {
       const result = await pool.run({ urlPath } satisfies WorkerData);
 
-      if (result.statusCode < 400) {
-        await pagefindIndex?.addHTMLFile({
-          url: urlPath,
-          content: result.html,
-        });
-      }
-
       completedCount++;
 
       if (isTTY()) {
@@ -163,10 +156,6 @@ export const prerender = async ({
     }),
   );
 
-  const pagefindWriteResult = await pagefindIndex?.writeFiles({
-    outputPath: path.join(distDir, "pagefind"),
-  });
-
   const seconds = ((performance.now() - start) / 1000).toFixed(1);
 
   const message = `✓ finished prerendering ${paths.length} routes in ${seconds} seconds using ${maxThreads} workers`;
@@ -176,10 +165,43 @@ export const prerender = async ({
   } else {
     logger.info(colors.blue(message));
   }
-  if (pagefindWriteResult?.outputPath) {
-    logger.info(
-      colors.blue(`✓ pagefind index built: ${pagefindWriteResult.outputPath}`),
+
+  if (pagefindIndex) {
+    const pagesToIndex = workerResults.flatMap(({ statusCode, html }, i) =>
+      statusCode < 400 ? { url: paths[i], html } : [],
     );
+    const BATCH_SIZE = 40;
+    const pagefindStart = performance.now();
+
+    for (let offset = 0; offset < pagesToIndex.length; offset += BATCH_SIZE) {
+      const batch = pagesToIndex.slice(offset, offset + BATCH_SIZE);
+      await Promise.all(
+        batch.map(({ url, html }) =>
+          pagefindIndex.addHTMLFile({ url, content: html }),
+        ),
+      );
+      if (isTTY()) {
+        const done = offset + batch.length;
+        writeLine(
+          `pagefind indexing (${done}/${pagesToIndex.length}) ${colors.dim(batch.at(-1)?.url)}`,
+        );
+      }
+    }
+
+    if (isTTY()) writeLine("");
+
+    const { outputPath } = await pagefindIndex.writeFiles({
+      outputPath: path.join(distDir, "pagefind"),
+    });
+
+    if (outputPath) {
+      const duration = (performance.now() - pagefindStart) / 1000;
+      logger.info(
+        colors.blue(
+          `✓ pagefind index built in ${duration.toFixed(1)} seconds: ${outputPath}`,
+        ),
+      );
+    }
   }
 
   const redirectUrls = getRedirectUrls(workerResults, config.basePath);
