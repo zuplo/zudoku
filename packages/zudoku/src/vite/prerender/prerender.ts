@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -87,6 +88,15 @@ export const prerender = async ({
       paths.push(joinUrl(r.from));
     }
   }
+  // Detect actual memory available to this process. In containers (Docker,
+  // CodeBuild, etc.) os.totalmem() may report the host's memory rather than
+  // the container's cgroup limit. We read cgroup limits directly to get the
+  // real constraint.
+  const osTotalMb = Math.floor(os.totalmem() / (1024 * 1024));
+  const cgroupMemMb = getContainerMemoryLimitMb();
+  const totalMemMb =
+    cgroupMemMb !== undefined ? Math.min(cgroupMemMb, osTotalMb) : osTotalMb;
+
   // Workers inherit NODE_OPTIONS --max-old-space-size from the environment,
   // which on CI can be very high (e.g. 57 GB on CodeBuild XLARGE). This
   // prevents V8 from GCing aggressively, so workers grow unchecked until the
@@ -94,8 +104,7 @@ export const prerender = async ({
   //
   // resourceLimits is the only way to cap worker_threads heap independently
   // of NODE_OPTIONS. We also cap the default worker count based on available
-  // memory (at least 4 GB per worker) so workers have enough headroom.
-  const totalMemMb = Math.floor(os.totalmem() / (1024 * 1024));
+  // memory (at least 2 GB per worker) so workers have enough headroom.
   const availableForWorkersMb = Math.floor(totalMemMb * 0.75);
   const MIN_MB_PER_WORKER = 2048;
   const memBasedMax = Math.max(
@@ -123,7 +132,7 @@ export const prerender = async ({
   if (!isTTY()) {
     logger.info(
       colors.dim(
-        `prerendering ${paths.length} routes using ${maxThreads} workers (system: ${totalMemMb} MB, per-worker heap limit: ${maxOldGenerationSizeMb} MB, NODE_OPTIONS: ${process.env.NODE_OPTIONS ?? "unset"})...`,
+        `prerendering ${paths.length} routes using ${maxThreads} workers (memory: ${totalMemMb} MB${cgroupMemMb !== undefined ? ` [cgroup: ${cgroupMemMb} MB]` : ""}, per-worker heap limit: ${maxOldGenerationSizeMb} MB)...`,
       ),
     );
   }
@@ -286,3 +295,32 @@ export const prerender = async ({
 
   return { workerResults, rewrites };
 };
+
+/**
+ * Read the container's cgroup memory limit. Returns undefined when not
+ * running inside a cgroup-constrained container (e.g. bare metal / macOS).
+ *
+ * Tries cgroup v2 first (`/sys/fs/cgroup/memory.max`), then falls back to
+ * cgroup v1 (`/sys/fs/cgroup/memory/memory.limit_in_bytes`). A value of
+ * "max" or a number larger than 2^50 (~1 PB) means "no limit" — treated
+ * the same as not running in a container.
+ */
+function getContainerMemoryLimitMb(): number | undefined {
+  const CGROUP_PATHS = [
+    "/sys/fs/cgroup/memory.max", // cgroup v2
+    "/sys/fs/cgroup/memory/memory.limit_in_bytes", // cgroup v1
+  ];
+
+  for (const filePath of CGROUP_PATHS) {
+    try {
+      const raw = readFileSync(filePath, "utf8").trim();
+      if (raw === "max") return undefined;
+      const bytes = Number(raw);
+      if (!Number.isFinite(bytes) || bytes > 2 ** 50) return undefined;
+      return Math.floor(bytes / (1024 * 1024));
+    } catch {
+      // File doesn't exist — try next path
+    }
+  }
+  return undefined;
+}
