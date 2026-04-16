@@ -1,0 +1,30 @@
+{
+  "name": "cloudflare-ssr",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "zudoku dev",
+    "build": "zudoku build --experimental-ssr --adapter cloudflare",
+    "preview": "wrangler dev ./dist/server/entry.js",
+    "predeploy": "pnpm build",
+    "deploy": "wrangler deploy ./dist/server/entry.js"
+  },
+  "nx": {
+    "tags": [
+      "example"
+    ],
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "zudoku:build"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "wrangler": "^4.81.1",
+    "zudoku": "workspace:*"
+  }
+}
