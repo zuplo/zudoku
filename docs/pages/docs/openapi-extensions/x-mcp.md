@@ -7,13 +7,11 @@ Use `x-mcp` to document [MCP](https://modelcontextprotocol.io/) (Model Context P
 metadata in your OpenAPI description. This extension describes the MCP server capabilities, tools,
 resources, and prompts at the document root.
 
-:::note
+:::tip
 
-The `x-mcp` extension describes MCP server metadata at the **root level** of an OpenAPI document.
-Zudoku currently treats this as descriptive metadata and does not render dedicated UI from it. If
-you are looking to mark individual operations as MCP endpoints, see the
-[`x-mcp-server` extension](./x-mcp-server), which is the extension used for operation-level MCP
-behavior.
+Support for rendering `x-mcp` in Zudoku is currently in development. For now, if you want to mark
+individual operations as MCP endpoints with full UI support, use the
+[`x-mcp-server` extension](./x-mcp-server).
 
 :::
 
