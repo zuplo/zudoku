@@ -90,20 +90,23 @@ describe("getVisibleApps", () => {
     ]);
   });
 
-  it("hides chatgpt for apiKey auth", () => {
+  it("hides chatgpt and claude-desktop for apiKey auth", () => {
     const apps = getVisibleApps("apiKey");
     const ids = apps.map((a) => a.id);
     expect(ids).not.toContain("chatgpt");
     expect(ids).toContain("claude");
     expect(ids).toContain("codex");
-  });
 
-  it("filters claude-desktop for oauth auth", () => {
-    const apps = getVisibleApps("oauth");
     const claude = apps.find((a) => a.id === "claude");
     const subIds = claude?.subApps.map((s) => s.id);
     expect(subIds).toEqual(["claude-code"]);
-    expect(subIds).not.toContain("claude-desktop");
+  });
+
+  it("shows claude-desktop and claude-code for oauth auth", () => {
+    const apps = getVisibleApps("oauth");
+    const claude = apps.find((a) => a.id === "claude");
+    const subIds = claude?.subApps.map((s) => s.id);
+    expect(subIds).toEqual(["claude-desktop", "claude-code"]);
   });
 
   it("shows chatgpt for oauth auth", () => {

@@ -7,7 +7,6 @@ import { Callout } from "../../ui/Callout.js";
 import { Card } from "../../ui/Card.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
-import { cn } from "../../util/cn.js";
 import {
   type McpApp,
   type McpServerData,
@@ -324,7 +323,22 @@ export const MCPEndpoint = ({
     <Card className="p-6 mb-6 max-w-screen-md">
       <div className="space-y-4">
         <div>
-          <h3 className="text-lg font-semibold mb-2">App Configuration</h3>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold">App Configuration</h3>
+            <Button
+              onClick={handleCopy}
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+            >
+              {isCopied ? (
+                <CheckIcon className="h-3.5 w-3.5 text-green-600" />
+              ) : (
+                <CopyIcon className="h-3.5 w-3.5" />
+              )}
+              {isCopied ? "Copied!" : "Copy URL"}
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground mb-3">
             Choose your app and copy the configuration to get started.
           </p>
@@ -353,44 +367,6 @@ export const MCPEndpoint = ({
               ))}
             </Typography>
           </Tabs>
-        </div>
-
-        <div>
-          <h3 className="text-lg font-semibold mb-2">MCP Endpoint</h3>
-          <p className="text-sm text-muted-foreground mb-3">
-            Copy the url to connect any{" "}
-            <a
-              href="https://modelcontextprotocol.io/"
-              target="_blank"
-              rel="noopener"
-              className="text-primary hover:underline"
-            >
-              MCP
-            </a>
-            -compatible app
-          </p>
-
-          <div
-            className={cn(
-              "relative flex items-center gap-2 p-3 rounded-md border border-primary/50",
-            )}
-          >
-            <InlineCode className="bg-primary/20 px-4 py-2 flex-1 border-none">
-              {mcpUrl}
-            </InlineCode>
-            <Button
-              onClick={handleCopy}
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-            >
-              {isCopied ? (
-                <CheckIcon className="h-4 w-4 text-green-600" />
-              ) : (
-                <CopyIcon className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
         </div>
       </div>
     </Card>

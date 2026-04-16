@@ -99,7 +99,7 @@ export const MCP_APPS: McpApp[] = [
       {
         id: "claude-desktop",
         label: "Claude Desktop",
-        supportedAuth: ["none", "apiKey"],
+        supportedAuth: ["none", "oauth"],
       },
       {
         id: "claude-code",
