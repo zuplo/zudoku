@@ -13,6 +13,57 @@ import type { ProcessorArg } from "../config/validators/BuildSchema.js";
 import { traverse, traverseAsync } from "../lib/util/traverse.js";
 import type { RecordAny } from "../lib/util/types.js";
 import { operations } from "./enrich-with-zuplo.js";
+import type { PoliciesConfigFile } from "./policy-types.js";
+
+const MCP_TAG_NAME = "MCP";
+const MCP_TAG_DESCRIPTION =
+  "Model Context Protocol (MCP) server endpoints for AI tool integration";
+
+const API_KEY_POLICY_EXPORTS = [
+  "ApiAuthKeyInboundPolicy",
+  "ApiKeyInboundPolicy",
+  "MonetizationInboundPolicy",
+];
+
+// Resolves inbound policy names from x-zuplo-route, expanding composite policies
+const resolveInboundPolicies = (
+  operation: RecordAny,
+  policiesConfig: PoliciesConfigFile,
+): string[] => {
+  const inbound = operation["x-zuplo-route"]?.policies?.inbound;
+  if (!Array.isArray(inbound)) return [];
+
+  return inbound.reduce((acc: string[], policyName: string) => {
+    const policy = policiesConfig.policies?.find(
+      ({ name }) => name === policyName,
+    );
+    if (!policy) return acc;
+
+    if (policy.handler.export === "CompositeInboundPolicy") {
+      const childPolicies = policy.handler.options?.policies as
+        | string[]
+        | undefined;
+      return childPolicies ? [...acc, ...childPolicies] : acc;
+    }
+
+    return [...acc, policyName];
+  }, []);
+};
+
+// Finds API key policies from resolved inbound policy names
+const findApiKeyPolicies = (
+  inboundPolicyNames: string[],
+  policiesConfig: PoliciesConfigFile,
+) => {
+  return (
+    policiesConfig.policies?.filter(
+      (policy) =>
+        inboundPolicyNames.includes(policy.name) &&
+        API_KEY_POLICY_EXPORTS.includes(policy.handler.export) &&
+        !policy.handler.options?.disableAutomaticallyAddingKeyHeaderToOpenApi,
+    ) ?? []
+  );
+};
 
 // extracts x-mcp-server metadata from the operation using x-zuplo-mcp-tool
 // as a first class citizen.
@@ -103,13 +154,18 @@ const findOperationsInDocument = (
 // Enriches an OpenAPI schema with x-mcp-server data based on the Zuplo MCP server handler
 export const enrichWithZuploMcpServerData = ({
   rootDir,
+  policiesConfig,
 }: {
   rootDir: string;
+  policiesConfig: PoliciesConfigFile;
 }) => {
   return async ({ schema }: ProcessorArg) => {
     if (!schema.paths) return schema;
     const modifiedSchema = { ...schema };
     if (!modifiedSchema?.paths) return modifiedSchema;
+
+    let hasMcpEndpoints = false;
+    let hasApiKeySecurity = false;
 
     await traverseAsync(modifiedSchema, async (node, nodePath) => {
       // Check if we're at a "post" operation (paths -> /some/path -> "post").
@@ -160,9 +216,56 @@ export const enrichWithZuploMcpServerData = ({
         mcpExtension.tools = tools;
       }
 
+      // Check if any inbound policies on this MCP route are API key policies
+      const inboundPolicyNames = resolveInboundPolicies(
+        operation,
+        policiesConfig,
+      );
+      const apiKeyPolicies = findApiKeyPolicies(
+        inboundPolicyNames,
+        policiesConfig,
+      );
+
       node["x-mcp-server"] = mcpExtension;
+
+      if (apiKeyPolicies.length > 0) {
+        hasApiKeySecurity = true;
+        (node["x-mcp-server"] as RecordAny).security = [{ api_key: [] }];
+      }
+
+      // Assign default MCP tag if the operation has no tags
+      if (!operation.tags || operation.tags.length === 0) {
+        hasMcpEndpoints = true;
+        operation.tags = [MCP_TAG_NAME];
+      }
+
       return node;
     });
+
+    // Add MCP tag definition to top-level tags if we assigned it
+    if (hasMcpEndpoints) {
+      if (!modifiedSchema.tags) modifiedSchema.tags = [];
+      if (!modifiedSchema.tags.some((tag) => tag.name === MCP_TAG_NAME)) {
+        modifiedSchema.tags.push({
+          name: MCP_TAG_NAME,
+          description: MCP_TAG_DESCRIPTION,
+        });
+      }
+    }
+
+    // Ensure api_key security scheme exists if any MCP endpoint needs it
+    if (hasApiKeySecurity) {
+      if (!modifiedSchema.components) modifiedSchema.components = {};
+      if (!modifiedSchema.components.securitySchemes) {
+        modifiedSchema.components.securitySchemes = {};
+      }
+      if (!modifiedSchema.components.securitySchemes.api_key) {
+        modifiedSchema.components.securitySchemes.api_key = {
+          type: "http",
+          scheme: "bearer",
+        };
+      }
+    }
 
     return modifiedSchema;
   };

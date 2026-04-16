@@ -6,8 +6,12 @@ import type { OpenAPIDocument } from "../lib/oas/parser/index.js";
 import { removeExtensions } from "../lib/plugins/openapi/processors/removeExtensions.js";
 import { removePaths } from "../lib/plugins/openapi/processors/removePaths.js";
 import { enrichWithZuploMcpServerData } from "./enrich-with-zuplo-mcp.js";
+import type { PoliciesConfigFile } from "./policy-types.js";
 
-const mcpRouteHandler = (operations: Array<{ file: string; id: string }>) => ({
+const mcpRouteHandler = (
+  operations: Array<{ file: string; id: string }>,
+  inboundPolicies: string[] = [],
+) => ({
   "x-zuplo-route": {
     corsPolicy: "none",
     handler: {
@@ -15,9 +19,11 @@ const mcpRouteHandler = (operations: Array<{ file: string; id: string }>) => ({
       module: "$import(@zuplo/runtime)",
       options: { operations },
     },
-    policies: { inbound: [] },
+    policies: { inbound: inboundPolicies },
   },
 });
+
+const emptyPoliciesConfig: PoliciesConfigFile = { policies: [] };
 
 describe("enrichWithZuploMcpServerData", () => {
   let tempDir: string;
@@ -77,9 +83,10 @@ describe("enrichWithZuploMcpServerData", () => {
       },
     } as unknown as OpenAPIDocument;
 
-    const result = await enrichWithZuploMcpServerData({ rootDir })(
-      processorArg(schema),
-    );
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: emptyPoliciesConfig,
+    })(processorArg(schema));
 
     // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
@@ -135,9 +142,10 @@ describe("enrichWithZuploMcpServerData", () => {
       },
     } as unknown as OpenAPIDocument;
 
-    const result = await enrichWithZuploMcpServerData({ rootDir })(
-      processorArg(schema),
-    );
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: emptyPoliciesConfig,
+    })(processorArg(schema));
 
     // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
@@ -196,9 +204,10 @@ describe("enrichWithZuploMcpServerData", () => {
     expect(result.paths?.["/mcp"]).toBeDefined();
 
     // 2. enrichWithZuploMcpServerData
-    result = await enrichWithZuploMcpServerData({ rootDir })(
-      processorArg(result),
-    );
+    result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: emptyPoliciesConfig,
+    })(processorArg(result));
 
     // 3. removeExtensions (strip x-zuplo-*)
     result = removeExtensions({
@@ -211,5 +220,272 @@ describe("enrichWithZuploMcpServerData", () => {
     expect(op["x-mcp-server"].name).toBe("MCP Server");
     expect(op["x-mcp-server"].tools).toHaveLength(1);
     expect(op["x-zuplo-route"]).toBeUndefined();
+  });
+
+  it("should add security to x-mcp-server when API key inbound policy is present", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const policiesConfig: PoliciesConfigFile = {
+      policies: [
+        {
+          name: "my-api-key-policy",
+          policyType: "api-key-inbound",
+          handler: {
+            module: "$import(@zuplo/runtime)",
+            export: "ApiKeyInboundPolicy",
+            options: {},
+          },
+        },
+      ],
+    };
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler(
+              [{ file: "./config/routes.oas.json", id: "get-users" }],
+              ["my-api-key-policy"],
+            ),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig,
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].security).toEqual([{ api_key: [] }]);
+
+    // Should also add security scheme to components
+    expect(result.components?.securitySchemes?.api_key).toEqual({
+      type: "http",
+      scheme: "bearer",
+    });
+  });
+
+  it("should not add security to x-mcp-server when no API key policy is present", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler([
+              { file: "./config/routes.oas.json", id: "get-users" },
+            ]),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: emptyPoliciesConfig,
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].security).toBeUndefined();
+    expect(result.components?.securitySchemes).toBeUndefined();
+  });
+
+  it("should add security when API key policy is inside composite policy", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const policiesConfig: PoliciesConfigFile = {
+      policies: [
+        {
+          name: "composite-auth",
+          policyType: "composite-inbound",
+          handler: {
+            module: "$import(@zuplo/runtime)",
+            export: "CompositeInboundPolicy",
+            options: { policies: ["inner-api-key-policy"] },
+          },
+        },
+        {
+          name: "inner-api-key-policy",
+          policyType: "api-key-inbound",
+          handler: {
+            module: "$import(@zuplo/runtime)",
+            export: "ApiAuthKeyInboundPolicy",
+            options: {},
+          },
+        },
+      ],
+    };
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler(
+              [{ file: "./config/routes.oas.json", id: "get-users" }],
+              ["composite-auth"],
+            ),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig,
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op["x-mcp-server"].security).toEqual([{ api_key: [] }]);
+  });
+
+  it("should add default MCP tag when operation has no tags", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            ...mcpRouteHandler([
+              { file: "./config/routes.oas.json", id: "get-users" },
+            ]),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: emptyPoliciesConfig,
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op.tags).toEqual(["MCP"]);
+
+    // Top-level tags should include MCP definition
+    expect(result.tags).toContainEqual({
+      name: "MCP",
+      description:
+        "Model Context Protocol (MCP) server endpoints for AI tool integration",
+    });
+  });
+
+  it("should not override existing tags on MCP operation", async () => {
+    await writeApiFile("config/routes.oas.json", {
+      openapi: "3.1.0",
+      info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
+      paths: {
+        "/mcp": {
+          post: {
+            summary: "MCP Server",
+            operationId: "mcp-endpoint",
+            tags: ["AI"],
+            ...mcpRouteHandler([
+              { file: "./config/routes.oas.json", id: "get-users" },
+            ]),
+            responses: { "200": { description: "MCP response" } },
+          },
+        },
+      },
+    } as unknown as OpenAPIDocument;
+
+    const result = await enrichWithZuploMcpServerData({
+      rootDir,
+      policiesConfig: emptyPoliciesConfig,
+    })(processorArg(schema));
+
+    // biome-ignore lint/suspicious/noExplicitAny: test assertion
+    const op = result.paths?.["/mcp"]?.post as Record<string, any>;
+    expect(op.tags).toEqual(["AI"]);
+
+    // Should not add MCP tag definition since it wasn't assigned
+    expect(result.tags).toBeUndefined();
   });
 });
