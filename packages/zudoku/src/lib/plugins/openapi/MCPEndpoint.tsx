@@ -8,6 +8,16 @@ import { Card } from "../../ui/Card.js";
 import { SyntaxHighlight } from "../../ui/SyntaxHighlight.js";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/Tabs.js";
 import { cn } from "../../util/cn.js";
+import {
+  type McpServerData,
+  getAuthHeader,
+  getClaudeCodeCommand,
+  getCursorConfig,
+  getGenericConfig,
+  getMcpServerName,
+  getMcpUrl,
+  getVscodeConfig,
+} from "./mcp-configs.js";
 
 export const MCPEndpoint = ({
   serverUrl,
@@ -17,45 +27,19 @@ export const MCPEndpoint = ({
 }: {
   serverUrl?: string;
   operationPath?: string;
-  data?: boolean | Record<string, unknown>;
+  data?: McpServerData;
   summary?: string;
 }) => {
   const [isCopied, setIsCopied] = useState(false);
-  const mcpUrl = `${(serverUrl ?? "").replace(/\/+$/, "")}${operationPath ?? "/mcp"}`;
+  const mcpUrl = getMcpUrl(serverUrl, operationPath);
+  const name = getMcpServerName(data, summary);
+  const auth = getAuthHeader(data);
 
-  const name =
-    typeof data === "boolean"
-      ? (summary ?? "mcp-server")
-      : (data?.name ?? summary ?? "mcp-server");
-
-  const claudeCodeCommand = `claude mcp add --transport http '${name}' '${mcpUrl}'`;
-
-  const cursorConfig = `{
-  "mcpServers": {
-    "${name}": {
-      "url": "${mcpUrl}"
-    }
-  }
-}`;
-
+  const claudeCodeCommand = getClaudeCodeCommand(name, mcpUrl, auth);
+  const cursorConfig = getCursorConfig(name, mcpUrl, auth);
   const chatgptConfig = mcpUrl;
-
-  const genericConfig = `{
-  "mcpServers": {
-    "${name}": {
-      "url": "${mcpUrl}"
-    }
-  }
-}`;
-
-  const vscodeConfig = `{
-  "servers": {
-    "${name}": {
-      "type": "http",
-      "url": "${mcpUrl}"
-    }
-  }
-}`;
+  const genericConfig = getGenericConfig(name, mcpUrl, auth);
+  const vscodeConfig = getVscodeConfig(name, mcpUrl, auth);
 
   const handleCopy = () => {
     void navigator.clipboard.writeText(mcpUrl).then(() => {

@@ -259,6 +259,11 @@ describe("enrichWithZuploMcpServerData", () => {
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op["x-mcp-server"].security).toEqual([{ api_key: [] }]);
 
+    // Security scheme definitions should be included in extension for UI rendering
+    expect(op["x-mcp-server"].securitySchemes).toEqual({
+      api_key: { type: "http", scheme: "bearer" },
+    });
+
     // Security scheme should be copied to main schema
     expect(result.components?.securitySchemes?.api_key).toEqual({
       type: "http",

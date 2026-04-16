@@ -226,7 +226,10 @@ export const enrichWithZuploMcpServerData = ({
       // Add security from referenced operations to x-mcp-server
       const dedupedSecurity = deduplicateSecurity(allSecurity);
       if (dedupedSecurity.length > 0) {
-        (node["x-mcp-server"] as RecordAny).security = dedupedSecurity;
+        const ext = node["x-mcp-server"] as RecordAny;
+        ext.security = dedupedSecurity;
+        // Include scheme definitions so the UI can generate auth headers
+        ext.securitySchemes = { ...collectedSecuritySchemes };
       }
 
       // Assign default MCP tag if the operation has no tags
