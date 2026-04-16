@@ -3,15 +3,17 @@ title: x-mcp
 sidebar_icon: bot
 ---
 
-Use `x-mcp` to document [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) servers for
-API consumers. This extension describes the MCP server capabilities, tools, resources, and prompts
-directly in your OpenAPI description.
+Use `x-mcp` to document [MCP](https://modelcontextprotocol.io/) (Model Context Protocol) server
+metadata in your OpenAPI description. This extension describes the MCP server capabilities, tools,
+resources, and prompts at the document root.
 
 :::note
 
-The `x-mcp` extension describes MCP server metadata at the **root level** of an OpenAPI document. If
+The `x-mcp` extension describes MCP server metadata at the **root level** of an OpenAPI document.
+Zudoku currently treats this as descriptive metadata and does not render dedicated UI from it. If
 you are looking to mark individual operations as MCP endpoints, see the
-[`x-mcp-server` guide](/docs/guides/mcp-servers).
+[`x-mcp-server` extension](./x-mcp-server), which is the extension used for operation-level MCP
+behavior.
 
 :::
 
@@ -122,8 +124,7 @@ x-mcp:
         $ref: "#/components/schemas/Client"
       security:
         - OAuth2:
-            scopes:
-              read: Read access
+            - read
     - name: clients/list
       description: Get a list of clients with all scopes in a service domain.
       inputSchema:
