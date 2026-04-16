@@ -87,16 +87,9 @@ export const prerender = async ({
       paths.push(joinUrl(r.from));
     }
   }
-  const maxThreads =
-    buildConfig?.prerender?.workers ?? Math.floor(os.cpus().length * 0.8);
-
-  // Cap each worker's heap so V8 GCs aggressively before exhausting physical
-  // memory. Critical on no-swap environments like Linux containers (CodeBuild).
   const totalMemMb = Math.floor(os.totalmem() / (1024 * 1024));
-  const reservedMb = 2048;
-  const maxOldGenerationSizeMb = Math.floor(
-    Math.max(totalMemMb - reservedMb, 1024) / maxThreads,
-  );
+  const cpuBasedMax = Math.floor(os.cpus().length * 0.8);
+  const maxThreads = buildConfig?.prerender?.workers ?? cpuBasedMax;
 
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
@@ -111,7 +104,7 @@ export const prerender = async ({
   if (!isTTY()) {
     logger.info(
       colors.dim(
-        `prerendering ${paths.length} routes using ${maxThreads} workers (${maxOldGenerationSizeMb} MB heap per worker, ${totalMemMb} MB total system memory)...`,
+        `prerendering ${paths.length} routes using ${maxThreads} workers (${totalMemMb} MB total system memory)...`,
       ),
     );
   }
@@ -131,10 +124,8 @@ export const prerender = async ({
   const pool = new Piscina<WorkerData, WorkerResult>({
     filename: new URL("./worker.js", import.meta.url).href,
     idleTimeout: 5_000,
+    minThreads: 1,
     maxThreads,
-    resourceLimits: {
-      maxOldGenerationSizeMb,
-    },
     workerData: {
       template: html,
       distDir,
