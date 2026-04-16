@@ -63,7 +63,7 @@ export const MCPEndpoint = ({
             >
               MCP
             </a>
-            -compatible AI tool
+            -compatible app
           </p>
 
           <div
@@ -90,9 +90,9 @@ export const MCPEndpoint = ({
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold mb-2">AI Tool Configuration</h3>
+          <h3 className="text-lg font-semibold mb-2">App Configuration</h3>
           <p className="text-sm text-muted-foreground mb-3">
-            Choose your AI tool and copy the configuration to get started.
+            Choose your app and copy the configuration to get started.
           </p>
 
           <hr className="my-4" />
@@ -242,7 +242,7 @@ export const MCPEndpoint = ({
               <TabsContent value="generic" className="space-y-3">
                 <p>
                   Generic <InlineCode>.mcp.json</InlineCode> configuration
-                  format that works with most MCP-compatible AI tools.
+                  format that works with most MCP-compatible apps.
                 </p>
                 <SyntaxHighlight
                   showLanguageIndicator
@@ -253,7 +253,7 @@ export const MCPEndpoint = ({
                 />
                 <p className="text-sm text-muted-foreground">
                   Place this file in your project root or the appropriate
-                  configuration directory for your AI tool. The exact location
+                  configuration directory for your app. The exact location
                   depends on your specific tool.
                 </p>
                 <a
