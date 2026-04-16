@@ -162,7 +162,7 @@ export const enrichWithZuploMcpServerData = ({
     const modifiedSchema = { ...schema };
     if (!modifiedSchema?.paths) return modifiedSchema;
 
-    let hasMcpEndpoints = false;
+    let assignedDefaultMcpTag = false;
     const collectedSecuritySchemes: Record<
       string,
       OpenAPIV3_1.SecuritySchemeObject
@@ -234,7 +234,7 @@ export const enrichWithZuploMcpServerData = ({
 
       // Assign default MCP tag if the operation has no tags
       if (!operation.tags || operation.tags.length === 0) {
-        hasMcpEndpoints = true;
+        assignedDefaultMcpTag = true;
         operation.tags = [MCP_TAG_NAME];
       }
 
@@ -242,7 +242,7 @@ export const enrichWithZuploMcpServerData = ({
     });
 
     // Add MCP tag definition to top-level tags if we assigned it
-    if (hasMcpEndpoints) {
+    if (assignedDefaultMcpTag) {
       if (!modifiedSchema.tags) modifiedSchema.tags = [];
       if (!modifiedSchema.tags.some((tag) => tag.name === MCP_TAG_NAME)) {
         modifiedSchema.tags.push({
