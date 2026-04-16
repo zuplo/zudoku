@@ -34,7 +34,10 @@ If you don't have an Auth0 account, you can sign up for a
      - Production: `https://your-site.com/oauth/callback`
      - Preview (wildcard): `https://*.your-domain.com/oauth/callback`
      - Local Development: `http://localhost:3000/oauth/callback`
-   - **Allowed Logout URLs**: Same as callback URLs above
+   - **Allowed Logout URLs**:
+     - Production: `https://your-site.com/oauth/logout-callback`
+     - Preview (wildcard): `https://*.your-domain.com/oauth/logout-callback`
+     - Local Development: `http://localhost:3000/oauth/logout-callback`
 
    - **Allowed Web Origins**:
      - Production: `https://your-site.com`
@@ -112,8 +115,8 @@ To enable logout for your Auth0 application:
 
 1. Ensure your **Allowed Logout URLs** are configured in Auth0 (see
    [Configure Auth0 Application](#setup-steps) above)
-2. The logout URL should match your callback URL pattern (e.g., `https://your-site.com/` for
-   production)
+2. The logout URL must use the `/oauth/logout-callback` path (e.g.,
+   `https://your-site.com/oauth/logout-callback` for production)
 
 For older tenants, you may need to enable **RP-Initiated Logout** in your tenant settings. See the
 [Auth0 logout documentation](https://auth0.com/docs/authenticate/login/logout/log-users-out-of-auth0)
