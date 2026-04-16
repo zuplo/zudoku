@@ -87,9 +87,28 @@ export const prerender = async ({
       paths.push(joinUrl(r.from));
     }
   }
+  // Workers inherit NODE_OPTIONS --max-old-space-size from the environment,
+  // which on CI can be very high (e.g. 57 GB on CodeBuild XLARGE). This
+  // prevents V8 from GCing aggressively, so workers grow unchecked until the
+  // container OOMs (especially on no-swap Linux containers).
+  //
+  // resourceLimits is the only way to cap worker_threads heap independently
+  // of NODE_OPTIONS. We also cap the default worker count based on available
+  // memory (at least 4 GB per worker) so workers have enough headroom.
   const totalMemMb = Math.floor(os.totalmem() / (1024 * 1024));
+  const availableForWorkersMb = Math.floor(totalMemMb * 0.75);
+  const MIN_MB_PER_WORKER = 2048;
+  const memBasedMax = Math.max(
+    1,
+    Math.floor(availableForWorkersMb / MIN_MB_PER_WORKER),
+  );
   const cpuBasedMax = Math.floor(os.cpus().length * 0.8);
-  const maxThreads = buildConfig?.prerender?.workers ?? cpuBasedMax;
+  const maxThreads =
+    buildConfig?.prerender?.workers ?? Math.min(memBasedMax, cpuBasedMax);
+  const maxOldGenerationSizeMb = Math.max(
+    512,
+    Math.floor(availableForWorkersMb / maxThreads),
+  );
 
   const start = performance.now();
   const LOG_INTERVAL_MS = 30_000; // Log every 30 seconds
@@ -104,7 +123,7 @@ export const prerender = async ({
   if (!isTTY()) {
     logger.info(
       colors.dim(
-        `prerendering ${paths.length} routes using ${maxThreads} workers (${totalMemMb} MB total system memory)...`,
+        `prerendering ${paths.length} routes using ${maxThreads} workers (system: ${totalMemMb} MB, per-worker heap limit: ${maxOldGenerationSizeMb} MB, NODE_OPTIONS: ${process.env.NODE_OPTIONS ?? "unset"})...`,
       ),
     );
   }
@@ -126,6 +145,9 @@ export const prerender = async ({
     idleTimeout: 5_000,
     minThreads: 1,
     maxThreads,
+    resourceLimits: {
+      maxOldGenerationSizeMb,
+    },
     workerData: {
       template: html,
       distDir,
