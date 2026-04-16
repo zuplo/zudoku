@@ -13,57 +13,10 @@ import type { ProcessorArg } from "../config/validators/BuildSchema.js";
 import { traverse, traverseAsync } from "../lib/util/traverse.js";
 import type { RecordAny } from "../lib/util/types.js";
 import { operations } from "./enrich-with-zuplo.js";
-import type { PoliciesConfigFile } from "./policy-types.js";
 
 const MCP_TAG_NAME = "MCP";
 const MCP_TAG_DESCRIPTION =
   "Model Context Protocol (MCP) server endpoints for AI tool integration";
-
-const API_KEY_POLICY_EXPORTS = [
-  "ApiAuthKeyInboundPolicy",
-  "ApiKeyInboundPolicy",
-  "MonetizationInboundPolicy",
-];
-
-// Resolves inbound policy names from x-zuplo-route, expanding composite policies
-const resolveInboundPolicies = (
-  operation: RecordAny,
-  policiesConfig: PoliciesConfigFile,
-): string[] => {
-  const inbound = operation["x-zuplo-route"]?.policies?.inbound;
-  if (!Array.isArray(inbound)) return [];
-
-  return inbound.reduce((acc: string[], policyName: string) => {
-    const policy = policiesConfig.policies?.find(
-      ({ name }) => name === policyName,
-    );
-    if (!policy) return acc;
-
-    if (policy.handler.export === "CompositeInboundPolicy") {
-      const childPolicies = policy.handler.options?.policies as
-        | string[]
-        | undefined;
-      return childPolicies ? [...acc, ...childPolicies] : acc;
-    }
-
-    return [...acc, policyName];
-  }, []);
-};
-
-// Finds API key policies from resolved inbound policy names
-const findApiKeyPolicies = (
-  inboundPolicyNames: string[],
-  policiesConfig: PoliciesConfigFile,
-) => {
-  return (
-    policiesConfig.policies?.filter(
-      (policy) =>
-        inboundPolicyNames.includes(policy.name) &&
-        API_KEY_POLICY_EXPORTS.includes(policy.handler.export) &&
-        !policy.handler.options?.disableAutomaticallyAddingKeyHeaderToOpenApi,
-    ) ?? []
-  );
-};
 
 // extracts x-mcp-server metadata from the operation using x-zuplo-mcp-tool
 // as a first class citizen.
@@ -135,29 +88,74 @@ const buildOperationLookup = (
   return operationMap;
 };
 
-// Takes an OpenAPI document and extracts tool metadata for the given operation IDs
-const findOperationsInDocument = (
+interface DocumentExtractionResult {
+  tools: ExtensionMcpServerTool[];
+  security: OpenAPIV3_1.SecurityRequirementObject[];
+  securitySchemes: Record<string, OpenAPIV3_1.SecuritySchemeObject>;
+}
+
+// Extracts tools, security requirements, and security schemes from referenced operations
+const extractFromDocument = (
   document: OpenAPIV3_1.Document,
   operationIds: string[],
-): ExtensionMcpServerTool[] => {
+): DocumentExtractionResult => {
   const operationLookup = buildOperationLookup(document);
+  const tools: ExtensionMcpServerTool[] = [];
+  const securityReqs: OpenAPIV3_1.SecurityRequirementObject[] = [];
+  const referencedSchemeNames = new Set<string>();
 
-  return operationIds.flatMap((operationId) => {
+  for (const operationId of operationIds) {
     const operation = operationLookup.get(operationId);
-    if (!operation) return [];
+    if (!operation) continue;
 
     const tool = extractOperationSchema(operation);
-    return tool ? [tool] : [];
+    if (tool) tools.push(tool);
+
+    // Collect security: operation-level takes precedence, fall back to doc-level
+    const opSecurity = operation.security ?? document.security;
+    if (opSecurity) {
+      for (const req of opSecurity) {
+        securityReqs.push(req);
+        for (const name of Object.keys(req)) {
+          referencedSchemeNames.add(name);
+        }
+      }
+    }
+  }
+
+  // Grab referenced security scheme definitions from the document
+  const securitySchemes: Record<string, OpenAPIV3_1.SecuritySchemeObject> = {};
+  const docSchemes = document.components?.securitySchemes;
+  if (docSchemes) {
+    for (const name of referencedSchemeNames) {
+      const scheme = docSchemes[name];
+      if (scheme && !("$ref" in scheme)) {
+        securitySchemes[name] = scheme;
+      }
+    }
+  }
+
+  return { tools, security: securityReqs, securitySchemes };
+};
+
+// Deduplicates security requirements by stringified key
+const deduplicateSecurity = (
+  reqs: OpenAPIV3_1.SecurityRequirementObject[],
+): OpenAPIV3_1.SecurityRequirementObject[] => {
+  const seen = new Set<string>();
+  return reqs.filter((req) => {
+    const key = JSON.stringify(req);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 };
 
 // Enriches an OpenAPI schema with x-mcp-server data based on the Zuplo MCP server handler
 export const enrichWithZuploMcpServerData = ({
   rootDir,
-  policiesConfig,
 }: {
   rootDir: string;
-  policiesConfig: PoliciesConfigFile;
 }) => {
   return async ({ schema }: ProcessorArg) => {
     if (!schema.paths) return schema;
@@ -165,7 +163,10 @@ export const enrichWithZuploMcpServerData = ({
     if (!modifiedSchema?.paths) return modifiedSchema;
 
     let hasMcpEndpoints = false;
-    let hasApiKeySecurity = false;
+    const collectedSecuritySchemes: Record<
+      string,
+      OpenAPIV3_1.SecuritySchemeObject
+    > = {};
 
     await traverseAsync(modifiedSchema, async (node, nodePath) => {
       // Check if we're at a "post" operation (paths -> /some/path -> "post").
@@ -195,7 +196,8 @@ export const enrichWithZuploMcpServerData = ({
 
       if (operationsByFile.size === 0) return node;
 
-      const tools: ExtensionMcpServerTool[] = [];
+      const allTools: ExtensionMcpServerTool[] = [];
+      const allSecurity: OpenAPIV3_1.SecurityRequirementObject[] = [];
 
       for (const [filePath, operationIds] of operationsByFile) {
         const resolvedPath = path.resolve(rootDir, "../", filePath);
@@ -203,7 +205,10 @@ export const enrichWithZuploMcpServerData = ({
         const document = JSON.parse(fileContent);
 
         if (document) {
-          tools.push(...findOperationsInDocument(document, operationIds));
+          const result = extractFromDocument(document, operationIds);
+          allTools.push(...result.tools);
+          allSecurity.push(...result.security);
+          Object.assign(collectedSecuritySchemes, result.securitySchemes);
         }
       }
 
@@ -212,25 +217,16 @@ export const enrichWithZuploMcpServerData = ({
         version: DEFAULT_MCP_SERVER_VERSION,
       };
 
-      if (tools.length > 0) {
-        mcpExtension.tools = tools;
+      if (allTools.length > 0) {
+        mcpExtension.tools = allTools;
       }
-
-      // Check if any inbound policies on this MCP route are API key policies
-      const inboundPolicyNames = resolveInboundPolicies(
-        operation,
-        policiesConfig,
-      );
-      const apiKeyPolicies = findApiKeyPolicies(
-        inboundPolicyNames,
-        policiesConfig,
-      );
 
       node["x-mcp-server"] = mcpExtension;
 
-      if (apiKeyPolicies.length > 0) {
-        hasApiKeySecurity = true;
-        (node["x-mcp-server"] as RecordAny).security = [{ api_key: [] }];
+      // Add security from referenced operations to x-mcp-server
+      const dedupedSecurity = deduplicateSecurity(allSecurity);
+      if (dedupedSecurity.length > 0) {
+        (node["x-mcp-server"] as RecordAny).security = dedupedSecurity;
       }
 
       // Assign default MCP tag if the operation has no tags
@@ -253,17 +249,16 @@ export const enrichWithZuploMcpServerData = ({
       }
     }
 
-    // Ensure api_key security scheme exists if any MCP endpoint needs it
-    if (hasApiKeySecurity) {
+    // Merge collected security schemes into the main schema
+    if (Object.keys(collectedSecuritySchemes).length > 0) {
       if (!modifiedSchema.components) modifiedSchema.components = {};
       if (!modifiedSchema.components.securitySchemes) {
         modifiedSchema.components.securitySchemes = {};
       }
-      if (!modifiedSchema.components.securitySchemes.api_key) {
-        modifiedSchema.components.securitySchemes.api_key = {
-          type: "http",
-          scheme: "bearer",
-        };
+      for (const [name, scheme] of Object.entries(collectedSecuritySchemes)) {
+        if (!modifiedSchema.components.securitySchemes[name]) {
+          modifiedSchema.components.securitySchemes[name] = scheme;
+        }
       }
     }
 

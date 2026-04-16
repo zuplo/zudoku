@@ -22,7 +22,7 @@ export const getProcessors = async (rootDir: string): Promise<Processor[]> => {
       shouldRemove: ({ parameter }) => parameter["x-internal"],
     }),
     enrichWithZuploData({ policiesConfig }),
-    enrichWithZuploMcpServerData({ rootDir, policiesConfig }),
+    enrichWithZuploMcpServerData({ rootDir }),
     ({ schema }: ProcessorArg) => {
       const url = ZuploEnv.serverUrl;
       if (!url || process.env.ZUPLO_PUBLIC_DISABLE_INJECT_ENDPOINT)
