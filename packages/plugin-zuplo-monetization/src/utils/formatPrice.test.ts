@@ -26,13 +26,14 @@ describe("formatPrice", () => {
 });
 
 describe("formatPriceTwoDecimals", () => {
-  it("shows two fraction digits for whole amounts", () => {
-    expect(formatPriceTwoDecimals(10, "USD")).toBe("$10.00");
+  it("interprets amount as cents", () => {
+    expect(formatPriceTwoDecimals(420, "USD")).toBe("$4.20");
+    expect(formatPriceTwoDecimals(100_000, "USD")).toBe("$1,000.00");
   });
 
-  it("rounds to two decimal places", () => {
-    expect(formatPriceTwoDecimals(10.126, "USD")).toBe("$10.13");
-    expect(formatPriceTwoDecimals(0.005, "USD")).toBe("$0.01");
+  it("rounds minor units to two decimal places in the major currency", () => {
+    expect(formatPriceTwoDecimals(1012.6, "USD")).toBe("$10.13");
+    expect(formatPriceTwoDecimals(0.5, "USD")).toBe("$0.01");
   });
 
   it("defaults to USD when no currency is provided", () => {
