@@ -26,8 +26,8 @@ import type { ZudokuConfig } from "zudoku";
 const config: ZudokuConfig = {
   // ... other config
   redirects: [
-    { from: "/", to: "/docs/introduction" },
-    { from: "/getting-started", to: "/docs/quickstart" },
+    { from: "/", to: "/introduction" },
+    { from: "/getting-started", to: "/quickstart" },
   ],
 };
 
@@ -40,8 +40,8 @@ When a visitor navigates to the `from` path, they are automatically redirected t
 
 Each redirect object accepts two properties:
 
-- **`from`** — The path you want to redirect away from. This should be an absolute path starting
-  with `/`.
+- **`from`** — The path you want to redirect away from. An absolute path starting with `/` is
+  recommended. If you omit the leading slash, it is normalized automatically.
 - **`to`** — The destination path where visitors will be sent. This can be any valid path in your
   portal.
 
