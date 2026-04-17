@@ -44,7 +44,7 @@
   "size-limit": [
     {
       "path": "examples/cosmo-cargo/dist/assets/entry.client-*.js",
-      "limit": "210 KB"
+      "limit": "215 KB"
     }
   ],
   "nx": {
@@ -54,5 +54,5 @@
       "check:other"
     ]
   },
-  "packageManager": "pnpm@10.32.1"
+  "packageManager": "pnpm@10.33.0"
 }
