@@ -113,7 +113,7 @@ describe("CheckoutConfirmPage", () => {
         total: 4912.5,
         taxInclusive: false,
         taxes: [{ taxType: "VAT" }],
-        items: [],
+        items: [{ amount: 4900, taxAmount: 12.5 }],
       },
     };
 
@@ -133,7 +133,7 @@ describe("CheckoutConfirmPage", () => {
         total: 4903.25,
         taxInclusive: false,
         taxes: [{ taxType: "sales_tax" }],
-        items: [],
+        items: [{ amount: 4900, taxAmount: 3.25 }],
       },
     };
 
@@ -152,7 +152,7 @@ describe("CheckoutConfirmPage", () => {
         total: 4904,
         taxInclusive: true,
         taxes: [{ taxType: "sales_tax" }],
-        items: [],
+        items: [{ amount: 4900, taxAmount: 4 }],
       },
     };
 
@@ -179,7 +179,7 @@ describe("CheckoutConfirmPage", () => {
         total: 4900,
         taxInclusive: false,
         taxes: [],
-        items: [],
+        items: [{ amount: 4900, taxAmount: Number.NaN }],
       },
     };
 

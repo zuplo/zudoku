@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatPrice } from "./formatPrice.js";
+import { formatPrice, formatPriceTwoDecimals } from "./formatPrice.js";
 
 describe("formatPrice", () => {
   it("formats whole numbers without decimals", () => {
@@ -22,5 +22,20 @@ describe("formatPrice", () => {
 
   it("defaults to USD when no currency is provided", () => {
     expect(formatPrice(10)).toBe("$10");
+  });
+});
+
+describe("formatPriceTwoDecimals", () => {
+  it("shows two fraction digits for whole amounts", () => {
+    expect(formatPriceTwoDecimals(10, "USD")).toBe("$10.00");
+  });
+
+  it("rounds to two decimal places", () => {
+    expect(formatPriceTwoDecimals(10.126, "USD")).toBe("$10.13");
+    expect(formatPriceTwoDecimals(0.005, "USD")).toBe("$0.01");
+  });
+
+  it("defaults to USD when no currency is provided", () => {
+    expect(formatPriceTwoDecimals(0)).toBe("$0.00");
   });
 });
