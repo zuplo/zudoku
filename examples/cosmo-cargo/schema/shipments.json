@@ -39,7 +39,7 @@
     },
     {
       "name": "International Shipping",
-      "description": "Operations for managing customs documentation, duties, and international shipment processes."
+      "description": "Operations for managing customs documentation, duties, and international shipment processes.\n\n<SpaceWarning sector=\"7G\">\nInterstellar customs regulations were updated in Stardate 2025.3. All shipments crossing the Outer Rim must include a Quantum Manifest.\n</SpaceWarning>"
     },
     {
       "name": "Documentation",

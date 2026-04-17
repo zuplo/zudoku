@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   ApiIdentity,
   ApiIdentityPlugin,
@@ -211,6 +212,20 @@ const config: ZudokuConfig = {
   mdx: {
     components: {
       Trademark: () => "™",
+      SpaceWarning: ({
+        children,
+        sector,
+      }: {
+        children: ReactNode;
+        sector?: string;
+      }) => (
+        <div className="my-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+          <div className="flex items-center gap-2 font-semibold text-yellow-600 dark:text-yellow-400">
+            ⚠️ {sector ? `Sector ${sector} Advisory` : "Space Advisory"}
+          </div>
+          <div className="mt-1 text-sm">{children}</div>
+        </div>
+      ),
     },
   },
   navigationRules: [
