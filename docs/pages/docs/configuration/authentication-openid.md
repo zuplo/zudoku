@@ -28,11 +28,11 @@ Add the `authentication` property to your [Zudoku configuration](./overview.md):
 }
 ```
 
-| Option     | Required | Description                                                                                                                                 |
-| ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `clientId` | Yes      | The OAuth client ID issued by your provider.                                                                                                |
-| `issuer`   | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`.                                                |
-| `scopes`   | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                                                                            |
+| Option     | Required | Description                                                                                  |
+| ---------- | -------- | -------------------------------------------------------------------------------------------- |
+| `clientId` | Yes      | The OAuth client ID issued by your provider.                                                 |
+| `issuer`   | Yes      | The issuer URL. Zudoku discovers endpoints from `<issuer>/.well-known/openid-configuration`. |
+| `scopes`   | No       | Scopes to request. Defaults to `["openid", "profile", "email"]`.                             |
 
 ## Provider Setup
 
@@ -47,8 +47,7 @@ Register Zudoku as a public SPA / single page application client in your identit
 
 ### Okta
 
-1. In the Okta admin console go to **Applications** → **Applications** → **Create App
-   Integration**.
+1. In the Okta admin console go to **Applications** → **Applications** → **Create App Integration**.
 2. Select **OIDC - OpenID Connect** and **Single Page Application**.
 3. Set **Sign-in redirect URIs** to `https://your-site.com/oauth/callback` (add
    `http://localhost:3000/oauth/callback` for local development).
@@ -89,9 +88,9 @@ enable **Standard Flow** (Authorization Code).
 
 ## Verifying the Issuer
 
-You can confirm your issuer URL is correct by opening
-`<issuer>/.well-known/openid-configuration` in a browser. It should return a JSON document listing
-`authorization_endpoint`, `token_endpoint`, `userinfo_endpoint`, and `jwks_uri`.
+You can confirm your issuer URL is correct by opening `<issuer>/.well-known/openid-configuration` in
+a browser. It should return a JSON document listing `authorization_endpoint`, `token_endpoint`,
+`userinfo_endpoint`, and `jwks_uri`.
 
 ## User Profile
 
