@@ -1,13 +1,14 @@
 ---
 title: Redirects
 sidebar_icon: arrow-right-left
-description: Configure URL redirects in your Zudoku developer portal to set landing pages,
-  maintain backward compatibility, and handle URL changes. Covers redirect
-  behavior, basePath interaction, and troubleshooting.
+description:
+  Configure URL redirects in your Zudoku developer portal to set landing pages, maintain backward
+  compatibility, and handle URL changes. Covers redirect behavior, basePath interaction, and
+  troubleshooting.
 ---
 
-Redirects let you automatically send visitors from one URL to another in your
-developer portal. They are useful when you need to:
+Redirects let you automatically send visitors from one URL to another in your developer portal. They
+are useful when you need to:
 
 - Set a custom landing page for the root path (`/`)
 - Maintain backward compatibility after restructuring documentation
@@ -16,8 +17,8 @@ developer portal. They are useful when you need to:
 
 ## Basic configuration
 
-Add a `redirects` array to your `zudoku.config.ts` file. Each entry has a
-`from` path and a `to` path:
+Add a `redirects` array to your `zudoku.config.ts` file. Each entry has a `from` path and a `to`
+path:
 
 ```ts title="zudoku.config.ts"
 import type { ZudokuConfig } from "zudoku";
@@ -33,70 +34,67 @@ const config: ZudokuConfig = {
 export default config;
 ```
 
-When a visitor navigates to the `from` path, they are automatically redirected
-to the `to` path.
+When a visitor navigates to the `from` path, they are automatically redirected to the `to` path.
 
 ## Redirect properties
 
 Each redirect object accepts two properties:
 
-- **`from`** — The path you want to redirect away from. This should be an
-  absolute path starting with `/`.
-- **`to`** — The destination path where visitors will be sent. This can be any
-  valid path in your portal.
+- **`from`** — The path you want to redirect away from. This should be an absolute path starting
+  with `/`.
+- **`to`** — The destination path where visitors will be sent. This can be any valid path in your
+  portal.
 
 ```ts
 redirects: [{ from: "/old-page", to: "/new-page" }];
 ```
 
-Trailing slashes in the `from` path are normalized automatically. Both
-`/old-page` and `/old-page/` will match the same redirect rule.
+Trailing slashes in the `from` path are normalized automatically. Both `/old-page` and `/old-page/`
+will match the same redirect rule.
 
 ## How redirects work
 
-Zudoku redirects operate at two levels depending on how the visitor reaches the
-page:
+Zudoku redirects operate at two levels depending on how the visitor reaches the page:
 
 ### Server-side behavior
 
-When a visitor loads a redirect path directly (for example, by typing the URL in
-the browser address bar or following an external link), the server responds with
-an HTTP **301 (Moved Permanently)** status code and a `Location` header pointing
-to the destination. This tells browsers and search engines that the page has
-permanently moved.
+When a visitor loads a redirect path directly (for example, by typing the URL in the browser address
+bar or following an external link), the exact response depends on your deployment target:
 
-During the build process, Zudoku prerenders each redirect source path as a small
-HTML file containing a JavaScript redirect. This ensures that redirects work
-correctly on static hosting platforms that serve prerendered HTML files.
+- **Zuplo** and **Vercel** (or any platform that reads the Vercel Build Output API): the platform
+  returns an HTTP **301 (Moved Permanently)** with a `Location` header, so browsers and search
+  engines see a true permanent redirect.
+- **SSR deployments**: the server returns a real HTTP 301 from the router loader.
+- **Other static hosts** (Netlify, Cloudflare Pages, GitHub Pages, S3, nginx, etc.): Zudoku
+  prerenders each redirect source path as a small HTML file containing a JavaScript redirect. The
+  file is served with a 200 response and the browser follows the redirect once the script runs.
+  JavaScript must be enabled for the redirect to fire.
 
 ### Client-side behavior
 
-When a visitor clicks an internal link that points to a redirect path, Zudoku
-handles the redirect entirely in the browser using client-side routing. The
-visitor is navigated to the destination without a full page reload, providing a
-seamless experience.
+When a visitor clicks an internal link that points to a redirect path, Zudoku handles the redirect
+entirely in the browser using client-side routing. The visitor is navigated to the destination
+without a full page reload, providing a seamless experience.
 
-Both behaviors produce the same result for the visitor — they end up at the
-destination page.
+Both behaviors land the visitor on the destination page. For search engines, only the 301 variants
+signal a permanent move; the JavaScript redirect used on generic static hosts is weaker for SEO.
 
 ## Common patterns
 
 ### Setting a landing page
 
-The most common use of redirects is setting a landing page for the root path of
-your portal:
+The most common use of redirects is setting a landing page for the root path of your portal:
 
 ```ts
 redirects: [{ from: "/", to: "/docs/introduction" }];
 ```
 
-This sends visitors who arrive at your portal's root URL to your introduction
-page.
+This sends visitors who arrive at your portal's root URL to your introduction page.
 
 ### Reorganizing documentation
 
-When you restructure your documentation, add redirects from the old paths so
-existing bookmarks and external links continue to work:
+When you restructure your documentation, add redirects from the old paths so existing bookmarks and
+external links continue to work:
 
 ```ts
 redirects: [
@@ -108,8 +106,7 @@ redirects: [
 
 ### Redirecting to specific sections
 
-You can redirect to a specific section of a page using a hash fragment in the
-`to` path:
+You can redirect to a specific section of a page using a hash fragment in the `to` path:
 
 ```ts
 redirects: [
@@ -124,13 +121,13 @@ redirects: [
 ];
 ```
 
-This is useful when multiple old pages have been consolidated into a single page
-with distinct sections.
+This is useful when multiple old pages have been consolidated into a single page with distinct
+sections.
 
 ### Redirecting category paths
 
-If your API reference groups endpoints into categories, you may want the
-category path to redirect to a specific endpoint or overview page:
+If your API reference groups endpoints into categories, you may want the category path to redirect
+to a specific endpoint or overview page:
 
 ```ts
 redirects: [
@@ -141,10 +138,9 @@ redirects: [
 
 ## Redirects and the `basePath` option
 
-If your portal uses a
-[`basePath`](/docs/configuration/overview#basepath), redirects are
-defined _relative to the base path_. Zudoku automatically prepends the base path
-when generating server-side redirect rules.
+If your portal uses a [`basePath`](/docs/configuration/overview#basepath), redirects are defined
+_relative to the base path_. Zudoku automatically prepends the base path to both the matched `from`
+and the emitted `Location`.
 
 For example, with `basePath: "/docs"`:
 
@@ -157,53 +153,34 @@ You do not need to include the base path in your `from` or `to` values.
 
 ## Redirects vs. navigation rules
 
-Zudoku offers two features that can change where visitors end up:
-[redirects](#basic-configuration) and
-[navigation rules](/docs/guides/navigation-rules). They serve different purposes:
+Zudoku offers two features that can change where visitors end up: [redirects](#basic-configuration)
+and [navigation rules](/docs/guides/navigation-rules). They serve different purposes:
 
-- **Redirects** map one URL to another. Use them when a page has moved or when
-  you need a specific URL to point somewhere else. They affect both direct
-  visits and internal link clicks.
-- **Navigation rules** customize the _sidebar_ generated by plugins like the
-  OpenAPI plugin. Use them to insert, reorder, modify, or remove items in the
-  sidebar without changing the underlying page URLs.
+- **Redirects** map one URL to another. Use them when a page has moved or when you need a specific
+  URL to point somewhere else. They affect both direct visits and internal link clicks.
+- **Navigation rules** customize the _sidebar_ generated by plugins like the OpenAPI plugin. Use
+  them to insert, reorder, modify, or remove items in the sidebar without changing the underlying
+  page URLs.
 
-If you want to change where a URL takes visitors, use a redirect. If you want to
-change what appears in the sidebar navigation, use a navigation rule.
+If you want to change where a URL takes visitors, use a redirect. If you want to change what appears
+in the sidebar navigation, use a navigation rule.
 
 ## Redirects and sitemaps
 
 Redirect source paths are automatically excluded from your
-[sitemap](/docs/configuration/overview#sitemap). Only the destination
-pages appear in the generated `sitemap.xml`, which prevents search engines from
-indexing the old URLs.
+[sitemap](/docs/configuration/overview#sitemap). Only the destination pages appear in the generated
+`sitemap.xml`, which prevents search engines from indexing the old URLs.
 
 ## Troubleshooting
 
 ### Redirect returns a 404
 
-Make sure the `to` path points to a page that actually exists in your portal. If
-the destination is an API reference page generated from an OpenAPI spec, verify
-that the path matches the generated route. You can check available routes by
-running your dev server and navigating manually.
-
-### Redirect works on reload but not on link click
-
-This was a known issue in older versions of Zudoku where client-side navigation
-did not process redirects. Update to the latest version to resolve this. In
-current versions, redirects are handled by both the server-side prerender and
-the client-side router.
-
-### Trailing slash mismatch
-
-Zudoku normalizes trailing slashes in the `from` path, so `/old-page/` and
-`/old-page` are treated identically. You do not need to create separate redirect
-rules for both variants.
+Make sure the `to` path points to a page that actually exists in your portal. If the destination is
+an API reference page generated from an OpenAPI spec, verify that the path matches the generated
+route. You can check available routes by running your dev server and navigating manually.
 
 ### Redirect conflicts with another route
 
-If the `from` path matches a route that already exists (for example, a page
-generated by the OpenAPI plugin), the behavior depends on route priority. In
-general, explicitly defined page routes take precedence over redirects. If your
-redirect seems to be ignored, check whether another route is already registered
-at that path.
+Redirects are registered before page routes, so when a redirect `from` path exactly matches another
+route, the redirect wins. If you want a page to be reachable at a given path, remove the conflicting
+redirect rather than relying on route priority.
