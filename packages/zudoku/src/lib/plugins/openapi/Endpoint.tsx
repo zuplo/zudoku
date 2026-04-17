@@ -32,7 +32,7 @@ const CopyButton = ({ url }: { url: string }) => {
       }}
       variant="ghost"
       size="icon-xs"
-      aria-label="Copy endpoint URL"
+      aria-label="Copy server URL"
     >
       {isCopied ? (
         <CheckIcon className="text-green-600" size={14} aria-hidden="true" />
