@@ -86,8 +86,8 @@ export const openApiPlugin = (config: OasPluginConfig): ZudokuPlugin => {
         children,
         ...props
       }: PropsWithChildren<Partial<PlaygroundContentProps>>) => {
-        if (!server) {
-          throw new Error("Server is required");
+        if (!server || typeof window === "undefined") {
+          return null;
         }
 
         return (
