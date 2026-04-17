@@ -55,14 +55,10 @@ export async function runBuild(options: BuildOptions) {
   });
 
   const clientResult = await viteBuild(viteClientConfig);
-  // biome-ignore lint/suspicious/noConsole: Debugging build phases
-  console.log("[zudoku] client build complete, starting SSR build...");
   const serverResult = await viteBuild({
     ...viteServerConfig,
     logLevel: "silent",
   });
-  // biome-ignore lint/suspicious/noConsole: Debugging build phases
-  console.log("[zudoku] SSR build complete, starting prerender...");
 
   if (Array.isArray(clientResult) || !("output" in clientResult)) {
     throw new Error("Client build failed");

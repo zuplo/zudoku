@@ -88,83 +88,8 @@ export const prerender = async ({
       paths.push(joinUrl(r.from));
     }
   }
-  // ── Worker scaling strategy ──────────────────────────────────────────
-  //
-  // Each prerender worker loads the ENTIRE SSR bundle (all OpenAPI specs,
-  // React components, etc.) into its own V8 isolate. For large projects
-  // this baseline alone can be 2-5 GB per worker.
-  //
-  // Two problems make naive scaling dangerous:
-  //
-  // 1. NODE_OPTIONS inheritance: CI environments like CodeBuild set
-  //    --max-old-space-size=57344 (57 GB). Worker threads inherit this,
-  //    so V8 thinks each worker has 57 GB and doesn't GC aggressively.
-  //    Workers lazily grow their heaps until the container OOMs.
-  //
-  // 2. No swap on Linux containers: On macOS, the OS provides swap to
-  //    absorb memory spikes. On CodeBuild/Docker containers there is no
-  //    swap — any spike past physical RAM is an instant OOM kill.
-  //
-  // The fix has two parts:
-  //
-  // (a) resourceLimits.maxOldGenerationSizeMb on each worker. This is
-  //     the ONLY way to override the inherited --max-old-space-size for
-  //     worker_threads. It caps V8's heap and, critically, makes V8 GC
-  //     aggressively relative to the cap. 4 GB per worker is enough for
-  //     even very large projects (tested with 2390 routes, 3.4 MB OAS
-  //     specs). Note: this is a hard kill — if a worker exceeds it, the
-  //     worker is terminated immediately with ERR_WORKER_OUT_OF_MEMORY.
-  //
-  // (b) Conservative default worker count. Prerendering is memory-bound,
-  //     not CPU-bound — more workers beyond ~8 gives diminishing returns
-  //     while increasing memory pressure. We cap the default at 8 and
-  //     use 0.5 * CPUs (not 0.8) as the CPU-based heuristic.
-  //
-  // Tested on CodeBuild XLARGE (72 GB, 36 vCPU):
-  //   28 workers → instant OOM
-  //   14 workers → OOM at ~1159/2390 routes
-  //    7 workers → SUCCESS (2390 routes in 99s)
-  //
-  // Users can override via `prerender.workers` in their build config.
-  // ────────────────────────────────────────────────────────────────────
-
-  // Step 1: Detect actual memory. In containers, os.totalmem() may
-  // report the host's memory, not the container's cgroup limit.
-  const osTotalMb = Math.floor(os.totalmem() / (1024 * 1024));
-  const cgroupMemMb = getContainerMemoryLimitMb();
-  const totalMemMb =
-    cgroupMemMb !== undefined ? Math.min(cgroupMemMb, osTotalMb) : osTotalMb;
-
-  // Step 2: Reserve memory for the main process (Vite, pagefind, etc.)
-  // and OS overhead. Use 25% of total or 2 GB, whichever is larger.
-  const reservedMb = Math.max(2048, Math.floor(totalMemMb * 0.25));
-  const availableForWorkersMb = totalMemMb - reservedMb;
-
-  // Step 3: Per-worker heap limit. This overrides NODE_OPTIONS and
-  // forces V8 to GC aggressively within this budget.
-  const PER_WORKER_HEAP_LIMIT_MB = 4096;
-
-  // Step 4: Worker count — the lesser of memory-based, CPU-based, and
-  // hard cap. Beyond 8 workers the gains are marginal and memory
-  // pressure dominates.
-  const MAX_WORKERS = 8;
-  const memBasedWorkers = Math.max(
-    1,
-    Math.floor(availableForWorkersMb / PER_WORKER_HEAP_LIMIT_MB),
-  );
-  const cpuBasedWorkers = Math.max(1, Math.floor(os.cpus().length * 0.5));
-  const defaultWorkers = Math.min(
-    memBasedWorkers,
-    cpuBasedWorkers,
-    MAX_WORKERS,
-  );
-  const maxThreads = buildConfig?.prerender?.workers ?? defaultWorkers;
-
-  // Step 5: Per-worker resource limits. Cap at PER_WORKER_HEAP_LIMIT_MB
-  // or the fair share of available memory, whichever is smaller.
-  const maxOldGenerationSizeMb = Math.min(
-    PER_WORKER_HEAP_LIMIT_MB,
-    Math.max(512, Math.floor(availableForWorkersMb / maxThreads)),
+  const { maxThreads, maxOldGenerationSizeMb } = getWorkerScaling(
+    buildConfig?.prerender?.workers,
   );
 
   const start = performance.now();
@@ -180,7 +105,7 @@ export const prerender = async ({
   if (!isTTY()) {
     logger.info(
       colors.dim(
-        `prerendering ${paths.length} routes using ${maxThreads} workers (total: ${totalMemMb} MB${cgroupMemMb !== undefined ? ` [cgroup]` : ""}, available: ${availableForWorkersMb} MB, per-worker limit: ${maxOldGenerationSizeMb} MB)...`,
+        `prerendering ${paths.length} routes using ${maxThreads} workers...`,
       ),
     );
   }
@@ -345,13 +270,74 @@ export const prerender = async ({
 };
 
 /**
+ * Compute worker count and per-worker heap limit for prerendering.
+ *
+ * Each prerender worker loads the entire SSR bundle (OpenAPI specs, React
+ * components) into its own V8 isolate: 2-5 GB baseline for large projects.
+ * Two problems make naive scaling dangerous:
+ *
+ * 1. NODE_OPTIONS inheritance: CI like CodeBuild sets
+ *    --max-old-space-size=57344, which worker_threads inherit. V8 thinks
+ *    it has 57 GB and doesn't GC aggressively, so workers lazily grow
+ *    until the container OOMs.
+ * 2. No swap on Linux containers: any spike past physical RAM is an
+ *    instant OOM kill (unlike macOS which swaps).
+ *
+ * Fix: cap each worker's heap via `resourceLimits.maxOldGenerationSizeMb`
+ * (the only way to override the inherited NODE_OPTIONS for workers), and
+ * pick a conservative worker count — prerendering is memory-bound, so
+ * beyond ~8 workers gains are marginal and memory pressure dominates.
+ *
+ * Tested on CodeBuild XLARGE (72 GB, 36 vCPU):
+ *   28 workers → instant OOM
+ *   14 workers → OOM at ~1159/2390 routes
+ *    7 workers → SUCCESS (2390 routes in 99s)
+ */
+function getWorkerScaling(workersOverride?: number): {
+  maxThreads: number;
+  maxOldGenerationSizeMb: number;
+} {
+  const PER_WORKER_HEAP_LIMIT_MB = 4096;
+  const MAX_WORKERS = 8;
+
+  // In containers, os.totalmem() may report the host's memory, not the
+  // container's cgroup limit — take the lesser of the two.
+  const osTotalMb = Math.floor(os.totalmem() / (1024 * 1024));
+  const cgroupMemMb = getContainerMemoryLimitMb();
+  const totalMemMb =
+    cgroupMemMb !== undefined ? Math.min(cgroupMemMb, osTotalMb) : osTotalMb;
+
+  // Reserve memory for the main process (Vite, pagefind) and OS overhead.
+  const reservedMb = Math.max(2048, Math.floor(totalMemMb * 0.25));
+  const availableForWorkersMb = totalMemMb - reservedMb;
+
+  const memBasedWorkers = Math.max(
+    1,
+    Math.floor(availableForWorkersMb / PER_WORKER_HEAP_LIMIT_MB),
+  );
+  const cpuBasedWorkers = Math.max(1, Math.floor(os.cpus().length * 0.5));
+  const defaultWorkers = Math.min(
+    memBasedWorkers,
+    cpuBasedWorkers,
+    MAX_WORKERS,
+  );
+  const maxThreads = workersOverride ?? defaultWorkers;
+
+  const maxOldGenerationSizeMb = Math.min(
+    PER_WORKER_HEAP_LIMIT_MB,
+    Math.max(512, Math.floor(availableForWorkersMb / maxThreads)),
+  );
+
+  return { maxThreads, maxOldGenerationSizeMb };
+}
+
+/**
  * Read the container's cgroup memory limit. Returns undefined when not
  * running inside a cgroup-constrained container (e.g. bare metal / macOS).
  *
  * Tries cgroup v2 first (`/sys/fs/cgroup/memory.max`), then falls back to
  * cgroup v1 (`/sys/fs/cgroup/memory/memory.limit_in_bytes`). A value of
- * "max" or a number larger than 2^50 (~1 PB) means "no limit" — treated
- * the same as not running in a container.
+ * "max" or a number larger than 2^50 (~1 PB) means "no limit".
  */
 function getContainerMemoryLimitMb(): number | undefined {
   const CGROUP_PATHS = [
