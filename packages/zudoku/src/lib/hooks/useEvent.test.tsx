@@ -29,6 +29,7 @@ const locationData = {
   search: "",
   key: "",
   state: {},
+  unstable_mask: undefined,
 } satisfies Location;
 
 describe("useEvent", () => {

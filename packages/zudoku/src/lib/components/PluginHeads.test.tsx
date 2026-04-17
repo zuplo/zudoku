@@ -11,6 +11,7 @@ const loc = {
   hash: "",
   state: null,
   key: "default",
+  unstable_mask: undefined,
 } satisfies Location;
 
 const renderHeadSSR = (plugins: ZudokuPlugin[]) => {
