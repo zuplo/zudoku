@@ -176,6 +176,8 @@ export const prerender = async ({
     const pagesToIndex = workerResults.flatMap(({ statusCode, html }, i) =>
       statusCode < 400 ? { url: paths[i], html } : [],
     );
+    // Batch size caps concurrent IPC writes to the pagefind child process;
+    // higher values can overflow its pipe buffer and trigger ENOBUFS.
     const BATCH_SIZE = 40;
     const pagefindStart = performance.now();
 
@@ -189,7 +191,7 @@ export const prerender = async ({
       if (isTTY()) {
         const done = offset + batch.length;
         writeLine(
-          `pagefind indexing (${done}/${pagesToIndex.length}) ${colors.dim(batch.at(-1)?.url)}`,
+          `pagefind indexing (${done}/${pagesToIndex.length}) ${colors.dim(batch.at(-1)?.url ?? "")}`,
         );
       }
     }
@@ -285,23 +287,19 @@ export const prerender = async ({
  *
  * Fix: cap each worker's heap via `resourceLimits.maxOldGenerationSizeMb`
  * (the only way to override the inherited NODE_OPTIONS for workers), and
- * pick a conservative worker count — prerendering is memory-bound, so
- * beyond ~8 workers gains are marginal and memory pressure dominates.
- *
- * Tested on CodeBuild XLARGE (72 GB, 36 vCPU):
- *   28 workers → instant OOM
- *   14 workers → OOM at ~1159/2390 routes
- *    7 workers → SUCCESS (2390 routes in 99s)
+ * pick a conservative worker count. Prerendering is memory-bound, so beyond
+ * ~8 workers gains are marginal and memory pressure dominates. Empirically
+ * on a 72 GB / 36 vCPU container, worker count must stay near CPU/5 to
+ * avoid OOM before completion.
  */
-function getWorkerScaling(workersOverride?: number): {
-  maxThreads: number;
-  maxOldGenerationSizeMb: number;
-} {
+const getWorkerScaling = (
+  workersOverride?: number,
+): { maxThreads: number; maxOldGenerationSizeMb: number } => {
   const PER_WORKER_HEAP_LIMIT_MB = 4096;
   const MAX_WORKERS = 8;
 
   // In containers, os.totalmem() may report the host's memory, not the
-  // container's cgroup limit — take the lesser of the two.
+  // container's cgroup limit. Take the lesser of the two.
   const osTotalMb = Math.floor(os.totalmem() / (1024 * 1024));
   const cgroupMemMb = getContainerMemoryLimitMb();
   const totalMemMb =
@@ -321,7 +319,9 @@ function getWorkerScaling(workersOverride?: number): {
     cpuBasedWorkers,
     MAX_WORKERS,
   );
-  const maxThreads = workersOverride ?? defaultWorkers;
+  const validOverride =
+    workersOverride && workersOverride > 0 ? workersOverride : undefined;
+  const maxThreads = validOverride ?? defaultWorkers;
 
   const maxOldGenerationSizeMb = Math.min(
     PER_WORKER_HEAP_LIMIT_MB,
@@ -329,17 +329,19 @@ function getWorkerScaling(workersOverride?: number): {
   );
 
   return { maxThreads, maxOldGenerationSizeMb };
-}
+};
 
 /**
  * Read the container's cgroup memory limit. Returns undefined when not
  * running inside a cgroup-constrained container (e.g. bare metal / macOS).
  *
  * Tries cgroup v2 first (`/sys/fs/cgroup/memory.max`), then falls back to
- * cgroup v1 (`/sys/fs/cgroup/memory/memory.limit_in_bytes`). A value of
- * "max" or a number larger than 2^50 (~1 PB) means "no limit".
+ * cgroup v1 (`/sys/fs/cgroup/memory/memory.limit_in_bytes`). cgroup v2 uses
+ * the literal string "max" to signal "no limit"; cgroup v1 uses a near-
+ * LLONG_MAX value (~9.2e18) instead, so any number above 2^50 (~1 PB) is
+ * treated as unlimited.
  */
-function getContainerMemoryLimitMb(): number | undefined {
+const getContainerMemoryLimitMb = (): number | undefined => {
   const CGROUP_PATHS = [
     "/sys/fs/cgroup/memory.max", // cgroup v2
     "/sys/fs/cgroup/memory/memory.limit_in_bytes", // cgroup v1
@@ -352,9 +354,9 @@ function getContainerMemoryLimitMb(): number | undefined {
       const bytes = Number(raw);
       if (!Number.isFinite(bytes) || bytes > 2 ** 50) return undefined;
       return Math.floor(bytes / (1024 * 1024));
-    } catch {
-      // File doesn't exist — try next path
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
     }
   }
   return undefined;
-}
+};
