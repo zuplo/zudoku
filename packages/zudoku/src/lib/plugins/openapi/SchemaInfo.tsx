@@ -425,6 +425,41 @@ export const SchemaInfo = () => {
                 content={schema.description}
               />
             )}
+            {!options?.disableSecurity &&
+              (schema.components?.securitySchemes?.length ?? 0) > 0 && (
+                <div>
+                  <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
+                    <ShieldCheckIcon size={14} />
+                    Authentication
+                  </div>
+                  <div className="flex flex-col gap-6 max-w-full lg:max-w-2xl">
+                    <p className="text-sm text-muted-foreground">
+                      {(schema.components?.securitySchemes?.length ?? 0) > 1
+                        ? "This API supports the following authentication methods. Use whichever matches your use case."
+                        : "This API requires authentication on every request. Follow the instructions below to authenticate."}
+                    </p>
+                    {schema.components?.securitySchemes?.map((scheme) => (
+                      <div
+                        key={scheme.name}
+                        id={slugify(`auth-${scheme.name}`)}
+                        className="flex flex-col gap-2"
+                      >
+                        <h3 className="text-base font-semibold flex items-center gap-2 m-0">
+                          {securitySchemeIcon(scheme.type)}
+                          {scheme.name}
+                        </h3>
+                        <Markdown
+                          className="prose-sm max-w-full"
+                          content={generateAuthInstructions(
+                            scheme,
+                            schema.servers[0]?.url ?? "https://api.example.com",
+                          )}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             {tags.length > 0 && (
               <div>
                 <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
@@ -497,41 +532,6 @@ export const SchemaInfo = () => {
                           </Badge>
                         </ItemActions>
                       </Item>
-                    ))}
-                  </div>
-                </div>
-              )}
-            {!options?.disableSecurity &&
-              (schema.components?.securitySchemes?.length ?? 0) > 0 && (
-                <div>
-                  <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-muted-foreground mb-4">
-                    <ShieldCheckIcon size={14} />
-                    Authentication
-                  </div>
-                  <div className="flex flex-col gap-6 max-w-full lg:max-w-2xl">
-                    <p className="text-sm text-muted-foreground">
-                      {(schema.components?.securitySchemes?.length ?? 0) > 1
-                        ? "This API supports the following authentication methods. Use whichever matches your use case."
-                        : "This API requires authentication on every request. Follow the instructions below to authenticate."}
-                    </p>
-                    {schema.components?.securitySchemes?.map((scheme) => (
-                      <div
-                        key={scheme.name}
-                        id={slugify(`auth-${scheme.name}`)}
-                        className="flex flex-col gap-2"
-                      >
-                        <h3 className="text-base font-semibold flex items-center gap-2 m-0">
-                          {securitySchemeIcon(scheme.type)}
-                          {scheme.name}
-                        </h3>
-                        <Markdown
-                          className="prose-sm max-w-full"
-                          content={generateAuthInstructions(
-                            scheme,
-                            schema.servers[0]?.url ?? "https://api.example.com",
-                          )}
-                        />
-                      </div>
                     ))}
                   </div>
                 </div>
