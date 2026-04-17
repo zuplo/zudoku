@@ -15,8 +15,8 @@ authentication provider you use.
 
 ## Authentication Providers
 
-Zudoku supports Clerk, Auth0, Supabase, Firebase, Azure B2C, and any OpenID provider that supports
-the OpenID Connect protocol (including PingFederate).
+Zudoku supports Clerk, Auth0, Supabase, Firebase, Azure B2C, and any OpenID Connect provider
+(including Okta, Keycloak, Authentik, and PingFederate).
 
 Not seeing your authentication provider? [Let us know](https://github.com/zuplo/zudoku/issues)
 
@@ -95,6 +95,9 @@ When configuring your OpenID provider, you will need to set the following:
 
 By default, the scopes "openid", "profile", and "email" are requested. You can customize these by
 providing your own array of scopes.
+
+For provider-specific guides (Okta, Keycloak, etc.), see the
+[OpenID Connect setup page](./authentication-openid.md).
 
 ### Firebase
 

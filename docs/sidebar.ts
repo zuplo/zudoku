@@ -95,6 +95,7 @@ export const docs: Navigation = [
           "docs/configuration/authentication-auth0",
           "docs/configuration/authentication-clerk",
           "docs/configuration/authentication-azure-ad",
+          "docs/configuration/authentication-openid",
           "docs/configuration/authentication-pingfederate",
           "docs/configuration/authentication-supabase",
           "docs/configuration/authentication-firebase",
