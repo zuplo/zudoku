@@ -120,7 +120,7 @@ describe("SubscriptionChangeConfirmPage", () => {
         total: 4509,
         taxInclusive: false,
         taxes: [{ taxType: "VAT" }],
-        items: [],
+        items: [{ amount: 4500, taxAmount: 9 }],
       },
     };
 
@@ -139,7 +139,7 @@ describe("SubscriptionChangeConfirmPage", () => {
         total: 4505,
         taxInclusive: true,
         taxes: [{ taxType: "sales_tax" }],
-        items: [],
+        items: [{ amount: 4500, taxAmount: 5 }],
       },
     };
 
