@@ -155,7 +155,7 @@ export const SecurityRequirements = ({
                         <TooltipContent
                           side="bottom"
                           align="start"
-                          className="bg-popover text-popover-foreground border shadow-md [&>svg]:!fill-popover [&>svg]:!bg-popover"
+                          className="bg-popover text-popover-foreground border shadow-md [&>svg]:!hidden"
                         >
                           <SchemeTooltipContent
                             scheme={reqScheme.scheme}
