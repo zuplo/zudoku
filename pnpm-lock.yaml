@@ -460,8 +460,8 @@ importers:
         specifier: ^4.6.0
         version: 4.6.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@docsearch/css':
-        specifier: ^4.6.0
-        version: 4.6.0
+        specifier: ^4.6.2
+        version: 4.6.2
       '@docsearch/modal':
         specifier: ^4.6.0
         version: 4.6.0(@algolia/client-search@5.48.1)(@types/react@19.2.14)(algoliasearch@5.48.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(search-insights@2.17.3)
@@ -646,7 +646,7 @@ importers:
         version: 3.23.0
       '@supabase/supabase-js':
         specifier: ^2.49.4
-        version: 2.50.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+        version: 2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@tailwindcss/typography':
         specifier: 0.5.19
         version: 0.5.19(tailwindcss@4.2.1)
@@ -712,7 +712,7 @@ importers:
         version: 6.0.0
       firebase:
         specifier: ^12.6.0
-        version: 12.6.0(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6)))
+        version: 12.6.0(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10)))
       glob:
         specifier: 13.0.6
         version: 13.0.6
@@ -1883,6 +1883,9 @@ packages:
 
   '@docsearch/css@4.6.0':
     resolution: {integrity: sha512-YlcAimkXclvqta47g47efzCM5CFxDwv2ClkDfEs/fC/Ak0OxPH2b3czwa4o8O1TRBf+ujFF2RiUwszz2fPVNJQ==}
+
+  '@docsearch/css@4.6.2':
+    resolution: {integrity: sha512-fH/cn8BjEEdM2nJdjNMHIvOVYupG6AIDtFVDgIZrNzdCSj4KXr9kd+hsehqsNGYjpUjObeKYKvgy/IwCb1jZYQ==}
 
   '@docsearch/modal@4.6.0':
     resolution: {integrity: sha512-al5Ks+HO5nD0PeYQxpkqezx7lW+rPuMw/IbldMzL6VAYe5Ks75j+47Vkw5SVSpYFwVGjj24WSOBVaDjF40LOvA==}
@@ -11493,6 +11496,8 @@ snapshots:
 
   '@docsearch/css@4.6.0': {}
 
+  '@docsearch/css@4.6.2': {}
+
   '@docsearch/modal@4.6.0(@algolia/client-search@5.48.1)(@types/react@19.2.14)(algoliasearch@5.48.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(search-insights@2.17.3)':
     dependencies:
       '@docsearch/core': 4.6.0(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -11854,10 +11859,10 @@ snapshots:
       idb: 7.1.1
       tslib: 2.8.1
 
-  '@firebase/auth-compat@0.6.1(@firebase/app-compat@0.5.6)(@firebase/app-types@0.9.3)(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6)))':
+  '@firebase/auth-compat@0.6.1(@firebase/app-compat@0.5.6)(@firebase/app-types@0.9.3)(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10)))':
     dependencies:
       '@firebase/app-compat': 0.5.6
-      '@firebase/auth': 1.11.1(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6)))
+      '@firebase/auth': 1.11.1(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10)))
       '@firebase/auth-types': 0.13.0(@firebase/app-types@0.9.3)(@firebase/util@1.13.0)
       '@firebase/component': 0.7.0
       '@firebase/util': 1.13.0
@@ -11892,7 +11897,7 @@ snapshots:
       '@firebase/app-types': 0.9.3
       '@firebase/util': 1.14.0
 
-  '@firebase/auth@1.11.1(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6)))':
+  '@firebase/auth@1.11.1(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10)))':
     dependencies:
       '@firebase/app': 0.14.6
       '@firebase/component': 0.7.0
@@ -11900,7 +11905,7 @@ snapshots:
       '@firebase/util': 1.13.0
       tslib: 2.8.1
     optionalDependencies:
-      '@react-native-async-storage/async-storage': 1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6))
+      '@react-native-async-storage/async-storage': 1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10))
 
   '@firebase/auth@1.12.1(@firebase/app@0.14.9)':
     dependencies:
@@ -15482,12 +15487,12 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/realtime-js@2.11.10(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+  '@supabase/realtime-js@2.11.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@supabase/node-fetch': 2.6.15
       '@types/phoenix': 1.6.6
       '@types/ws': 8.18.1
-      ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      ws: 8.20.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -15512,13 +15517,13 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  '@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@6.0.6)':
+  '@supabase/supabase-js@2.50.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)':
     dependencies:
       '@supabase/auth-js': 2.70.0
       '@supabase/functions-js': 2.4.4
       '@supabase/node-fetch': 2.6.15
       '@supabase/postgrest-js': 1.19.4
-      '@supabase/realtime-js': 2.11.10(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      '@supabase/realtime-js': 2.11.10(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@supabase/storage-js': 2.7.1
     transitivePeerDependencies:
       - bufferutil
@@ -15977,7 +15982,7 @@ snapshots:
 
   '@types/ws@7.4.7':
     dependencies:
-      '@types/node': 12.20.55
+      '@types/node': 25.6.0
 
   '@types/ws@8.18.1':
     dependencies:
@@ -17527,7 +17532,7 @@ snapshots:
     transitivePeerDependencies:
       - '@react-native-async-storage/async-storage'
 
-  firebase@12.6.0(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6))):
+  firebase@12.6.0(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10))):
     dependencies:
       '@firebase/ai': 2.6.0(@firebase/app-types@0.9.3)(@firebase/app@0.14.6)
       '@firebase/analytics': 0.10.19(@firebase/app@0.14.6)
@@ -17537,8 +17542,8 @@ snapshots:
       '@firebase/app-check-compat': 0.4.0(@firebase/app-compat@0.5.6)(@firebase/app@0.14.6)
       '@firebase/app-compat': 0.5.6
       '@firebase/app-types': 0.9.3
-      '@firebase/auth': 1.11.1(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6)))
-      '@firebase/auth-compat': 0.6.1(@firebase/app-compat@0.5.6)(@firebase/app-types@0.9.3)(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@6.0.6)))
+      '@firebase/auth': 1.11.1(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10)))
+      '@firebase/auth-compat': 0.6.1(@firebase/app-compat@0.5.6)(@firebase/app-types@0.9.3)(@firebase/app@0.14.6)(@react-native-async-storage/async-storage@1.24.0(react-native@0.83.1(@babel/core@7.29.0)(@types/react@19.2.14)(bufferutil@4.1.0)(react@19.2.4)(utf-8-validate@5.0.10)))
       '@firebase/data-connect': 0.3.12(@firebase/app@0.14.6)
       '@firebase/database': 1.1.0
       '@firebase/database-compat': 2.1.0
