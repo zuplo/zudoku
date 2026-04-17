@@ -130,7 +130,7 @@ const SubscriptionChangeConfirmPage = () => {
                         {formatPrice(price.monthly, selectedPlan?.currency)}
                       </div>
                       {taxAmount != null && (
-                        <div className="text-xs font-normal mt-1">
+                        <div className="text-sm font-normal mt-1">
                           {taxInclusive
                             ? `${formatPriceTwoDecimals(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
                             : `+ ${formatPriceTwoDecimals(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
