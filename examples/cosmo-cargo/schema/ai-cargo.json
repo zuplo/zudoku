@@ -283,7 +283,19 @@
         "operationId": "mcpUniversal",
         "x-mcp-server": {
           "name": "Cosmo Cargo AI",
-          "version": "1.0.0"
+          "version": "1.0.0",
+          "security": [
+            {
+              "ApiKeyAuth": []
+            }
+          ],
+          "securitySchemes": {
+            "ApiKeyAuth": {
+              "type": "apiKey",
+              "in": "header",
+              "name": "X-API-Key"
+            }
+          }
         },
         "requestBody": {
           "required": true,
