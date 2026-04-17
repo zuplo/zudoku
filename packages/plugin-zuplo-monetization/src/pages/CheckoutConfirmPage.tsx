@@ -15,7 +15,7 @@ import { useMonetizationConfig } from "../MonetizationContext";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
-import { formatPrice, formatPriceTwoDecimals } from "../utils/formatPrice";
+import { formatMinorCurrencyAmount, formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import {
   getPlanFromPurchaseDetails,
@@ -123,8 +123,8 @@ const CheckoutConfirmPage = () => {
                       {taxAmount != null && (
                         <div className="text-sm font-normal mt-1">
                           {taxInclusive
-                            ? `${formatPriceTwoDecimals(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
-                            : `+ ${formatPriceTwoDecimals(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
+                            ? `${formatMinorCurrencyAmount(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
+                            : `+ ${formatMinorCurrencyAmount(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
                         </div>
                       )}
                       {billingCycle && (
