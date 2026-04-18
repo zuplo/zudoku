@@ -191,8 +191,7 @@
             "items": {
               "$ref": "#/components/schemas/Comment"
             },
-            "maxItems": 100,
-            "enum": ["PENDING", "APPROVED", "REJECTED"]
+            "maxItems": 100
           },
           "tags": {
             "type": "array",

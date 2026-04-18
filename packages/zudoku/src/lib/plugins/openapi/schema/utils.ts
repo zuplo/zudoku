@@ -36,6 +36,22 @@ export const isArrayCircularRef = (
 ): schema is SchemaObject & { items: SchemaObject } =>
   isArrayType(schema) && "items" in schema && isCircularRef(schema.items);
 
+const COMPONENTS_SCHEMAS_PREFIX = "#/components/schemas/";
+
+// Unescape a JSON Pointer token per RFC 6901: ~1 → /, ~0 → ~, then URI decode.
+const unescapeJsonPointer = (token: string) =>
+  decodeURIComponent(token.replace(/~1/g, "/").replace(/~0/g, "~"));
+
+export const getSchemaRefName = (
+  schema?: SchemaObject | null,
+): string | undefined => {
+  const ref = schema && "__$ref" in schema ? schema.__$ref : undefined;
+  if (typeof ref !== "string") return;
+  if (!ref.startsWith(COMPONENTS_SCHEMAS_PREFIX)) return;
+
+  return unescapeJsonPointer(ref.slice(COMPONENTS_SCHEMAS_PREFIX.length));
+};
+
 export const extractCircularRefInfo = (
   ref?: string | SchemaObject,
 ): string | undefined => {

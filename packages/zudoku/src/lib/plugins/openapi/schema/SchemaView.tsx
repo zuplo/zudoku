@@ -15,8 +15,15 @@ import { EnumValues } from "../components/EnumValues.js";
 import { ParamInfos } from "../ParamInfos.js";
 import { SchemaExampleAndDefault } from "./SchemaExampleAndDefault.js";
 import { SchemaPropertyItem } from "./SchemaPropertyItem.js";
+import { SchemaRefLink } from "./SchemaRefLink.js";
 import { UnionView } from "./UnionView.js";
-import { isArrayType, isBasicType } from "./utils.js";
+import { getSchemaRefName, isArrayType, isBasicType } from "./utils.js";
+
+const RootRefLabel = ({ name }: { name: string }) => (
+  <div className="text-xs font-semibold flex items-center gap-1.5 px-4 py-2 border-b bg-muted/40">
+    <SchemaRefLink name={name} />
+  </div>
+);
 
 const renderMarkdown = (content?: string) =>
   content && (
@@ -108,11 +115,13 @@ const ObjectSchemaView = ({
   defaultOpen,
   cardHeader,
   embedded,
+  rootRefName,
 }: {
   schema: SchemaObject;
   defaultOpen: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  rootRefName?: string;
 }) => {
   const [showDeprecated, setShowDeprecated] = useState(false);
   const deprecatedRef = useRef<HTMLDivElement>(null);
@@ -189,6 +198,11 @@ const ObjectSchemaView = ({
     );
   }
 
+  const hasPanelContent =
+    nonDeprecatedGroups.length > 0 ||
+    deprecatedProperties ||
+    additionalObjectProperties;
+
   return (
     <Frame>
       {cardHeader}
@@ -197,10 +211,9 @@ const ObjectSchemaView = ({
           <FrameDescription>{schema.description}</FrameDescription>
         </FrameHeader>
       )}
-      {(nonDeprecatedGroups.length > 0 ||
-        deprecatedProperties ||
-        additionalObjectProperties) && (
+      {(hasPanelContent || rootRefName) && (
         <FramePanel className="p-0!">
+          {rootRefName && <RootRefLabel name={rootRefName} />}
           {itemsList}
           {deprecatedProperties && (
             <div ref={deprecatedRef} id={deprecatedId} hidden={!showDeprecated}>
@@ -244,11 +257,13 @@ export const SchemaView = ({
   defaultOpen = false,
   cardHeader,
   embedded,
+  hideRootRef,
 }: {
   schema?: SchemaObject | null;
   defaultOpen?: boolean;
   cardHeader?: React.ReactNode;
   embedded?: boolean;
+  hideRootRef?: boolean;
 }) => {
   if (!schema || Object.keys(schema).length === 0) {
     return (
@@ -287,12 +302,15 @@ export const SchemaView = ({
   }
 
   if (schema.type === "object") {
+    const rootRefName =
+      !embedded && !hideRootRef ? getSchemaRefName(schema) : undefined;
     return (
       <ObjectSchemaView
         schema={schema}
         defaultOpen={defaultOpen}
         cardHeader={cardHeader}
         embedded={embedded}
+        rootRefName={rootRefName}
       />
     );
   }
