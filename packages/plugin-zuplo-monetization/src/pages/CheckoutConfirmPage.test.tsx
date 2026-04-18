@@ -109,11 +109,11 @@ describe("CheckoutConfirmPage", () => {
       tax: {
         currency: "gbp",
         subtotal: 4900,
-        taxAmount: 12.5,
-        total: 4912.5,
+        taxAmount: 1250,
+        total: 6150,
         taxInclusive: false,
         taxes: [{ taxType: "VAT" }],
-        items: [{ amount: 4900, taxAmount: 12.5 }],
+        items: [{ amount: 4900, taxAmount: 1250 }],
       },
     };
 
@@ -129,11 +129,11 @@ describe("CheckoutConfirmPage", () => {
       tax: {
         currency: "usd",
         subtotal: 4900,
-        taxAmount: 3.25,
-        total: 4903.25,
+        taxAmount: 325,
+        total: 5225,
         taxInclusive: false,
         taxes: [{ taxType: "sales_tax" }],
-        items: [{ amount: 4900, taxAmount: 3.25 }],
+        items: [{ amount: 4900, taxAmount: 325 }],
       },
     };
 
@@ -148,11 +148,11 @@ describe("CheckoutConfirmPage", () => {
       tax: {
         currency: "usd",
         subtotal: 4900,
-        taxAmount: 4,
-        total: 4904,
+        taxAmount: 400,
+        total: 4900,
         taxInclusive: true,
         taxes: [{ taxType: "sales_tax" }],
-        items: [{ amount: 4900, taxAmount: 4 }],
+        items: [{ amount: 4900, taxAmount: 400 }],
       },
     };
 
@@ -213,8 +213,8 @@ describe("CheckoutConfirmPage", () => {
       tax: {
         currency: "usd",
         subtotal: 0,
-        taxAmount: 5,
-        total: 5,
+        taxAmount: 500,
+        total: 500,
         taxInclusive: false,
         taxes: [{ taxType: "sales_tax" }],
         items: [],

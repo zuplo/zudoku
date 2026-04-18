@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatPrice, formatPriceTwoDecimals } from "./formatPrice.js";
+import { formatMinorCurrencyAmount, formatPrice } from "./formatPrice.js";
 
 describe("formatPrice", () => {
   it("formats whole numbers without decimals", () => {
@@ -25,17 +25,31 @@ describe("formatPrice", () => {
   });
 });
 
-describe("formatPriceTwoDecimals", () => {
-  it("shows two fraction digits for whole amounts", () => {
-    expect(formatPriceTwoDecimals(10, "USD")).toBe("$10.00");
+describe("formatMinorCurrencyAmount", () => {
+  it("uses two fraction digits and divides by 100 for USD", () => {
+    expect(formatMinorCurrencyAmount(420, "USD")).toBe("$4.20");
+    expect(formatMinorCurrencyAmount(100_000, "USD")).toBe("$1,000.00");
   });
 
-  it("rounds to two decimal places", () => {
-    expect(formatPriceTwoDecimals(10.126, "USD")).toBe("$10.13");
-    expect(formatPriceTwoDecimals(0.005, "USD")).toBe("$0.01");
+  it("uses no extra fraction digits for zero-exponent currencies (e.g. JPY, KRW)", () => {
+    expect(formatMinorCurrencyAmount(420, "JPY")).toBe("¥420");
+    expect(formatMinorCurrencyAmount(12_500, "KRW")).toBe("₩12,500");
+  });
+
+  it("uses three fraction digits for KWD", () => {
+    expect(formatMinorCurrencyAmount(12_345, "KWD")).toBe("KWD 12.345");
+  });
+
+  it("rounds when converting from minor units", () => {
+    expect(formatMinorCurrencyAmount(1012.6, "USD")).toBe("$10.13");
+    expect(formatMinorCurrencyAmount(0.5, "USD")).toBe("$0.01");
+  });
+
+  it("normalizes currency to uppercase", () => {
+    expect(formatMinorCurrencyAmount(420, "usd")).toBe("$4.20");
   });
 
   it("defaults to USD when no currency is provided", () => {
-    expect(formatPriceTwoDecimals(0)).toBe("$0.00");
+    expect(formatMinorCurrencyAmount(0)).toBe("$0.00");
   });
 });
