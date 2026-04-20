@@ -314,7 +314,7 @@ const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
         </div>
 
         <Markdown
-          className="text-muted-foreground mt-4 line-clamp-2 text-sm whitespace-pre-wrap"
+          className="text-muted-foreground mt-4 line-clamp-3 text-sm whitespace-pre-wrap"
           content={item.description}
           components={{
             a: (props) => <span {...props} />,
