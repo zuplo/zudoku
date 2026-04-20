@@ -95,7 +95,7 @@ export function SchemaList() {
                 </CollapsibleTrigger>
               </Heading>
               <CollapsibleContent className="mt-4 CollapsibleContent">
-                <SchemaView schema={schema.schema} />
+                <SchemaView schema={schema.schema} hideRootRef />
               </CollapsibleContent>
             </Collapsible>
           ))}
