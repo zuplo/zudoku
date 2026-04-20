@@ -21,6 +21,13 @@ import { getZuploSystemConfigurations } from "./zuplo.js";
 
 export type ZudokuConfigEnv = ConfigEnv & {
   mode: "development" | "production";
+  /**
+   * Whether the deployment has a live server at runtime (dev, SSR). Falls
+   * back to `true` when omitted. Baked into the client as
+   * `import.meta.env.ZUDOKU_HAS_SERVER` so features that depend on server
+   * endpoints (e.g. SSR auth cookie sync) can branch at build time.
+   */
+  hasServer?: boolean;
 };
 
 export const getAppClientEntryPath = () =>
@@ -103,6 +110,9 @@ export async function getViteConfig(
       "process.env.ZUDOKU_VERSION": JSON.stringify(packageJson.version),
       "process.env.IS_ZUPLO": ZuploEnv.isZuplo,
       "import.meta.env.IS_ZUPLO": ZuploEnv.isZuplo,
+      "import.meta.env.ZUDOKU_HAS_SERVER": JSON.stringify(
+        configEnv.hasServer ?? true,
+      ),
       "import.meta.env.ZUPLO_PUBLIC_DEPLOYMENT_NAME":
         JSON.stringify(deploymentName),
       ...defineEnvVars([
