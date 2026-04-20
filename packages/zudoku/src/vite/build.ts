@@ -43,7 +43,6 @@ export type BuildOptions = {
 export async function runBuild(options: BuildOptions) {
   const { dir, ssr, adapter = "node" } = options;
 
-  // Build client and server bundles
   const viteClientConfig = await getViteConfig(dir, {
     mode: "production",
     command: "build",

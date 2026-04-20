@@ -49,6 +49,14 @@ const noopStorage: StateStorage = {
 const ssrAuthInitial =
   typeof window !== "undefined" ? window.ZUDOKU_SSR_AUTH : undefined;
 
+// When the server injected ZUDOKU_SSR_AUTH, cookies are authoritative and
+// tokens stay out of localStorage. SSG has no such injection, so persist the
+// full snapshot for reload continuity.
+const partialize = (state: AuthState) =>
+  ssrAuthInitial !== undefined
+    ? { isAuthenticated: state.isAuthenticated, profile: state.profile }
+    : state;
+
 export const authState = create<AuthState>()(
   persist(
     (set) => ({
@@ -90,6 +98,7 @@ export const authState = create<AuthState>()(
       storage: createJSONStorage(() =>
         typeof window !== "undefined" ? localStorage : noopStorage,
       ),
+      partialize,
     },
   ),
 );
