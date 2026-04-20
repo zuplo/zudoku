@@ -384,7 +384,8 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
-      categories: [{ label: "General", tags: ["Shipments"] }],
+      categories: [{ label: "Core", tags: ["Shipments", "Logistics"] }],
+      stability: "stable",
       options: {
         disableSecurity: false,
         transformExamples: ({ content, auth }) => {
@@ -421,13 +422,15 @@ const config: ZudokuConfig = {
         "./schema/label-v1.json",
       ],
       path: "/catalog/api-label",
-      categories: [{ label: "General", tags: ["Labels"] }],
+      categories: [{ label: "Core", tags: ["Labels"] }],
+      stability: "stable",
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
-      categories: [{ label: "General", tags: ["Developer"] }],
+      categories: [{ label: "Platform", tags: ["Events", "Developer"] }],
+      stability: "stable",
       options: {
         supportedLanguages: [
           { value: "js", label: "JavaScript" },
@@ -453,13 +456,15 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/interplanetary.json",
       path: "/catalog/api-interplanetary",
-      categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
+      categories: [{ label: "Interplanetary", tags: ["Routes", "Transit"] }],
+      stability: "beta",
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
       path: "/catalog/api-tracking",
-      categories: [{ label: "General", tags: ["Tracking"] }],
+      categories: [{ label: "Core", tags: ["Tracking", "Events"] }],
+      stability: "stable",
     },
     {
       type: "file",
@@ -471,6 +476,7 @@ const config: ZudokuConfig = {
           tags: ["MCP Integration", "AI Optimization"],
         },
       ],
+      stability: "alpha",
     },
     {
       type: "file",
@@ -478,16 +484,18 @@ const config: ZudokuConfig = {
       path: "/catalog/api-docs",
       categories: [
         {
-          label: "Documentation",
+          label: "Platform",
           tags: ["Documentation"],
         },
       ],
+      stability: "stable",
     },
     {
       type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
-      categories: [{ label: "General", tags: ["Containers", "Booking"] }],
+      categories: [{ label: "Core", tags: ["Containers", "Booking"] }],
+      stability: "stable",
     },
     {
       type: "file",
@@ -509,7 +517,8 @@ const config: ZudokuConfig = {
         },
       ],
       path: "/catalog/api-fleet-ops",
-      categories: [{ label: "General", tags: ["Fleet Command"] }],
+      categories: [{ label: "Core", tags: ["Fleet Command"] }],
+      stability: "beta",
     },
   ],
   theme: {

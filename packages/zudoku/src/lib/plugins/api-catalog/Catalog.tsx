@@ -1,80 +1,343 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
-import { useMatch } from "react-router";
+import { SearchIcon, XIcon } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "zudoku/components";
 import { useAuthState } from "../../authentication/state.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { Badge } from "../../ui/Badge.js";
+import { Button } from "../../ui/Button.js";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "../../ui/InputGroup.js";
+import { Kbd } from "../../ui/Kbd.js";
+import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import { type ApiCatalogPluginOptions, getKey } from "./index.js";
+import type {
+  ApiCatalogItem,
+  ApiCatalogPluginOptions,
+  CatalogItemStatus,
+} from "./index.js";
+
+const statusStyles: Record<CatalogItemStatus, string> = {
+  stable:
+    "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-200",
+  beta: "bg-sky-100 text-sky-900 dark:bg-sky-900/30 dark:text-sky-200",
+  alpha: "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200",
+};
+
+const statusLabel: Record<CatalogItemStatus, string> = {
+  stable: "Stable",
+  beta: "Beta",
+  alpha: "Alpha",
+};
+
+const StatusBadge = ({ status }: { status: CatalogItemStatus }) => (
+  <span
+    className={cn(
+      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
+      statusStyles[status],
+    )}
+  >
+    <span
+      className={cn(
+        "size-1.5 rounded-full",
+        status === "stable" && "bg-emerald-500",
+        status === "beta" && "bg-sky-500",
+        status === "alpha" && "bg-amber-500",
+      )}
+    />
+    {statusLabel[status]}
+  </span>
+);
+
+const getAvatarLetter = (label: string) =>
+  label.trim().charAt(0).toUpperCase() || "?";
+
+const matchesQuery = (item: ApiCatalogItem, query: string) => {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  return (
+    item.label.toLowerCase().includes(q) ||
+    item.description.toLowerCase().includes(q) ||
+    item.categories.some(
+      (c) =>
+        c.label.toLowerCase().includes(q) ||
+        c.tags.some((t) => t.toLowerCase().includes(q)),
+    )
+  );
+};
 
 export const Catalog = ({
   items,
   filterCatalogItems = (items) => items,
   label = "API Library",
-  categoryLabel,
-}: Omit<ApiCatalogPluginOptions, "path"> & {
-  categoryLabel?: string;
-}) => {
+  categories = [],
+}: Omit<ApiCatalogPluginOptions, "path">) => {
   const auth = useAuthState();
-  const match = useMatch({ path: "/catalog/:category" });
-  const activeCategory = match?.params.category;
+  const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const catalogItems = useSuspenseQuery({
     queryFn: () => filterCatalogItems(items, { auth }),
     queryKey: ["catalogItems", auth],
   });
 
-  // Only index the overview page, ignore the rest
-  const dataSet = activeCategory ? { "data-pagefind-ignore": "all" } : {};
+  const filterChips = useMemo(() => {
+    const seen = new Set<string>();
+    const ordered: string[] = [];
+    for (const cat of categories) {
+      if (!seen.has(cat.label)) {
+        seen.add(cat.label);
+        ordered.push(cat.label);
+      }
+    }
+    for (const item of catalogItems.data) {
+      for (const cat of item.categories) {
+        if (!seen.has(cat.label)) {
+          seen.add(cat.label);
+          ordered.push(cat.label);
+        }
+      }
+    }
+    return ordered;
+  }, [categories, catalogItems.data]);
+
+  const visibleItems = useMemo(
+    () =>
+      catalogItems.data.filter((item) => {
+        if (
+          activeFilter &&
+          !item.categories.some((c) => c.label === activeFilter)
+        ) {
+          return false;
+        }
+        return matchesQuery(item, query);
+      }),
+    [catalogItems.data, query, activeFilter],
+  );
+
+  const totalOps = useMemo(
+    () =>
+      catalogItems.data.reduce((sum, i) => sum + (i.operationCount ?? 0), 0),
+    [catalogItems.data],
+  );
+
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   return (
-    <section className="pt-(--padding-content-top)" {...dataSet}>
+    <section className="pt-(--padding-content-top) pb-12">
       <Helmet>
-        <title>
-          {categoryLabel ? `${categoryLabel} - ` : ""}
-          {label}
-        </title>
+        <title>{label}</title>
       </Helmet>
-      <div className="grid gap-4">
-        <Heading level={2}>
-          {label}
-          {categoryLabel && ` - ${categoryLabel}`}
-        </Heading>
+      <div className="flex flex-col gap-6">
+        <header className="flex flex-col gap-2">
+          <Heading level={1} className="text-4xl font-bold tracking-tight">
+            {label}
+          </Heading>
+          <p className="text-muted-foreground text-base">
+            Browse every API across the platform. {catalogItems.data.length}{" "}
+            {catalogItems.data.length === 1 ? "API" : "APIs"}
+            {totalOps > 0 ? ` · ${totalOps}+ endpoints` : ""}.
+          </p>
+        </header>
 
-        <div className="grid grid-cols-2 gap-4">
-          {catalogItems.data
-            .filter(
-              (api) =>
-                !activeCategory ||
-                api.categories.find((c) =>
-                  c.tags.find((t) => getKey(c.label, t) === activeCategory),
-                ),
-            )
-            .map((api) => (
-              <Link
-                to={joinUrl(api.path)}
-                className="no-underline hover:!text-foreground"
-                key={api.path}
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <InputGroup className="max-w-md">
+            <InputGroupAddon align="inline-start">
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              ref={inputRef}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search APIs…"
+              aria-label="Search APIs"
+            />
+            <InputGroupAddon align="inline-end">
+              {query ? (
+                <button
+                  type="button"
+                  aria-label="Clear search"
+                  onClick={() => setQuery("")}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <XIcon className="size-4" />
+                </button>
+              ) : (
+                <Kbd>/</Kbd>
+              )}
+            </InputGroupAddon>
+          </InputGroup>
+
+          {filterChips.length > 0 && (
+            <div
+              role="tablist"
+              aria-label="Filter by category"
+              className="flex flex-wrap items-center gap-2"
+            >
+              <FilterChip
+                active={activeFilter === null}
+                onClick={() => setActiveFilter(null)}
               >
-                <div className="border h-full rounded-lg p-4 flex flex-col gap-2 cursor-pointer hover:bg-border/20 font-normal">
-                  <span className="font-semibold">{api.label}</span>
-                  <Markdown
-                    className="text-sm whitespace-pre-wrap mb-6 line-clamp-2"
-                    content={api.description}
-                    components={{
-                      // Because we're wrapping the description in a Link already,
-                      // we need to strip out other links to not get a hydration error, like:
-                      // > In HTML, <a> cannot be a descendant of <a>.
-                      // > This will cause a hydration error.
-                      a: (props) => <span {...props} />,
-                    }}
-                  />
-                </div>
-              </Link>
-            ))}
+                All
+              </FilterChip>
+              {filterChips.map((chip) => (
+                <FilterChip
+                  key={chip}
+                  active={activeFilter === chip}
+                  onClick={() =>
+                    setActiveFilter(activeFilter === chip ? null : chip)
+                  }
+                >
+                  {chip}
+                </FilterChip>
+              ))}
+            </div>
+          )}
         </div>
+
+        {visibleItems.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-12 text-center">
+            <p className="text-muted-foreground text-sm">
+              No APIs match your filters.
+            </p>
+            {(query || activeFilter) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mt-2"
+                onClick={() => {
+                  setQuery("");
+                  setActiveFilter(null);
+                }}
+              >
+                Clear filters
+              </Button>
+            )}
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleItems.map((api) => (
+              <CatalogCard key={api.path} item={api} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
+  );
+};
+
+const FilterChip = ({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    role="tab"
+    aria-selected={active}
+    onClick={onClick}
+    className={cn(
+      "rounded-md border px-3 py-1.5 text-sm font-medium transition-colors",
+      active
+        ? "border-primary/40 bg-primary/10 text-primary"
+        : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
+    )}
+  >
+    {children}
+  </button>
+);
+
+const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
+  const tags = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const cat of item.categories) {
+      for (const tag of [cat.label, ...cat.tags]) {
+        if (!seen.has(tag)) {
+          seen.add(tag);
+          out.push(tag);
+        }
+      }
+    }
+    return out;
+  }, [item.categories]);
+
+  return (
+    <Link
+      to={joinUrl(item.path)}
+      className="no-underline group hover:!text-foreground"
+    >
+      <article className="bg-card ring-foreground/10 hover:ring-primary/40 hover:bg-accent/30 flex h-full flex-col rounded-xl p-5 ring-1 transition-[box-shadow,background-color]">
+        <div className="flex items-start gap-3">
+          <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold">
+            {getAvatarLetter(item.label)}
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <span className="font-semibold leading-tight">{item.label}</span>
+            {item.version && (
+              <span className="text-muted-foreground text-xs">
+                {item.version}
+              </span>
+            )}
+          </div>
+          {item.status && <StatusBadge status={item.status} />}
+        </div>
+
+        <Markdown
+          className="text-muted-foreground mt-4 line-clamp-2 text-sm whitespace-pre-wrap"
+          content={item.description}
+          components={{
+            a: (props) => <span {...props} />,
+          }}
+        />
+
+        {(tags.length > 0 || item.operationCount != null) && (
+          <div className="mt-auto flex items-center justify-between gap-2 border-t pt-4">
+            <div className="flex flex-wrap items-center gap-1.5">
+              {tags.slice(0, 3).map((tag) => (
+                <Badge key={tag} variant="muted" className="font-normal">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+            {item.operationCount != null && (
+              <span className="text-muted-foreground shrink-0 text-xs font-medium">
+                {item.operationCount} ops
+              </span>
+            )}
+          </div>
+        )}
+      </article>
+    </Link>
   );
 };

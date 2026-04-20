@@ -109,6 +109,7 @@ const ApiConfigSchema = z
     server: z.string(),
     path: z.string(),
     categories: z.array(ApiCatalogCategorySchema),
+    stability: z.enum(["stable", "beta", "alpha"]),
     options: ApiOptionsSchema,
   })
   .partial();
