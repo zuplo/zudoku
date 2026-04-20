@@ -14,7 +14,7 @@ import {
   InputGroupInput,
 } from "../../ui/InputGroup.js";
 import { Kbd } from "../../ui/Kbd.js";
-import { cn } from "../../util/cn.js";
+import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import type { ApiCatalogItem, ApiCatalogPluginOptions } from "./index.js";
 
@@ -164,29 +164,22 @@ export const Catalog = ({
           </InputGroup>
 
           {filterChips.length > 0 && (
-            <div
-              role="group"
+            <ToggleGroup
+              type="single"
+              size="sm"
+              variant="outline"
               aria-label="Filter by category"
-              className="flex flex-wrap items-center gap-2"
+              value={activeFilter ?? ""}
+              onValueChange={(value) => setActiveFilter(value || null)}
+              className="flex flex-wrap justify-start gap-2"
             >
-              <FilterChip
-                active={activeFilter === null}
-                onClick={() => setActiveFilter(null)}
-              >
-                All
-              </FilterChip>
+              <ToggleGroupItem value="">All</ToggleGroupItem>
               {filterChips.map((chip) => (
-                <FilterChip
-                  key={chip}
-                  active={activeFilter === chip}
-                  onClick={() =>
-                    setActiveFilter(activeFilter === chip ? null : chip)
-                  }
-                >
+                <ToggleGroupItem key={chip} value={chip}>
                   {chip}
-                </FilterChip>
+                </ToggleGroupItem>
               ))}
-            </div>
+            </ToggleGroup>
           )}
         </div>
 
@@ -220,30 +213,6 @@ export const Catalog = ({
     </section>
   );
 };
-
-const FilterChip = ({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) => (
-  <button
-    type="button"
-    aria-pressed={active}
-    onClick={onClick}
-    className={cn(
-      "rounded-md border px-3 py-1.5 text-sm font-medium transition-colors",
-      active
-        ? "border-primary/40 bg-primary/10 text-primary"
-        : "border-border bg-background text-muted-foreground hover:bg-accent hover:text-foreground",
-    )}
-  >
-    {children}
-  </button>
-);
 
 const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
   const tags = useMemo(() => {
