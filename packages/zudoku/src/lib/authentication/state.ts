@@ -2,7 +2,6 @@ import { create } from "zustand";
 import {
   createJSONStorage,
   persist,
-  type PersistOptions,
   type StateStorage,
 } from "zustand/middleware";
 import { syncZustandState } from "../util/syncZustandState.js";
@@ -50,24 +49,13 @@ const noopStorage: StateStorage = {
 const ssrAuthInitial =
   typeof window !== "undefined" ? window.ZUDOKU_SSR_AUTH : undefined;
 
-// When a runtime server is available (dev, SSR deployments), tokens live
-// only in httpOnly cookies the server writes after verification. Strip
-// `providerData` from the persisted snapshot so access/refresh tokens the
-// provider SDK happens to stash there never hit localStorage. Provider SDKs
-// rehydrate their own session on boot and push a fresh `providerData` back
-// into the store, which `cookie-sync` then mirrors to the server cookie.
-//
-// In SSG builds there is no server at runtime and therefore no cookie
-// fallback — persist the full snapshot so a reload can still recover the
-// session from localStorage.
-const partialize: PersistOptions<AuthState>["partialize"] = import.meta.env
-  .ZUDOKU_HAS_SERVER
-  ? (state) =>
-      ({
-        isAuthenticated: state.isAuthenticated,
-        profile: state.profile,
-      }) as unknown as AuthState
-  : (state) => state;
+// When the server injected ZUDOKU_SSR_AUTH, cookies are authoritative and
+// tokens stay out of localStorage. SSG has no such injection, so persist the
+// full snapshot for reload continuity.
+const partialize = (state: AuthState) =>
+  ssrAuthInitial !== undefined
+    ? { isAuthenticated: state.isAuthenticated, profile: state.profile }
+    : state;
 
 export const authState = create<AuthState>()(
   persist(

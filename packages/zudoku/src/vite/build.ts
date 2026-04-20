@@ -43,18 +43,14 @@ export type BuildOptions = {
 export async function runBuild(options: BuildOptions) {
   const { dir, ssr, adapter = "node" } = options;
 
-  // Build client and server bundles. `hasServer` only matters for the
-  // client bundle — it's a no-op flag on the server build.
   const viteClientConfig = await getViteConfig(dir, {
     mode: "production",
     command: "build",
-    hasServer: ssr,
   });
   const viteServerConfig = await getViteConfig(dir, {
     mode: "production",
     command: "build",
     isSsrBuild: true,
-    hasServer: ssr,
   });
 
   const clientResult = await viteBuild(viteClientConfig);

@@ -16,9 +16,8 @@ Zudoku supports two runtime shapes:
 The mode is selected at build time: `zudoku build --ssr` keeps the server bundle; plain
 `zudoku build` prerenders and drops the server bundle.
 
-A build-time flag `import.meta.env.ZUDOKU_HAS_SERVER` is baked into the client bundle from
-`ZudokuConfigEnv.hasServer` (see `vite/config.ts`). Dev always runs the server, so `hasServer`
-defaults to `true`.
+The client detects the mode at runtime via `window.ZUDOKU_SSR_AUTH`: the SSR server injects this
+object (even with `profile: null`) whenever auth is configured; SSG never injects it.
 
 ## Token storage
 
@@ -51,18 +50,16 @@ Since SSR has a cookie fallback but SSG does not, the persisted zustand shape di
 
 ```ts
 // packages/zudoku/src/lib/authentication/state.ts
-const partialize = import.meta.env.ZUDOKU_HAS_SERVER
-  ? (state) => ({
-      // SSR: don't write tokens to localStorage. The httpOnly cookie is
+const partialize = (state: AuthState) =>
+  ssrAuthInitial !== undefined
+    ? // SSR: don't write tokens to localStorage. The httpOnly cookie is
       // the durable store; `providerData` stays only in memory.
-      isAuthenticated: state.isAuthenticated,
-      profile: state.profile,
-    })
-  : (state) => state;
-// SSG: persist full state including `providerData`. Without a server
-// there is no cookie to recover tokens on reload, so localStorage is
-// the only continuity store. This is the weaker posture but the only
-// option in a pure-static deployment.
+      { isAuthenticated: state.isAuthenticated, profile: state.profile }
+    : // SSG: persist full state including `providerData`. Without a server
+      // there is no cookie to recover tokens on reload, so localStorage is
+      // the only continuity store. Weaker posture but the only option in
+      // a pure-static deployment.
+      state;
 ```
 
 ### Reload behavior (SSR mode)
@@ -124,5 +121,3 @@ introduced (`providerData` in zustand persist) while leaving provider SDK storag
 | `state.ts`           | Zustand store + mode-aware `partialize`             |
 | `hook.ts`            | `useAuth`; SSR override via `RenderContext.ssrAuth` |
 | `providers/*.tsx`    | Per-provider `verifyAccessToken` implementations    |
-| `vite/config.ts`     | Bakes `import.meta.env.ZUDOKU_HAS_SERVER` define    |
-| `vite/build.ts`      | Passes `hasServer: ssr` to the client config        |
