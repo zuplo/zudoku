@@ -101,6 +101,26 @@ jobs:
       - name: Build Examples
         run: nx run-many -t build --projects=tag:example --exclude=mermaid,many-apis
 
+      - name: Smoke Test with-base-path
+        run: |
+          dist="examples/with-base-path/dist"
+          nested="$dist/your-repo"
+          fail() { echo "::error::$1"; exit 1; }
+
+          [ -f "$nested/introduction.html" ] || fail "prerendered page missing at $nested/introduction.html"
+          [ -f "$nested/api/rick-and-morty/1.0.0/schema.json" ] || fail "schema download missing under $nested/api/"
+          [ -f "$nested/llms.txt" ] || fail "llms.txt missing under $nested/"
+          find "$nested/assets" -name '*.js' -type f | grep -q . || fail "no JS bundles in $nested/assets"
+          [ -f "$dist/404.html" ] || fail "status page 404.html missing at dist root"
+
+          grep -q 'rel="icon" href="/your-repo/favicon.svg"' "$nested/introduction.html" \
+            || fail "favicon href missing /your-repo prefix"
+
+          grep -q 'href="/your-repo/assets/' "$nested/introduction.html" \
+            || fail "asset URLs missing /your-repo prefix"
+
+          echo "✅ with-base-path smoke test passed"
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
