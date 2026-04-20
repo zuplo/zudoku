@@ -487,7 +487,7 @@ export const Playground = ({
   }, []);
 
   const serverSelect = (
-    <div className="inline-block opacity-50 hover:opacity-100 transition">
+    <div className="inline-block align-middle -translate-y-px opacity-50 hover:opacity-100 transition">
       {server ? (
         <span>{server.replace(/^https?:\/\//, "").replace(/\/$/, "")}</span>
       ) : (
@@ -499,7 +499,7 @@ export const Playground = ({
             value={selectedServer}
             defaultValue={selectedServer}
           >
-            <SelectTrigger className="p-0 h-fit shadow-none border-none flex-row-reverse bg-transparent text-xs gap-0.5 translate-y-[4px]">
+            <SelectTrigger className="p-0! h-6! shadow-none border-none flex-row-reverse bg-transparent text-xs gap-0.5">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -573,18 +573,18 @@ export const Playground = ({
 
           <div className="grid grid-cols-[1fr_1px_1fr] text-sm">
             <div className="col-span-3 p-4 border-b flex gap-2 items-stretch">
-              <div className="flex flex-1 items-center w-full border rounded-md relative overflow-hidden">
-                <div className="border-r p-2 bg-muted rounded-l-md self-stretch font-semibold font-mono flex items-center">
+              <div className="flex flex-1 items-stretch w-full min-h-8 border rounded-md relative overflow-hidden">
+                <div className="border-r px-2 bg-muted rounded-l-md font-semibold font-mono flex items-center">
                   {method.toUpperCase()}
                 </div>
-                <div className="items-center px-2 font-mono text-xs break-all leading-6 relative h-full w-full">
-                  <div className="h-full py-1.5">
+                <div className="flex-1 min-w-0 px-2 font-mono text-xs break-all leading-6 flex items-center">
+                  <div>
                     {serverSelect}
                     <UrlPath url={url} />
                     <UrlQueryParams />
                   </div>
                 </div>
-                <div className="px-1">
+                <div className="px-1 flex items-center">
                   <Button
                     type="button"
                     onClick={() => {
