@@ -13,10 +13,7 @@ export const SchemaRefLink = ({
 }) => (
   <Link
     to={{ pathname: "../~schemas", hash: slugify(name) }}
-    className={cn(
-      "text-foreground underline decoration-dotted underline-offset-4 hover:decoration-solid",
-      className,
-    )}
+    className={cn("text-foreground hover:underline", className)}
   >
     {name}
     {suffix}
