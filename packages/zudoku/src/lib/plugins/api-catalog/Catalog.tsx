@@ -51,7 +51,6 @@ export const Catalog = ({
   items,
   filterCatalogItems = (items) => items,
   label = "API Library",
-  categories = [],
 }: Omit<ApiCatalogPluginOptions, "path">) => {
   const auth = useAuthState();
   const [query, setQuery] = useState("");
@@ -66,12 +65,6 @@ export const Catalog = ({
   const filterChips = useMemo(() => {
     const seen = new Set<string>();
     const ordered: string[] = [];
-    for (const cat of categories) {
-      if (!seen.has(cat.label)) {
-        seen.add(cat.label);
-        ordered.push(cat.label);
-      }
-    }
     for (const item of catalogItems.data) {
       for (const cat of item.categories) {
         if (!seen.has(cat.label)) {
@@ -81,7 +74,7 @@ export const Catalog = ({
       }
     }
     return ordered;
-  }, [categories, catalogItems.data]);
+  }, [catalogItems.data]);
 
   const visibleItems = useMemo(
     () =>
@@ -138,7 +131,7 @@ export const Catalog = ({
           <p className="text-muted-foreground text-base">
             Browse every API across the platform. {catalogItems.data.length}{" "}
             {catalogItems.data.length === 1 ? "API" : "APIs"}
-            {totalOps > 0 ? ` · ${totalOps}+ endpoints` : ""}.
+            {totalOps > 0 ? ` · ${totalOps} endpoints` : ""}.
           </p>
         </header>
 
@@ -172,7 +165,7 @@ export const Catalog = ({
 
           {filterChips.length > 0 && (
             <div
-              role="tablist"
+              role="group"
               aria-label="Filter by category"
               className="flex flex-wrap items-center gap-2"
             >
@@ -239,8 +232,7 @@ const FilterChip = ({
 }) => (
   <button
     type="button"
-    role="tab"
-    aria-selected={active}
+    aria-pressed={active}
     onClick={onClick}
     className={cn(
       "rounded-md border px-3 py-1.5 text-sm font-medium transition-colors",
