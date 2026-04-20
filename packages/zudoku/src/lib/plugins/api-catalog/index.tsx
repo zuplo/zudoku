@@ -1,15 +1,12 @@
 import type { AuthState } from "../../authentication/state.js";
 import type { ZudokuPlugin } from "../../core/plugins.js";
 
-export type CatalogItemStatus = "stable" | "beta" | "alpha";
-
 export type ApiCatalogItem = {
   path: string;
   label: string;
   description: string;
   categories: CatalogCategory[];
   version?: string;
-  status?: CatalogItemStatus;
   operationCount?: number;
 };
 

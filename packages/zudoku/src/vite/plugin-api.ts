@@ -159,14 +159,17 @@ const viteApiPlugin = async (): Promise<Plugin> => {
             const latestSchema = schemaManager.getLatestSchema(apiConfig.path);
             if (!latestSchema?.schema.info) continue;
 
-            const paths = latestSchema.schema.paths ?? {};
-            let operationCount = 0;
-            for (const pathItem of Object.values(paths)) {
-              if (!pathItem || typeof pathItem !== "object") continue;
-              for (const method of Object.keys(pathItem)) {
-                if (httpMethods.has(method.toLowerCase())) operationCount++;
-              }
-            }
+            const operationCount = Object.values(
+              latestSchema.schema.paths ?? {},
+            ).reduce<number>((sum, pathItem) => {
+              if (!pathItem || typeof pathItem !== "object") return sum;
+              return (
+                sum +
+                Object.keys(pathItem).filter((m) =>
+                  httpMethods.has(m.toLowerCase()),
+                ).length
+              );
+            }, 0);
 
             const rawVersion = latestSchema.schema.info.version;
             const version = rawVersion
@@ -181,7 +184,6 @@ const viteApiPlugin = async (): Promise<Plugin> => {
               description: latestSchema.schema.info.description ?? "",
               categories: apiConfig.categories ?? [],
               version,
-              status: apiConfig.stability ?? "stable",
               operationCount,
             });
           }

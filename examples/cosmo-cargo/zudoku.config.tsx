@@ -385,7 +385,6 @@ const config: ZudokuConfig = {
       input: "./schema/shipments.json",
       path: "api-shipments",
       categories: [{ label: "Core", tags: ["Shipments", "Logistics"] }],
-      stability: "stable",
       options: {
         disableSecurity: false,
         transformExamples: ({ content, auth }) => {
@@ -423,14 +422,12 @@ const config: ZudokuConfig = {
       ],
       path: "/catalog/api-label",
       categories: [{ label: "Core", tags: ["Labels"] }],
-      stability: "stable",
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
       categories: [{ label: "Platform", tags: ["Events", "Developer"] }],
-      stability: "stable",
       options: {
         supportedLanguages: [
           { value: "js", label: "JavaScript" },
@@ -457,14 +454,12 @@ const config: ZudokuConfig = {
       input: "./schema/interplanetary.json",
       path: "/catalog/api-interplanetary",
       categories: [{ label: "Interplanetary", tags: ["Routes", "Transit"] }],
-      stability: "beta",
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
       path: "/catalog/api-tracking",
       categories: [{ label: "Core", tags: ["Tracking", "Events"] }],
-      stability: "stable",
     },
     {
       type: "file",
@@ -476,7 +471,6 @@ const config: ZudokuConfig = {
           tags: ["MCP Integration", "AI Optimization"],
         },
       ],
-      stability: "alpha",
     },
     {
       type: "file",
@@ -488,14 +482,12 @@ const config: ZudokuConfig = {
           tags: ["Documentation"],
         },
       ],
-      stability: "stable",
     },
     {
       type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
       categories: [{ label: "Core", tags: ["Containers", "Booking"] }],
-      stability: "stable",
     },
     {
       type: "file",
@@ -518,7 +510,6 @@ const config: ZudokuConfig = {
       ],
       path: "/catalog/api-fleet-ops",
       categories: [{ label: "Core", tags: ["Fleet Command"] }],
-      stability: "beta",
     },
   ],
   theme: {

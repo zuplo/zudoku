@@ -16,46 +16,22 @@ import {
 import { Kbd } from "../../ui/Kbd.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
-import type {
-  ApiCatalogItem,
-  ApiCatalogPluginOptions,
-  CatalogItemStatus,
-} from "./index.js";
-
-const statusStyles: Record<CatalogItemStatus, string> = {
-  stable:
-    "bg-emerald-100 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-200",
-  beta: "bg-sky-100 text-sky-900 dark:bg-sky-900/30 dark:text-sky-200",
-  alpha: "bg-amber-100 text-amber-900 dark:bg-amber-900/30 dark:text-amber-200",
-};
-
-const statusLabel: Record<CatalogItemStatus, string> = {
-  stable: "Stable",
-  beta: "Beta",
-  alpha: "Alpha",
-};
-
-const StatusBadge = ({ status }: { status: CatalogItemStatus }) => (
-  <span
-    className={cn(
-      "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium",
-      statusStyles[status],
-    )}
-  >
-    <span
-      className={cn(
-        "size-1.5 rounded-full",
-        status === "stable" && "bg-emerald-500",
-        status === "beta" && "bg-sky-500",
-        status === "alpha" && "bg-amber-500",
-      )}
-    />
-    {statusLabel[status]}
-  </span>
-);
+import type { ApiCatalogItem, ApiCatalogPluginOptions } from "./index.js";
 
 const getAvatarLetter = (label: string) =>
   label.trim().charAt(0).toUpperCase() || "?";
+
+const truncateDescription = (md: string) => {
+  if (!md) return md;
+  const lines = md.split("\n");
+  const cutoff = lines.findIndex((line) => {
+    const trimmed = line.trim();
+    if (/^#{1,6}\s/.test(trimmed)) return true;
+    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) return true;
+    return false;
+  });
+  return (cutoff === -1 ? lines : lines.slice(0, cutoff)).join("\n").trim();
+};
 
 const matchesQuery = (item: ApiCatalogItem, query: string) => {
   if (!query) return true;
@@ -302,20 +278,19 @@ const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
           <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold">
             {getAvatarLetter(item.label)}
           </div>
-          <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
             <span className="font-semibold leading-tight">{item.label}</span>
             {item.version && (
-              <span className="text-muted-foreground text-xs">
+              <span className="text-muted-foreground bg-muted shrink-0 rounded-md px-2 py-0.5 text-xs font-medium">
                 {item.version}
               </span>
             )}
           </div>
-          {item.status && <StatusBadge status={item.status} />}
         </div>
 
         <Markdown
           className="text-muted-foreground mt-4 line-clamp-3 text-sm whitespace-pre-wrap"
-          content={item.description}
+          content={truncateDescription(item.description)}
           components={{
             a: (props) => <span {...props} />,
           }}
