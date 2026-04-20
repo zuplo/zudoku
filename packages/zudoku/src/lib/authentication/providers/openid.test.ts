@@ -247,6 +247,59 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
     });
   });
 
+  describe("verifyAccessToken", () => {
+    // Header {"alg":"none"}, payload {"sub":"u1","exp":1700000000}.
+    // Content doesn't matter for decoding since jose.decodeJwt skips signature.
+    const TOKEN_WITH_EXP =
+      "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ1MSIsImV4cCI6MTcwMDAwMDAwMH0.sig";
+
+    test("returns verified profile and expiresAt from access token JWT", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({
+          sub: "u1",
+          email: "u@example.com",
+          name: "U",
+          email_verified: true,
+          picture: "https://example.com/p.png",
+        }),
+      );
+      const result = await provider.verifyAccessToken(TOKEN_WITH_EXP);
+      expect(result).toEqual({
+        profile: {
+          sub: "u1",
+          email: "u@example.com",
+          name: "U",
+          emailVerified: true,
+          pictureUrl: "https://example.com/p.png",
+        },
+        expiresAt: 1_700_000_000,
+      });
+    });
+
+    test("returns null when userInfo responds not-ok", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        new Response(null, { status: 401 }),
+      );
+      expect(await provider.verifyAccessToken("t")).toBeUndefined();
+    });
+
+    test("throws when userInfo transport fails (→ 502 at the handler)", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockRejectedValueOnce(new Error("boom"));
+      await expect(provider.verifyAccessToken("t")).rejects.toThrow("boom");
+    });
+
+    test("returns null when userInfo has no sub", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockResolvedValueOnce(
+        Response.json({ email: "u@example.com" }),
+      );
+      expect(await provider.verifyAccessToken("t")).toBeUndefined();
+    });
+  });
+
   test("self heals providerData when providerData.type is undefined", async () => {
     const provider = createProvider();
 

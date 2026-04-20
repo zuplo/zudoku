@@ -148,6 +148,7 @@
     "hono": "4.12.12",
     "http-terminator": "3.2.0",
     "javascript-stringify": "2.1.0",
+    "jose": "6.2.2",
     "json-schema-to-typescript-lite": "15.0.0",
     "loglevel": "1.9.2",
     "lucide-react": "0.577.0",

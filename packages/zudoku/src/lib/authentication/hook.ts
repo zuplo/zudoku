@@ -76,8 +76,8 @@ export const useAuth = () => {
 
   useRefreshUserProfile();
 
-  // On the server, the zustand store can't read window.ZUDOKU_SSR_AUTH,
-  // so we override from RenderContext which carries the per-request auth state
+  // On the server, the zustand store can't read window.ZUDOKU_SSR_AUTH, so
+  // override from RenderContext which carries the per-request auth state.
   const { ssrAuth } = use(RenderContext);
   const isSSR = typeof window === "undefined";
 
@@ -86,7 +86,7 @@ export const useAuth = () => {
     ...authState,
     ...(isSSR &&
       ssrAuth && {
-        isAuthenticated: true,
+        isAuthenticated: !!ssrAuth.profile,
         isPending: false,
         profile: ssrAuth.profile,
       }),
