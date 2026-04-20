@@ -514,9 +514,9 @@ const config: ZudokuConfig = {
   ],
   theme: {
     light: {
-      background: "0 0% 100%",
+      background: "oklch(0.995 0.002 80)",
       foreground: "20 14.3% 4.1%",
-      card: "#fafafa",
+      card: "#fff",
       cardForeground: "#262626",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
@@ -531,6 +531,7 @@ const config: ZudokuConfig = {
       border: "20 5.9% 90%",
       input: "20 5.9% 90%",
       ring: "oklch(0.708 0 0)",
+      radius: "0.4rem",
     },
     dark: {
       background: "#1a1a18",

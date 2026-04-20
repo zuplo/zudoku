@@ -3,6 +3,7 @@ import { Helmet } from "@zudoku/react-helmet-async";
 import { SearchIcon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "zudoku/components";
+import { Card, CardContent, CardHeader } from "zudoku/ui/Card.js";
 import { useAuthState } from "../../authentication/state.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
@@ -47,6 +48,8 @@ const matchesQuery = (item: ApiCatalogItem, query: string) => {
   );
 };
 
+const ALL_ITEMS = "all";
+
 export const Catalog = ({
   items,
   filterCatalogItems = (items) => items,
@@ -54,7 +57,7 @@ export const Catalog = ({
 }: Omit<ApiCatalogPluginOptions, "path">) => {
   const auth = useAuthState();
   const [query, setQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState<string>(ALL_ITEMS);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const catalogItems = useSuspenseQuery({
@@ -80,11 +83,12 @@ export const Catalog = ({
     () =>
       catalogItems.data.filter((item) => {
         if (
-          activeFilter &&
+          activeFilter !== ALL_ITEMS &&
           !item.categories.some((c) => c.label === activeFilter)
         ) {
           return false;
         }
+
         return matchesQuery(item, query);
       }),
     [catalogItems.data, query, activeFilter],
@@ -165,15 +169,16 @@ export const Catalog = ({
 
           {filterChips.length > 0 && (
             <ToggleGroup
-              type="single"
               size="sm"
               variant="outline"
               aria-label="Filter by category"
-              value={activeFilter ?? ""}
-              onValueChange={(value) => setActiveFilter(value || null)}
-              className="flex flex-wrap justify-start gap-2"
+              spacing={2}
+              value={activeFilter ? [activeFilter] : [""]}
+              onValueChange={(value) =>
+                setActiveFilter(value.at(0) ?? ALL_ITEMS)
+              }
             >
-              <ToggleGroupItem value="">All</ToggleGroupItem>
+              <ToggleGroupItem value={ALL_ITEMS}>All</ToggleGroupItem>
               {filterChips.map((chip) => (
                 <ToggleGroupItem key={chip} value={chip}>
                   {chip}
@@ -195,7 +200,7 @@ export const Catalog = ({
                 className="mt-2"
                 onClick={() => {
                   setQuery("");
-                  setActiveFilter(null);
+                  setActiveFilter(ALL_ITEMS);
                 }}
               >
                 Clear filters
@@ -230,50 +235,51 @@ const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
   }, [item.categories]);
 
   return (
-    <Link
-      to={joinUrl(item.path)}
-      className="no-underline group hover:!text-foreground"
-    >
-      <article className="bg-card ring-foreground/10 hover:ring-primary/40 hover:bg-accent/30 flex h-full flex-col rounded-xl p-5 ring-1 transition-[box-shadow,background-color]">
-        <div className="flex items-start gap-3">
+    <Link to={joinUrl(item.path)} className="group ">
+      <Card>
+        <CardHeader className="flex items-start gap-3">
           <div className="bg-primary/10 text-primary flex size-10 shrink-0 items-center justify-center rounded-lg text-base font-semibold">
             {getAvatarLetter(item.label)}
           </div>
           <div className="flex min-w-0 flex-1 items-start justify-between gap-2">
-            <span className="font-semibold leading-tight">{item.label}</span>
+            <div className="flex flex-col">
+              <span className="font-semibold leading-tight">{item.label}</span>
+            </div>
             {item.version && (
               <span className="text-muted-foreground bg-muted shrink-0 rounded-md px-2 py-0.5 text-xs font-medium">
                 {item.version}
               </span>
             )}
           </div>
-        </div>
-
-        <Markdown
-          className="text-muted-foreground mt-4 line-clamp-3 text-sm whitespace-pre-wrap"
-          content={truncateDescription(item.description)}
-          components={{
-            a: (props) => <span {...props} />,
-          }}
-        />
-
-        {(tags.length > 0 || item.operationCount != null) && (
-          <div className="mt-auto flex items-center justify-between gap-2 border-t pt-4">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {tags.slice(0, 3).map((tag) => (
-                <Badge key={tag} variant="muted" className="font-normal">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            {item.operationCount != null && (
-              <span className="text-muted-foreground shrink-0 text-xs font-medium">
-                {item.operationCount} ops
-              </span>
+        </CardHeader>
+        <CardContent>
+          <Markdown
+            className="text-muted-foreground line-clamp-2 text-sm whitespace-pre-wrap"
+            content={truncateDescription(item.description)}
+            components={{
+              a: (props) => <span {...props} />,
+            }}
+          />
+          <div className="border-t mt-2 pt-2">
+            {(tags.length > 0 || item.operationCount != null) && (
+              <div className="mt-auto flex items-center justify-between gap-2 ">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {tags.slice(0, 3).map((tag) => (
+                    <Badge key={tag} variant="muted" className="font-normal">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+                {item.operationCount != null && (
+                  <span className="text-muted-foreground shrink-0 text-xs font-medium">
+                    {item.operationCount} ops
+                  </span>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </article>
+        </CardContent>
+      </Card>
     </Link>
   );
 };
