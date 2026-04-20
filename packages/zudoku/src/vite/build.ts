@@ -140,7 +140,9 @@ const runPrerender = async (options: PrerenderOptions) => {
 
     // Move status pages (400, 404, 500) to root path
     const statusPages = workerResults.flatMap((r) =>
-      /400|404|500\.html$/.test(r.outputPath) ? r.outputPath : [],
+      /^(400|404|500)\.html$/.test(path.basename(r.outputPath))
+        ? r.outputPath
+        : [],
     );
     for (const statusPage of statusPages) {
       await rename(
