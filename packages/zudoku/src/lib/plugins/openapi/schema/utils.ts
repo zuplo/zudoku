@@ -45,7 +45,9 @@ const unescapeJsonPointer = (token: string) =>
 export const getSchemaRefName = (
   schema?: SchemaObject | null,
 ): string | undefined => {
-  // Circular refs are serialized as strings (e.g. "$ref:#/components/...").
+  // Defensive: circular refs can arrive as "$ref:#/..." strings from
+  // handleCircularRefs despite the typed parameter, so the `in` check below
+  // would throw. Bail early.
   if (!schema || typeof schema !== "object") return;
 
   const ref = "__$ref" in schema ? schema.__$ref : undefined;
