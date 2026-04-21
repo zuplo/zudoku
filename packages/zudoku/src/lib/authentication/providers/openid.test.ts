@@ -62,9 +62,11 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
     const setupCallback = ({
       claimsEmailVerified,
       userInfoEmailVerified,
+      customClaims,
     }: {
       claimsEmailVerified?: boolean;
       userInfoEmailVerified?: boolean;
+      customClaims?: Record<string, unknown>;
     }) => {
       Object.defineProperty(window, "location", {
         configurable: true,
@@ -108,6 +110,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         email: "user@example.com",
         name: "Test User",
         picture: "https://example.com/pic.jpg",
+        ...customClaims,
       };
       if (userInfoEmailVerified !== undefined) {
         userInfo.email_verified = userInfoEmailVerified;
@@ -188,6 +191,27 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
 
       expect(useAuthState.getState().profile?.emailVerified).toBe(false);
     });
+
+    test("spreads custom claims from userInfo into profile", async () => {
+      const provider = createProvider();
+      setupCallback({
+        userInfoEmailVerified: true,
+        customClaims: {
+          resource_access: { api: { roles: ["admin"] } },
+          custom_role: "editor",
+        },
+      });
+
+      await provider.handleCallback();
+
+      const profile = useAuthState.getState().profile;
+      expect(profile?.resource_access).toEqual({ api: { roles: ["admin"] } });
+      expect(profile?.custom_role).toBe("editor");
+      expect(profile?.sub).toBe("user-1");
+      expect(profile?.email).toBe("user@example.com");
+      expect(profile?.emailVerified).toBe(true);
+      expect(profile?.pictureUrl).toBe("https://example.com/pic.jpg");
+    });
   });
 
   describe("refreshUserProfile", () => {
@@ -244,6 +268,26 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       await provider.refreshUserProfile();
 
       expect(useAuthState.getState().profile?.emailVerified).toBe(false);
+    });
+
+    test("spreads custom claims from userInfo into profile", async () => {
+      const provider = setupRefresh({
+        sub: "user-1",
+        email: "user@example.com",
+        name: "Test",
+        email_verified: true,
+        resource_access: { api: { roles: ["admin"] } },
+        custom_role: "editor",
+      });
+
+      await provider.refreshUserProfile();
+
+      const profile = useAuthState.getState().profile;
+      expect(profile?.resource_access).toEqual({ api: { roles: ["admin"] } });
+      expect(profile?.custom_role).toBe("editor");
+      expect(profile?.sub).toBe("user-1");
+      expect(profile?.email).toBe("user@example.com");
+      expect(profile?.emailVerified).toBe(true);
     });
   });
 

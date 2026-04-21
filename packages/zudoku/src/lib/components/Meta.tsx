@@ -25,7 +25,16 @@ export const Meta = ({ children }: PropsWithChildren) => {
         {meta?.description && (
           <meta name="description" content={meta.description} />
         )}
-        {meta?.favicon && <link rel="icon" href={meta.favicon} />}
+        {meta?.favicon && (
+          <link
+            rel="icon"
+            href={
+              /^https?:\/\//.test(meta.favicon)
+                ? meta.favicon
+                : joinUrl(options.basePath, meta.favicon)
+            }
+          />
+        )}
         {meta?.generator && <meta name="generator" content={meta.generator} />}
         {meta?.applicationName && (
           <meta name="application-name" content={meta.applicationName} />

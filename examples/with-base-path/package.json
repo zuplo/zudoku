@@ -1,12 +1,11 @@
 {
-  "name": "with-config",
+  "name": "with-base-path",
   "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "zudoku dev",
     "build": "zudoku build",
-    "preview": "zudoku preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
+    "preview": "zudoku preview"
   },
   "nx": {
     "tags": [
@@ -21,7 +20,6 @@
     }
   },
   "devDependencies": {
-    "@clerk/clerk-js": "^6.7.4",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zudoku": "workspace:*"

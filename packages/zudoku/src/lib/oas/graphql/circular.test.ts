@@ -185,6 +185,22 @@ describe("handleCircularRefs", () => {
     expect(result.properties.child.properties.back).toContain(CIRCULAR_REF);
   });
 
+  it("should preserve non-enumerable __$ref in the result", () => {
+    const obj = { type: "object", properties: { foo: { type: "string" } } };
+    Object.defineProperty(obj, "__$ref", {
+      value: "#/components/schemas/Pet",
+      enumerable: false,
+    });
+
+    const result = handleCircularRefs(obj);
+
+    expect(result.__$ref).toBe("#/components/schemas/Pet");
+    // Also survives JSON serialization (must be enumerable on result)
+    expect(JSON.parse(JSON.stringify(result)).__$ref).toBe(
+      "#/components/schemas/Pet",
+    );
+  });
+
   // Exact reproduction of #1869 - shared object instances with __$ref
   it("should NOT mark shared object instances with __$ref as circular (issue #1869)", () => {
     // When dereferencing, the SAME object instance is returned for all refs to the same schema

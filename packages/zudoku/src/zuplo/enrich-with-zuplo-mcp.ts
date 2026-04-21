@@ -88,19 +88,33 @@ const buildOperationLookup = (
   return operationMap;
 };
 
-interface DocumentExtractionResult {
-  tools: ExtensionMcpServerTool[];
+// Extracts tool metadata from a disk file for the given operation IDs
+const extractToolsFromDocument = (
+  document: OpenAPIV3_1.Document,
+  operationIds: string[],
+): ExtensionMcpServerTool[] => {
+  const operationLookup = buildOperationLookup(document);
+
+  return operationIds.flatMap((operationId) => {
+    const operation = operationLookup.get(operationId);
+    if (!operation) return [];
+
+    const tool = extractOperationSchema(operation);
+    return tool ? [tool] : [];
+  });
+};
+
+interface SecurityExtractionResult {
   security: OpenAPIV3_1.SecurityRequirementObject[];
   securitySchemes: Record<string, OpenAPIV3_1.SecuritySchemeObject>;
 }
 
-// Extracts tools, security requirements, and security schemes from referenced operations
-const extractFromDocument = (
-  document: OpenAPIV3_1.Document,
+// Extracts security from the in-memory schema (already enriched by enrichWithZuploData)
+const extractSecurityFromSchema = (
+  schema: OpenAPIV3_1.Document,
   operationIds: string[],
-): DocumentExtractionResult => {
-  const operationLookup = buildOperationLookup(document);
-  const tools: ExtensionMcpServerTool[] = [];
+): SecurityExtractionResult => {
+  const operationLookup = buildOperationLookup(schema);
   const securityReqs: OpenAPIV3_1.SecurityRequirementObject[] = [];
   const referencedSchemeNames = new Set<string>();
 
@@ -108,11 +122,8 @@ const extractFromDocument = (
     const operation = operationLookup.get(operationId);
     if (!operation) continue;
 
-    const tool = extractOperationSchema(operation);
-    if (tool) tools.push(tool);
-
-    // Collect security: operation-level takes precedence, fall back to doc-level
-    const opSecurity = operation.security ?? document.security;
+    // operation-level security takes precedence, fall back to doc-level
+    const opSecurity = operation.security ?? schema.security;
     if (opSecurity) {
       for (const req of opSecurity) {
         securityReqs.push(req);
@@ -123,9 +134,8 @@ const extractFromDocument = (
     }
   }
 
-  // Grab referenced security scheme definitions from the document
   const securitySchemes: Record<string, OpenAPIV3_1.SecuritySchemeObject> = {};
-  const docSchemes = document.components?.securitySchemes;
+  const docSchemes = schema.components?.securitySchemes;
   if (docSchemes) {
     for (const name of referencedSchemeNames) {
       const scheme = docSchemes[name];
@@ -135,7 +145,7 @@ const extractFromDocument = (
     }
   }
 
-  return { tools, security: securityReqs, securitySchemes };
+  return { security: securityReqs, securitySchemes };
 };
 
 // Deduplicates security requirements by stringified key
@@ -163,10 +173,6 @@ export const enrichWithZuploMcpServerData = ({
     if (!modifiedSchema?.paths) return modifiedSchema;
 
     let assignedDefaultMcpTag = false;
-    const collectedSecuritySchemes: Record<
-      string,
-      OpenAPIV3_1.SecuritySchemeObject
-    > = {};
 
     await traverseAsync(modifiedSchema, async (node, nodePath) => {
       // Check if we're at a "post" operation (paths -> /some/path -> "post").
@@ -196,21 +202,25 @@ export const enrichWithZuploMcpServerData = ({
 
       if (operationsByFile.size === 0) return node;
 
+      // Extract tools from disk files (source of truth for tool metadata)
       const allTools: ExtensionMcpServerTool[] = [];
-      const allSecurity: OpenAPIV3_1.SecurityRequirementObject[] = [];
-
       for (const [filePath, operationIds] of operationsByFile) {
         const resolvedPath = path.resolve(rootDir, "../", filePath);
         const fileContent = await fs.readFile(resolvedPath, "utf-8");
         const document = JSON.parse(fileContent);
 
         if (document) {
-          const result = extractFromDocument(document, operationIds);
-          allTools.push(...result.tools);
-          allSecurity.push(...result.security);
-          Object.assign(collectedSecuritySchemes, result.securitySchemes);
+          allTools.push(...extractToolsFromDocument(document, operationIds));
         }
       }
+
+      // Extract security from the in-memory schema (already enriched by enrichWithZuploData)
+      const allOperationIds = [...operationsByFile.values()].flat();
+      const { security: allSecurity, securitySchemes } =
+        extractSecurityFromSchema(
+          modifiedSchema as OpenAPIV3_1.Document,
+          allOperationIds,
+        );
 
       const mcpExtension: ExtensionMcpServer = {
         name: DEFAULT_MCP_SERVER_NAME,
@@ -228,8 +238,7 @@ export const enrichWithZuploMcpServerData = ({
       if (dedupedSecurity.length > 0) {
         const ext = node["x-mcp-server"] as RecordAny;
         ext.security = dedupedSecurity;
-        // Include scheme definitions so the UI can generate auth headers
-        ext.securitySchemes = { ...collectedSecuritySchemes };
+        ext.securitySchemes = { ...securitySchemes };
       }
 
       // Assign default MCP tag if the operation has no tags
@@ -249,19 +258,6 @@ export const enrichWithZuploMcpServerData = ({
           name: MCP_TAG_NAME,
           description: MCP_TAG_DESCRIPTION,
         });
-      }
-    }
-
-    // Merge collected security schemes into the main schema
-    if (Object.keys(collectedSecuritySchemes).length > 0) {
-      if (!modifiedSchema.components) modifiedSchema.components = {};
-      if (!modifiedSchema.components.securitySchemes) {
-        modifiedSchema.components.securitySchemes = {};
-      }
-      for (const [name, scheme] of Object.entries(collectedSecuritySchemes)) {
-        if (!modifiedSchema.components.securitySchemes[name]) {
-          modifiedSchema.components.securitySchemes[name] = scheme;
-        }
       }
     }
 

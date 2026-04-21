@@ -3,6 +3,8 @@ import { isValidElement, useState } from "react";
 import { InlineCode } from "../../components/InlineCode.js";
 import type { SchemaObject } from "../../oas/parser/index.js";
 import { cn } from "../../util/cn.js";
+import { SchemaRefLink } from "./schema/SchemaRefLink.js";
+import { getSchemaRefName } from "./schema/utils.js";
 
 const Pattern = ({ pattern }: { pattern: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,14 +34,25 @@ const getSchemaInfos = (schema?: SchemaObject) => {
       ? schema.items
       : undefined;
 
+  const getTypeLabel = () => {
+    if (items) {
+      const itemsRefName = getSchemaRefName(items);
+      if (itemsRefName) {
+        return <SchemaRefLink name={itemsRefName} suffix="[]" />;
+      }
+      if (items.type) {
+        return Array.isArray(items.type)
+          ? `(${items.type.join(" | ")})[]`
+          : `${items.type}[]`;
+      }
+    }
+    const refName = getSchemaRefName(schema);
+    if (refName) return <SchemaRefLink name={refName} />;
+    return Array.isArray(schema.type) ? schema.type.join(" | ") : schema.type;
+  };
+
   return [
-    items?.type
-      ? Array.isArray(items.type)
-        ? `(${items.type.join(" | ")})[]`
-        : `${items.type}[]`
-      : Array.isArray(schema.type)
-        ? schema.type.join(" | ")
-        : schema.type,
+    getTypeLabel(),
 
     schema.enum && "enum",
     schema.const && "const",

@@ -213,10 +213,26 @@ describe("enrichWithZuploMcpServerData", () => {
     expect(op["x-zuplo-route"]).toBeUndefined();
   });
 
-  it("should add security to x-mcp-server when referenced operations have security", async () => {
+  it("should add security to x-mcp-server from in-memory schema operations", async () => {
+    // External file has NO security (raw source)
     await writeApiFile("config/routes.oas.json", {
       openapi: "3.1.0",
       info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    // In-memory schema has security (enriched by enrichWithZuploData)
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
       components: {
         securitySchemes: {
           api_key: { type: "http", scheme: "bearer" },
@@ -231,13 +247,6 @@ describe("enrichWithZuploMcpServerData", () => {
             responses: { "200": { description: "OK" } },
           },
         },
-      },
-    });
-
-    const schema = {
-      openapi: "3.1.0",
-      info: { title: "Test MCP API", version: "1.0.0" },
-      paths: {
         "/mcp": {
           post: {
             summary: "MCP Server",
@@ -263,18 +272,27 @@ describe("enrichWithZuploMcpServerData", () => {
     expect(op["x-mcp-server"].securitySchemes).toEqual({
       api_key: { type: "http", scheme: "bearer" },
     });
-
-    // Security scheme should be copied to main schema
-    expect(result.components?.securitySchemes?.api_key).toEqual({
-      type: "http",
-      scheme: "bearer",
-    });
   });
 
-  it("should inherit doc-level security when operations have none", async () => {
+  it("should inherit doc-level security from in-memory schema", async () => {
     await writeApiFile("config/routes.oas.json", {
       openapi: "3.1.0",
       info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+
+    // In-memory schema has doc-level security
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
       security: [{ bearer_auth: [] }],
       components: {
         securitySchemes: {
@@ -289,13 +307,6 @@ describe("enrichWithZuploMcpServerData", () => {
             responses: { "200": { description: "OK" } },
           },
         },
-      },
-    });
-
-    const schema = {
-      openapi: "3.1.0",
-      info: { title: "Test MCP API", version: "1.0.0" },
-      paths: {
         "/mcp": {
           post: {
             summary: "MCP Server",
@@ -316,9 +327,8 @@ describe("enrichWithZuploMcpServerData", () => {
     // biome-ignore lint/suspicious/noExplicitAny: test assertion
     const op = result.paths?.["/mcp"]?.post as Record<string, any>;
     expect(op["x-mcp-server"].security).toEqual([{ bearer_auth: [] }]);
-    expect(result.components?.securitySchemes?.bearer_auth).toEqual({
-      type: "http",
-      scheme: "bearer",
+    expect(op["x-mcp-server"].securitySchemes).toEqual({
+      bearer_auth: { type: "http", scheme: "bearer" },
     });
   });
 
@@ -368,6 +378,26 @@ describe("enrichWithZuploMcpServerData", () => {
     await writeApiFile("config/routes.oas.json", {
       openapi: "3.1.0",
       info: { title: "Routes API", version: "1.0.0" },
+      paths: {
+        "/users": {
+          get: {
+            operationId: "get-users",
+            summary: "Get all users",
+            responses: { "200": { description: "OK" } },
+          },
+          post: {
+            operationId: "create-user",
+            summary: "Create a user",
+            responses: { "201": { description: "Created" } },
+          },
+        },
+      },
+    });
+
+    // In-memory schema has security on both operations
+    const schema = {
+      openapi: "3.1.0",
+      info: { title: "Test MCP API", version: "1.0.0" },
       components: {
         securitySchemes: {
           api_key: { type: "http", scheme: "bearer" },
@@ -388,13 +418,6 @@ describe("enrichWithZuploMcpServerData", () => {
             responses: { "201": { description: "Created" } },
           },
         },
-      },
-    });
-
-    const schema = {
-      openapi: "3.1.0",
-      info: { title: "Test MCP API", version: "1.0.0" },
-      paths: {
         "/mcp": {
           post: {
             summary: "MCP Server",
