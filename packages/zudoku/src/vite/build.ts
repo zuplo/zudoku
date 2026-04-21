@@ -24,10 +24,11 @@ export type BuildOptions = {
 export async function runBuild(options: BuildOptions) {
   const { dir, ssr, adapter = "node" } = options;
 
-  const viteConfig = await getViteConfig(dir, {
-    mode: "production",
-    command: "build",
-  });
+  const viteConfig = await getViteConfig(
+    dir,
+    { mode: "production", command: "build" },
+    { adapter },
+  );
 
   const builder = await createBuilder(viteConfig);
 
