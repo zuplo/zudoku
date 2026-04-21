@@ -10,7 +10,12 @@ export interface MarkdownPluginOptions extends ZudokuDocsConfig {
 }
 export type MarkdownPluginDefaultOptions = Pick<
   Frontmatter,
-  "toc" | "disablePager" | "showLastModified" | "suggestEdit" | "copyPage"
+  | "toc"
+  | "disablePager"
+  | "showLastModified"
+  | "suggestEdit"
+  | "copyPage"
+  | "fullWidth"
 >;
 
 export type Frontmatter = {
@@ -25,6 +30,7 @@ export type Frontmatter = {
   lastModifiedTime?: number;
   suggestEdit?: { url: string; text?: string } | false;
   copyPage?: boolean;
+  fullWidth?: boolean;
 };
 
 export type MDXImport = {

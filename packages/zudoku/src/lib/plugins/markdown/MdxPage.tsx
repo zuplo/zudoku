@@ -7,6 +7,7 @@ import {
   EditIcon,
   ExternalLinkIcon,
   Link2Icon,
+  ListTreeIcon,
 } from "lucide-react";
 import { type PropsWithChildren, useEffect, useState } from "react";
 import { useLocation } from "react-router";
@@ -18,18 +19,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
+import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
-import { Toc } from "../../components/navigation/Toc.js";
+import { Toc, TocContent } from "../../components/navigation/Toc.js";
 import {
   useCurrentItem,
   usePrevNext,
 } from "../../components/navigation/utils.js";
 import { Pagination } from "../../components/Pagination.js";
 import { Typography } from "../../components/Typography.js";
+import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { getMarkdownPathname } from "../../util/markdown.js";
 import type { MdxComponentsType } from "../../util/MdxComponents.js";
@@ -78,11 +81,13 @@ export const MdxPage = ({
   const location = useLocation();
   const { options } = useZudoku();
   const [isCopied, setIsCopied] = useState(false);
+  const [isTocOpen, setIsTocOpen] = useState(false);
 
   const title = frontmatter.title;
   const description = frontmatter.description ?? excerpt;
   const category = frontmatter.category ?? categoryTitle;
   const hideToc = frontmatter.toc === false || defaultOptions?.toc === false;
+  const fullWidth = frontmatter.fullWidth ?? defaultOptions?.fullWidth ?? false;
   const pageTitle =
     title ?? tableOfContents.find((item) => item.depth === 1)?.text;
   const hidePager =
@@ -130,6 +135,8 @@ export const MdxPage = ({
     tableOfContents.filter((item) => item.depth === 2);
 
   const showToc = !hideToc && tocEntries.length > 0;
+  const showTocSidebar = showToc && !fullWidth;
+  const showTocPopover = showToc && fullWidth;
 
   const { prev, next } = usePrevNext();
 
@@ -149,7 +156,10 @@ export const MdxPage = ({
 
   return (
     <div
-      className="grid grid-cols-1 xl:grid-cols-(--sidecar-grid-cols) gap-8 justify-between"
+      className={cn(
+        "grid grid-cols-1 gap-8 justify-between",
+        !fullWidth && "xl:grid-cols-(--sidecar-grid-cols)",
+      )}
       data-pagefind-filter="section:markdown"
       data-pagefind-meta="section:markdown"
     >
@@ -161,72 +171,106 @@ export const MdxPage = ({
         )}
       </Helmet>
 
-      <Typography className="max-w-full xl:w-full xl:max-w-3xl flex-1 shrink pt-(--padding-content-top)">
+      <Typography
+        className={cn(
+          "max-w-full flex-1 shrink pt-(--padding-content-top)",
+          !fullWidth && "xl:w-full xl:max-w-3xl",
+        )}
+      >
         <header className="flow-root">
-          {copyMarkdownConfig && (
+          {(copyMarkdownConfig || showTocPopover) && (
             <div
-              className="float-end ms-4 mt-1"
+              className="float-end ms-4 mt-1 flex items-center gap-2"
               role="group"
               aria-label="Page actions"
             >
-              <ButtonGroup>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleCopyMarkdown}
-                >
-                  {isCopied ? (
-                    <CheckIcon
-                      size={14}
-                      className="text-emerald-600"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <CopyIcon size={14} aria-hidden="true" />
-                  )}
-                  <span>Copy page</span>
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+              {showTocPopover && (
+                <Popover open={isTocOpen} onOpenChange={setIsTocOpen}>
+                  <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      size="icon-sm"
-                      aria-label="More actions"
+                      size="sm"
+                      aria-label="Toggle table of contents"
                     >
-                      <ChevronDownIcon size={14} aria-hidden="true" />
+                      <ListTreeIcon size={14} aria-hidden="true" />
+                      <span>On this page</span>
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      className="gap-2"
-                      onClick={() =>
-                        void navigator.clipboard.writeText(window.location.href)
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    className="w-72 max-h-[calc(100vh-var(--header-height)-2rem)] overflow-y-auto p-3 text-sm"
+                    onClick={(e) => {
+                      if ((e.target as HTMLElement).closest("a")) {
+                        setIsTocOpen(false);
                       }
-                    >
-                      <Link2Icon className="size-4" aria-hidden="true" />
-                      Copy link to page
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="gap-2" asChild>
-                      <a
-                        href={markdownUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    }}
+                  >
+                    <TocContent entries={tocEntries} showHeader={false} />
+                  </PopoverContent>
+                </Popover>
+              )}
+              {copyMarkdownConfig && (
+                <ButtonGroup>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleCopyMarkdown}
+                  >
+                    {isCopied ? (
+                      <CheckIcon
+                        size={14}
+                        className="text-emerald-600"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <CopyIcon size={14} aria-hidden="true" />
+                    )}
+                    <span>Copy page</span>
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        aria-label="More actions"
                       >
-                        <ExternalLinkIcon
-                          className="size-4"
-                          aria-hidden="true"
-                        />
-                        Open Markdown page
-                      </a>
-                    </DropdownMenuItem>
-                    <AiAssistantMenuItems
-                      aiAssistants={options.aiAssistants}
-                      getPageUrl={() => window.location.href}
-                      type="docs"
-                    />
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </ButtonGroup>
+                        <ChevronDownIcon size={14} aria-hidden="true" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        className="gap-2"
+                        onClick={() =>
+                          void navigator.clipboard.writeText(
+                            window.location.href,
+                          )
+                        }
+                      >
+                        <Link2Icon className="size-4" aria-hidden="true" />
+                        Copy link to page
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-2" asChild>
+                        <a
+                          href={markdownUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <ExternalLinkIcon
+                            className="size-4"
+                            aria-hidden="true"
+                          />
+                          Open Markdown page
+                        </a>
+                      </DropdownMenuItem>
+                      <AiAssistantMenuItems
+                        aiAssistants={options.aiAssistants}
+                        getPageUrl={() => window.location.href}
+                        type="docs"
+                      />
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </ButtonGroup>
+              )}
             </div>
           )}
           {category && <CategoryHeading>{category}</CategoryHeading>}
@@ -297,9 +341,11 @@ export const MdxPage = ({
           </>
         )}
       </Typography>
-      <div className="hidden xl:block" data-pagefind-ignore="all">
-        {showToc && <Toc entries={tocEntries} />}
-      </div>
+      {showTocSidebar && (
+        <div className="hidden xl:block" data-pagefind-ignore="all">
+          <Toc entries={tocEntries} />
+        </div>
+      )}
     </div>
   );
 };
