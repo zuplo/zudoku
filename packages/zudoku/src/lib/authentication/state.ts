@@ -81,20 +81,18 @@ syncZustandState(authState);
 
 export const useAuthState = authState;
 
-export type NestedClaim =
+export type CustomClaim =
   | string
   | number
   | boolean
   | null
-  | NestedClaimRecord
-  | NestedClaimArray
+  | CustomClaimRecord
+  | CustomClaimArray
   | undefined;
-export interface NestedClaimRecord {
-  [key: string]: NestedClaim;
+export interface CustomClaimRecord {
+  [key: string]: CustomClaim;
 }
-export type NestedClaimArray = NestedClaim[];
-
-export type CustomClaim = string | boolean | NestedClaimRecord | undefined;
+export type CustomClaimArray = CustomClaim[];
 
 export interface UserProfile {
   sub: string;

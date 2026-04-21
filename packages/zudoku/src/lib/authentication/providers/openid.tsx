@@ -196,7 +196,7 @@ export class OpenIDAuthenticationProvider
       name: userInfo.name,
       emailVerified: Boolean(emailVerified),
       pictureUrl: userInfo.picture,
-    } as UserProfile;
+    };
   }
 
   public async refreshUserProfile(): Promise<boolean> {
