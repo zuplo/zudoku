@@ -1,67 +1,74 @@
-import type { StateCreator, StoreMutatorIdentifier } from "zustand";
-import type { AuthState, UserProfile } from "./state.js";
+import type { StoreApi } from "zustand";
+import type { AuthState } from "./state.js";
 
-type CookieSync = <
-  T extends Pick<AuthState, "isAuthenticated" | "profile" | "providerData">,
-  Mps extends [StoreMutatorIdentifier, unknown][] = [],
-  Mcs extends [StoreMutatorIdentifier, unknown][] = [],
->(
-  config: StateCreator<T, Mps, Mcs>,
-) => StateCreator<T, Mps, Mcs>;
+type TokenBearer = { accessToken?: string; refreshToken?: string };
 
-const cookieSyncImpl: CookieSync = (config) => (set, get, api) => {
-  const result = config(set, get, api);
-
-  if (typeof window !== "undefined") {
-    // Subscribe for ongoing state changes (login/logout actions)
-    api.subscribe((next, prev) => {
-      if (next.isAuthenticated && next.profile) {
-        if (!prev.isAuthenticated || next.providerData !== prev.providerData) {
-          syncSessionCookie(next.profile, next.providerData);
-        }
-      } else if (!next.isAuthenticated && prev.isAuthenticated) {
-        void fetch("/__z/auth/session", { method: "DELETE" }).catch((e) => {
-          // biome-ignore lint/suspicious/noConsole: Log session clear failures
-          console.warn("Failed to clear session cookie:", e);
-        });
-      }
-    });
-
-    // Sync immediately if persist already rehydrated an authenticated session
-    // but SSR didn't have cookies yet (subscribe misses the initial rehydration)
-    const state = api.getState();
-    if (state.isAuthenticated && state.profile && !window.ZUDOKU_SSR_AUTH) {
-      syncSessionCookie(state.profile, state.providerData);
-    }
-  }
-
-  return result;
+const readTokens = (providerData: unknown): TokenBearer => {
+  if (!providerData || typeof providerData !== "object") return {};
+  const { accessToken, refreshToken } = providerData as TokenBearer;
+  return {
+    accessToken: typeof accessToken === "string" ? accessToken : undefined,
+    refreshToken: typeof refreshToken === "string" ? refreshToken : undefined,
+  };
 };
 
-export const cookieSync = cookieSyncImpl as CookieSync;
+const postSession = async (providerData: unknown) => {
+  const { accessToken, refreshToken } = readTokens(providerData);
+  if (!accessToken) return;
 
-const syncSessionCookie = (profile: UserProfile, providerData: unknown) => {
-  const data = providerData as
-    | { accessToken?: string; refreshToken?: string }
-    | undefined;
-
-  void fetch("/__z/auth/session", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      accessToken: data?.accessToken,
-      refreshToken: data?.refreshToken,
-      profile,
-    }),
-  })
-    .then((r) => {
-      if (!r.ok) {
-        // biome-ignore lint/suspicious/noConsole: Debug cookie sync
-        console.warn("Cookie sync failed:", r.status);
-      }
-    })
-    .catch((e) => {
-      // biome-ignore lint/suspicious/noConsole: Debug cookie sync
-      console.warn("Cookie sync error:", e);
+  try {
+    const r = await fetch("/__z/auth/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ accessToken, refreshToken }),
     });
+    // 501 = provider opted out of SSR auth; any other failure is surfaced.
+    if (!r.ok && r.status !== 501) {
+      // biome-ignore lint/suspicious/noConsole: Surface SSR auth failures
+      console.error("SSR auth cookie sync failed:", r.status);
+    }
+  } catch (e) {
+    // biome-ignore lint/suspicious/noConsole: Surface SSR auth failures
+    console.error("SSR auth cookie sync error:", e);
+  }
+};
+
+const clearSession = () =>
+  fetch("/__z/auth/session", { method: "DELETE" }).catch((e) => {
+    // biome-ignore lint/suspicious/noConsole: Surface SSR auth failures
+    console.error("SSR auth cookie clear failed:", e);
+  });
+
+/**
+ * Mirror the client auth state to SSR cookies so the next HTML render is
+ * authenticated on first paint. Reads tokens from `providerData` — each
+ * built-in provider puts them there. No-op on the server.
+ */
+export const setupCookieSync = (
+  store: StoreApi<
+    Pick<AuthState, "isAuthenticated" | "profile" | "providerData">
+  >,
+) => {
+  if (typeof window === "undefined") return;
+
+  store.subscribe((next, prev) => {
+    if (next.isAuthenticated && next.profile) {
+      if (!prev.isAuthenticated || next.providerData !== prev.providerData) {
+        void postSession(next.providerData);
+      }
+    } else if (!next.isAuthenticated && prev.isAuthenticated) {
+      void clearSession();
+    }
+  });
+
+  // If persist rehydrated an authed session that SSR didn't see, push tokens
+  // up so the next navigation is server-authed.
+  const state = store.getState();
+  if (
+    state.isAuthenticated &&
+    state.profile &&
+    !window.ZUDOKU_SSR_AUTH?.profile
+  ) {
+    void postSession(state.providerData);
+  }
 };
