@@ -15,6 +15,13 @@ import {
   InputGroupInput,
 } from "../../ui/InputGroup.js";
 import { Kbd } from "../../ui/Kbd.js";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../ui/Select.js";
 import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
 import { joinUrl } from "../../util/joinUrl.js";
 import { sanitizeMarkdownForMetatag } from "../openapi/util/sanitizeMarkdownForMetatag.js";
@@ -38,6 +45,7 @@ const matchesQuery = (item: ApiCatalogItem, query: string) => {
 };
 
 const ALL_ITEMS = "all";
+const MAX_VISIBLE_CHIPS = 6;
 
 export const Catalog = ({
   items,
@@ -140,23 +148,42 @@ export const Catalog = ({
           </InputGroup>
 
           {filterChips.length > 0 && (
-            <ToggleGroup
-              size="sm"
-              variant="outline"
-              aria-label="Filter by category"
-              spacing={2}
-              value={activeFilter ? [activeFilter] : [""]}
-              onValueChange={(value: string[]) =>
-                setActiveFilter(value.at(0) ?? ALL_ITEMS)
-              }
-            >
-              <ToggleGroupItem value={ALL_ITEMS}>All</ToggleGroupItem>
-              {filterChips.map((chip) => (
-                <ToggleGroupItem key={chip} value={chip}>
-                  {chip}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+            <div className="flex flex-wrap items-center gap-2">
+              <ToggleGroup
+                size="sm"
+                variant="outline"
+                aria-label="Filter by category"
+                spacing={2}
+                value={[activeFilter]}
+                onValueChange={(value: string[]) =>
+                  setActiveFilter(value.at(0) ?? ALL_ITEMS)
+                }
+              >
+                <ToggleGroupItem value={ALL_ITEMS}>All</ToggleGroupItem>
+                {filterChips.slice(0, MAX_VISIBLE_CHIPS).map((chip) => (
+                  <ToggleGroupItem key={chip} value={chip}>
+                    {chip}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+              {filterChips.length > MAX_VISIBLE_CHIPS && (
+                <Select
+                  value={activeFilter}
+                  onValueChange={(value) => setActiveFilter(value || ALL_ITEMS)}
+                >
+                  <SelectTrigger size="sm" aria-label="More category filters">
+                    <SelectValue placeholder="More" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filterChips.slice(MAX_VISIBLE_CHIPS).map((chip) => (
+                      <SelectItem key={chip} value={chip}>
+                        {chip}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
           )}
         </div>
 
