@@ -20,7 +20,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "../../ui/Select.js";
 import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -171,8 +170,12 @@ export const Catalog = ({
                   value={activeFilter}
                   onValueChange={(value) => setActiveFilter(value || ALL_ITEMS)}
                 >
-                  <SelectTrigger size="sm" aria-label="More category filters">
-                    <SelectValue placeholder="More" />
+                  <SelectTrigger
+                    size="sm"
+                    aria-label="More category filters"
+                    className="h-8 gap-1 px-2.5 text-[0.8rem]"
+                  >
+                    More
                   </SelectTrigger>
                   <SelectContent>
                     {filterChips.slice(MAX_VISIBLE_CHIPS).map((chip) => (
