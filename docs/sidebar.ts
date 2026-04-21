@@ -150,6 +150,7 @@ export const docs: Navigation = [
       "docs/configuration/slots",
       "docs/custom-plugins",
       "docs/extending/events",
+      "docs/extending/hooks",
     ],
   },
 ];
