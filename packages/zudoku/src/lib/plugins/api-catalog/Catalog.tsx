@@ -1,12 +1,13 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Helmet } from "@zudoku/react-helmet-async";
 import { SearchIcon, XIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "zudoku/components";
 import { Card, CardContent, CardHeader } from "zudoku/ui/Card.js";
 import { useAuthState } from "../../authentication/state.js";
 import { Heading } from "../../components/Heading.js";
 import { Markdown } from "../../components/Markdown.js";
+import { useHotkey } from "../../hooks/useHotkey.js";
 import { Badge } from "../../ui/Badge.js";
 import { Button } from "../../ui/Button.js";
 import {
@@ -100,27 +101,10 @@ export const Catalog = ({
     [catalogItems.data],
   );
 
-  useEffect(() => {
-    const handler = (event: KeyboardEvent) => {
-      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) {
-        return;
-      }
-      const target = event.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.isContentEditable)
-      ) {
-        return;
-      }
-      event.preventDefault();
-      inputRef.current?.focus();
-      inputRef.current?.select();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, []);
+  useHotkey("slash", () => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  });
 
   return (
     <section className="pt-(--padding-content-top) pb-12">
