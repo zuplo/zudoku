@@ -8,6 +8,7 @@ import type {
   AuthActionContext,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
@@ -40,6 +41,10 @@ export class AzureB2CAuthPlugin
   private readonly redirectToAfterSignUp?: string;
   private readonly redirectToAfterSignIn?: string;
   private readonly redirectToAfterSignOut: string;
+  private readonly authority: string;
+  // The issuer carries the tenant GUID we don't know up-front, so discover.
+  private discoveryPromise?: Promise<{ issuer: string; jwks_uri: string }>;
+  private jwks?: ReturnType<typeof import("jose").createRemoteJWKSet>;
 
   constructor({
     clientId,
@@ -57,13 +62,13 @@ export class AzureB2CAuthPlugin
     this.redirectToAfterSignIn = redirectToAfterSignIn;
     this.redirectToAfterSignOut = redirectToAfterSignOut;
 
-    const authority = `https://${tenantName}.b2clogin.com/${tenantName}.onmicrosoft.com/${policyName}`;
+    this.authority = `https://${tenantName}.b2clogin.com/${tenantName}.onmicrosoft.com/${policyName}`;
     const redirectUri = joinUrl(basePath, AZUREB2C_CALLBACK_PATH);
 
     this.msalInstance = new PublicClientApplication({
       auth: {
         clientId,
-        authority,
+        authority: this.authority,
         redirectUri,
         knownAuthorities: [`${tenantName}.b2clogin.com`],
       },
@@ -176,6 +181,69 @@ export class AzureB2CAuthPlugin
     request.headers.set("Authorization", `Bearer ${accessToken}`);
     return request;
   };
+
+  private async getDiscovery() {
+    this.discoveryPromise ??= fetch(
+      `${this.authority}/v2.0/.well-known/openid-configuration`,
+    ).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Azure B2C discovery failed: ${response.status} ${response.statusText}`,
+        );
+      }
+      return (await response.json()) as { issuer: string; jwks_uri: string };
+    });
+    return this.discoveryPromise;
+  }
+
+  async verifyAccessToken(token: string): Promise<VerifyAccessTokenResult> {
+    const jose = await import("jose");
+    const { issuer, jwks_uri } = await this.getDiscovery();
+    if (!this.jwks) {
+      this.jwks = jose.createRemoteJWKSet(new URL(jwks_uri));
+    }
+    try {
+      const { payload } = await jose.jwtVerify(token, this.jwks, { issuer });
+      // Match client-side sub (handleAuthResponse uses account.localAccountId, which is oid).
+      const sub =
+        typeof payload.oid === "string"
+          ? payload.oid
+          : typeof payload.sub === "string"
+            ? payload.sub
+            : undefined;
+      if (!sub) return undefined;
+
+      const emails = Array.isArray(payload.emails) ? payload.emails : [];
+      const email =
+        typeof payload.email === "string"
+          ? payload.email
+          : typeof emails[0] === "string"
+            ? emails[0]
+            : undefined;
+
+      const fullName = [payload.given_name, payload.family_name]
+        .filter((s): s is string => typeof s === "string" && s.length > 0)
+        .join(" ");
+      const name =
+        typeof payload.name === "string" ? payload.name : fullName || undefined;
+
+      return {
+        profile: {
+          sub,
+          email,
+          name,
+          emailVerified: true,
+          pictureUrl: undefined,
+        },
+        expiresAt: typeof payload.exp === "number" ? payload.exp : undefined,
+      };
+    } catch (e) {
+      // JOSEError = invalid token (→ 401). Rethrow anything else so the
+      // handler can surface 502 for misconfig / JWKS fetch failures.
+      if (e instanceof jose.errors.JOSEError) return undefined;
+      throw e;
+    }
+  }
 
   signOut = async (_: AuthActionContext) => {
     const account = this.msalInstance.getAllAccounts()[0];

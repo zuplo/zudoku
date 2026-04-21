@@ -18,6 +18,8 @@ import "virtual:zudoku-theme.css";
 import { Zudoku } from "zudoku/components";
 import { Outlet } from "zudoku/router";
 import type { ZudokuConfig } from "../config/config.js";
+import { setupCookieSync } from "../lib/authentication/cookie-sync.js";
+import { authState } from "../lib/authentication/state.js";
 import { BuildCheck } from "../lib/components/BuildCheck.js";
 import "./main.css";
 import { Meta } from "../lib/components/Meta.js";
@@ -30,6 +32,8 @@ import { RouterError } from "../lib/errors/RouterError.js";
 import { ZuploEnv } from "./env.js";
 import { processRoutes } from "./processRoutes.js";
 import { createRedirectRoutes } from "./utils/createRedirectRoutes.js";
+
+setupCookieSync(authState);
 
 export const shikiReady: Promise<HighlighterCore> =
   import("../lib/shiki.js").then(async ({ highlighterPromise }) => {
