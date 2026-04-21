@@ -5,8 +5,8 @@ description: Reference for the React hooks exported by Zudoku.
 ---
 
 Zudoku exposes a set of React hooks that let you read and interact with the runtime state of your
-site from custom components, MDX pages, plugins, and
-[slots](../configuration/slots.mdx). All hooks are available from the `zudoku/hooks` entry point.
+site from custom components, MDX pages, plugins, and [slots](../configuration/slots.mdx). All hooks
+are available from the `zudoku/hooks` entry point.
 
 ```typescript
 import {
@@ -36,16 +36,16 @@ const { isAuthEnabled, isAuthenticated, isPending, profile, login, logout, signu
 
 ### Returned values
 
-| Property          | Type                                           | Description                                                                                                                             |
-| ----------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `isAuthEnabled`   | `boolean`                                      | `true` if an `authentication` provider is configured in `zudoku.config.ts`. When `false`, the action methods will throw if called.      |
-| `isAuthenticated` | `boolean`                                      | Whether a user is currently signed in.                                                                                                  |
-| `isPending`       | `boolean`                                      | `true` while the provider is still initializing or restoring a session. Use this to render loading states and avoid flashing UI.        |
-| `profile`         | `UserProfile \| null`                          | The authenticated user's profile, or `null` when signed out. See [User profile](#user-profile).                                         |
-| `providerData`    | `ProviderData \| null`                         | Raw provider-specific data (for example the Supabase session or Firebase user). Useful when you need access to provider-only features.  |
-| `login`           | `(options?: AuthActionOptions) => Promise<void>` | Starts the sign-in flow. Redirects back to the current page by default.                                                                 |
-| `logout`          | `() => Promise<void>`                          | Signs the user out.                                                                                                                     |
-| `signup`          | `(options?: AuthActionOptions) => Promise<void>` | Starts the sign-up flow, if the provider supports it. Redirects back to the current page by default.                                    |
+| Property          | Type                                             | Description                                                                                                                            |
+| ----------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `isAuthEnabled`   | `boolean`                                        | `true` if an `authentication` provider is configured in `zudoku.config.ts`. When `false`, the action methods will throw if called.     |
+| `isAuthenticated` | `boolean`                                        | Whether a user is currently signed in.                                                                                                 |
+| `isPending`       | `boolean`                                        | `true` while the provider is still initializing or restoring a session. Use this to render loading states and avoid flashing UI.       |
+| `profile`         | `UserProfile \| null`                            | The authenticated user's profile, or `null` when signed out. See [User profile](#user-profile).                                        |
+| `providerData`    | `ProviderData \| null`                           | Raw provider-specific data (for example the Supabase session or Firebase user). Useful when you need access to provider-only features. |
+| `login`           | `(options?: AuthActionOptions) => Promise<void>` | Starts the sign-in flow. Redirects back to the current page by default.                                                                |
+| `logout`          | `() => Promise<void>`                            | Signs the user out.                                                                                                                    |
+| `signup`          | `(options?: AuthActionOptions) => Promise<void>` | Starts the sign-up flow, if the provider supports it. Redirects back to the current page by default.                                   |
 
 `AuthActionOptions` accepts:
 
@@ -135,13 +135,8 @@ the user has verified their address.
 ```typescript
 import { useVerifiedEmail } from "zudoku/hooks";
 
-const {
-  email,
-  isVerified,
-  supportsEmailVerification,
-  refresh,
-  requestEmailVerification,
-} = useVerifiedEmail();
+const { email, isVerified, supportsEmailVerification, refresh, requestEmailVerification } =
+  useVerifiedEmail();
 ```
 
 | Property                    | Type                                             | Description                                                                                  |
@@ -149,7 +144,7 @@ const {
 | `email`                     | `string \| undefined`                            | The user's email address, if any.                                                            |
 | `isVerified`                | `boolean`                                        | Whether the provider reports the email as verified.                                          |
 | `supportsEmailVerification` | `boolean`                                        | `true` when the provider implements a `requestEmailVerification` method.                     |
-| `refresh`                   | `() => void`                                     | Re-fetch the user profile from the provider — useful after the user verifies in another tab.|
+| `refresh`                   | `() => void`                                     | Re-fetch the user profile from the provider — useful after the user verifies in another tab. |
 | `requestEmailVerification`  | `(options?: AuthActionOptions) => Promise<void>` | Triggers the provider's "resend verification email" flow.                                    |
 
 The hook automatically refreshes the profile when the window regains focus so `isVerified` updates
@@ -168,7 +163,8 @@ import { useRefreshUserProfile } from "zudoku/hooks";
 const { refetch, isFetching } = useRefreshUserProfile({ refetchOnWindowFocus: "always" });
 ```
 
-It returns the full [React Query `UseQueryResult`](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery).
+It returns the full
+[React Query `UseQueryResult`](https://tanstack.com/query/latest/docs/framework/react/reference/useQuery).
 
 ## `useZudoku`
 
@@ -182,8 +178,8 @@ import { useZudoku } from "zudoku/hooks";
 const { options, navigation, queryClient, addEventListener, emitEvent } = useZudoku();
 ```
 
-Must be called inside the `ZudokuProvider` (i.e. inside any Zudoku page or slot). Calling it
-outside throws.
+Must be called inside the `ZudokuProvider` (i.e. inside any Zudoku page or slot). Calling it outside
+throws.
 
 ## `useEvent`
 
