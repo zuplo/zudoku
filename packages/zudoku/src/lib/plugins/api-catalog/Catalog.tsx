@@ -173,7 +173,7 @@ export const Catalog = ({
                   <SelectTrigger
                     size="sm"
                     aria-label="More category filters"
-                    className="h-8 gap-1 px-2.5 text-[0.8rem]"
+                    className="!h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem]"
                   >
                     More
                   </SelectTrigger>
