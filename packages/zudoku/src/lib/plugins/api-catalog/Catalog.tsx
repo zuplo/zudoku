@@ -6,7 +6,6 @@ import { Link } from "zudoku/components";
 import { Card, CardContent, CardHeader } from "zudoku/ui/Card.js";
 import { useAuthState } from "../../authentication/state.js";
 import { Heading } from "../../components/Heading.js";
-import { Markdown } from "../../components/Markdown.js";
 import { useHotkey } from "../../hooks/useHotkey.js";
 import { Badge } from "../../ui/Badge.js";
 import { Button } from "../../ui/Button.js";
@@ -18,22 +17,11 @@ import {
 import { Kbd } from "../../ui/Kbd.js";
 import { ToggleGroup, ToggleGroupItem } from "../../ui/ToggleGroup.js";
 import { joinUrl } from "../../util/joinUrl.js";
+import { sanitizeMarkdownForMetatag } from "../openapi/util/sanitizeMarkdownForMetatag.js";
 import type { ApiCatalogItem, ApiCatalogPluginOptions } from "./index.js";
 
 const getAvatarLetter = (label: string) =>
   label.trim().charAt(0).toUpperCase() || "?";
-
-const truncateDescription = (md: string) => {
-  if (!md) return md;
-  const lines = md.split("\n");
-  const cutoff = lines.findIndex((line) => {
-    const trimmed = line.trim();
-    if (/^#{1,6}\s/.test(trimmed)) return true;
-    if (/^(-{3,}|\*{3,}|_{3,})$/.test(trimmed)) return true;
-    return false;
-  });
-  return (cutoff === -1 ? lines : lines.slice(0, cutoff)).join("\n").trim();
-};
 
 const matchesQuery = (item: ApiCatalogItem, query: string) => {
   if (!query) return true;
@@ -158,7 +146,7 @@ export const Catalog = ({
               aria-label="Filter by category"
               spacing={2}
               value={activeFilter ? [activeFilter] : [""]}
-              onValueChange={(value) =>
+              onValueChange={(value: string[]) =>
                 setActiveFilter(value.at(0) ?? ALL_ITEMS)
               }
             >
@@ -237,13 +225,9 @@ const CatalogCard = ({ item }: { item: ApiCatalogItem }) => {
           </div>
         </CardHeader>
         <CardContent>
-          <Markdown
-            className="text-muted-foreground line-clamp-2 text-sm whitespace-pre-wrap"
-            content={truncateDescription(item.description)}
-            components={{
-              a: (props) => <span {...props} />,
-            }}
-          />
+          <p className="text-muted-foreground line-clamp-2 text-sm">
+            {sanitizeMarkdownForMetatag(item.description, 240)}
+          </p>
           <div className="border-t mt-2 pt-2">
             {(tags.length > 0 || item.operationCount != null) && (
               <div className="mt-auto flex items-center justify-between gap-2 ">
