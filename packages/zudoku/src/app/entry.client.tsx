@@ -15,16 +15,14 @@ const routes = getRoutesByConfig(config);
 // biome-ignore lint/style/noNonNullAssertion: We know the root element exists
 const root = document.getElementById("root")!;
 
-// Injected by entry.server.tsx into a <script> tag before </body>.
-// ZUDOKU_DATA: dehydrated React Query cache for SSR.
-// ZUDOKU_SSR_AUTH: auth profile from httpOnly cookies (no tokens, client-safe).
-// Used by the zustand auth store (state.ts) to seed initial state so the
-// client renders the same auth UI the server did, avoiding hydration mismatch.
+// Injected by entry.server.tsx before </body>. `ZUDOKU_SSR_AUTH` present
+// signals "server checked auth"; `profile: null` is an authoritative
+// logged-out. state.ts reads this to seed the client store.
 declare global {
   interface Window {
     ZUDOKU_VERSION: string;
     ZUDOKU_DATA?: DehydratedState;
-    ZUDOKU_SSR_AUTH?: { profile: UserProfile };
+    ZUDOKU_SSR_AUTH?: { profile: UserProfile | null };
   }
 }
 

@@ -5,7 +5,6 @@ import {
   type StateStorage,
 } from "zustand/middleware";
 import { syncZustandState } from "../util/syncZustandState.js";
-import { cookieSync } from "./cookie-sync.js";
 
 /**
  * Registry interface for provider-specific data types.
@@ -45,54 +44,62 @@ const noopStorage: StateStorage = {
   removeItem: () => {},
 };
 
-// Read SSR auth state injected by entry.server.tsx to avoid hydration mismatch
+// Seed from the SSR-injected signal. Object present = server checked;
+// `profile: null` = authoritative anon. Absent = fall back to pending.
 const ssrAuthInitial =
   typeof window !== "undefined" ? window.ZUDOKU_SSR_AUTH : undefined;
 
+// When the server injected ZUDOKU_SSR_AUTH, cookies are authoritative and
+// tokens stay out of localStorage. SSG has no such injection, so persist the
+// full snapshot for reload continuity.
+const partialize = (state: AuthState) =>
+  ssrAuthInitial !== undefined
+    ? { isAuthenticated: state.isAuthenticated, profile: state.profile }
+    : state;
+
 export const authState = create<AuthState>()(
-  cookieSync(
-    persist(
-      (set) => ({
-        isAuthenticated: !!ssrAuthInitial,
-        isPending: !ssrAuthInitial,
-        profile: ssrAuthInitial?.profile ?? null,
-        providerData: null,
-        setAuthenticationPending: () =>
-          set(() => ({
-            isAuthenticated: false,
-            isPending: false,
-            profile: null,
-            providerData: null,
-          })),
-        setLoggedOut: () =>
-          set(() => ({
-            isAuthenticated: false,
-            isPending: false,
-            profile: null,
-            providerData: null,
-          })),
-        setLoggedIn: ({ profile, providerData }) =>
-          set(() => ({
-            isAuthenticated: true,
-            isPending: false,
-            profile,
-            providerData,
-          })),
-      }),
-      {
-        merge: (persistedState, currentState) => {
-          return {
-            ...currentState,
-            isPending: false,
-            ...(typeof persistedState === "object" ? persistedState : {}),
-          };
-        },
-        name: "auth-state",
-        storage: createJSONStorage(() =>
-          typeof window !== "undefined" ? localStorage : noopStorage,
-        ),
+  persist(
+    (set) => ({
+      isAuthenticated: !!ssrAuthInitial?.profile,
+      isPending: ssrAuthInitial === undefined,
+      profile: ssrAuthInitial?.profile ?? null,
+      providerData: null,
+      setAuthenticationPending: () =>
+        set(() => ({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        })),
+      setLoggedOut: () =>
+        set(() => ({
+          isAuthenticated: false,
+          isPending: false,
+          profile: null,
+          providerData: null,
+        })),
+      setLoggedIn: ({ profile, providerData }) =>
+        set(() => ({
+          isAuthenticated: true,
+          isPending: false,
+          profile,
+          providerData,
+        })),
+    }),
+    {
+      merge: (persistedState, currentState) => {
+        return {
+          ...currentState,
+          isPending: false,
+          ...(typeof persistedState === "object" ? persistedState : {}),
+        };
       },
-    ),
+      name: "auth-state",
+      storage: createJSONStorage(() =>
+        typeof window !== "undefined" ? localStorage : noopStorage,
+      ),
+      partialize,
+    },
   ),
 );
 

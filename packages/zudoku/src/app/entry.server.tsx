@@ -10,9 +10,10 @@ import {
   type RouteObject,
 } from "react-router";
 import "vite/modulepreload-polyfill";
+import { configuredAuthProvider } from "virtual:zudoku-auth";
 import config from "virtual:zudoku-config";
 import { parseCookies } from "../lib/authentication/cookies.js";
-import { sessionHandler } from "../lib/authentication/session-handler.js";
+import { createSessionHandler } from "../lib/authentication/session-handler.js";
 import { BootstrapStatic } from "../lib/components/Bootstrap.js";
 import { NO_DEHYDRATE } from "../lib/components/cache.js";
 import type { SSRAuthState } from "../lib/components/context/RenderContext.js";
@@ -20,7 +21,6 @@ import { ServerError } from "../lib/errors/ServerError.js";
 import { highlighterPromise } from "../lib/shiki.js";
 import { getRoutesByConfig } from "./main.js";
 export { getRoutesByConfig };
-export { sessionHandler };
 
 const safeSerialize = (data: unknown) =>
   JSON.stringify(data).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
@@ -72,8 +72,10 @@ export const handleRequest = async ({
   }
 
   const { accessToken, profile } = parseCookies(request);
-  const ssrAuth: SSRAuthState | undefined = profile
-    ? { accessToken, profile }
+  // Emit auth state when configured, even if profile is null, so the client
+  // knows whether the server checked auth.
+  const ssrAuth: SSRAuthState | undefined = configuredAuthProvider
+    ? { accessToken, profile: profile ?? null }
     : undefined;
 
   const router = createStaticRouter(dataRoutes, context);
@@ -167,7 +169,9 @@ export const handleRequest = async ({
     const headers: HeadersInit = {
       "Content-Type": "text/html; charset=utf-8",
     };
-    if (ssrAuth) {
+    // Only suppress caching for pages that embed a per-user profile.
+    // Anonymous renders (auth configured but no session) stay cacheable.
+    if (ssrAuth?.profile) {
       headers["Cache-Control"] = "private, no-store";
     }
 
@@ -191,7 +195,7 @@ export const createServer = (options: {
   const routes = getRoutesByConfig(config);
   const app = new Hono();
 
-  app.route("/__z/auth/session", sessionHandler);
+  app.route("/__z/auth/session", createSessionHandler(configuredAuthProvider));
   app.all("*", (c) =>
     handleRequest({
       template: options.template,
