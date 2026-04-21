@@ -225,6 +225,11 @@ export class OpenIDAuthenticationProvider
   }
 
   public async refreshUserProfile(): Promise<boolean> {
+    // SSR mode doesn't persist `providerData`; tokens live only in the
+    // httpOnly cookie. Without client-side tokens we can't call userInfo —
+    // the SSR-supplied profile stays authoritative.
+    if (!useAuthState.getState().providerData) return false;
+
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
 

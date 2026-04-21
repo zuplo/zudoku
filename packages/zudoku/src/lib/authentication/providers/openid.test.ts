@@ -234,6 +234,32 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       expect(useAuthState.getState().profile?.emailVerified).toBe(true);
     });
 
+    test("returns false without evicting state when providerData is null (SSR reload)", async () => {
+      const provider = createProvider();
+      vi.mocked(oauth.userInfoRequest).mockClear();
+
+      // SSR-seeded: profile is set, but providerData wasn't persisted.
+      useAuthState.setState({
+        isAuthenticated: true,
+        isPending: false,
+        profile: {
+          sub: "user-1",
+          email: "user@example.com",
+          emailVerified: true,
+          name: "Test",
+          pictureUrl: undefined,
+        },
+        providerData: null,
+      });
+
+      const result = await provider.refreshUserProfile();
+
+      expect(result).toBe(false);
+      expect(oauth.userInfoRequest).not.toHaveBeenCalled();
+      expect(useAuthState.getState().isAuthenticated).toBe(true);
+      expect(useAuthState.getState().profile?.sub).toBe("user-1");
+    });
+
     test("defaults emailVerified to false when userInfo omits it", async () => {
       const provider = setupRefresh({
         sub: "user-1",
