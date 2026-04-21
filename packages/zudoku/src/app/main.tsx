@@ -133,7 +133,6 @@ export const getRoutesByConfig = (config: ZudokuConfig): RouteObject[] => {
           <Outlet />
         </Zudoku>
       ),
-      hydrateFallbackElement: <div>Loading...</div>,
       children: [
         {
           element: (
