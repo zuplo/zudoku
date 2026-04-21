@@ -384,7 +384,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
-      categories: [{ label: "Core", tags: ["Shipments", "Logistics"] }],
+      categories: [
+        { label: "Core", tags: ["Shipments", "Logistics"] },
+        { label: "Logistics", tags: ["Shipments"] },
+      ],
       options: {
         disableSecurity: false,
         transformExamples: ({ content, auth }) => {
@@ -421,13 +424,19 @@ const config: ZudokuConfig = {
         "./schema/label-v1.json",
       ],
       path: "/catalog/api-label",
-      categories: [{ label: "Core", tags: ["Labels"] }],
+      categories: [
+        { label: "Core", tags: ["Labels"] },
+        { label: "Printing", tags: ["Labels"] },
+      ],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
-      categories: [{ label: "Platform", tags: ["Events", "Developer"] }],
+      categories: [
+        { label: "Platform", tags: ["Events", "Developer"] },
+        { label: "Integrations", tags: ["Developer"] },
+      ],
       options: {
         supportedLanguages: [
           { value: "js", label: "JavaScript" },
@@ -459,7 +468,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/tracking-v1.json",
       path: "/catalog/api-tracking",
-      categories: [{ label: "Core", tags: ["Tracking", "Events"] }],
+      categories: [
+        { label: "Core", tags: ["Tracking", "Events"] },
+        { label: "Insights", tags: ["Tracking"] },
+      ],
     },
     {
       type: "file",
@@ -487,7 +499,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
-      categories: [{ label: "Core", tags: ["Containers", "Booking"] }],
+      categories: [
+        { label: "Core", tags: ["Containers", "Booking"] },
+        { label: "Storage", tags: ["Containers"] },
+      ],
     },
     {
       type: "file",
@@ -509,7 +524,10 @@ const config: ZudokuConfig = {
         },
       ],
       path: "/catalog/api-fleet-ops",
-      categories: [{ label: "Core", tags: ["Fleet Command"] }],
+      categories: [
+        { label: "Core", tags: ["Fleet Command"] },
+        { label: "Operations", tags: ["Fleet Command"] },
+      ],
     },
   ],
   theme: {
