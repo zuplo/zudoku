@@ -217,7 +217,7 @@
     "@types/yargs": "17.0.35",
     "@vitest/coverage-v8": "4.0.18",
     "happy-dom": "catalog:",
-    "oxc-parser": "^0.119.0",
+    "oxc-parser": "^0.126.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "tsx": "4.21.0",
