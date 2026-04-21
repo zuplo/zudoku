@@ -78,6 +78,7 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "15.3.1",
+    "@base-ui/react": "^1.4.0",
     "@envelop/core": "5.5.1",
     "@graphql-typed-document-node/core": "3.2.0",
     "@hono/node-server": "1.19.13",

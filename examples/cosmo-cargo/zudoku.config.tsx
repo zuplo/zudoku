@@ -384,7 +384,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/shipments.json",
       path: "api-shipments",
-      categories: [{ label: "General", tags: ["Shipments"] }],
+      categories: [
+        { label: "Core", tags: ["Shipments", "Logistics"] },
+        { label: "Logistics", tags: ["Shipments"] },
+      ],
       options: {
         disableSecurity: false,
         transformExamples: ({ content, auth }) => {
@@ -421,13 +424,19 @@ const config: ZudokuConfig = {
         "./schema/label-v1.json",
       ],
       path: "/catalog/api-label",
-      categories: [{ label: "General", tags: ["Labels"] }],
+      categories: [
+        { label: "Core", tags: ["Labels"] },
+        { label: "Printing", tags: ["Labels"] },
+      ],
     },
     {
       type: "file",
       input: "./schema/webhooks.json",
       path: "/catalog/api-webhooks",
-      categories: [{ label: "General", tags: ["Developer"] }],
+      categories: [
+        { label: "Platform", tags: ["Events", "Developer"] },
+        { label: "Integrations", tags: ["Developer"] },
+      ],
       options: {
         supportedLanguages: [
           { value: "js", label: "JavaScript" },
@@ -453,13 +462,16 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/interplanetary.json",
       path: "/catalog/api-interplanetary",
-      categories: [{ label: "Interplanetary", tags: ["Interplanetary"] }],
+      categories: [{ label: "Interplanetary", tags: ["Routes", "Transit"] }],
     },
     {
       type: "file",
       input: "./schema/tracking-v1.json",
       path: "/catalog/api-tracking",
-      categories: [{ label: "General", tags: ["Tracking"] }],
+      categories: [
+        { label: "Core", tags: ["Tracking", "Events"] },
+        { label: "Insights", tags: ["Tracking"] },
+      ],
     },
     {
       type: "file",
@@ -478,7 +490,7 @@ const config: ZudokuConfig = {
       path: "/catalog/api-docs",
       categories: [
         {
-          label: "Documentation",
+          label: "Platform",
           tags: ["Documentation"],
         },
       ],
@@ -487,7 +499,10 @@ const config: ZudokuConfig = {
       type: "file",
       input: "./schema/cargo-containers.json",
       path: "/catalog/api-cargo-containers",
-      categories: [{ label: "General", tags: ["Containers", "Booking"] }],
+      categories: [
+        { label: "Core", tags: ["Containers", "Booking"] },
+        { label: "Storage", tags: ["Containers"] },
+      ],
     },
     {
       type: "file",
@@ -509,14 +524,17 @@ const config: ZudokuConfig = {
         },
       ],
       path: "/catalog/api-fleet-ops",
-      categories: [{ label: "General", tags: ["Fleet Command"] }],
+      categories: [
+        { label: "Core", tags: ["Fleet Command"] },
+        { label: "Operations", tags: ["Fleet Command"] },
+      ],
     },
   ],
   theme: {
     light: {
-      background: "0 0% 100%",
+      background: "oklch(0.995 0.002 80)",
       foreground: "20 14.3% 4.1%",
-      card: "#fafafa",
+      card: "#fff",
       cardForeground: "#262626",
       primary: "#f4bf32",
       primaryForeground: "#0f1719",
@@ -531,6 +549,7 @@ const config: ZudokuConfig = {
       border: "20 5.9% 90%",
       input: "20 5.9% 90%",
       ring: "oklch(0.708 0 0)",
+      radius: "0.4rem",
     },
     dark: {
       background: "#1a1a18",
