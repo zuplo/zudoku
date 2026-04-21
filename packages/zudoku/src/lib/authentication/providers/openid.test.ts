@@ -197,7 +197,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       setupCallback({
         userInfoEmailVerified: true,
         customClaims: {
-          resource_access: { api: { roles: "admin" } },
+          resource_access: { api: { roles: ["admin"] } },
           custom_role: "editor",
         },
       });
@@ -205,7 +205,7 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
       await provider.handleCallback();
 
       const profile = useAuthState.getState().profile;
-      expect(profile?.resource_access).toEqual({ api: { roles: "admin" } });
+      expect(profile?.resource_access).toEqual({ api: { roles: ["admin"] } });
       expect(profile?.custom_role).toBe("editor");
       expect(profile?.sub).toBe("user-1");
       expect(profile?.email).toBe("user@example.com");
@@ -276,14 +276,14 @@ describe("OpenIDAuthenticationProvider emailVerified", () => {
         email: "user@example.com",
         name: "Test",
         email_verified: true,
-        resource_access: { api: { roles: "admin" } },
+        resource_access: { api: { roles: ["admin"] } },
         custom_role: "editor",
       });
 
       await provider.refreshUserProfile();
 
       const profile = useAuthState.getState().profile;
-      expect(profile?.resource_access).toEqual({ api: { roles: "admin" } });
+      expect(profile?.resource_access).toEqual({ api: { roles: ["admin"] } });
       expect(profile?.custom_role).toBe("editor");
       expect(profile?.sub).toBe("user-1");
       expect(profile?.email).toBe("user@example.com");
