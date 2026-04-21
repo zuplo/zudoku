@@ -90,7 +90,8 @@ jobs:
 
       - name: Update package.json
         run: |
-          VERSION=$(node -p "require('./packages/zudoku/package.json').version")
+          VERSION=$(pnpm view zudoku@local version --registry http://localhost:4873)
+          echo "Using locally-published zudoku version: $VERSION"
           cd examples/cosmo-cargo
           pnpm pkg set "devDependencies.zudoku=$VERSION"
 
