@@ -183,6 +183,22 @@ export class OpenIDAuthenticationProvider
     });
   }
 
+  private buildUserProfile(
+    userInfo: oauth.UserInfoResponse,
+    fallbackEmailVerified: oauth.JsonValue | undefined,
+  ): UserProfile {
+    const emailVerified =
+      userInfo.email_verified ?? fallbackEmailVerified ?? false;
+    return {
+      ...userInfo,
+      sub: userInfo.sub,
+      email: userInfo.email,
+      name: userInfo.name,
+      emailVerified: Boolean(emailVerified),
+      pictureUrl: userInfo.picture,
+    } as UserProfile;
+  }
+
   public async refreshUserProfile(): Promise<boolean> {
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
@@ -200,13 +216,7 @@ export class OpenIDAuthenticationProvider
         ? providerData.claims?.email_verified
         : undefined;
 
-    const profile: UserProfile = {
-      sub: userInfo.sub,
-      email: userInfo.email,
-      name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? emailVerified ?? false,
-      pictureUrl: userInfo.picture,
-    };
+    const profile = this.buildUserProfile(userInfo, emailVerified);
 
     useAuthState.setState({
       isAuthenticated: true,
@@ -494,14 +504,7 @@ export class OpenIDAuthenticationProvider
     );
     const userInfo = await userInfoResponse.json();
 
-    const profile: UserProfile = {
-      ...userInfo,
-      sub: userInfo.sub,
-      email: userInfo.email,
-      name: userInfo.name,
-      emailVerified: userInfo.email_verified ?? claims?.email_verified ?? false,
-      pictureUrl: userInfo.picture,
-    };
+    const profile = this.buildUserProfile(userInfo, claims?.email_verified);
 
     useAuthState.setState({
       isAuthenticated: true,

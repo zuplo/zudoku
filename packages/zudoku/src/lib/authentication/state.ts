@@ -81,11 +81,16 @@ syncZustandState(authState);
 
 export const useAuthState = authState;
 
+export interface CustomClaimRecord {
+  [key: string]: CustomClaim;
+}
+export type CustomClaim = string | boolean | CustomClaimRecord | undefined;
+
 export interface UserProfile {
   sub: string;
   email: string | undefined;
   emailVerified: boolean;
   name: string | undefined;
   pictureUrl: string | undefined;
-  [key: string]: string | boolean | undefined;
+  [key: string]: CustomClaim;
 }
