@@ -1,10 +1,14 @@
+import { ShieldCheckIcon, ShieldCogCornerIcon } from "lucide-react";
 import { useMemo, useState, useTransition } from "react";
 import { useSearchParams } from "react-router";
+import { Button } from "zudoku/components";
 import { useZudoku } from "zudoku/hooks";
 import { Badge } from "zudoku/ui/Badge.js";
 import { NativeSelect, NativeSelectOption } from "zudoku/ui/NativeSelect.js";
+import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
 import { SyntaxHighlight } from "zudoku/ui/SyntaxHighlight.js";
 import { useAuthState } from "../../authentication/state.js";
+import { useApiIdentities } from "../../components/context/ZudokuContext.js";
 import { PathRenderer } from "../../components/PathRenderer.js";
 import { cn } from "../../util/cn.js";
 import { useOnScreen } from "../../util/useOnScreen.js";
@@ -14,13 +18,23 @@ import { useOasConfig } from "./context.js";
 import { GeneratedExampleSidecarBox } from "./GeneratedExampleSidecarBox.js";
 import type { OperationsFragmentFragment } from "./graphql/graphql.js";
 import { graphql } from "./graphql/index.js";
+import { AuthorizeDialog } from "./playground/AuthorizeDialog.js";
+import IdentitySelector from "./playground/IdentitySelector.js";
+import {
+  NO_IDENTITY,
+  SECURITY_SCHEME_PREFIX,
+} from "./playground/Playground.js";
+import { useIdentityStore } from "./playground/rememberedIdentity.js";
+import { useSecurityCredentialsStore } from "./playground/securityCredentialsStore.js";
 import { PlaygroundDialogWrapper } from "./PlaygroundDialogWrapper.js";
 import { RequestBodySidecarBox } from "./RequestBodySidecarBox.js";
 import { ResponsesSidecarBox } from "./ResponsesSidecarBox.js";
 import * as SidecarBox from "./SidecarBox.js";
 import { createHttpSnippet, getConverted } from "./util/createHttpSnippet.js";
+import { extractOperationSecuritySchemes } from "./util/extractOperationSecuritySchemes.js";
 import { generateSchemaExample } from "./util/generateSchemaExample.js";
 import { methodForColor } from "./util/methodToColor.js";
+import { useResolvedAuth } from "./util/useResolvedAuth.js";
 
 export const GetServerQuery = graphql(/* GraphQL */ `
   query getServerQuery($input: JSON!, $type: SchemaType!) {
@@ -172,8 +186,46 @@ export const Sidecar = ({
   const selectedServer =
     globalSelectedServer || operation.servers.at(0)?.url || "";
 
+  const securitySchemes = useMemo(
+    () =>
+      options?.disableSecurity
+        ? []
+        : extractOperationSecuritySchemes(operation),
+    [operation, options?.disableSecurity],
+  );
+
+  const identities = useApiIdentities();
+  const rememberedIdentity = useIdentityStore((s) => s.rememberedIdentity);
+  const setRememberedIdentity = useIdentityStore(
+    (s) => s.setRememberedIdentity,
+  );
+  const securityCredentials = useSecurityCredentialsStore((s) => s.credentials);
+
+  const identityList = useMemo(() => identities.data ?? [], [identities.data]);
+
+  const resolvedAuth = useResolvedAuth({
+    operation,
+    identityId: rememberedIdentity,
+    identities: identityList,
+  });
+
+  const inapplicableSchemeName = useMemo(() => {
+    if (!rememberedIdentity?.startsWith(SECURITY_SCHEME_PREFIX)) return;
+    const name = rememberedIdentity.slice(SECURITY_SCHEME_PREFIX.length);
+    return securitySchemes.some((s) => s.name === name) ? undefined : name;
+  }, [rememberedIdentity, securitySchemes]);
+
+  const hasAuthOptions = securitySchemes.length > 0 || identityList.length > 0;
+  const [authPopoverOpen, setAuthPopoverOpen] = useState(false);
+  const [authorizeSchemeName, setAuthorizeSchemeName] = useState<
+    string | undefined
+  >();
+
+  const hasResolvedAuth =
+    resolvedAuth.headers.length > 0 || resolvedAuth.queryString.length > 0;
+
   const httpSnippetCode = useMemo<string | undefined>(() => {
-    if (codeSamples) {
+    if (codeSamples && !hasResolvedAuth) {
       const match = codeSamples.find((s) => s.lang === selectedLang);
       return match?.source;
     }
@@ -185,6 +237,7 @@ export const Sidecar = ({
       operation,
       example: currentExampleCode,
       auth,
+      resolvedAuth,
     });
 
     if (converted) return converted;
@@ -198,6 +251,7 @@ export const Sidecar = ({
             text: JSON.stringify(currentExampleCode, null, 2),
           }
         : { mimeType: selectedContent?.mediaType ?? "application/json" },
+      resolvedAuth,
     });
 
     return getConverted(snippet, selectedLang);
@@ -211,6 +265,8 @@ export const Sidecar = ({
     options,
     auth,
     context,
+    resolvedAuth,
+    hasResolvedAuth,
   ]);
 
   const [ref, isOnScreen] = useOnScreen({ rootMargin: "200px 0px 200px 0px" });
@@ -248,36 +304,13 @@ export const Sidecar = ({
               </Badge>
               {path}
             </span>
-            <div className="flex items-center gap-1">
-              <NativeSelect
-                className="py-0.5 h-fit max-w-32 truncate bg-background"
-                value={selectedLang}
-                onChange={(e) => {
-                  startTransition(() => {
-                    setSearchParams((prev) => {
-                      prev.set("lang", e.target.value);
-                      return prev;
-                    });
-                  });
-                }}
-              >
-                {supportedLanguages.map((language) => (
-                  <NativeSelectOption
-                    key={language.value}
-                    value={language.value}
-                  >
-                    {language.label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
-              {showPlayground && (
-                <PlaygroundDialogWrapper
-                  servers={operation.servers.map((server) => server.url)}
-                  operation={operation}
-                  examples={requestBodyContent ?? undefined}
-                />
-              )}
-            </div>
+            {showPlayground && (
+              <PlaygroundDialogWrapper
+                servers={operation.servers.map((server) => server.url)}
+                operation={operation}
+                examples={requestBodyContent ?? undefined}
+              />
+            )}
           </div>
         </SidecarBox.Head>
         <SidecarBox.Body>
@@ -287,12 +320,100 @@ export const Sidecar = ({
             <SyntaxHighlight
               embedded
               language={selectedLang}
+              showLanguageIndicator={false}
               className="[--scrollbar-color:gray] rounded-none text-xs max-h-[200px]"
               // biome-ignore lint/style/noNonNullAssertion: code is guaranteed to be defined
               code={httpSnippetCode!}
             />
           )}
         </SidecarBox.Body>
+        <SidecarBox.Footer className="text-xs self-end flex justify-between items-center gap-2">
+          <NativeSelect
+            className="text-xs h-fit py-1 max-w-32 truncate bg-background"
+            value={selectedLang}
+            onChange={(e) => {
+              startTransition(() => {
+                setSearchParams((prev) => {
+                  prev.set("lang", e.target.value);
+                  return prev;
+                });
+              });
+            }}
+          >
+            {supportedLanguages.map((language) => (
+              <NativeSelectOption key={language.value} value={language.value}>
+                {language.label}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
+          {hasAuthOptions && (
+            <Popover open={authPopoverOpen} onOpenChange={setAuthPopoverOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Select authentication"
+                >
+                  {hasResolvedAuth ? (
+                    <ShieldCheckIcon className="size-4 text-green-600" />
+                  ) : (
+                    <ShieldCogCornerIcon className="size-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="p-0 w-76 overflow-hidden">
+                <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-muted/40">
+                  Selection syncs across endpoints that support it.
+                </div>
+                {inapplicableSchemeName && (
+                  <div className="px-4 py-2.5 text-xs text-muted-foreground border-b bg-amber-500/10">
+                    Selected <code>{inapplicableSchemeName}</code> isn't
+                    supported for this endpoint.
+                  </div>
+                )}
+                <IdentitySelector
+                  value={
+                    inapplicableSchemeName
+                      ? NO_IDENTITY
+                      : (rememberedIdentity ?? NO_IDENTITY)
+                  }
+                  identities={identityList}
+                  setValue={(value) => {
+                    setRememberedIdentity(value);
+                    if (value.startsWith(SECURITY_SCHEME_PREFIX)) {
+                      const schemeName = value.slice(
+                        SECURITY_SCHEME_PREFIX.length,
+                      );
+                      if (!securityCredentials[schemeName]?.isAuthorized) {
+                        setAuthPopoverOpen(false);
+                        setAuthorizeSchemeName(schemeName);
+                      }
+                    }
+                  }}
+                  securitySchemes={
+                    securitySchemes.length > 0 ? securitySchemes : undefined
+                  }
+                  securityCredentials={securityCredentials}
+                  onConfigureScheme={(name) => {
+                    setAuthPopoverOpen(false);
+                    setAuthorizeSchemeName(name);
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          )}
+          {authorizeSchemeName && (
+            <AuthorizeDialog
+              securitySchemes={securitySchemes.filter(
+                (s) => s.name === authorizeSchemeName,
+              )}
+              open={Boolean(authorizeSchemeName)}
+              onOpenChange={(open) => {
+                if (!open) setAuthorizeSchemeName(undefined);
+              }}
+            />
+          )}
+        </SidecarBox.Footer>
       </SidecarBox.Root>
 
       {transformedRequestBodyContent && currentExample ? (
