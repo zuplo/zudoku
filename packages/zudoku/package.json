@@ -1,6 +1,6 @@
 {
   "name": "zudoku",
-  "version": "0.75.1",
+  "version": "0.76.0",
   "type": "module",
   "sideEffects": [
     "**/*.css",
