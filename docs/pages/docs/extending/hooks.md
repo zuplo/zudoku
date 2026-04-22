@@ -139,13 +139,13 @@ const { email, isVerified, supportsEmailVerification, refresh, requestEmailVerif
   useVerifiedEmail();
 ```
 
-| Property                    | Type                                             | Description                                                                                  |
-| --------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-| `email`                     | `string \| undefined`                            | The user's email address, if any.                                                            |
-| `isVerified`                | `boolean`                                        | Whether the provider reports the email as verified.                                          |
-| `supportsEmailVerification` | `boolean`                                        | `true` when the provider implements a `requestEmailVerification` method.                     |
-| `refresh`                   | `() => void`                                     | Re-fetch the user profile from the provider — useful after the user verifies in another tab. |
-| `requestEmailVerification`  | `(options?: AuthActionOptions) => Promise<void>` | Triggers the provider's "resend verification email" flow.                                    |
+| Property                    | Type                                             | Description                                                                                                                |
+| --------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `email`                     | `string \| undefined`                            | The user's email address, if any.                                                                                          |
+| `isVerified`                | `boolean \| undefined`                           | Whether the provider reports the email as verified. `undefined` when no profile is available (e.g. signed out or pending). |
+| `supportsEmailVerification` | `boolean`                                        | `true` when the provider implements a `requestEmailVerification` method.                                                   |
+| `refresh`                   | `() => void`                                     | Re-fetch the user profile from the provider — useful after the user verifies in another tab.                               |
+| `requestEmailVerification`  | `(options?: AuthActionOptions) => Promise<void>` | Triggers the provider's "resend verification email" flow.                                                                  |
 
 The hook automatically refreshes the profile when the window regains focus so `isVerified` updates
 after the user completes verification elsewhere.
@@ -189,10 +189,11 @@ See the [Events](./events.md) page for the full guide and the list of available 
 ```typescript
 import { useEvent } from "zudoku/hooks";
 
-// Access the latest event payload
-const locationEvent = useEvent("location");
+// Access the latest event payload. When called without a callback, useEvent
+// returns the event's argument tuple — destructure it to get the payload.
+const [locationEvent] = useEvent("location") ?? [];
 
-// Or transform the payload
+// Or transform the payload with a callback
 const pathname = useEvent("location", ({ to }) => to.pathname);
 
 // Or run a side effect only
