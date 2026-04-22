@@ -12,6 +12,7 @@ import type {
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { SignOut } from "../components/SignOut.js";
@@ -28,6 +29,8 @@ import {
 export type SupabaseProviderData = {
   type: "supabase";
   session: Session;
+  accessToken: string;
+  refreshToken?: string;
 };
 
 declare module "../state.js" {
@@ -86,7 +89,12 @@ class SupabaseAuthenticationProvider
 
     useAuthState.getState().setLoggedIn({
       profile,
-      providerData: { type: "supabase", session },
+      providerData: {
+        type: "supabase",
+        session,
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+      },
     });
   }
 
@@ -98,6 +106,21 @@ class SupabaseAuthenticationProvider
     }
 
     return data.session.access_token;
+  }
+
+  async verifyAccessToken(token: string): Promise<VerifyAccessTokenResult> {
+    const { data, error } = await this.client.auth.getUser(token);
+    if (error || !data.user) return undefined;
+    const user = data.user;
+    return {
+      profile: {
+        sub: user.id,
+        email: user.email,
+        name: user.user_metadata.full_name || user.user_metadata.name,
+        emailVerified: user.email_confirmed_at != null,
+        pictureUrl: user.user_metadata.avatar_url,
+      },
+    };
   }
 
   async signRequest(request: Request): Promise<Request> {
@@ -204,7 +227,12 @@ class SupabaseAuthenticationProvider
 
       useAuthState.getState().setLoggedIn({
         profile,
-        providerData: { type: "supabase", session: data.session },
+        providerData: {
+          type: "supabase",
+          session: data.session,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+        },
       });
     }
   };

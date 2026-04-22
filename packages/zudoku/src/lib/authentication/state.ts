@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import {
+  createJSONStorage,
+  persist,
+  type StateStorage,
+} from "zustand/middleware";
 import { syncZustandState } from "../util/syncZustandState.js";
 
 /**
@@ -34,12 +38,29 @@ export interface AuthState {
   }) => void;
 }
 
+const noopStorage: StateStorage = {
+  getItem: () => null,
+  setItem: () => {},
+  removeItem: () => {},
+};
+
+// Seed from the SSR-injected signal. Object present = server checked;
+// `profile: null` = authoritative anon. Absent = fall back to pending.
+const ssrAuthInitial =
+  typeof window !== "undefined" ? window.ZUDOKU_SSR_AUTH : undefined;
+
+// When the server injected ZUDOKU_SSR_AUTH, cookies are the single source of
+// truth. Persisting would let stale localStorage contradict the SSR signal
+// (ghost login after cookies expire). SSG has no SSR signal, so persist the
+// full snapshot for reload continuity.
+const ssrMode = ssrAuthInitial !== undefined;
+
 export const authState = create<AuthState>()(
   persist(
     (set) => ({
-      isAuthenticated: false,
-      isPending: true,
-      profile: null,
+      isAuthenticated: !!ssrAuthInitial?.profile,
+      isPending: ssrAuthInitial === undefined,
+      profile: ssrAuthInitial?.profile ?? null,
       providerData: null,
       setAuthenticationPending: () =>
         set(() => ({
@@ -72,7 +93,9 @@ export const authState = create<AuthState>()(
         };
       },
       name: "auth-state",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() =>
+        typeof window === "undefined" || ssrMode ? noopStorage : localStorage,
+      ),
     },
   ),
 );

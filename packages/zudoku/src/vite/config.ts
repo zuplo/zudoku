@@ -45,11 +45,13 @@ const defineEnvVars = (vars: string[]) =>
 export async function getViteConfig(
   dir: string,
   configEnv: ZudokuConfigEnv,
+  options: { adapter?: "node" | "cloudflare" | "vercel" } = {},
 ): Promise<InlineConfig> {
   const { config, publicEnv, envPrefix } = await loadZudokuConfig(
     configEnv,
     dir,
   );
+  const isWorker = options.adapter === "cloudflare";
 
   const cdnUrl = CdnUrlSchema.parse(config.cdnUrl);
 
@@ -88,6 +90,10 @@ export async function getViteConfig(
     root: dir,
     base,
     appType: "custom",
+    // Cloudflare Workers: `webworker` makes Vite pick the browser platform
+    // for rolldown and avoids emitting `createRequire(import.meta.url)`,
+    // which is undefined in Workers. See vitejs/vite#21969 (fix in 8.0.4+).
+    ssr: isWorker ? { target: "webworker" } : undefined,
     configFile: false,
     clearScreen: false,
     logLevel: (process.env.LOG_LEVEL ?? "info") as LogLevel,
@@ -161,6 +167,7 @@ export async function getViteConfig(
             path.join(dir, "dist", config.basePath ?? "", "server"),
           ),
           rolldownOptions: {
+            logLevel: "warn",
             input: ["zudoku/app/entry.server.tsx", config.__meta.configPath],
           },
         },

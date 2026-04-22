@@ -9,6 +9,7 @@ import type {
   AuthActionOptions,
   AuthenticationPlugin,
   AuthenticationProviderInitializer,
+  VerifyAccessTokenResult,
 } from "../authentication.js";
 import { CoreAuthenticationPlugin } from "../AuthenticationPlugin.js";
 import { CallbackHandler } from "../components/CallbackHandler.js";
@@ -19,6 +20,16 @@ import { type UserProfile, useAuthState } from "../state.js";
 
 const CODE_VERIFIER_KEY = "code-verifier";
 const STATE_KEY = "oauth-state";
+
+const decodeJwtExp = async (token: string): Promise<number | undefined> => {
+  try {
+    const { decodeJwt } = await import("jose");
+    const payload = decodeJwt(token);
+    return typeof payload.exp === "number" ? payload.exp : undefined;
+  } catch {
+    return undefined;
+  }
+};
 
 export interface OpenIdProviderData {
   // just for easy migration we also allow for undefined type. can be removed in the future.
@@ -199,7 +210,42 @@ export class OpenIDAuthenticationProvider
     };
   }
 
+  public async verifyAccessToken(
+    token: string,
+  ): Promise<VerifyAccessTokenResult> {
+    const authServer = await this.getAuthServer();
+    const response = await oauth.userInfoRequest(
+      authServer,
+      this.client,
+      token,
+    );
+    if (!response.ok) return undefined;
+    const userInfo = (await response.json()) as Record<string, unknown>;
+    if (!userInfo.sub) return undefined;
+
+    // userInfoRequest authenticated the token upstream; parsing `exp` here
+    // lets us bound the cookie lifetime to the token's. Opaque tokens just
+    // yield undefined and fall back to the handler's default.
+    const expiresAt = await decodeJwtExp(token);
+
+    return {
+      profile: {
+        sub: String(userInfo.sub),
+        email: userInfo.email as string | undefined,
+        name: userInfo.name as string | undefined,
+        emailVerified: Boolean(userInfo.email_verified),
+        pictureUrl: userInfo.picture as string | undefined,
+      },
+      expiresAt,
+    };
+  }
+
   public async refreshUserProfile(): Promise<boolean> {
+    // SSR mode doesn't persist `providerData`; tokens live only in the
+    // httpOnly cookie. Without client-side tokens we can't call userInfo —
+    // the SSR-supplied profile stays authoritative.
+    if (!useAuthState.getState().providerData) return false;
+
     const accessToken = await this.getAccessToken();
     const authServer = await this.getAuthServer();
 
