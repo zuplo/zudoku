@@ -33,7 +33,6 @@ import { useCurrentNavigation, useZudoku } from "./context/ZudokuContext.js";
 import { PoweredByZudoku } from "./navigation/PoweredByZudoku.js";
 import { getFirstMatchingPath, shouldShowItem } from "./navigation/utils.js";
 import { PageProgress } from "./PageProgress.js";
-import { Slot } from "./Slot.js";
 import { ThemeSwitch } from "./ThemeSwitch.js";
 
 const MobileHeaderNavLink = ({
@@ -168,9 +167,6 @@ export const MobileTopNavigation = () => {
                 />
               ))}
               {headerNavigation.length > 0 && <Separator className="my-2" />}
-              <li className="empty:hidden">
-                <Slot.Target name="top-navigation-side" />
-              </li>
 
               {filteredItems.map((item) => {
                 if (item.type === "separator") {

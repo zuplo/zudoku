@@ -25,7 +25,8 @@ type PredefinedSlotNames =
   | "content-before"
   | "content-after"
   | "navigation-after"
-  | "navigation-before";
+  | "navigation-before"
+  | "mobile-top-bar-end";
 
 export type SlotName = PredefinedSlotNames | CustomSlotNames;
 

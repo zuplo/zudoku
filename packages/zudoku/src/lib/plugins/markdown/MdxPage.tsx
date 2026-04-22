@@ -1,6 +1,7 @@
 import { useMDXComponents } from "@mdx-js/react";
 import { Helmet } from "@zudoku/react-helmet-async";
 import {
+  ArrowUpIcon,
   CheckIcon,
   ChevronDownIcon,
   CopyIcon,
@@ -20,8 +21,10 @@ import {
   DropdownMenuTrigger,
 } from "zudoku/ui/DropdownMenu.js";
 import { Popover, PopoverContent, PopoverTrigger } from "zudoku/ui/Popover.js";
+import type { TocEntry } from "../../../vite/mdx/rehype-extract-toc-with-jsx.js";
 import { AiAssistantMenuItems } from "../../components/AiAssistantMenuItems.js";
 import { CategoryHeading } from "../../components/CategoryHeading.js";
+import { useViewportAnchor } from "../../components/context/ViewportAnchorContext.js";
 import { useZudoku } from "../../components/context/ZudokuContext.js";
 import { DeveloperHint } from "../../components/DeveloperHint.js";
 import { Heading } from "../../components/Heading.js";
@@ -31,6 +34,7 @@ import {
   usePrevNext,
 } from "../../components/navigation/utils.js";
 import { Pagination } from "../../components/Pagination.js";
+import { Slot } from "../../components/Slot.js";
 import { Typography } from "../../components/Typography.js";
 import { cn } from "../../util/cn.js";
 import { joinUrl } from "../../util/joinUrl.js";
@@ -46,6 +50,61 @@ declare global {
     }) => string[] | undefined;
   }
 }
+
+const TocPopoverButton = ({
+  tocEntries,
+  className,
+}: {
+  tocEntries: TocEntry[];
+  className?: string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const { activeAnchor } = useViewportAnchor();
+  const activeAnchorText = activeAnchor
+    ? document.getElementById(activeAnchor)?.textContent
+    : null;
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        className={cn(
+          "flex items-center gap-1 text-muted-foreground hover:text-accent-foreground",
+          className,
+        )}
+        aria-label="Toggle table of contents"
+      >
+        <ListTreeIcon aria-hidden="true" className="size-3" />
+        <span className="text-xs font-medium">
+          {activeAnchorText ?? "On this page"}
+        </span>
+      </PopoverTrigger>
+      <PopoverContent
+        align="end"
+        sideOffset={8}
+        className="max-w-sm overflow-y-auto p-4 text-sm"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+        onClick={(e) => {
+          if (e.target instanceof HTMLElement && e.target.closest("a")) {
+            setOpen(false);
+          }
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+            setOpen(false);
+          }}
+          className="flex items-center gap-2 pb-3 -mx-1 font-medium"
+        >
+          <ArrowUpIcon size={14} aria-hidden="true" />
+          Return to top
+        </button>
+        <TocContent entries={tocEntries} showHeader={false} />
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 const MarkdownHeadings = {
   h2: ({ children, id }) => (
@@ -137,6 +196,7 @@ export const MdxPage = ({
   const showToc = !hideToc && tocEntries.length > 0;
   const showTocSidebar = showToc && !fullWidth;
   const showTocPopover = showToc && fullWidth;
+  const showTocDrawer = showToc && !fullWidth;
 
   const { prev, next } = usePrevNext();
 
@@ -178,6 +238,19 @@ export const MdxPage = ({
         )}
       >
         <header className="flow-root">
+          {showTocDrawer && (
+            <>
+              <Slot.Source name="top-navigation-side" type="append">
+                <TocPopoverButton
+                  tocEntries={tocEntries}
+                  className="xl:hidden"
+                />
+              </Slot.Source>
+              <Slot.Source name="mobile-top-bar-end" type="append">
+                <TocPopoverButton tocEntries={tocEntries} />
+              </Slot.Source>
+            </>
+          )}
           {(copyMarkdownConfig || showTocPopover) && (
             <div
               className="float-end ms-4 mt-1 flex items-center gap-2"
