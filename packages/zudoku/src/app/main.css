@@ -51,6 +51,59 @@
   --font-serif: var(--font-serif);
 }
 
+@utility typography {
+  --tw-prose-body: color-mix(in oklch, currentColor 90%, transparent);
+  --tw-prose-headings: currentColor;
+  --tw-prose-lead: color-mix(in oklch, currentColor 65%, transparent);
+  --tw-prose-links: currentColor;
+  --tw-prose-bold: currentColor;
+  --tw-prose-counters: color-mix(in oklch, currentColor 55%, transparent);
+  --tw-prose-bullets: color-mix(in oklch, currentColor 30%, transparent);
+  --tw-prose-hr: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-quotes: currentColor;
+  --tw-prose-quote-borders: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-captions: color-mix(in oklch, currentColor 55%, transparent);
+  --tw-prose-code: currentColor;
+  --tw-prose-kbd: currentColor;
+  --tw-prose-th-borders: color-mix(in oklch, currentColor 30%, transparent);
+  --tw-prose-td-borders: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-invert-body: color-mix(in oklch, currentColor 90%, transparent);
+  --tw-prose-invert-headings: currentColor;
+  --tw-prose-invert-lead: color-mix(in oklch, currentColor 65%, transparent);
+  --tw-prose-invert-links: currentColor;
+  --tw-prose-invert-bold: currentColor;
+  --tw-prose-invert-counters: color-mix(
+    in oklch,
+    currentColor 55%,
+    transparent
+  );
+  --tw-prose-invert-bullets: color-mix(in oklch, currentColor 30%, transparent);
+  --tw-prose-invert-hr: color-mix(in oklch, currentColor 20%, transparent);
+  --tw-prose-invert-quotes: currentColor;
+  --tw-prose-invert-quote-borders: color-mix(
+    in oklch,
+    currentColor 20%,
+    transparent
+  );
+  --tw-prose-invert-captions: color-mix(
+    in oklch,
+    currentColor 55%,
+    transparent
+  );
+  --tw-prose-invert-code: currentColor;
+  --tw-prose-invert-kbd: currentColor;
+  --tw-prose-invert-th-borders: color-mix(
+    in oklch,
+    currentColor 30%,
+    transparent
+  );
+  --tw-prose-invert-td-borders: color-mix(
+    in oklch,
+    currentColor 20%,
+    transparent
+  );
+}
+
 @utility prose {
   a {
     @apply font-normal underline-offset-4 hover:text-primary;

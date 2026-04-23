@@ -533,7 +533,7 @@ const config: ZudokuConfig = {
   theme: {
     light: {
       background: "oklch(0.995 0.002 80)",
-      foreground: "20 14.3% 4.1%",
+      foreground: "#262626",
       card: "#fff",
       cardForeground: "#262626",
       primary: "#f4bf32",
