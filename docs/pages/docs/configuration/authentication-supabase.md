@@ -248,11 +248,11 @@ authentication: {
   // Optional: When true, sign-in and sign-up pages show only OAuth buttons (no email/password)
   onlyThirdPartyProviders: true,
 
-  // Optional: When false, the sign-up UI is disabled (for invite-only setups).
+  // Optional: When true, the sign-up UI is disabled (for invite-only setups).
   // Must also be disabled in the Supabase dashboard under
   // Authentication → Configuration → Sign In / Providers → Allow new users to sign up.
-  // Defaults to true.
-  allowSignUp: false,
+  // Defaults to false.
+  disableSignUp: true,
 
   // Optional: Redirect URLs after authentication events
   redirectToAfterSignUp: "/welcome",
@@ -321,9 +321,9 @@ CREATE TRIGGER on_auth_user_created
 ## Invite-only sign-ups
 
 To launch an invite-only portal where new users can only be created by an admin, set
-`allowSignUp: false` in your Zudoku config **and** disable new sign-ups in the Supabase dashboard
+`disableSignUp: true` in your Zudoku config **and** disable new sign-ups in the Supabase dashboard
 (**Authentication** → **Configuration** → **Sign In / Providers** → clear **Allow new users to sign
-up**). When `allowSignUp` is `false`:
+up**). When `disableSignUp` is `true`:
 
 - The "Don't have an account? Sign up." link is hidden on the sign-in page.
 - Navigating to `/signup` shows an "Invitation required" message instead of a form.
@@ -334,7 +334,7 @@ export default {
     type: "supabase",
     supabaseUrl: "https://your-project.supabase.co",
     supabaseKey: "<your-publishable-key>",
-    allowSignUp: false,
+    disableSignUp: true,
   },
 };
 ```

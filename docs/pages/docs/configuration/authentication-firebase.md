@@ -53,9 +53,9 @@ export default {
     // "microsoft", "apple", "yahoo", "password", "emailLink"
     // If not specified, all enabled providers in Firebase will be available
     providers: ["google", "github", "password"],
-    // Optional: disable the sign-up UI for invite-only setups. Defaults to true.
-    // When false, the "Sign up" link is hidden and /signup shows a message.
-    allowSignUp: false,
+    // Optional: disable the sign-up UI for invite-only setups. Defaults to false.
+    // When true, the "Sign up" link is hidden and /signup shows a message.
+    disableSignUp: true,
     // Optional: configure redirect URLs after authentication
     redirectToAfterSignIn: "/docs",
     redirectToAfterSignUp: "/getting-started",

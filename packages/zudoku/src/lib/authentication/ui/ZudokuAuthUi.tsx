@@ -139,12 +139,12 @@ export const ZudokuSignInUi = ({
   onUsernamePasswordSignIn,
   enableUsernamePassword,
   enableEmailLink,
-  allowSignUp = true,
+  disableSignUp = false,
 }: {
   providers: string[];
   enableUsernamePassword: boolean;
   enableEmailLink?: boolean;
-  allowSignUp?: boolean;
+  disableSignUp?: boolean;
   onOAuthSignIn: (providerId: string) => Promise<void>;
   onUsernamePasswordSignIn: (email: string, password: string) => Promise<void>;
 }) => {
@@ -254,7 +254,7 @@ export const ZudokuSignInUi = ({
               Sign in with email link
             </Link>
           )}
-          {allowSignUp && (
+          {!disableSignUp && (
             <Link to="/signup" className="text-sm text-muted-foreground">
               Don't have an account? Sign up.
             </Link>

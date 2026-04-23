@@ -45,7 +45,7 @@ class SupabaseAuthenticationProvider
   private readonly config: SupabaseAuthenticationConfig;
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
-  private readonly allowSignUp: boolean;
+  private readonly disableSignUp: boolean;
 
   constructor(config: SupabaseAuthenticationConfig) {
     const { supabaseUrl, supabaseKey } = config;
@@ -65,7 +65,7 @@ class SupabaseAuthenticationProvider
       : (config.providers ?? []);
     this.providers = configuredProviders;
     this.enableUsernamePassword = !config.onlyThirdPartyProviders;
-    this.allowSignUp = config.allowSignUp ?? true;
+    this.disableSignUp = config.disableSignUp ?? false;
 
     this.client.auth.onAuthStateChange(async (event, session) => {
       if (session && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
@@ -316,7 +316,7 @@ class SupabaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
-            allowSignUp={this.allowSignUp}
+            disableSignUp={this.disableSignUp}
             onOAuthSignIn={this.onOAuthSignIn}
             onUsernamePasswordSignIn={this.onUsernamePasswordSignIn}
           />
@@ -324,15 +324,15 @@ class SupabaseAuthenticationProvider
       },
       {
         path: "/signup",
-        element: this.allowSignUp ? (
+        element: this.disableSignUp ? (
+          <ZudokuSignUpDisabledUi />
+        ) : (
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
             onOAuthSignUp={this.onOAuthSignIn}
             onUsernamePasswordSignUp={this.onUsernamePasswordSignUp}
           />
-        ) : (
-          <ZudokuSignUpDisabledUi />
         ),
       },
       {

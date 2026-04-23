@@ -60,13 +60,13 @@ class FirebaseAuthenticationProvider
   private readonly providers: string[];
   private readonly enableUsernamePassword: boolean;
   private readonly enableEmailLink: boolean;
-  private readonly allowSignUp: boolean;
+  private readonly disableSignUp: boolean;
   private readonly redirectToAfterSignOut: string;
 
   constructor(config: FirebaseAuthenticationConfig) {
     super();
     this.redirectToAfterSignOut = config.redirectToAfterSignOut ?? "/";
-    this.allowSignUp = config.allowSignUp ?? true;
+    this.disableSignUp = config.disableSignUp ?? false;
 
     this.app = initializeApp({
       apiKey: config.apiKey,
@@ -220,7 +220,7 @@ class FirebaseAuthenticationProvider
           <ZudokuSignInUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
-            allowSignUp={this.allowSignUp}
+            disableSignUp={this.disableSignUp}
             onOAuthSignIn={async (providerId: string) => {
               useAuthState.setState({ isPending: true });
               const provider = await getProviderForId(providerId);
@@ -265,7 +265,9 @@ class FirebaseAuthenticationProvider
       },
       {
         path: "/signup",
-        element: this.allowSignUp ? (
+        element: this.disableSignUp ? (
+          <ZudokuSignUpDisabledUi />
+        ) : (
           <ZudokuSignUpUi
             providers={this.providers}
             enableUsernamePassword={this.enableUsernamePassword}
@@ -292,8 +294,6 @@ class FirebaseAuthenticationProvider
               await this.setUserLoggedIn(createUser.user);
             }}
           />
-        ) : (
-          <ZudokuSignUpDisabledUi />
         ),
       },
       {
