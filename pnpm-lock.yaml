@@ -210,6 +210,20 @@ importers:
         specifier: workspace:*
         version: link:../../packages/zudoku
 
+  examples/aws-lambda-ssr:
+    devDependencies:
+      react:
+        specifier: 'catalog:'
+        version: 19.2.5
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.2.5(react@19.2.5)
+      zudoku:
+        specifier: workspace:*
+        version: link:../../packages/zudoku
+
+  examples/aws-lambda-ssr/dist: {}
+
   examples/cloudflare-ssr:
     devDependencies:
       react:
@@ -370,6 +384,8 @@ importers:
       zudoku:
         specifier: workspace:*
         version: link:../../packages/zudoku
+
+  examples/with-vite-config/dist: {}
 
   examples/with-zuplo/docs:
     dependencies:
