@@ -200,7 +200,14 @@ export const Sidecar = ({
         : { mimeType: selectedContent?.mediaType ?? "application/json" },
     });
 
-    return getConverted(snippet, selectedLang);
+    // Check if any success response (2xx) has content — if none do, the
+    // response body is empty (e.g. 204 No Content) and code snippets should
+    // not attempt to parse JSON from the response.
+    const hasResponseBody = operation.responses.some(
+      (r) => r.statusCode.startsWith("2") && r.content && r.content.length > 0,
+    );
+
+    return getConverted(snippet, selectedLang, { hasResponseBody });
   }, [
     codeSamples,
     currentExampleCode,

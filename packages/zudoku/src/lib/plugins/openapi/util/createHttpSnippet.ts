@@ -89,7 +89,21 @@ export const createHttpSnippet = ({
   });
 };
 
-export const getConverted = (snippet: HTTPSnippet, option: string) => {
+/**
+ * Removes `.json()` parsing from generated JS fetch snippets when the response
+ * has no body (e.g. 204 No Content), since calling `response.json()` on an
+ * empty body throws a runtime error.
+ */
+const removeJsonParsing = (code: string): string =>
+  code
+    .replace(/\n\s*\.then\(response => response\.json\(\)\)/, "")
+    .replace(/\n\s*\.then\(res => res\.json\(\)\)/, "");
+
+export const getConverted = (
+  snippet: HTTPSnippet,
+  option: string,
+  { hasResponseBody = true }: { hasResponseBody?: boolean } = {},
+) => {
   // biome-ignore lint/suspicious/noExplicitAny: Allow any type
   let converted: any;
   switch (option) {
@@ -131,5 +145,11 @@ export const getConverted = (snippet: HTTPSnippet, option: string) => {
       break;
   }
 
-  return converted ? converted[0] : "";
+  const result = converted ? (converted[0] as string) : "";
+
+  if (!hasResponseBody && (option === "js" || option === "node")) {
+    return removeJsonParsing(result);
+  }
+
+  return result;
 };
