@@ -537,8 +537,8 @@ importers:
   packages/zudoku:
     dependencies:
       '@apidevtools/json-schema-ref-parser':
-        specifier: 15.3.1
-        version: 15.3.1(@types/json-schema@7.0.15)
+        specifier: 15.3.5
+        version: 15.3.5(@types/json-schema@7.0.15)
       '@azure/msal-browser':
         specifier: ^4.13.0
         version: 4.13.2
@@ -1066,12 +1066,14 @@ packages:
   '@antfu/utils@9.3.0':
     resolution: {integrity: sha512-9hFT4RauhcUzqOE4f1+frMKLZrgNog5b06I7VmZQV1BkvwvqrbC8EBZf3L1eEL2AKb6rNKjER0sEvJiSP1FXEA==}
 
-  '@apidevtools/json-schema-ref-parser@14.1.1':
-    resolution: {integrity: sha512-uGF1YGOzzD50L7HLNWclXmsEhQflw8/zZHIz0/AzkJrKL5r9PceUipZxR/cp/8veTk4TVfdDJLyIwXLjaP5ePg==}
+  '@apidevtools/json-schema-ref-parser@14.2.1':
+    resolution: {integrity: sha512-HmdFw9CDYqM6B25pqGBpNeLCKvGPlIx1EbLrVL0zPvj50CJQUHyBNBw45Muk0kEIkogo1VZvOKHajdMuAzSxRg==}
     engines: {node: '>= 20'}
+    peerDependencies:
+      '@types/json-schema': ^7.0.15
 
-  '@apidevtools/json-schema-ref-parser@15.3.1':
-    resolution: {integrity: sha512-FIweGOR9zrNuskfDXn8dfsA4eJEe8LmmGsGSDikEZvgYm36SO36yMhasXSOX7/OTGZ3b7I9iPhOxB24D8xL5uQ==}
+  '@apidevtools/json-schema-ref-parser@15.3.5':
+    resolution: {integrity: sha512-orNOYXw3hYXxxisXMldjzjBzqqTLBPbwOtHg7ovBPvfBHDue1qM9YJENZ3W2BQuS+7z4ThogMbEzEsov57Itkg==}
     engines: {node: '>=20'}
     peerDependencies:
       '@types/json-schema': ^7.0.15
@@ -10380,12 +10382,12 @@ snapshots:
 
   '@antfu/utils@9.3.0': {}
 
-  '@apidevtools/json-schema-ref-parser@14.1.1':
+  '@apidevtools/json-schema-ref-parser@14.2.1(@types/json-schema@7.0.15)':
     dependencies:
       '@types/json-schema': 7.0.15
       js-yaml: 4.1.1
 
-  '@apidevtools/json-schema-ref-parser@15.3.1(@types/json-schema@7.0.15)':
+  '@apidevtools/json-schema-ref-parser@15.3.5(@types/json-schema@7.0.15)':
     dependencies:
       '@types/json-schema': 7.0.15
       js-yaml: 4.1.1
@@ -14441,7 +14443,7 @@ snapshots:
       debug: 4.4.3
       invariant: 2.2.4
       metro: 0.83.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)
-      metro-config: 0.83.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       metro-core: 0.83.6
       semver: 7.7.4
     transitivePeerDependencies:
@@ -18182,7 +18184,7 @@ snapshots:
 
   json-schema-to-typescript-lite@15.0.0:
     dependencies:
-      '@apidevtools/json-schema-ref-parser': 14.1.1
+      '@apidevtools/json-schema-ref-parser': 14.2.1(@types/json-schema@7.0.15)
       '@types/json-schema': 7.0.15
 
   json-schema-traverse@1.0.0: {}
@@ -18772,6 +18774,21 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  metro-config@0.83.6(bufferutil@4.1.0)(utf-8-validate@5.0.10):
+    dependencies:
+      connect: 3.7.0
+      flow-enums-runtime: 0.0.6
+      jest-validate: 29.7.0
+      metro: 0.83.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      metro-cache: 0.83.6
+      metro-core: 0.83.6
+      metro-runtime: 0.83.6
+      yaml: 2.8.3
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   metro-config@0.83.6(bufferutil@4.1.0)(utf-8-validate@6.0.6):
     dependencies:
       connect: 3.7.0
@@ -18923,7 +18940,7 @@ snapshots:
       metro-babel-transformer: 0.83.6
       metro-cache: 0.83.6
       metro-cache-key: 0.83.6
-      metro-config: 0.83.6(bufferutil@4.1.0)(utf-8-validate@6.0.6)
+      metro-config: 0.83.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       metro-core: 0.83.6
       metro-file-map: 0.83.6
       metro-resolver: 0.83.6
