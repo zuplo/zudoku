@@ -130,6 +130,7 @@ export const prerender = async ({
     resourceLimits: {
       maxOldGenerationSizeMb,
     },
+    execArgv: ["--no-deprecation"],
     workerData: {
       template: html,
       distDir,

@@ -30,7 +30,8 @@ export const getPlanFromPurchaseDetails = (
 export const getTaxAmountFromPurchaseDetails = (
   response: PurchaseDetailsResponse,
 ) => {
-  const taxAmount = response?.tax?.taxAmount;
+  // @note: the first item in the items array represents the monthly charge & tax amount
+  const taxAmount = response?.tax?.items[0]?.taxAmount;
   const numericAmount =
     typeof taxAmount === "number"
       ? taxAmount

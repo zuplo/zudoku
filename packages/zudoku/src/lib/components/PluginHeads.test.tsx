@@ -11,8 +11,7 @@ const loc = {
   hash: "",
   state: null,
   key: "default",
-  unstable_mask: undefined,
-} satisfies Location;
+} as Location;
 
 const renderHeadSSR = (plugins: ZudokuPlugin[]) => {
   const ctx = {} as HelmetData["context"];

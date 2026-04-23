@@ -48,14 +48,13 @@ const viteApiPlugin = async (): Promise<Plugin> => {
     processors,
   });
 
+  await fs.rm(tmpStoreDir, { recursive: true, force: true });
+  await fs.mkdir(tmpStoreDir, { recursive: true });
+  await schemaManager.processAllSchemas();
+
   return {
     name: "zudoku-api-plugins",
     async buildStart() {
-      await fs.rm(tmpStoreDir, { recursive: true, force: true });
-      await fs.mkdir(tmpStoreDir, { recursive: true });
-
-      await schemaManager.processAllSchemas();
-
       schemaManager
         .getAllTrackedFiles()
         .forEach((file) => this.addWatchFile(file));
@@ -143,16 +142,48 @@ const viteApiPlugin = async (): Promise<Plugin> => {
         const apis = ensureArray(config.apis);
         const apiMetadata: ApiCatalogItem[] = [];
 
+        const httpMethods = new Set([
+          "get",
+          "post",
+          "put",
+          "patch",
+          "delete",
+          "options",
+          "head",
+          "trace",
+        ]);
+
         for (const apiConfig of apis) {
           if (apiConfig.type === "file" && apiConfig.path) {
             const latestSchema = schemaManager.getLatestSchema(apiConfig.path);
             if (!latestSchema?.schema.info) continue;
+
+            const operationCount = Object.values(
+              latestSchema.schema.paths ?? {},
+            ).reduce<number>((sum, pathItem) => {
+              if (!pathItem || typeof pathItem !== "object") return sum;
+              return (
+                sum +
+                Object.keys(pathItem).filter((m) =>
+                  httpMethods.has(m.toLowerCase()),
+                ).length
+              );
+            }, 0);
+
+            const rawVersion = latestSchema.schema.info.version;
+            const version = rawVersion
+              ? rawVersion.startsWith("v") || rawVersion.startsWith("V")
+                ? rawVersion
+                : `v${rawVersion}`
+              : undefined;
 
             apiMetadata.push({
               path: apiConfig.path,
               label: latestSchema.schema.info.title,
               description: latestSchema.schema.info.description ?? "",
               categories: apiConfig.categories ?? [],
+              version,
+              operationCount,
             });
           }
         }

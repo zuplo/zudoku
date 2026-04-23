@@ -116,11 +116,11 @@ describe("SubscriptionChangeConfirmPage", () => {
       tax: {
         currency: "gbp",
         subtotal: 4500,
-        taxAmount: 9,
-        total: 4509,
+        taxAmount: 900,
+        total: 5400,
         taxInclusive: false,
         taxes: [{ taxType: "VAT" }],
-        items: [],
+        items: [{ amount: 4500, taxAmount: 900 }],
       },
     };
 
@@ -135,11 +135,11 @@ describe("SubscriptionChangeConfirmPage", () => {
       tax: {
         currency: "usd",
         subtotal: 4500,
-        taxAmount: 5,
-        total: 4505,
+        taxAmount: 500,
+        total: 4500,
         taxInclusive: true,
         taxes: [{ taxType: "sales_tax" }],
-        items: [],
+        items: [{ amount: 4500, taxAmount: 500 }],
       },
     };
 

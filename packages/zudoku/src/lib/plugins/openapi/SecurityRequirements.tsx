@@ -2,11 +2,10 @@ import { KeyRoundIcon, LockIcon, ShieldCheckIcon } from "lucide-react";
 import { type ReactNode, Suspense, lazy } from "react";
 import { Badge } from "zudoku/ui/Badge.js";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "zudoku/ui/Tooltip.js";
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "zudoku/ui/HoverCard.js";
 import type {
   SecuritySchemeIn,
   SecuritySchemeType,
@@ -63,41 +62,48 @@ const schemeLabel = (scheme: SecurityScheme): string => {
   }
 };
 
-const SchemeTooltipContent = ({
+const SchemeHoverContent = ({
   scheme,
   scopes,
 }: {
   scheme: SecurityScheme;
   scopes: string[];
-}) => (
-  <div className="flex flex-col gap-1 max-w-xs">
-    <div className="text-xs capitalize">{schemeLabel(scheme)}</div>
-    {scheme.description && (
-      <Suspense fallback={<div className="text-xs">{scheme.description}</div>}>
-        <Markdown
-          content={scheme.description}
-          className="prose-xs text-xs max-w-full"
-        />
-      </Suspense>
-    )}
-    {scopes.length > 0 && (
-      <div className="flex flex-col gap-0.5">
-        <span className="text-xs text-muted-foreground">Required scopes:</span>
-        <div className="flex flex-wrap gap-1">
-          {scopes.map((scope) => (
-            <Badge
-              key={scope}
-              variant="muted"
-              className="text-[10px] px-1 py-0 h-auto font-mono"
-            >
-              {scope}
-            </Badge>
-          ))}
+}) => {
+  if (!scheme.description && scopes.length === 0) return null;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {scheme.description && (
+        <Suspense
+          fallback={<div className="text-xs">{scheme.description}</div>}
+        >
+          <Markdown
+            content={scheme.description}
+            className="prose-xs text-xs max-w-full"
+          />
+        </Suspense>
+      )}
+      {scopes.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <span className="text-xs text-muted-foreground">
+            Required scopes:
+          </span>
+          <div className="flex flex-wrap gap-1">
+            {scopes.map((scope) => (
+              <Badge
+                key={scope}
+                variant="muted"
+                className="text-[10px] px-1 py-0 h-auto font-mono"
+              >
+                {scope}
+              </Badge>
+            ))}
+          </div>
         </div>
-      </div>
-    )}
-  </div>
-);
+      )}
+    </div>
+  );
+};
 
 export const SecurityRequirements = ({
   security,
@@ -111,45 +117,57 @@ export const SecurityRequirements = ({
   if (requirements.length === 0) return null;
 
   return (
-    <TooltipProvider delayDuration={150}>
-      <div className="flex items-center gap-1.5 flex-wrap">
-        {requirements.map((req, reqIdx) => {
-          const reqKey = `${reqIdx}-${req.schemes.map((s) => s.scheme.name).join("+")}`;
-          return (
-            <div key={reqKey} className="contents">
-              {reqIdx > 0 && (
-                <span className="text-[10px] text-muted-foreground font-medium uppercase">
-                  or
-                </span>
-              )}
-              {req.schemes.map((reqScheme, schemeIdx) => (
+    <div className="flex items-center gap-1.5 flex-wrap">
+      {requirements.map((req, reqIdx) => {
+        const reqKey = `${reqIdx}-${req.schemes.map((s) => s.scheme.name).join("+")}`;
+        return (
+          <div key={reqKey} className="contents">
+            {reqIdx > 0 && (
+              <span className="text-[10px] text-muted-foreground font-medium uppercase">
+                or
+              </span>
+            )}
+            {req.schemes.map((reqScheme, schemeIdx) => {
+              const hasHoverContent =
+                !!reqScheme.scheme.description || reqScheme.scopes.length > 0;
+              const badge = (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] gap-1 py-0 h-5 font-normal cursor-default"
+                >
+                  {schemeIcon[reqScheme.scheme.type]}
+                  {schemeLabel(reqScheme.scheme)}
+                </Badge>
+              );
+
+              return (
                 <div key={reqScheme.scheme.name} className="contents">
                   {schemeIdx > 0 && (
                     <span className="text-[10px] text-muted-foreground">+</span>
                   )}
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] gap-1 py-0 h-5 font-normal cursor-default"
+                  {hasHoverContent ? (
+                    <HoverCard openDelay={150} closeDelay={100}>
+                      <HoverCardTrigger asChild>{badge}</HoverCardTrigger>
+                      <HoverCardContent
+                        side="bottom"
+                        align="start"
+                        className="w-auto max-w-xs p-3"
                       >
-                        {schemeIcon[reqScheme.scheme.type]}
-                        {schemeLabel(reqScheme.scheme)}
-                      </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" align="start">
-                      <SchemeTooltipContent
-                        scheme={reqScheme.scheme}
-                        scopes={reqScheme.scopes}
-                      />
-                    </TooltipContent>
-                  </Tooltip>
+                        <SchemeHoverContent
+                          scheme={reqScheme.scheme}
+                          scopes={reqScheme.scopes}
+                        />
+                      </HoverCardContent>
+                    </HoverCard>
+                  ) : (
+                    badge
+                  )}
                 </div>
-              ))}
-            </div>
-          );
-        })}
-      </div>
-    </TooltipProvider>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
   );
 };

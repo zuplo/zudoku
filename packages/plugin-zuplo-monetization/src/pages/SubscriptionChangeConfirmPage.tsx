@@ -15,7 +15,7 @@ import { useMonetizationConfig } from "../MonetizationContext";
 import { categorizeRateCards } from "../utils/categorizeRateCards";
 import { formatBillingCycle } from "../utils/formatBillingCycle";
 import { formatDuration } from "../utils/formatDuration";
-import { formatPrice } from "../utils/formatPrice";
+import { formatMinorCurrencyAmount, formatPrice } from "../utils/formatPrice";
 import { getPriceFromPlan } from "../utils/getPriceFromPlan";
 import {
   getPlanFromPurchaseDetails,
@@ -129,16 +129,16 @@ const SubscriptionChangeConfirmPage = () => {
                       <div className="text-2xl font-bold">
                         {formatPrice(price.monthly, selectedPlan?.currency)}
                       </div>
+                      {taxAmount != null && (
+                        <div className="text-sm font-normal mt-1">
+                          {taxInclusive
+                            ? `${formatMinorCurrencyAmount(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
+                            : `+ ${formatMinorCurrencyAmount(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
+                        </div>
+                      )}
                       {billingCycle && (
                         <div className="text-sm text-muted-foreground font-normal">
                           Billed {formatBillingCycle(billingCycle)}
-                        </div>
-                      )}
-                      {taxAmount != null && (
-                        <div className="text-xs text-muted-foreground font-normal mt-1">
-                          {taxInclusive
-                            ? `${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel} included`
-                            : `+ ${formatPrice(taxAmount, selectedPlan?.currency)} ${taxLabel}`}
                         </div>
                       )}
                     </div>
