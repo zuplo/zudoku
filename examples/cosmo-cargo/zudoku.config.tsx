@@ -8,6 +8,7 @@ import type {
 import { generateWebhookCodeSnippet } from "./src/CodeSnippetGenerator";
 import { Landingpage } from "./src/Landingpage";
 import { NotFound } from "./src/NotFound";
+import { VipLounge } from "./src/VipLounge";
 
 export class CosmoCargoApiIdentityPlugin implements ApiIdentityPlugin {
   async getIdentities(context: ZudokuContext) {
@@ -341,7 +342,7 @@ const config: ZudokuConfig = {
       path: "/vip-lounge",
       label: "VIP Lounge",
       display: "auth",
-      element: <div>Welcome to the VIP Lounge, exclusive Zuplo member!</div>,
+      element: <VipLounge />,
     },
   ],
   redirects: [
